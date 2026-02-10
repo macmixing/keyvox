@@ -1,5 +1,6 @@
 import Cocoa
 import Combine
+import CoreGraphics
 
 final class KeyboardMonitor: ObservableObject {
 
@@ -10,20 +11,24 @@ final class KeyboardMonitor: ObservableObject {
     /// The key (or modifier) the user holds to start dictation.
     /// Stored in UserDefaults so it can be wired to a Settings UI with a simple Picker.
     enum TriggerBinding: String, CaseIterable, Identifiable {
+        case leftOption
         case rightOption
-        case anyOption
-        case anyCommand
-        case control
+        case leftCommand
+        case rightCommand
+        case leftControl
+        case rightControl
         case function
 
         var id: String { rawValue }
 
         var displayName: String {
             switch self {
+            case .leftOption: return "Left Option (⌥)"
             case .rightOption: return "Right Option (⌥)"
-            case .anyOption: return "Option (⌥)"
-            case .anyCommand: return "Command (⌘)"
-            case .control: return "Control (⌃)"
+            case .leftCommand: return "Left Command (⌘)"
+            case .rightCommand: return "Right Command (⌘)"
+            case .leftControl: return "Left Control (⌃)"
+            case .rightControl: return "Right Control (⌃)"
             case .function: return "Fn (Function)"
             }
         }
@@ -31,23 +36,30 @@ final class KeyboardMonitor: ObservableObject {
         /// Returns true if this binding is currently pressed for the given flagsChanged event.
         func isPressed(for event: NSEvent) -> Bool {
             let flags = event.modifierFlags
+            
+            // Get the current CGEvent for precise left/right key detection
+            let cgEvent = CGEvent(source: nil)
+            let cgFlags = cgEvent?.flags.rawValue ?? 0
 
             switch self {
+            case .leftOption:
+                return flags.contains(.option) && (cgFlags & 0x00000020) != 0
+                
             case .rightOption:
-                // High-level mask for Option, plus a device-specific bit to distinguish RIGHT option.
-                let isOptionDown = flags.contains(.option)
-                let isRightOption = (flags.rawValue & KeyboardMonitor.rightOptionKeyMask) != 0
-                return isOptionDown && isRightOption
-
-            case .anyOption:
-                return flags.contains(.option)
-
-            case .anyCommand:
-                return flags.contains(.command)
-
-            case .control:
-                return flags.contains(.control)
-
+                return flags.contains(.option) && (cgFlags & 0x00000020) == 0
+                
+            case .leftCommand:
+                return flags.contains(.command) && (cgFlags & 0x00000010) == 0
+                
+            case .rightCommand:
+                return flags.contains(.command) && (cgFlags & 0x00000010) != 0
+                
+            case .leftControl:
+                return flags.contains(.control) && (cgFlags & 0x00000001) != 0
+                
+            case .rightControl:
+                return flags.contains(.control) && (cgFlags & 0x00000001) == 0
+                
             case .function:
                 return flags.contains(.function)
             }
@@ -76,10 +88,6 @@ final class KeyboardMonitor: ObservableObject {
 
     private static let bindingDefaultsKey = "KeyVox.TriggerBinding"
 
-    // Using a bitmask for the Right Option key specifically
-    // NX_DEVICERIGHTOPTIONKEYMASK = 0x00000040
-    fileprivate static let rightOptionKeyMask: UInt = 0x00000040
-
     private var lastFlagsChangedEvent: NSEvent?
 
     private var defaultsObserver: NSObjectProtocol?
@@ -91,8 +99,8 @@ final class KeyboardMonitor: ObservableObject {
            let saved = TriggerBinding(rawValue: raw) {
             self.triggerBinding = saved
         } else {
-            // Keep your current default behavior.
-            self.triggerBinding = .rightOption
+            // Default to left option key
+            self.triggerBinding = .leftOption
         }
 
         startMonitoring()
