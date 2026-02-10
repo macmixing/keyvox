@@ -15,51 +15,21 @@ class PasteService {
         print("Clipboard updated. Starting Surgical Accessibility Injection...")
         
         // 2. Smart Injection Strategy
+        // 2. Smart Injection Strategy
         pasteQueue.async {
-            // A. Check for "Problematic" Apps (Electron/Cross-Platform) that claim AX success but fail
-            // Examples: VSCode, Discord, Slack, Cursor, Arc, etc.
-            if self.shouldForceFallback() {
-                print("App requires legacy paste (Electron/Web). Triggering Menu Bar Paste...")
-                self.pasteViaMenuBar()
-                return
-            }
-            
-            // B. Try Surgical Accessibility Injection first (Fastest & Most Reliable for Native Apps)
+            // A. Try Surgical Accessibility Injection first 
+            // Internal logic now checks for "AXWebArea" role to fail fast for Electron apps.
             if self.injectTextViaAccessibility(text) {
                 print("SUCCESS: Text injected surgically via Accessibility API.")
             } else {
-                // C. Fallback to Menu Bar Paste (Required for any failure)
-                print("Accessibility injection failed. Triggering Menu Bar Paste...")
+                // B. Fallback to Menu Bar Paste (Required for AXWebArea or failure)
+                print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
                 self.pasteViaMenuBar()
             }
         }
     }
     
-    private func shouldForceFallback() -> Bool {
-        guard let frontApp = NSWorkspace.shared.frontmostApplication,
-              let bundleID = frontApp.bundleIdentifier else {
-            return false
-        }
-        
-        let lowerBundle = bundleID.lowercased()
-        let knownProblemApps = [
-            "code",       // VSCode (com.microsoft.VSCode)
-            "cursor",     // Cursor AI
-            "slack",      // Slack
-            "discord",    // Discord
-            "warp",       // Warp Terminal
-            "electron",   // Generic Electron
-            "todesktop",  // ToDesktop wrappers
-            "arc",        // Arc Browser
-            "chrome",     // Google Chrome (often AX is weird on specific fields)
-            "brave",      // Brave Browser
-            "firefox",    // Firefox
-            "antigravity" // The User's IDE/App
-        ]
-        
-        // If the bundle ID contains any of these strings, force fallback
-        return knownProblemApps.contains { lowerBundle.contains($0) }
-    }
+    
     
     private func pasteViaMenuBar() {
         // 1. Get the frontmost app
@@ -134,7 +104,6 @@ class PasteService {
         let systemWideElement = AXUIElementCreateSystemWide()
         var focusedElement: CFTypeRef?
         
-        // Find the currently focused UI element system-wide
         let result = AXUIElementCopyAttributeValue(
             systemWideElement,
             kAXFocusedUIElementAttribute as CFString,
@@ -142,19 +111,79 @@ class PasteService {
         )
         
         guard result == .success, let element = focusedElement as! AXUIElement? else {
-            print("Error: Could not find focused element via Accessibility.")
             return false
         }
         
-        // Attempt to set the selected text attribute.
-        // If selection is empty, this inserts at the cursor.
+        // 1. Check the Role of the focused element.
+        // Electron apps (VSCode, Discord, Chrome) typically use "AXWebArea" or "AXGroup" for their text areas.
+        // Native apps use "AXTextArea" or "AXTextField".
+        // Direct injection (AXSelectedTextAttribute) often silently fails on AXWebArea.
+        var role: CFTypeRef?
+        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &role)
+        
+        var roleStr = "Unknown"
+        if let roleVal = role as? String {
+            roleStr = roleVal
+            print("DEBUG: Focused Element Role: \(roleStr)")
+            if roleStr == "AXWebArea" || roleStr == "AXGroup" {
+                // Return false to start the "Menu Bar Paste" fallback immediately.
+                // This is a GENERIC heuristic, not a hardcoded app list.
+                return false
+            }
+        }
+        
+        // 2. Attempt Surgical Injection (Verification Mode)
+        // Some Electron apps (like AntiGravity) report "AXTextArea" but silently fail.
+        // We verify if the Selection Range moved (cursor advanced).
+        
+        let originalRange = getSelectedRange(element: element)
+        
+        // A. Try to set the value
         let status = AXUIElementSetAttributeValue(
             element,
             kAXSelectedTextAttribute as CFString,
             text as CFTypeRef
         )
         
-        return status == .success
+        if status != .success {
+            return false
+        }
+        
+        // B. VERIFY: Did the cursor move?
+        usleep(1000) // 1ms
+        
+        let newRange = getSelectedRange(element: element)
+        
+        // C. Detection Logic:
+        // If we had a range, and the new range is IDENTICAL, then the app ignored us.
+        // Use strict check: if we *know* the range didn't move, fail.
+        // If we couldn't get ranges, we assume SUCCESS (native app weirdness safe default).
+        if let old = originalRange, let new = newRange {
+            if old.location == new.location && old.length == new.length {
+                print("DEBUG: Silent Failure Detected! Range didn't move. Role: \(roleStr)")
+                return false // Trigger Fallback
+            }
+        }
+        
+        return true
+    }
+    
+    private func getSelectedRange(element: AXUIElement) -> CFRange? {
+        var rangeValue: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, &rangeValue)
+        
+        guard result == .success, let value = rangeValue else { return nil }
+        
+        // AXValue Check
+        if CFGetTypeID(value) == AXValueGetTypeID() {
+            let axVal = value as! AXValue
+            var range = CFRange()
+            // .cfRange is the type for kAXSelectedTextRangeAttribute
+            if AXValueGetValue(axVal, .cfRange, &range) {
+                return range
+            }
+        }
+        return nil
     }
 }
 
