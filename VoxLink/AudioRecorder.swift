@@ -9,6 +9,7 @@ class AudioRecorder: NSObject, ObservableObject {
     private var audioData: [Float] = []
     
     @Published var isRecording = false
+    @Published var audioLevel: Float = 0.0
     
     func startRecording() {
         guard !isRecording else { return }
@@ -44,6 +45,22 @@ class AudioRecorder: NSObject, ObservableObject {
             if let floatData = outputBuffer.floatChannelData {
                 let frames = Array(UnsafeBufferPointer(start: floatData[0], count: Int(outputBuffer.frameLength)))
                 self.audioData.append(contentsOf: frames)
+                
+                // Calculate RMS for UI visualization
+                var sum: Float = 0
+                for frame in frames {
+                    sum += frame * frame
+                }
+                let rms = sqrt(sum / Float(frames.count))
+                
+                // Non-linear boost (Square root) to make quiet sounds visible
+                // RMS of 0.01 (quiet) -> 0.1 * 5.0 = 0.5 (Half bar)
+                // RMS of 0.04 (normal) -> 0.2 * 5.0 = 1.0 (Full bar)
+                let level = min(max(sqrt(rms) * 5.0, 0.0), 1.0)
+                
+                DispatchQueue.main.async {
+                    self.audioLevel = level
+                }
             }
         }
         

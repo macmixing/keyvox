@@ -42,13 +42,14 @@ class TranscriptionManager: ObservableObject {
     private func startRecording() {
         guard case .idle = state else { return }
         
+        playSound(named: "Morse") // Start sound
         state = .recording
-        OverlayManager.shared.show()
+        OverlayManager.shared.show(recorder: audioRecorder)
         audioRecorder.startRecording()
     }
     
     private var stopRequestedAt: Date?
-
+    
     private func stopRecordingAndTranscribe() {
         guard case .recording = state else { return }
         
@@ -56,6 +57,7 @@ class TranscriptionManager: ObservableObject {
         stopRequestedAt = startTime
         print("--- Speed Profile Start ---")
         
+        playSound(named: "Frog") // Stop sound
         OverlayManager.shared.hide()
         state = .transcribing
         
@@ -93,6 +95,11 @@ class TranscriptionManager: ObservableObject {
             }
         }
     }
-
-
+    
+    private func playSound(named name: String) {
+        if let sound = NSSound(named: name) {
+            sound.volume = 0.1 // 10% volume
+            sound.play()
+        }
+    }
 }
