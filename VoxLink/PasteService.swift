@@ -24,7 +24,10 @@ class PasteService {
             } else {
                 // B. Fallback to Menu Bar Paste (Required for AXWebArea or failure)
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
-                self.pasteViaMenuBar()
+                // Must be on Main Thread to avoid NSMenu concurrency crashes
+                DispatchQueue.main.async {
+                    self.pasteViaMenuBar()
+                }
             }
         }
     }
@@ -54,7 +57,15 @@ class PasteService {
         for menu in menuItems {
             // Check if this menu contains the Paste item
             if let pasteItem = findPasteMenuItem(in: menu) {
-                print("Found 'Paste' menu item in a menu. Triggering AXPress...")
+                // Verify it's enabled before clicking
+                var enabled: CFTypeRef?
+                if AXUIElementCopyAttributeValue(pasteItem, kAXEnabledAttribute as CFString, &enabled) == .success,
+                   let isEnabled = enabled as? Bool, !isEnabled {
+                    print("Fallback Skipped: 'Paste' menu item is disabled (Context doesn't support pasting).")
+                    return
+                }
+                
+                print("Found 'Paste' menu item. Triggering AXPress...")
                 let error = AXUIElementPerformAction(pasteItem, kAXPressAction as CFString)
                 if error == .success {
                     print("Fallback Success: AXPress triggered on Paste menu.")

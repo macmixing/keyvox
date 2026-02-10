@@ -31,7 +31,7 @@ struct BarView: View {
         RoundedRectangle(cornerRadius: 2)
             .fill(
                 LinearGradient(
-                    colors: [Color.indigo, Color.indigo.opacity(0.8)],
+                    colors: [Color.indigo, Color.indigo.opacity(0.9)],
                     startPoint: .bottom,
                     endPoint: .top
                 )
