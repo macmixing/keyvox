@@ -2,7 +2,7 @@ import Cocoa
 
 class PasteService {
     static let shared = PasteService()
-    private let pasteQueue = DispatchQueue(label: "com.voxlink.paste", qos: .userInteractive)
+    private let pasteQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive)
     
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }

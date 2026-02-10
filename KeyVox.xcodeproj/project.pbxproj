@@ -80,7 +80,7 @@
 			packageProductDependencies = (
 				8EE0049E2F3BA79A00BBAB30 /* SwiftWhisper */,
 			);
-			productName = VoxLink;
+			productName = KeyVox;
 			productReference = 8EE0045A2F3BA59900BBAB30 /* KeyVox.app */;
 			productType = "com.apple.product-type.application";
 		};

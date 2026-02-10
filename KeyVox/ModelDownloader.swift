@@ -10,13 +10,13 @@ class ModelDownloader: ObservableObject {
     
     var modelURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let voxLinkDir = appSupport.appendingPathComponent("VoxLink")
+        let KeyVoxDir = appSupport.appendingPathComponent("KeyVox")
         
-        if !FileManager.default.fileExists(atPath: voxLinkDir.path) {
-            try? FileManager.default.createDirectory(at: voxLinkDir, withIntermediateDirectories: true)
+        if !FileManager.default.fileExists(atPath: KeyVoxDir.path) {
+            try? FileManager.default.createDirectory(at: KeyVoxDir, withIntermediateDirectories: true)
         }
         
-        return voxLinkDir.appendingPathComponent("ggml-base.en.bin")
+        return KeyVoxDir.appendingPathComponent("ggml-base.en.bin")
     }
     
     init() {
@@ -26,10 +26,10 @@ class ModelDownloader: ObservableObject {
     private func cleanupOldModels() {
         let fileManager = FileManager.default
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let voxLinkDir = appSupport.appendingPathComponent("VoxLink")
+        let KeyVoxDir = appSupport.appendingPathComponent("KeyVox")
         
-        let tinyModel = voxLinkDir.appendingPathComponent("ggml-tiny.en.bin")
-        let tinyCoreML = voxLinkDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
+        let tinyModel = KeyVoxDir.appendingPathComponent("ggml-tiny.en.bin")
+        let tinyCoreML = KeyVoxDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
         
         // Remove Tiny Model (Clean up as requested)
         try? fileManager.removeItem(at: tinyModel)

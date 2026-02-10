@@ -1,6 +1,6 @@
 //
-//  VoxLinkApp.swift
-//  VoxLink
+//  KeyVoxApp.swift
+//  KeyVox
 //
 //  Created by Dom Esposito on 2/10/26.
 //
@@ -8,14 +8,14 @@
 import SwiftUI
 
 @main
-struct VoxLinkApp: App {
+struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
     @StateObject private var downloader = ModelDownloader()
     
     var body: some Scene {
-        MenuBarExtra("VoxLink", systemImage: transcriptionManager.state == .recording ? "waveform.circle.fill" : "waveform.circle") {
+        MenuBarExtra("KeyVox", systemImage: transcriptionManager.state == .recording ? "waveform.circle.fill" : "waveform.circle") {
             VStack {
-                Text("VoxLink Status: \(statusText)")
+                Text("KeyVox Status: \(statusText)")
                 if !downloader.isModelDownloaded {
                     Text("⚠️ Model missing")
                         .font(.caption)
@@ -69,7 +69,7 @@ struct VoxLinkApp: App {
         window.isReleasedWhenClosed = false // Critical for manual lifecycle management
         window.center()
         window.setFrameAutosaveName("Settings")
-        window.title = "VoxLink Settings"
+        window.title = "KeyVox Settings"
         window.contentView = NSHostingView(rootView: SettingsView())
         
         self.settingsWindow = window
