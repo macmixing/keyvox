@@ -46,39 +46,31 @@ class PasteService {
             return
         }
         
-        // 3. Find "Edit" -> "Paste"
-        // This is a simplified traversal. For production, we might want to cache this or be more robust.
-        if let editMenu = findMenu(in: menuBarElement, named: "Edit"),
-           let pasteItem = findMenuItem(in: editMenu, named: "Paste") {
-            
-            print("Found 'Paste' menu item. Triggering AXPress...")
-            let error = AXUIElementPerformAction(pasteItem, kAXPressAction as CFString)
-            if error == .success {
-                print("Fallback Success: AXPress triggered on Paste menu.")
-            } else {
-                print("Fallback Failed: AXPress returned error \(error.rawValue)")
-            }
-        } else {
-            print("Fallback Failed: Could not find 'Edit' > 'Paste' menu item.")
-        }
-    }
-    
-    private func findMenu(in menuBar: AXUIElement, named name: String) -> AXUIElement? {
+        // 3. Find "Paste" item in ANY menu (usually Edit, but we scan to be safe & locale-agnostic)
         var children: CFTypeRef?
-        AXUIElementCopyAttributeValue(menuBar, kAXChildrenAttribute as CFString, &children)
-        guard let items = children as? [AXUIElement] else { return nil }
+        AXUIElementCopyAttributeValue(menuBarElement, kAXChildrenAttribute as CFString, &children)
+        guard let menuItems = children as? [AXUIElement] else { return }
         
-        for item in items {
-            var title: CFTypeRef?
-            AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &title)
-            if let titleStr = title as? String, titleStr == name {
-                return item
+        for menu in menuItems {
+            // Check if this menu contains the Paste item
+            if let pasteItem = findPasteMenuItem(in: menu) {
+                print("Found 'Paste' menu item in a menu. Triggering AXPress...")
+                let error = AXUIElementPerformAction(pasteItem, kAXPressAction as CFString)
+                if error == .success {
+                    print("Fallback Success: AXPress triggered on Paste menu.")
+                } else {
+                    print("Fallback Failed: AXPress returned error \(error.rawValue)")
+                }
+                return 
             }
         }
-        return nil
+        
+        print("Fallback Failed: Could not find 'Paste' menu item in any menu.")
     }
     
-    private func findMenuItem(in menu: AXUIElement, named name: String) -> AXUIElement? {
+    
+    
+    private func findPasteMenuItem(in menu: AXUIElement) -> AXUIElement? {
         // Did we get the Menu Element or the Menu Item?
         // Usually Menu Item (Edit) -> Children (Menu) -> Children (Menu Items)
         
@@ -91,9 +83,25 @@ class PasteService {
         guard let subItems = subChildren as? [AXUIElement] else { return nil }
         
         for item in subItems {
+            // 1. Check AXIdentifier (Most robust, usually "paste:")
+            var idValue: CFTypeRef?
+            if AXUIElementCopyAttributeValue(item, "AXIdentifier" as CFString, &idValue) == .success,
+               let idStr = idValue as? String, idStr == "paste:" {
+                return item
+            }
+            
+            // 2. Check Cmd+V Shortcut (Locale independent)
+            var cmdChar: CFTypeRef?
+            if AXUIElementCopyAttributeValue(item, kAXMenuItemCmdCharAttribute as CFString, &cmdChar) == .success,
+               let charStr = cmdChar as? String, charStr == "V" {
+                 // Check modifiers if needed, but usually V is unique enough in Edit menu
+                 return item
+            }
+
+            // 3. Fallback: Title (English "Paste")
             var title: CFTypeRef?
             AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &title)
-            if let titleStr = title as? String, titleStr == name {
+            if let titleStr = title as? String, titleStr == "Paste" {
                 return item
             }
         }

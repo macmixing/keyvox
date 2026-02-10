@@ -16,18 +16,34 @@ class ModelDownloader: ObservableObject {
             try? FileManager.default.createDirectory(at: voxLinkDir, withIntermediateDirectories: true)
         }
         
-        return voxLinkDir.appendingPathComponent("ggml-tiny.en.bin")
+        return voxLinkDir.appendingPathComponent("ggml-base.en.bin")
+    }
+    
+    init() {
+        cleanupOldModels()
+    }
+    
+    private func cleanupOldModels() {
+        let fileManager = FileManager.default
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let voxLinkDir = appSupport.appendingPathComponent("VoxLink")
+        
+        let tinyModel = voxLinkDir.appendingPathComponent("ggml-tiny.en.bin")
+        let tinyCoreML = voxLinkDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
+        
+        // Remove Tiny Model (Clean up as requested)
+        try? fileManager.removeItem(at: tinyModel)
+        try? fileManager.removeItem(at: tinyCoreML)
     }
     
     func downloadBaseModel() {
         guard !isDownloading else { return }
         
-        // 1. Download the standard GGML model (CPU fallback)
-        let ggmlURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin")!
+        // 1. Download the Base GGML model (Better than Tiny, still fast)
+        let ggmlURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin")!
         
-        // 2. Download the CoreML model (Neural Engine acceleration)
-        // Note: We need a zipped mlmodelc for simple downloading
-        let coreMLURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en-encoder.mlmodelc.zip")!
+        // 2. Download the CoreML model (Neural Engine acceleration for Base)
+        let coreMLURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-encoder.mlmodelc.zip")!
         
         isDownloading = true
         progress = 0

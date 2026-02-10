@@ -76,11 +76,16 @@ func exploreEditMenu(_ editMenu: AXUIElement) {
         if let name = title as? String {
             print("- MenuItem: \(name)")
             if name == "Paste" {
-                print("  -> FOUND PASTE! Checking actions...")
-                var actions: CFArray?
-                AXUIElementCopyActionNames(item, &actions)
-                if let actionList = actions as? [String] {
-                    print("  -> Supported Actions: \(actionList)")
+                print("  -> FOUND PASTE! Checking attributes...")
+                var attrNames: CFArray?
+                AXUIElementCopyAttributeNames(item, &attrNames)
+                if let names = attrNames as? [String] {
+                    print("  -> Attributes: \(names)")
+                    for attr in names {
+                        var value: CFTypeRef?
+                        AXUIElementCopyAttributeValue(item, attr as CFString, &value)
+                        print("    - \(attr): \(value ?? "nil" as CFTypeRef)")
+                    }
                 }
             }
         }

@@ -113,15 +113,12 @@ class WhisperService: ObservableObject {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let voxLinkDir = appSupport.appendingPathComponent("VoxLink")
         
-        let tinyModelURL = voxLinkDir.appendingPathComponent("ggml-tiny.en.bin")
-        if FileManager.default.fileExists(atPath: tinyModelURL.path) {
-            return tinyModelURL.path
-        }
-        
-        let baseModelURL = voxLinkDir.appendingPathComponent("ggml-base.bin")
+        // Check for Base model first (Upgrade)
+        let baseModelURL = voxLinkDir.appendingPathComponent("ggml-base.en.bin")
         if FileManager.default.fileExists(atPath: baseModelURL.path) {
             return baseModelURL.path
         }
+        
         return nil
     }
 }

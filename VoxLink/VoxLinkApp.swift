@@ -32,7 +32,7 @@ struct VoxLinkApp: App {
                     }
                 }
                 Divider()
-                Button("Settings / Download Model...") {
+                Button("Settings") {
                     openSettings()
                 }
                 Button("Quit") {

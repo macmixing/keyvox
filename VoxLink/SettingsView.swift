@@ -5,7 +5,7 @@ struct SettingsView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("VoxLink Settings")
+            Text("Settings")
                 .font(.headline)
             
             Divider()
@@ -19,10 +19,10 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("Model (Tiny.en) is ready.")
+                        Text("Model is ready.")
                     }
                 } else {
-                    Text("The Whisper Tiny model is required for transcription.")
+                    Text("The AI model is required for transcription.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -32,7 +32,7 @@ struct SettingsView: View {
                                 .font(.caption)
                         }
                     } else {
-                        Button("Download Tiny Model (75MB)") {
+                        Button("Download Model (142MB)") {
                             downloader.downloadBaseModel()
                         }
                     }
