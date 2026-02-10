@@ -64,11 +64,13 @@ class PasteService {
         // 2. Find the Menu Bar
         var menuBar: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(accessibilityApp, kAXMenuBarAttribute as CFString, &menuBar)
-        
-        guard result == .success, let menuBarElement = menuBar as! AXUIElement? else {
+
+        guard result == .success, menuBar != nil else {
             print("Fallback Failed: Could not find Menu Bar.")
             return
         }
+
+        let menuBarElement = menuBar as! AXUIElement
         
         // 3. Find "Paste" item in ANY menu (usually Edit, but we scan to be safe & locale-agnostic)
         var children: CFTypeRef?
@@ -150,9 +152,11 @@ class PasteService {
             &focusedElement
         )
         
-        guard result == .success, let element = focusedElement as! AXUIElement? else {
+        guard result == .success, focusedElement != nil else {
             return false
         }
+
+        let element = focusedElement as! AXUIElement
         
         // 1. Check the Role of the focused element.
         // Electron apps (VSCode, Discord, Chrome) typically use "AXWebArea" or "AXGroup" for their text areas.
