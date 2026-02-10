@@ -2,41 +2,58 @@ import Cocoa
 
 class PasteService {
     static let shared = PasteService()
+    private let pasteQueue = DispatchQueue(label: "com.voxlink.paste", qos: .userInteractive)
     
     func pasteText(_ text: String) {
-        // No filters.
+        guard !text.isEmpty else { return }
+        
+        // 1. Update clipboard as a background backup (manual paste fallback)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
         
-        print("Clipboard updated with transcription. Triggering Cmd+V...")
+        print("Clipboard updated. Starting Surgical Accessibility Injection...")
         
-        // 0.2s delay to ensure the focused app is ready
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            // Using nil source for maximum global compatibility
-            let source = CGEventSource(stateID: .hidSystemState)
-            
-            // Cmd Down (Flags must be added to the events that follow)
-            let cmdDown = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: true)
-            
-            // V Down
-            let vDown = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: true)
-            vDown?.flags = .maskCommand
-            
-            // V Up
-            let vUp = CGEvent(keyboardEventSource: source, virtualKey: 0x09, keyDown: false)
-            vUp?.flags = .maskCommand
-            
-            // Cmd Up
-            let cmdUp = CGEvent(keyboardEventSource: source, virtualKey: 0x37, keyDown: false)
-            
-            // Post events to HID level
-            cmdDown?.post(tap: .cghidEventTap)
-            vDown?.post(tap: .cghidEventTap)
-            vUp?.post(tap: .cghidEventTap)
-            cmdUp?.post(tap: .cghidEventTap)
-            
-            print("Keystroke events posted.")
+        // 2. Surgical Injection (The Wispr Flow Way)
+        pasteQueue.async {
+            if self.injectTextViaAccessibility(text) {
+                print("SUCCESS: Text injected surgically via Accessibility API.")
+            } else {
+                print("FAILED: Accessibility injection failed. Ensure Accessibility permissions are granted.")
+            }
         }
     }
+    
+    private func injectTextViaAccessibility(_ text: String) -> Bool {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElement: CFTypeRef?
+        
+        // Find the currently focused UI element system-wide
+        let result = AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElement
+        )
+        
+        guard result == .success, let element = focusedElement as! AXUIElement? else {
+            print("Error: Could not find focused element via Accessibility.")
+            return false
+        }
+        
+        // Attempt to set the selected text attribute.
+        // If selection is empty, this inserts at the cursor.
+        let status = AXUIElementSetAttributeValue(
+            element,
+            kAXSelectedTextAttribute as CFString,
+            text as CFTypeRef
+        )
+        
+        return status == .success
+    }
 }
+
+
+
+
+
+

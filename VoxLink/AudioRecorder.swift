@@ -16,25 +16,32 @@ class AudioRecorder: NSObject, ObservableObject {
     func startRecording() {
         guard !isRecording else { return }
         
+        // Always recreate the engine for a fresh start
         audioEngine = AVAudioEngine()
-        inputNode = audioEngine?.inputNode
+        guard let engine = audioEngine else { return }
         
-        // Use the HARDWARE format to ensure zero resampling issues during capture
-        let hardwareFormat = inputNode?.inputFormat(forBus: 0)
+        let inputNode = engine.inputNode
+        self.inputNode = inputNode
+        
+        // Use outputFormat(forBus: 0) which is more reliable for taps on macOS
+        let tapFormat = inputNode.outputFormat(forBus: 0)
         
         do {
             if FileManager.default.fileExists(atPath: tempAudioURL.path) {
                 try FileManager.default.removeItem(at: tempAudioURL)
             }
             
-            // Record exactly what the hardware provides
-            audioFile = try AVAudioFile(forWriting: tempAudioURL, settings: hardwareFormat!.settings)
+            // Record exactly what the tap provides
+            audioFile = try AVAudioFile(forWriting: tempAudioURL, settings: tapFormat.settings)
         } catch {
             print("Could not create audio file: \(error)")
             return
         }
         
-        inputNode?.installTap(onBus: 0, bufferSize: 1024, format: hardwareFormat) { [weak self] (buffer, time) in
+        // Remove existing tap just in case
+        inputNode.removeTap(onBus: 0)
+        
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: tapFormat) { [weak self] (buffer, time) in
             guard let self = self else { return }
             do {
                 try self.audioFile?.write(from: buffer)
@@ -43,31 +50,33 @@ class AudioRecorder: NSObject, ObservableObject {
             }
         }
         
-        audioEngine?.prepare()
+        engine.prepare()
         
         do {
-            try audioEngine?.start()
+            try engine.start()
             isRecording = true
-            print("Recording started at hardware rate: \(hardwareFormat?.sampleRate ?? 0) Hz...")
+            print("Recording started at rate: \(tapFormat.sampleRate) Hz...")
         } catch {
             print("Could not start audio engine: \(error)")
+            inputNode.removeTap(onBus: 0)
+            isRecording = false
         }
     }
     
     func stopRecording(completion: @escaping (URL?) -> Void) {
-        guard isRecording else { 
-            completion(nil)
-            return 
+        // Ensure we stop even if state is inconsistent
+        defer {
+            audioEngine?.stop()
+            inputNode?.removeTap(onBus: 0)
+            audioEngine = nil
+            inputNode = nil
+            audioFile = nil
+            isRecording = false
+            completion(tempAudioURL)
         }
         
-        inputNode?.removeTap(onBus: 0)
-        audioEngine?.stop()
-        audioEngine = nil
-        inputNode = nil
-        audioFile = nil
-        isRecording = false
-        
+        guard isRecording else { return }
         print("Recording stopped. File saved to: \(tempAudioURL)")
-        completion(tempAudioURL)
     }
+
 }

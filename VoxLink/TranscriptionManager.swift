@@ -15,6 +15,7 @@ class TranscriptionManager: ObservableObject {
     private let keyboardMonitor = KeyboardMonitor()
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
+    private var targetApp: NSRunningApplication?
     private var cancellables = Set<AnyCancellable>()
     
     init() {
@@ -39,6 +40,7 @@ class TranscriptionManager: ObservableObject {
     
     private func startRecording() {
         guard case .idle = state else { return }
+        
         state = .recording
         OverlayManager.shared.show()
         audioRecorder.startRecording()
@@ -65,4 +67,6 @@ class TranscriptionManager: ObservableObject {
             }
         }
     }
+
+
 }
