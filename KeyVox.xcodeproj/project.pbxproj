@@ -10,43 +10,14 @@
 		8EE0049F2F3BA79A00BBAB30 /* SwiftWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* SwiftWhisper */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		8EE004682F3BA59B00BBAB30 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8EE004522F3BA59900BBAB30 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8EE004592F3BA59900BBAB30;
-			remoteInfo = VoxLink;
-		};
-		8EE004722F3BA59B00BBAB30 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8EE004522F3BA59900BBAB30 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8EE004592F3BA59900BBAB30;
-			remoteInfo = VoxLink;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		8EE0045A2F3BA59900BBAB30 /* VoxLink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoxLink.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8EE004672F3BA59B00BBAB30 /* VoxLinkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoxLinkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		8EE004712F3BA59B00BBAB30 /* VoxLinkUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoxLinkUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8EE0045C2F3BA59900BBAB30 /* VoxLink */ = {
+		8EE0045C2F3BA59900BBAB30 /* KeyVox */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = VoxLink;
-			sourceTree = "<group>";
-		};
-		8EE0046A2F3BA59B00BBAB30 /* VoxLinkTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = VoxLinkTests;
-			sourceTree = "<group>";
-		};
-		8EE004742F3BA59B00BBAB30 /* VoxLinkUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = VoxLinkUITests;
+			path = KeyVox;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -60,29 +31,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8EE004642F3BA59B00BBAB30 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		8EE0046E2F3BA59B00BBAB30 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		8EE004512F3BA59900BBAB30 = {
 			isa = PBXGroup;
 			children = (
-				8EE0045C2F3BA59900BBAB30 /* VoxLink */,
-				8EE0046A2F3BA59B00BBAB30 /* VoxLinkTests */,
-				8EE004742F3BA59B00BBAB30 /* VoxLinkUITests */,
+				8EE0045C2F3BA59900BBAB30 /* KeyVox */,
 				8EE0049D2F3BA79A00BBAB30 /* Frameworks */,
 				8EE0045B2F3BA59900BBAB30 /* Products */,
 			);
@@ -91,9 +46,7 @@
 		8EE0045B2F3BA59900BBAB30 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8EE0045A2F3BA59900BBAB30 /* VoxLink.app */,
-				8EE004672F3BA59B00BBAB30 /* VoxLinkTests.xctest */,
-				8EE004712F3BA59B00BBAB30 /* VoxLinkUITests.xctest */,
+				8EE0045A2F3BA59900BBAB30 /* KeyVox.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8EE004592F3BA59900BBAB30 /* VoxLink */ = {
+		8EE004592F3BA59900BBAB30 /* KeyVox */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8EE0047B2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLink" */;
+			buildConfigurationList = 8EE0047B2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "KeyVox" */;
 			buildPhases = (
 				8EE004562F3BA59900BBAB30 /* Sources */,
 				8EE004572F3BA59900BBAB30 /* Frameworks */,
@@ -121,61 +74,15 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8EE0045C2F3BA59900BBAB30 /* VoxLink */,
+				8EE0045C2F3BA59900BBAB30 /* KeyVox */,
 			);
-			name = VoxLink;
+			name = KeyVox;
 			packageProductDependencies = (
 				8EE0049E2F3BA79A00BBAB30 /* SwiftWhisper */,
 			);
 			productName = VoxLink;
-			productReference = 8EE0045A2F3BA59900BBAB30 /* VoxLink.app */;
+			productReference = 8EE0045A2F3BA59900BBAB30 /* KeyVox.app */;
 			productType = "com.apple.product-type.application";
-		};
-		8EE004662F3BA59B00BBAB30 /* VoxLinkTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 8EE0047E2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLinkTests" */;
-			buildPhases = (
-				8EE004632F3BA59B00BBAB30 /* Sources */,
-				8EE004642F3BA59B00BBAB30 /* Frameworks */,
-				8EE004652F3BA59B00BBAB30 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				8EE004692F3BA59B00BBAB30 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				8EE0046A2F3BA59B00BBAB30 /* VoxLinkTests */,
-			);
-			name = VoxLinkTests;
-			packageProductDependencies = (
-			);
-			productName = VoxLinkTests;
-			productReference = 8EE004672F3BA59B00BBAB30 /* VoxLinkTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		8EE004702F3BA59B00BBAB30 /* VoxLinkUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 8EE004812F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLinkUITests" */;
-			buildPhases = (
-				8EE0046D2F3BA59B00BBAB30 /* Sources */,
-				8EE0046E2F3BA59B00BBAB30 /* Frameworks */,
-				8EE0046F2F3BA59B00BBAB30 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				8EE004732F3BA59B00BBAB30 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				8EE004742F3BA59B00BBAB30 /* VoxLinkUITests */,
-			);
-			name = VoxLinkUITests;
-			packageProductDependencies = (
-			);
-			productName = VoxLinkUITests;
-			productReference = 8EE004712F3BA59B00BBAB30 /* VoxLinkUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -190,17 +97,9 @@
 					8EE004592F3BA59900BBAB30 = {
 						CreatedOnToolsVersion = 26.3;
 					};
-					8EE004662F3BA59B00BBAB30 = {
-						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 8EE004592F3BA59900BBAB30;
-					};
-					8EE004702F3BA59B00BBAB30 = {
-						CreatedOnToolsVersion = 26.3;
-						TestTargetID = 8EE004592F3BA59900BBAB30;
-					};
 				};
 			};
-			buildConfigurationList = 8EE004552F3BA59900BBAB30 /* Build configuration list for PBXProject "VoxLink" */;
+			buildConfigurationList = 8EE004552F3BA59900BBAB30 /* Build configuration list for PBXProject "KeyVox" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -217,29 +116,13 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8EE004592F3BA59900BBAB30 /* VoxLink */,
-				8EE004662F3BA59B00BBAB30 /* VoxLinkTests */,
-				8EE004702F3BA59B00BBAB30 /* VoxLinkUITests */,
+				8EE004592F3BA59900BBAB30 /* KeyVox */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8EE004582F3BA59900BBAB30 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		8EE004652F3BA59B00BBAB30 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		8EE0046F2F3BA59B00BBAB30 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,34 +139,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8EE004632F3BA59B00BBAB30 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		8EE0046D2F3BA59B00BBAB30 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		8EE004692F3BA59B00BBAB30 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8EE004592F3BA59900BBAB30 /* VoxLink */;
-			targetProxy = 8EE004682F3BA59B00BBAB30 /* PBXContainerItemProxy */;
-		};
-		8EE004732F3BA59B00BBAB30 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8EE004592F3BA59900BBAB30 /* VoxLink */;
-			targetProxy = 8EE004722F3BA59B00BBAB30 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8EE004792F3BA59B00BBAB30 /* Debug */ = {
@@ -438,7 +294,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.voxlink;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -482,7 +338,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.voxlink;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -494,90 +350,10 @@
 			};
 			name = Release;
 		};
-		8EE0047F2F3BA59B00BBAB30 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U7YT4DBC54;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dom.voxlink.VoxLinkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoxLink.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoxLink";
-			};
-			name = Debug;
-		};
-		8EE004802F3BA59B00BBAB30 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U7YT4DBC54;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dom.voxlink.VoxLinkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoxLink.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoxLink";
-			};
-			name = Release;
-		};
-		8EE004822F3BA59B00BBAB30 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U7YT4DBC54;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dom.voxlink.VoxLinkUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = VoxLink;
-			};
-			name = Debug;
-		};
-		8EE004832F3BA59B00BBAB30 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U7YT4DBC54;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dom.voxlink.VoxLinkUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = VoxLink;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8EE004552F3BA59900BBAB30 /* Build configuration list for PBXProject "VoxLink" */ = {
+		8EE004552F3BA59900BBAB30 /* Build configuration list for PBXProject "KeyVox" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8EE004792F3BA59B00BBAB30 /* Debug */,
@@ -586,29 +362,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8EE0047B2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLink" */ = {
+		8EE0047B2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "KeyVox" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8EE0047C2F3BA59B00BBAB30 /* Debug */,
 				8EE0047D2F3BA59B00BBAB30 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		8EE0047E2F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLinkTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				8EE0047F2F3BA59B00BBAB30 /* Debug */,
-				8EE004802F3BA59B00BBAB30 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		8EE004812F3BA59B00BBAB30 /* Build configuration list for PBXNativeTarget "VoxLinkUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				8EE004822F3BA59B00BBAB30 /* Debug */,
-				8EE004832F3BA59B00BBAB30 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

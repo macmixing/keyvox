@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8EE004592F3BA59900BBAB30"
-               BuildableName = "VoxLink.app"
-               BlueprintName = "VoxLink"
-               ReferencedContainer = "container:VoxLink.xcodeproj">
+               BuildableName = "KeyVox.app"
+               BlueprintName = "KeyVox"
+               ReferencedContainer = "container:KeyVox.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,33 +29,9 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8EE004662F3BA59B00BBAB30"
-               BuildableName = "VoxLinkTests.xctest"
-               BlueprintName = "VoxLinkTests"
-               ReferencedContainer = "container:VoxLink.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8EE004702F3BA59B00BBAB30"
-               BuildableName = "VoxLinkUITests.xctest"
-               BlueprintName = "VoxLinkUITests"
-               ReferencedContainer = "container:VoxLink.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -69,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8EE004592F3BA59900BBAB30"
-            BuildableName = "VoxLink.app"
-            BlueprintName = "VoxLink"
-            ReferencedContainer = "container:VoxLink.xcodeproj">
+            BuildableName = "KeyVox.app"
+            BlueprintName = "KeyVox"
+            ReferencedContainer = "container:KeyVox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -86,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8EE004592F3BA59900BBAB30"
-            BuildableName = "VoxLink.app"
-            BlueprintName = "VoxLink"
-            ReferencedContainer = "container:VoxLink.xcodeproj">
+            BuildableName = "KeyVox.app"
+            BlueprintName = "KeyVox"
+            ReferencedContainer = "container:KeyVox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
