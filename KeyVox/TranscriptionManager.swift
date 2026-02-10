@@ -12,7 +12,7 @@ class TranscriptionManager: ObservableObject {
         case error(String)
     }
     
-    private let keyboardMonitor = KeyboardMonitor()
+    let keyboardMonitor = KeyboardMonitor.shared
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
     private var targetApp: NSRunningApplication?
