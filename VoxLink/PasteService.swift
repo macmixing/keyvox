@@ -7,27 +7,48 @@ class PasteService {
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }
         
-        // 1. Update clipboard as a background backup (manual paste fallback)
+        // 1. Save current clipboard state (all types)
         let pasteboard = NSPasteboard.general
+        let savedTypes = pasteboard.types ?? []
+        var savedData: [NSPasteboard.PasteboardType: Data] = [:]
+        
+        for type in savedTypes {
+            if let data = pasteboard.data(forType: type) {
+                savedData[type] = data
+            }
+        }
+        
+        // 2. Overwrite with new text (Required for Cmd+V fallback)
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
         
-        print("Clipboard updated. Starting Surgical Accessibility Injection...")
+        print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
         
-        // 2. Smart Injection Strategy
-        // 2. Smart Injection Strategy
+        // 3. Smart Injection Strategy
         pasteQueue.async {
-            // A. Try Surgical Accessibility Injection first 
-            // Internal logic now checks for "AXWebArea" role to fail fast for Electron apps.
+            // A. Try Surgical Accessibility Injection first
             if self.injectTextViaAccessibility(text) {
                 print("SUCCESS: Text injected surgically via Accessibility API.")
             } else {
-                // B. Fallback to Menu Bar Paste (Required for AXWebArea or failure)
+                // B. Fallback to Menu Bar Paste
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
-                // Must be on Main Thread to avoid NSMenu concurrency crashes
                 DispatchQueue.main.async {
                     self.pasteViaMenuBar()
                 }
+            }
+            
+            // 4. Restore original clipboard after a short delay
+            // Give the system/app time to read the new value (0.5s is usually safe)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                
+                // Restore all saved types
+                for (type, data) in savedData {
+                    pasteboard.setData(data, forType: type)
+                }
+                
+                print("Clipboard state restored (\(savedData.count) types).")
             }
         }
     }
