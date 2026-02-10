@@ -5,48 +5,45 @@ import Combine
 class AudioRecorder: NSObject, ObservableObject {
     private var audioEngine: AVAudioEngine?
     private var inputNode: AVAudioInputNode?
-    private var audioFile: AVAudioFile?
+    private var converter: AVAudioConverter?
+    private var audioData: [Float] = []
     
     @Published var isRecording = false
-    
-    var tempAudioURL: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("recording.wav")
-    }
     
     func startRecording() {
         guard !isRecording else { return }
         
-        // Always recreate the engine for a fresh start
         audioEngine = AVAudioEngine()
         guard let engine = audioEngine else { return }
         
         let inputNode = engine.inputNode
         self.inputNode = inputNode
         
-        // Use outputFormat(forBus: 0) which is more reliable for taps on macOS
-        let tapFormat = inputNode.outputFormat(forBus: 0)
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+        let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
         
-        do {
-            if FileManager.default.fileExists(atPath: tempAudioURL.path) {
-                try FileManager.default.removeItem(at: tempAudioURL)
+        // Setup converter for real-time resampling
+        converter = AVAudioConverter(from: inputFormat, to: outputFormat)
+        audioData.removeAll()
+        
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] (buffer, time) in
+            guard let self = self, let converter = self.converter else { return }
+            
+            let outputCapacity = AVAudioFrameCount(Double(buffer.frameLength) * 16000.0 / inputFormat.sampleRate) + 1
+            guard let outputBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: outputCapacity) else { return }
+            
+            var error: NSError?
+            let inputBlock: AVAudioConverterInputBlock = { inNumPackets, outStatus in
+                outStatus.pointee = .haveData
+                return buffer
             }
             
-            // Record exactly what the tap provides
-            audioFile = try AVAudioFile(forWriting: tempAudioURL, settings: tapFormat.settings)
-        } catch {
-            print("Could not create audio file: \(error)")
-            return
-        }
-        
-        // Remove existing tap just in case
-        inputNode.removeTap(onBus: 0)
-        
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: tapFormat) { [weak self] (buffer, time) in
-            guard let self = self else { return }
-            do {
-                try self.audioFile?.write(from: buffer)
-            } catch {
-                print("Error writing to audio file: \(error)")
+            converter.convert(to: outputBuffer, error: &error, withInputFrom: inputBlock)
+            
+            if let floatData = outputBuffer.floatChannelData {
+                let frames = Array(UnsafeBufferPointer(start: floatData[0], count: Int(outputBuffer.frameLength)))
+                self.audioData.append(contentsOf: frames)
             }
         }
         
@@ -55,7 +52,7 @@ class AudioRecorder: NSObject, ObservableObject {
         do {
             try engine.start()
             isRecording = true
-            print("Recording started at rate: \(tapFormat.sampleRate) Hz...")
+            print("Recording started (Direct to Memory @ 16kHz)...")
         } catch {
             print("Could not start audio engine: \(error)")
             inputNode.removeTap(onBus: 0)
@@ -63,20 +60,18 @@ class AudioRecorder: NSObject, ObservableObject {
         }
     }
     
-    func stopRecording(completion: @escaping (URL?) -> Void) {
-        // Ensure we stop even if state is inconsistent
+    func stopRecording(completion: @escaping ([Float]) -> Void) {
         defer {
             audioEngine?.stop()
             inputNode?.removeTap(onBus: 0)
             audioEngine = nil
             inputNode = nil
-            audioFile = nil
+            converter = nil
             isRecording = false
-            completion(tempAudioURL)
+            completion(audioData)
         }
         
         guard isRecording else { return }
-        print("Recording stopped. File saved to: \(tempAudioURL)")
+        print("Recording stopped. Captured \(audioData.count) frames.")
     }
-
 }

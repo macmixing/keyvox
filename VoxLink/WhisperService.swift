@@ -9,28 +9,36 @@ class WhisperService: ObservableObject {
     
     private var whisper: Whisper?
     
-    func transcribe(audioURL: URL, completion: @escaping (String?) -> Void) {
-        guard let modelPath = getModelPath() else {
-            print("Model not found. Please download a Whisper model first.")
-            completion(nil)
-            return
-        }
+    /// Pre-loads the model into memory to eliminate cold-start latency.
+    func warmup() {
+        guard whisper == nil else { return }
+        guard let modelPath = getModelPath() else { return }
         
+        print("Warming up Whisper model with optimized settings...")
+        
+        let params = WhisperParams.default
+        params.language = .english
+        params.n_threads = 4 // Optimal for M-series P-cores (prevent oversubscription)
+        params.print_timestamps = false
+        params.suppress_blank = true
+        params.suppress_non_speech_tokens = true
+        // CoreML is automatic if the model files are present
+        
+        whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
+    }
+    
+    func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
         self.isTranscribing = true
         
+        // Ensure model is loaded (if warmup wasn't called/finished)
         if whisper == nil {
-            whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath))
+            warmup()
         }
         
-        print("Starting transcription for: \(audioURL.path)")
+        print("Transcribing \(audioFrames.count) raw frames...")
         
         Task {
             do {
-                // Step-by-step resampling to 16kHz
-                let audioFrames = try loadAndResample(url: audioURL)
-                
-                print("Transcribing \(audioFrames.count) frames at 16kHz...")
-                
                 let segments = try await whisper?.transcribe(audioFrames: audioFrames)
                 let text = segments?.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
                 
@@ -45,6 +53,18 @@ class WhisperService: ObservableObject {
                     self.isTranscribing = false
                     completion(nil)
                 }
+            }
+        }
+    }
+    
+    // Legacy support for file-based transcription (can be removed later)
+    func transcribe(audioURL: URL, completion: @escaping (String?) -> Void) {
+        Task {
+            do {
+                let audioFrames = try loadAndResample(url: audioURL)
+                transcribe(audioFrames: audioFrames, completion: completion)
+            } catch {
+                completion(nil)
             }
         }
     }

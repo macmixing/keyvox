@@ -20,6 +20,7 @@ class TranscriptionManager: ObservableObject {
     
     init() {
         setupBindings()
+        whisperService.warmup()
     }
     
     private func setupBindings() {
@@ -46,22 +47,47 @@ class TranscriptionManager: ObservableObject {
         audioRecorder.startRecording()
     }
     
+    private var stopRequestedAt: Date?
+
     private func stopRecordingAndTranscribe() {
         guard case .recording = state else { return }
         
+        let startTime = Date()
+        stopRequestedAt = startTime
+        print("--- Speed Profile Start ---")
+        
         OverlayManager.shared.hide()
         state = .transcribing
-        audioRecorder.stopRecording { [weak self] audioURL in
-            guard let self = self, let url = audioURL else {
+        
+        audioRecorder.stopRecording { [weak self] frames in
+            let stopDuration = Date().timeIntervalSince(startTime)
+            print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
+            
+            guard let self = self, !frames.isEmpty else {
                 self?.state = .idle
                 return
             }
             
-            self.whisperService.transcribe(audioURL: url) { result in
+            let transcribeStart = Date()
+            self.whisperService.transcribe(audioFrames: frames) { result in
+                let transcribeDuration = Date().timeIntervalSince(transcribeStart)
+                print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")
+                
                 DispatchQueue.main.async {
-                    let text = result ?? "[Transcription Empty]"
+                    let text = result ?? ""
                     self.lastTranscription = text
-                    PasteService.shared.pasteText(text)
+                    
+                    let pasteStart = Date()
+                    if !text.isEmpty {
+                        PasteService.shared.pasteText(text)
+                    }
+                    let pasteDuration = Date().timeIntervalSince(pasteStart)
+                    print("3. Injection trigger: \(String(format: "%.3f", pasteDuration))s")
+                    
+                    let totalTime = Date().timeIntervalSince(startTime)
+                    print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
+                    print("--- Speed Profile End ---")
+                    
                     self.state = .idle
                 }
             }
