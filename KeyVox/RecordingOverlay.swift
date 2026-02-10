@@ -1,8 +1,15 @@
 import SwiftUI
+import Combine
+
+class OverlayVisibilityManager: ObservableObject {
+    @Published var isVisible: Bool = false
+    @Published var shouldDismiss: Bool = false
+}
 
 struct RecordingOverlay: View {
     @ObservedObject var recorder: AudioRecorder
     var isTranscribing: Bool
+    @ObservedObject var visibilityManager: OverlayVisibilityManager
     
     var body: some View {
         ZStack {
@@ -10,7 +17,7 @@ struct RecordingOverlay: View {
                 .fill(Color.black.opacity(0.8))
                 .overlay(
                     Circle()
-                        .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.yellow.opacity(0.3), lineWidth: 2)
                 )
                 .shadow(radius: 10)
                 .frame(width: 50, height: 50)
@@ -18,6 +25,21 @@ struct RecordingOverlay: View {
             HStack(spacing: 4) {
                 ForEach(0..<5) { index in
                     BarView(value: Double(recorder.audioLevel), index: index, isTranscribing: isTranscribing)
+                }
+            }
+        }
+        .scaleEffect(visibilityManager.isVisible ? 1.0 : 0.3)
+        .opacity(visibilityManager.isVisible ? 1.0 : 0.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: visibilityManager.isVisible)
+        .onAppear {
+            withAnimation {
+                visibilityManager.isVisible = true
+            }
+        }
+        .onChange(of: visibilityManager.shouldDismiss) { oldValue, newValue in
+            if newValue {
+                withAnimation {
+                    visibilityManager.isVisible = false
                 }
             }
         }
@@ -83,6 +105,7 @@ struct BarView: View {
 class OverlayManager {
     static let shared = OverlayManager()
     private var window: NSPanel?
+    private var visibilityManager = OverlayVisibilityManager()
     
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         if window == nil {
@@ -99,7 +122,11 @@ class OverlayManager {
             panel.hasShadow = false
             panel.isMovableByWindowBackground = true
             
-            let contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder, isTranscribing: isTranscribing))
+            let contentView = NSHostingView(rootView: RecordingOverlay(
+                recorder: recorder,
+                isTranscribing: isTranscribing,
+                visibilityManager: visibilityManager
+            ))
             panel.contentView = contentView
             
             // Center on bottom of screen
@@ -112,11 +139,30 @@ class OverlayManager {
         }
         
         // Always update the content view to ensure binding is fresh
-        window?.contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder, isTranscribing: isTranscribing))
+        window?.contentView = NSHostingView(rootView: RecordingOverlay(
+            recorder: recorder,
+            isTranscribing: isTranscribing,
+            visibilityManager: visibilityManager
+        ))
+        
+        // Reset state for showing
+        visibilityManager.shouldDismiss = false
         window?.orderFrontRegardless()
+        
+        // Trigger entrance animation after window is visible
+        DispatchQueue.main.async { [weak self] in
+            self?.visibilityManager.isVisible = true
+        }
     }
     
     func hide() {
-        window?.orderOut(nil)
+        // Trigger the hide animation first
+        visibilityManager.isVisible = false
+        visibilityManager.shouldDismiss = true
+        
+        // Wait for animation to complete before actually hiding the window
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.window?.orderOut(nil)
+        }
     }
 }
