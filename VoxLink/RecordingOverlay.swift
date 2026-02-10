@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RecordingOverlay: View {
     @ObservedObject var recorder: AudioRecorder
+    var isTranscribing: Bool
     
     var body: some View {
         ZStack {
@@ -16,7 +17,7 @@ struct RecordingOverlay: View {
             
             HStack(spacing: 4) {
                 ForEach(0..<5) { index in
-                    BarView(value: Double(recorder.audioLevel), index: index)
+                    BarView(value: Double(recorder.audioLevel), index: index, isTranscribing: isTranscribing)
                 }
             }
         }
@@ -26,6 +27,9 @@ struct RecordingOverlay: View {
 struct BarView: View {
     var value: Double
     var index: Int
+    var isTranscribing: Bool
+    
+    @State private var ripplePhase: Double = 0
     
     var body: some View {
         RoundedRectangle(cornerRadius: 2)
@@ -38,18 +42,41 @@ struct BarView: View {
             )
             .shadow(color: .yellow.opacity(0.9), radius: 4, x: 0, y: 0) // The "Glow"
             .frame(width: 4, height: height)
+            .animation(.linear(duration: 0.1), value: ripplePhase)
             .animation(.spring(response: 0.3, dampingFraction: 0.9), value: value)
+            .onAppear {
+                startRippleAnimation()
+            }
     }
     
     var height: CGFloat {
-        // Create a "wave" effect from a single value
-        let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
         let minHeight: CGFloat = 6
         let maxHeight: CGFloat = 30
         
-        // Center the wave peak
-        let dynamicHeight = CGFloat(value * multipliers[index]) * maxHeight
-        return max(minHeight, dynamicHeight)
+        // Show ripples when quiet (low audio) or transcribing
+        let shouldRipple = value < 0.15 || isTranscribing
+        
+        if shouldRipple {
+            // Ripple animation: subtle wave traveling left to right
+            let waveOffset = ripplePhase + Double(index) * 0.8
+            let rippleHeight = sin(waveOffset) * 0.5 + 0.5 // Range: 0.0 to 1.0
+            // Thin baseline (3px) with ripple going up to 12px
+            return 3 + (CGFloat(rippleHeight) * 9)
+        } else {
+            // Normal audio-reactive animation
+            let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
+            let dynamicHeight = CGFloat(value * multipliers[index]) * maxHeight
+            return max(minHeight, dynamicHeight)
+        }
+    }
+    
+    private func startRippleAnimation() {
+        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+            ripplePhase += 0.1
+            if ripplePhase > .pi * 2 {
+                ripplePhase = 0
+            }
+        }
     }
 }
 
@@ -57,7 +84,7 @@ class OverlayManager {
     static let shared = OverlayManager()
     private var window: NSPanel?
     
-    func show(recorder: AudioRecorder) {
+    func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         if window == nil {
             let panel = NSPanel(
                 contentRect: NSRect(x: 0, y: 0, width: 80, height: 80),
@@ -72,7 +99,7 @@ class OverlayManager {
             panel.hasShadow = false
             panel.isMovableByWindowBackground = true
             
-            let contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder))
+            let contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder, isTranscribing: isTranscribing))
             panel.contentView = contentView
             
             // Center on bottom of screen
@@ -85,7 +112,7 @@ class OverlayManager {
         }
         
         // Always update the content view to ensure binding is fresh
-        window?.contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder))
+        window?.contentView = NSHostingView(rootView: RecordingOverlay(recorder: recorder, isTranscribing: isTranscribing))
         window?.orderFrontRegardless()
     }
     

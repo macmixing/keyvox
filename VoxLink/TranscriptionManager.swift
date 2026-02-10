@@ -58,14 +58,17 @@ class TranscriptionManager: ObservableObject {
         print("--- Speed Profile Start ---")
         
         playSound(named: "Frog") // Stop sound
-        OverlayManager.shared.hide()
         state = .transcribing
+        
+        // Keep overlay visible but show transcription ripples
+        OverlayManager.shared.show(recorder: audioRecorder, isTranscribing: true)
         
         audioRecorder.stopRecording { [weak self] frames in
             let stopDuration = Date().timeIntervalSince(startTime)
             print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
             
             guard let self = self, !frames.isEmpty else {
+                OverlayManager.shared.hide()
                 self?.state = .idle
                 return
             }
@@ -90,6 +93,8 @@ class TranscriptionManager: ObservableObject {
                     print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
                     print("--- Speed Profile End ---")
                     
+                    // Hide overlay only after transcription completes
+                    OverlayManager.shared.hide()
                     self.state = .idle
                 }
             }
