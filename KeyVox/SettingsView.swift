@@ -153,7 +153,7 @@ struct SettingsView: View {
                                         .font(.caption)
                                 }
                             } else {
-                                Button("Download Model (142MB)") {
+                                Button("Download Model") {
                                     downloader.downloadBaseModel()
                                 }
                             }

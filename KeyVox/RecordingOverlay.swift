@@ -23,9 +23,9 @@ struct RecordingOverlay: View {
                         .stroke(Color.yellow.opacity(0.6), lineWidth: 2)
                 )
                 .shadow(radius: 10)
-                .frame(width: isDevModeOversized ? 100 : 50, height: isDevModeOversized ? 100 : 50)
+                .frame(width: isDevModeOversized ? 300 : 50, height: isDevModeOversized ? 300 : 50)
             
-            HStack(spacing: isDevModeOversized ? 8 : 4) {
+            HStack(spacing: isDevModeOversized ? 24 : 4) {
                 ForEach(0..<5) { index in
                     BarView(value: Double(recorder.audioLevel), index: index, isTranscribing: isTranscribing)
                 }
@@ -58,7 +58,7 @@ struct BarView: View {
     @State private var ripplePhase: Double = 0
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 2)
+        RoundedRectangle(cornerRadius: 26)
             .fill(
                 LinearGradient(
                     colors: [Color.indigo, Color.indigo.opacity(0.9)],
@@ -67,7 +67,7 @@ struct BarView: View {
                 )
             )
             .shadow(color: .yellow.opacity(0.9), radius: 4, x: 0, y: 0) // The "Glow"
-            .frame(width: isDevModeOversized ? 8 : 4, height: height)
+            .frame(width: isDevModeOversized ? 24 : 4, height: height)
             .animation(.linear(duration: 0.1), value: ripplePhase)
             .animation(.spring(response: 0.3, dampingFraction: 0.9), value: value)
             .onAppear {
@@ -76,8 +76,8 @@ struct BarView: View {
     }
     
     var height: CGFloat {
-        let minHeight: CGFloat = isDevModeOversized ? 12 : 6
-        let maxHeight: CGFloat = isDevModeOversized ? 60 : 30
+        let minHeight: CGFloat = isDevModeOversized ? 18 : 6
+        let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
         
         // Show ripples when quiet (low audio) or transcribing
         let shouldRipple = value < 0.15 || isTranscribing
@@ -87,7 +87,7 @@ struct BarView: View {
             let waveOffset = ripplePhase + Double(index) * 0.8
             let rippleHeight = sin(waveOffset) * 0.5 + 0.5 // Range: 0.0 to 1.0
             // Thin baseline (3px) with ripple going up to 12px
-            return (isDevModeOversized ? 6 : 3) + (CGFloat(rippleHeight) * (isDevModeOversized ? 18 : 9))
+            return (isDevModeOversized ? 9 : 3) + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
         } else {
             // Normal audio-reactive animation
             let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
@@ -114,7 +114,7 @@ class OverlayManager {
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         if window == nil {
             let panel = NSPanel(
-                contentRect: NSRect(x: 0, y: 0, width: isDevModeOversized ? 116 : 66, height: isDevModeOversized ? 116 : 66),
+                contentRect: NSRect(x: 0, y: 0, width: isDevModeOversized ? 316 : 66, height: isDevModeOversized ? 316 : 66),
                 styleMask: [.nonactivatingPanel, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -136,7 +136,7 @@ class OverlayManager {
             // Center on bottom of screen
             if let screen = NSScreen.main {
                 let rect = screen.visibleFrame
-                panel.setFrameOrigin(NSPoint(x: rect.midX - (isDevModeOversized ? 58 : 33), y: rect.minY + 50))
+                panel.setFrameOrigin(NSPoint(x: rect.midX - (isDevModeOversized ? 158 : 33), y: rect.minY + 50))
             }
             
             window = panel

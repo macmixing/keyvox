@@ -12,8 +12,18 @@ struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
     @StateObject private var downloader = ModelDownloader()
     
+    private var menuBarImage: Image {
+        let imageName = transcriptionManager.state == .recording ? "logo-white-invert" : "logo-white"
+        if let nsImage = NSImage(named: imageName) {
+            nsImage.isTemplate = true
+            nsImage.size = NSSize(width: 18, height: 18)
+            return Image(nsImage: nsImage)
+        }
+        return Image(systemName: "waveform.circle")
+    }
+    
     var body: some Scene {
-        MenuBarExtra("KeyVox", systemImage: transcriptionManager.state == .recording ? "waveform.circle.fill" : "waveform.circle") {
+        MenuBarExtra {
             VStack {
                 Text("KeyVox Status: \(statusText)")
                 if !downloader.isModelDownloaded {
@@ -39,6 +49,8 @@ struct KeyVoxApp: App {
                     NSApplication.shared.terminate(nil)
                 }
             }
+        } label: {
+            menuBarImage
         }
     }
     
