@@ -2,11 +2,14 @@ import Foundation
 import Combine
 
 class ModelDownloader: ObservableObject {
+    static let shared = ModelDownloader()
+    
     @Published var progress: Double = 0
     @Published var isDownloading = false
+    @Published var modelReady: Bool = false
     @Published var errorMessage: String?
     
-    private var downloadTask: URLSessionDownloadTask?
+    private var taskProgress: [Int: (written: Int64, total: Int64)] = [:]
     
     var modelURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -20,7 +23,12 @@ class ModelDownloader: ObservableObject {
     }
     
     init() {
+        refreshModelStatus()
         cleanupOldModels()
+    }
+    
+    func refreshModelStatus() {
+        modelReady = FileManager.default.fileExists(atPath: modelURL.path)
     }
     
     private func cleanupOldModels() {
@@ -31,7 +39,6 @@ class ModelDownloader: ObservableObject {
         let tinyModel = KeyVoxDir.appendingPathComponent("ggml-tiny.en.bin")
         let tinyCoreML = KeyVoxDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
         
-        // Remove Tiny Model (Clean up as requested)
         try? fileManager.removeItem(at: tinyModel)
         try? fileManager.removeItem(at: tinyCoreML)
     }
@@ -39,65 +46,77 @@ class ModelDownloader: ObservableObject {
     func downloadBaseModel() {
         guard !isDownloading else { return }
         
-        // 1. Download the Base GGML model (Better than Tiny, still fast)
         let ggmlURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin")!
-        
-        // 2. Download the CoreML model (Neural Engine acceleration for Base)
         let coreMLURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-encoder.mlmodelc.zip")!
         
         isDownloading = true
         progress = 0
         errorMessage = nil
+        taskProgress.removeAll()
         
-        let session = URLSession(configuration: .default, delegate: DownloadDelegate(progressHandler: { progress in
-            DispatchQueue.main.async {
-                self.progress = progress
-            }
-        }), delegateQueue: nil)
+        let session = URLSession(configuration: .default, delegate: DownloadDelegate(downloader: self), delegateQueue: nil)
         
-        // Parallel download group
-        let group = DispatchGroup()
+        let taskA = session.downloadTask(with: ggmlURL)
+        let taskB = session.downloadTask(with: coreMLURL)
         
-        // Task A: GGML Model
-        group.enter()
-        let taskA = session.downloadTask(with: ggmlURL) { localURL, _, error in
-            defer { group.leave() }
-            if let localURL = localURL {
-                try? FileManager.default.removeItem(at: self.modelURL)
-                try? FileManager.default.moveItem(at: localURL, to: self.modelURL)
-            }
-        }
+        taskProgress[taskA.taskIdentifier] = (0, 140_000_000)
+        taskProgress[taskB.taskIdentifier] = (0, 50_000_000)
+        
         taskA.resume()
-        
-        // Task B: CoreML Model
-        group.enter()
-        let taskB = session.downloadTask(with: coreMLURL) { localURL, _, error in
-            defer { group.leave() }
-            if let localURL = localURL {
-                // Determine destination for CoreML model
-                let coreMLDest = self.modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc.zip")
-                try? FileManager.default.removeItem(at: coreMLDest)
-                try? FileManager.default.moveItem(at: localURL, to: coreMLDest)
-                
-                // We need to unzip this for it to work.
-                // For simplicity in this step, we'll ask the user to unzip or use a shell command.
-                // Ideally, we'd use a lightweight unzip library or `Process` to unzip.
-                self.unzipCoreML(at: coreMLDest)
-            }
-        }
         taskB.resume()
+    }
+    
+    func handleDownloadCompletion(task: URLSessionDownloadTask, location: URL) {
+        let urlString = task.originalRequest?.url?.absoluteString ?? ""
+        let isGGML = urlString.contains("ggml-base.en.bin")
         
-        group.notify(queue: .main) {
-            self.finishDownloads()
+        if isGGML {
+            try? FileManager.default.removeItem(at: self.modelURL)
+            try? FileManager.default.moveItem(at: location, to: self.modelURL)
+        } else {
+            let coreMLDest = self.modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc.zip")
+            try? FileManager.default.removeItem(at: coreMLDest)
+            try? FileManager.default.moveItem(at: location, to: coreMLDest)
+            self.unzipCoreML(at: coreMLDest)
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let id = task.taskIdentifier
+            
+            if var current = self.taskProgress[id] {
+                current.written = current.total
+                self.taskProgress[id] = current
+            }
+            
+            self.calculateTotalProgress()
+            
+            let allDone = self.taskProgress.values.allSatisfy { $0.written >= $0.total && $0.total > 0 }
+            if allDone {
+                self.isDownloading = false
+                self.progress = 1.0
+                self.refreshModelStatus() // Update published state
+            }
         }
     }
     
-    private func finishDownloads() {
-        DispatchQueue.main.async {
-            self.isDownloading = false
-            #if DEBUG
-            print("Downloads complete. Hardware acceleration assets ready.")
-            #endif
+    func updateTaskProgress(id: Int, written: Int64, total: Int64) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.taskProgress[id] = (written, total)
+            self.calculateTotalProgress()
+        }
+    }
+    
+    private func calculateTotalProgress() {
+        let totalWritten = taskProgress.values.map { $0.written }.reduce(0, +)
+        let totalExpected = taskProgress.values.map { $0.total }.reduce(0, +)
+        
+        if totalExpected > 0 {
+            let newProgress = Double(totalWritten) / Double(totalExpected)
+            if abs(self.progress - newProgress) > 0.005 {
+                self.progress = newProgress
+            }
         }
     }
     
@@ -106,31 +125,31 @@ class ModelDownloader: ObservableObject {
         process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
         process.arguments = ["-o", url.path, "-d", url.deletingLastPathComponent().path]
         try? process.run()
-    }
-    
-    func cancelDownload() {
-        downloadTask?.cancel()
-        isDownloading = false
+        process.waitUntilExit()
     }
     
     var isModelDownloaded: Bool {
-        FileManager.default.fileExists(atPath: modelURL.path)
+        modelReady
     }
 }
 
 class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
-    var progressHandler: (Double) -> Void
+    weak var downloader: ModelDownloader?
     
-    init(progressHandler: @escaping (Double) -> Void) {
-        self.progressHandler = progressHandler
+    init(downloader: ModelDownloader) {
+        self.downloader = downloader
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
-        progressHandler(progress)
+        downloader?.updateTaskProgress(
+            id: downloadTask.taskIdentifier,
+            written: totalBytesWritten,
+            total: totalBytesExpectedToWrite
+        )
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        // Handled in the completion block of downloadTask
+        downloader?.handleDownloadCompletion(task: downloadTask, location: location)
     }
 }
+

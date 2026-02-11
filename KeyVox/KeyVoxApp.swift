@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
-    @StateObject private var downloader = ModelDownloader()
+    @ObservedObject private var downloader = ModelDownloader.shared
     
     private var menuBarImage: Image {
         let imageName = transcriptionManager.state == .recording ? "logo-white-invert" : "logo-white"
