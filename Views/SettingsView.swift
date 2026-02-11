@@ -89,19 +89,17 @@ struct SettingsRow<Accessory: View>: View {
 
 // MARK: - Main Settings View
 struct SettingsView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject private var downloader = ModelDownloader.shared
     @StateObject private var keyboardMonitor = KeyboardMonitor.shared
+    @State private var showLegal = false
 
     var body: some View {
         ZStack {
-            // Background Layer: Dark Indigo
-            Color.indigo.opacity(0.15)
-                .background(Color(white: 0.01))
-                .ignoresSafeArea()
-            
             VStack(spacing: 32) {
                 // Header
                 headerView
+                    .offset(y: -15)
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -160,6 +158,18 @@ struct SettingsView: View {
                         
                         // Section: Tips
                         tipsSection
+                        
+                        Divider()
+                            .opacity(0.1)
+                            .padding(.horizontal, 24)
+                        
+                        Button("Legal & Licenses") {
+                            showLegal = true
+                        }
+                        .font(.custom("Kanit Medium", size: 10))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 16)
                     }
                     .padding(.vertical, 8)
                 }
@@ -167,12 +177,27 @@ struct SettingsView: View {
             .padding(.top, 32)
         }
         .frame(width: 500, height: 480)
+        .background(
+            Color.indigo.opacity(0.15)
+                .background(Color(white: 0.01))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .sheet(isPresented: $showLegal) {
+            LegalView()
+        }
     }
     
     private var headerView: some View {
         HStack {
             AnimatedWaveHeader()
             Spacer()
+            Button(action: { dismiss() }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            .buttonStyle(.plain)
+            .offset(y: -5)
         }
         .padding(.horizontal, 24)
     }

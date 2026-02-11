@@ -24,6 +24,7 @@
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
+		8E927F692F3C58D000C071B3 /* LegalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E927F682F3C58D000C071B3 /* LegalView.swift */; };
 		8EE0049F2F3BA79A00BBAB30 /* SwiftWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* SwiftWhisper */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05D92F3C51D6003BD458 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
+		8E927F682F3C58D000C071B3 /* LegalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalView.swift; sourceTree = "<group>"; };
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -112,6 +114,7 @@
 		8E6D05DB2F3C51D6003BD458 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8E927F682F3C58D000C071B3 /* LegalView.swift */,
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
 				8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
@@ -233,6 +236,7 @@
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
 				8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,
+				8E927F692F3C58D000C071B3 /* LegalView.swift in Sources */,
 				8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,

@@ -44,7 +44,7 @@ class WindowManager: ObservableObject {
         window.center()
         
         window.contentView?.wantsLayer = true
-        window.contentView?.layer?.cornerRadius = 26
+        window.contentView?.layer?.cornerRadius = 28
         window.contentView?.layer?.masksToBounds = true
         
         window.contentView = NSHostingView(rootView: OnboardingView(onComplete: {
@@ -70,13 +70,16 @@ class WindowManager: ObservableObject {
         } else {
             window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 500, height: 480),
-                styleMask: [.titled, .closable, .fullSizeContentView],
+                styleMask: [.fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.isReleasedWhenClosed = false
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
+            window.standardWindowButton(.closeButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+            window.standardWindowButton(.zoomButton)?.isHidden = true
             window.backgroundColor = .clear
             window.isOpaque = false
             window.hasShadow = true
@@ -85,7 +88,7 @@ class WindowManager: ObservableObject {
             window.isMovableByWindowBackground = true
             
             window.contentView?.wantsLayer = true
-            window.contentView?.layer?.cornerRadius = 26
+            window.contentView?.layer?.cornerRadius = 28
             window.contentView?.layer?.masksToBounds = true
             window.contentView = NSHostingView(rootView: SettingsView())
             self.settingsWindow = window

@@ -91,7 +91,7 @@ struct OnboardingView: View {
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .onAppear {
             checkCurrentStatus()
         }
