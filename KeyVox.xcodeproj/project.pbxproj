@@ -7,20 +7,46 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E6D056D2F3C4F9A003BD458 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D055B2F3C4F9A003BD458 /* Assets.xcassets */; };
+		8E6D056E2F3C4F9A003BD458 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D055E2F3C4F9A003BD458 /* Kanit-Medium.ttf */; };
+		8E6D056F2F3C4F9A003BD458 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05602F3C4F9A003BD458 /* keyvox.icon */; };
+		8E6D05702F3C4F9A003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D055C2F3C4F9A003BD458 /* AudioRecorder.swift */; };
+		8E6D05712F3C4F9A003BD458 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D055D2F3C4F9A003BD458 /* ContentView.swift */; };
+		8E6D05722F3C4F9A003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D055F2F3C4F9A003BD458 /* KeyboardMonitor.swift */; };
+		8E6D05732F3C4F9A003BD458 /* KeyVoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05612F3C4F9A003BD458 /* KeyVoxApp.swift */; };
+		8E6D05742F3C4F9A003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05622F3C4F9A003BD458 /* KeyVoxLogo.swift */; };
+		8E6D05752F3C4F9A003BD458 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05632F3C4F9A003BD458 /* ModelDownloader.swift */; };
+		8E6D05762F3C4F9A003BD458 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05642F3C4F9A003BD458 /* OnboardingView.swift */; };
+		8E6D05772F3C4F9A003BD458 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05652F3C4F9A003BD458 /* PasteService.swift */; };
+		8E6D05782F3C4F9A003BD458 /* RecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05662F3C4F9A003BD458 /* RecordingOverlay.swift */; };
+		8E6D05792F3C4F9A003BD458 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05672F3C4F9A003BD458 /* SettingsView.swift */; };
+		8E6D057A2F3C4F9A003BD458 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05682F3C4F9A003BD458 /* StatusMenuView.swift */; };
+		8E6D057B2F3C4F9A003BD458 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05692F3C4F9A003BD458 /* TranscriptionManager.swift */; };
+		8E6D057C2F3C4F9A003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D056A2F3C4F9A003BD458 /* UIComponents.swift */; };
+		8E6D057D2F3C4F9A003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D056B2F3C4F9A003BD458 /* WhisperService.swift */; };
 		8EE0049F2F3BA79A00BBAB30 /* SwiftWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* SwiftWhisper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8E6D055B2F3C4F9A003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8E6D055C2F3C4F9A003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
+		8E6D055D2F3C4F9A003BD458 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8E6D055E2F3C4F9A003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
+		8E6D055F2F3C4F9A003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
+		8E6D05602F3C4F9A003BD458 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
+		8E6D05612F3C4F9A003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
+		8E6D05622F3C4F9A003BD458 /* KeyVoxLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxLogo.swift; sourceTree = "<group>"; };
+		8E6D05632F3C4F9A003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
+		8E6D05642F3C4F9A003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		8E6D05652F3C4F9A003BD458 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
+		8E6D05662F3C4F9A003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
+		8E6D05672F3C4F9A003BD458 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		8E6D05682F3C4F9A003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
+		8E6D05692F3C4F9A003BD458 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
+		8E6D056A2F3C4F9A003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
+		8E6D056B2F3C4F9A003BD458 /* WhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperService.swift; sourceTree = "<group>"; };
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		8EE0045C2F3BA59900BBAB30 /* KeyVox */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = KeyVox;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8EE004572F3BA59900BBAB30 /* Frameworks */ = {
@@ -34,10 +60,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8E6D056C2F3C4F9A003BD458 /* KeyVox */ = {
+			isa = PBXGroup;
+			children = (
+				8E6D055B2F3C4F9A003BD458 /* Assets.xcassets */,
+				8E6D055C2F3C4F9A003BD458 /* AudioRecorder.swift */,
+				8E6D055D2F3C4F9A003BD458 /* ContentView.swift */,
+				8E6D055E2F3C4F9A003BD458 /* Kanit-Medium.ttf */,
+				8E6D055F2F3C4F9A003BD458 /* KeyboardMonitor.swift */,
+				8E6D05602F3C4F9A003BD458 /* keyvox.icon */,
+				8E6D05612F3C4F9A003BD458 /* KeyVoxApp.swift */,
+				8E6D05622F3C4F9A003BD458 /* KeyVoxLogo.swift */,
+				8E6D05632F3C4F9A003BD458 /* ModelDownloader.swift */,
+				8E6D05642F3C4F9A003BD458 /* OnboardingView.swift */,
+				8E6D05652F3C4F9A003BD458 /* PasteService.swift */,
+				8E6D05662F3C4F9A003BD458 /* RecordingOverlay.swift */,
+				8E6D05672F3C4F9A003BD458 /* SettingsView.swift */,
+				8E6D05682F3C4F9A003BD458 /* StatusMenuView.swift */,
+				8E6D05692F3C4F9A003BD458 /* TranscriptionManager.swift */,
+				8E6D056A2F3C4F9A003BD458 /* UIComponents.swift */,
+				8E6D056B2F3C4F9A003BD458 /* WhisperService.swift */,
+			);
+			path = KeyVox;
+			sourceTree = "<group>";
+		};
 		8EE004512F3BA59900BBAB30 = {
 			isa = PBXGroup;
 			children = (
-				8EE0045C2F3BA59900BBAB30 /* KeyVox */,
+				8E6D056C2F3C4F9A003BD458 /* KeyVox */,
 				8EE0049D2F3BA79A00BBAB30 /* Frameworks */,
 				8EE0045B2F3BA59900BBAB30 /* Products */,
 			);
@@ -72,9 +122,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				8EE0045C2F3BA59900BBAB30 /* KeyVox */,
 			);
 			name = KeyVox;
 			packageProductDependencies = (
@@ -126,6 +173,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E6D056D2F3C4F9A003BD458 /* Assets.xcassets in Resources */,
+				8E6D056E2F3C4F9A003BD458 /* Kanit-Medium.ttf in Resources */,
+				8E6D056F2F3C4F9A003BD458 /* keyvox.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +186,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E6D05702F3C4F9A003BD458 /* AudioRecorder.swift in Sources */,
+				8E6D05712F3C4F9A003BD458 /* ContentView.swift in Sources */,
+				8E6D05722F3C4F9A003BD458 /* KeyboardMonitor.swift in Sources */,
+				8E6D05732F3C4F9A003BD458 /* KeyVoxApp.swift in Sources */,
+				8E6D05742F3C4F9A003BD458 /* KeyVoxLogo.swift in Sources */,
+				8E6D05752F3C4F9A003BD458 /* ModelDownloader.swift in Sources */,
+				8E6D05762F3C4F9A003BD458 /* OnboardingView.swift in Sources */,
+				8E6D05772F3C4F9A003BD458 /* PasteService.swift in Sources */,
+				8E6D05782F3C4F9A003BD458 /* RecordingOverlay.swift in Sources */,
+				8E6D05792F3C4F9A003BD458 /* SettingsView.swift in Sources */,
+				8E6D057A2F3C4F9A003BD458 /* StatusMenuView.swift in Sources */,
+				8E6D057B2F3C4F9A003BD458 /* TranscriptionManager.swift in Sources */,
+				8E6D057C2F3C4F9A003BD458 /* UIComponents.swift in Sources */,
+				8E6D057D2F3C4F9A003BD458 /* WhisperService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

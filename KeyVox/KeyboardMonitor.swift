@@ -11,12 +11,12 @@ final class KeyboardMonitor: ObservableObject {
     /// The key (or modifier) the user holds to start dictation.
     /// Stored in UserDefaults so it can be wired to a Settings UI with a simple Picker.
     enum TriggerBinding: String, CaseIterable, Identifiable {
-        case leftOption
         case rightOption
-        case leftCommand
+        case leftOption
         case rightCommand
-        case leftControl
+        case leftCommand
         case rightControl
+        case leftControl
         case function
 
         var id: String { rawValue }
@@ -100,8 +100,8 @@ final class KeyboardMonitor: ObservableObject {
            let saved = TriggerBinding(rawValue: raw) {
             self.triggerBinding = saved
         } else {
-            // Default to left option key
-            self.triggerBinding = .leftOption
+            // Default to right option key
+            self.triggerBinding = .rightOption
         }
 
         startMonitoring()
