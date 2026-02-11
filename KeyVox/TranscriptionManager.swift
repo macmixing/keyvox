@@ -46,7 +46,9 @@ class TranscriptionManager: ObservableObject {
             if state == .recording {
                 if keyboardMonitor.isShiftPressed {
                     isLocked = true
+                    #if DEBUG
                     print("Hands-free mode LOCKED")
+                    #endif
                 } else if !isLocked {
                     stopRecordingAndTranscribe()
                 }
@@ -70,7 +72,9 @@ class TranscriptionManager: ObservableObject {
         
         let startTime = Date()
         stopRequestedAt = startTime
+        #if DEBUG
         print("--- Speed Profile Start ---")
+        #endif
         
         playSound(named: "Frog") // Stop sound
         state = .transcribing
@@ -81,7 +85,9 @@ class TranscriptionManager: ObservableObject {
         
         audioRecorder.stopRecording { [weak self] frames in
             let stopDuration = Date().timeIntervalSince(startTime)
+            #if DEBUG
             print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
+            #endif
             
             guard let self = self, !frames.isEmpty else {
                 OverlayManager.shared.hide()
@@ -92,7 +98,9 @@ class TranscriptionManager: ObservableObject {
             let transcribeStart = Date()
             self.whisperService.transcribe(audioFrames: frames) { result in
                 let transcribeDuration = Date().timeIntervalSince(transcribeStart)
+                #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")
+                #endif
                 
                 DispatchQueue.main.async {
                     let text = result ?? ""
@@ -103,11 +111,15 @@ class TranscriptionManager: ObservableObject {
                         PasteService.shared.pasteText(text)
                     }
                     let pasteDuration = Date().timeIntervalSince(pasteStart)
+                    #if DEBUG
                     print("3. Injection trigger: \(String(format: "%.3f", pasteDuration))s")
+                    #endif
                     
                     let totalTime = Date().timeIntervalSince(startTime)
+                    #if DEBUG
                     print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
                     print("--- Speed Profile End ---")
+                    #endif
                     
                     // Hide overlay only after transcription completes
                     OverlayManager.shared.hide()

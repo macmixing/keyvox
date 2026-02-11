@@ -88,8 +88,16 @@ class ModelDownloader: ObservableObject {
         taskB.resume()
         
         group.notify(queue: .main) {
+            self.finishDownloads()
+        }
+    }
+    
+    private func finishDownloads() {
+        DispatchQueue.main.async {
             self.isDownloading = false
+            #if DEBUG
             print("Downloads complete. Hardware acceleration assets ready.")
+            #endif
         }
     }
     

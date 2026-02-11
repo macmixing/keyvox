@@ -161,7 +161,9 @@ final class KeyboardMonitor: ObservableObject {
                 self.isTriggerKeyPressed = newState
                 self.isShiftPressed = newShiftState
                 if newState != self.isTriggerKeyPressed {
+                    #if DEBUG
                     print("Trigger key (\(self.triggerBinding.displayName)) state changed: \(newState)")
+                    #endif
                 }
             }
         }

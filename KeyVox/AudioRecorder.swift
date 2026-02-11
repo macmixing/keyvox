@@ -80,9 +80,13 @@ class AudioRecorder: NSObject, ObservableObject {
         do {
             try engine.start()
             isRecording = true
+            #if DEBUG
             print("Recording started (Direct to Memory @ 16kHz)...")
+            #endif
         } catch {
+            #if DEBUG
             print("Could not start audio engine: \(error)")
+            #endif
             inputNode.removeTap(onBus: 0)
             isRecording = false
         }
@@ -102,7 +106,9 @@ class AudioRecorder: NSObject, ObservableObject {
         }
         
         guard isRecording else { return }
+        #if DEBUG
         print("Recording stopped. Captured \(audioData.count) frames.")
+        #endif
     }
     
     private func removeInternalGaps(from samples: [Float]) -> [Float] {
@@ -146,12 +152,16 @@ class AudioRecorder: NSObject, ObservableObject {
         }
         
         if processedSamples.isEmpty {
+            #if DEBUG
             print("Audio processed: Resulted in total silence (Threshold: \(threshold))")
+            #endif
             return []
         }
         
         let compression = Double(processedSamples.count) / Double(samples.count) * 100.0
+        #if DEBUG
         print("Gap Removal: \(samples.count) -> \(processedSamples.count) frames (\(String(format: "%.1f", compression))% retained)")
+        #endif
         
         return processedSamples
     }

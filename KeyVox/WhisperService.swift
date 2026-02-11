@@ -14,7 +14,9 @@ class WhisperService: ObservableObject {
         guard whisper == nil else { return }
         guard let modelPath = getModelPath() else { return }
         
+        #if DEBUG
         print("Warming up Whisper model with optimized settings...")
+        #endif
         
         let params = WhisperParams.default
         params.language = .english
@@ -29,7 +31,9 @@ class WhisperService: ObservableObject {
     
     func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
         guard !audioFrames.isEmpty else {
+            #if DEBUG
             print("Skipping transcription: audio buffer is empty or silent.")
+            #endif
             completion("")
             return
         }
@@ -41,7 +45,9 @@ class WhisperService: ObservableObject {
             warmup()
         }
         
+        #if DEBUG
         print("Transcribing \(audioFrames.count) raw frames...")
+        #endif
         
         Task {
             do {
@@ -54,7 +60,9 @@ class WhisperService: ObservableObject {
                     completion(text)
                 }
             } catch {
+                #if DEBUG
                 print("Transcription error: \(error)")
+                #endif
                 DispatchQueue.main.async {
                     self.isTranscribing = false
                     completion(nil)

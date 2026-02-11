@@ -24,7 +24,9 @@ class PasteService {
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
 
+        #if DEBUG
         print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
+        #endif
 
         // 3. Smart Injection Strategy
         pasteQueue.async {
@@ -32,11 +34,15 @@ class PasteService {
 
             // A. Try Surgical Accessibility Injection first
             if self.injectTextViaAccessibility(text) {
+                #if DEBUG
                 print("SUCCESS: Text injected surgically via Accessibility API.")
+                #endif
             } else {
                 // B. Fallback to Menu Bar Paste
                 usedMenuPasteFallback = true
+                #if DEBUG
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
+                #endif
                 DispatchQueue.main.async {
                     self.pasteViaMenuBar()
                 }
@@ -66,7 +72,9 @@ class PasteService {
 
                 // Helpful debug signal
                 let restoredCount = itemsToWrite.count
+                #if DEBUG
                 print("Clipboard state restored (items: \(restoredCount)).")
+                #endif
             }
         }
     }
@@ -84,7 +92,9 @@ class PasteService {
         let result = AXUIElementCopyAttributeValue(accessibilityApp, kAXMenuBarAttribute as CFString, &menuBar)
 
         guard result == .success, menuBar != nil else {
+            #if DEBUG
             print("Fallback Failed: Could not find Menu Bar.")
+            #endif
             return
         }
 
@@ -102,22 +112,32 @@ class PasteService {
                 var enabled: CFTypeRef?
                 if AXUIElementCopyAttributeValue(pasteItem, kAXEnabledAttribute as CFString, &enabled) == .success,
                    let isEnabled = enabled as? Bool, !isEnabled {
+                    #if DEBUG
                     print("Fallback Skipped: 'Paste' menu item is disabled (Context doesn't support pasting).")
+                    #endif
                     return
                 }
                 
+                #if DEBUG
                 print("Found 'Paste' menu item. Triggering AXPress...")
+                #endif
                 let error = AXUIElementPerformAction(pasteItem, kAXPressAction as CFString)
                 if error == .success {
+                    #if DEBUG
                     print("Fallback Success: AXPress triggered on Paste menu.")
+                    #endif
                 } else {
+                    #if DEBUG
                     print("Fallback Failed: AXPress returned error \(error.rawValue)")
+                    #endif
                 }
                 return 
             }
         }
         
+        #if DEBUG
         print("Fallback Failed: Could not find 'Paste' menu item in any menu.")
+        #endif
     }
     
     
@@ -186,7 +206,9 @@ class PasteService {
         var roleStr = "Unknown"
         if let roleVal = role as? String {
             roleStr = roleVal
+            #if DEBUG
             print("DEBUG: Focused Element Role: \(roleStr)")
+            #endif
             if roleStr == "AXWebArea" || roleStr == "AXGroup" {
                 // Return false to start the "Menu Bar Paste" fallback immediately.
                 // This is a GENERIC heuristic, not a hardcoded app list.
@@ -222,7 +244,9 @@ class PasteService {
         // If we couldn't get ranges, we assume SUCCESS (native app weirdness safe default).
         if let old = originalRange, let new = newRange {
             if old.location == new.location && old.length == new.length {
+                #if DEBUG
                 print("DEBUG: Silent Failure Detected! Range didn't move. Role: \(roleStr)")
+                #endif
                 return false // Trigger Fallback
             }
         }
