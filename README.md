@@ -42,17 +42,27 @@ KeyVox follows a modular, service-oriented architecture designed for low-latency
 
 ---
 
-## Getting Started
+## Getting Started & Onboarding
+
+### First Launch Experience
+KeyVox features a guided, 3-step onboarding flow that appears automatically on your first launch. This ensures your environment is perfectly configured for local AI processing.
+
+1.  **Welcome**: Introduction to KeyVox's local-first philosophy.
+2.  **Permissions Check**:
+    *   **Microphone**: Required to capture audio. If denied, you must enable it in *System Settings > Privacy & Security > Microphone*.
+    *   **Accessibility**: Required to inject text into other apps. Enabling this allows KeyVox to paste directly at your cursor.
+3.  **Model Download**: KeyVox automatically downloads the optimized **OpenAI Whisper Base** model (~142MB). This happens entirely within the onboarding window with a real-time progress bar.
 
 ### Prerequisites
 - **macOS 15.0 or later**
-- **Accessibility Permissions**: Required for global key monitoring and text injection.
+- **Apple Silicon (M1/M2/M3)** recommended for best performance. Intel Macs are supported via Accelerate framework.
 
 ### Installation
-1. Clone the repository: `git clone https://github.com/macmixing/keyvox.git`
-2. Open `KeyVox.xcodeproj` in Xcode.
-3. Build and Run.
-4. Open **Settings** from the menu bar status icon to download the **OpenAI Whisper Base** model and **CoreML assets**. The UI will update automatically once ready.
+1.  Clone the repository: `git clone https://github.com/macmixing/keyvox.git`
+2.  Open `KeyVox.xcodeproj` in Xcode.
+3.  Build and Run.
+4.  Follow the **on-screen onboarding guide** to set up permissions and download the AI model.
+    *   *Note: If you skip onboarding or need to re-download the model, you can access these controls anytime from the **Settings** menu.*
 
 ---
 
