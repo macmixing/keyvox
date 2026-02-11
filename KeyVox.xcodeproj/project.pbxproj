@@ -398,7 +398,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Transcription requires microphone access.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox Transcription requires microphone access.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -445,7 +445,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Transcription requires microphone access.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox Transcription requires microphone access.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
