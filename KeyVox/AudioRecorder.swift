@@ -10,6 +10,8 @@ class AudioRecorder: NSObject, ObservableObject {
     
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0
+    @Published var isVisualQuiet = true
+    private var lastSpeechTime: Date = Date.distantPast
     
     func startRecording() {
         guard !isRecording else { return }
@@ -58,8 +60,17 @@ class AudioRecorder: NSObject, ObservableObject {
                 // RMS of 0.04 (normal) -> 0.2 * 5.0 = 1.0 (Full bar)
                 let level = min(max(sqrt(rms) * 5.0, 0.0), 1.0)
                 
+                if level > 0.15 {
+                    self.lastSpeechTime = Date()
+                }
+                
+                let isNowQuiet = Date().timeIntervalSince(self.lastSpeechTime) > 0.8
+                
                 DispatchQueue.main.async {
                     self.audioLevel = level
+                    if self.isVisualQuiet != isNowQuiet {
+                        self.isVisualQuiet = isNowQuiet
+                    }
                 }
             }
         }
@@ -85,10 +96,63 @@ class AudioRecorder: NSObject, ObservableObject {
             inputNode = nil
             converter = nil
             isRecording = false
-            completion(audioData)
+            
+            let processed = removeInternalGaps(from: audioData)
+            completion(processed)
         }
         
         guard isRecording else { return }
         print("Recording stopped. Captured \(audioData.count) frames.")
+    }
+    
+    private func removeInternalGaps(from samples: [Float]) -> [Float] {
+        guard !samples.isEmpty else { return [] }
+        
+        let threshold: Float = 0.002 // Tuned: Sensitive enough for quiet speech
+        let windowSize = 1600 // 100ms at 16kHz
+        let paddingWindows = 8 // Tuned: 800ms padding to prevent clipping
+        
+        let totalWindows = samples.count / windowSize
+        // If recording is too short for windowing, just return it as is
+        guard totalWindows > 0 else { return samples }
+        
+        var keepWindows = [Bool](repeating: false, count: totalWindows)
+        
+        // Phase 1: Identify speech windows
+        for w in 0..<totalWindows {
+            let start = w * windowSize
+            let end = start + windowSize
+            let window = samples[start..<end]
+            
+            let rms = sqrt(window.reduce(0) { $0 + $1 * $1 } / Float(windowSize))
+            if rms > threshold {
+                // Mark this window and padding around it
+                let lowerBound = max(0, w - paddingWindows)
+                let upperBound = min(totalWindows - 1, w + paddingWindows)
+                for i in lowerBound...upperBound {
+                    keepWindows[i] = true
+                }
+            }
+        }
+        
+        // Phase 2: Stitch kept windows together
+        var processedSamples: [Float] = []
+        for w in 0..<totalWindows {
+            if keepWindows[w] {
+                let start = w * windowSize
+                let end = start + windowSize
+                processedSamples.append(contentsOf: samples[start..<end])
+            }
+        }
+        
+        if processedSamples.isEmpty {
+            print("Audio processed: Resulted in total silence (Threshold: \(threshold))")
+            return []
+        }
+        
+        let compression = Double(processedSamples.count) / Double(samples.count) * 100.0
+        print("Gap Removal: \(samples.count) -> \(processedSamples.count) frames (\(String(format: "%.1f", compression))% retained)")
+        
+        return processedSamples
     }
 }

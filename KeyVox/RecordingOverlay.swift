@@ -27,7 +27,12 @@ struct RecordingOverlay: View {
             
             HStack(spacing: isDevModeOversized ? 24 : 4) {
                 ForEach(0..<5) { index in
-                    BarView(value: Double(recorder.audioLevel), index: index, isTranscribing: isTranscribing)
+                    BarView(
+                        value: Double(recorder.audioLevel),
+                        index: index,
+                        isTranscribing: isTranscribing,
+                        isVisualQuiet: recorder.isVisualQuiet
+                    )
                 }
             }
         }
@@ -54,6 +59,7 @@ struct BarView: View {
     var value: Double
     var index: Int
     var isTranscribing: Bool
+    var isVisualQuiet: Bool
     
     @State private var ripplePhase: Double = 0
     
@@ -79,8 +85,8 @@ struct BarView: View {
         let minHeight: CGFloat = isDevModeOversized ? 18 : 6
         let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
         
-        // Show ripples when quiet (low audio) or transcribing
-        let shouldRipple = value < 0.15 || isTranscribing
+        // Show ripples when quiet (low audio with slack) or transcribing
+        let shouldRipple = isVisualQuiet || isTranscribing
         
         if shouldRipple {
             // Ripple animation: subtle wave traveling left to right

@@ -28,6 +28,12 @@ class WhisperService: ObservableObject {
     }
     
     func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
+        guard !audioFrames.isEmpty else {
+            print("Skipping transcription: audio buffer is empty or silent.")
+            completion("")
+            return
+        }
+        
         self.isTranscribing = true
         
         // Ensure model is loaded (if warmup wasn't called/finished)
