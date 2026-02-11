@@ -2,9 +2,18 @@
 
 # KeyVox
 
-**KeyVox** is a premium, high-performance macOS application that brings seamless, local voice-to-text transcription to your fingertips. Built with a focus on speed, privacy, and rich aesthetics, KeyVox allows you to dictate text into any application instantly using OpenAI's Whisper model—running entirely on your machine.
+**KeyVox** is a high-performance macOS application that brings seamless, local voice-to-text transcription to your fingertips. Built with a focus on speed, privacy, and refined design, KeyVox allows you to dictate text into any application instantly using OpenAI's Whisper model running entirely on your machine.
 
 ---
+
+## Why KeyVox
+
+KeyVox was built as a local-first alternative to cloud-based, subscription-driven dictation tools. It focuses on instant responsiveness, privacy, and deep macOS integration rather than usage caps or online processing.
+
+- Fully local Whisper inference
+- Instant modifier-key trigger
+- Accessibility-based text injection with intelligent fallback
+- No tracking, no cloud processing, no subscriptions
 
 ## Features
 
@@ -13,11 +22,11 @@
 - **Instant Trigger**: Hold a configurable modifier key (Option, Command, Control, or Fn) to record, release to transcribe.
 - **Universal Acceleration**: Leverages **CoreML** (Neural Engine) on Apple Silicon and **Accelerate Framework** on Intel Macs for high-performance inference.
 - **Model Pre-warming**: Eliminates "first-run" latency by keeping the model warm in memory.
-- **Local & Private**: 100% on-device processing using `whisper.cpp`. No data is ever sent to the cloud.
+- **Local & Private**: 100% on-device processing using `whisper.cpp`. No transcription data is ever sent to the cloud.
 
 ### Premium User Experience
-- **Redesigned Settings**: A stunning, glassmorphic dashboard featuring the **Kanit Medium** font, animated wave headers, and real-time synchronized status tracking.
-- **Interactive Visuals**: A beautiful, audio-reactive floating overlay with glassmorphism aesthetics and ripple animations.
+- **Redesigned Settings**: A glassmorphic dashboard featuring the **Kanit Medium** font, animated wave headers, and real-time synchronized status tracking.
+- **Interactive Visuals**: An audio-reactive floating overlay with glassmorphism aesthetics and ripple animations.
 - **Smart Feedback**: Low-latency Morse-code ("Morse") and Frog ("Frog") sound feedback for non-visual status updates.
 - **Real-time Status Sync**: Coordinated model status between the Menu Bar and Settings window via a global singleton architecture.
 
