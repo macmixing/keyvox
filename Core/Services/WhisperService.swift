@@ -40,6 +40,9 @@ class WhisperService: ObservableObject {
     }
     
     func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
+        // Hardening: ensure only one transcription runs at a time
+        transcriptionTask?.cancel()
+        transcriptionTask = nil
         guard !audioFrames.isEmpty else {
             #if DEBUG
             print("Skipping transcription: audio buffer is empty or silent.")
