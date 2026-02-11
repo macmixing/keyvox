@@ -100,7 +100,7 @@ class WindowManager: ObservableObject {
         } else if let menuBarButton = NSApp.windows.first(where: { $0.className.contains("MenuBar") })?.frame {
             let screenFrame = NSScreen.main?.visibleFrame ?? .zero
             let xPos = menuBarButton.midX - 250 // Center under icon (250 = half of 500 width)
-            let yPos = screenFrame.maxY - 500 // Just below menu bar
+            let yPos = screenFrame.maxY - 480 // Flush with menu bar bottom edge
             window.setFrameOrigin(NSPoint(x: xPos, y: yPos))
         } else {
             window.center()
