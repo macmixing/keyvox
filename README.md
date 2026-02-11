@@ -1,4 +1,4 @@
-<img src="logo.png" width="128" alt="KeyVox Logo">
+<img src="Resources/logo.png" width="128" alt="KeyVox Logo">
 
 # KeyVox
 
