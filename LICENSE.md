@@ -23,16 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ---
-
 ## Proprietary Assets and Branding (Copyright)
 
-The following assets are **EXCLUSIVE PROPERTY** of Dominic Esposito and are **EXCLUDED** from the MIT license above:
+The following specific files and assets are **EXCLUSIVE PROPERTY** of Dominic Esposito and are **EXCLUDED** from the MIT license above. They may not be used, copied, or modified for any commercial or public-facing project:
 
-*   **App Icon & Branding**: All logos, wordmarks, and app icon designs.
-*   **Visual Identity**: Color palettes, specific font combinations, and brand imagery.
-*   **UI/UX Designs**: Signature user interface elements, including but not limited to:
-    *   The **Audio-Reactive Wave Recording Overlay** and its associated animations.
-    *   The **Animated Wave Header** design and its movement physics.
-    *   The overall "Look and Feel" of the KeyVox application.
+1.  **`Resources/Assets.xcassets/`**
+    * Includes all App Icons, the KeyVox Logo, and related brand imagery.
+2.  **`Views/Components/KeyVoxLogo.swift`**
+    * The proprietary implementation of the KeyVox logo.
+3.  **`Views/RecordingOverlay.swift`**
+    * The "Audio-Reactive Wave" animation, which is a direct derivative of the KeyVox brand identity.
 
-You are welcome to use, study, and modify the underlying logic of the software, but you may not use, replicate, or redistribute the proprietary branding or UI/UX assets listed above for any commercial or transformative purpose without explicit written permission from Dominic Esposito.
+These visual elements represent the unique brand identity of KeyVox and are being reserved for future commercial projects.
+
+**Condition of Use:**
+You are welcome to use, study, and modify the underlying logic of the software (e.g., `WhisperService`, `KeyboardMonitor`, etc.). However, if you fork or redistribute this software, you **MUST** remove the files listed above and replace them with your own original designs. Your fork must use a unique name, icon, and visual style that cannot be reasonably confused with KeyVox.
