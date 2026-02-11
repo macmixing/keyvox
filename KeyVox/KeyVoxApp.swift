@@ -61,16 +61,38 @@ struct KeyVoxApp: App {
         }
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 350, height: 250),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 400),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.isReleasedWhenClosed = false // Critical for manual lifecycle management
-        window.center()
-        window.setFrameAutosaveName("Settings")
-        window.title = "KeyVox Settings"
+        window.isReleasedWhenClosed = false
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.backgroundColor = .clear
+        window.isOpaque = false
+        window.hasShadow = true
+        window.level = .floating
+        
+        // Add rounded corners
+        window.contentView?.wantsLayer = true
+        window.contentView?.layer?.cornerRadius = 26
+        window.contentView?.layer?.masksToBounds = true
+        
+        // Position below menu bar icon
+        if let menuBarButton = NSApp.windows.first(where: { $0.className.contains("MenuBar") })?.frame {
+            let screenFrame = NSScreen.main?.visibleFrame ?? .zero
+            let xPos = menuBarButton.midX - 200 // Center under icon (200 = half of 400 width)
+            let yPos = screenFrame.maxY - 420 // Just below menu bar (20px gap)
+            window.setFrameOrigin(NSPoint(x: xPos, y: yPos))
+        } else {
+            window.center()
+        }
+        
         window.contentView = NSHostingView(rootView: SettingsView())
+        
+        // Close when clicking outside
+        window.hidesOnDeactivate = true
         
         self.settingsWindow = window
         window.makeKeyAndOrderFront(nil)
