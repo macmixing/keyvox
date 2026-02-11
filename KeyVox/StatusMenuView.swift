@@ -21,12 +21,15 @@ struct StatusMenuView: View {
                         Text("KeyVox Status")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.secondary)
-                        Text(currentStatus.text)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.primary)
+                        HStack(alignment: .center, spacing: 6) {
+                            Text(currentStatus.text)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.primary)
+                            StatusIndicator(status: currentStatus)
+                                .offset(y: 1)
+                        }
                     }
                     Spacer()
-                    StatusIndicator(status: currentStatus)
                 }
                 
                 Divider()
