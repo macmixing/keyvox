@@ -1,9 +1,11 @@
 import SwiftUI
 import AVFoundation
+import ApplicationServices
 
 struct StatusMenuView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var manager: TranscriptionManager
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @ObservedObject var downloader = ModelDownloader.shared
     @State private var micAuthorized: Bool = true
     
@@ -19,19 +21,19 @@ struct StatusMenuView: View {
                         Text("KeyVox Status")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.secondary)
-                        Text(statusText)
+                        Text(currentStatus.text)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.primary)
                     }
                     Spacer()
-                    StatusIndicator(state: manager.state)
+                    StatusIndicator(status: currentStatus)
                 }
                 
                 Divider()
                     .opacity(0.1)
                 
-                // Warnings Section
-                if !micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted() {
+                // Warnings Section (Only show after onboarding is complete)
+                if hasCompletedOnboarding && (!micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted()) {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
                             WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
@@ -44,7 +46,7 @@ struct StatusMenuView: View {
                                 dismiss()
                                 openSettings()
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    downloader.downloadBaseModel()
+                                    ModelDownloader.shared.downloadBaseModel()
                                 }
                             }
                         }
@@ -63,10 +65,15 @@ struct StatusMenuView: View {
                 
                 // Actions
                 VStack(spacing: 2) {
-                    MenuActionRow(icon: "gearshape.fill", title: "Settings") {
+                    MenuActionRow(
+                        icon: "gearshape.fill",
+                        title: "Settings",
+                        disabled: !hasCompletedOnboarding
+                    ) {
                         dismiss()
                         openSettings()
                     }
+                    
                     MenuActionRow(icon: "power", title: "Quit KeyVox") {
                         dismiss()
                         quitApp()
@@ -96,12 +103,52 @@ struct StatusMenuView: View {
         }
     }
     
-    private var statusText: String {
+    enum AppStatus {
+        case onboarding
+        case issue
+        case idle
+        case recording
+        case transcribing
+        case error(String)
+        
+        var text: String {
+            switch self {
+            case .onboarding: return "Waiting"
+            case .issue: return "Issue!"
+            case .idle: return "Ready"
+            case .recording: return "Recording..."
+            case .transcribing: return "Processing..."
+            case .error(let msg): return "Error: \(msg)"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .onboarding: return .yellow
+            case .issue: return .red
+            case .idle: return .green
+            case .recording: return .red
+            case .transcribing: return .blue
+            case .error: return .orange
+            }
+        }
+    }
+    
+    private var currentStatus: AppStatus {
+        if !hasCompletedOnboarding {
+            return .onboarding
+        }
+        
+        // After onboarding, check for blocking issues
+        if !micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted() {
+            return .issue
+        }
+        
         switch manager.state {
-        case .idle: return "Ready"
-        case .recording: return "Recording..."
-        case .transcribing: return "Processing..."
-        case .error(let msg): return "Error: \(msg)"
+        case .idle: return .idle
+        case .recording: return .recording
+        case .transcribing: return .transcribing
+        case .error(let msg): return .error(msg)
         }
     }
     
@@ -122,22 +169,13 @@ struct StatusMenuView: View {
 // MARK: - Supporting Views
 
 struct StatusIndicator: View {
-    let state: TranscriptionManager.AppState
+    let status: StatusMenuView.AppStatus
     
     var body: some View {
         Circle()
-            .fill(color)
+            .fill(status.color)
             .frame(width: 8, height: 8)
-            .shadow(color: color.opacity(0.5), radius: 3)
-    }
-    
-    private var color: Color {
-        switch state {
-        case .idle: return .green
-        case .recording: return .red
-        case .transcribing: return .blue
-        case .error: return .orange
-        }
+            .shadow(color: status.color.opacity(0.5), radius: 3)
     }
 }
 
@@ -186,6 +224,7 @@ struct WarningRow: View {
 struct MenuActionRow: View {
     let icon: String
     let title: String
+    var disabled: Bool = false
     let action: () -> Void
     @State private var isHovering = false
     
@@ -201,29 +240,15 @@ struct MenuActionRow: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(isHovering ? Color.primary.opacity(0.05) : Color.clear)
+            .background(isHovering && !disabled ? Color.primary.opacity(0.05) : Color.clear)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(disabled)
+        .opacity(disabled ? 0.3 : 1.0)
         .onHover { isHovering = $0 }
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
-struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
-    
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blendingMode
-        view.state = .active
-        return view
-    }
-    
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
-        nsView.blendingMode = blendingMode
-    }
-}
+

@@ -2,23 +2,9 @@ import SwiftUI
 
 // MARK: - Animated Wave Header with Circle
 struct AnimatedWaveHeader: View {
-    @State private var ripplePhase: Double = 0
-    
     var body: some View {
         HStack(spacing: 16) {
-            // Circle with animated bars
-            ZStack {
-                Circle()
-                    .stroke(Color.yellow.opacity(0.6), lineWidth: 2)
-                    .frame(width: 44, height: 44)
-                    .shadow(color: .yellow.opacity(0.3), radius: 4)
-                
-                HStack(spacing: 3) {
-                    ForEach(0..<5) { index in
-                        MiniBarView(index: index, ripplePhase: ripplePhase)
-                    }
-                }
-            }
+            KeyVoxLogo()
             
             VStack(alignment: .leading, spacing: 0) {
                 Text("KeyVox")
@@ -30,42 +16,6 @@ struct AnimatedWaveHeader: View {
                     .tracking(0.5)
             }
         }
-        .onAppear {
-            startRippleAnimation()
-        }
-    }
-    
-    private func startRippleAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
-            ripplePhase += 0.1
-            if ripplePhase > .pi * 2 {
-                ripplePhase = 0
-            }
-        }
-    }
-}
-
-struct MiniBarView: View {
-    let index: Int
-    let ripplePhase: Double
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 2)
-            .fill(
-                LinearGradient(
-                    colors: [.indigo, .indigo.opacity(0.7)],
-                    startPoint: .bottom,
-                    endPoint: .top
-                )
-            )
-            .shadow(color: .yellow.opacity(0.5), radius: 2, x: 0, y: 0)
-            .frame(width: 3.5, height: height)
-    }
-    
-    var height: CGFloat {
-        let waveOffset = ripplePhase + Double(index) * 0.8
-        let rippleHeight = sin(waveOffset) * 0.5 + 0.5
-        return 8 + (CGFloat(rippleHeight) * 10)
     }
 }
 
@@ -196,25 +146,8 @@ struct SettingsView: View {
                                 }
                                 
                                 if downloader.isDownloading {
-                                    VStack(spacing: 8) {
-                                        // Indented to align with text block
-                                        VStack(spacing: 8) {
-                                            ProgressView(value: downloader.progress)
-                                                .progressViewStyle(KeyVoxProgressStyle())
-                                                .frame(height: 6)
-                                            
-                                            HStack {
-                                                Text("Preparing AI Assets...")
-                                                    .font(.custom("Kanit Medium", size: 10))
-                                                    .foregroundColor(.secondary)
-                                                Spacer()
-                                                Text("\(Int(downloader.progress * 100))%")
-                                                    .font(.custom("Kanit Medium", size: 11))
-                                                    .foregroundColor(.indigo)
-                                            }
-                                        }
+                                    ModelDownloadProgress(progress: downloader.progress)
                                         .padding(.leading, 60)
-                                    }
                                 }
                                 
                                 if let error = downloader.errorMessage {
@@ -298,25 +231,6 @@ struct TipItem: View {
         .padding(.vertical, 8)
         .background(Color.white.opacity(0.03))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-struct KeyVoxProgressStyle: ProgressViewStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.1))
-                
-                if let progress = configuration.fractionCompleted {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.indigo)
-                        .frame(width: geometry.size.width * CGFloat(progress))
-                        .shadow(color: .indigo.opacity(0.5), radius: 3)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: progress)
-                }
-            }
-        }
     }
 }
 
