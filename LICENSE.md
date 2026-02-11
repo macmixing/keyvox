@@ -35,4 +35,4 @@ The following assets are **EXCLUSIVE PROPERTY** of Dominic Esposito and are **EX
     *   The **Animated Wave Header** design and its movement physics.
     *   The overall "Look and Feel" of the KeyVox application.
 
-You are welcome to use, study, and modify the underlying logic of the software, but you may not use, replicate, or redistribute the proprietary branding or UI/UX assets listed above for any commercial or transformative purpose without explicit written permission from Dom Esposito.
+You are welcome to use, study, and modify the underlying logic of the software, but you may not use, replicate, or redistribute the proprietary branding or UI/UX assets listed above for any commercial or transformative purpose without explicit written permission from Dominic Esposito.
