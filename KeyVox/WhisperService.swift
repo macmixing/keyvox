@@ -52,12 +52,15 @@ class WhisperService: ObservableObject {
         Task {
             do {
                 let segments = try await whisper?.transcribe(audioFrames: audioFrames)
-                let text = segments?.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+                let text = segments?.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                
+                // Collapse multiple spaces into a single space
+                let cleanedText = text.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
                 
                 DispatchQueue.main.async {
                     self.isTranscribing = false
-                    self.transcriptionText = text ?? ""
-                    completion(text)
+                    self.transcriptionText = cleanedText
+                    completion(cleanedText)
                 }
             } catch {
                 #if DEBUG
