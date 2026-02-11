@@ -7,7 +7,7 @@ struct StatusMenuView: View {
     @ObservedObject var manager: TranscriptionManager
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @ObservedObject var downloader = ModelDownloader.shared
-    @State private var micAuthorized: Bool = true
+    @State private var micAuthorized: Bool = (AVCaptureDevice.authorizationStatus(for: .audio) == .authorized)
     
     var openSettings: () -> Void
     var quitApp: () -> Void
@@ -37,7 +37,9 @@ struct StatusMenuView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
                             WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
-                                requestMicAccess()
+                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+                                    NSWorkspace.shared.open(url)
+                                }
                             }
                         }
                         
@@ -99,7 +101,7 @@ struct StatusMenuView: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: downloader.isModelDownloaded)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: AXIsProcessTrusted())
         .onAppear {
-            checkMicPermissions()
+            downloader.refreshModelStatus()
         }
     }
     
