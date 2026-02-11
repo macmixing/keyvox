@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E6D05C62F3C51C9003BD458 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C32F3C51C9003BD458 /* ContentView.swift */; };
 		8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */; };
 		8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */; };
@@ -30,6 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		8E6D05C32F3C51C9003BD458 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
 		8E6D05C82F3C51D6003BD458 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 		8E6D05C52F3C51C9003BD458 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
 				8E6D05C32F3C51C9003BD458 /* ContentView.swift */,
 				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
 			);
@@ -239,6 +242,7 @@
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
 				8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */,
 				8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */,
+				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
 				8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,

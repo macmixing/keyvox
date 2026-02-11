@@ -41,14 +41,14 @@ final class KeyboardMonitor: ObservableObject {
     @Published var isShiftPressed = false
     @Published var isSoundEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(isSoundEnabled, forKey: Self.soundEnabledKey)
+            UserDefaults.standard.set(isSoundEnabled, forKey: UserDefaultsKeys.isSoundEnabled)
         }
     }
 
     /// Expose the current binding so SwiftUI Settings can bind to it.
     @Published var triggerBinding: TriggerBinding {
         didSet {
-            UserDefaults.standard.set(triggerBinding.rawValue, forKey: Self.bindingDefaultsKey)
+            UserDefaults.standard.set(triggerBinding.rawValue, forKey: UserDefaultsKeys.triggerBinding)
             // Re-evaluate immediately so UI state stays correct if the user changes binding while holding keys.
             if let lastFlagsChangedEvent {
                 handleModifierChange(event: lastFlagsChangedEvent)
@@ -72,8 +72,7 @@ final class KeyboardMonitor: ObservableObject {
     private var rightControlDown = false
     private var fnDown = false
 
-    private static let bindingDefaultsKey = "KeyVox.TriggerBinding"
-    private static let soundEnabledKey = "KeyVox.IsSoundEnabled"
+
 
     private var lastFlagsChangedEvent: NSEvent?
 
@@ -82,7 +81,7 @@ final class KeyboardMonitor: ObservableObject {
     // MARK: - Init
 
     private init() {
-        if let raw = UserDefaults.standard.string(forKey: Self.bindingDefaultsKey),
+        if let raw = UserDefaults.standard.string(forKey: UserDefaultsKeys.triggerBinding),
            let saved = TriggerBinding(rawValue: raw) {
             self.triggerBinding = saved
         } else {
@@ -90,7 +89,7 @@ final class KeyboardMonitor: ObservableObject {
             self.triggerBinding = .rightOption
         }
 
-        self.isSoundEnabled = UserDefaults.standard.object(forKey: Self.soundEnabledKey) as? Bool ?? true
+        self.isSoundEnabled = UserDefaults.standard.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
 
         startMonitoring()
 
@@ -100,7 +99,7 @@ final class KeyboardMonitor: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             guard let self else { return }
-            guard let raw = UserDefaults.standard.string(forKey: Self.bindingDefaultsKey),
+            guard let raw = UserDefaults.standard.string(forKey: UserDefaultsKeys.triggerBinding),
                   let updated = TriggerBinding(rawValue: raw) else {
                 return
             }

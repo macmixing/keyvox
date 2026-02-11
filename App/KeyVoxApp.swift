@@ -45,7 +45,7 @@ class WindowManager: ObservableObject {
         
         
         window.contentView = NSHostingView(rootView: OnboardingView(onComplete: {
-            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+            UserDefaults.standard.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
             window.close()
             self.onboardingWindow = nil
             // Open settings centered immediately after onboarding
@@ -128,7 +128,7 @@ struct KeyVoxApp: App {
     init() {
         // App initialization
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            if !UserDefaults.standard.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding) {
                 WindowManager.shared.showOnboarding()
             }
         }
