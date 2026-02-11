@@ -120,6 +120,20 @@ struct SettingsView: View {
                                 .labelsHidden()
                             }
                         }
+
+                                                // Section: Sound
+                        SettingsCard {
+                            SettingsRow(
+                                icon: "speaker.wave.2.fill",
+                                title: "Play Sounds",
+                                subtitle: "Get audio feedback when recording starts and ends."
+                            ) {
+                                Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                                    .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                                    .labelsHidden()
+                            }
+                        }
+                        
                         // Section: Whisper Model
                         SettingsCard {
                             VStack(spacing: 16) {
@@ -155,18 +169,6 @@ struct SettingsView: View {
                             }
                         }
                         
-                        // Section: Sound
-                        SettingsCard {
-                            SettingsRow(
-                                icon: "speaker.wave.2.fill",
-                                title: "Play Sounds",
-                                subtitle: "Get audio feedback when recording starts and ends."
-                            ) {
-                                Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
-                                    .toggleStyle(SwitchToggleStyle(tint: .indigo))
-                                    .labelsHidden()
-                            }
-                        }
                         
                         // Section: Tips
                         tipsSection
