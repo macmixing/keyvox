@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 @main
 struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
     @ObservedObject private var downloader = ModelDownloader.shared
+    @State private var micAuthorized: Bool = true
     
     private var menuBarImage: Image {
         let imageName = transcriptionManager.state == .recording ? "logo-white-invert" : "logo-white"
@@ -24,34 +26,20 @@ struct KeyVoxApp: App {
     
     var body: some Scene {
         MenuBarExtra {
-            VStack {
-                Text("KeyVox Status: \(statusText)")
-                if !downloader.isModelDownloaded {
-                    Text("⚠️ Model missing")
-                        .font(.caption)
-                        .foregroundColor(.red)
-                }
-                
-                if !AXIsProcessTrusted() {
-                    Text("⚠️ Accessibility Permission Required")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                    Button("Grant Permission...") {
-                        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-                        AXIsProcessTrustedWithOptions(options as CFDictionary)
-                    }
-                }
-                Divider()
-                Button("Settings") {
-                    openSettings()
-                }
-                Button("Quit") {
-                    NSApplication.shared.terminate(nil)
-                }
-            }
+            StatusMenuView(
+                manager: transcriptionManager,
+                openSettings: { openSettings() },
+                quitApp: { NSApplication.shared.terminate(nil) }
+            )
         } label: {
             menuBarImage
         }
+        .menuBarExtraStyle(.window)
+    }
+    
+    private func checkMicPermissions() {
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        micAuthorized = (status == .authorized)
     }
     
     private var statusText: String {
