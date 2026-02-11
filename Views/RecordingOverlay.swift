@@ -62,6 +62,7 @@ struct BarView: View {
     var isVisualQuiet: Bool
     
     @State private var ripplePhase: Double = 0
+    @State private var rippleTimer: Timer?
     
     var body: some View {
         RoundedRectangle(cornerRadius: 26)
@@ -78,6 +79,9 @@ struct BarView: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.9), value: value)
             .onAppear {
                 startRippleAnimation()
+            }
+            .onDisappear {
+                stopRippleAnimation()
             }
     }
     
@@ -103,12 +107,21 @@ struct BarView: View {
     }
     
     private func startRippleAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+        // Prevent stacking multiple timers if the view re-appears
+        if rippleTimer != nil { return }
+
+        rippleTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+            // Timer tick updates are safe to do on the main run loop (scheduledTimer runs there by default)
             ripplePhase += 0.1
             if ripplePhase > .pi * 2 {
                 ripplePhase = 0
             }
         }
+    }
+
+    private func stopRippleAnimation() {
+        rippleTimer?.invalidate()
+        rippleTimer = nil
     }
 }
 

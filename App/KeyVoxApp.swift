@@ -43,9 +43,6 @@ class WindowManager: ObservableObject {
         window.isMovableByWindowBackground = true
         window.center()
         
-        window.contentView?.wantsLayer = true
-        window.contentView?.layer?.cornerRadius = 28
-        window.contentView?.layer?.masksToBounds = true
         
         window.contentView = NSHostingView(rootView: OnboardingView(onComplete: {
             UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
@@ -87,9 +84,7 @@ class WindowManager: ObservableObject {
             window.hidesOnDeactivate = true
             window.isMovableByWindowBackground = true
             
-            window.contentView?.wantsLayer = true
-            window.contentView?.layer?.cornerRadius = 28
-            window.contentView?.layer?.masksToBounds = true
+
             window.contentView = NSHostingView(rootView: SettingsView())
             self.settingsWindow = window
         }
@@ -99,8 +94,21 @@ class WindowManager: ObservableObject {
             window.center()
         } else if let menuBarButton = NSApp.windows.first(where: { $0.className.contains("MenuBar") })?.frame {
             let screenFrame = NSScreen.main?.visibleFrame ?? .zero
-            let xPos = menuBarButton.midX - 250 // Center under icon (250 = half of 500 width)
-            let yPos = screenFrame.maxY - 480 // Flush with menu bar bottom edge
+            let winSize = window.frame.size
+
+            // Desired position: centered under menu bar icon, flush under menu bar
+            var xPos = menuBarButton.midX - (winSize.width / 2)
+            var yPos = screenFrame.maxY - winSize.height
+
+            // Clamp to visible bounds so the window never spawns off-screen
+            let minX = screenFrame.minX
+            let maxX = screenFrame.maxX - winSize.width
+            let minY = screenFrame.minY
+            let maxY = screenFrame.maxY - winSize.height
+
+            xPos = min(max(xPos, minX), maxX)
+            yPos = min(max(yPos, minY), maxY)
+
             window.setFrameOrigin(NSPoint(x: xPos, y: yPos))
         } else {
             window.center()
