@@ -283,9 +283,3 @@ class PasteService {
         return nil
     }
 }
-
-
-
-
-
-

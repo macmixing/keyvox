@@ -71,11 +71,7 @@ final class KeyboardMonitor: ObservableObject {
     private var leftControlDown = false
     private var rightControlDown = false
     private var fnDown = false
-
-
-
     private var lastFlagsChangedEvent: NSEvent?
-
     private var defaultsObserver: NSObjectProtocol?
 
     // MARK: - Init
@@ -176,11 +172,6 @@ final class KeyboardMonitor: ObservableObject {
             DispatchQueue.main.async {
                 self.isTriggerKeyPressed = newState
                 self.isShiftPressed = newShiftState
-                if newState != self.isTriggerKeyPressed {
-                    #if DEBUG
-                    print("Trigger key (\(self.triggerBinding.displayName)) state changed: \(newState)")
-                    #endif
-                }
             }
         }
     }

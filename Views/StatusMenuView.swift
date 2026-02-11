@@ -5,7 +5,7 @@ import ApplicationServices
 struct StatusMenuView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var manager: TranscriptionManager
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @AppStorage(UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     @ObservedObject var downloader = ModelDownloader.shared
     @State private var micAuthorized: Bool = (AVCaptureDevice.authorizationStatus(for: .audio) == .authorized)
     
@@ -154,19 +154,6 @@ struct StatusMenuView: View {
         case .recording: return .recording
         case .transcribing: return .transcribing
         case .error(let msg): return .error(msg)
-        }
-    }
-    
-    private func checkMicPermissions() {
-        let status = AVCaptureDevice.authorizationStatus(for: .audio)
-        micAuthorized = (status == .authorized)
-    }
-    
-    private func requestMicAccess() {
-        AVCaptureDevice.requestAccess(for: .audio) { _ in
-            DispatchQueue.main.async {
-                self.checkMicPermissions()
-            }
         }
     }
 }

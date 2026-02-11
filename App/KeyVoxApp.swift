@@ -123,7 +123,7 @@ struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @AppStorage(UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     
     init() {
         // App initialization

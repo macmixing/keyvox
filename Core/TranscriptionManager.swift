@@ -15,7 +15,6 @@ class TranscriptionManager: ObservableObject {
     let keyboardMonitor = KeyboardMonitor.shared
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
-    private var targetApp: NSRunningApplication?
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
     
