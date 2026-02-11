@@ -67,7 +67,18 @@ class PasteService {
                 }
 
                 if !itemsToWrite.isEmpty {
-                    pb.writeObjects(itemsToWrite)
+                    let didWrite = pb.writeObjects(itemsToWrite)
+
+                    // Hardening: `writeObjects` can be finicky in rare cases.
+                    // If it fails, fall back to restoring the first item's types directly.
+                    if !didWrite {
+                        pb.clearContents()
+                        if let first = savedSnapshot.first {
+                            for (type, data) in first {
+                                pb.setData(data, forType: type)
+                            }
+                        }
+                    }
                 }
 
                 // Helpful debug signal
