@@ -10,9 +10,9 @@ struct OnboardingView: View {
     var openSettings: () -> Void
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             // Header
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 KeyVoxLogo(size: 80)
                 
                 VStack(spacing: 4) {
@@ -25,10 +25,10 @@ struct OnboardingView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.top, 20)
+            .padding(.top, 50)
             
             // Steps
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 OnboardingStepRow(
                     isCompleted: micAuthorized,
                     stepNumber: 1,
@@ -63,30 +63,32 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, 30)
             
-            Spacer()
+
             
-            // Footer
-            if allStepsCompleted {
+            // Footer - Persistent Button
+            VStack(spacing: 12) {
                 Button(action: onComplete) {
                     Text("Start Using KeyVox")
                         .font(.custom("Kanit Medium", size: 16))
-                        .foregroundColor(.black)
+                        .foregroundColor(allStepsCompleted ? .black : .white.opacity(0.3))
                         .padding(.horizontal, 40)
                         .padding(.vertical, 12)
-                        .background(Color.yellow)
+                        .frame(minWidth: 240)
+                        .background(allStepsCompleted ? Color.yellow : Color.white.opacity(0.05))
                         .cornerRadius(25)
-                        .shadow(color: .yellow.opacity(0.3), radius: 10)
+                        .shadow(color: allStepsCompleted ? .yellow.opacity(0.3) : .clear, radius: 10)
                 }
                 .buttonStyle(.plain)
-                .transition(.scale.combined(with: .opacity))
-            } else {
+                .disabled(!allStepsCompleted)
+                
                 Text("Complete all steps to proceed")
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.custom("Kanit Medium", size: 11))
                     .foregroundColor(.secondary.opacity(0.5))
+                    .opacity(allStepsCompleted ? 0 : 1)
             }
         }
-        .padding(.bottom, 40)
-        .frame(width: 500, height: 600)
+        .padding(.bottom, 32)
+        .frame(width: 500, height: 520)
         .background(
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))

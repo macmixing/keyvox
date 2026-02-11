@@ -26,7 +26,7 @@ class WindowManager: ObservableObject {
         }
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 600),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 520),
             styleMask: [.fullSizeContentView],
             backing: .buffered,
             defer: false
