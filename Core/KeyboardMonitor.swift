@@ -33,37 +33,6 @@ final class KeyboardMonitor: ObservableObject {
             }
         }
 
-        /// Returns true if this binding is currently pressed for the given flagsChanged event.
-        func isPressed(for event: NSEvent) -> Bool {
-            let flags = event.modifierFlags
-            
-            // Get the current CGEvent for precise left/right key detection
-            let cgEvent = CGEvent(source: nil)
-            let cgFlags = cgEvent?.flags.rawValue ?? 0
-
-            switch self {
-            case .leftOption:
-                return flags.contains(.option) && (cgFlags & 0x00000020) != 0
-                
-            case .rightOption:
-                return flags.contains(.option) && (cgFlags & 0x00000020) == 0
-                
-            case .leftCommand:
-                return flags.contains(.command) && (cgFlags & 0x00000010) == 0
-                
-            case .rightCommand:
-                return flags.contains(.command) && (cgFlags & 0x00000010) != 0
-                
-            case .leftControl:
-                return flags.contains(.control) && (cgFlags & 0x00000001) != 0
-                
-            case .rightControl:
-                return flags.contains(.control) && (cgFlags & 0x00000001) == 0
-                
-            case .function:
-                return flags.contains(.function)
-            }
-        }
     }
 
     // MARK: - Published State
@@ -86,6 +55,17 @@ final class KeyboardMonitor: ObservableObject {
 
     private var globalMonitor: Any?
     private var localMonitor: Any?
+    private var globalKeyDownMonitor: Any?
+    private var localKeyDownMonitor: Any?
+
+    // Track left/right modifier state deterministically from flagsChanged keyCodes
+    private var leftOptionDown = false
+    private var rightOptionDown = false
+    private var leftCommandDown = false
+    private var rightCommandDown = false
+    private var leftControlDown = false
+    private var rightControlDown = false
+    private var fnDown = false
 
     private static let bindingDefaultsKey = "KeyVox.TriggerBinding"
 
@@ -132,7 +112,7 @@ final class KeyboardMonitor: ObservableObject {
         }
         
         // Add global keyboard monitor for Escape key
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 { // Escape
                 self?.handleEscapeKey()
             }
@@ -144,7 +124,7 @@ final class KeyboardMonitor: ObservableObject {
             return event
         }
         
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 { // Escape
                 self?.handleEscapeKey()
             }
@@ -170,12 +150,19 @@ final class KeyboardMonitor: ObservableObject {
         if let localMonitor {
             NSEvent.removeMonitor(localMonitor)
         }
+        if let globalKeyDownMonitor {
+            NSEvent.removeMonitor(globalKeyDownMonitor)
+        }
+        if let localKeyDownMonitor {
+            NSEvent.removeMonitor(localKeyDownMonitor)
+        }
     }
 
     private func handleModifierChange(event: NSEvent) {
         lastFlagsChangedEvent = event
+        updateModifierState(from: event)
 
-        let newState = triggerBinding.isPressed(for: event)
+        let newState = isTriggerPressed()
         let newShiftState = event.modifierFlags.contains(.shift)
         
         if newState != isTriggerKeyPressed || newShiftState != isShiftPressed {
@@ -188,6 +175,60 @@ final class KeyboardMonitor: ObservableObject {
                     #endif
                 }
             }
+        }
+    }
+
+    private func updateModifierState(from event: NSEvent) {
+        let flags = event.modifierFlags
+
+        // flagsChanged provides the keyCode for the modifier that changed.
+        // We use it to deterministically track left/right state.
+        switch event.keyCode {
+        case 58: // Left Option
+            leftOptionDown = flags.contains(.option)
+        case 61: // Right Option
+            rightOptionDown = flags.contains(.option)
+        case 55: // Left Command
+            leftCommandDown = flags.contains(.command)
+        case 54: // Right Command
+            rightCommandDown = flags.contains(.command)
+        case 59: // Left Control
+            leftControlDown = flags.contains(.control)
+        case 62: // Right Control
+            rightControlDown = flags.contains(.control)
+        case 63: // Fn (Function)
+            fnDown = flags.contains(.function)
+        default:
+            break
+        }
+
+        // Safety: if the aggregate flag is not present, clear both sides.
+        if !flags.contains(.option) {
+            leftOptionDown = false
+            rightOptionDown = false
+        }
+        if !flags.contains(.command) {
+            leftCommandDown = false
+            rightCommandDown = false
+        }
+        if !flags.contains(.control) {
+            leftControlDown = false
+            rightControlDown = false
+        }
+
+        // Fn has no left/right; keep it in sync with the aggregate flag.
+        fnDown = flags.contains(.function)
+    }
+
+    private func isTriggerPressed() -> Bool {
+        switch triggerBinding {
+        case .leftOption: return leftOptionDown
+        case .rightOption: return rightOptionDown
+        case .leftCommand: return leftCommandDown
+        case .rightCommand: return rightCommandDown
+        case .leftControl: return leftControlDown
+        case .rightControl: return rightControlDown
+        case .function: return fnDown
         }
     }
 }
