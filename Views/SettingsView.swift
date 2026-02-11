@@ -89,7 +89,7 @@ struct SettingsRow<Accessory: View>: View {
 
 // MARK: - Main Settings View
 struct SettingsView: View {
-    @Environment(\.dismiss) var dismiss
+
     @ObservedObject private var downloader = ModelDownloader.shared
     @StateObject private var keyboardMonitor = KeyboardMonitor.shared
     @State private var showLegal = false
@@ -120,7 +120,6 @@ struct SettingsView: View {
                                 .labelsHidden()
                             }
                         }
-                        
                         // Section: Whisper Model
                         SettingsCard {
                             VStack(spacing: 16) {
@@ -156,6 +155,19 @@ struct SettingsView: View {
                             }
                         }
                         
+                        // Section: Sound
+                        SettingsCard {
+                            SettingsRow(
+                                icon: "speaker.wave.2.fill",
+                                title: "Play Sounds",
+                                subtitle: "Get audio feedback when recording starts and ends."
+                            ) {
+                                Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                                    .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                                    .labelsHidden()
+                            }
+                        }
+                        
                         // Section: Tips
                         tipsSection
                         
@@ -176,12 +188,14 @@ struct SettingsView: View {
             }
             .padding(.top, 32)
         }
-        .frame(width: 500, height: 480)
+        .frame(width: 500, height: 580)
         .background(
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .preferredColorScheme(.dark)
+        .ignoresSafeArea()
         .sheet(isPresented: $showLegal) {
             LegalView()
         }
@@ -191,7 +205,7 @@ struct SettingsView: View {
         HStack {
             AnimatedWaveHeader()
             Spacer()
-            Button(action: { dismiss() }) {
+            Button(action: { NSApp.keyWindow?.orderOut(nil) }) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 24))
                     .foregroundColor(.white.opacity(0.8))

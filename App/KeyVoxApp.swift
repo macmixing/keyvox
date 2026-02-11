@@ -66,8 +66,8 @@ class WindowManager: ObservableObject {
             window = existing
         } else {
             window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 500, height: 480),
-                styleMask: [.fullSizeContentView],
+                contentRect: NSRect(x: 0, y: 0, width: 500, height: 580),
+                styleMask: [.titled, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
@@ -83,7 +83,6 @@ class WindowManager: ObservableObject {
             window.level = .floating
             window.hidesOnDeactivate = true
             window.isMovableByWindowBackground = true
-            
 
             window.contentView = NSHostingView(rootView: SettingsView())
             self.settingsWindow = window

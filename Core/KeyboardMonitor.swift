@@ -39,6 +39,11 @@ final class KeyboardMonitor: ObservableObject {
 
     @Published var isTriggerKeyPressed = false
     @Published var isShiftPressed = false
+    @Published var isSoundEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isSoundEnabled, forKey: Self.soundEnabledKey)
+        }
+    }
 
     /// Expose the current binding so SwiftUI Settings can bind to it.
     @Published var triggerBinding: TriggerBinding {
@@ -68,6 +73,7 @@ final class KeyboardMonitor: ObservableObject {
     private var fnDown = false
 
     private static let bindingDefaultsKey = "KeyVox.TriggerBinding"
+    private static let soundEnabledKey = "KeyVox.IsSoundEnabled"
 
     private var lastFlagsChangedEvent: NSEvent?
 
@@ -83,6 +89,8 @@ final class KeyboardMonitor: ObservableObject {
             // Default to right option key
             self.triggerBinding = .rightOption
         }
+
+        self.isSoundEnabled = UserDefaults.standard.object(forKey: Self.soundEnabledKey) as? Bool ?? true
 
         startMonitoring()
 
