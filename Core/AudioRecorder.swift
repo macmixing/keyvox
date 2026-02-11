@@ -7,6 +7,7 @@ class AudioRecorder: NSObject, ObservableObject {
     private var inputNode: AVAudioInputNode?
     private var converter: AVAudioConverter?
     private var audioData: [Float] = []
+    private let audioDataQueue = DispatchQueue(label: "AudioRecorder.audioDataQueue")
     
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0
@@ -27,7 +28,9 @@ class AudioRecorder: NSObject, ObservableObject {
         
         // Setup converter for real-time resampling
         converter = AVAudioConverter(from: inputFormat, to: outputFormat)
-        audioData.removeAll()
+        audioDataQueue.sync {
+            audioData.removeAll()
+        }
         
         inputNode.removeTap(onBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] (buffer, time) in
@@ -46,7 +49,9 @@ class AudioRecorder: NSObject, ObservableObject {
             
             if let floatData = outputBuffer.floatChannelData {
                 let frames = Array(UnsafeBufferPointer(start: floatData[0], count: Int(outputBuffer.frameLength)))
-                self.audioData.append(contentsOf: frames)
+                self.audioDataQueue.sync {
+                    self.audioData.append(contentsOf: frames)
+                }
                 
                 // Calculate RMS for UI visualization
                 var sum: Float = 0
@@ -101,7 +106,8 @@ class AudioRecorder: NSObject, ObservableObject {
             converter = nil
             isRecording = false
             
-            let processed = removeInternalGaps(from: audioData)
+            let snapshot: [Float] = audioDataQueue.sync { audioData }
+            let processed = removeInternalGaps(from: snapshot)
             completion(processed)
         }
         
