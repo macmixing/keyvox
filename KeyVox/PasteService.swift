@@ -6,49 +6,67 @@ class PasteService {
     
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }
-        
-        // 1. Save current clipboard state (all types)
+
+        // 1. Save current clipboard state (lossless, item-based)
         let pasteboard = NSPasteboard.general
-        let savedTypes = pasteboard.types ?? []
-        var savedData: [NSPasteboard.PasteboardType: Data] = [:]
-        
-        for type in savedTypes {
-            if let data = pasteboard.data(forType: type) {
-                savedData[type] = data
+        let savedItems = pasteboard.pasteboardItems ?? []
+        let savedSnapshot: [[NSPasteboard.PasteboardType: Data]] = savedItems.map { item in
+            var dict: [NSPasteboard.PasteboardType: Data] = [:]
+            for type in item.types {
+                if let data = item.data(forType: type) {
+                    dict[type] = data
+                }
             }
+            return dict
         }
-        
-        // 2. Overwrite with new text (Required for Cmd+V fallback)
+
+        // 2. Overwrite with new text (required for Cmd+V / menu-bar Paste fallback)
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
-        
+
         print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
-        
+
         // 3. Smart Injection Strategy
         pasteQueue.async {
+            var usedMenuPasteFallback = false
+
             // A. Try Surgical Accessibility Injection first
             if self.injectTextViaAccessibility(text) {
                 print("SUCCESS: Text injected surgically via Accessibility API.")
             } else {
                 // B. Fallback to Menu Bar Paste
+                usedMenuPasteFallback = true
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
                 DispatchQueue.main.async {
                     self.pasteViaMenuBar()
                 }
             }
-            
+
             // 4. Restore original clipboard after a short delay
-            // Give the system/app time to read the new value (0.5s is usually safe)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                let pasteboard = NSPasteboard.general
-                pasteboard.clearContents()
-                
-                // Restore all saved types
-                for (type, data) in savedData {
-                    pasteboard.setData(data, forType: type)
+            // - Accessibility injection doesn't need the clipboard for long.
+            // - Menu Paste can be slower depending on the frontmost app.
+            let restoreDelay: TimeInterval = usedMenuPasteFallback ? 0.8 : 0.25
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + restoreDelay) {
+                let pb = NSPasteboard.general
+                pb.clearContents()
+
+                // Rebuild original pasteboard items (preserves files, images, RTF, etc.)
+                let itemsToWrite: [NSPasteboardItem] = savedSnapshot.map { itemDict in
+                    let newItem = NSPasteboardItem()
+                    for (type, data) in itemDict {
+                        newItem.setData(data, forType: type)
+                    }
+                    return newItem
                 }
-                
-                print("Clipboard state restored (\(savedData.count) types).")
+
+                if !itemsToWrite.isEmpty {
+                    pb.writeObjects(itemsToWrite)
+                }
+
+                // Helpful debug signal
+                let restoredCount = itemsToWrite.count
+                print("Clipboard state restored (items: \(restoredCount)).")
             }
         }
     }
