@@ -16,6 +16,7 @@ class TranscriptionManager: ObservableObject {
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
     private var targetApp: NSRunningApplication?
+    private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
     
     init() {
@@ -33,9 +34,23 @@ class TranscriptionManager: ObservableObject {
     
     private func handleTriggerKey(isPressed: Bool) {
         if isPressed {
-            startRecording()
+            if state == .idle {
+                startRecording()
+            } else if state == .recording && isLocked {
+                // If we are locked and press the key again, stop recording
+                isLocked = false
+                stopRecordingAndTranscribe()
+            }
         } else {
-            stopRecordingAndTranscribe()
+            // Key released
+            if state == .recording {
+                if keyboardMonitor.isShiftPressed {
+                    isLocked = true
+                    print("Hands-free mode LOCKED")
+                } else if !isLocked {
+                    stopRecordingAndTranscribe()
+                }
+            }
         }
     }
     
@@ -59,6 +74,7 @@ class TranscriptionManager: ObservableObject {
         
         playSound(named: "Frog") // Stop sound
         state = .transcribing
+        isLocked = false
         
         // Keep overlay visible but show transcription ripples
         OverlayManager.shared.show(recorder: audioRecorder, isTranscribing: true)

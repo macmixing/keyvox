@@ -69,6 +69,7 @@ final class KeyboardMonitor: ObservableObject {
     // MARK: - Published State
 
     @Published var isTriggerKeyPressed = false
+    @Published var isShiftPressed = false
 
     /// Expose the current binding so SwiftUI Settings can bind to it.
     @Published var triggerBinding: TriggerBinding {
@@ -153,10 +154,15 @@ final class KeyboardMonitor: ObservableObject {
         lastFlagsChangedEvent = event
 
         let newState = triggerBinding.isPressed(for: event)
-        if newState != isTriggerKeyPressed {
+        let newShiftState = event.modifierFlags.contains(.shift)
+        
+        if newState != isTriggerKeyPressed || newShiftState != isShiftPressed {
             DispatchQueue.main.async {
                 self.isTriggerKeyPressed = newState
-                print("Trigger key (\(self.triggerBinding.displayName)) state changed: \(newState)")
+                self.isShiftPressed = newShiftState
+                if newState != self.isTriggerKeyPressed {
+                    print("Trigger key (\(self.triggerBinding.displayName)) state changed: \(newState)")
+                }
             }
         }
     }
