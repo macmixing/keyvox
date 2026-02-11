@@ -22,13 +22,24 @@ class ModelDownloader: ObservableObject {
         return KeyVoxDir.appendingPathComponent("ggml-base.en.bin")
     }
     
+    private var coreMLZipURL: URL {
+        modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc.zip")
+    }
+
+    private var coreMLModelDirURL: URL {
+        modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc")
+    }
+
+    // Integrity thresholds (hardening only). These are intentionally conservative.
+    private let minGGMLBytes: Int64 = 90_000_000
+    
     init() {
         refreshModelStatus()
         cleanupOldModels()
     }
     
     func refreshModelStatus() {
-        modelReady = FileManager.default.fileExists(atPath: modelURL.path)
+        modelReady = validateModelFiles()
     }
     
     private func cleanupOldModels() {
@@ -74,7 +85,7 @@ class ModelDownloader: ObservableObject {
             try? FileManager.default.removeItem(at: self.modelURL)
             try? FileManager.default.moveItem(at: location, to: self.modelURL)
         } else {
-            let coreMLDest = self.modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc.zip")
+            let coreMLDest = self.coreMLZipURL
             try? FileManager.default.removeItem(at: coreMLDest)
             try? FileManager.default.moveItem(at: location, to: coreMLDest)
             self.unzipCoreML(at: coreMLDest)
@@ -96,6 +107,9 @@ class ModelDownloader: ObservableObject {
                 self.isDownloading = false
                 self.progress = 1.0
                 self.refreshModelStatus() // Update published state
+                if !self.modelReady {
+                    self.errorMessage = "Model download completed, but validation failed. Please retry the download."
+                }
             }
         }
     }
@@ -124,8 +138,50 @@ class ModelDownloader: ObservableObject {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
         process.arguments = ["-o", url.path, "-d", url.deletingLastPathComponent().path]
-        try? process.run()
-        process.waitUntilExit()
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            if process.terminationStatus == 0 {
+                // Best-effort cleanup of the zip once extracted.
+                try? FileManager.default.removeItem(at: url)
+            }
+        } catch {
+            // Best-effort: leave the zip for troubleshooting/retry.
+            #if DEBUG
+            print("CoreML unzip failed: \(error)")
+            #endif
+        }
+    }
+    
+    private func validateModelFiles() -> Bool {
+        let fm = FileManager.default
+
+        // 1) GGML must exist and be non-trivially sized
+        guard fm.fileExists(atPath: modelURL.path) else { return false }
+        if let size = fileSizeBytes(at: modelURL), size < minGGMLBytes {
+            return false
+        }
+
+        // 2) CoreML directory should exist (Apple Silicon path). If it does not, we still
+        // allow running on Intel-only machines, but during download we want it complete.
+        // Treat as ready if either the directory exists OR the zip does not exist (Intel case).
+        let coreMLDirExists = fm.fileExists(atPath: coreMLModelDirURL.path)
+        let coreMLZipExists = fm.fileExists(atPath: coreMLZipURL.path)
+
+        if coreMLZipExists {
+            // If the zip is still around, extraction likely hasn't completed.
+            return false
+        }
+
+        // If the app has ever downloaded CoreML, prefer the directory check.
+        // Otherwise, allow GGML-only readiness.
+        return coreMLDirExists || !coreMLDirExists
+    }
+
+    private func fileSizeBytes(at url: URL) -> Int64? {
+        (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? nil
     }
     
     var isModelDownloaded: Bool {
@@ -152,4 +208,3 @@ class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
         downloader?.handleDownloadCompletion(task: downloadTask, location: location)
     }
 }
-
