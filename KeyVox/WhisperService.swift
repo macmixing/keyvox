@@ -29,6 +29,16 @@ class WhisperService: ObservableObject {
         whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
     }
     
+    private var transcriptionTask: Task<Void, Never>?
+    
+    func cancelTranscription() {
+        transcriptionTask?.cancel()
+        transcriptionTask = nil
+        #if DEBUG
+        print("WhisperService: Transcription cancelled.")
+        #endif
+    }
+    
     func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
         guard !audioFrames.isEmpty else {
             #if DEBUG
@@ -49,9 +59,16 @@ class WhisperService: ObservableObject {
         print("Transcribing \(audioFrames.count) raw frames...")
         #endif
         
-        Task {
+        transcriptionTask = Task {
             do {
                 let segments = try await whisper?.transcribe(audioFrames: audioFrames)
+                
+                // Check if task was cancelled before proceeding
+                if Task.isCancelled {
+                    DispatchQueue.main.async { self.isTranscribing = false }
+                    return
+                }
+                
                 let text = segments?.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
                 
                 // Collapse multiple spaces into a single space
@@ -63,6 +80,11 @@ class WhisperService: ObservableObject {
                     completion(cleanedText)
                 }
             } catch {
+                if Task.isCancelled {
+                    DispatchQueue.main.async { self.isTranscribing = false }
+                    return
+                }
+                
                 #if DEBUG
                 print("Transcription error: \(error)")
                 #endif

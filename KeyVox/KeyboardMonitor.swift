@@ -130,11 +130,33 @@ final class KeyboardMonitor: ObservableObject {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handleModifierChange(event: event)
         }
+        
+        // Add global keyboard monitor for Escape key
+        NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 53 { // Escape
+                self?.handleEscapeKey()
+            }
+        }
 
         // Local monitor for when the app is focused
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handleModifierChange(event: event)
             return event
+        }
+        
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 53 { // Escape
+                self?.handleEscapeKey()
+            }
+            return event
+        }
+    }
+    
+    @Published var escapePressedSignal = false
+    
+    private func handleEscapeKey() {
+        DispatchQueue.main.async {
+            self.escapePressedSignal.toggle()
         }
     }
 

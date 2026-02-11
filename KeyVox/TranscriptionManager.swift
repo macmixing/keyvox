@@ -30,6 +30,28 @@ class TranscriptionManager: ObservableObject {
                 self?.handleTriggerKey(isPressed: isPressed)
             }
             .store(in: &cancellables)
+            
+        keyboardMonitor.$escapePressedSignal
+            .dropFirst()
+            .sink { [weak self] _ in
+                self?.abortRecording()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func abortRecording() {
+        guard state == .recording || state == .transcribing else { return }
+        
+        #if DEBUG
+        print("!! ESCAPE pressed: Aborting session !!")
+        #endif
+        
+        playSound(named: "Bottle") // Cancel sound
+        audioRecorder.stopRecording { _ in }
+        whisperService.cancelTranscription()
+        isLocked = false
+        OverlayManager.shared.hide()
+        state = .idle
     }
     
     private func handleTriggerKey(isPressed: Bool) {
