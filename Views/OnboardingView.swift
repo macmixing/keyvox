@@ -5,6 +5,7 @@ struct OnboardingView: View {
     @ObservedObject var downloader = ModelDownloader.shared
     @State private var micAuthorized: Bool = false
     @State private var accessibilityAuthorized: Bool = false
+    @State private var accessibilityPollTimer: Timer?
     
     var onComplete: () -> Void
     var openSettings: () -> Void
@@ -97,6 +98,10 @@ struct OnboardingView: View {
         .onAppear {
             checkCurrentStatus()
         }
+        .onDisappear {
+            accessibilityPollTimer?.invalidate()
+            accessibilityPollTimer = nil
+        }
         .animation(.spring(), value: allStepsCompleted)
     }
     
@@ -120,12 +125,17 @@ struct OnboardingView: View {
     private func requestAccessibilityAccess() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         AXIsProcessTrustedWithOptions(options as CFDictionary)
-        
-        // Polling loop to check if user granted it
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+
+        // Prevent stacking multiple timers
+        accessibilityPollTimer?.invalidate()
+
+        accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if AXIsProcessTrusted() {
-                self.accessibilityAuthorized = true
+                DispatchQueue.main.async {
+                    self.accessibilityAuthorized = true
+                }
                 timer.invalidate()
+                accessibilityPollTimer = nil
             }
         }
     }
