@@ -14,6 +14,8 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     private let captureQueue = DispatchQueue(label: "AudioRecorder.captureQueue")
     // Recorder contract is still mono Float32 @ 16kHz for downstream transcription.
     private let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
+    private let normalizationTargetPeak: Float = 0.9
+    private let normalizationMaxGain: Float = 3.0
 
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0
@@ -90,10 +92,12 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
 
             // Preserve stop pipeline contract:
             // 1) snapshot raw audio
-            // 2) run gap removal
-            // 3) return processed frames
+            // 2) normalize loudness
+            // 3) run gap removal
+            // 4) return processed frames
             let snapshot: [Float] = audioDataQueue.sync { audioData }
-            let processed = removeInternalGaps(from: snapshot)
+            let normalized = normalizeForTranscription(snapshot)
+            let processed = removeInternalGaps(from: normalized)
             completion(processed)
         }
 
@@ -162,9 +166,8 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
 
         let rms = sqrt(sum / Float(frames.count))
 
-        // Non-linear boost (square root) to make quiet sounds visible.
-        // RMS of 0.01 (quiet) -> 0.1 * 5.0 = 0.5 (half bar)
-        // RMS of 0.04 (normal) -> 0.2 * 5.0 = 1.0 (full bar)
+        // Visual meter scaling only. This does not modify captured audio samples.
+        // Keep boosted UI response so waveform movement remains readable.
         let level = min(max(sqrt(rms) * 5.0, 0.0), 1.0)
 
         if level > 0.15 {
@@ -191,6 +194,30 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         if existingInput.isInterleaved != inputFormat.isInterleaved { return true }
 
         return false
+    }
+
+    private func normalizeForTranscription(_ samples: [Float]) -> [Float] {
+        guard !samples.isEmpty else { return samples }
+
+        var peak: Float = 0
+        for sample in samples {
+            let magnitude = abs(sample)
+            if magnitude > peak {
+                peak = magnitude
+            }
+        }
+
+        guard peak > 0 else { return samples }
+
+        let gain = normalizationTargetPeak / peak
+        let clampedGain = min(gain, normalizationMaxGain)
+
+        // If already near target, avoid an extra pass.
+        guard abs(clampedGain - 1.0) > 0.01 else { return samples }
+
+        return samples.map { sample in
+            min(max(sample * clampedGain, -1.0), 1.0)
+        }
     }
 
     private func removeInternalGaps(from samples: [Float]) -> [Float] {
