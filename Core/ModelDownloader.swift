@@ -187,6 +187,19 @@ class ModelDownloader: ObservableObject {
     var isModelDownloaded: Bool {
         modelReady
     }
+    
+    func deleteModel() {
+        let fm = FileManager.default
+        try? fm.removeItem(at: modelURL)
+        try? fm.removeItem(at: coreMLModelDirURL)
+        try? fm.removeItem(at: coreMLZipURL)
+        
+        DispatchQueue.main.async {
+            self.refreshModelStatus()
+            self.progress = 0
+            self.errorMessage = nil
+        }
+    }
 }
 
 class DownloadDelegate: NSObject, URLSessionDownloadDelegate {

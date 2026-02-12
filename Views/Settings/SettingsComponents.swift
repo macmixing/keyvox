@@ -97,10 +97,10 @@ struct SettingsRow<Accessory: View>: View {
                     .font(.custom("Kanit Medium", size: 12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer(minLength: 20)
+            Spacer(minLength: 16)
             
             accessory
         }
