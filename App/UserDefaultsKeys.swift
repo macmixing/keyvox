@@ -6,4 +6,6 @@ enum UserDefaultsKeys {
     static let hasCompletedOnboarding = "KeyVox.HasCompletedOnboarding"
     static let triggerBinding         = "KeyVox.TriggerBinding"
     static let isSoundEnabled         = "KeyVox.IsSoundEnabled"
+    static let selectedMicrophoneUID  = "KeyVox.SelectedMicrophoneUID"
+    static let hasInitializedMicrophoneDefault = "KeyVox.HasInitializedMicrophoneDefault"
 }

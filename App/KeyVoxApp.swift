@@ -61,12 +61,17 @@ class WindowManager: ObservableObject {
     
     @MainActor
     func openSettings(centered: Bool = false) {
+        let settingsSize = NSSize(
+            width: SettingsView.preferredWindowSize.width,
+            height: SettingsView.preferredWindowSize.height
+        )
+
         let window: NSWindow
         if let existing = settingsWindow {
             window = existing
         } else {
             window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 500, height: 580),
+                contentRect: NSRect(x: 0, y: 0, width: settingsSize.width, height: settingsSize.height),
                 styleMask: [.titled, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -87,6 +92,10 @@ class WindowManager: ObservableObject {
             window.contentView = NSHostingView(rootView: SettingsView())
             self.settingsWindow = window
         }
+
+        // Always apply current settings size so changes take effect immediately,
+        // including when reusing an already-created settings window.
+        window.setContentSize(settingsSize)
         
         // Position logic - Always update position
         if centered {

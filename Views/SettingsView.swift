@@ -89,9 +89,11 @@ struct SettingsRow<Accessory: View>: View {
 
 // MARK: - Main Settings View
 struct SettingsView: View {
+    static let preferredWindowSize = CGSize(width: 500, height: 720)
 
     @ObservedObject private var downloader = ModelDownloader.shared
     @StateObject private var keyboardMonitor = KeyboardMonitor.shared
+    @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
     @State private var showLegal = false
 
     var body: some View {
@@ -101,96 +103,113 @@ struct SettingsView: View {
                 headerView
                     .offset(y: -15)
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // Section: Trigger Key
-                        SettingsCard {
-                            SettingsRow(
-                                icon: "keyboard",
-                                title: "Trigger Key",
-                                subtitle: "Hold this key to start recording. Release to transcribe."
-                            ) {
-                                Picker("", selection: $keyboardMonitor.triggerBinding) {
-                                    ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
-                                        Text(binding.displayName).tag(binding)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 140)
-                                .labelsHidden()
-                            }
-                        }
-
-                                                // Section: Sound
-                        SettingsCard {
-                            SettingsRow(
-                                icon: "speaker.wave.2.fill",
-                                title: "Play Sounds",
-                                subtitle: "Get audio feedback when recording starts and ends."
-                            ) {
-                                Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
-                                    .toggleStyle(SwitchToggleStyle(tint: .indigo))
-                                    .labelsHidden()
-                            }
-                        }
-                        
-                        // Section: Whisper Model
-                        SettingsCard {
-                            VStack(spacing: 16) {
-                                SettingsRow(
-                                    icon: "cpu",
-                                    title: "OpenAI Whisper Base",
-                                    subtitle: "Locally powered high-accuracy English model."
-                                ) {
-                                    if downloader.isModelDownloaded {
-                                        StatusBadge(title: "Ready", color: .green)
-                                    } else if downloader.isDownloading {
-                                        StatusBadge(title: "Installing", color: .yellow)
-                                    } else {
-                                        Button("Install") {
-                                            downloader.downloadBaseModel()
-                                        }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.indigo)
-                                        .controlSize(.small)
-                                    }
-                                }
-                                
-                                if downloader.isDownloading {
-                                    ModelDownloadProgress(progress: downloader.progress)
-                                        .padding(.leading, 60)
-                                }
-                                
-                                if let error = downloader.errorMessage {
-                                    Text(error)
-                                        .font(.custom("Kanit Medium", size: 10))
-                                        .foregroundColor(.red)
+                VStack(spacing: 20) {
+                    // Section: Trigger Key
+                    SettingsCard {
+                        SettingsRow(
+                            icon: "keyboard",
+                            title: "Trigger Key",
+                            subtitle: "Hold this key to start recording. Release to transcribe."
+                        ) {
+                            Picker("", selection: $keyboardMonitor.triggerBinding) {
+                                ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
+                                    Text(binding.displayName).tag(binding)
                                 }
                             }
+                            .pickerStyle(.menu)
+                            .frame(width: 140)
+                            .labelsHidden()
                         }
-                        
-                        
-                        // Section: Tips
-                        tipsSection
-                        
-                        Divider()
-                            .opacity(0.1)
-                            .padding(.horizontal, 24)
-                        
-                        Button("Legal & Licenses") {
-                            showLegal = true
-                        }
-                        .font(.custom("Kanit Medium", size: 10))
-                        .foregroundColor(.secondary.opacity(0.5))
-                        .buttonStyle(.plain)
-                        .padding(.bottom, 16)
                     }
-                    .padding(.vertical, 8)
+
+                    // Section: Microphone
+                    SettingsCard {
+                        SettingsRow(
+                            icon: "mic.fill",
+                            title: "Microphone",
+                            subtitle: microphoneSubtitle
+                        ) {
+                            Picker("", selection: $audioDeviceManager.selectedMicrophoneUID) {
+                                ForEach(audioDeviceManager.pickerMicrophones) { microphone in
+                                    Text(microphonePickerLabel(for: microphone))
+                                        .tag(microphone.id)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 220)
+                            .labelsHidden()
+                            .disabled(audioDeviceManager.pickerMicrophones.isEmpty)
+                        }
+                    }
+
+                    // Section: Sound
+                    SettingsCard {
+                        SettingsRow(
+                            icon: "speaker.wave.2.fill",
+                            title: "Play Sounds",
+                            subtitle: "Get audio feedback when recording starts and ends."
+                        ) {
+                            Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                                .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                                .labelsHidden()
+                        }
+                    }
+                    
+                    // Section: Whisper Model
+                    SettingsCard {
+                        VStack(spacing: 16) {
+                            SettingsRow(
+                                icon: "cpu",
+                                title: "OpenAI Whisper Base",
+                                subtitle: "Locally powered high-accuracy English model."
+                            ) {
+                                if downloader.isModelDownloaded {
+                                    StatusBadge(title: "Ready", color: .green)
+                                } else if downloader.isDownloading {
+                                    StatusBadge(title: "Installing", color: .yellow)
+                                } else {
+                                    Button("Install") {
+                                        downloader.downloadBaseModel()
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.indigo)
+                                    .controlSize(.small)
+                                }
+                            }
+                            
+                            if downloader.isDownloading {
+                                ModelDownloadProgress(progress: downloader.progress)
+                                    .padding(.leading, 60)
+                            }
+                            
+                            if let error = downloader.errorMessage {
+                                Text(error)
+                                    .font(.custom("Kanit Medium", size: 10))
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    
+                    // Section: Tips
+                    tipsSection
+                    
+                    Divider()
+                        .opacity(0.1)
+                        .padding(.horizontal, 24)
+                    
+                    Button("Legal & Licenses") {
+                        showLegal = true
+                    }
+                    .font(.custom("Kanit Medium", size: 10))
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 16)
                 }
+                .padding(.vertical, 8)
             }
             .padding(.top, 32)
         }
-        .frame(width: 500, height: 580)
+        .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
         .background(
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))
@@ -233,6 +252,38 @@ struct SettingsView: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 8)
+    }
+
+    private var microphoneSubtitle: String {
+        guard let selected = audioDeviceManager.selectedMicrophone else {
+            if !audioDeviceManager.selectedMicrophoneUID.isEmpty {
+                return "Selected mic is unavailable. Built-in Microphone will be used until it reconnects."
+            }
+            return "Built-in Microphone is recommended for the fastest and most reliable dictation."
+        }
+
+        switch selected.kind {
+        case .builtIn:
+            return "Built-in Microphone selected. Recommended for fastest startup and best reliability."
+        case .airPods:
+            return "AirPods selected. Bluetooth mics may start slower and reduce dictation accuracy."
+        case .bluetooth:
+            return "Bluetooth microphone selected. Startup can be slower before dictation begins."
+        case .wiredOrOther:
+            return "External microphone selected. Built-in Microphone is still recommended for best speed."
+        }
+    }
+
+    private func microphonePickerLabel(for microphone: MicrophoneOption) -> String {
+        if !microphone.isAvailable {
+            return "Previously Selected Microphone (Unavailable)"
+        }
+
+        if microphone.kind == .builtIn {
+            return "\(microphone.name) (Recommended)"
+        }
+
+        return microphone.name
     }
 }
 
@@ -278,4 +329,3 @@ struct TipItem: View {
 #Preview {
     SettingsView()
 }
-
