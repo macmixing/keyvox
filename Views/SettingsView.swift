@@ -172,7 +172,7 @@ struct SettingsView: View {
             Spacer()
             
             // Version Info
-            Text("Version 1.0.0")
+            Text("Version \(appVersion)")
                 .font(.custom("Kanit Medium", size: 10))
                 .foregroundColor(.secondary.opacity(0.5))
         }
@@ -356,14 +356,12 @@ struct SettingsView: View {
     
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Spacer().frame(height: 4)
             
             HStack(spacing: 12) {
                 TipItem(icon: "shift", text: "Shift + Release for Hands-Free")
                 TipItem(icon: "escape", text: "Esc to Cancel")
             }
         }
-        .padding(.top, 8)
     }
 
     private var microphoneSubtitle: String {
@@ -396,6 +394,12 @@ struct SettingsView: View {
         }
 
         return microphone.name
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) (\(build))"
     }
 }
 
