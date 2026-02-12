@@ -14,7 +14,6 @@ struct AnimatedWaveHeader: View {
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary)
                     .tracking(0.5)
-                    .padding(.top, -3)
             }
         }
     }
@@ -142,13 +141,14 @@ struct SettingsView: View {
                             .foregroundColor(.white.opacity(0.8))
                     }
                     .buttonStyle(.plain)
-                    .padding(.trailing, 28)
-                    .padding(.top, -8)
+                    .padding(.trailing, 20)
+                    .padding(.top, 15)
                 }
                 Spacer()
             }
         }
         .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showLegal) {
             LegalView()
@@ -159,6 +159,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             AnimatedWaveHeader()
+                .padding(.top, 35)
                 .padding(.bottom, 24)
             
             // Navigation Items
