@@ -17,6 +17,7 @@ class TranscriptionManager: ObservableObject {
     private let whisperService = WhisperService()
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
+    private let startCueLeadIn: TimeInterval = 0.18
     
     init() {
         setupBindings()
@@ -79,11 +80,16 @@ class TranscriptionManager: ObservableObject {
     
     private func startRecording() {
         guard case .idle = state else { return }
-        
+
         playSound(named: "Morse") // Start sound
-        state = .recording
-        OverlayManager.shared.show(recorder: audioRecorder)
-        audioRecorder.startRecording()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + startCueLeadIn) { [weak self] in
+            guard let self = self, self.state == .idle else { return }
+
+            self.state = .recording
+            OverlayManager.shared.show(recorder: self.audioRecorder)
+            self.audioRecorder.startRecording()
+        }
     }
     
     private var stopRequestedAt: Date?
@@ -97,7 +103,6 @@ class TranscriptionManager: ObservableObject {
         print("--- Speed Profile Start ---")
         #endif
         
-        playSound(named: "Frog") // Stop sound
         state = .transcribing
         isLocked = false
         
@@ -105,6 +110,8 @@ class TranscriptionManager: ObservableObject {
         OverlayManager.shared.show(recorder: audioRecorder, isTranscribing: true)
         
         audioRecorder.stopRecording { [weak self] frames in
+            self?.playSound(named: "Frog") // Stop sound
+
             let stopDuration = Date().timeIntervalSince(startTime)
             #if DEBUG
             print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
