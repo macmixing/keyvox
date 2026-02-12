@@ -109,6 +109,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 // MARK: - Main Settings View
 struct SettingsView: View {
     static let preferredWindowSize = CGSize(width: 800, height: 600)
+    @Environment(\.dismiss) var dismiss
 
     @ObservedObject private var downloader = ModelDownloader.shared
     @StateObject private var keyboardMonitor = KeyboardMonitor.shared
@@ -207,8 +208,13 @@ struct SettingsView: View {
     // MARK: - Settings Sections
     
     private var generalSettings: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
+            
+            Text("KEYBOARD")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
+                .padding(.leading, 4)
             
             SettingsCard {
                 SettingsRow(
@@ -233,8 +239,13 @@ struct SettingsView: View {
     }
     
     private var audioSettings: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
+            
+            Text("CUSTOMIZE")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
+                .padding(.leading, 4)
             
             SettingsCard {
                 HStack(alignment: .top, spacing: 16) {
@@ -286,8 +297,13 @@ struct SettingsView: View {
     }
     
     private var modelSettings: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
+            
+            Text("MODEL")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
+                .padding(.leading, 4)
             
             SettingsCard {
                 VStack(spacing: 16) {
@@ -326,31 +342,88 @@ struct SettingsView: View {
     }
     
     private var informationSettings: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
             
-            SettingsCard {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("KeyVox is a local first dictation tool that uses OpenAI's Whisper model to transcribe your voice into any application at the speed of thought.")
-                        .font(.custom("Kanit Medium", size: 14))
-                        .foregroundColor(.secondary)
-                        .lineSpacing(4)
+            // About Section
+            VStack(alignment: .leading, spacing: 10) {
+                Text("ABOUT")
+                    .font(.custom("Kanit Medium", size: 10))
+                    .foregroundColor(.secondary.opacity(0.6))
+                    .padding(.leading, 4)
+                
+                SettingsCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("KeyVox is a local first dictation tool that uses OpenAI's Whisper model to transcribe your voice into any application at the speed of thought.")
+                            .font(.custom("Kanit Medium", size: 14))
+                            .foregroundColor(.secondary)
+                            .lineSpacing(4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            .padding(.bottom, 12)
+            
+            // More from Developer Section
+            VStack(alignment: .leading, spacing: 10) {
+                Text("MORE FROM DEVELOPER")
+                    .font(.custom("Kanit Medium", size: 10))
+                    .foregroundColor(.secondary.opacity(0.6))
+                    .padding(.leading, 4)
+                
+                SettingsCard {
+                    HStack(spacing: 16) {
+                        Image("cueboard-logo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 44, height: 44)
+                            .cornerRadius(12)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Cueboard")
+                                .font(.custom("Kanit Medium", size: 16))
+                            Text("Cueboard is a shot list planning tool for creators who think visually. Compatible with iPhone, iPad, and Apple Silicon Mac.")
+                                .font(.custom("Kanit Medium", size: 11))
+                                .foregroundColor(.secondary)
+                                .lineSpacing(2)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            if let url = URL(string: "https://cueboard.app?utm_source=keyvox") {
+                                NSWorkspace.shared.open(url)
+                                dismiss()
+                            }
+                        }) {
+                            Text("View")
+                                .font(.custom("Kanit Medium", size: 12))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.indigo.opacity(0.2))
+                                .foregroundColor(.indigo)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(DepressedButtonStyle())
+                    }
                 }
             }
             
             HStack {
                 Button(action: { showLegal = true }) {
-                    HStack {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Image(systemName: "doc.text.fill")
+                            .font(.system(size: 12))
                         Text("Legal & Licenses")
                     }
                     .font(.custom("Kanit Medium", size: 13))
                     .foregroundColor(.indigo)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(DepressedButtonStyle())
                 .padding(.leading, 8)
                 Spacer()
             }
+            .padding(.top, 8)
         }
     }
     
@@ -436,8 +509,18 @@ struct SidebarItem: View {
                     .fill(isSelected ? Color.indigo.opacity(0.3) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DepressedButtonStyle())
         .onHover { isHovered = $0 }
+    }
+}
+
+// MARK: - Custom Button Styles
+struct DepressedButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
