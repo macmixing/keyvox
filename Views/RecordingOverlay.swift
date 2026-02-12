@@ -129,8 +129,12 @@ class OverlayManager {
     static let shared = OverlayManager()
     private var window: NSPanel?
     private var visibilityManager = OverlayVisibilityManager()
+    private var pendingHideWorkItem: DispatchWorkItem?
     
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
+        pendingHideWorkItem?.cancel()
+        pendingHideWorkItem = nil
+
         if window == nil {
             let panel = NSPanel(
                 contentRect: NSRect(x: 0, y: 0, width: isDevModeOversized ? 316 : 66, height: isDevModeOversized ? 316 : 66),
@@ -179,13 +183,18 @@ class OverlayManager {
     }
     
     func hide() {
+        pendingHideWorkItem?.cancel()
+
         // Trigger the hide animation first
         visibilityManager.isVisible = false
         visibilityManager.shouldDismiss = true
         
         // Wait for animation to complete before actually hiding the window
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        let workItem = DispatchWorkItem { [weak self] in
             self?.window?.orderOut(nil)
+            self?.pendingHideWorkItem = nil
         }
+        pendingHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
     }
 }

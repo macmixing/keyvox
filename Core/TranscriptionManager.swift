@@ -113,25 +113,27 @@ class TranscriptionManager: ObservableObject {
         print("--- Speed Profile Start ---")
         #endif
         
-        state = .transcribing
         isLocked = false
-        
-        // Keep overlay visible but show transcription ripples
-        OverlayManager.shared.show(recorder: audioRecorder, isTranscribing: true)
-        
+
         audioRecorder.stopRecording { [weak self] frames in
-            self?.playSound(named: "Frog") // Stop sound
+            guard let self = self else { return }
+            self.playSound(named: "Frog") // Stop sound
 
             let stopDuration = Date().timeIntervalSince(startTime)
             #if DEBUG
             print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
             #endif
             
-            guard let self = self, !frames.isEmpty else {
+            guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
-                self?.state = .idle
+                self.state = .idle
                 return
             }
+
+            self.state = .transcribing
+            
+            // Transition overlay to transcription ripples only when we have frames to process.
+            OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
             let transcribeStart = Date()
             self.whisperService.transcribe(audioFrames: frames) { result in
