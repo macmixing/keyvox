@@ -10,10 +10,11 @@ struct AnimatedWaveHeader: View {
                 Text("KeyVox")
                     .font(.custom("Kanit Medium", size: 24))
                     .foregroundColor(.indigo)
-                Text("flow at the speed of thought")
+                Text("Local.  Private. Fast.")
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary)
                     .tracking(0.5)
+                    .padding(.top, -3)
             }
         }
     }
@@ -39,7 +40,6 @@ struct SettingsCard<Content: View>: View {
                             .stroke(Color.white.opacity(isHovered ? 0.2 : 0.1), lineWidth: 1)
                     )
             )
-            .padding(.horizontal)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
             .onHover { isHovered = $0 }
     }
@@ -87,170 +87,282 @@ struct SettingsRow<Accessory: View>: View {
     }
 }
 
+// MARK: - Settings Tab Enum
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case general = "General"
+    case audio = "Audio"
+    case model = "AI Engine"
+    case information = "Information"
+    
+    var id: String { self.rawValue }
+    
+    var icon: String {
+        switch self {
+        case .general: return "keyboard"
+        case .audio: return "mic.fill"
+        case .model: return "cpu"
+        case .information: return "info.circle.fill"
+        }
+    }
+}
+
 // MARK: - Main Settings View
 struct SettingsView: View {
-    static let preferredWindowSize = CGSize(width: 500, height: 720)
+    static let preferredWindowSize = CGSize(width: 800, height: 600)
 
     @ObservedObject private var downloader = ModelDownloader.shared
     @StateObject private var keyboardMonitor = KeyboardMonitor.shared
     @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
+    @State private var selectedTab: SettingsTab = .general
     @State private var showLegal = false
 
     var body: some View {
         ZStack {
-            VStack(spacing: 32) {
-                // Header
-                headerView
-                    .offset(y: -15)
-                
-                VStack(spacing: 20) {
-                    // Section: Trigger Key
-                    SettingsCard {
-                        SettingsRow(
-                            icon: "keyboard",
-                            title: "Trigger Key",
-                            subtitle: "Hold this key to start recording. Release to transcribe."
-                        ) {
-                            Picker("", selection: $keyboardMonitor.triggerBinding) {
-                                ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
-                                    Text(binding.displayName).tag(binding)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .frame(width: 140)
-                            .labelsHidden()
-                        }
-                    }
-
-                    // Section: Microphone
-                    SettingsCard {
-                        SettingsRow(
-                            icon: "mic.fill",
-                            title: "Microphone",
-                            subtitle: microphoneSubtitle
-                        ) {
-                            Picker("", selection: $audioDeviceManager.selectedMicrophoneUID) {
-                                ForEach(audioDeviceManager.pickerMicrophones) { microphone in
-                                    Text(microphonePickerLabel(for: microphone))
-                                        .tag(microphone.id)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .frame(width: 220)
-                            .labelsHidden()
-                            .disabled(audioDeviceManager.pickerMicrophones.isEmpty)
-                        }
-                    }
-
-                    // Section: Sound
-                    SettingsCard {
-                        SettingsRow(
-                            icon: "speaker.wave.2.fill",
-                            title: "Play Sounds",
-                            subtitle: "Get audio feedback when recording starts and ends."
-                        ) {
-                            Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
-                                .toggleStyle(SwitchToggleStyle(tint: .indigo))
-                                .labelsHidden()
-                        }
-                    }
-                    
-                    // Section: Whisper Model
-                    SettingsCard {
-                        VStack(spacing: 16) {
-                            SettingsRow(
-                                icon: "cpu",
-                                title: "OpenAI Whisper Base",
-                                subtitle: "Locally powered high-accuracy English model."
-                            ) {
-                                if downloader.isModelDownloaded {
-                                    StatusBadge(title: "Ready", color: .green)
-                                } else if downloader.isDownloading {
-                                    StatusBadge(title: "Installing", color: .yellow)
-                                } else {
-                                    Button("Install") {
-                                        downloader.downloadBaseModel()
-                                    }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.indigo)
-                                    .controlSize(.small)
-                                }
-                            }
-                            
-                            if downloader.isDownloading {
-                                ModelDownloadProgress(progress: downloader.progress)
-                                    .padding(.leading, 60)
-                            }
-                            
-                            if let error = downloader.errorMessage {
-                                Text(error)
-                                    .font(.custom("Kanit Medium", size: 10))
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    
-                    // Section: Tips
-                    tipsSection
-                    
-                    Divider()
-                        .opacity(0.1)
-                        .padding(.horizontal, 24)
-                    
-                    Button("Legal & Licenses") {
-                        showLegal = true
-                    }
-                    .font(.custom("Kanit Medium", size: 10))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .buttonStyle(.plain)
-                    .padding(.bottom, 16)
-                }
-                .padding(.vertical, 8)
-            }
-            .padding(.top, 32)
-        }
-        .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
-        .background(
+            // Background
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .ignoresSafeArea()
+            
+            HStack(spacing: 0) {
+                // Sidebar
+                sidebarView
+                
+                // Content Area
+                contentView
+            }
+            
+            // Close Button (Fixed at top right)
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: { NSApp.keyWindow?.orderOut(nil) }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 28)
+                    .padding(.top, -8)
+                }
+                Spacer()
+            }
+        }
+        .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
         .preferredColorScheme(.dark)
-        .ignoresSafeArea()
         .sheet(isPresented: $showLegal) {
             LegalView()
         }
     }
     
-    private var headerView: some View {
-        HStack {
+    private var sidebarView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
             AnimatedWaveHeader()
-            Spacer()
-            Button(action: { NSApp.keyWindow?.orderOut(nil) }) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.white.opacity(0.8))
+                .padding(.bottom, 24)
+            
+            // Navigation Items
+            ForEach(SettingsTab.allCases) { tab in
+                SidebarItem(
+                    tab: tab,
+                    isSelected: selectedTab == tab,
+                    action: { selectedTab = tab }
+                )
             }
-            .buttonStyle(.plain)
-            .offset(y: -5)
+            
+            Spacer()
+            
+            // Version Info
+            Text("Version 1.0.0")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.5))
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 32)
+        .padding(.top, -8)
+        .padding(.bottom, 24)
+        .frame(width: 260)
+        .background(Color.white.opacity(0.02))
+    }
+    
+    private var contentView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 32) {
+                switch selectedTab {
+                case .general:
+                    generalSettings
+                case .audio:
+                    audioSettings
+                case .model:
+                    modelSettings
+                case .information:
+                    informationSettings
+                }
+            }
+            .padding(.horizontal, 40)
+            .padding(.top, 32)
+            .padding(.bottom, 40)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    
+    // MARK: - Settings Sections
+    
+    private var generalSettings: some View {
+        VStack(spacing: 20) {
+            Spacer().frame(height: 4)
+            
+            SettingsCard {
+                SettingsRow(
+                    icon: "keyboard",
+                    title: "Trigger Key",
+                    subtitle: "Hold this key to start recording. Release to transcribe."
+                ) {
+                    Picker("", selection: $keyboardMonitor.triggerBinding) {
+                        ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
+                            Text(binding.displayName).tag(binding)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 160)
+                    .labelsHidden()
+                }
+            }
+            
+            // Tips as part of General or Info
+            tipsSection
+        }
+    }
+    
+    private var audioSettings: some View {
+        VStack(spacing: 20) {
+            Spacer().frame(height: 4)
+            
+            SettingsCard {
+                HStack(alignment: .top, spacing: 16) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.indigo.opacity(0.15))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: "mic.fill")
+                            .font(.custom("Kanit Medium", size: 20))
+                            .foregroundColor(.indigo)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Microphone Input")
+                            .font(.custom("Kanit Medium", size: 17))
+                        
+                        Text(microphoneSubtitle)
+                            .font(.custom("Kanit Medium", size: 12))
+                            .foregroundColor(.secondary)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Picker("", selection: $audioDeviceManager.selectedMicrophoneUID) {
+                            ForEach(audioDeviceManager.pickerMicrophones) { microphone in
+                                Text(microphonePickerLabel(for: microphone))
+                                    .tag(microphone.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .disabled(audioDeviceManager.pickerMicrophones.isEmpty)
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            
+            SettingsCard {
+                SettingsRow(
+                    icon: "speaker.wave.2.fill",
+                    title: "System Sounds",
+                    subtitle: "Play audio feedback when recording starts and ends."
+                ) {
+                    Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                        .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                        .labelsHidden()
+                }
+            }
+        }
+    }
+    
+    private var modelSettings: some View {
+        VStack(spacing: 20) {
+            Spacer().frame(height: 4)
+            
+            SettingsCard {
+                VStack(spacing: 16) {
+                    SettingsRow(
+                        icon: "cpu",
+                        title: "OpenAI Whisper Base",
+                        subtitle: "Locally powered high-accuracy English model."
+                    ) {
+                        if downloader.isModelDownloaded {
+                            StatusBadge(title: "Ready", color: .green)
+                        } else if downloader.isDownloading {
+                            StatusBadge(title: "Installing", color: .yellow)
+                        } else {
+                            Button("Install") {
+                                downloader.downloadBaseModel()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.indigo)
+                            .controlSize(.small)
+                        }
+                    }
+                    
+                    if downloader.isDownloading {
+                        ModelDownloadProgress(progress: downloader.progress)
+                            .padding(.leading, 60)
+                    }
+                    
+                    if let error = downloader.errorMessage {
+                        Text(error)
+                            .font(.custom("Kanit Medium", size: 10))
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+        }
+    }
+    
+    private var informationSettings: some View {
+        VStack(spacing: 20) {
+            Spacer().frame(height: 4)
+            
+            SettingsCard {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("KeyVox is a local first dictation tool that uses OpenAI's Whisper model to transcribe your voice into any application at the speed of thought.")
+                        .font(.custom("Kanit Medium", size: 14))
+                        .foregroundColor(.secondary)
+                        .lineSpacing(4)
+                }
+            }
+            
+            HStack {
+                Button(action: { showLegal = true }) {
+                    HStack {
+                        Image(systemName: "doc.text.fill")
+                        Text("Legal & Licenses")
+                    }
+                    .font(.custom("Kanit Medium", size: 13))
+                    .foregroundColor(.indigo)
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 8)
+                Spacer()
+            }
+        }
     }
     
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("QUICK TIPS")
-                .font(.custom("Kanit Medium", size: 11))
-                .foregroundColor(.secondary)
-                .tracking(1)
-                .padding(.leading, 8)
+            Spacer().frame(height: 4)
             
             HStack(spacing: 12) {
                 TipItem(icon: "shift", text: "Shift + Release for Hands-Free")
                 TipItem(icon: "escape", text: "Esc to Cancel")
             }
         }
-        .padding(.horizontal, 24)
         .padding(.top, 8)
     }
 
@@ -284,6 +396,44 @@ struct SettingsView: View {
         }
 
         return microphone.name
+    }
+}
+
+// MARK: - Sidebar Supporting View
+struct SidebarItem: View {
+    let tab: SettingsTab
+    let isSelected: Bool
+    let action: () -> Void
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: tab.icon)
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                
+                Text(tab.rawValue)
+                    .font(.custom("Kanit Medium", size: 15))
+                
+                Spacer()
+                
+                if isSelected {
+                    Circle()
+                        .fill(Color.yellow)
+                        .frame(width: 6, height: 6)
+                }
+            }
+            .foregroundColor(isSelected ? .white : .secondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.indigo.opacity(0.3) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
     }
 }
 

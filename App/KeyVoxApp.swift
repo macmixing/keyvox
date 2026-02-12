@@ -60,11 +60,8 @@ class WindowManager: ObservableObject {
     }
     
     @MainActor
-    func openSettings(centered: Bool = false) {
-        let settingsSize = NSSize(
-            width: SettingsView.preferredWindowSize.width,
-            height: SettingsView.preferredWindowSize.height
-        )
+    func openSettings(centered: Bool = true) {
+        let settingsSize = SettingsView.preferredWindowSize
 
         let window: NSWindow
         if let existing = settingsWindow {
@@ -72,7 +69,7 @@ class WindowManager: ObservableObject {
         } else {
             window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: settingsSize.width, height: settingsSize.height),
-                styleMask: [.titled, .fullSizeContentView],
+                styleMask: [.titled, .fullSizeContentView, .closable],
                 backing: .buffered,
                 defer: false
             )
@@ -86,39 +83,16 @@ class WindowManager: ObservableObject {
             window.isOpaque = false
             window.hasShadow = true
             window.level = .floating
-            window.hidesOnDeactivate = true
+            window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
             window.contentView = NSHostingView(rootView: SettingsView())
             self.settingsWindow = window
         }
 
-        // Always apply current settings size so changes take effect immediately,
-        // including when reusing an already-created settings window.
         window.setContentSize(settingsSize)
         
-        // Position logic - Always update position
         if centered {
-            window.center()
-        } else if let menuBarButton = NSApp.windows.first(where: { $0.className.contains("MenuBar") })?.frame {
-            let screenFrame = NSScreen.main?.visibleFrame ?? .zero
-            let winSize = window.frame.size
-
-            // Desired position: centered under menu bar icon, flush under menu bar
-            var xPos = menuBarButton.midX - (winSize.width / 2)
-            var yPos = screenFrame.maxY - winSize.height
-
-            // Clamp to visible bounds so the window never spawns off-screen
-            let minX = screenFrame.minX
-            let maxX = screenFrame.maxX - winSize.width
-            let minY = screenFrame.minY
-            let maxY = screenFrame.maxY - winSize.height
-
-            xPos = min(max(xPos, minX), maxX)
-            yPos = min(max(yPos, minY), maxY)
-
-            window.setFrameOrigin(NSPoint(x: xPos, y: yPos))
-        } else {
             window.center()
         }
         
