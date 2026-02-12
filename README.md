@@ -77,7 +77,7 @@ KeyVox features a guided, 3-step onboarding flow that appears automatically on y
 
 ## Usage
 
-1. **Configure**: Set your preferred **Trigger Key** in Settings (Default: Left Option).
+1. **Configure**: Set your preferred **Trigger Key** in Settings (Default: ).
 2. **Standard Dictation**: Press and hold trigger → Speak → Release to paste.
 3. **Hands-Free**: Press and hold trigger → Hold **Shift** → Release trigger (Recording continues) → Press trigger again to stop.
 4. **Cancel**: Press **Esc** at any time to kill the session and discard any audio.
