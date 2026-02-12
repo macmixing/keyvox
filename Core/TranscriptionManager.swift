@@ -17,8 +17,6 @@ class TranscriptionManager: ObservableObject {
     private let whisperService = WhisperService()
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
-    private let startCueLeadIn: TimeInterval = 0.18
-    private var pendingStartWorkItem: DispatchWorkItem?
     
     init() {
         setupBindings()
@@ -66,11 +64,7 @@ class TranscriptionManager: ObservableObject {
             }
         } else {
             // Key released
-            if state == .idle {
-                // Fast tap path: cancel delayed recording start before it enters `.recording`.
-                pendingStartWorkItem?.cancel()
-                pendingStartWorkItem = nil
-            } else if state == .recording {
+            if state == .recording {
                 if keyboardMonitor.isShiftPressed {
                     isLocked = true
                     #if DEBUG
@@ -88,18 +82,9 @@ class TranscriptionManager: ObservableObject {
 
         playSound(named: "Morse") // Start sound
 
-        pendingStartWorkItem?.cancel()
-        let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
-            self.pendingStartWorkItem = nil
-            guard self.state == .idle, self.keyboardMonitor.isTriggerKeyPressed else { return }
-
-            self.state = .recording
-            OverlayManager.shared.show(recorder: self.audioRecorder)
-            self.audioRecorder.startRecording()
-        }
-        pendingStartWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + startCueLeadIn, execute: workItem)
+        state = .recording
+        OverlayManager.shared.show(recorder: audioRecorder)
+        audioRecorder.startRecording()
     }
     
     private var stopRequestedAt: Date?

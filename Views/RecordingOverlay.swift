@@ -39,12 +39,7 @@ struct RecordingOverlay: View {
         .padding(8)
         .scaleEffect(visibilityManager.isVisible ? 1.0 : 0.3)
         .opacity(visibilityManager.isVisible ? 1.0 : 0.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: visibilityManager.isVisible)
-        .onAppear {
-            withAnimation {
-                visibilityManager.isVisible = true
-            }
-        }
+        .animation(.spring(response: 0.16, dampingFraction: 0.88), value: visibilityManager.isVisible)
         .onChange(of: visibilityManager.shouldDismiss) { oldValue, newValue in
             if newValue {
                 withAnimation {
@@ -174,12 +169,8 @@ class OverlayManager {
         
         // Reset state for showing
         visibilityManager.shouldDismiss = false
+        visibilityManager.isVisible = true
         window?.orderFrontRegardless()
-        
-        // Trigger entrance animation after window is visible
-        DispatchQueue.main.async { [weak self] in
-            self?.visibilityManager.isVisible = true
-        }
     }
     
     func hide() {
