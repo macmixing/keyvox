@@ -92,13 +92,13 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
 
             // Preserve stop pipeline contract:
             // 1) snapshot raw audio
-            // 2) normalize loudness
-            // 3) run gap removal
+            // 2) run gap removal / silence rejection
+            // 3) normalize loudness
             // 4) return processed frames
             let snapshot: [Float] = audioDataQueue.sync { audioData }
-            let normalized = normalizeForTranscription(snapshot)
-            let processed = removeInternalGaps(from: normalized)
-            completion(processed)
+            let speechOnly = removeInternalGaps(from: snapshot)
+            let normalized = normalizeForTranscription(speechOnly)
+            completion(normalized)
         }
 
         guard isRecording else { return }
@@ -226,12 +226,18 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         let threshold: Float = 0.002 // Tuned: Sensitive enough for quiet speech
         let windowSize = 1600 // 100ms at 16kHz
         let paddingWindows = 8 // Tuned: 800ms padding to prevent clipping
+        let minSpeechWindows = 2
+        let minAvgSpeechRMSMultiplier: Float = 1.15
+        let shortUtterancePeakBypass: Float = 0.02
 
         let totalWindows = samples.count / windowSize
         // If recording is too short for windowing, just return it as is
         guard totalWindows > 0 else { return samples }
 
         var keepWindows = [Bool](repeating: false, count: totalWindows)
+        var speechWindowCount = 0
+        var speechRMSSum: Float = 0
+        var peak: Float = 0
 
         // Phase 1: Identify speech windows
         for w in 0..<totalWindows {
@@ -239,8 +245,19 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             let end = start + windowSize
             let window = samples[start..<end]
 
-            let rms = sqrt(window.reduce(0) { $0 + $1 * $1 } / Float(windowSize))
+            var sumSquares: Float = 0
+            for sample in window {
+                sumSquares += sample * sample
+                let magnitude = abs(sample)
+                if magnitude > peak {
+                    peak = magnitude
+                }
+            }
+            let rms = sqrt(sumSquares / Float(windowSize))
             if rms > threshold {
+                speechWindowCount += 1
+                speechRMSSum += rms
+
                 // Mark this window and padding around it
                 let lowerBound = max(0, w - paddingWindows)
                 let upperBound = min(totalWindows - 1, w + paddingWindows)
@@ -248,6 +265,27 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
                     keepWindows[i] = true
                 }
             }
+        }
+
+        // Reject mostly-silent clips so background noise doesn't get transcribed.
+        if speechWindowCount == 0 {
+            #if DEBUG
+            print("Audio processed: No speech windows above threshold.")
+            #endif
+            return []
+        }
+        let avgSpeechRMS = speechRMSSum / Float(speechWindowCount)
+        if speechWindowCount < minSpeechWindows && peak < shortUtterancePeakBypass {
+            #if DEBUG
+            print("Audio processed: Rejected low-energy short clip (speech windows: \(speechWindowCount), peak: \(peak)).")
+            #endif
+            return []
+        }
+        if avgSpeechRMS < threshold * minAvgSpeechRMSMultiplier {
+            #if DEBUG
+            print("Audio processed: Rejected low-energy clip (avgSpeechRMS: \(avgSpeechRMS), threshold: \(threshold)).")
+            #endif
+            return []
         }
 
         // Phase 2: Stitch kept windows together
