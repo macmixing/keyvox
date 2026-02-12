@@ -20,6 +20,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0
     @Published var isVisualQuiet = true
+    @Published var currentDeviceKind: MicrophoneKind = .builtIn
     private var lastSpeechTime: Date = Date.distantPast
 
     func startRecording() {
@@ -65,6 +66,9 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         captureSession = session
         captureInput = input
         captureOutput = output
+        
+        // Map current device kind for conditional logic upstream
+        currentDeviceKind = AudioDeviceManager.shared.availableMicrophones.first(where: { $0.id == device.uniqueID })?.kind ?? .builtIn
 
         // Converter is rebuilt lazily when first buffer arrives (or source format changes).
         converter = nil
@@ -82,7 +86,19 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     func stopRecording(completion: @escaping ([Float]) -> Void) {
         defer {
             captureOutput?.setSampleBufferDelegate(nil, queue: nil)
-            captureSession?.stopRunning()
+            
+            // Explicitly remove inputs/outputs before stopping to force OS to release BT profile
+            if let session = captureSession {
+                session.beginConfiguration()
+                if let input = captureInput {
+                    session.removeInput(input)
+                }
+                if let output = captureOutput {
+                    session.removeOutput(output)
+                }
+                session.commitConfiguration()
+                session.stopRunning()
+            }
 
             captureSession = nil
             captureInput = nil

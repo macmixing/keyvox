@@ -102,7 +102,16 @@ class TranscriptionManager: ObservableObject {
 
         audioRecorder.stopRecording { [weak self] frames in
             guard let self = self else { return }
-            self.playSound(named: "Frog") // Stop sound
+            
+            // Root Cause Fix: Bluetooth HFP/SCO to A2DP switching delay.
+            // NSSound cannot play into a Bluetooth Voice channel (HFP).
+            // We must wait for the hardware to renegotiate back to high-quality A2DP.
+            let isBluetooth = self.audioRecorder.currentDeviceKind == .bluetooth || self.audioRecorder.currentDeviceKind == .airPods
+            let delay: TimeInterval = isBluetooth ? 0.2 : 0.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.playSound(named: "Frog") // Stop sound
+            }
 
             let stopDuration = Date().timeIntervalSince(startTime)
             #if DEBUG
