@@ -2,114 +2,101 @@
 
 # KeyVox
 
-**KeyVox** is a high-performance macOS application that brings seamless, local voice-to-text transcription to your fingertips. Built with a focus on speed, privacy, and refined design, KeyVox allows you to dictate text into any application instantly using OpenAI's Whisper model running entirely on your machine.
-
----
+**KeyVox** is a local-first macOS dictation app. Hold a trigger key to record, release to transcribe with Whisper on-device, and insert text into the active app.
 
 ## Why KeyVox
 
-KeyVox was built as a local-first alternative to cloud-based, subscription-driven dictation tools. It focuses on instant responsiveness, privacy, and deep macOS integration rather than usage caps or online processing.
+KeyVox is built for low-latency, local transcription with deep macOS integration.
 
-- Fully local Whisper inference
-- Instant modifier-key trigger
-- Accessibility-based text injection with intelligent fallback
-- No tracking, no cloud processing, no subscriptions
+- Local Whisper inference (no cloud transcription path)
+- Global modifier-key trigger workflow
+- Accessibility-first text insertion with fallback behavior
+- Menu bar-first UX with onboarding and settings
 
 ## Features
 
 ### Performance & AI
-- **OpenAI Whisper Base (Multilingual)**: Uses the high-accuracy **Base multilingual** model locally with automatic language detection.
-- **Instant Trigger**: Hold a configurable modifier key (Option, Command, Control, or Fn) to record, release to transcribe.
-- **Universal Acceleration**: Leverages **CoreML** (Neural Engine) on Apple Silicon and **Accelerate Framework** on Intel Macs for high-performance inference.
-- **Model Pre-warming**: Eliminates "first-run" latency by keeping the model warm in memory.
-- **Local & Private**: 100% on-device processing using `whisper.cpp`. No transcription data is ever sent to the cloud.
+- **Local Whisper pipeline**: Uses `whisper.cpp` through the local `KeyVoxWhisper` package.
+- **Model artifact**: Uses `ggml-base.bin` (plus CoreML encoder assets when available).
+- **Automatic language detection**: Transcription runs with Whisper language `.auto`.
+- **Model pre-warming**: Loads model early to reduce first-transcription delay.
 
-### Premium User Experience
-- **Redesigned Settings**: A glassmorphic dashboard featuring the **Kanit Medium** font, animated wave headers, and real-time synchronized status tracking.
-- **Interactive Visuals**: An audio-reactive floating overlay with glassmorphism aesthetics and ripple animations.
-- **Smart Feedback**: Low-latency Morse-code ("Morse") and Frog ("Frog") sound feedback for non-visual status updates.
-- **Real-time Status Sync**: Coordinated model status between the Menu Bar and Settings window via a global singleton architecture.
+### Interaction
+- **Configurable trigger binding**: Left/Right Option, Command, Control, or Fn.
+- **Default trigger**: **Right Option (⌥)**.
+- **Hands-free mode**: Hold **Shift** while releasing trigger to keep recording until trigger is pressed again.
+- **Escape to cancel**: Press **Esc** during recording/transcribing to abort.
 
-### Advanced Interaction
-- **Hands-Free Mode**: Hold **Shift** while releasing your trigger key to lock recording. Press the trigger key again to stop and transcribe.
-- **Escape to Cancel**: Instantly discard any active recording or transcription session by pressing the **Esc** key.
-- **Accessibility First**: Uses the macOS Accessibility API for surgical text injection into native application fields.
-- **Intelligent Fallback**: Automatic "Menu Bar Paste" simulation for web-based editors or restricted apps.
+### Injection & Feedback
+- **Accessibility-first insertion**: Attempts direct insertion in focused controls.
+- **Fallback insertion**: Uses menu-bar Paste automation when direct insertion is unavailable.
+- **Overlay feedback**: Floating recording/transcribing overlay with persisted position.
+- **Audio cues**: Start/stop/cancel sounds (when enabled).
 
----
+### App Operations
+- **Onboarding flow**: Microphone, Accessibility, and model setup on first launch.
+- **Update checks**: Manual and timer-based update checks via `Core/Services/AppUpdateService.swift`.
+- **Warnings**: In-app warning overlays for missing model or permissions.
 
 ## Architecture
 
-KeyVox follows a modular, service-oriented architecture designed for low-latency performance:
+KeyVox is organized by responsibility:
 
-- **`TranscriptionManager`**: The central coordinator managing the state machine (IDLE → RECORDING → TRANSCRIBING).
-- **`WhisperService`**: Manages the `KeyVoxWhisper` wrapper (backed by `whisper.cpp`) for model lifecycle and inference threading.
-- **`AudioRecorder`**: Captures high-fidelity 16kHz mono audio directly into memory buffers.
-- **`PasteService`**: A sophisticated injection engine that bridges native accessibility and UI-simulated fallbacks.
-- **`KeyboardMonitor`**: A global event tap using `NSEvent.addGlobalMonitorForEvents` to catch triggers and special modifiers (Shift, Escape).
-- **`ModelDownloader`**: Shared singleton handling parallel, animated downloads of AI assets.
+- **`App/KeyVoxApp.swift`**: app entry point, menu bar scene, window lifecycle.
+- **`Core/TranscriptionManager.swift`**: central recording/transcription state machine.
+- **`Core/AudioRecorder.swift`**: 16kHz mono audio capture pipeline.
+- **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
+- **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
+- **`Core/Services/WhisperService.swift`**: model loading and local transcription.
+- **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
+- **`Core/Services/AppUpdateService.swift`**: remote version polling and prompt triggers.
+- **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
 
-### KeyVoxWhisper Wrapper (For Contributors)
-`KeyVoxWhisper` is a local Swift wrapper package in `Packages/KeyVoxWhisper` that bridges KeyVox to official `whisper.cpp` XCFramework releases.
+### KeyVoxWhisper Wrapper
+`Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.
 
-Why this exists:
-- Keeps inference integration current with active `whisper.cpp` upstream instead of relying on an unmaintained third-party wrapper.
-- Gives the app a stable, project-owned Swift API surface (`Whisper`, `WhisperParams`, `Segment`).
-- Lets us pin binary artifacts and checksums for reproducible builds.
+## Repository Structure
 
-Maintenance model:
-- Runtime transcription is fully local/offline.
-- Upstream changes are handled in one place (the wrapper package), minimizing churn in app code.
-- Dependency updates should be deliberate and tested with silence/noise regression scenarios.
+High-level layout:
 
----
+- `App/`
+- `Core/`
+- `Views/`
+- `Resources/`
+- `Packages/`
 
-## Getting Started & Onboarding
+For a detailed map of files and component responsibilities, see [`CODEMAP.md`](CODEMAP.md).
 
-### First Launch Experience
-KeyVox features a guided, 3-step onboarding flow that appears automatically on your first launch. This ensures your environment is perfectly configured for local AI processing.
-
-1.  **Welcome**: Introduction to KeyVox's local-first philosophy.
-2.  **Permissions Check**:
-    *   **Microphone**: Required to capture audio. If denied, you must enable it in *System Settings > Privacy & Security > Microphone*.
-    *   **Accessibility**: Required to inject text into other apps. Enabling this allows KeyVox to paste directly at your cursor.
-3.  **Model Download**: KeyVox automatically downloads the optimized **OpenAI Whisper Base (multilingual)** model (~142MB). This happens entirely within the onboarding window with a real-time progress bar.
+## Getting Started
 
 ### Prerequisites
-- **macOS 15.0 or later**
-- **Apple Silicon (M1/M2/M3)** recommended for best performance. Intel Macs are supported via Accelerate framework.
+- **macOS 15.6 or later**
+- Apple Silicon recommended for best performance (Intel supported)
 
 ### Installation
-1.  Clone the repository: `git clone https://github.com/macmixing/keyvox.git`
-2.  Open `KeyVox.xcodeproj` in Xcode.
-    *   The project includes a local Swift package: `Packages/KeyVoxWhisper` (wrapper for official `whisper.cpp` binaries).
-    *   Wrapper details for contributors: `Packages/KeyVoxWhisper/README.md`.
-3.  Build and Run.
-4.  Follow the **on-screen onboarding guide** to set up permissions and download the AI model.
-    *   *Note: If you skip onboarding or need to re-download the model, you can access these controls anytime from the **Settings** menu.*
-
----
+1. Clone the repository: `git clone https://github.com/macmixing/keyvox.git`
+2. Open `KeyVox.xcodeproj` in Xcode.
+3. Build and run.
+4. Complete onboarding to grant permissions and download model assets.
 
 ## Usage
 
-1. **Configure**: Set your preferred **Trigger Key** in Settings (Default: ).
-2. **Standard Dictation**: Press and hold trigger → Speak → Release to paste.
-3. **Hands-Free**: Press and hold trigger → Hold **Shift** → Release trigger (Recording continues) → Press trigger again to stop.
-4. **Cancel**: Press **Esc** at any time to kill the session and discard any audio.
-
----
+1. **Configure**: Pick your trigger key in Settings (Default: **Right Option (⌥)**).
+2. **Standard dictation**: Hold trigger -> speak -> release to transcribe and insert.
+3. **Hands-free**: Hold trigger -> hold **Shift** -> release trigger -> press trigger again to stop.
+4. **Cancel**: Press **Esc** to abort the active session.
 
 ## Troubleshooting
 
-- **"Model missing" won't clear?** Ensure you've completed the download in Settings. The menu bar status is synchronized automatically.
-- **Text not pasting?** Ensure KeyVox is enabled in *System Settings > Privacy & Security > Accessibility*.
-
----
+- **Model missing**: Open Settings and download/retry model setup.
+- **No text insertion**: Verify Accessibility permission in System Settings.
+- **No input audio**: Verify microphone permission and selected microphone in Settings.
 
 ## License
 
-This project is licensed under the MIT License.
+KeyVox uses a dual-license model:
 
----
+- **Source code** is MIT-licensed.
+- **Branding and specified visual assets** are excluded and remain proprietary.
 
-Developed with love for the macOS community.
+See [`LICENSE.md`](LICENSE.md) for exact terms and the full list of excluded files/assets.
