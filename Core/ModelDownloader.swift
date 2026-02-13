@@ -13,13 +13,15 @@ class ModelDownloader: ObservableObject {
     
     var modelURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let KeyVoxDir = appSupport.appendingPathComponent("KeyVox")
+        let modelsDir = appSupport
+            .appendingPathComponent("KeyVox")
+            .appendingPathComponent("Models")
         
-        if !FileManager.default.fileExists(atPath: KeyVoxDir.path) {
-            try? FileManager.default.createDirectory(at: KeyVoxDir, withIntermediateDirectories: true)
+        if !FileManager.default.fileExists(atPath: modelsDir.path) {
+            try? FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
         }
         
-        return KeyVoxDir.appendingPathComponent("ggml-base.en.bin")
+        return modelsDir.appendingPathComponent("ggml-base.en.bin")
     }
     
     private var coreMLZipURL: URL {
@@ -45,10 +47,12 @@ class ModelDownloader: ObservableObject {
     private func cleanupOldModels() {
         let fileManager = FileManager.default
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let KeyVoxDir = appSupport.appendingPathComponent("KeyVox")
+        let modelsDir = appSupport
+            .appendingPathComponent("KeyVox")
+            .appendingPathComponent("Models")
         
-        let tinyModel = KeyVoxDir.appendingPathComponent("ggml-tiny.en.bin")
-        let tinyCoreML = KeyVoxDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
+        let tinyModel = modelsDir.appendingPathComponent("ggml-tiny.en.bin")
+        let tinyCoreML = modelsDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
         
         try? fileManager.removeItem(at: tinyModel)
         try? fileManager.removeItem(at: tinyCoreML)

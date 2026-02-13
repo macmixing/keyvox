@@ -158,10 +158,11 @@ class WhisperService: ObservableObject {
     
     private func getModelPath() -> String? {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let KeyVoxDir = appSupport.appendingPathComponent("KeyVox")
+        let modelsDir = appSupport
+            .appendingPathComponent("KeyVox")
+            .appendingPathComponent("Models")
         
-        // Check for Base model first (Upgrade)
-        let baseModelURL = KeyVoxDir.appendingPathComponent("ggml-base.en.bin")
+        let baseModelURL = modelsDir.appendingPathComponent("ggml-base.en.bin")
         if FileManager.default.fileExists(atPath: baseModelURL.path) {
             return baseModelURL.path
         }
