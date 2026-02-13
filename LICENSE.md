@@ -23,25 +23,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ---
-## Proprietary Assets and Branding (Copyright)
+## Excluded Proprietary Assets and Branding
 
-The following specific files and assets are **EXCLUSIVE PROPERTY** of Dominic Esposito and are **EXCLUDED** from the MIT license above. They may not be used, copied, or modified for any commercial or public-facing project:
+The MIT License applies to all source code in this repository **except** for the files and assets explicitly listed below.
 
-1.  **`Resources/Assets.xcassets/`**
-    * Includes all App Icons, the KeyVox Logo, and related brand imagery.
-2.  **`Views/Components/KeyVoxLogo.swift`**
-    * The proprietary implementation of the KeyVox logo.
-3.  **`Views/RecordingOverlay.swift`**
-    * The "Audio-Reactive Wave" animation, which is a direct derivative of the KeyVox brand identity.
-4.  **`Resources/keyvox.icon/`**
-    * The proprietary app icon package and source imagery.
-5.  **`Resources/logo.png`**
-    * The standalone KeyVox logo artwork used in repository branding.
+The following files and assets are **NOT licensed under the MIT License** and remain the exclusive property of Dominic Esposito. They may not be used, copied, modified, or redistributed in any commercial or public-facing project without explicit written permission.
 
-These visual elements represent the unique brand identity of KeyVox and are being reserved for future commercial projects.
+### Excluded Files and Assets
 
-**Condition of Use:**
-You are welcome to use, study, and modify the underlying logic of the software (e.g., `WhisperService`, `KeyboardMonitor`, etc.). However, if you fork or redistribute this software, you **MUST** remove the files listed above and replace them with your own original designs. Your fork must use a unique name, icon, and visual style that cannot be reasonably confused with KeyVox.
+1. `Resources/Assets.xcassets/`  
+   Includes all App Icons, the KeyVox logo, and related brand imagery.
 
-**Trademark Notice:**
-"KeyVox", its logos, and related brand elements are reserved. This license does not grant any right to use the KeyVox name or marks in a way that suggests affiliation, endorsement, or origin.
+2. `Views/Components/KeyVoxLogo.swift`  
+   The proprietary implementation of the KeyVox logo.
+
+3. `Views/RecordingOverlay.swift`  
+   The proprietary "Audio-Reactive Wave" animation, which is a derivative of the KeyVox brand identity.
+
+4. `Resources/keyvox.icon/`  
+   The proprietary app icon package and source imagery.
+
+5. `Resources/logo.png`  
+   The standalone KeyVox logo artwork used in repository branding.
+
+These visual elements represent the unique brand identity of KeyVox and are reserved for current and future commercial use.
+
+---
+
+## Condition of Redistribution
+
+You are free to use, study, modify, and commercially distribute the MIT-licensed source code in this repository.
+
+However, if you fork or redistribute this project, you **must remove** all excluded proprietary assets listed above and replace them with your own original branding, including:
+
+- A unique application name  
+- A unique icon  
+- A distinct visual identity  
+
+Your fork may not use branding, visual elements, or design elements that could reasonably be confused with KeyVox.
+
+---
+
+## Trademark Notice
+
+"KeyVox", its logos, and related brand elements are reserved.  
+This license does not grant any rights to use the KeyVox name or marks in a manner that suggests affiliation, endorsement, or origin.
