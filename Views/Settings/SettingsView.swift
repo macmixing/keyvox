@@ -8,8 +8,12 @@ struct SettingsView: View {
     @ObservedObject internal var downloader = ModelDownloader.shared
     @StateObject internal var keyboardMonitor = KeyboardMonitor.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
-    @State internal var selectedTab: SettingsTab = .general
+    @State internal var selectedTab: SettingsTab
     @State internal var showLegal = false
+
+    init(initialTab: SettingsTab = .general) {
+        _selectedTab = State(initialValue: initialTab)
+    }
 
     var body: some View {
         ZStack {

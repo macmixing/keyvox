@@ -83,6 +83,7 @@ class TranscriptionManager: ObservableObject {
         playSound(named: "Morse") // Start sound
 
         state = .recording
+        SilenceWarningManager.shared.hide()
         OverlayManager.shared.show(recorder: audioRecorder)
         audioRecorder.startRecording()
     }
@@ -120,6 +121,9 @@ class TranscriptionManager: ObservableObject {
             
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
+                if self.audioRecorder.lastCaptureWasAbsoluteSilence {
+                    SilenceWarningManager.shared.show()
+                }
                 self.state = .idle
                 return
             }

@@ -21,6 +21,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     @Published var audioLevel: Float = 0.0
     @Published var isVisualQuiet = true
     @Published var currentDeviceKind: MicrophoneKind = .builtIn
+    @Published private(set) var lastCaptureWasAbsoluteSilence: Bool = false
     private var lastSpeechTime: Date = Date.distantPast
 
     func startRecording() {
@@ -77,6 +78,8 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             audioData.removeAll()
         }
 
+        lastCaptureWasAbsoluteSilence = false
+
         lastSpeechTime = Date.distantPast
 
         session.startRunning()
@@ -112,6 +115,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             // 3) normalize loudness
             // 4) return processed frames
             let snapshot: [Float] = audioDataQueue.sync { audioData }
+            lastCaptureWasAbsoluteSilence = isAbsoluteSilence(snapshot)
             let speechOnly = removeInternalGaps(from: snapshot)
             let normalized = normalizeForTranscription(speechOnly)
             completion(normalized)
@@ -336,5 +340,20 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             position: .unspecified
         )
         return discovery.devices
+    }
+
+    private func isAbsoluteSilence(_ samples: [Float]) -> Bool {
+        guard !samples.isEmpty else { return true }
+
+        var peak: Float = 0
+        for sample in samples {
+            let magnitude = abs(sample)
+            if magnitude > peak {
+                peak = magnitude
+            }
+        }
+
+        // Treat near-zero PCM as a muted/disabled microphone capture.
+        return peak < 0.0001
     }
 }

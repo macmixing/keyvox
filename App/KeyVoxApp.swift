@@ -60,7 +60,7 @@ class WindowManager: ObservableObject {
     }
     
     @MainActor
-    func openSettings(centered: Bool = true) {
+    func openSettings(centered: Bool = true, tab: SettingsTab = .general) {
         let settingsSize = SettingsView.preferredWindowSize
 
         let window: NSWindow
@@ -86,11 +86,12 @@ class WindowManager: ObservableObject {
             window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
-            window.contentView = NSHostingView(rootView: SettingsView())
+            window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
             self.settingsWindow = window
         }
 
         window.setContentSize(settingsSize)
+        window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
         
         if centered {
             window.center()
