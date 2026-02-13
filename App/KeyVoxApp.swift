@@ -136,7 +136,7 @@ struct KeyVoxApp: App {
         MenuBarExtra {
             StatusMenuView(
                 manager: transcriptionManager,
-                openSettings: { WindowManager.shared.openSettings() },
+                openSettings: { tab in WindowManager.shared.openSettings(tab: tab) },
                 checkForUpdates: { AppUpdateService.shared.checkForUpdatesManually() },
                 quitApp: { NSApplication.shared.terminate(nil) }
             )

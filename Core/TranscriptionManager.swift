@@ -80,6 +80,12 @@ class TranscriptionManager: ObservableObject {
     
     private func startRecording() {
         guard case .idle = state else { return }
+        ModelDownloader.shared.refreshModelStatus()
+        guard ModelDownloader.shared.isModelDownloaded else {
+            OverlayManager.shared.hide()
+            WarningManager.shared.show(.modelMissing)
+            return
+        }
         guard AXIsProcessTrusted() else {
             OverlayManager.shared.hide()
             WarningManager.shared.show(.accessibilityPermission)

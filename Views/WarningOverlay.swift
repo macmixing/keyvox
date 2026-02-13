@@ -4,6 +4,7 @@ import AppKit
 enum WarningKind {
     case microphoneSilence
     case accessibilityPermission
+    case modelMissing
 
     var iconName: String {
         switch self {
@@ -11,6 +12,8 @@ enum WarningKind {
             return "mic.slash.fill"
         case .accessibilityPermission:
             return "accessibility"
+        case .modelMissing:
+            return "cpu"
         }
     }
 
@@ -20,6 +23,8 @@ enum WarningKind {
             return "No microphone audio detected"
         case .accessibilityPermission:
             return "Accessibility access required"
+        case .modelMissing:
+            return "Model is not installed"
         }
     }
 
@@ -29,6 +34,8 @@ enum WarningKind {
             return "Your microphone may be muted. Check System Settings or switch the input device in KeyVox Settings."
         case .accessibilityPermission:
             return "KeyVox needs Accessibility access to paste dictation into other apps. Enable it in System Settings, then try again."
+        case .modelMissing:
+            return "KeyVox needs a local Whisper model before dictation can start. Open KeyVox Settings to download it."
         }
     }
 
@@ -38,6 +45,8 @@ enum WarningKind {
             return .audio
         case .accessibilityPermission:
             return .general
+        case .modelMissing:
+            return .model
         }
     }
 
@@ -47,6 +56,17 @@ enum WarningKind {
             return URL(string: "x-apple.systempreferences:com.apple.preference.sound?Input")
         case .accessibilityPermission:
             return URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+        case .modelMissing:
+            return nil
+        }
+    }
+
+    var showsKeyVoxSettingsButton: Bool {
+        switch self {
+        case .microphoneSilence, .modelMissing:
+            return true
+        case .accessibilityPermission:
+            return false
         }
     }
 }
@@ -73,7 +93,7 @@ struct WarningOverlay: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
 
-            if case .microphoneSilence = kind {
+            if kind.systemSettingsURL != nil && kind.showsKeyVoxSettingsButton {
                 HStack(spacing: 8) {
                     Button("System Settings", action: openSystemSettings)
                         .buttonStyle(.bordered)
@@ -87,9 +107,16 @@ struct WarningOverlay: View {
             } else {
                 HStack {
                     Spacer(minLength: 0)
-                    Button("System Settings", action: openSystemSettings)
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                    if kind.showsKeyVoxSettingsButton {
+                        Button("KeyVox Settings", action: openKeyVoxSettings)
+                            .buttonStyle(.borderedProminent)
+                            .tint(.indigo)
+                            .controlSize(.small)
+                    } else {
+                        Button("System Settings", action: openSystemSettings)
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                    }
                     Spacer(minLength: 0)
                 }
             }

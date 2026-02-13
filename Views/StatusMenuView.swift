@@ -9,7 +9,7 @@ struct StatusMenuView: View {
     @ObservedObject var downloader = ModelDownloader.shared
     @State private var micAuthorized: Bool = (AVCaptureDevice.authorizationStatus(for: .audio) == .authorized)
     
-    var openSettings: () -> Void
+    var openSettings: (SettingsTab) -> Void
     var checkForUpdates: () -> Void
     var quitApp: () -> Void
 
@@ -51,8 +51,8 @@ struct StatusMenuView: View {
                         if !downloader.isModelDownloaded {
                             WarningRow(icon: "cpu", title: "Model missing") {
                                 dismiss()
-                                openSettings()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                openSettings(.model)
+                                DispatchQueue.main.async {
                                     ModelDownloader.shared.downloadBaseModel()
                                 }
                             }
@@ -76,7 +76,7 @@ struct StatusMenuView: View {
                         disabled: !hasCompletedOnboarding
                     ) {
                         dismiss()
-                        openSettings()
+                        openSettings(.general)
                     }
 
                     MenuActionRow(icon: "arrow.triangle.2.circlepath", title: "Check for Updates") {
