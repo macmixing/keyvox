@@ -33,8 +33,15 @@ The following specific files and assets are **EXCLUSIVE PROPERTY** of Dominic Es
     * The proprietary implementation of the KeyVox logo.
 3.  **`Views/RecordingOverlay.swift`**
     * The "Audio-Reactive Wave" animation, which is a direct derivative of the KeyVox brand identity.
+4.  **`Resources/keyvox.icon/`**
+    * The proprietary app icon package and source imagery.
+5.  **`Resources/logo.png`**
+    * The standalone KeyVox logo artwork used in repository branding.
 
 These visual elements represent the unique brand identity of KeyVox and are being reserved for future commercial projects.
 
 **Condition of Use:**
 You are welcome to use, study, and modify the underlying logic of the software (e.g., `WhisperService`, `KeyboardMonitor`, etc.). However, if you fork or redistribute this software, you **MUST** remove the files listed above and replace them with your own original designs. Your fork must use a unique name, icon, and visual style that cannot be reasonably confused with KeyVox.
+
+**Trademark Notice:**
+"KeyVox", its logos, and related brand elements are reserved. This license does not grant any right to use the KeyVox name or marks in a way that suggests affiliation, endorsement, or origin.

@@ -54,14 +54,19 @@ extension SettingsView {
     
     The following specific assets are EXCLUSIVE PROPERTY of Dominic Esposito and are EXCLUDED from the MIT license above. They may not be used, copied, or modified for any commercial or public-facing project:
     
-    - All App Icons, the KeyVox Logo, and related brand imagery.
-    - The proprietary implementation of the KeyVox logo.
-    - The "Audio-Reactive Wave" animation, which is a direct derivative of the KeyVox brand identity.
+    - Resources/Assets.xcassets/ (all app icons, KeyVox logo, and related brand imagery)
+    - Views/Components/KeyVoxLogo.swift (proprietary logo implementation)
+    - Views/RecordingOverlay.swift (the "Audio-Reactive Wave" brand animation)
+    - Resources/keyvox.icon/ (proprietary app icon package and source imagery)
+    - Resources/logo.png (standalone KeyVox logo artwork used in repository branding)
     
     These visual elements represent the unique brand identity of KeyVox and are being reserved for future commercial projects.
     
     Condition of Use:
     You are welcome to use, study, and modify the underlying logic of the software (e.g., WhisperService, KeyboardMonitor, etc.). However, if you fork or redistribute this software, you MUST remove the proprietary assets listed above and replace them with your own original designs. Your fork must use a unique name, icon, and visual style that cannot be reasonably confused with KeyVox.
+
+    Trademark Notice:
+    "KeyVox", its logos, and related brand elements are reserved. This license does not grant any right to use the KeyVox name or marks in a way that suggests affiliation, endorsement, or origin.
     """
                             )
                             

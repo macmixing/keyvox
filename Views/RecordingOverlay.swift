@@ -1,6 +1,8 @@
 import SwiftUI
 
 // MARK: - Development Settings
+// NOTE: This file contains the proprietary "Audio-Reactive Wave" visual identity
+// referenced in LICENSE.md under Proprietary Assets and Branding.
 private let isDevModeOversized = false // Set to false for normal size
 
 struct RecordingOverlay: View {

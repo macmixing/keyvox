@@ -1,5 +1,7 @@
 import SwiftUI
 
+// NOTE: This file contains the proprietary KeyVox logo implementation
+// referenced in LICENSE.md under Proprietary Assets and Branding.
 struct KeyVoxLogo: View {
     @State private var ripplePhase: Double = 0
     var size: CGFloat = 44
