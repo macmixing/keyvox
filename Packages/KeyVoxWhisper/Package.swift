@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftWhisperCompat",
+    name: "KeyVoxWhisper",
     platforms: [
         .macOS(.v13),
     ],
     products: [
         .library(
-            name: "SwiftWhisper",
-            targets: ["SwiftWhisper"]
+            name: "KeyVoxWhisper",
+            targets: ["KeyVoxWhisper"]
         ),
     ],
     targets: [
@@ -19,9 +19,9 @@ let package = Package(
             checksum: "c7faeb328620d6012e130f3d705c51a6ea6c995605f2df50f6e1ad68c59c6c4a"
         ),
         .target(
-            name: "SwiftWhisper",
+            name: "KeyVoxWhisper",
             dependencies: ["whisper"],
-            path: "Sources/SwiftWhisper"
+            path: "Sources/KeyVoxWhisper"
         ),
     ]
 )

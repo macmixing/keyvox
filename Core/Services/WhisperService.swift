@@ -1,5 +1,5 @@
 import Foundation
-import SwiftWhisper
+import KeyVoxWhisper
 import Combine
 import AVFoundation
 

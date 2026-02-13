@@ -125,7 +125,7 @@ KeyVox/
 ## Dependencies
 
 ### External Libraries
-- **SwiftWhisper**: Whisper model inference
+- **KeyVoxWhisper**: Local wrapper around whisper.cpp for model inference
 - **Combine**: Reactive programming for state management
 - **AVFoundation**: Audio processing and capture
 - **ApplicationServices**: Accessibility API integration

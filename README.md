@@ -43,11 +43,24 @@ KeyVox was built as a local-first alternative to cloud-based, subscription-drive
 KeyVox follows a modular, service-oriented architecture designed for low-latency performance:
 
 - **`TranscriptionManager`**: The central coordinator managing the state machine (IDLE → RECORDING → TRANSCRIBING).
-- **`WhisperService`**: Manages the Whisper GGML/CoreML model lifecycle and inference threading.
+- **`WhisperService`**: Manages the `KeyVoxWhisper` wrapper (backed by `whisper.cpp`) for model lifecycle and inference threading.
 - **`AudioRecorder`**: Captures high-fidelity 16kHz mono audio directly into memory buffers.
 - **`PasteService`**: A sophisticated injection engine that bridges native accessibility and UI-simulated fallbacks.
 - **`KeyboardMonitor`**: A global event tap using `NSEvent.addGlobalMonitorForEvents` to catch triggers and special modifiers (Shift, Escape).
 - **`ModelDownloader`**: Shared singleton handling parallel, animated downloads of AI assets.
+
+### KeyVoxWhisper Wrapper (For Contributors)
+`KeyVoxWhisper` is a local Swift wrapper package in `Packages/KeyVoxWhisper` that bridges KeyVox to official `whisper.cpp` XCFramework releases.
+
+Why this exists:
+- Keeps inference integration current with active `whisper.cpp` upstream instead of relying on an unmaintained third-party wrapper.
+- Gives the app a stable, project-owned Swift API surface (`Whisper`, `WhisperParams`, `Segment`).
+- Lets us pin binary artifacts and checksums for reproducible builds.
+
+Maintenance model:
+- Runtime transcription is fully local/offline.
+- Upstream changes are handled in one place (the wrapper package), minimizing churn in app code.
+- Dependency updates should be deliberate and tested with silence/noise regression scenarios.
 
 ---
 
@@ -69,6 +82,8 @@ KeyVox features a guided, 3-step onboarding flow that appears automatically on y
 ### Installation
 1.  Clone the repository: `git clone https://github.com/macmixing/keyvox.git`
 2.  Open `KeyVox.xcodeproj` in Xcode.
+    *   The project includes a local Swift package: `Packages/KeyVoxWhisper` (wrapper for official `whisper.cpp` binaries).
+    *   Wrapper details for contributors: `Packages/KeyVoxWhisper/README.md`.
 3.  Build and Run.
 4.  Follow the **on-screen onboarding guide** to set up permissions and download the AI model.
     *   *Note: If you skip onboarding or need to re-download the model, you can access these controls anytime from the **Settings** menu.*
