@@ -6,6 +6,7 @@ class PasteService {
     
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }
+        let insertionText = applySmartLeadingSeparatorIfNeeded(to: text)
 
         // 1. Save current clipboard state (lossless, item-based)
         let pasteboard = NSPasteboard.general
@@ -22,7 +23,7 @@ class PasteService {
 
         // 2. Overwrite with new text (required for Cmd+V / menu-bar Paste fallback)
         pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        pasteboard.setString(insertionText, forType: .string)
 
         #if DEBUG
         print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
@@ -33,7 +34,7 @@ class PasteService {
             var usedMenuPasteFallback = false
 
             // A. Try Surgical Accessibility Injection first
-            if self.injectTextViaAccessibility(text) {
+            if self.injectTextViaAccessibility(insertionText) {
                 #if DEBUG
                 print("SUCCESS: Text injected surgically via Accessibility API.")
                 #endif
@@ -88,6 +89,86 @@ class PasteService {
                 #endif
             }
         }
+    }
+
+    private func applySmartLeadingSeparatorIfNeeded(to text: String) -> String {
+        guard let firstIncoming = text.first else { return text }
+        guard let context = focusedInsertionContext() else { return text }
+
+        // Replacing selected text should not auto-prefix a space.
+        guard context.selectionLength == 0 else { return text }
+        guard context.caretLocation > 0 else { return text }
+        guard let previous = context.previousCharacter else { return text }
+
+        guard shouldInsertLeadingSpace(previous: previous, firstIncoming: firstIncoming) else {
+            return text
+        }
+
+        return " " + text
+    }
+
+    private func focusedInsertionContext() -> (selectionLength: Int, caretLocation: Int, previousCharacter: Character?)? {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElementRef: CFTypeRef?
+        let focusResult = AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElementRef
+        )
+
+        guard focusResult == .success, let focusedElementRef else { return nil }
+        let focusedElement = focusedElementRef as! AXUIElement
+
+        guard let selectedRange = getSelectedRange(element: focusedElement) else { return nil }
+
+        let caretLocation = max(0, selectedRange.location)
+        let selectionLength = max(0, selectedRange.length)
+
+        guard caretLocation > 0 else {
+            return (selectionLength, caretLocation, nil)
+        }
+
+        var valueRef: CFTypeRef?
+        let valueResult = AXUIElementCopyAttributeValue(
+            focusedElement,
+            kAXValueAttribute as CFString,
+            &valueRef
+        )
+
+        guard valueResult == .success, let value = valueRef as? String else {
+            return (selectionLength, caretLocation, nil)
+        }
+
+        let nsValue = value as NSString
+        guard caretLocation <= nsValue.length else {
+            return (selectionLength, caretLocation, nil)
+        }
+
+        let previousText = nsValue.substring(with: NSRange(location: caretLocation - 1, length: 1))
+        return (selectionLength, caretLocation, previousText.first)
+    }
+
+    private func shouldInsertLeadingSpace(previous: Character, firstIncoming: Character) -> Bool {
+        if firstIncoming.isWhitespace { return false }
+        if previous.isWhitespace { return false }
+
+        // If incoming text starts with punctuation, do not prefix a space.
+        let incomingPunctuation = CharacterSet(charactersIn: ".,!?;:)]}\"'”’")
+        if firstIncoming.unicodeScalars.allSatisfy({ incomingPunctuation.contains($0) }) {
+            return false
+        }
+
+        // If we are immediately after an opening delimiter, do not prefix.
+        if "([{".contains(previous) {
+            return false
+        }
+
+        let spacingTriggerPunctuation = CharacterSet(charactersIn: ".,!?;:)]}\"'”’")
+        let previousIsWordLike = previous.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) }
+        let previousIsTriggerPunctuation = previous.unicodeScalars.contains { spacingTriggerPunctuation.contains($0) }
+
+        // Insert a separator when starting a new dictation right after a word/sentence.
+        return previousIsWordLike || previousIsTriggerPunctuation
     }
     
     
