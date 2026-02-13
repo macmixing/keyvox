@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import CoreGraphics
 
 // MARK: - Development Settings
 private let isDevModeOversized = false // Set to false for normal size
@@ -140,6 +141,12 @@ class OverlayManager {
     private var pendingHideWorkItem: DispatchWorkItem?
     private var pendingResetWorkItem: DispatchWorkItem?
     private var moveObserver: NSObjectProtocol?
+    private var screenParamsObserver: NSObjectProtocol?
+    private var isUsingFallbackDisplay: Bool = false
+    private var hasLoadedPreferredDisplayKey = false
+    private var preferredDisplayKeyCache: String?
+    private var hasLoadedOriginsByDisplay = false
+    private var originsByDisplayCache: [String: NSPoint] = [:]
     
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         pendingHideWorkItem?.cancel()
@@ -168,24 +175,25 @@ class OverlayManager {
                 visibilityManager: visibilityManager
             ))
             panel.contentView = contentView
-            
-            panel.setFrameOrigin(initialOrigin(for: panel))
             registerMoveObserverIfNeeded(for: panel)
-            
+            registerScreenParamsObserverIfNeeded(for: panel)
             window = panel
         }
-        
+
         // Always update the content view to ensure binding is fresh
         window?.contentView = NSHostingView(rootView: RecordingOverlay(
             recorder: recorder,
             isTranscribing: isTranscribing,
             visibilityManager: visibilityManager
         ))
-        
+
         // Reset state for showing
         visibilityManager.shouldDismiss = false
         visibilityManager.isVisible = true
-        window?.orderFrontRegardless()
+        if let panel = window {
+            panel.setFrameOrigin(resolvedOriginForShow(panel: panel))
+            panel.orderFrontRegardless()
+        }
     }
     
     func hide() {
@@ -211,15 +219,96 @@ class OverlayManager {
             object: panel,
             queue: .main
         ) { [weak self] _ in
-            self?.saveOrigin(panel.frame.origin)
+            self?.handlePanelMove(panel)
         }
     }
 
-    private func initialOrigin(for panel: NSPanel) -> NSPoint {
-        if let saved = loadSavedOrigin() {
-            return clampedOrigin(saved, for: panel)
+    private func registerScreenParamsObserverIfNeeded(for panel: NSPanel) {
+        guard screenParamsObserver == nil else { return }
+        screenParamsObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self, weak panel] _ in
+            guard let self, let panel else { return }
+            self.handleScreenParametersChanged(for: panel)
         }
-        return defaultOrigin(for: panel)
+    }
+
+    private func handlePanelMove(_ panel: NSPanel) {
+        let center = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
+        guard let currentScreen = screenContaining(point: center) ?? panel.screen ?? NSScreen.main ?? NSScreen.screens.first,
+              let key = displayKey(for: currentScreen) else {
+            return
+        }
+
+        saveOrigin(panel.frame.origin, for: key)
+
+        if let preferredKey = loadPreferredDisplayKey(),
+           screen(forDisplayKey: preferredKey) == nil {
+            isUsingFallbackDisplay = true
+            return
+        }
+
+        savePreferredDisplayKey(key)
+        isUsingFallbackDisplay = false
+    }
+
+    private func handleScreenParametersChanged(for panel: NSPanel) {
+        guard let preferredKey = loadPreferredDisplayKey() else {
+            if panel.isVisible { clampPanelToVisibleBounds(panel) }
+            return
+        }
+
+        if let preferredScreen = screen(forDisplayKey: preferredKey) {
+            if isUsingFallbackDisplay, panel.isVisible {
+                let origin = savedOrigin(for: preferredKey) ?? defaultOrigin(for: panel, on: preferredScreen)
+                panel.setFrameOrigin(clampedOrigin(origin, for: panel, on: preferredScreen))
+                isUsingFallbackDisplay = false
+            } else if panel.isVisible {
+                clampPanelToVisibleBounds(panel)
+            }
+            return
+        }
+
+        isUsingFallbackDisplay = true
+        if panel.isVisible {
+            clampPanelToVisibleBounds(panel)
+        }
+    }
+
+    private func clampPanelToVisibleBounds(_ panel: NSPanel) {
+        let center = NSPoint(x: panel.frame.midX, y: panel.frame.midY)
+        guard let screen = screenContaining(point: center) ?? panel.screen ?? NSScreen.main ?? NSScreen.screens.first else {
+            return
+        }
+
+        let clamped = clampedOrigin(panel.frame.origin, for: panel, on: screen)
+        if abs(clamped.x - panel.frame.origin.x) > 0.5 || abs(clamped.y - panel.frame.origin.y) > 0.5 {
+            panel.setFrameOrigin(clamped)
+        }
+    }
+
+    private func resolvedOriginForShow(panel: NSPanel) -> NSPoint {
+        let preferredKey = loadPreferredDisplayKey()
+        if let preferredKey,
+           let preferredScreen = screen(forDisplayKey: preferredKey) {
+            isUsingFallbackDisplay = false
+            let origin = savedOrigin(for: preferredKey) ?? defaultOrigin(for: panel, on: preferredScreen)
+            return clampedOrigin(origin, for: panel, on: preferredScreen)
+        }
+
+        guard let fallbackScreen = panel.screen ?? NSScreen.main ?? NSScreen.screens.first else {
+            return panel.frame.origin
+        }
+
+        isUsingFallbackDisplay = (preferredKey != nil)
+        if let fallbackKey = displayKey(for: fallbackScreen),
+           let origin = savedOrigin(for: fallbackKey) {
+            return clampedOrigin(origin, for: panel, on: fallbackScreen)
+        }
+
+        return clampedOrigin(defaultOrigin(for: panel, on: fallbackScreen), for: panel, on: fallbackScreen)
     }
 
     private func moveToDefaultPosition(_ panel: NSPanel?, animated: Bool) {
@@ -269,11 +358,13 @@ class OverlayManager {
     }
 
     private func defaultOrigin(for panel: NSPanel) -> NSPoint {
-        let screen = panel.screen ?? NSScreen.main
-        guard let screen else {
+        guard let screen = panel.screen ?? NSScreen.main ?? NSScreen.screens.first else {
             return panel.frame.origin
         }
+        return defaultOrigin(for: panel, on: screen)
+    }
 
+    private func defaultOrigin(for panel: NSPanel, on screen: NSScreen) -> NSPoint {
         let rect = screen.visibleFrame
         return NSPoint(
             x: rect.midX - (panel.frame.width / 2),
@@ -281,22 +372,85 @@ class OverlayManager {
         )
     }
 
-    private func clampedOrigin(_ origin: NSPoint, for panel: NSPanel) -> NSPoint {
-        guard let screen = panel.screen ?? NSScreen.main else { return origin }
+    private func clampedOrigin(_ origin: NSPoint, for panel: NSPanel, on screen: NSScreen) -> NSPoint {
         let visible = screen.visibleFrame
-        let maxX = visible.maxX - panel.frame.width
-        let maxY = visible.maxY - panel.frame.height
+        let maxX = max(visible.minX, visible.maxX - panel.frame.width)
+        let maxY = max(visible.minY, visible.maxY - panel.frame.height)
         return NSPoint(
             x: min(max(origin.x, visible.minX), maxX),
             y: min(max(origin.y, visible.minY), maxY)
         )
     }
 
-    private func saveOrigin(_ origin: NSPoint) {
-        UserDefaults.standard.set([origin.x, origin.y], forKey: UserDefaultsKeys.recordingOverlayOrigin)
+    private func savePreferredDisplayKey(_ key: String) {
+        preferredDisplayKeyCache = key
+        hasLoadedPreferredDisplayKey = true
+        UserDefaults.standard.set(key, forKey: UserDefaultsKeys.recordingOverlayPreferredDisplayKey)
     }
 
-    private func loadSavedOrigin() -> NSPoint? {
+    private func loadPreferredDisplayKey() -> String? {
+        if hasLoadedPreferredDisplayKey {
+            return preferredDisplayKeyCache
+        }
+        preferredDisplayKeyCache = UserDefaults.standard.string(forKey: UserDefaultsKeys.recordingOverlayPreferredDisplayKey)
+        hasLoadedPreferredDisplayKey = true
+        return preferredDisplayKeyCache
+    }
+
+    private func saveOriginsByDisplay(_ origins: [String: NSPoint]) {
+        originsByDisplayCache = origins
+        hasLoadedOriginsByDisplay = true
+        let serialized = origins.mapValues { [$0.x, $0.y] }
+        UserDefaults.standard.set(serialized, forKey: UserDefaultsKeys.recordingOverlayOriginsByDisplay)
+    }
+
+    private func loadOriginsByDisplay() -> [String: NSPoint] {
+        if hasLoadedOriginsByDisplay {
+            return originsByDisplayCache
+        }
+
+        let defaults = UserDefaults.standard
+        var origins = [String: NSPoint]()
+        if let raw = defaults.dictionary(forKey: UserDefaultsKeys.recordingOverlayOriginsByDisplay) {
+            for (key, value) in raw {
+                if let doubles = value as? [Double], doubles.count == 2 {
+                    origins[key] = NSPoint(x: doubles[0], y: doubles[1])
+                    continue
+                }
+                if let numbers = value as? [NSNumber], numbers.count == 2 {
+                    origins[key] = NSPoint(x: numbers[0].doubleValue, y: numbers[1].doubleValue)
+                }
+            }
+        }
+
+        if origins.isEmpty,
+           let legacyOrigin = loadLegacySavedOrigin(),
+           let screen = screenContaining(point: legacyOrigin) ?? NSScreen.main ?? NSScreen.screens.first,
+           let displayKey = displayKey(for: screen) {
+            origins[displayKey] = legacyOrigin
+            saveOriginsByDisplay(origins)
+            if loadPreferredDisplayKey() == nil {
+                savePreferredDisplayKey(displayKey)
+            }
+        } else {
+            originsByDisplayCache = origins
+            hasLoadedOriginsByDisplay = true
+        }
+
+        return originsByDisplayCache
+    }
+
+    private func savedOrigin(for key: String) -> NSPoint? {
+        loadOriginsByDisplay()[key]
+    }
+
+    private func saveOrigin(_ origin: NSPoint, for key: String) {
+        var origins = loadOriginsByDisplay()
+        origins[key] = origin
+        saveOriginsByDisplay(origins)
+    }
+
+    private func loadLegacySavedOrigin() -> NSPoint? {
         if let numbers = UserDefaults.standard.array(forKey: UserDefaultsKeys.recordingOverlayOrigin) as? [NSNumber],
            numbers.count == 2 {
             return NSPoint(x: numbers[0].doubleValue, y: numbers[1].doubleValue)
@@ -308,6 +462,31 @@ class OverlayManager {
         }
 
         return nil
+    }
+
+    private func displayID(for screen: NSScreen) -> CGDirectDisplayID? {
+        guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else {
+            return nil
+        }
+        return CGDirectDisplayID(number.uint32Value)
+    }
+
+    private func displayKey(for screen: NSScreen) -> String? {
+        guard let id = displayID(for: screen) else { return nil }
+        if let uuid = CGDisplayCreateUUIDFromDisplayID(id)?.takeRetainedValue() {
+            return CFUUIDCreateString(nil, uuid) as String
+        }
+        return "display-id-\(id)"
+    }
+
+    private func screen(forDisplayKey key: String) -> NSScreen? {
+        NSScreen.screens.first { screen in
+            displayKey(for: screen) == key
+        }
+    }
+
+    private func screenContaining(point: NSPoint) -> NSScreen? {
+        NSScreen.screens.first(where: { $0.visibleFrame.contains(point) }) ?? NSScreen.main
     }
 }
 
