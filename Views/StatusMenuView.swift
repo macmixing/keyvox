@@ -33,8 +33,9 @@ struct StatusMenuView: View {
                     Spacer()
                 }
                 
-                Divider()
-                    .opacity(0.1)
+                Rectangle()
+                    .fill(Color.white.opacity(0.24))
+                    .frame(height: 0.5)
                 
                 // Warnings Section (Only show after onboarding is complete)
                 if hasCompletedOnboarding && (!micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted()) {
@@ -65,8 +66,6 @@ struct StatusMenuView: View {
                         }
                     }
                     
-                    Divider()
-                        .opacity(0.1)
                 }
                 
                 // Actions
@@ -248,4 +247,3 @@ struct MenuActionRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
-
