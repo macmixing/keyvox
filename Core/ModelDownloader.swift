@@ -21,15 +21,15 @@ class ModelDownloader: ObservableObject {
             try? FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
         }
         
-        return modelsDir.appendingPathComponent("ggml-base.en.bin")
+        return modelsDir.appendingPathComponent("ggml-base.bin")
     }
     
     private var coreMLZipURL: URL {
-        modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc.zip")
+        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc.zip")
     }
 
     private var coreMLModelDirURL: URL {
-        modelURL.deletingPathExtension().appendingPathExtension("en-encoder.mlmodelc")
+        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc")
     }
 
     // Integrity thresholds (hardening only). These are intentionally conservative.
@@ -37,32 +37,17 @@ class ModelDownloader: ObservableObject {
     
     init() {
         refreshModelStatus()
-        cleanupOldModels()
     }
     
     func refreshModelStatus() {
         modelReady = validateModelFiles()
     }
     
-    private func cleanupOldModels() {
-        let fileManager = FileManager.default
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let modelsDir = appSupport
-            .appendingPathComponent("KeyVox")
-            .appendingPathComponent("Models")
-        
-        let tinyModel = modelsDir.appendingPathComponent("ggml-tiny.en.bin")
-        let tinyCoreML = modelsDir.appendingPathComponent("ggml-tiny.en-encoder.mlmodelc")
-        
-        try? fileManager.removeItem(at: tinyModel)
-        try? fileManager.removeItem(at: tinyCoreML)
-    }
-    
     func downloadBaseModel() {
         guard !isDownloading else { return }
         
-        let ggmlURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin")!
-        let coreMLURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-encoder.mlmodelc.zip")!
+        let ggmlURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin")!
+        let coreMLURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base-encoder.mlmodelc.zip")!
         
         isDownloading = true
         progress = 0
@@ -83,7 +68,7 @@ class ModelDownloader: ObservableObject {
     
     func handleDownloadCompletion(task: URLSessionDownloadTask, location: URL) {
         let urlString = task.originalRequest?.url?.absoluteString ?? ""
-        let isGGML = urlString.contains("ggml-base.en.bin")
+        let isGGML = urlString.contains("ggml-base.bin")
         
         if isGGML {
             try? FileManager.default.removeItem(at: self.modelURL)

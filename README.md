@@ -18,7 +18,7 @@ KeyVox was built as a local-first alternative to cloud-based, subscription-drive
 ## Features
 
 ### Performance & AI
-- **OpenAI Whisper Base**: Uses the high-accuracy **Base English** model locally for superior transcription compared to tiny models.
+- **OpenAI Whisper Base (Multilingual)**: Uses the high-accuracy **Base multilingual** model locally with automatic language detection.
 - **Instant Trigger**: Hold a configurable modifier key (Option, Command, Control, or Fn) to record, release to transcribe.
 - **Universal Acceleration**: Leverages **CoreML** (Neural Engine) on Apple Silicon and **Accelerate Framework** on Intel Macs for high-performance inference.
 - **Model Pre-warming**: Eliminates "first-run" latency by keeping the model warm in memory.
@@ -73,7 +73,7 @@ KeyVox features a guided, 3-step onboarding flow that appears automatically on y
 2.  **Permissions Check**:
     *   **Microphone**: Required to capture audio. If denied, you must enable it in *System Settings > Privacy & Security > Microphone*.
     *   **Accessibility**: Required to inject text into other apps. Enabling this allows KeyVox to paste directly at your cursor.
-3.  **Model Download**: KeyVox automatically downloads the optimized **OpenAI Whisper Base** model (~142MB). This happens entirely within the onboarding window with a real-time progress bar.
+3.  **Model Download**: KeyVox automatically downloads the optimized **OpenAI Whisper Base (multilingual)** model (~142MB). This happens entirely within the onboarding window with a real-time progress bar.
 
 ### Prerequisites
 - **macOS 15.0 or later**

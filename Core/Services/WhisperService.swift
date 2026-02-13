@@ -19,7 +19,7 @@ class WhisperService: ObservableObject {
         #endif
         
         let params = WhisperParams.default
-        params.language = .english
+        params.language = .auto
         params.n_threads = 4 // Optimal for M-series P-cores (prevent oversubscription)
         params.no_context = true
         params.print_timestamps = false
@@ -162,7 +162,7 @@ class WhisperService: ObservableObject {
             .appendingPathComponent("KeyVox")
             .appendingPathComponent("Models")
         
-        let baseModelURL = modelsDir.appendingPathComponent("ggml-base.en.bin")
+        let baseModelURL = modelsDir.appendingPathComponent("ggml-base.bin")
         if FileManager.default.fileExists(atPath: baseModelURL.path) {
             return baseModelURL.path
         }
