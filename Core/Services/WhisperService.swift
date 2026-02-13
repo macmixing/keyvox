@@ -21,9 +21,14 @@ class WhisperService: ObservableObject {
         let params = WhisperParams.default
         params.language = .english
         params.n_threads = 4 // Optimal for M-series P-cores (prevent oversubscription)
+        params.no_context = true
         params.print_timestamps = false
         params.suppress_blank = true
         params.suppress_non_speech_tokens = true
+        params.temperature = 0.0
+        params.temperature_inc = 0.0
+        params.no_speech_thold = 0.6
+        params.logprob_thold = -0.8
         // CoreML is automatic if the model files are present
         
         whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)

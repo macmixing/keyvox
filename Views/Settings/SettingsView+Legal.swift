@@ -66,8 +66,8 @@ extension SettingsView {
                             )
                             
                             LicenseGroup(
-                                title: "SwiftWhisper",
-                                copyright: "Copyright (c) 2023 Aaron Taylor",
+                                title: "whisper.cpp",
+                                copyright: "Copyright (c) The ggml authors",
                                 license: """
     MIT License
     

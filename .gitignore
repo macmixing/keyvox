@@ -3,3 +3,5 @@
 # Xcode user-specific files
 *.xcuserstate
 xcuserdata/
+Packages/**/.build/
+Packages/**/.swiftpm/
