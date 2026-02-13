@@ -21,18 +21,19 @@
 		8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */; };
 		8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */; };
 		8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */; };
+		8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1100012F43000100AA0001 /* OverlayManager.swift */; };
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
 		8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */; };
-			8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C92F3C51D6003BD458 /* WhisperService.swift */; };
-			8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C82F3C51D6003BD458 /* PasteService.swift */; };
-			8EBB01012F41000100BB1101 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01002F41000100BB1101 /* AppUpdateService.swift */; };
-			8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
-			8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
-			8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
-			8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
+		8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C92F3C51D6003BD458 /* WhisperService.swift */; };
+		8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C82F3C51D6003BD458 /* PasteService.swift */; };
+		8EBB01012F41000100BB1101 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01002F41000100BB1101 /* AppUpdateService.swift */; };
+		8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
+		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
+		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
+		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
 		8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8E927F6A2F3C7AA000C071B3 /* Credits.rtf */; };
 		8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */; };
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
@@ -57,6 +58,7 @@
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
+		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
@@ -68,13 +70,13 @@
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		8E927F6A2F3C7AA000C071B3 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVox.entitlements; sourceTree = "<group>"; };
-			8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
-			8EC700112F42000100C70001 /* WarningKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKind.swift; sourceTree = "<group>"; };
-			8EC700122F42000100C70001 /* WarningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningOverlayView.swift; sourceTree = "<group>"; };
-			8EC700132F42000100C70001 /* WarningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningManager.swift; sourceTree = "<group>"; };
-			8EBB01002F41000100BB1101 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
-			8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
-			8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
+		8EC700112F42000100C70001 /* WarningKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKind.swift; sourceTree = "<group>"; };
+		8EC700122F42000100C70001 /* WarningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningOverlayView.swift; sourceTree = "<group>"; };
+		8EC700132F42000100C70001 /* WarningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningManager.swift; sourceTree = "<group>"; };
+		8EBB01002F41000100BB1101 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
+		8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
+		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,12 +128,13 @@
 			isa = PBXGroup;
 			children = (
 				8E6D05CA2F3C51D6003BD458 /* Services */,
-					8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */,
-					8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
-					8EBB01002F41000100BB1101 /* AppUpdateService.swift */,
-					8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
-					8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */,
-					8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */,
+				8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */,
+				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
+				8EBB01002F41000100BB1101 /* AppUpdateService.swift */,
+				8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
+				8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */,
+				8F1100012F43000100AA0001 /* OverlayManager.swift */,
+				8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -174,12 +177,12 @@
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				8EC700212F42000100C70001 /* Warnings */,
 				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
-					8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
-					8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
-					8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
-				);
-				path = Views;
-				sourceTree = "<group>";
+				8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
+				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
+				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
 		};
 		8EE004512F3BA59900BBAB30 = {
 			isa = PBXGroup;
@@ -291,19 +294,20 @@
 				8E57FBA12F3E444B00935A26 /* SettingsView+Audio.swift in Sources */,
 				8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */,
 				8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */,
-					8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
-					8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
-					8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
-					8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
-					8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
-					8EBB01012F41000100BB1101 /* AppUpdateService.swift in Sources */,
-					8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
-					8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,
-					8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
-					8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
-					8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
-					8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
-					8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
+				8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
+				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
+				8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
+				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
+				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
+				8EBB01012F41000100BB1101 /* AppUpdateService.swift in Sources */,
+				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
+				8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */,
+				8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,
+				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
+				8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
+				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
+				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
+				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
 			);
