@@ -116,6 +116,10 @@ struct KeyVoxApp: App {
                 WindowManager.shared.showOnboarding()
             }
         }
+
+        Task { @MainActor in
+            AppUpdateService.shared.startUpdateTimer()
+        }
     }
     
     private var menuBarImage: Image {
@@ -133,6 +137,7 @@ struct KeyVoxApp: App {
             StatusMenuView(
                 manager: transcriptionManager,
                 openSettings: { WindowManager.shared.openSettings() },
+                checkForUpdates: { AppUpdateService.shared.checkForUpdatesManually() },
                 quitApp: { NSApplication.shared.terminate(nil) }
             )
         } label: {

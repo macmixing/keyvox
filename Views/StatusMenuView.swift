@@ -10,6 +10,7 @@ struct StatusMenuView: View {
     @State private var micAuthorized: Bool = (AVCaptureDevice.authorizationStatus(for: .audio) == .authorized)
     
     var openSettings: () -> Void
+    var checkForUpdates: () -> Void
     var quitApp: () -> Void
 
     var body: some View {
@@ -77,6 +78,11 @@ struct StatusMenuView: View {
                     ) {
                         dismiss()
                         openSettings()
+                    }
+
+                    MenuActionRow(icon: "arrow.triangle.2.circlepath", title: "Check for Updates") {
+                        dismiss()
+                        checkForUpdates()
                     }
                     
                     MenuActionRow(icon: "power", title: "Quit KeyVox") {
@@ -242,5 +248,4 @@ struct MenuActionRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
-
 
