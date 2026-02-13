@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import ApplicationServices
 
 class TranscriptionManager: ObservableObject {
     @Published var state: AppState = .idle
@@ -79,11 +80,16 @@ class TranscriptionManager: ObservableObject {
     
     private func startRecording() {
         guard case .idle = state else { return }
+        guard AXIsProcessTrusted() else {
+            OverlayManager.shared.hide()
+            WarningManager.shared.show(.accessibilityPermission)
+            return
+        }
 
         playSound(named: "Morse") // Start sound
 
         state = .recording
-        SilenceWarningManager.shared.hide()
+        WarningManager.shared.hide()
         OverlayManager.shared.show(recorder: audioRecorder)
         audioRecorder.startRecording()
     }
@@ -122,7 +128,7 @@ class TranscriptionManager: ObservableObject {
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
                 if self.audioRecorder.lastCaptureWasAbsoluteSilence {
-                    SilenceWarningManager.shared.show()
+                    WarningManager.shared.show(.microphoneSilence)
                 }
                 self.state = .idle
                 return
