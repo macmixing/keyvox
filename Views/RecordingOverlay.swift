@@ -82,23 +82,26 @@ struct BarView: View {
     
     var height: CGFloat {
         let minHeight: CGFloat = isDevModeOversized ? 18 : 6
+        let flatHeight: CGFloat = isDevModeOversized ? 9 : 3
         let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
-        
-        // Show ripples when quiet (low audio with slack) or transcribing
-        let shouldRipple = isVisualQuiet || isTranscribing
-        
-        if shouldRipple {
+
+        if isTranscribing {
             // Ripple animation: subtle wave traveling left to right
             let waveOffset = ripplePhase + Double(index) * 0.8
             let rippleHeight = sin(waveOffset) * 0.5 + 0.5 // Range: 0.0 to 1.0
             // Thin baseline (3px) with ripple going up to 12px
-            return (isDevModeOversized ? 9 : 3) + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
-        } else {
-            // Normal audio-reactive animation
-            let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
-            let dynamicHeight = CGFloat(value * multipliers[index]) * maxHeight
-            return max(minHeight, dynamicHeight)
+            return flatHeight + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
         }
+
+        if isVisualQuiet {
+            // During recording with no input signal, show a steady flat line.
+            return flatHeight
+        }
+
+        // Normal audio-reactive animation while recording and signal is present.
+        let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
+        let dynamicHeight = CGFloat(value * multipliers[index]) * maxHeight
+        return max(minHeight, dynamicHeight)
     }
     
     private func startRippleAnimation() {
