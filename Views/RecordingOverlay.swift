@@ -122,16 +122,18 @@ struct BarView: View {
 
 class OverlayManager {
     static let shared = OverlayManager()
-    private var window: NSPanel?
+    private var window: OverlayPanel?
     private var visibilityManager = OverlayVisibilityManager()
     private var pendingHideWorkItem: DispatchWorkItem?
+    private var pendingResetWorkItem: DispatchWorkItem?
+    private var moveObserver: NSObjectProtocol?
     
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
 
         if window == nil {
-            let panel = NSPanel(
+            let panel = OverlayPanel(
                 contentRect: NSRect(x: 0, y: 0, width: isDevModeOversized ? 316 : 66, height: isDevModeOversized ? 316 : 66),
                 styleMask: [.nonactivatingPanel, .fullSizeContentView],
                 backing: .buffered,
@@ -143,6 +145,9 @@ class OverlayManager {
             panel.backgroundColor = .clear
             panel.hasShadow = false
             panel.isMovableByWindowBackground = true
+            panel.onDoubleClick = { [weak self, weak panel] in
+                self?.moveToDefaultPosition(panel, animated: true)
+            }
             
             let contentView = NSHostingView(rootView: RecordingOverlay(
                 recorder: recorder,
@@ -151,11 +156,8 @@ class OverlayManager {
             ))
             panel.contentView = contentView
             
-            // Center on bottom of screen
-            if let screen = NSScreen.main {
-                let rect = screen.visibleFrame
-                panel.setFrameOrigin(NSPoint(x: rect.midX - (isDevModeOversized ? 158 : 33), y: rect.minY + 50))
-            }
+            panel.setFrameOrigin(initialOrigin(for: panel))
+            registerMoveObserverIfNeeded(for: panel)
             
             window = panel
         }
@@ -187,5 +189,123 @@ class OverlayManager {
         }
         pendingHideWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+    }
+
+    private func registerMoveObserverIfNeeded(for panel: NSPanel) {
+        guard moveObserver == nil else { return }
+        moveObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: panel,
+            queue: .main
+        ) { [weak self] _ in
+            self?.saveOrigin(panel.frame.origin)
+        }
+    }
+
+    private func initialOrigin(for panel: NSPanel) -> NSPoint {
+        if let saved = loadSavedOrigin() {
+            return clampedOrigin(saved, for: panel)
+        }
+        return defaultOrigin(for: panel)
+    }
+
+    private func moveToDefaultPosition(_ panel: NSPanel?, animated: Bool) {
+        guard let panel else { return }
+        let target = defaultOrigin(for: panel)
+
+        if !animated {
+            pendingResetWorkItem?.cancel()
+            pendingResetWorkItem = nil
+            panel.setFrameOrigin(target)
+            return
+        }
+
+        let current = panel.frame.origin
+        let deltaX = target.x - current.x
+        let deltaY = target.y - current.y
+        let distance = hypot(deltaX, deltaY)
+
+        // Avoid animation churn when we are effectively already at the default spot.
+        guard distance > 1 else {
+            panel.setFrameOrigin(target)
+            return
+        }
+
+        pendingResetWorkItem?.cancel()
+        // Overshoot in the same direction as travel so the return path stays natural.
+        let unitX = deltaX / distance
+        let unitY = deltaY / distance
+        let overshootDistance = min(12, max(6, distance * 0.12))
+        let overshoot = NSPoint(
+            x: target.x + unitX * overshootDistance,
+            y: target.y + unitY * overshootDistance
+        )
+        let overshootFrame = NSRect(origin: overshoot, size: panel.frame.size)
+        let targetFrame = NSRect(origin: target, size: panel.frame.size)
+
+        // Step 1: quick "buzz" overshoot toward the default anchor.
+        panel.setFrame(overshootFrame, display: true, animate: true)
+
+        // Step 2: settle back to the exact default location.
+        let settleWorkItem = DispatchWorkItem { [weak panel] in
+            guard let panel else { return }
+            panel.setFrame(targetFrame, display: true, animate: true)
+        }
+        pendingResetWorkItem = settleWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: settleWorkItem)
+    }
+
+    private func defaultOrigin(for panel: NSPanel) -> NSPoint {
+        let screen = panel.screen ?? NSScreen.main
+        guard let screen else {
+            return panel.frame.origin
+        }
+
+        let rect = screen.visibleFrame
+        return NSPoint(
+            x: rect.midX - (panel.frame.width / 2),
+            y: rect.minY + 50
+        )
+    }
+
+    private func clampedOrigin(_ origin: NSPoint, for panel: NSPanel) -> NSPoint {
+        guard let screen = panel.screen ?? NSScreen.main else { return origin }
+        let visible = screen.visibleFrame
+        let maxX = visible.maxX - panel.frame.width
+        let maxY = visible.maxY - panel.frame.height
+        return NSPoint(
+            x: min(max(origin.x, visible.minX), maxX),
+            y: min(max(origin.y, visible.minY), maxY)
+        )
+    }
+
+    private func saveOrigin(_ origin: NSPoint) {
+        UserDefaults.standard.set([origin.x, origin.y], forKey: UserDefaultsKeys.recordingOverlayOrigin)
+    }
+
+    private func loadSavedOrigin() -> NSPoint? {
+        if let numbers = UserDefaults.standard.array(forKey: UserDefaultsKeys.recordingOverlayOrigin) as? [NSNumber],
+           numbers.count == 2 {
+            return NSPoint(x: numbers[0].doubleValue, y: numbers[1].doubleValue)
+        }
+
+        if let doubles = UserDefaults.standard.array(forKey: UserDefaultsKeys.recordingOverlayOrigin) as? [Double],
+           doubles.count == 2 {
+            return NSPoint(x: doubles[0], y: doubles[1])
+        }
+
+        return nil
+    }
+}
+
+private final class OverlayPanel: NSPanel {
+    var onDoubleClick: (() -> Void)?
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .leftMouseDown, event.clickCount == 2 {
+            onDoubleClick?()
+            return
+        }
+        super.sendEvent(event)
     }
 }

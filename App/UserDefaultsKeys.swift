@@ -8,4 +8,5 @@ enum UserDefaultsKeys {
     static let isSoundEnabled         = "KeyVox.IsSoundEnabled"
     static let selectedMicrophoneUID  = "KeyVox.SelectedMicrophoneUID"
     static let hasInitializedMicrophoneDefault = "KeyVox.HasInitializedMicrophoneDefault"
+    static let recordingOverlayOrigin = "KeyVox.RecordingOverlayOrigin"
 }
