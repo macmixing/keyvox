@@ -2,6 +2,8 @@ import Foundation
 import whisper
 
 public final class Whisper {
+    private static let minimumInferenceFrameCount = 16_800
+
     private let whisperContext: OpaquePointer?
     public var params: WhisperParams
 
@@ -31,13 +33,22 @@ public final class Whisper {
             throw WhisperError.initializationFailed
         }
 
+        let framesForInference: [Float]
+        if audioFrames.count < Self.minimumInferenceFrameCount {
+            // Add a small safety margin above 1s to avoid borderline short-clip failures.
+            let paddingCount = Self.minimumInferenceFrameCount - audioFrames.count
+            framesForInference = audioFrames + Array(repeating: 0, count: paddingCount)
+        } else {
+            framesForInference = audioFrames
+        }
+
         let paramsSnapshot = params.whisperParams
 
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 var localParams = paramsSnapshot
 
-                let status = audioFrames.withUnsafeBufferPointer { buffer in
+                let status = framesForInference.withUnsafeBufferPointer { buffer in
                     whisper_full(
                         whisperContext,
                         localParams,
