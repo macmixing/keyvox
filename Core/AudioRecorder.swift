@@ -3,6 +3,12 @@ import AVFoundation
 import Combine
 import CoreMedia
 
+enum LiveInputSignalState: Equatable {
+    case dead
+    case quiet
+    case active
+}
+
 class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleBufferDelegate {
     private var captureSession: AVCaptureSession?
     private var captureInput: AVCaptureDeviceInput?
@@ -20,9 +26,15 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0
     @Published var isVisualQuiet = true
+    @Published var liveInputSignalState: LiveInputSignalState = .dead
     @Published var currentDeviceKind: MicrophoneKind = .builtIn
     @Published private(set) var lastCaptureWasAbsoluteSilence: Bool = false
-    private var lastSpeechTime: Date = Date.distantPast
+    private let deadSignalPeakThreshold: Float = 0.00012
+    private let activeSignalRMSThreshold: Float = 0.003
+    private let deadStateHoldDuration: TimeInterval = 0.35
+    private let activeStateHoldDuration: TimeInterval = 0.20
+    private var lastNonDeadSignalTime: Date = Date.distantPast
+    private var lastActiveSignalTime: Date = Date.distantPast
 
     func startRecording() {
         guard !isRecording else { return }
@@ -80,7 +92,13 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
 
         lastCaptureWasAbsoluteSilence = false
 
-        lastSpeechTime = Date.distantPast
+        lastNonDeadSignalTime = Date.distantPast
+        lastActiveSignalTime = Date.distantPast
+        DispatchQueue.main.async {
+            self.audioLevel = 0
+            self.isVisualQuiet = true
+            self.liveInputSignalState = .dead
+        }
 
         session.startRunning()
         isRecording = true
@@ -180,8 +198,13 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
 
         // Calculate RMS for UI visualization.
         var sum: Float = 0
+        var peak: Float = 0
         for frame in frames {
             sum += frame * frame
+            let magnitude = abs(frame)
+            if magnitude > peak {
+                peak = magnitude
+            }
         }
 
         let rms = sqrt(sum / Float(frames.count))
@@ -190,16 +213,26 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         // Keep boosted UI response so waveform movement remains readable.
         let level = min(max(sqrt(rms) * 5.0, 0.0), 1.0)
 
-        if level > 0.15 {
-            lastSpeechTime = Date()
+        let now = Date()
+        if peak > deadSignalPeakThreshold {
+            lastNonDeadSignalTime = now
+        }
+        if rms > activeSignalRMSThreshold {
+            lastActiveSignalTime = now
         }
 
-        let isNowQuiet = Date().timeIntervalSince(lastSpeechTime) > 0.8
+        let isDead = now.timeIntervalSince(lastNonDeadSignalTime) > deadStateHoldDuration
+        let isActive = now.timeIntervalSince(lastActiveSignalTime) <= activeStateHoldDuration
+        let signalState: LiveInputSignalState = isDead ? .dead : (isActive ? .active : .quiet)
 
         DispatchQueue.main.async {
             self.audioLevel = level
-            if self.isVisualQuiet != isNowQuiet {
-                self.isVisualQuiet = isNowQuiet
+            let isQuiet = signalState != .active
+            if self.isVisualQuiet != isQuiet {
+                self.isVisualQuiet = isQuiet
+            }
+            if self.liveInputSignalState != signalState {
+                self.liveInputSignalState = signalState
             }
         }
     }

@@ -31,7 +31,7 @@ struct RecordingOverlay: View {
                         value: Double(recorder.audioLevel),
                         index: index,
                         isTranscribing: isTranscribing,
-                        isVisualQuiet: recorder.isVisualQuiet
+                        signalState: recorder.liveInputSignalState
                     )
                 }
             }
@@ -54,7 +54,7 @@ struct BarView: View {
     var value: Double
     var index: Int
     var isTranscribing: Bool
-    var isVisualQuiet: Bool
+    var signalState: LiveInputSignalState
     
     @State private var ripplePhase: Double = 0
     @State private var rippleTimer: Timer?
@@ -93,9 +93,19 @@ struct BarView: View {
             return flatHeight + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
         }
 
-        if isVisualQuiet {
-            // During recording with no input signal, show a steady flat line.
+        if signalState == .dead {
+            // Truly silent input: hard flatline.
             return flatHeight
+        }
+
+        if signalState == .quiet {
+            // Quiet room noise: tiny "live" motion so users know the mic is hot.
+            let quietWaveOffset = (ripplePhase * 0.45) + Double(index) * 0.65
+            let quietWave = (sin(quietWaveOffset) * 0.5) + 0.5
+            let quietLevel = min(max(value / 0.14, 0), 1)
+            let subtleBaseLift: CGFloat = isDevModeOversized ? 3.2 : 1.2
+            let subtleWaveRange: CGFloat = isDevModeOversized ? 6.8 : 2.6
+            return flatHeight + (CGFloat(quietLevel) * subtleBaseLift) + (CGFloat(quietWave) * subtleWaveRange)
         }
 
         // Normal audio-reactive animation while recording and signal is present.
