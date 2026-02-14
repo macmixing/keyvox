@@ -21,6 +21,10 @@ class OverlayManager {
     private var preferredDisplayKeyCache: String?
     private var hasLoadedOriginsByDisplay = false
     private var originsByDisplayCache: [String: NSPoint] = [:]
+    // Step 2 settle tuning (overshoot return leg only).
+    private let resetSettleStartDelay: TimeInterval = 0.05
+    private let resetSettleDuration: TimeInterval = 0.10
+    private let resetSettleOverrideClearDelay: TimeInterval = 0.10
 
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         pendingHideWorkItem?.cancel()
@@ -221,15 +225,22 @@ class OverlayManager {
         let targetFrame = NSRect(origin: target, size: panel.frame.size)
 
         // Step 1: quick "buzz" overshoot toward the default anchor.
+        (panel as? OverlayPanel)?.frameAnimationDurationOverride = nil
         panel.setFrame(overshootFrame, display: true, animate: true)
 
         // Step 2: settle back to the exact default location.
         let settleWorkItem = DispatchWorkItem { [weak panel] in
             guard let panel else { return }
+            if let overlayPanel = panel as? OverlayPanel {
+                overlayPanel.frameAnimationDurationOverride = self.resetSettleDuration
+            }
             panel.setFrame(targetFrame, display: true, animate: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + self.resetSettleOverrideClearDelay) { [weak panel] in
+                (panel as? OverlayPanel)?.frameAnimationDurationOverride = nil
+            }
         }
         pendingResetWorkItem = settleWorkItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: settleWorkItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + resetSettleStartDelay, execute: settleWorkItem)
     }
 
     private func defaultOrigin(for panel: NSPanel) -> NSPoint {
@@ -367,6 +378,11 @@ class OverlayManager {
 
 private final class OverlayPanel: NSPanel {
     var onDoubleClick: (() -> Void)?
+    var frameAnimationDurationOverride: TimeInterval?
+
+    override func animationResizeTime(_ newFrame: NSRect) -> TimeInterval {
+        frameAnimationDurationOverride ?? super.animationResizeTime(newFrame)
+    }
 
     override func sendEvent(_ event: NSEvent) {
         if event.type == .leftMouseDown, event.clickCount == 2 {
