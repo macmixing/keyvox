@@ -1,0 +1,8 @@
+# Canonical dictionary entries used by quality-gate benchmarks.
+Dom Esposito
+Cueboard
+MiGo
+MiGo Platform
+KeyVox
+OpenAI Whisper
+KeyVox App

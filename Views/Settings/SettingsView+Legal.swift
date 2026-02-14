@@ -3,6 +3,22 @@ import SwiftUI
 extension SettingsView {
     struct LegalView: View {
         @Environment(\.dismiss) var dismiss
+
+        private var pronunciationLicensesText: String {
+            guard let url = Bundle.main.url(
+                forResource: "LICENSES",
+                withExtension: "md",
+                subdirectory: "Pronunciation"
+            ) else {
+                return "Pronunciation third-party attributions are bundled in Resources/Pronunciation/LICENSES.md."
+            }
+
+            guard let content = try? String(contentsOf: url, encoding: .utf8) else {
+                return "Unable to load bundled pronunciation attribution file."
+            }
+
+            return content
+        }
         
         var body: some View {
             ZStack {
@@ -136,6 +152,12 @@ extension SettingsView {
     
     The OFL allows the licensed fonts to be used, studied, modified and redistributed freely as long as they are not sold by themselves. The fonts, including any derivative works, can be bundled, embedded, redistributed and/or sold with any software provided that any reserved names are not used by derivative works. The fonts and derivatives, however, cannot be released under any other type of license. The requirement for fonts to remain under this license does not apply to any document created using the fonts or their derivatives.
     """
+                            )
+
+                            LicenseGroup(
+                                title: "Pronunciation Data (CMUdict + SCOWL)",
+                                copyright: "Third-party data attributions",
+                                license: pronunciationLicensesText
                             )
                         }
                         .padding(24)

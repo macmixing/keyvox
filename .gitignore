@@ -5,3 +5,4 @@
 xcuserdata/
 Packages/**/.build/
 Packages/**/.swiftpm/
+.tmp.pronunciation-bench.*

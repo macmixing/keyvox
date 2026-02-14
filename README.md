@@ -20,6 +20,7 @@ KeyVox is built for low-latency, local transcription with deep macOS integration
 - **Model artifact**: Uses `ggml-base.bin` (plus CoreML encoder assets when available).
 - **Automatic language detection**: Transcription runs with Whisper language `.auto`.
 - **Model pre-warming**: Loads model early to reduce first-transcription delay.
+- **Phonetic dictionary adherence**: Applies offline post-correction with bundled pronunciation data plus deterministic fallback encoding.
 
 ### Interaction
 - **Configurable trigger binding**: Left/Right Option, Command, Control, or Fn.
@@ -48,6 +49,7 @@ KeyVox is organized by responsibility:
 - **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
 - **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
+- **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
 - **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
 - **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
 - **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
@@ -69,6 +71,20 @@ KeyVox is organized by responsibility:
 
 ### KeyVoxWhisper Wrapper
 `Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.
+
+## Pronunciation Resources
+
+- Bundled pronunciation resources live in `Resources/Pronunciation/`.
+- Runtime never downloads lexicon assets; matching is fully offline.
+- Maintainers regenerate resources with `Tools/Pronunciation/build_lexicon.sh`.
+- Source snapshot pins/checksums live in `Resources/Pronunciation/sources.lock.json`.
+- Source/license attribution is tracked in `Resources/Pronunciation/LICENSES.md`.
+- License/source policy check: `Tools/Pronunciation/verify_licenses.sh`.
+- Quality gate check: `Tools/Pronunciation/benchmarks/run_quality_gates.sh`.
+- Production targets:
+  - `lexicon-v1.tsv` target: `240,000+` rows (allowed range: `240,000-450,000`).
+  - `common-words-v1.txt` range: `10,000-15,000` rows.
+  - coverage >= `95%`, correction hit-rate >= `90%` (`>=80%` if Phonetisaurus is unavailable and fallback G2P is used), false positives <= `1%`, median matcher latency <= `10ms`.
 
 ## Repository Structure
 

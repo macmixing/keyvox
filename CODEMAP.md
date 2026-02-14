@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-13**
+**Last Updated: 2026-02-14**
 
 ## Project Overview
 
@@ -9,10 +9,11 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - **App**: app entry point, window lifecycle, shared defaults keys
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
-- **Core/AI**: dictionary storage + post-transcription normalization helpers
+- **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
-- **Resources**: assets, entitlements, bundled fonts/icons
+- **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
+- **Tools**: maintainer-only scripts (resource generation, dev helpers)
 - **Packages**: local Swift package wrapping `whisper.cpp`
 
 ## Contributor Notes
@@ -35,8 +36,12 @@ KeyVox/
 │   │   └── WhisperService.swift
 │   ├── AI/
 │   │   ├── CustomVocabularyNormalizer.swift
+│   │   ├── DictionaryMatcher.swift
 │   │   ├── DictionaryEntry.swift
 │   │   ├── DictionaryStore.swift
+│   │   ├── PhoneticEncoder.swift
+│   │   ├── PronunciationLexicon.swift
+│   │   ├── ReplacementScorer.swift
 │   │   └── TranscriptionPostProcessor.swift
 │   ├── AudioDeviceManager.swift
 │   ├── AudioRecorder.swift
@@ -80,11 +85,28 @@ KeyVox/
 │           └── WhisperParams.swift
 ├── Resources/
 │   ├── Assets.xcassets/
+│   ├── Pronunciation/
+│   │   ├── LICENSES.md
+│   │   ├── common-words-v1.txt
+│   │   ├── lexicon-v1.tsv
+│   │   └── sources.lock.json
 │   ├── KeyVox.entitlements
 │   ├── Kanit-Medium.ttf
 │   ├── Credits.rtf
 │   ├── logo.png
 │   └── keyvox.icon/
+├── Tools/
+│   └── Pronunciation/
+│       ├── benchmarks/
+│       │   ├── coverage-corpus.txt
+│       │   ├── dictionary-entries.txt
+│       │   ├── evaluate_matcher.swift
+│       │   ├── positive-cases.tsv
+│       │   ├── run_quality_gates.sh
+│       │   └── safety-cases.txt
+│       ├── build_lexicon.sh
+│       ├── train_g2p.sh
+│       └── verify_licenses.sh
 ├── KeyVox.xcodeproj/
 ├── LICENSE.md
 ├── README.md
@@ -134,6 +156,28 @@ KeyVox/
 - `Core/Services/WhisperService.swift`
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
+
+### AI Post-Processing (`Core/AI`)
+
+- `Core/AI/DictionaryMatcher.swift`
+  - Performs balanced n-gram matching (1-4 tokens) against dictionary entries.
+  - Uses weighted text + phonetic + context scoring with ambiguity guardrails.
+  - Resolves overlap conflicts by highest-confidence replacement wins.
+- `Core/AI/PronunciationLexicon.swift`
+  - Loads bundled pronunciation signatures and common-word safety list from app resources.
+- `Core/AI/PhoneticEncoder.swift`
+  - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
+- `Core/AI/ReplacementScorer.swift`
+  - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
+- `Tools/Pronunciation/build_lexicon.sh`
+  - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
+  - Enforces row targets and writes `Resources/Pronunciation/sources.lock.json`.
+- `Tools/Pronunciation/train_g2p.sh`
+  - Build-time Phonetisaurus/OpenFst G2P generation for OOV pronunciation candidates.
+- `Tools/Pronunciation/verify_licenses.sh`
+  - Enforces allowed-source and attribution policy before distribution.
+- `Tools/Pronunciation/benchmarks/run_quality_gates.sh`
+  - Enforces coverage/hit-rate/false-positive/latency thresholds using benchmark fixtures.
 - `Core/Services/PasteService.swift`
   - Smart whitespace handling and robust clipboard restore.
 - `Core/Services/AppUpdateService.swift`

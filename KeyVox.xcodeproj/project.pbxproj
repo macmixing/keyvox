@@ -47,6 +47,11 @@
 		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
 		8F2202062F44010000BB2201 /* SettingsView+ModelDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */; };
 		8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */; };
+		8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301012F45010000CC3301 /* PhoneticEncoder.swift */; };
+		8F3302022F45010000CC3301 /* PronunciationLexicon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301022F45010000CC3301 /* PronunciationLexicon.swift */; };
+		8F3302032F45010000CC3301 /* DictionaryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301032F45010000CC3301 /* DictionaryMatcher.swift */; };
+		8F3302042F45010000CC3301 /* ReplacementScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301042F45010000CC3301 /* ReplacementScorer.swift */; };
+		8F3302052F45010000CC3301 /* Pronunciation in Resources */ = {isa = PBXBuildFile; fileRef = 8F3301052F45010000CC3301 /* Pronunciation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -91,6 +96,11 @@
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelDictionary.swift"; sourceTree = "<group>"; };
 		8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDeletePromptView.swift; sourceTree = "<group>"; };
+		8F3301012F45010000CC3301 /* PhoneticEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneticEncoder.swift; sourceTree = "<group>"; };
+		8F3301022F45010000CC3301 /* PronunciationLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationLexicon.swift; sourceTree = "<group>"; };
+		8F3301032F45010000CC3301 /* DictionaryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryMatcher.swift; sourceTree = "<group>"; };
+		8F3301042F45010000CC3301 /* ReplacementScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplacementScorer.swift; sourceTree = "<group>"; };
+		8F3301052F45010000CC3301 /* Pronunciation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Pronunciation; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +169,7 @@
 		8E6D05D32F3C51D6003BD458 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8F3301052F45010000CC3301 /* Pronunciation */,
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
@@ -182,8 +193,12 @@
 			isa = PBXGroup;
 			children = (
 				8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */,
+				8F3301032F45010000CC3301 /* DictionaryMatcher.swift */,
 				8F2201012F44010000BB2201 /* DictionaryEntry.swift */,
 				8F2201022F44010000BB2201 /* DictionaryStore.swift */,
+				8F3301012F45010000CC3301 /* PhoneticEncoder.swift */,
+				8F3301022F45010000CC3301 /* PronunciationLexicon.swift */,
+				8F3301042F45010000CC3301 /* ReplacementScorer.swift */,
 				8F2201042F44010000BB2201 /* TranscriptionPostProcessor.swift */,
 			);
 			path = AI;
@@ -301,6 +316,7 @@
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
+				8F3302052F45010000CC3301 /* Pronunciation in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +331,7 @@
 				8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */,
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
 				8F2202032F44010000BB2201 /* CustomVocabularyNormalizer.swift in Sources */,
+				8F3302032F45010000CC3301 /* DictionaryMatcher.swift in Sources */,
 				8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */,
 				8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */,
 				8E57FBA42F3E449000935A26 /* SettingsView.swift in Sources */,
@@ -342,6 +359,9 @@
 				8F2202022F44010000BB2201 /* DictionaryStore.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
+				8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */,
+				8F3302022F45010000CC3301 /* PronunciationLexicon.swift in Sources */,
+				8F3302042F45010000CC3301 /* ReplacementScorer.swift in Sources */,
 				8F2202042F44010000BB2201 /* TranscriptionPostProcessor.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,

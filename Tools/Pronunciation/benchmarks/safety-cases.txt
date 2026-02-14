@@ -1,0 +1,21 @@
+# Safety corpus should remain unchanged after correction.
+keyboard shortcuts improve editing speed
+we should test the app tomorrow morning
+the quick brown fox jumps over the lazy dog
+open source software depends on clear licenses
+please send the release notes to the community
+the model downloads and transcribes speech locally
+this sentence does not include custom brand words
+add the task to the project board and review it
+version control keeps collaboration safe and simple
+we fixed the typo and pushed the branch update
+audio quality matters for reliable transcription output
+users can edit dictionary entries in settings
+this benchmark protects against false replacements
+the weather today is cold and windy outside
+always validate dependencies before shipping software
+the keyboard mapping changed after system update
+the package manager resolved every build dependency
+documentation quality impacts long term maintainability
+we ran the tests and all scenarios passed
+community feedback helps prioritize improvements

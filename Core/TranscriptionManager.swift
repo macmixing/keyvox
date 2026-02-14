@@ -45,6 +45,7 @@ class TranscriptionManager: ObservableObject {
         dictionaryStore.$entries
             .sink { [weak self] _ in
                 guard let self else { return }
+                self.postProcessor.updateDictionaryEntries(self.dictionaryStore.entries)
                 let hintPrompt = self.dictionaryStore.whisperHintPrompt()
                 self.whisperService.updateDictionaryHintPrompt(hintPrompt)
             }
