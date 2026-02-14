@@ -2,8 +2,10 @@ import Cocoa
 
 class PasteService {
     static let shared = PasteService()
+    // Serialize insertion side effects (AX writes, menu fallback, clipboard restore scheduling).
     private let pasteQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive)
 
+    // Heuristic memory for consecutive dictation when AX metadata is incomplete.
     private let heuristicTTL: TimeInterval = 10
     private var lastInsertionAppIdentity: AppIdentity?
     private var lastInsertionAt: Date = .distantPast
@@ -15,7 +17,6 @@ class PasteService {
     }
 
     private struct InsertionContext {
-        let focusedElement: AXUIElement
         let selectionLength: Int?
         let caretLocation: Int?
         let previousCharacter: Character?
@@ -32,12 +33,13 @@ class PasteService {
         let textToPaste: String
     }
 
+    // MARK: - Entry Point
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }
         let insertionText = applySmartLeadingSeparatorIfNeeded(to: text)
         let targetAppIdentity = frontmostAppIdentity()
 
-        // 1. Save current clipboard state (lossless, item-based)
+        // Preserve full clipboard fidelity before writing insertion payload.
         let pasteboard = NSPasteboard.general
         let savedItems = pasteboard.pasteboardItems ?? []
         let savedSnapshot: [[NSPasteboard.PasteboardType: Data]] = savedItems.map { item in
@@ -50,7 +52,7 @@ class PasteService {
             return dict
         }
 
-        // 2. Overwrite with new text (required for Cmd+V / menu-bar Paste fallback)
+        // Menu fallback uses Cmd+V semantics, so payload must be in the clipboard.
         pasteboard.clearContents()
         pasteboard.setString(insertionText, forType: .string)
 
@@ -58,9 +60,7 @@ class PasteService {
         print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
         #endif
 
-        // 3. Smart Injection Strategy
         pasteQueue.async {
-            // A. Try Surgical Accessibility Injection first
             let injectionOutcome = self.injectTextViaAccessibility(insertionText)
             let needsMenuPasteFallback: Bool
             let didAccessibilityInsertText: Bool
@@ -80,7 +80,7 @@ class PasteService {
                 didAccessibilityInsertText = false
             }
 
-            var didMenuPasteSucceed = false
+            var didMenuFallbackInsert = false
             if needsMenuPasteFallback {
                 #if DEBUG
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
@@ -104,27 +104,25 @@ class PasteService {
                 }
 
                 if textForMenuPaste.isEmpty {
-                    didMenuPasteSucceed = didTypeLeadingSpaces
+                    didMenuFallbackInsert = didTypeLeadingSpaces
                 } else {
                     let didPaste = self.pasteViaMenuBarOnMainThread()
-                    didMenuPasteSucceed = didPaste || didTypeLeadingSpaces
+                    didMenuFallbackInsert = didPaste || didTypeLeadingSpaces
                 }
             }
 
-            if didAccessibilityInsertText || didMenuPasteSucceed {
+            if didAccessibilityInsertText || didMenuFallbackInsert {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
-            // 4. Restore original clipboard after a short delay
-            // - Accessibility injection doesn't need the clipboard for long.
-            // - Menu Paste can be slower depending on the frontmost app.
+            // Menu-driven paste can complete slightly after AX calls.
             let restoreDelay: TimeInterval = needsMenuPasteFallback ? 0.8 : 0.25
 
             DispatchQueue.main.asyncAfter(deadline: .now() + restoreDelay) {
                 let pb = NSPasteboard.general
                 pb.clearContents()
 
-                // Rebuild original pasteboard items (preserves files, images, RTF, etc.)
+                // Restore original clipboard items (files, images, rich text, etc.).
                 let itemsToWrite: [NSPasteboardItem] = savedSnapshot.map { itemDict in
                     let newItem = NSPasteboardItem()
                     for (type, data) in itemDict {
@@ -136,8 +134,7 @@ class PasteService {
                 if !itemsToWrite.isEmpty {
                     let didWrite = pb.writeObjects(itemsToWrite)
 
-                    // Hardening: `writeObjects` can be finicky in rare cases.
-                    // If it fails, fall back to restoring the first item's types directly.
+                    // Rare fallback path when writeObjects fails.
                     if !didWrite {
                         pb.clearContents()
                         if let first = savedSnapshot.first {
@@ -148,7 +145,6 @@ class PasteService {
                     }
                 }
 
-                // Helpful debug signal
                 let restoredCount = itemsToWrite.count
                 #if DEBUG
                 print("Clipboard state restored (items: \(restoredCount)).")
@@ -157,11 +153,12 @@ class PasteService {
         }
     }
 
+    // MARK: - Smart Spacing
     private func applySmartLeadingSeparatorIfNeeded(to text: String) -> String {
         guard let firstIncoming = text.first else { return text }
         let context = focusedInsertionContext()
 
-        // Replacing selected text should not auto-prefix a space.
+        // Replacements should not auto-prefix a separator.
         if let context {
             if let selectionLength = context.selectionLength, selectionLength > 0 {
                 return text
@@ -182,6 +179,7 @@ class PasteService {
         guard shouldInsertLeadingSpaceFromHeuristic(firstIncoming: firstIncoming) else {
             return text
         }
+        // Best-effort fallback when AX context cannot provide a previous character.
         return " " + text
     }
 
@@ -197,6 +195,7 @@ class PasteService {
         guard focusResult == .success, let focusedElementRef else { return nil }
         let focusedElement = focusedElementRef as! AXUIElement
 
+        // Best-effort context: selection/caret may be unavailable in some editors.
         let selectedRange = getSelectedRange(element: focusedElement)
         let caretLocation = selectedRange.map { max(0, $0.location) }
         let selectionLength = selectedRange.map { max(0, $0.length) }
@@ -213,7 +212,6 @@ class PasteService {
         }
 
         return InsertionContext(
-            focusedElement: focusedElement,
             selectionLength: selectionLength,
             caretLocation: caretLocation,
             previousCharacter: previousCharacter
@@ -269,10 +267,11 @@ class PasteService {
         let previousIsWordLike = previous.unicodeScalars.contains { CharacterSet.alphanumerics.contains($0) }
         let previousIsTriggerPunctuation = previous.unicodeScalars.contains { spacingTriggerPunctuation.contains($0) }
 
-        // Insert a separator when starting a new dictation right after a word/sentence.
+        // Start a new dictation segment after a word/sentence boundary.
         return previousIsWordLike || previousIsTriggerPunctuation
     }
 
+    // MARK: - Menu Fallback
     private func pasteViaMenuBarOnMainThread() -> Bool {
         if Thread.isMainThread {
             return pasteViaMenuBar()
@@ -304,15 +303,14 @@ class PasteService {
 
         let menuBarElement = menuBar as! AXUIElement
 
-        // 3. Find "Paste" item in ANY menu (usually Edit, but we scan to be safe & locale-agnostic)
+        // Find "Paste" in any menu so this remains locale/layout resilient.
         var children: CFTypeRef?
         AXUIElementCopyAttributeValue(menuBarElement, kAXChildrenAttribute as CFString, &children)
         guard let menuItems = children as? [AXUIElement] else { return false }
 
         for menu in menuItems {
-            // Check if this menu contains the Paste item
             if let pasteItem = findPasteMenuItem(in: menu) {
-                // Verify it's enabled before clicking
+                // Skip contexts where Paste exists but is currently disabled.
                 var enabled: CFTypeRef?
                 if AXUIElementCopyAttributeValue(pasteItem, kAXEnabledAttribute as CFString, &enabled) == .success,
                    let isEnabled = enabled as? Bool, !isEnabled {
@@ -335,8 +333,8 @@ class PasteService {
                     print("Fallback Failed: AXPress returned error \(error.rawValue)")
                     #endif
                 }
-                // Soft success: if Paste exists and is enabled, treat attempted AXPress
-                // as success for insertion-memory continuity.
+                // Soft success: AXPress return codes are inconsistent across apps.
+                // If Paste exists and is enabled, treat the attempt as an insertion signal.
                 return true
             }
         }
@@ -348,8 +346,7 @@ class PasteService {
     }
 
     private func findPasteMenuItem(in menu: AXUIElement) -> AXUIElement? {
-        // Did we get the Menu Element or the Menu Item?
-        // Usually Menu Item (Edit) -> Children (Menu) -> Children (Menu Items)
+        // Expected structure: menu bar item -> submenu -> actionable menu entries.
 
         var children: CFTypeRef?
         AXUIElementCopyAttributeValue(menu, kAXChildrenAttribute as CFString, &children)
@@ -360,22 +357,21 @@ class PasteService {
         guard let subItems = subChildren as? [AXUIElement] else { return nil }
 
         for item in subItems {
-            // 1. Check AXIdentifier (Most robust, usually "paste:")
+            // 1) AXIdentifier is the most stable signal when present.
             var idValue: CFTypeRef?
             if AXUIElementCopyAttributeValue(item, "AXIdentifier" as CFString, &idValue) == .success,
                let idStr = idValue as? String, idStr == "paste:" {
                 return item
             }
 
-            // 2. Check Cmd+V Shortcut (Locale independent)
+            // 2) Cmd+V shortcut is locale-independent.
             var cmdChar: CFTypeRef?
             if AXUIElementCopyAttributeValue(item, kAXMenuItemCmdCharAttribute as CFString, &cmdChar) == .success,
                let charStr = cmdChar as? String, charStr == "V" {
-                // Check modifiers if needed, but usually V is unique enough in Edit menu
                 return item
             }
 
-            // 3. Fallback: Title (English "Paste")
+            // 3) Title fallback for environments without identifier/shortcut metadata.
             var title: CFTypeRef?
             AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &title)
             if let titleStr = title as? String, titleStr == "Paste" {
@@ -385,6 +381,7 @@ class PasteService {
         return nil
     }
 
+    // MARK: - Accessibility Injection
     private func injectTextViaAccessibility(_ text: String) -> AccessibilityInjectionOutcome {
         let systemWideElement = AXUIElementCreateSystemWide()
         var focusedElement: CFTypeRef?
@@ -401,10 +398,7 @@ class PasteService {
 
         let element = focusedElement as! AXUIElement
 
-        // 1. Check the Role of the focused element.
-        // Electron apps (VSCode, Discord, Chrome) typically use "AXWebArea" or "AXGroup" for their text areas.
-        // Native apps use "AXTextArea" or "AXTextField".
-        // Direct injection (AXSelectedTextAttribute) often silently fails on AXWebArea.
+        // Role gate: AXWebArea/AXGroup commonly ignore direct selected-text writes.
         var role: CFTypeRef?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &role)
 
@@ -415,19 +409,14 @@ class PasteService {
             print("DEBUG: Focused Element Role: \(roleStr)")
             #endif
             if roleStr == "AXWebArea" || roleStr == "AXGroup" {
-                // Start the menu-bar paste fallback immediately.
-                // This is a GENERIC heuristic, not a hardcoded app list.
+                // Generic fallback, not app-specific branching.
                 return .failureNeedsFallback
             }
         }
 
-        // 2. Attempt Surgical Injection (Verification Mode)
-        // Some Electron apps (like AntiGravity) report "AXTextArea" but silently fail.
-        // We verify if the Selection Range moved (cursor advanced).
-
+        // Attempt direct selected-text write and verify range movement when available.
         let originalRange = getSelectedRange(element: element)
 
-        // A. Try to set the value
         let status = AXUIElementSetAttributeValue(
             element,
             kAXSelectedTextAttribute as CFString,
@@ -438,14 +427,12 @@ class PasteService {
             return .failureNeedsFallback
         }
 
-        // B. VERIFY: Did the cursor move?
+        // Verify whether the caret/selection range changed after write.
         usleep(1000) // 1ms
 
         let newRange = getSelectedRange(element: element)
 
-        // C. Detection Logic:
-        // If we had a range, and the new range is IDENTICAL, then the app ignored us.
-        // Treat this as "soft success": insertion may have happened, but we still fallback.
+        // Identical ranges imply probable no-op; keep soft success and still fallback.
         if let old = originalRange, let new = newRange {
             if old.location == new.location && old.length == new.length {
                 #if DEBUG
@@ -456,8 +443,7 @@ class PasteService {
             return .verifiedSuccess
         }
 
-        // Verification is inconclusive when range metadata is unavailable.
-        // Keep soft success so we can seed spacing memory while still using fallback.
+        // Inconclusive verification: keep soft success and still run fallback path.
         return .softSuccessNeedsFallback
     }
 
@@ -477,6 +463,7 @@ class PasteService {
         return text
     }
 
+    // MARK: - Heuristic Identity / Memory
     private func frontmostAppIdentity() -> AppIdentity? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         let rawBundleID = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -497,6 +484,7 @@ class PasteService {
         lastInsertedTrailingCharacter = text.last
     }
 
+    // MARK: - Menu Transport
     private func menuFallbackTransport(for text: String) -> MenuFallbackTransport {
         let leadingSpaces = text.prefix { $0 == " " }.count
         guard leadingSpaces > 0 else {
@@ -550,17 +538,17 @@ class PasteService {
         return true
     }
 
+    // MARK: - AX Utilities
     private func getSelectedRange(element: AXUIElement) -> CFRange? {
         var rangeValue: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, &rangeValue)
 
         guard result == .success, let value = rangeValue else { return nil }
 
-        // AXValue Check
+        // kAXSelectedTextRangeAttribute is represented as AXValue(.cfRange).
         if CFGetTypeID(value) == AXValueGetTypeID() {
             let axVal = value as! AXValue
             var range = CFRange()
-            // .cfRange is the type for kAXSelectedTextRangeAttribute
             if AXValueGetValue(axVal, .cfRange, &range) {
                 return range
             }
