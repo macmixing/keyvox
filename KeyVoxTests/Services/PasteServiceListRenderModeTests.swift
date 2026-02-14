@@ -15,4 +15,14 @@ struct PasteServiceListRenderModeTests {
         #expect(PasteService.listRenderMode(forAXRole: "AXTextArea") == .multiline)
         #expect(PasteService.listRenderMode(forAXRole: nil) == .multiline)
     }
+
+    @Test
+    func messagesBundleOverrideForcesMultiline() {
+        #expect(
+            PasteService.listRenderMode(
+                forAXRole: "AXTextField",
+                bundleID: "com.apple.MobileSMS"
+            ) == .multiline
+        )
+    }
 }

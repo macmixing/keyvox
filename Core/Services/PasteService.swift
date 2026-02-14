@@ -162,10 +162,20 @@ class PasteService {
             return .multiline
         }
 
-        return Self.listRenderMode(forAXRole: role)
+        let bundleID = frontmostAppIdentity()?.bundleID
+        return Self.listRenderMode(forAXRole: role, bundleID: bundleID)
     }
 
     static func listRenderMode(forAXRole role: String?) -> ListRenderMode {
+        listRenderMode(forAXRole: role, bundleID: nil)
+    }
+
+    static func listRenderMode(forAXRole role: String?, bundleID: String?) -> ListRenderMode {
+        // Some apps expose message composers as single-line roles even when newline insertion is valid.
+        if let bundleID, multilineListOverrideBundleIDs.contains(bundleID) {
+            return .multiline
+        }
+
         guard let role else { return .multiline }
 
         switch role {
@@ -175,6 +185,10 @@ class PasteService {
             return .multiline
         }
     }
+
+    private static let multilineListOverrideBundleIDs: Set<String> = [
+        "com.apple.MobileSMS"
+    ]
 
     // MARK: - Smart Spacing
     private func applySmartLeadingSeparatorIfNeeded(to text: String) -> String {
