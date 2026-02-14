@@ -2,25 +2,34 @@ import Foundation
 import AppKit
 import Combine
 
-///
-/// Remote JSON schema:
-/// {
-///   "build": "1",
-///   "version": "1.0.1",
-///   "updateURL": "https://keyvox.app/builds/KeyVox.dmg",
-///   "updateAlert": true,
-///   "updateCheckInterval": 10800,
-///   "updateTitle": "KeyVox Update Available!",
-///   "message": "A new version of KeyVox is available! Please update for the best experience!"
-/// }
-struct AppVersionInfo: Codable {
-    let build: String
+struct GitHubReleaseAsset: Decodable {
+    let name: String
+    let browserDownloadURL: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case browserDownloadURL = "browser_download_url"
+    }
+}
+
+struct GitHubLatestReleaseResponse: Decodable {
+    let tagName: String
+    let body: String?
+    let htmlURL: String
+    let assets: [GitHubReleaseAsset]
+
+    enum CodingKeys: String, CodingKey {
+        case tagName = "tag_name"
+        case body
+        case htmlURL = "html_url"
+        case assets
+    }
+}
+
+struct LatestReleaseInfo {
     let version: String
-    let updateURL: String
-    let updateAlert: Bool?
-    let updateTitle: String?
     let message: String?
-    let updateCheckInterval: TimeInterval?
+    let updateURL: URL
 }
 
 struct UpdatePrompt {
@@ -38,18 +47,19 @@ struct UpdatePrompt {
 final class AppUpdateService: ObservableObject {
     static let shared = AppUpdateService()
 
-    @Published private(set) var latestRemoteInfo: AppVersionInfo?
+    @Published private(set) var latestRemoteInfo: LatestReleaseInfo?
 
-    private let versionURL = URL(string: "https://keyvox.app/config/version.json")!
+    private let githubOwner = "macmixing"
+    private let githubRepo = "keyvoxghost"
     private let defaultCheckInterval: TimeInterval = 60 * 60 * 24
-    private let allowedHosts = ["keyvox.app", "apps.apple.com"]
+    private let allowedHosts = ["api.github.com", "github.com"]
     private var updateTimer: Timer?
     private var suppressedUpdateIDThisSession: String?
 
     private init() {}
 
-    private var checkInterval: TimeInterval {
-        latestRemoteInfo?.updateCheckInterval ?? defaultCheckInterval
+    private var latestReleaseURL: URL {
+        URL(string: "https://api.github.com/repos/\(githubOwner)/\(githubRepo)/releases/latest")!
     }
 
     /// Starts the automatic update polling timer.
@@ -81,7 +91,7 @@ final class AppUpdateService: ObservableObject {
 
     private func restartUpdateTimerIfNeeded() {
         updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: checkInterval, repeats: true) { [weak self] _ in
+        updateTimer = Timer.scheduledTimer(withTimeInterval: defaultCheckInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.checkForUpdatesIfNeeded()
             }
@@ -96,8 +106,8 @@ final class AppUpdateService: ObservableObject {
             }
             return
         }
-        let updateID = "\(remoteInfo.version)+\(remoteInfo.build)"
-        let cooldown = max(remoteInfo.updateCheckInterval ?? defaultCheckInterval, 1)
+        let updateID = "\(remoteInfo.version)+\(remoteInfo.updateURL.absoluteString)"
+        let cooldown = max(defaultCheckInterval, 1)
 
         // If user pressed "Later", suppress repeats for this app session.
         if !isManualCheck, suppressedUpdateIDThisSession == updateID {
@@ -107,34 +117,37 @@ final class AppUpdateService: ObservableObject {
         if !isManualCheck {
             let snoozedUntil = UserDefaults.standard.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date ?? .distantPast
             guard Date() >= snoozedUntil else { return }
-
-            if let alertEnabled = remoteInfo.updateAlert, !alertEnabled {
-                return
-            }
         }
 
         guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return }
         UpdatePromptManager.shared.show(prompt: prompt)
     }
 
-    private func buildPrompt(from remoteInfo: AppVersionInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
-        guard let updateURL = URL(string: remoteInfo.updateURL),
-              hasAllowedHost(updateURL) else {
+    private func buildPrompt(from remoteInfo: LatestReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
+        guard hasAllowedHost(remoteInfo.updateURL) else {
             #if DEBUG
-            print("[AppUpdateService] Ignoring update URL outside allowlist: \(remoteInfo.updateURL)")
+            print("[AppUpdateService] Ignoring update URL outside allowlist: \(remoteInfo.updateURL.absoluteString)")
             #endif
             return nil
         }
 
+        let fallbackMessage = "A new version of KeyVox is available. Please update for the best experience."
+        let promptMessage: String
+        if let body = remoteInfo.message, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            promptMessage = body
+        } else {
+            promptMessage = fallbackMessage
+        }
+
         return UpdatePrompt(
-            title: remoteInfo.updateTitle ?? "KeyVox Update Available",
-            message: remoteInfo.message ?? "A new version of KeyVox is available. Please update for the best experience.",
+            title: "KeyVox Update Available",
+            message: promptMessage,
             version: remoteInfo.version,
-            build: remoteInfo.build,
+            build: nil,
             dismissButtonTitle: "Later",
             primaryButtonTitle: "Download Update",
             onPrimaryAction: { [weak self] in
-                NSWorkspace.shared.open(updateURL)
+                NSWorkspace.shared.open(remoteInfo.updateURL)
                 self?.snoozeAutoPrompt(for: cooldown, updateID: updateID)
             },
             onDismiss: { [weak self] in
@@ -171,44 +184,65 @@ final class AppUpdateService: ObservableObject {
         suppressedUpdateIDThisSession = updateID
     }
 
-    private func fetchLatestVersionInfo() async -> AppVersionInfo? {
+    private func fetchLatestVersionInfo() async -> LatestReleaseInfo? {
         do {
-            let previousInterval = checkInterval
-            let (data, _) = try await URLSession.shared.data(from: versionURL)
-            let info = try JSONDecoder().decode(AppVersionInfo.self, from: data)
-            latestRemoteInfo = info
+            var request = URLRequest(url: latestReleaseURL)
+            request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+            request.setValue("KeyVox/\(localVersionInfo().version)", forHTTPHeaderField: "User-Agent")
 
-            if let newInterval = info.updateCheckInterval, newInterval != previousInterval {
-                restartUpdateTimerIfNeeded()
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                #if DEBUG
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("[AppUpdateService] GitHub API returned status \(httpResponse.statusCode)")
+                }
+                #endif
+                return nil
             }
 
+            let release = try JSONDecoder().decode(GitHubLatestReleaseResponse.self, from: data)
+            guard let info = mapReleaseInfo(from: release) else { return nil }
+            latestRemoteInfo = info
             return info
         } catch {
             #if DEBUG
-            print("[AppUpdateService] Failed to fetch version info: \(error)")
+            print("[AppUpdateService] Failed to fetch GitHub release info: \(error)")
             #endif
             return nil
         }
     }
 
-    private func shouldOfferUpdate(remoteInfo: AppVersionInfo) -> Bool {
-        guard let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-              let localBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String else {
+    private func mapReleaseInfo(from release: GitHubLatestReleaseResponse) -> LatestReleaseInfo? {
+        let normalizedVersion = normalizeVersionTag(release.tagName)
+        guard !normalizedVersion.isEmpty else { return nil }
+
+        let selectedDownloadURL: URL? = release.assets.first(where: { asset in
+            asset.name.lowercased().hasSuffix(".dmg")
+        }).flatMap { URL(string: $0.browserDownloadURL) } ?? URL(string: release.htmlURL)
+
+        guard let selectedDownloadURL,
+              hasAllowedHost(selectedDownloadURL) else {
+            #if DEBUG
+            print("[AppUpdateService] No allowed GitHub download URL for release \(release.tagName)")
+            #endif
+            return nil
+        }
+
+        return LatestReleaseInfo(
+            version: normalizedVersion,
+            message: release.body,
+            updateURL: selectedDownloadURL
+        )
+    }
+
+    private func shouldOfferUpdate(remoteInfo: LatestReleaseInfo) -> Bool {
+        guard let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
             return false
         }
 
-        if compareVersionStrings(remoteInfo.version, localVersion) > 0 {
-            return true
-        }
-
-        if remoteInfo.version == localVersion {
-            if let remoteBuildInt = Int(remoteInfo.build), let localBuildInt = Int(localBuild) {
-                return remoteBuildInt > localBuildInt
-            }
-            return remoteInfo.build > localBuild
-        }
-
-        return false
+        let normalizedLocalVersion = normalizeVersionTag(localVersion)
+        return compareVersionStrings(remoteInfo.version, normalizedLocalVersion) > 0
     }
 
     private func hasAllowedHost(_ url: URL) -> Bool {
@@ -219,6 +253,14 @@ final class AppUpdateService: ObservableObject {
             }
         }
         return false
+    }
+
+    private func normalizeVersionTag(_ version: String) -> String {
+        let trimmed = version.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.lowercased().hasPrefix("v") {
+            return String(trimmed.dropFirst())
+        }
+        return trimmed
     }
 
     /// Returns 1 if `v1 > v2`, -1 if `v1 < v2`, 0 if equal.

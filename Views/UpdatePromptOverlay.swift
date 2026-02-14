@@ -11,6 +11,14 @@ struct UpdatePromptOverlay: View {
     let onPrimaryAction: () -> Void
     let onDismiss: () -> Void
 
+    private var versionBadgeTitle: String? {
+        guard let version = prompt.version, !version.isEmpty else { return nil }
+        if let build = prompt.build, !build.isEmpty {
+            return "v\(version) (\(build))"
+        }
+        return "v\(version)"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             AnimatedWaveHeader()
@@ -27,8 +35,8 @@ struct UpdatePromptOverlay: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if let version = prompt.version, let build = prompt.build {
-                StatusBadge(title: "v\(version) (\(build))", color: .indigo)
+            if let versionBadgeTitle {
+                StatusBadge(title: versionBadgeTitle, color: .indigo)
             }
 
             HStack(spacing: 10) {

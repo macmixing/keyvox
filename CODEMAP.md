@@ -122,8 +122,12 @@ KeyVox/
 - `Core/Services/PasteService.swift`
   - Smart whitespace handling and robust clipboard restore.
 - `Core/Services/AppUpdateService.swift`
-  - Fetches remote version metadata.
+  - Fetches latest release metadata from GitHub Releases API.
+  - Endpoint is composed from owner/repo constants in the service.
+  - Maps `tag_name` to app version comparison and `body` to prompt message content.
+  - Prefers `.dmg` `browser_download_url`, then falls back to release `html_url`.
   - Supports timer-based checks and manual checks.
+  - Fails silently on network/decoding errors.
   - Triggers `UpdatePromptOverlay` through prompt manager.
 
 ### UI Layer

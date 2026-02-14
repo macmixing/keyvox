@@ -35,7 +35,7 @@ KeyVox is built for low-latency, local transcription with deep macOS integration
 
 ### App Operations
 - **Onboarding flow**: Microphone, Accessibility, and model setup on first launch.
-- **Update checks**: Manual and timer-based update checks via `Core/Services/AppUpdateService.swift`.
+- **Update checks**: Manual and timer-based checks backed by GitHub Releases metadata via `Core/Services/AppUpdateService.swift`.
 - **Warnings**: In-app warning overlays for missing model or permissions.
 
 ## Architecture
@@ -49,8 +49,18 @@ KeyVox is organized by responsibility:
 - **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
 - **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
-- **`Core/Services/AppUpdateService.swift`**: remote version polling and prompt triggers.
+- **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
 - **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
+
+## Update Service
+
+`Core/Services/AppUpdateService.swift` is the single update source-of-truth integration.
+
+- Fetches latest release metadata from the GitHub Releases "latest release" API endpoint configured in the service constants.
+- Uses `tag_name` for version detection (normalizes `v1.2.3` -> `1.2.3` before comparison).
+- Uses release `body` as the in-app update message/changelog text.
+- Uses the first `.dmg` asset `browser_download_url` for the update button when available; otherwise falls back to release `html_url`.
+- Keeps timer-based and manual checks, with silent failure behavior if the API is unavailable or payload decoding fails.
 
 ### KeyVoxWhisper Wrapper
 `Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.
