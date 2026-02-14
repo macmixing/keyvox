@@ -34,4 +34,20 @@ struct ListRendererTests {
         let rendered = renderer.render(list, mode: .singleLineInline)
         #expect(rendered == "Tasks: 1. Call vet; 2. Buy food done")
     }
+
+    @Test
+    func capitalizesFirstLetterOfTrailingTransition() {
+        let renderer = ListRenderer()
+        let list = DetectedList(
+            leadingText: "Here is the plan",
+            items: [
+                DetectedListItem(spokenIndex: 1, content: "Get dog food"),
+                DetectedListItem(spokenIndex: 2, content: "Charge phone"),
+            ],
+            trailingText: "and everything is handled"
+        )
+
+        let rendered = renderer.render(list, mode: .multiline)
+        #expect(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nAnd everything is handled")
+    }
 }

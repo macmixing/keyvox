@@ -13,7 +13,7 @@ struct ListRenderer {
         }
 
         let leadIn = formattedLeadIn(list.leadingText)
-        let trailing = list.trailingText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trailing = normalizedTrailingText(list.trailingText)
         var composed = listText
 
         if !leadIn.isEmpty {
@@ -47,5 +47,22 @@ struct ListRenderer {
 
         leadIn = leadIn.trimmingCharacters(in: CharacterSet(charactersIn: ".,;!?"))
         return leadIn + ":"
+    }
+
+    private func normalizedTrailingText(_ text: String) -> String {
+        let trailing = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trailing.isEmpty else { return "" }
+
+        let transitionPattern = #"(?i)^(and|then|now|so|because|since|as|also|anyway|anyways|next|finally|after that)\b"#
+        guard trailing.range(of: transitionPattern, options: .regularExpression) != nil else {
+            return trailing
+        }
+
+        return capitalizingFirstLetter(in: trailing)
+    }
+
+    private func capitalizingFirstLetter(in text: String) -> String {
+        guard let first = text.first else { return text }
+        return String(first).uppercased() + text.dropFirst()
     }
 }

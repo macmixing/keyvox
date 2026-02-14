@@ -154,11 +154,11 @@ struct ListPatternDetector {
         // Second pass: split long causal commentary off the last list item.
         if let split = firstRegexSplit(
             normalized,
-            pattern: #"(?i)^(.{8,}?)\s+(because|since|as)\s+(.+)$"#
+            pattern: #"(?i)^(.{8,}?)\s+((?:because|since|as)\s+.+)$"#
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 4 && trailingWordCount >= 4 && !startsLikeListMarker(split.1) {
+            if itemWordCount >= 2 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
                 return (split.0, split.1)
             }
         }
@@ -174,10 +174,23 @@ struct ListPatternDetector {
             }
         }
 
+        // Common Whisper shape for post-list continuation:
+        // "... <last item>, and <new thought>"
+        if let split = firstRegexSplit(
+            normalized,
+            pattern: #"(?i)^(.{8,}?),\s+((?:and\s+(?:now|then|i|we|everything|that|this|there)|now|okay|ok|so|anyway|anyways|also)\b.*)$"#
+        ) {
+            let itemWordCount = split.0.split(separator: " ").count
+            let trailingWordCount = split.1.split(separator: " ").count
+            if itemWordCount >= 3 && trailingWordCount >= 3 {
+                return (split.0, split.1)
+            }
+        }
+
         // Fallback for speech without hard punctuation ("... and now ...").
         if let split = firstRegexSplit(
             normalized,
-            pattern: #"(?i)^(.{8,}?)\s+(and\s+(?:now|then|i|we)|now|okay|ok|so|anyway|anyways|also|i\s+(?:need|want|have|should)|we\s+(?:need|want|have|should))\s+(.+)$"#
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+(?:now|then|i|we)|now|okay|ok|so|anyway|anyways|also|i\s+(?:need|want|have|should)|we\s+(?:need|want|have|should))\s+.+)$"#
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
