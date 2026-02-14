@@ -32,8 +32,10 @@ KeyVox/
 │   └── UserDefaultsKeys.swift
 ├── Core/
 │   ├── Services/
+│   │   ├── AppUpdateLogic.swift
 │   │   ├── AppUpdateService.swift
 │   │   ├── PasteService.swift
+│   │   ├── UpdateFeedConfig.swift
 │   │   └── WhisperService.swift
 │   ├── AI/
 │   │   ├── CustomVocabularyNormalizer.swift
@@ -42,8 +44,7 @@ KeyVox/
 │   │   ├── DictionaryStore.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
-│   │   ├── ReplacementScorer.swift
-│   │   └── TranscriptionPostProcessor.swift
+│   │   └── ReplacementScorer.swift
 │   ├── TextProcessing/
 │   │   ├── ListFormattingEngine.swift
 │   │   ├── ListFormattingTypes.swift
@@ -54,6 +55,7 @@ KeyVox/
 │   ├── KeyboardMonitor.swift
 │   ├── ModelDownloader.swift
 │   ├── OverlayManager.swift
+│   ├── TranscriptionPostProcessor.swift
 │   └── TranscriptionManager.swift
 ├── Views/
 │   ├── Components/
@@ -102,6 +104,9 @@ KeyVox/
 │   ├── logo.png
 │   └── keyvox.icon/
 ├── Tools/
+│   ├── UpdateFeed/
+│   │   ├── configure_local_feed.sh
+│   │   └── update-feed.override.example.json
 │   └── Pronunciation/
 │       ├── benchmarks/
 │       │   ├── coverage-corpus.txt
@@ -125,7 +130,7 @@ KeyVox/
 2. `Core/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
-5. `Core/AI/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
+5. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
 6. `Core/Services/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 7. `Core/OverlayManager.swift` owns overlay panel lifecycle, drag persistence, and per-display position restore.
 8. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
@@ -165,7 +170,7 @@ KeyVox/
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
 
-### Post-Processing (`Core/AI` + `Core/TextProcessing`)
+### Post-Processing (`Core` + `Core/AI` + `Core/TextProcessing`)
 
 - `Core/AI/DictionaryMatcher.swift`
   - Performs balanced n-gram matching (1-4 tokens) against dictionary entries.
@@ -198,14 +203,23 @@ KeyVox/
 - `Core/Services/PasteService.swift`
   - Smart whitespace handling and robust clipboard restore.
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
+- `Core/Services/UpdateFeedConfig.swift`
+  - Centralized update feed owner/repo defaults.
+  - Supports optional local override file at `~/Library/Application Support/KeyVox/update-feed.override.json`.
+- `Core/Services/AppUpdateLogic.swift`
+  - Pure helpers for release mapping, host allowlist checks, version normalization, and version comparison.
 - `Core/Services/AppUpdateService.swift`
   - Fetches latest release metadata from GitHub Releases API.
-  - Endpoint is composed from owner/repo constants in the service.
+  - Endpoint is composed from resolved update feed config.
   - Maps `tag_name` to app version comparison and `body` to prompt message content.
   - Prefers `.dmg` `browser_download_url`, then falls back to release `html_url`.
   - Supports timer-based checks and manual checks.
   - Fails silently on network/decoding errors.
   - Triggers `UpdatePromptOverlay` through prompt manager.
+- `Tools/UpdateFeed/configure_local_feed.sh`
+  - Maintainer helper for setting, clearing, and showing the local update feed override file.
+- `Tools/UpdateFeed/update-feed.override.example.json`
+  - Template for local override JSON shape (the active override lives in Application Support, not in the repo).
 
 ### UI Layer
 

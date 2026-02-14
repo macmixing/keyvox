@@ -56,6 +56,8 @@
 		8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401022F46010000DD4401 /* ListPatternDetector.swift */; };
 		8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401032F46010000DD4401 /* ListRenderer.swift */; };
 		8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401042F46010000DD4401 /* ListFormattingEngine.swift */; };
+		8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */; };
+		8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501022F47010000EE5501 /* AppUpdateLogic.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -109,6 +111,8 @@
 		8F4401022F46010000DD4401 /* ListPatternDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternDetector.swift; sourceTree = "<group>"; };
 		8F4401032F46010000DD4401 /* ListRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListRenderer.swift; sourceTree = "<group>"; };
 		8F4401042F46010000DD4401 /* ListFormattingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingEngine.swift; sourceTree = "<group>"; };
+		8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedConfig.swift; sourceTree = "<group>"; };
+		8F5501022F47010000EE5501 /* AppUpdateLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogic.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,8 +156,10 @@
 		8E6D05CA2F3C51D6003BD458 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
 				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
+				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
 				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
 			);
 			path = Services;
@@ -363,6 +369,7 @@
 				8E57FBA02F3E444B00935A26 /* SettingsView+Information.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Audio.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
+				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,
 				8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */,
 				8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */,
 				8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
@@ -387,6 +394,7 @@
 				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
+				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,

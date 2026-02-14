@@ -54,11 +54,13 @@ KeyVox is organized by responsibility:
 - **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
 - **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
-- **`Core/AI/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
+- **`Core/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
 - **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
 - **`Core/TextProcessing/ListFormattingEngine.swift`**: deterministic numeric list detection/rendering layer.
 - **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
 - **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
+- **`Core/Services/UpdateFeedConfig.swift`**: tracked default update feed config plus optional local override resolution.
+- **`Core/Services/AppUpdateLogic.swift`**: pure update parsing/version/host validation helpers.
 - **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
 
 ### Post-Processing Order
@@ -76,11 +78,14 @@ KeyVox is organized by responsibility:
 
 `Core/Services/AppUpdateService.swift` is the single update source-of-truth integration.
 
-- Fetches latest release metadata from the GitHub Releases "latest release" API endpoint configured in the service constants.
+- Fetches latest release metadata from the GitHub Releases "latest release" API endpoint configured by `Core/Services/UpdateFeedConfig.swift`.
 - Uses `tag_name` for version detection (normalizes `v1.2.3` -> `1.2.3` before comparison).
 - Uses release `body` as the in-app update message/changelog text.
 - Uses the first `.dmg` asset `browser_download_url` for the update button when available; otherwise falls back to release `html_url`.
 - Keeps timer-based and manual checks, with silent failure behavior if the API is unavailable or payload decoding fails.
+- Optional local override file for maintainer testing: `~/Library/Application Support/KeyVox/update-feed.override.json`.
+- Optional helper script for setting/clearing/showing local override: `Tools/UpdateFeed/configure_local_feed.sh`.
+- Example override template (committed): `Tools/UpdateFeed/update-feed.override.example.json`.
 
 ### KeyVoxWhisper Wrapper
 `Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.

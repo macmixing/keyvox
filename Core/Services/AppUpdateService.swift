@@ -49,17 +49,22 @@ final class AppUpdateService: ObservableObject {
 
     @Published private(set) var latestRemoteInfo: LatestReleaseInfo?
 
-    private let githubOwner = "macmixing"
-    private let githubRepo = "keyvoxghost"
+    private let feedConfig: UpdateFeedConfig
+    private let bundle: Bundle
+    private let urlSession: URLSession
     private let defaultCheckInterval: TimeInterval = 60 * 60 * 24
-    private let allowedHosts = ["api.github.com", "github.com"]
     private var updateTimer: Timer?
     private var suppressedUpdateIDThisSession: String?
+    private var autoPromptSnoozedUntilInSession: Date?
 
-    private init() {}
-
-    private var latestReleaseURL: URL {
-        URL(string: "https://api.github.com/repos/\(githubOwner)/\(githubRepo)/releases/latest")!
+    init(
+        feedConfig: UpdateFeedConfig? = nil,
+        bundle: Bundle = .main,
+        urlSession: URLSession = .shared
+    ) {
+        self.feedConfig = feedConfig ?? UpdateFeedResolver.resolve()
+        self.bundle = bundle
+        self.urlSession = urlSession
     }
 
     /// Starts the automatic update polling timer.
@@ -111,12 +116,15 @@ final class AppUpdateService: ObservableObject {
 
         // If user pressed "Later", suppress repeats for this app session.
         if !isManualCheck, suppressedUpdateIDThisSession == updateID {
-            return
+            if let snoozedUntil = autoPromptSnoozedUntilInSession, Date() < snoozedUntil {
+                return
+            }
         }
 
         if !isManualCheck {
-            let snoozedUntil = UserDefaults.standard.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date ?? .distantPast
-            guard Date() >= snoozedUntil else { return }
+            if let snoozedUntil = autoPromptSnoozedUntilInSession, Date() < snoozedUntil {
+                return
+            }
         }
 
         guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return }
@@ -124,7 +132,7 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func buildPrompt(from remoteInfo: LatestReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
-        guard hasAllowedHost(remoteInfo.updateURL) else {
+        guard AppUpdateLogic.hasAllowedHost(remoteInfo.updateURL, allowedHosts: feedConfig.allowedHosts) else {
             #if DEBUG
             print("[AppUpdateService] Ignoring update URL outside allowlist: \(remoteInfo.updateURL.absoluteString)")
             #endif
@@ -172,25 +180,23 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func localVersionInfo() -> (version: String, build: String) {
-        let version = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "Unknown"
-        let build = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "Unknown"
+        let version = (bundle.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "Unknown"
+        let build = (bundle.infoDictionary?["CFBundleVersion"] as? String) ?? "Unknown"
         return (version, build)
     }
 
     private func snoozeAutoPrompt(for cooldown: TimeInterval, updateID: String) {
-        let now = Date()
-        UserDefaults.standard.set(now, forKey: UserDefaultsKeys.App.updateAlertLastShown)
-        UserDefaults.standard.set(now.addingTimeInterval(cooldown), forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
+        autoPromptSnoozedUntilInSession = Date().addingTimeInterval(cooldown)
         suppressedUpdateIDThisSession = updateID
     }
 
     private func fetchLatestVersionInfo() async -> LatestReleaseInfo? {
         do {
-            var request = URLRequest(url: latestReleaseURL)
+            var request = URLRequest(url: feedConfig.latestReleaseURL)
             request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
             request.setValue("KeyVox/\(localVersionInfo().version)", forHTTPHeaderField: "User-Agent")
 
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 #if DEBUG
@@ -202,7 +208,12 @@ final class AppUpdateService: ObservableObject {
             }
 
             let release = try JSONDecoder().decode(GitHubLatestReleaseResponse.self, from: data)
-            guard let info = mapReleaseInfo(from: release) else { return nil }
+            guard let info = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: feedConfig.allowedHosts) else {
+                #if DEBUG
+                print("[AppUpdateService] No allowed GitHub download URL for release \(release.tagName)")
+                #endif
+                return nil
+            }
             latestRemoteInfo = info
             return info
         } catch {
@@ -213,75 +224,19 @@ final class AppUpdateService: ObservableObject {
         }
     }
 
-    private func mapReleaseInfo(from release: GitHubLatestReleaseResponse) -> LatestReleaseInfo? {
-        let normalizedVersion = normalizeVersionTag(release.tagName)
-        guard !normalizedVersion.isEmpty else { return nil }
-
-        let selectedDownloadURL: URL? = release.assets.first(where: { asset in
-            asset.name.lowercased().hasSuffix(".dmg")
-        }).flatMap { URL(string: $0.browserDownloadURL) } ?? URL(string: release.htmlURL)
-
-        guard let selectedDownloadURL,
-              hasAllowedHost(selectedDownloadURL) else {
-            #if DEBUG
-            print("[AppUpdateService] No allowed GitHub download URL for release \(release.tagName)")
-            #endif
-            return nil
-        }
-
-        return LatestReleaseInfo(
-            version: normalizedVersion,
-            message: release.body,
-            updateURL: selectedDownloadURL
-        )
-    }
-
     private func shouldOfferUpdate(remoteInfo: LatestReleaseInfo) -> Bool {
-        guard let localVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+        guard let localVersion = bundle.infoDictionary?["CFBundleShortVersionString"] as? String else {
             return false
         }
 
-        let normalizedLocalVersion = normalizeVersionTag(localVersion)
-        return compareVersionStrings(remoteInfo.version, normalizedLocalVersion) > 0
-    }
-
-    private func hasAllowedHost(_ url: URL) -> Bool {
-        guard let host = url.host?.lowercased() else { return false }
-        for allowedHost in allowedHosts {
-            if host == allowedHost || host.hasSuffix(".\(allowedHost)") {
-                return true
-            }
-        }
-        return false
-    }
-
-    private func normalizeVersionTag(_ version: String) -> String {
-        let trimmed = version.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.lowercased().hasPrefix("v") {
-            return String(trimmed.dropFirst())
-        }
-        return trimmed
-    }
-
-    /// Returns 1 if `v1 > v2`, -1 if `v1 < v2`, 0 if equal.
-    private func compareVersionStrings(_ v1: String, _ v2: String) -> Int {
-        let a = v1.split(separator: ".").map { Int($0) ?? 0 }
-        let b = v2.split(separator: ".").map { Int($0) ?? 0 }
-        let maxCount = max(a.count, b.count)
-
-        for i in 0..<maxCount {
-            let ai = i < a.count ? a[i] : 0
-            let bi = i < b.count ? b[i] : 0
-            if ai > bi { return 1 }
-            if ai < bi { return -1 }
-        }
-
-        return 0
+        let normalizedLocalVersion = AppUpdateLogic.normalizeVersionTag(localVersion)
+        return AppUpdateLogic.compareVersionStrings(remoteInfo.version, normalizedLocalVersion) > 0
     }
 
     /// For testing: clears the update prompt cooldown.
+    @MainActor
     static func resetLastShown() {
-        UserDefaults.standard.removeObject(forKey: UserDefaultsKeys.App.updateAlertLastShown)
-        UserDefaults.standard.removeObject(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
+        AppUpdateService.shared.autoPromptSnoozedUntilInSession = nil
+        AppUpdateService.shared.suppressedUpdateIDThisSession = nil
     }
 }
