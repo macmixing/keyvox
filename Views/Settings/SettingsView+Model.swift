@@ -13,6 +13,8 @@ extension SettingsView {
             SettingsCard {
                 ModelSettingsRow(downloader: downloader)
             }
+
+            dictionarySettings
         }
     }
 }

@@ -8,6 +8,7 @@ class WhisperService: ObservableObject {
     @Published var transcriptionText = ""
     
     private var whisper: Whisper?
+    private var dictionaryHintPrompt = ""
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -29,6 +30,7 @@ class WhisperService: ObservableObject {
         params.temperature_inc = 0.0
         params.no_speech_thold = 0.6
         params.logprob_thold = -0.8
+        params.initialPrompt = dictionaryHintPrompt
         // CoreML is automatic if the model files are present
         
         whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
@@ -42,6 +44,13 @@ class WhisperService: ObservableObject {
         #if DEBUG
         print("WhisperService: Transcription cancelled.")
         #endif
+    }
+
+    func updateDictionaryHintPrompt(_ prompt: String) {
+        let cleanedPrompt = prompt
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        dictionaryHintPrompt = cleanedPrompt
+        whisper?.params.initialPrompt = cleanedPrompt
     }
     
     func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {

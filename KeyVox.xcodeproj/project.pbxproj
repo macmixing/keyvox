@@ -40,6 +40,13 @@
 		8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
 		8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1100012F43000100AA0001 /* OverlayManager.swift */; };
+		8F2202012F44010000BB2201 /* DictionaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201012F44010000BB2201 /* DictionaryEntry.swift */; };
+		8F2202022F44010000BB2201 /* DictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201022F44010000BB2201 /* DictionaryStore.swift */; };
+		8F2202032F44010000BB2201 /* CustomVocabularyNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */; };
+		8F2202042F44010000BB2201 /* TranscriptionPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201042F44010000BB2201 /* TranscriptionPostProcessor.swift */; };
+		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
+		8F2202062F44010000BB2201 /* SettingsView+ModelDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */; };
+		8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,6 +84,13 @@
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
+		8F2201012F44010000BB2201 /* DictionaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntry.swift; sourceTree = "<group>"; };
+		8F2201022F44010000BB2201 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
+		8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVocabularyNormalizer.swift; sourceTree = "<group>"; };
+		8F2201042F44010000BB2201 /* TranscriptionPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionPostProcessor.swift; sourceTree = "<group>"; };
+		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
+		8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelDictionary.swift"; sourceTree = "<group>"; };
+		8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDeletePromptView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,12 +108,14 @@
 		8E57FB9B2F3E444B00935A26 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */,
 				8E57FBA22F3E449000935A26 /* SettingsView+Legal.swift */,
 				8E57FBA32F3E449000935A26 /* SettingsView.swift */,
 				8E57FB952F3E444B00935A26 /* SettingsComponents.swift */,
 				8E57FB962F3E444B00935A26 /* SettingsView+Audio.swift */,
 				8E57FB972F3E444B00935A26 /* SettingsView+General.swift */,
 				8E57FB982F3E444B00935A26 /* SettingsView+Information.swift */,
+				8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */,
 				8E57FB992F3E444B00935A26 /* SettingsView+Model.swift */,
 				8E57FB9A2F3E444B00935A26 /* SettingsView+Sidebar.swift */,
 			);
@@ -128,6 +144,7 @@
 		8E6D05CF2F3C51D6003BD458 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				8F2201002F44010000BB2201 /* AI */,
 				8E6D05CA2F3C51D6003BD458 /* Services */,
 				8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */,
 				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
@@ -154,10 +171,22 @@
 		8E6D05D62F3C51D6003BD458 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		8F2201002F44010000BB2201 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */,
+				8F2201012F44010000BB2201 /* DictionaryEntry.swift */,
+				8F2201022F44010000BB2201 /* DictionaryStore.swift */,
+				8F2201042F44010000BB2201 /* TranscriptionPostProcessor.swift */,
+			);
+			path = AI;
 			sourceTree = "<group>";
 		};
 		8E6D05DB2F3C51D6003BD458 /* Views */ = {
@@ -282,14 +311,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */,
 				8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */,
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
+				8F2202032F44010000BB2201 /* CustomVocabularyNormalizer.swift in Sources */,
 				8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */,
 				8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */,
 				8E57FBA42F3E449000935A26 /* SettingsView.swift in Sources */,
+				8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */,
 				8E57FBA52F3E449000935A26 /* SettingsView+Legal.swift in Sources */,
 				8E57FB9E2F3E444B00935A26 /* SettingsView+Sidebar.swift in Sources */,
 				8E57FB9F2F3E444B00935A26 /* SettingsView+Model.swift in Sources */,
+				8F2202062F44010000BB2201 /* SettingsView+ModelDictionary.swift in Sources */,
 				8E57FBA02F3E444B00935A26 /* SettingsView+Information.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Audio.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
@@ -305,8 +338,11 @@
 				8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
 				8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
+				8F2202012F44010000BB2201 /* DictionaryEntry.swift in Sources */,
+				8F2202022F44010000BB2201 /* DictionaryStore.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
+				8F2202042F44010000BB2201 /* TranscriptionPostProcessor.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,

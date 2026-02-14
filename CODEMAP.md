@@ -9,6 +9,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - **App**: app entry point, window lifecycle, shared defaults keys
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
+- **Core/AI**: dictionary storage + post-transcription normalization helpers
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons
@@ -32,6 +33,11 @@ KeyVox/
 │   │   ├── AppUpdateService.swift
 │   │   ├── PasteService.swift
 │   │   └── WhisperService.swift
+│   ├── AI/
+│   │   ├── CustomVocabularyNormalizer.swift
+│   │   ├── DictionaryEntry.swift
+│   │   ├── DictionaryStore.swift
+│   │   └── TranscriptionPostProcessor.swift
 │   ├── AudioDeviceManager.swift
 │   ├── AudioRecorder.swift
 │   ├── KeyboardMonitor.swift
@@ -40,14 +46,17 @@ KeyVox/
 │   └── TranscriptionManager.swift
 ├── Views/
 │   ├── Components/
+│   │   ├── ConfirmDeletePromptView.swift
 │   │   ├── KeyVoxLogo.swift
 │   │   └── UIComponents.swift
 │   ├── Settings/
+│   │   ├── DictionaryWordEditorView.swift
 │   │   ├── SettingsComponents.swift
 │   │   ├── SettingsView+Audio.swift
 │   │   ├── SettingsView+General.swift
 │   │   ├── SettingsView+Information.swift
 │   │   ├── SettingsView+Legal.swift
+│   │   ├── SettingsView+ModelDictionary.swift
 │   │   ├── SettingsView+Model.swift
 │   │   ├── SettingsView+Sidebar.swift
 │   │   └── SettingsView.swift

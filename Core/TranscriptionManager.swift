@@ -16,6 +16,8 @@ class TranscriptionManager: ObservableObject {
     let keyboardMonitor = KeyboardMonitor.shared
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
+    private let dictionaryStore = DictionaryStore.shared
+    private let postProcessor = TranscriptionPostProcessor()
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
@@ -37,6 +39,14 @@ class TranscriptionManager: ObservableObject {
             .dropFirst()
             .sink { [weak self] _ in
                 self?.abortRecording()
+            }
+            .store(in: &cancellables)
+
+        dictionaryStore.$entries
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let hintPrompt = self.dictionaryStore.whisperHintPrompt()
+                self.whisperService.updateDictionaryHintPrompt(hintPrompt)
             }
             .store(in: &cancellables)
     }
@@ -155,7 +165,11 @@ class TranscriptionManager: ObservableObject {
                 #endif
                 
                 DispatchQueue.main.async {
-                    let text = result ?? ""
+                    let rawText = result ?? ""
+                    let text = self.postProcessor.process(
+                        rawText,
+                        dictionaryEntries: self.dictionaryStore.entries
+                    )
                     self.lastTranscription = text
                     
                     let pasteStart = Date()

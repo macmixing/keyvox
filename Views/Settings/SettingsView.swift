@@ -8,8 +8,11 @@ struct SettingsView: View {
     @ObservedObject internal var downloader = ModelDownloader.shared
     @StateObject internal var keyboardMonitor = KeyboardMonitor.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
+    @ObservedObject internal var dictionaryStore = DictionaryStore.shared
     @State internal var selectedTab: SettingsTab
     @State internal var showLegal = false
+    @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
+    @State internal var dictionaryDeleteTarget: DictionaryEntry?
 
     init(initialTab: SettingsTab = .general) {
         _selectedTab = State(initialValue: initialTab)
@@ -51,6 +54,24 @@ struct SettingsView: View {
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showLegal) {
             LegalView()
+        }
+        .sheet(item: $dictionaryEditorMode) { mode in
+            DictionaryWordEditorView(mode: mode, dictionaryStore: dictionaryStore)
+        }
+        .sheet(item: $dictionaryDeleteTarget) { entry in
+            ConfirmDeletePromptView(
+                config: ConfirmDeletePromptConfig(
+                    title: "Delete Entry?",
+                    message: "This dictionary entry will be removed from KeyVox."
+                ),
+                onConfirm: {
+                    dictionaryStore.delete(id: entry.id)
+                    dictionaryDeleteTarget = nil
+                },
+                onCancel: {
+                    dictionaryDeleteTarget = nil
+                }
+            )
         }
     }
     

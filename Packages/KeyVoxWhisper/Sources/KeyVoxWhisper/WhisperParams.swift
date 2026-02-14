@@ -14,6 +14,7 @@ public final class WhisperParams {
 
     var whisperParams: whisper_full_params
     private var languageCString: UnsafeMutablePointer<CChar>?
+    private var initialPromptCString: UnsafeMutablePointer<CChar>?
 
     public init(strategy: WhisperSamplingStrategy = .greedy) {
         let cStrategy: whisper_sampling_strategy = strategy == .greedy
@@ -27,6 +28,9 @@ public final class WhisperParams {
     deinit {
         if let languageCString {
             free(languageCString)
+        }
+        if let initialPromptCString {
+            free(initialPromptCString)
         }
     }
 
@@ -52,6 +56,33 @@ public final class WhisperParams {
             guard let duplicated = strdup(newValue.rawValue) else { return }
             languageCString = duplicated
             whisperParams.language = UnsafePointer(duplicated)
+        }
+    }
+
+    public var initialPrompt: String {
+        get {
+            guard let cPrompt = whisperParams.initial_prompt else {
+                return ""
+            }
+            return String(cString: cPrompt)
+        }
+        set {
+            if let initialPromptCString {
+                free(initialPromptCString)
+                self.initialPromptCString = nil
+            }
+
+            let cleaned = newValue
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !cleaned.isEmpty else {
+                whisperParams.initial_prompt = nil
+                return
+            }
+
+            guard let duplicated = strdup(cleaned) else { return }
+            initialPromptCString = duplicated
+            whisperParams.initial_prompt = UnsafePointer(duplicated)
         }
     }
 
