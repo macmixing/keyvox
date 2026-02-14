@@ -14,6 +14,12 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **Resources**: assets, entitlements, bundled fonts/icons
 - **Packages**: local Swift package wrapping `whisper.cpp`
 
+## Contributor Notes
+
+- Behavior and motion constants are kept file-local near their owning runtime logic to reduce maintenance confusion.
+- Proprietary visual tuning remains in excluded branded files (`Views/RecordingOverlay.swift`, `Views/Components/KeyVoxLogo.swift`).
+- No shared constants module is required unless a value is truly reused across multiple domains.
+
 ## File Tree
 
 ```text

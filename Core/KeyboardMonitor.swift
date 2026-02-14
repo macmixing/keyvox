@@ -73,6 +73,17 @@ final class KeyboardMonitor: ObservableObject {
     private var fnDown = false
     private var lastFlagsChangedEvent: NSEvent?
     private var defaultsObserver: NSObjectProtocol?
+    
+    private enum KeyCode {
+        static let escape: UInt16 = 53
+        static let leftOption: UInt16 = 58
+        static let rightOption: UInt16 = 61
+        static let leftCommand: UInt16 = 55
+        static let rightCommand: UInt16 = 54
+        static let leftControl: UInt16 = 59
+        static let rightControl: UInt16 = 62
+        static let function: UInt16 = 63
+    }
 
     // MARK: - Init
 
@@ -116,7 +127,7 @@ final class KeyboardMonitor: ObservableObject {
         
         // Add global keyboard monitor for Escape key
         globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { // Escape
+            if event.keyCode == KeyCode.escape { // Escape
                 self?.handleEscapeKey()
             }
         }
@@ -128,7 +139,7 @@ final class KeyboardMonitor: ObservableObject {
         }
         
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { // Escape
+            if event.keyCode == KeyCode.escape { // Escape
                 self?.handleEscapeKey()
             }
             return event
@@ -182,19 +193,19 @@ final class KeyboardMonitor: ObservableObject {
         // flagsChanged provides the keyCode for the modifier that changed.
         // We use it to deterministically track left/right state.
         switch event.keyCode {
-        case 58: // Left Option
+        case KeyCode.leftOption: // Left Option
             leftOptionDown = flags.contains(.option)
-        case 61: // Right Option
+        case KeyCode.rightOption: // Right Option
             rightOptionDown = flags.contains(.option)
-        case 55: // Left Command
+        case KeyCode.leftCommand: // Left Command
             leftCommandDown = flags.contains(.command)
-        case 54: // Right Command
+        case KeyCode.rightCommand: // Right Command
             rightCommandDown = flags.contains(.command)
-        case 59: // Left Control
+        case KeyCode.leftControl: // Left Control
             leftControlDown = flags.contains(.control)
-        case 62: // Right Control
+        case KeyCode.rightControl: // Right Control
             rightControlDown = flags.contains(.control)
-        case 63: // Fn (Function)
+        case KeyCode.function: // Fn (Function)
             fnDown = flags.contains(.function)
         default:
             break

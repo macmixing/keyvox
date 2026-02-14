@@ -18,6 +18,8 @@ class TranscriptionManager: ObservableObject {
     private let whisperService = WhisperService()
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
+    private let bluetoothStopSoundDelay: TimeInterval = 0.2
+    private let defaultStopSoundDelay: TimeInterval = 0.0
     
     init() {
         setupBindings()
@@ -120,7 +122,7 @@ class TranscriptionManager: ObservableObject {
             // NSSound cannot play into a Bluetooth Voice channel (HFP).
             // We must wait for the hardware to renegotiate back to high-quality A2DP.
             let isBluetooth = self.audioRecorder.currentDeviceKind == .bluetooth || self.audioRecorder.currentDeviceKind == .airPods
-            let delay: TimeInterval = isBluetooth ? 0.2 : 0.0
+            let delay: TimeInterval = isBluetooth ? self.bluetoothStopSoundDelay : self.defaultStopSoundDelay
             
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 self.playSound(named: "Frog") // Stop sound

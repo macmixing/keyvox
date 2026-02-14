@@ -21,6 +21,12 @@ class OverlayManager {
     private var preferredDisplayKeyCache: String?
     private var hasLoadedOriginsByDisplay = false
     private var originsByDisplayCache: [String: NSPoint] = [:]
+    private let hideAnimationCompletionDelay: TimeInterval = 0.5
+    private let clampOriginThreshold: CGFloat = 0.5
+    private let resetOvershootMinimumDistance: CGFloat = 6
+    private let resetOvershootMaximumDistance: CGFloat = 12
+    private let resetOvershootDistanceRatio: CGFloat = 0.12
+    private let defaultVerticalOffset: CGFloat = 50
     // Step 2 settle tuning (overshoot return leg only).
     private let resetSettleStartDelay: TimeInterval = 0.05
     private let resetSettleDuration: TimeInterval = 0.10
@@ -88,7 +94,7 @@ class OverlayManager {
             self?.pendingHideWorkItem = nil
         }
         pendingHideWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + hideAnimationCompletionDelay, execute: workItem)
     }
 
     private func registerMoveObserverIfNeeded(for panel: NSPanel) {
@@ -163,7 +169,7 @@ class OverlayManager {
         }
 
         let clamped = clampedOrigin(panel.frame.origin, for: panel, on: screen)
-        if abs(clamped.x - panel.frame.origin.x) > 0.5 || abs(clamped.y - panel.frame.origin.y) > 0.5 {
+        if abs(clamped.x - panel.frame.origin.x) > clampOriginThreshold || abs(clamped.y - panel.frame.origin.y) > clampOriginThreshold {
             panel.setFrameOrigin(clamped)
         }
     }
@@ -216,7 +222,7 @@ class OverlayManager {
         // Overshoot in the same direction as travel so the return path stays natural.
         let unitX = deltaX / distance
         let unitY = deltaY / distance
-        let overshootDistance = min(12, max(6, distance * 0.12))
+        let overshootDistance = min(resetOvershootMaximumDistance, max(resetOvershootMinimumDistance, distance * resetOvershootDistanceRatio))
         let overshoot = NSPoint(
             x: target.x + unitX * overshootDistance,
             y: target.y + unitY * overshootDistance
@@ -254,7 +260,7 @@ class OverlayManager {
         let rect = screen.visibleFrame
         return NSPoint(
             x: rect.midX - (panel.frame.width / 2),
-            y: rect.minY + 50
+            y: rect.minY + defaultVerticalOffset
         )
     }
 

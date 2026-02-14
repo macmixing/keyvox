@@ -7,6 +7,8 @@ class PasteService {
 
     // Heuristic memory for consecutive dictation when AX metadata is incomplete.
     private let heuristicTTL: TimeInterval = 10
+    private let restoreDelayAfterMenuFallback: TimeInterval = 0.8
+    private let restoreDelayAfterAccessibilityInjection: TimeInterval = 0.25
     private var lastInsertionAppIdentity: AppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
@@ -116,7 +118,7 @@ class PasteService {
             }
 
             // Menu-driven paste can complete slightly after AX calls.
-            let restoreDelay: TimeInterval = needsMenuPasteFallback ? 0.8 : 0.25
+            let restoreDelay: TimeInterval = needsMenuPasteFallback ? self.restoreDelayAfterMenuFallback : self.restoreDelayAfterAccessibilityInjection
 
             DispatchQueue.main.asyncAfter(deadline: .now() + restoreDelay) {
                 let pb = NSPasteboard.general

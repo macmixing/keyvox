@@ -108,10 +108,11 @@ struct KeyVoxApp: App {
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
     @AppStorage(UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
+    private let onboardingStartupDelay: TimeInterval = 0.1
     
     init() {
         // App initialization
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {
             if !UserDefaults.standard.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding) {
                 WindowManager.shared.showOnboarding()
             }

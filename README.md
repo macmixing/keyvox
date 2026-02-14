@@ -52,6 +52,11 @@ KeyVox is organized by responsibility:
 - **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
 - **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
 
+### Contributor Notes
+- Behavior and motion constants should stay close to their owning logic (file-local constants in managers/services/views).
+- Branded visual tuning intentionally stays inside proprietary files like `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift`.
+- This split reduces fork confusion and keeps licensing boundaries clear without extra license bookkeeping.
+
 ## Update Service
 
 `Core/Services/AppUpdateService.swift` is the single update source-of-truth integration.
