@@ -21,6 +21,8 @@ jobs:
             -configuration Debug \
             -destination 'platform=macOS' \
             -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             -resultBundlePath /tmp/keyvox-tests.xcresult \
             test
 

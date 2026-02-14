@@ -63,4 +63,16 @@ struct ListPatternDetectorTests {
         #expect(detected?.items.last?.content == "call mom")
         #expect(detected?.trailingText == "because we leave early")
     }
+
+    @Test
+    func preservesAndBecauseTransitionWhenSplittingLastItem() {
+        let detector = ListPatternDetector()
+        let text = "Today one get dog food two charge phone three call mom and because we leave early"
+
+        let detected = detector.detectList(in: text)
+        #expect(detected != nil)
+        #expect(detected?.items.count == 3)
+        #expect(detected?.items.last?.content == "call mom")
+        #expect(detected?.trailingText == "and because we leave early")
+    }
 }

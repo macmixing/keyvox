@@ -154,7 +154,7 @@ struct ListPatternDetector {
         // Second pass: split long causal commentary off the last list item.
         if let split = firstRegexSplit(
             normalized,
-            pattern: #"(?i)^(.{8,}?)\s+((?:because|since|as)\s+.+)$"#
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\s+.+)$"#
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
