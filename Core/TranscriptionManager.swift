@@ -167,9 +167,11 @@ class TranscriptionManager: ObservableObject {
                 
                 DispatchQueue.main.async {
                     let rawText = result ?? ""
+                    let renderMode = PasteService.shared.preferredListRenderModeForFocusedElement()
                     let text = self.postProcessor.process(
                         rawText,
-                        dictionaryEntries: self.dictionaryStore.entries
+                        dictionaryEntries: self.dictionaryStore.entries,
+                        renderMode: renderMode
                     )
                     self.lastTranscription = text
                     

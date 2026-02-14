@@ -10,6 +10,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **App**: app entry point, window lifecycle, shared defaults keys
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
 - **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
+- **Core/TextProcessing**: deterministic text formatting (list detection/rendering)
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -43,6 +44,11 @@ KeyVox/
 │   │   ├── PronunciationLexicon.swift
 │   │   ├── ReplacementScorer.swift
 │   │   └── TranscriptionPostProcessor.swift
+│   ├── TextProcessing/
+│   │   ├── ListFormattingEngine.swift
+│   │   ├── ListFormattingTypes.swift
+│   │   ├── ListPatternDetector.swift
+│   │   └── ListRenderer.swift
 │   ├── AudioDeviceManager.swift
 │   ├── AudioRecorder.swift
 │   ├── KeyboardMonitor.swift
@@ -119,9 +125,10 @@ KeyVox/
 2. `Core/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
-5. `Core/Services/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
-6. `Core/OverlayManager.swift` owns overlay panel lifecycle, drag persistence, and per-display position restore.
-7. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
+5. `Core/AI/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
+6. `Core/Services/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
+7. `Core/OverlayManager.swift` owns overlay panel lifecycle, drag persistence, and per-display position restore.
+8. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
 
 ## Key Components
 
@@ -138,6 +145,7 @@ KeyVox/
 - `Core/TranscriptionManager.swift`
   - Orchestrates recording, transcription, and paste.
   - Handles hands-free lock mode and escape cancellation.
+  - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
@@ -157,7 +165,7 @@ KeyVox/
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
 
-### AI Post-Processing (`Core/AI`)
+### Post-Processing (`Core/AI` + `Core/TextProcessing`)
 
 - `Core/AI/DictionaryMatcher.swift`
   - Performs balanced n-gram matching (1-4 tokens) against dictionary entries.
@@ -169,6 +177,15 @@ KeyVox/
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/AI/ReplacementScorer.swift`
   - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
+- `Core/TextProcessing/ListFormattingEngine.swift`
+  - Applies conservative numeric list formatting only when reliable list patterns are detected.
+- `Core/TextProcessing/ListPatternDetector.swift`
+  - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
+  - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
+- `Core/TextProcessing/ListRenderer.swift`
+  - Renders detected lists as multiline (`1. ...`) or single-line inline (`1. ...; 2. ...`) based on target context.
+- `Core/TextProcessing/ListFormattingTypes.swift`
+  - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
   - Enforces row targets and writes `Resources/Pronunciation/sources.lock.json`.
@@ -180,6 +197,7 @@ KeyVox/
   - Enforces coverage/hit-rate/false-positive/latency thresholds using benchmark fixtures.
 - `Core/Services/PasteService.swift`
   - Smart whitespace handling and robust clipboard restore.
+  - Determines preferred list render mode from focused AX role for single-line graceful fallback.
 - `Core/Services/AppUpdateService.swift`
   - Fetches latest release metadata from GitHub Releases API.
   - Endpoint is composed from owner/repo constants in the service.

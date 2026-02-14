@@ -5,6 +5,7 @@ final class TranscriptionPostProcessor {
     private let enablePhoneticMatcher = true
     private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
+    private let listFormattingEngine = ListFormattingEngine()
     private var dictionaryFingerprint = ""
 
     func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
@@ -14,7 +15,7 @@ final class TranscriptionPostProcessor {
         dictionaryMatcher.rebuildIndex(entries: entries)
     }
 
-    func process(_ text: String, dictionaryEntries: [DictionaryEntry]) -> String {
+    func process(_ text: String, dictionaryEntries: [DictionaryEntry], renderMode: ListRenderMode) -> String {
         guard !text.isEmpty else { return "" }
 
         updateDictionaryEntries(dictionaryEntries)
@@ -37,9 +38,28 @@ final class TranscriptionPostProcessor {
             normalized = vocabularyNormalizer.normalize(text, with: dictionaryEntries)
         }
 
-        return normalized
-            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let listFormatted = listFormattingEngine.formatIfNeeded(normalized, renderMode: renderMode)
+        return normalizeOutputWhitespace(listFormatted, renderMode: renderMode)
+    }
+
+    private func normalizeOutputWhitespace(_ text: String, renderMode: ListRenderMode) -> String {
+        switch renderMode {
+        case .singleLineInline:
+            return text
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        case .multiline:
+            let normalizedLines = text
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line in
+                    String(line)
+                        .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                .filter { !$0.isEmpty }
+
+            return normalizedLines.joined(separator: "\n")
+        }
     }
 
     private func fingerprint(for entries: [DictionaryEntry]) -> String {

@@ -52,6 +52,10 @@
 		8F3302032F45010000CC3301 /* DictionaryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301032F45010000CC3301 /* DictionaryMatcher.swift */; };
 		8F3302042F45010000CC3301 /* ReplacementScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301042F45010000CC3301 /* ReplacementScorer.swift */; };
 		8F3302052F45010000CC3301 /* Pronunciation in Resources */ = {isa = PBXBuildFile; fileRef = 8F3301052F45010000CC3301 /* Pronunciation */; };
+		8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401012F46010000DD4401 /* ListFormattingTypes.swift */; };
+		8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401022F46010000DD4401 /* ListPatternDetector.swift */; };
+		8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401032F46010000DD4401 /* ListRenderer.swift */; };
+		8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401042F46010000DD4401 /* ListFormattingEngine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,6 +105,10 @@
 		8F3301032F45010000CC3301 /* DictionaryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryMatcher.swift; sourceTree = "<group>"; };
 		8F3301042F45010000CC3301 /* ReplacementScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplacementScorer.swift; sourceTree = "<group>"; };
 		8F3301052F45010000CC3301 /* Pronunciation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Pronunciation; sourceTree = "<group>"; };
+		8F4401012F46010000DD4401 /* ListFormattingTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingTypes.swift; sourceTree = "<group>"; };
+		8F4401022F46010000DD4401 /* ListPatternDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternDetector.swift; sourceTree = "<group>"; };
+		8F4401032F46010000DD4401 /* ListRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListRenderer.swift; sourceTree = "<group>"; };
+		8F4401042F46010000DD4401 /* ListFormattingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				8F2201002F44010000BB2201 /* AI */,
+				8F4401002F46010000DD4401 /* TextProcessing */,
 				8E6D05CA2F3C51D6003BD458 /* Services */,
 				8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */,
 				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
@@ -202,6 +211,17 @@
 				8F2201042F44010000BB2201 /* TranscriptionPostProcessor.swift */,
 			);
 			path = AI;
+			sourceTree = "<group>";
+		};
+		8F4401002F46010000DD4401 /* TextProcessing */ = {
+			isa = PBXGroup;
+			children = (
+				8F4401042F46010000DD4401 /* ListFormattingEngine.swift */,
+				8F4401022F46010000DD4401 /* ListPatternDetector.swift */,
+				8F4401032F46010000DD4401 /* ListRenderer.swift */,
+				8F4401012F46010000DD4401 /* ListFormattingTypes.swift */,
+			);
+			path = TextProcessing;
 			sourceTree = "<group>";
 		};
 		8E6D05DB2F3C51D6003BD458 /* Views */ = {
@@ -362,6 +382,10 @@
 				8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */,
 				8F3302022F45010000CC3301 /* PronunciationLexicon.swift in Sources */,
 				8F3302042F45010000CC3301 /* ReplacementScorer.swift in Sources */,
+				8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */,
+				8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */,
+				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
+				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
 				8F2202042F44010000BB2201 /* TranscriptionPostProcessor.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,

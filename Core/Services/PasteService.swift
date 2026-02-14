@@ -155,6 +155,21 @@ class PasteService {
         }
     }
 
+    // MARK: - List Formatting Target
+    func preferredListRenderModeForFocusedElement() -> ListRenderMode {
+        guard let focusedElement = focusedUIElement(),
+              let role = roleString(for: focusedElement) else {
+            return .multiline
+        }
+
+        switch role {
+        case "AXTextField", "AXSearchField", "AXComboBox":
+            return .singleLineInline
+        default:
+            return .multiline
+        }
+    }
+
     // MARK: - Smart Spacing
     private func applySmartLeadingSeparatorIfNeeded(to text: String) -> String {
         guard let firstIncoming = text.first else { return text }
@@ -186,16 +201,7 @@ class PasteService {
     }
 
     private func focusedInsertionContext() -> InsertionContext? {
-        let systemWideElement = AXUIElementCreateSystemWide()
-        var focusedElementRef: CFTypeRef?
-        let focusResult = AXUIElementCopyAttributeValue(
-            systemWideElement,
-            kAXFocusedUIElementAttribute as CFString,
-            &focusedElementRef
-        )
-
-        guard focusResult == .success, let focusedElementRef else { return nil }
-        let focusedElement = focusedElementRef as! AXUIElement
+        guard let focusedElement = focusedUIElement() else { return nil }
 
         // Best-effort context: selection/caret may be unavailable in some editors.
         let selectedRange = getSelectedRange(element: focusedElement)
@@ -218,6 +224,30 @@ class PasteService {
             caretLocation: caretLocation,
             previousCharacter: previousCharacter
         )
+    }
+
+    private func focusedUIElement() -> AXUIElement? {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElementRef: CFTypeRef?
+        let focusResult = AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedElementRef
+        )
+
+        guard focusResult == .success, let focusedElementRef else { return nil }
+        guard CFGetTypeID(focusedElementRef) == AXUIElementGetTypeID() else {
+            return nil
+        }
+        return unsafeBitCast(focusedElementRef, to: AXUIElement.self)
+    }
+
+    private func roleString(for element: AXUIElement) -> String? {
+        var roleRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef) == .success else {
+            return nil
+        }
+        return roleRef as? String
     }
 
     private func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character? {

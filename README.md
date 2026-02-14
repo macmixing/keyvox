@@ -22,6 +22,11 @@ KeyVox is built for low-latency, local transcription with deep macOS integration
 - **Model pre-warming**: Loads model early to reduce first-transcription delay.
 - **Phonetic dictionary adherence**: Applies offline post-correction with bundled pronunciation data plus deterministic fallback encoding.
 
+### Text Processing
+- **Deterministic list formatting (non-AI)**: Converts spoken numeric lists (e.g., one/two/three, 1/2/3) into numbered output.
+- **Single-line aware list fallback**: Uses inline list rendering for single-line targets and multiline rendering for editors.
+- **Conservative spoken-marker range**: Spoken number markers currently support `one` through `twelve` to reduce false positives.
+
 ### Interaction
 - **Configurable trigger binding**: Left/Right Option, Command, Control, or Fn.
 - **Default trigger**: **Right Option (⌥)**.
@@ -49,10 +54,18 @@ KeyVox is organized by responsibility:
 - **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
 - **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
+- **`Core/AI/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
 - **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
+- **`Core/TextProcessing/ListFormattingEngine.swift`**: deterministic numeric list detection/rendering layer.
 - **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
 - **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
 - **`Views/RecordingOverlay.swift` + `Views/Components/KeyVoxLogo.swift`**: branded visual identity layer.
+
+### Post-Processing Order
+1. Whisper returns raw transcript text.
+2. Dictionary correction applies custom-word adherence.
+3. List formatting applies numeric list rendering when confident.
+4. Final text is inserted via Accessibility-first paste flow.
 
 ### Contributor Notes
 - Behavior and motion constants should stay close to their owning logic (file-local constants in managers/services/views).
