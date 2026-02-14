@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  app-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run app unit tests with coverage
+        run: |
+          xcodebuild \
+            -project KeyVox.xcodeproj \
+            -scheme "KeyVox DEBUG" \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -enableCodeCoverage YES \
+            -resultBundlePath /tmp/keyvox-tests.xcresult \
+            test
+
+      - name: Enforce core coverage
+        run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
+
+  package-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run KeyVoxWhisper package tests
+        run: swift test --package-path Packages/KeyVoxWhisper

@@ -1,6 +1,6 @@
 import Foundation
 
-enum ListRenderMode {
+enum ListRenderMode: Equatable {
     case multiline
     case singleLineInline
 }

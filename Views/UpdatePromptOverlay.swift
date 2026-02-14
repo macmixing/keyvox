@@ -126,3 +126,5 @@ final class UpdatePromptManager {
         window?.orderOut(nil)
     }
 }
+
+extension UpdatePromptManager: UpdatePromptPresenting {}

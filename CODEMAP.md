@@ -15,6 +15,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
 - **Tools**: maintainer-only scripts (resource generation, dev helpers)
+- **KeyVoxTests**: app unit tests for deterministic/runtime-safe logic
 - **Packages**: local Swift package wrapping `whisper.cpp`
 
 ## Contributor Notes
@@ -22,6 +23,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - Behavior and motion constants are kept file-local near their owning runtime logic to reduce maintenance confusion.
 - Proprietary visual tuning remains in excluded branded files (`Views/RecordingOverlay.swift`, `Views/Components/KeyVoxLogo.swift`).
 - No shared constants module is required unless a value is truly reused across multiple domains.
+- Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
 
 ## File Tree
 
@@ -35,6 +37,7 @@ KeyVox/
 │   │   ├── AppUpdateLogic.swift
 │   │   ├── AppUpdateService.swift
 │   │   ├── PasteService.swift
+│   │   ├── UpdatePromptPresenting.swift
 │   │   ├── UpdateFeedConfig.swift
 │   │   └── WhisperService.swift
 │   ├── AI/
@@ -85,12 +88,22 @@ KeyVox/
 │   └── KeyVoxWhisper/
 │       ├── Package.swift
 │       ├── README.md
-│       └── Sources/KeyVoxWhisper/
+│       ├── Sources/KeyVoxWhisper/
 │           ├── Segment.swift
 │           ├── Whisper.swift
 │           ├── WhisperError.swift
 │           ├── WhisperLanguage.swift
 │           └── WhisperParams.swift
+│       └── Tests/KeyVoxWhisperTests/
+│           ├── WhisperCoreTests.swift
+│           └── WhisperParamsTests.swift
+├── KeyVoxTests/
+│   ├── AI/
+│   ├── Core/
+│   ├── Fixtures/Updates/
+│   ├── Services/
+│   ├── TestSupport/
+│   └── TextProcessing/
 ├── Resources/
 │   ├── Assets.xcassets/
 │   ├── Pronunciation/
@@ -104,6 +117,8 @@ KeyVox/
 │   ├── logo.png
 │   └── keyvox.icon/
 ├── Tools/
+│   ├── Quality/
+│   │   └── check_core_coverage.sh
 │   ├── UpdateFeed/
 │   │   ├── configure_local_feed.sh
 │   │   └── update-feed.override.example.json
@@ -118,6 +133,8 @@ KeyVox/
 │       ├── build_lexicon.sh
 │       ├── train_g2p.sh
 │       └── verify_licenses.sh
+├── .github/workflows/
+│   └── tests.yml
 ├── KeyVox.xcodeproj/
 ├── LICENSE.md
 ├── README.md
@@ -215,11 +232,15 @@ KeyVox/
   - Prefers `.dmg` `browser_download_url`, then falls back to release `html_url`.
   - Supports timer-based checks and manual checks.
   - Fails silently on network/decoding errors.
-  - Triggers `UpdatePromptOverlay` through prompt manager.
+  - Triggers `UpdatePromptOverlay` through an injected prompt-presenting seam.
+- `Core/Services/UpdatePromptPresenting.swift`
+  - Main-actor protocol seam used to test update prompt flow without UI window dependencies.
 - `Tools/UpdateFeed/configure_local_feed.sh`
   - Maintainer helper for setting, clearing, and showing the local update feed override file.
 - `Tools/UpdateFeed/update-feed.override.example.json`
   - Template for local override JSON shape (the active override lives in Application Support, not in the repo).
+- `Tools/Quality/check_core_coverage.sh`
+  - Enforces allowlisted core-file coverage threshold from `.xcresult` using `xccov`.
 
 ### UI Layer
 

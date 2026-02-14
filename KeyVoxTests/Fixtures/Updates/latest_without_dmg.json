@@ -1,0 +1,11 @@
+{
+  "tag_name": "1.2.0",
+  "body": "No dmg asset in this release.",
+  "html_url": "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
+  "assets": [
+    {
+      "name": "notes.txt",
+      "browser_download_url": "https://github.com/macmixing/keyvox/releases/download/v1.2.0/notes.txt"
+    }
+  ]
+}

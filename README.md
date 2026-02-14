@@ -73,6 +73,7 @@ KeyVox is organized by responsibility:
 - Behavior and motion constants should stay close to their owning logic (file-local constants in managers/services/views).
 - Branded visual tuning intentionally stays inside proprietary files like `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift`.
 - This split reduces fork confusion and keeps licensing boundaries clear without extra license bookkeeping.
+- Unit tests focus on deterministic/runtime-safe logic; hardware and OS-event integrations remain integration-test territory.
 
 ## Update Service
 
@@ -86,6 +87,32 @@ KeyVox is organized by responsibility:
 - Optional local override file for maintainer testing: `~/Library/Application Support/KeyVox/update-feed.override.json`.
 - Optional helper script for setting/clearing/showing local override: `Tools/UpdateFeed/configure_local_feed.sh`.
 - Example override template (committed): `Tools/UpdateFeed/update-feed.override.example.json`.
+
+### Local Update Feed Workflow (Maintainers)
+- Tracked default update feed lives in `Core/Services/UpdateFeedConfig.swift` and should remain production-facing.
+- To test against a different repo locally, set an override (not committed):
+  - `Tools/UpdateFeed/configure_local_feed.sh set <owner> <repo>`
+- To inspect current local override:
+  - `Tools/UpdateFeed/configure_local_feed.sh show`
+- To return to tracked default behavior:
+  - `Tools/UpdateFeed/configure_local_feed.sh clear`
+- Runtime resolution order:
+  - If `~/Library/Application Support/KeyVox/update-feed.override.json` exists, the app uses it.
+  - If it does not exist, the app uses tracked defaults from `UpdateFeedConfig.swift`.
+
+## Testing & Quality Gates
+
+- App unit tests:  
+  `xcodebuild -project KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES test`
+- Package unit tests (`KeyVoxWhisper`):  
+  `swift test --package-path Packages/KeyVoxWhisper`
+- Core coverage gate (allowlisted deterministic files, threshold default `80%`):  
+  `Tools/Quality/check_core_coverage.sh <path-to-xcresult>`
+
+### Integration-Only Exclusions
+- Audio capture hardware/runtime behavior (`Core/AudioRecorder.swift`)
+- Global keyboard hook behavior (`Core/KeyboardMonitor.swift`)
+- Overlay window rendering/interaction details (`Core/OverlayManager.swift`, `Views/RecordingOverlay.swift`)
 
 ### KeyVoxWhisper Wrapper
 `Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.

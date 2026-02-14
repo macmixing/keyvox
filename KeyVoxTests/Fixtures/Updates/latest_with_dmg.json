@@ -1,0 +1,11 @@
+{
+  "tag_name": "v1.2.0",
+  "body": "Bug fixes and performance improvements.",
+  "html_url": "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
+  "assets": [
+    {
+      "name": "KeyVox-1.2.0.dmg",
+      "browser_download_url": "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0.dmg"
+    }
+  ]
+}

@@ -58,7 +58,18 @@
 		8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401042F46010000DD4401 /* ListFormattingEngine.swift */; };
 		8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */; };
 		8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501022F47010000EE5501 /* AppUpdateLogic.swift */; };
+		8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8EE6028C2F412B920094EC16 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8EE004522F3BA59900BBAB30 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8EE004592F3BA59900BBAB30;
+			remoteInfo = KeyVox;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
@@ -95,6 +106,7 @@
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionPostProcessor.swift; sourceTree = "<group>"; };
+		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		8F2201012F44010000BB2201 /* DictionaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntry.swift; sourceTree = "<group>"; };
 		8F2201022F44010000BB2201 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
@@ -113,7 +125,16 @@
 		8F4401042F46010000DD4401 /* ListFormattingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingEngine.swift; sourceTree = "<group>"; };
 		8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedConfig.swift; sourceTree = "<group>"; };
 		8F5501022F47010000EE5501 /* AppUpdateLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogic.swift; sourceTree = "<group>"; };
+		8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPresenting.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8EE602892F412B920094EC16 /* KeyVoxTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyVoxTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8EE004572F3BA59900BBAB30 /* Frameworks */ = {
@@ -121,6 +142,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8EE602852F412B920094EC16 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +187,7 @@
 				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
 				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
+				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
 				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
 			);
@@ -236,6 +265,7 @@
 				8E6D05D32F3C51D6003BD458 /* Resources */,
 				8E6D05DB2F3C51D6003BD458 /* Views */,
 				8E6D05C52F3C51C9003BD458 /* App */,
+				8EE602892F412B920094EC16 /* KeyVoxTests */,
 				8EE0045B2F3BA59900BBAB30 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -244,6 +274,7 @@
 			isa = PBXGroup;
 			children = (
 				8EE0045A2F3BA59900BBAB30 /* KeyVox.app */,
+				8EE602882F412B920094EC16 /* KeyVoxTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -296,6 +327,29 @@
 			productReference = 8EE0045A2F3BA59900BBAB30 /* KeyVox.app */;
 			productType = "com.apple.product-type.application";
 		};
+		8EE602872F412B920094EC16 /* KeyVoxTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8EE602902F412B920094EC16 /* Build configuration list for PBXNativeTarget "KeyVoxTests" */;
+			buildPhases = (
+				8EE602842F412B920094EC16 /* Sources */,
+				8EE602852F412B920094EC16 /* Frameworks */,
+				8EE602862F412B920094EC16 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8EE6028D2F412B920094EC16 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8EE602892F412B920094EC16 /* KeyVoxTests */,
+			);
+			name = KeyVoxTests;
+			packageProductDependencies = (
+			);
+			productName = KeyVoxTests;
+			productReference = 8EE602882F412B920094EC16 /* KeyVoxTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -308,6 +362,10 @@
 				TargetAttributes = {
 					8EE004592F3BA59900BBAB30 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					8EE602872F412B920094EC16 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 8EE004592F3BA59900BBAB30;
 					};
 				};
 			};
@@ -329,6 +387,7 @@
 			projectRoot = "";
 			targets = (
 				8EE004592F3BA59900BBAB30 /* KeyVox */,
+				8EE602872F412B920094EC16 /* KeyVoxTests */,
 			);
 		};
 /* End PBXProject section */
@@ -343,6 +402,13 @@
 				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
 				8F3302052F45010000CC3301 /* Pronunciation in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8EE602862F412B920094EC16 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,13 +461,29 @@
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
+				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8EE602842F412B920094EC16 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8EE6028D2F412B920094EC16 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8EE004592F3BA59900BBAB30 /* KeyVox */;
+			targetProxy = 8EE6028C2F412B920094EC16 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8EE004792F3BA59B00BBAB30 /* Debug */ = {
@@ -624,6 +706,46 @@
 			};
 			name = Release;
 		};
+		8EE6028E2F412B920094EC16 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cuei.keyvox.KeyVoxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyVox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyVox";
+			};
+			name = Debug;
+		};
+		8EE6028F2F412B920094EC16 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cuei.keyvox.KeyVoxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyVox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyVox";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -641,6 +763,15 @@
 			buildConfigurations = (
 				8EE0047C2F3BA59B00BBAB30 /* Debug */,
 				8EE0047D2F3BA59B00BBAB30 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8EE602902F412B920094EC16 /* Build configuration list for PBXNativeTarget "KeyVoxTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8EE6028E2F412B920094EC16 /* Debug */,
+				8EE6028F2F412B920094EC16 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

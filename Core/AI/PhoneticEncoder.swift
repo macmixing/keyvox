@@ -1,7 +1,8 @@
 import Foundation
 
 struct PhoneticEncoder {
-    func signature(for normalizedToken: String, lexicon: PronunciationLexicon) -> String {
+    @MainActor
+    func signature(for normalizedToken: String, lexicon: PronunciationLexiconProviding) -> String {
         if let known = lexicon.pronunciation(for: normalizedToken) {
             return known
         }
@@ -9,7 +10,8 @@ struct PhoneticEncoder {
         return fallbackSignature(for: normalizedToken)
     }
 
-    func phraseSignature(for tokens: [String], lexicon: PronunciationLexicon) -> String {
+    @MainActor
+    func phraseSignature(for tokens: [String], lexicon: PronunciationLexiconProviding) -> String {
         tokens
             .map { signature(for: $0, lexicon: lexicon) }
             .joined(separator: " ")

@@ -162,6 +162,12 @@ class PasteService {
             return .multiline
         }
 
+        return Self.listRenderMode(forAXRole: role)
+    }
+
+    static func listRenderMode(forAXRole role: String?) -> ListRenderMode {
+        guard let role else { return .multiline }
+
         switch role {
         case "AXTextField", "AXSearchField", "AXComboBox":
             return .singleLineInline

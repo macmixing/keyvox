@@ -35,7 +35,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8EE004662F3BA59B00BBAB30"
+               BlueprintIdentifier = "8EE602872F412B920094EC16"
                BuildableName = "KeyVoxTests.xctest"
                BlueprintName = "KeyVoxTests"
                ReferencedContainer = "container:KeyVox.xcodeproj">

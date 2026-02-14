@@ -1,6 +1,6 @@
 import Foundation
 
-public enum WhisperError: Error, LocalizedError {
+public enum WhisperError: Error, LocalizedError, Equatable {
     case initializationFailed
     case invalidFrames
     case transcriptionFailed(code: Int32)

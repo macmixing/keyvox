@@ -52,7 +52,9 @@ final class AppUpdateService: ObservableObject {
     private let feedConfig: UpdateFeedConfig
     private let bundle: Bundle
     private let urlSession: URLSession
-    private let defaultCheckInterval: TimeInterval = 60 * 60 * 24
+    private let promptPresenter: UpdatePromptPresenting
+    private let nowProvider: () -> Date
+    private let defaultCheckInterval: TimeInterval
     private var updateTimer: Timer?
     private var suppressedUpdateIDThisSession: String?
     private var autoPromptSnoozedUntilInSession: Date?
@@ -60,11 +62,17 @@ final class AppUpdateService: ObservableObject {
     init(
         feedConfig: UpdateFeedConfig? = nil,
         bundle: Bundle = .main,
-        urlSession: URLSession = .shared
+        urlSession: URLSession = .shared,
+        promptPresenter: UpdatePromptPresenting? = nil,
+        nowProvider: @escaping () -> Date = Date.init,
+        checkInterval: TimeInterval = 60 * 60 * 24
     ) {
         self.feedConfig = feedConfig ?? UpdateFeedResolver.resolve()
         self.bundle = bundle
         self.urlSession = urlSession
+        self.promptPresenter = promptPresenter ?? UpdatePromptManager.shared
+        self.nowProvider = nowProvider
+        self.defaultCheckInterval = max(checkInterval, 1)
     }
 
     /// Starts the automatic update polling timer.
@@ -116,19 +124,19 @@ final class AppUpdateService: ObservableObject {
 
         // If user pressed "Later", suppress repeats for this app session.
         if !isManualCheck, suppressedUpdateIDThisSession == updateID {
-            if let snoozedUntil = autoPromptSnoozedUntilInSession, Date() < snoozedUntil {
+            if let snoozedUntil = autoPromptSnoozedUntilInSession, nowProvider() < snoozedUntil {
                 return
             }
         }
 
         if !isManualCheck {
-            if let snoozedUntil = autoPromptSnoozedUntilInSession, Date() < snoozedUntil {
+            if let snoozedUntil = autoPromptSnoozedUntilInSession, nowProvider() < snoozedUntil {
                 return
             }
         }
 
         guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return }
-        UpdatePromptManager.shared.show(prompt: prompt)
+        promptPresenter.show(prompt: prompt)
     }
 
     private func buildPrompt(from remoteInfo: LatestReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
@@ -176,7 +184,7 @@ final class AppUpdateService: ObservableObject {
             onPrimaryAction: nil,
             onDismiss: {}
         )
-        UpdatePromptManager.shared.show(prompt: prompt)
+        promptPresenter.show(prompt: prompt)
     }
 
     private func localVersionInfo() -> (version: String, build: String) {
@@ -186,7 +194,7 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func snoozeAutoPrompt(for cooldown: TimeInterval, updateID: String) {
-        autoPromptSnoozedUntilInSession = Date().addingTimeInterval(cooldown)
+        autoPromptSnoozedUntilInSession = nowProvider().addingTimeInterval(cooldown)
         suppressedUpdateIDThisSession = updateID
     }
 

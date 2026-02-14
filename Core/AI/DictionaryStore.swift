@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-enum DictionaryStoreError: LocalizedError {
+enum DictionaryStoreError: LocalizedError, Equatable {
     case emptyPhrase
     case duplicatePhrase
     case saveFailed
@@ -32,11 +32,19 @@ final class DictionaryStore: ObservableObject {
     }
 
     private let fileManager: FileManager
+    private let appSupportDirectoryURL: URL
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    private init(fileManager: FileManager = .default) {
+    private convenience init(fileManager: FileManager = .default) {
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let defaultBaseDirectory = appSupport.appendingPathComponent("KeyVox", isDirectory: true)
+        self.init(fileManager: fileManager, baseDirectoryURL: defaultBaseDirectory)
+    }
+
+    init(fileManager: FileManager = .default, baseDirectoryURL: URL) {
         self.fileManager = fileManager
+        self.appSupportDirectoryURL = baseDirectoryURL
         loadFromDisk()
     }
 
@@ -100,11 +108,6 @@ final class DictionaryStore: ObservableObject {
         }
 
         return appendedCount == 0 ? "" : prompt
-    }
-
-    private var appSupportDirectoryURL: URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return appSupport.appendingPathComponent("KeyVox", isDirectory: true)
     }
 
     private var dictionaryDirectoryURL: URL {

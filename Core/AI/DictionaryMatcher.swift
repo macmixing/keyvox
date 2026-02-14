@@ -46,14 +46,14 @@ final class DictionaryMatcher {
         let score: Double
     }
 
-    private let lexicon: PronunciationLexicon
+    private let lexicon: PronunciationLexiconProviding
     private let encoder: PhoneticEncoder
     private let scorer: ReplacementScorer
 
     private var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
 
     init(
-        lexicon: PronunciationLexicon,
+        lexicon: PronunciationLexiconProviding,
         encoder: PhoneticEncoder,
         scorer: ReplacementScorer
     ) {
@@ -64,7 +64,7 @@ final class DictionaryMatcher {
 
     convenience init() {
         self.init(
-            lexicon: .shared,
+            lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
             scorer: .balanced
         )

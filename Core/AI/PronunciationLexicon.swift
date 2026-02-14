@@ -1,7 +1,13 @@
 import Foundation
 
 @MainActor
-final class PronunciationLexicon {
+protocol PronunciationLexiconProviding: AnyObject {
+    func pronunciation(for normalizedWord: String) -> String?
+    func isCommonWord(_ normalizedWord: String) -> Bool
+}
+
+@MainActor
+final class PronunciationLexicon: PronunciationLexiconProviding {
     static let shared = PronunciationLexicon()
 
     private(set) var pronunciationsByWord: [String: String] = [:]
