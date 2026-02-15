@@ -87,6 +87,7 @@ final class DictionaryMatcher {
         var stats = DebugStats()
         var proposed: [ProposedReplacement] = []
 
+        // Pipeline: propose replacements, resolve overlaps deterministically, then apply right-to-left.
         for start in tokens.indices {
             for tokenCount in 1...4 {
                 let end = start + tokenCount
@@ -125,6 +126,7 @@ final class DictionaryMatcher {
         }
 
         var output = text
+        // Apply from right to left so earlier replacements do not invalidate later NSRanges.
         for item in selected.sorted(by: { $0.range.location > $1.range.location }) {
             guard let swiftRange = Range(item.range, in: output) else { continue }
             output.replaceSubrange(swiftRange, with: item.replacement)

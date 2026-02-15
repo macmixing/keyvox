@@ -56,6 +56,7 @@ final class AudioDeviceManager: ObservableObject {
             return availableMicrophones
         }
 
+        // Preserve a missing persisted selection so users can see why the old choice is no longer active.
         let unavailable = MicrophoneOption(
             id: appSettings.selectedMicrophoneUID,
             name: "Previously Selected Microphone (Unavailable)",
@@ -186,6 +187,7 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     nonisolated private static func sortRank(for kind: MicrophoneKind) -> Int {
+        // Picker policy: built-in first (recommended), then wired/other, then Bluetooth classes.
         switch kind {
         case .builtIn:
             return 0
@@ -215,6 +217,7 @@ final class AudioDeviceManager: ObservableObject {
             return .builtIn
         }
 
+        // Name heuristics are a fallback for devices that do not report a reliable CoreAudio transport type.
         if lowered.contains("bluetooth") ||
             lowered.contains("hands-free") ||
             lowered.contains("headset") ||

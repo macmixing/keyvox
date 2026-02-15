@@ -77,6 +77,7 @@ final class WarningManager {
             recoveryWindow = panel
         }
 
+        // Recovery overlay model is main-actor isolated; construct and mutate it only on MainActor.
         let model = PasteFailureRecoveryOverlayModel(progress: progress, onDismiss: onDismiss)
         recoveryModel = model
         recoveryWindow?.contentView = NSHostingView(
@@ -105,6 +106,7 @@ final class WarningManager {
     private func playCancelSound() {
         let appSettings = AppSettingsStore.shared
         guard appSettings.isSoundEnabled else { return }
+        // Keep warning cues tied to the global cue-volume preference.
         if let sound = NSSound(named: "Submarine") {
             sound.volume = Float(appSettings.soundVolume)
             sound.play()
@@ -112,6 +114,7 @@ final class WarningManager {
     }
 
     private func setupMonitor() {
+        // Dismiss warnings on click-away both inside and outside app focus.
         if localMonitor == nil {
             localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
                 guard let self = self, let window = self.window, window.isVisible else { return event }

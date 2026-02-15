@@ -7,6 +7,7 @@ final class OverlayScreenPersistence {
     private var hasLoadedPreferredDisplayKey = false
     private var preferredDisplayKeyCache: String?
     private var hasLoadedOriginsByDisplay = false
+    // Lazy cache avoids repeated UserDefaults decoding on hot show/hide/move paths.
     private var originsByDisplayCache: [String: NSPoint] = [:]
 
     init(defaultVerticalOffset: CGFloat = 50) {
@@ -14,6 +15,7 @@ final class OverlayScreenPersistence {
     }
 
     func resolvedOriginForShow(panel: NSPanel) -> NSPoint {
+        // Prefer the persisted display when still connected; otherwise keep continuity on current fallback display.
         let preferredKey = loadPreferredDisplayKey()
         if let preferredKey,
            let preferredScreen = screen(forDisplayKey: preferredKey) {
@@ -65,6 +67,7 @@ final class OverlayScreenPersistence {
         }
 
         if let preferredScreen = screen(forDisplayKey: preferredKey) {
+            // If a previously missing preferred display returns, move back to its saved/default origin once.
             if isUsingFallbackDisplay, panel.isVisible {
                 let origin = savedOrigin(for: preferredKey) ?? defaultOrigin(for: panel, on: preferredScreen)
                 panel.setFrameOrigin(clampedOrigin(origin, for: panel, on: preferredScreen))
@@ -157,6 +160,7 @@ final class OverlayScreenPersistence {
            let legacyOrigin = loadLegacySavedOrigin(),
            let screen = screenContaining(point: legacyOrigin) ?? NSScreen.main ?? NSScreen.screens.first,
            let displayKey = displayKey(for: screen) {
+            // One-time migration from legacy single-origin storage into per-display storage.
             origins[displayKey] = legacyOrigin
             saveOriginsByDisplay(origins)
             if loadPreferredDisplayKey() == nil {

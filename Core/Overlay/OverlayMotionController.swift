@@ -4,6 +4,7 @@ import Foundation
 import QuartzCore
 
 final class OverlayMotionController {
+    // Keep these shared so double-click reset and fling impacts use the same bounce feel.
     private let resetOvershootMinimumDistance: CGFloat = 6
     private let resetOvershootMaximumDistance: CGFloat = 12
     private let resetOvershootDistanceRatio: CGFloat = 0.12
@@ -139,6 +140,7 @@ final class OverlayMotionController {
         let deltaX = targetOrigin.x - startOrigin.x
         let deltaY = targetOrigin.y - startOrigin.y
 
+        // Drive flight manually at 120 Hz; NSWindow animated frame updates can look stepped at fling speeds.
         let timer = Timer(timeInterval: flingFlightFrameInterval, repeats: true) { [weak self, weak panel] timer in
             guard let self, let panel else {
                 timer.invalidate()
