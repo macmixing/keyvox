@@ -53,7 +53,11 @@ KeyVox is organized by responsibility:
 - **`Core/TranscriptionManager.swift`**: central recording/transcription state machine.
 - **`Core/AudioRecorder.swift`**: 16kHz mono audio capture pipeline.
 - **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
-- **`Core/OverlayManager.swift`**: overlay lifecycle, drag persistence, display reconnection behavior.
+- **`Core/Overlay/OverlayManager.swift`**: overlay lifecycle orchestration, panel wiring, and visibility state.
+- **`Core/Overlay/OverlayMotionController.swift`**: fling/reset motion sequencing and overshoot/settle animation flow.
+- **`Core/Overlay/OverlayScreenPersistence.swift`**: per-display origin persistence, clamping, and preferred-display recovery.
+- **`Core/Overlay/OverlayPanel.swift`**: panel-level drag sampling, double-click reset detection, and release velocity capture.
+- **`Core/Overlay/OverlayFlingPhysics.swift`**: pure fling impact/reflection/duration calculations.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
 - **`Core/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
 - **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
@@ -114,7 +118,7 @@ KeyVox is organized by responsibility:
 ### Integration-Only Exclusions
 - Audio capture hardware/runtime behavior (`Core/AudioRecorder.swift`)
 - Global keyboard hook behavior (`Core/KeyboardMonitor.swift`)
-- Overlay window rendering/interaction details (`Core/OverlayManager.swift`, `Views/RecordingOverlay.swift`)
+- Overlay window rendering/interaction details (`Core/Overlay/OverlayManager.swift`, `Core/Overlay/OverlayPanel.swift`, `Views/RecordingOverlay.swift`)
 
 ### KeyVoxWhisper Wrapper
 `Packages/KeyVoxWhisper` is the project-local Swift wrapper around official `whisper.cpp` binaries. It isolates upstream compatibility churn behind a stable Swift interface used by app code.

@@ -66,7 +66,13 @@ KeyVox/
 │   ├── AudioRecorder.swift
 │   ├── KeyboardMonitor.swift
 │   ├── ModelDownloader.swift
-│   ├── OverlayManager.swift
+│   ├── Overlay/
+│   │   ├── OverlayFlingPhysics.swift
+│   │   ├── OverlayManager.swift
+│   │   ├── OverlayMotionController.swift
+│   │   ├── OverlayPanel.swift
+│   │   ├── OverlayScreenPersistence.swift
+│   │   └── OverlayTypes.swift
 │   ├── TranscriptionPostProcessor.swift
 │   └── TranscriptionManager.swift
 ├── Views/
@@ -159,7 +165,7 @@ KeyVox/
 4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
 5. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
 6. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
-7. `Core/OverlayManager.swift` owns overlay panel lifecycle, drag persistence, and per-display position restore.
+7. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 8. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
 
 ## Key Components
@@ -181,9 +187,16 @@ KeyVox/
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
-- `Core/OverlayManager.swift`
-  - Floating overlay panel management and visibility.
-  - Per-display persistence using preferred-display key + origins-by-display map.
+- `Core/Overlay/OverlayManager.swift`
+  - Floating overlay lifecycle orchestration and visibility.
+- `Core/Overlay/OverlayMotionController.swift`
+  - Fling/reset motion sequencing, timers/work items, and programmatic motion guards.
+- `Core/Overlay/OverlayScreenPersistence.swift`
+  - Per-display persistence using preferred-display key + origins-by-display map plus legacy migration.
+- `Core/Overlay/OverlayPanel.swift`
+  - NSPanel event capture for drag velocity sampling and double-click reset trigger.
+- `Core/Overlay/OverlayFlingPhysics.swift`
+  - Pure fling impact/reflection/duration helpers used by motion control.
 - `Core/AudioDeviceManager.swift`
   - Microphone discovery, persistence, and selection policy.
 - `Core/ModelDownloader.swift`
