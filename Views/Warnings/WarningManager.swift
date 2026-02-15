@@ -103,9 +103,10 @@ final class WarningManager {
     }
 
     private func playCancelSound() {
-        guard KeyboardMonitor.shared.isSoundEnabled else { return }
+        let appSettings = AppSettingsStore.shared
+        guard appSettings.isSoundEnabled else { return }
         if let sound = NSSound(named: "Bottle") {
-            sound.volume = 0.1
+            sound.volume = Float(appSettings.soundVolume)
             sound.play()
         }
     }

@@ -15,6 +15,7 @@ class TranscriptionManager: ObservableObject {
     }
     
     let keyboardMonitor = KeyboardMonitor.shared
+    private let appSettings = AppSettingsStore.shared
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
     private let dictionaryStore = DictionaryStore.shared
@@ -215,9 +216,9 @@ class TranscriptionManager: ObservableObject {
     }
     
     private func playSound(named name: String) {
-        guard keyboardMonitor.isSoundEnabled else { return }
+        guard appSettings.isSoundEnabled else { return }
         if let sound = NSSound(named: name) {
-            sound.volume = Float(keyboardMonitor.soundVolume)
+            sound.volume = Float(appSettings.soundVolume)
             sound.play()
         }
     }

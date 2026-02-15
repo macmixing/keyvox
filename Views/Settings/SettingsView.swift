@@ -5,8 +5,8 @@ struct SettingsView: View {
     static let preferredWindowSize = CGSize(width: 800, height: 600)
     @Environment(\.dismiss) var dismiss
 
+    @StateObject internal var appSettings = AppSettingsStore.shared
     @ObservedObject internal var downloader = ModelDownloader.shared
-    @StateObject internal var keyboardMonitor = KeyboardMonitor.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
     @ObservedObject internal var dictionaryStore = DictionaryStore.shared
     @State internal var selectedTab: SettingsTab

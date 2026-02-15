@@ -8,6 +8,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 ## Architecture
 
 - **App**: app entry point, window lifecycle, shared defaults keys
+- **App**: app entry point, window lifecycle, shared settings/defaults ownership
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
 - **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
 - **Core/TextProcessing**: deterministic text formatting (list detection/rendering)
@@ -30,6 +31,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 ```text
 KeyVox/
 ├── App/
+│   ├── AppSettingsStore.swift
 │   ├── KeyVoxApp.swift
 │   └── UserDefaultsKeys.swift
 ├── Core/
@@ -191,6 +193,9 @@ KeyVox/
 - `App/KeyVoxApp.swift`
   - App entry point and menu bar scene.
   - Owns onboarding/settings windows via `WindowManager`.
+- `App/AppSettingsStore.swift`
+  - Centralized persisted user-preference owner (`triggerBinding`, sound settings, onboarding, selected microphone, update prompt timestamps).
+  - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
 
@@ -203,6 +208,7 @@ KeyVox/
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
+  - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
 - `Core/Overlay/OverlayMotionController.swift`
@@ -214,7 +220,8 @@ KeyVox/
 - `Core/Overlay/OverlayFlingPhysics.swift`
   - Pure fling impact/reflection/duration helpers used by motion control.
 - `Core/AudioDeviceManager.swift`
-  - Microphone discovery, persistence, and selection policy.
+  - Microphone discovery and selection policy.
+  - Uses `AppSettingsStore.selectedMicrophoneUID` for persisted selection.
 - `Core/ModelDownloader.swift`
   - Downloads `ggml-base.bin` plus CoreML encoder zip and validates readiness.
 - `Core/Audio/AudioRecorder.swift`
@@ -342,8 +349,10 @@ KeyVox/
 
 ## Persistence & Defaults
 
-- Trigger binding and sound settings: `UserDefaults`
-- Microphone selection and initialization marker: `UserDefaults`
+- Centralized persisted preferences owner: `App/AppSettingsStore.swift`
+  - trigger binding, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps
+- Preference key catalog: `App/UserDefaultsKeys.swift`
+- Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
 - Overlay placement:
   - preferred display key: `KeyVox.RecordingOverlayPreferredDisplayKey`
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`

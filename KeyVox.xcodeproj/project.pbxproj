@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5000012F4F000100AA0001 /* AppSettingsStore.swift */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+General.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -95,6 +96,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9E5000012F4F000100AA0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
 		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		8E57FB952F3E444B00935A26 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponents.swift; sourceTree = "<group>"; };
 		8E57FB962F3E444B00935A26 /* SettingsView+Audio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Audio.swift"; sourceTree = "<group>"; };
@@ -221,8 +223,9 @@
 		8E6D05C52F3C51C9003BD458 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
+				9E5000012F4F000100AA0001 /* AppSettingsStore.swift */,
 				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
+				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -539,6 +542,7 @@
 				8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
 				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
 				8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
+				9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */,
 				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,

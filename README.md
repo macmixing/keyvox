@@ -50,12 +50,14 @@ KeyVox is built for low-latency, local transcription with deep macOS integration
 KeyVox is organized by responsibility:
 
 - **`App/KeyVoxApp.swift`**: app entry point, menu bar scene, window lifecycle.
+- **`App/AppSettingsStore.swift`**: centralized persisted user settings owner (trigger binding, system sounds, onboarding, selected microphone, update prompt timestamps).
 - **`Core/TranscriptionManager.swift`**: central recording/transcription state machine.
 - **`Core/Audio/AudioRecorder.swift`**: 16kHz mono audio capture pipeline orchestration.
 - **`Core/Audio/AudioCaptureClassification.swift`**: capture confidence/silence classification helper.
 - **`Core/Audio/AudioSilencePolicy.swift`**: shared silence-gate policy constants/rules.
 - **`Core/Audio/AudioSignalMetrics.swift`**: pure RMS/peak/window-ratio signal metrics.
-- **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
+- **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring (runtime key state; trigger preference mirrored from `AppSettingsStore`).
+- **`Core/AudioDeviceManager.swift`**: microphone discovery/selection policy and active capture-device resolution from persisted selection.
 - **`Core/Overlay/OverlayManager.swift`**: overlay lifecycle orchestration, panel wiring, and visibility state.
 - **`Core/Overlay/OverlayMotionController.swift`**: fling/reset motion sequencing and overshoot/settle animation flow.
 - **`Core/Overlay/OverlayScreenPersistence.swift`**: per-display origin persistence, clamping, and preferred-display recovery.

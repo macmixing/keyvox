@@ -16,7 +16,7 @@ extension SettingsView {
                     title: "Trigger Key",
                     subtitle: "Hold this key to start recording. Release to transcribe."
                 ) {
-                    Picker("", selection: $keyboardMonitor.triggerBinding) {
+                    Picker("", selection: $appSettings.triggerBinding) {
                         ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
                             Text(binding.displayName).tag(binding)
                         }

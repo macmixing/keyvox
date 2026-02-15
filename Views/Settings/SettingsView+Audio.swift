@@ -35,7 +35,7 @@ extension SettingsView {
                             .lineSpacing(2)
                             .fixedSize(horizontal: false, vertical: true)
                         
-                        Picker("", selection: $audioDeviceManager.selectedMicrophoneUID) {
+                        Picker("", selection: $appSettings.selectedMicrophoneUID) {
                             ForEach(audioDeviceManager.pickerMicrophones) { microphone in
                                 Text(microphonePickerLabel(for: microphone))
                                     .tag(microphone.id)
@@ -75,7 +75,7 @@ extension SettingsView {
 
                             Spacer(minLength: 16)
 
-                            Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                            Toggle("", isOn: $appSettings.isSoundEnabled)
                                 .toggleStyle(SwitchToggleStyle(tint: .indigo))
                                 .labelsHidden()
                         }
@@ -86,17 +86,17 @@ extension SettingsView {
                                 .foregroundColor(.primary)
 
                             HStack(spacing: 12) {
-                                Slider(value: $keyboardMonitor.soundVolume, in: 0...1)
+                                Slider(value: $appSettings.soundVolume, in: 0...1)
                                     .tint(.indigo)
-                                    .disabled(!keyboardMonitor.isSoundEnabled)
+                                    .disabled(!appSettings.isSoundEnabled)
 
-                                Text("\(Int((keyboardMonitor.soundVolume * 100).rounded()))%")
+                                Text("\(Int((appSettings.soundVolume * 100).rounded()))%")
                                     .font(.custom("Kanit Medium", size: 12))
                                     .foregroundColor(.secondary)
                                     .frame(width: 40, alignment: .trailing)
                             }
                         }
-                        .opacity(keyboardMonitor.isSoundEnabled ? 1 : 0.7)
+                        .opacity(appSettings.isSoundEnabled ? 1 : 0.7)
                     }
                 }
             }
@@ -105,7 +105,7 @@ extension SettingsView {
     
     var microphoneSubtitle: String {
         guard let selected = audioDeviceManager.selectedMicrophone else {
-            if !audioDeviceManager.selectedMicrophoneUID.isEmpty {
+            if !appSettings.selectedMicrophoneUID.isEmpty {
                 return "Selected mic is unavailable. Built-in Microphone will be used until it reconnects."
             }
             return "Built-in Microphone is recommended for the fastest and most reliable dictation."

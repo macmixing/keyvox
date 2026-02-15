@@ -5,7 +5,7 @@ import ApplicationServices
 struct StatusMenuView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var manager: TranscriptionManager
-    @AppStorage(UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
+    @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject var downloader = ModelDownloader.shared
     @State private var micAuthorized: Bool = (AVCaptureDevice.authorizationStatus(for: .audio) == .authorized)
     
@@ -38,7 +38,7 @@ struct StatusMenuView: View {
                     .frame(height: 0.5)
                 
                 // Warnings Section (Only show after onboarding is complete)
-                if hasCompletedOnboarding && (!micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted()) {
+                if appSettings.hasCompletedOnboarding && (!micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted()) {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
                             WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
@@ -73,7 +73,7 @@ struct StatusMenuView: View {
                     MenuActionRow(
                         icon: "gearshape.fill",
                         title: "Settings",
-                        disabled: !hasCompletedOnboarding
+                        disabled: !appSettings.hasCompletedOnboarding
                     ) {
                         dismiss()
                         openSettings(.general)
@@ -145,7 +145,7 @@ struct StatusMenuView: View {
     }
     
     private var currentStatus: AppStatus {
-        if !hasCompletedOnboarding {
+        if !appSettings.hasCompletedOnboarding {
             return .onboarding
         }
         

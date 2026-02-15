@@ -5,73 +5,26 @@ import CoreGraphics
 final class KeyboardMonitor: ObservableObject {
 
     static let shared = KeyboardMonitor()
+    typealias TriggerBinding = AppSettingsStore.TriggerBinding
 
     // MARK: - Trigger Binding
-
-    /// The key (or modifier) the user holds to start dictation.
-    /// Stored in UserDefaults so it can be wired to a Settings UI with a simple Picker.
-    enum TriggerBinding: String, CaseIterable, Identifiable {
-        case rightOption
-        case leftOption
-        case rightCommand
-        case leftCommand
-        case rightControl
-        case leftControl
-        case function
-
-        var id: String { rawValue }
-
-        var displayName: String {
-            switch self {
-            case .leftOption: return "Left Option (⌥)"
-            case .rightOption: return "Right Option (⌥)"
-            case .leftCommand: return "Left Command (⌘)"
-            case .rightCommand: return "Right Command (⌘)"
-            case .leftControl: return "Left Control (⌃)"
-            case .rightControl: return "Right Control (⌃)"
-            case .function: return "Fn (Function)"
-            }
-        }
-
-    }
 
     // MARK: - Published State
 
     @Published var isTriggerKeyPressed = false
     @Published var isShiftPressed = false
-    @Published var isSoundEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(isSoundEnabled, forKey: UserDefaultsKeys.isSoundEnabled)
-        }
-    }
-    @Published var soundVolume: Double {
-        didSet {
-            let clamped = min(max(soundVolume, 0.0), 1.0)
-            if clamped != soundVolume {
-                soundVolume = clamped
-                return
-            }
-            UserDefaults.standard.set(soundVolume, forKey: UserDefaultsKeys.soundVolume)
-        }
-    }
 
-    /// Expose the current binding so SwiftUI Settings can bind to it.
-    @Published var triggerBinding: TriggerBinding {
-        didSet {
-            UserDefaults.standard.set(triggerBinding.rawValue, forKey: UserDefaultsKeys.triggerBinding)
-            // Re-evaluate immediately so UI state stays correct if the user changes binding while holding keys.
-            if let lastFlagsChangedEvent {
-                handleModifierChange(event: lastFlagsChangedEvent)
-            }
-        }
-    }
+    /// Current trigger binding snapshot mirrored from `AppSettingsStore`.
+    @Published private(set) var triggerBinding: TriggerBinding
 
     // MARK: - Private
 
+    private let appSettings = AppSettingsStore.shared
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var globalKeyDownMonitor: Any?
     private var localKeyDownMonitor: Any?
+    private var cancellables = Set<AnyCancellable>()
 
     // Track left/right modifier state deterministically from flagsChanged keyCodes
     private var leftOptionDown = false
@@ -82,7 +35,6 @@ final class KeyboardMonitor: ObservableObject {
     private var rightControlDown = false
     private var fnDown = false
     private var lastFlagsChangedEvent: NSEvent?
-    private var defaultsObserver: NSObjectProtocol?
     
     private enum KeyCode {
         static let escape: UInt16 = 53
@@ -98,38 +50,24 @@ final class KeyboardMonitor: ObservableObject {
     // MARK: - Init
 
     private init() {
-        if let raw = UserDefaults.standard.string(forKey: UserDefaultsKeys.triggerBinding),
-           let saved = TriggerBinding(rawValue: raw) {
-            self.triggerBinding = saved
-        } else {
-            // Default to right option key
-            self.triggerBinding = .rightOption
-        }
-
-        self.isSoundEnabled = UserDefaults.standard.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
-        if let storedSoundVolume = UserDefaults.standard.object(forKey: UserDefaultsKeys.soundVolume) as? NSNumber {
-            self.soundVolume = min(max(storedSoundVolume.doubleValue, 0.0), 1.0)
-        } else {
-            self.soundVolume = 0.1
-        }
+        self.triggerBinding = appSettings.triggerBinding
 
         startMonitoring()
 
-        defaultsObserver = NotificationCenter.default.addObserver(
-            forName: UserDefaults.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
+        appSettings.$triggerBinding
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] updated in
             guard let self else { return }
-            guard let raw = UserDefaults.standard.string(forKey: UserDefaultsKeys.triggerBinding),
-                  let updated = TriggerBinding(rawValue: raw) else {
-                return
-            }
-
             if updated != self.triggerBinding {
                 self.triggerBinding = updated
+                // Re-evaluate immediately so UI state stays correct if the user changes
+                // binding while holding keys.
+                if let lastFlagsChangedEvent {
+                    self.handleModifierChange(event: lastFlagsChangedEvent)
+                }
             }
-        }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Monitoring
@@ -170,9 +108,6 @@ final class KeyboardMonitor: ObservableObject {
     }
 
     deinit {
-        if let defaultsObserver {
-            NotificationCenter.default.removeObserver(defaultsObserver)
-        }
         if let globalMonitor {
             NSEvent.removeMonitor(globalMonitor)
         }

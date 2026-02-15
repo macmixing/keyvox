@@ -45,7 +45,7 @@ class WindowManager: ObservableObject {
         
         
         window.contentView = NSHostingView(rootView: OnboardingView(onComplete: {
-            UserDefaults.standard.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
+            AppSettingsStore.shared.hasCompletedOnboarding = true
             window.close()
             self.onboardingWindow = nil
             // Open settings centered immediately after onboarding
@@ -105,15 +105,15 @@ class WindowManager: ObservableObject {
 @main
 struct KeyVoxApp: App {
     @StateObject private var transcriptionManager = TranscriptionManager()
+    @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
-    @AppStorage(UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     private let onboardingStartupDelay: TimeInterval = 0.1
     
     init() {
         // App initialization
         DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {
-            if !UserDefaults.standard.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding) {
+            if !AppSettingsStore.shared.hasCompletedOnboarding {
                 WindowManager.shared.showOnboarding()
             }
         }
@@ -145,7 +145,7 @@ struct KeyVoxApp: App {
             menuBarImage
         }
         .menuBarExtraStyle(.window)
-        .onChange(of: hasCompletedOnboarding) {
+        .onChange(of: appSettings.hasCompletedOnboarding) {
             // Re-evaluates state
         }
     }

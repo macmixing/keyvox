@@ -20,23 +20,26 @@ struct MicrophoneOption: Identifiable, Equatable {
 final class AudioDeviceManager: ObservableObject {
     static let shared = AudioDeviceManager()
 
+    private let appSettings = AppSettingsStore.shared
+
     @Published private(set) var availableMicrophones: [MicrophoneOption] = []
-    @Published var selectedMicrophoneUID: String {
-        didSet {
-            UserDefaults.standard.set(selectedMicrophoneUID, forKey: UserDefaultsKeys.selectedMicrophoneUID)
-            syncSelectedMicrophone()
-        }
-    }
     @Published private(set) var selectedMicrophone: MicrophoneOption?
 
     private var deviceObservers: [NSObjectProtocol] = []
+    private var cancellables = Set<AnyCancellable>()
+
+    var selectedMicrophoneUID: String { appSettings.selectedMicrophoneUID }
 
     private init() {
-        selectedMicrophoneUID = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
-
         availableMicrophones = Self.discoverInputMicrophones()
         applyInitialSelectionPolicy()
         syncSelectedMicrophone()
+        appSettings.$selectedMicrophoneUID
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.syncSelectedMicrophone()
+            }
+            .store(in: &cancellables)
         startMonitoringCaptureDevices()
     }
 
@@ -47,14 +50,14 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     var pickerMicrophones: [MicrophoneOption] {
-        guard !selectedMicrophoneUID.isEmpty,
+        guard !appSettings.selectedMicrophoneUID.isEmpty,
               selectedMicrophone == nil,
-              !availableMicrophones.contains(where: { $0.id == selectedMicrophoneUID }) else {
+              !availableMicrophones.contains(where: { $0.id == appSettings.selectedMicrophoneUID }) else {
             return availableMicrophones
         }
 
         let unavailable = MicrophoneOption(
-            id: selectedMicrophoneUID,
+            id: appSettings.selectedMicrophoneUID,
             name: "Previously Selected Microphone (Unavailable)",
             kind: .wiredOrOther,
             isAvailable: false
@@ -68,8 +71,8 @@ final class AudioDeviceManager: ObservableObject {
             return selectedDevice
         }
 
-        if !selectedMicrophoneUID.isEmpty,
-           let selectedFromUID = deviceForID(selectedMicrophoneUID) {
+        if !appSettings.selectedMicrophoneUID.isEmpty,
+           let selectedFromUID = deviceForID(appSettings.selectedMicrophoneUID) {
             return selectedFromUID
         }
 
@@ -107,22 +110,22 @@ final class AudioDeviceManager: ObservableObject {
 
         if !hasInitialized {
             if let builtInMicrophone {
-                selectedMicrophoneUID = builtInMicrophone.id
+                appSettings.selectedMicrophoneUID = builtInMicrophone.id
             } else if let first = availableMicrophones.first {
-                selectedMicrophoneUID = first.id
+                appSettings.selectedMicrophoneUID = first.id
             }
 
             defaults.set(true, forKey: UserDefaultsKeys.hasInitializedMicrophoneDefault)
             return
         }
 
-        if selectedMicrophoneUID.isEmpty, let builtInMicrophone {
-            selectedMicrophoneUID = builtInMicrophone.id
+        if appSettings.selectedMicrophoneUID.isEmpty, let builtInMicrophone {
+            appSettings.selectedMicrophoneUID = builtInMicrophone.id
         }
     }
 
     private func syncSelectedMicrophone() {
-        selectedMicrophone = availableMicrophones.first(where: { $0.id == selectedMicrophoneUID })
+        selectedMicrophone = availableMicrophones.first(where: { $0.id == appSettings.selectedMicrophoneUID })
     }
 
     private func startMonitoringCaptureDevices() {
