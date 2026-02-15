@@ -32,39 +32,47 @@ extension SettingsView {
                     .padding(.leading, 4)
                 
                 SettingsCard {
-                    HStack(spacing: 16) {
-                        Image("cueboard-logo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 44, height: 44)
-                            .cornerRadius(12)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Cueboard")
-                                .font(.custom("Kanit Medium", size: 16))
-                            Text("Cueboard is a shot list planning tool for creators who think visually. Compatible with iPhone, iPad, and Apple Silicon Mac.")
-                                .font(.custom("Kanit Medium", size: 11))
-                                .foregroundColor(.secondary)
-                                .lineSpacing(2)
-                        }
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            if let url = URL(string: "https://cueboard.app?utm_source=keyvox") {
-                                NSWorkspace.shared.open(url)
-                                dismiss()
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(spacing: 16) {
+                            Image("cueboard-logo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 44, height: 44)
+                                .cornerRadius(12)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Cueboard")
+                                    .font(.custom("Kanit Medium", size: 16))
+                                Text("Cueboard is a shot list planning tool for creators who think visually. Compatible with iPhone, iPad, and Apple Silicon Mac.")
+                                    .font(.custom("Kanit Medium", size: 11))
+                                    .foregroundColor(.secondary)
+                                    .lineSpacing(2)
                             }
-                        }) {
-                            Text("View")
-                                .font(.custom("Kanit Medium", size: 12))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.indigo.opacity(0.2))
-                                .foregroundColor(.indigo)
-                                .cornerRadius(8)
+
+                            Spacer()
+
+                            Button(action: {
+                                if let url = URL(string: "https://cueboard.app?utm_source=keyvox") {
+                                    NSWorkspace.shared.open(url)
+                                    dismiss()
+                                }
+                            }) {
+                                Text("View")
+                                    .font(.custom("Kanit Medium", size: 12))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(Color.indigo.opacity(0.2))
+                                    .foregroundColor(.indigo)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(DepressedButtonStyle())
                         }
-                        .buttonStyle(DepressedButtonStyle())
+
+                        GitHubSupportLink(onOpen: {
+                            dismiss()
+                        })
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 12)
                     }
                 }
             }
@@ -84,6 +92,33 @@ extension SettingsView {
                 Spacer()
             }
             .padding(.top, 8)
+        }
+    }
+}
+
+private struct GitHubSupportLink: View {
+    private let supportURL = URL(string: "https://github.com/sponsors/macmixing")!
+    let onOpen: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: {
+            NSWorkspace.shared.open(supportURL)
+            onOpen()
+        }) {
+            Text("Support KeyVox on GitHub")
+                .font(.custom("Kanit Medium", size: 12))
+                .foregroundColor(isHovered ? .yellow : .white)
+                .underline(isHovered)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+            if hovering {
+                NSCursor.pointingHand.set()
+            } else {
+                NSCursor.arrow.set()
+            }
         }
     }
 }
