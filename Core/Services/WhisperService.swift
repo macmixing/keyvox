@@ -53,7 +53,11 @@ class WhisperService: ObservableObject {
         whisper?.params.initialPrompt = cleanedPrompt
     }
     
-    func transcribe(audioFrames: [Float], completion: @escaping (String?) -> Void) {
+    func transcribe(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool = true,
+        completion: @escaping (String?) -> Void
+    ) {
         // Hardening: ensure only one transcription runs at a time
         transcriptionTask?.cancel()
         transcriptionTask = nil
@@ -71,6 +75,20 @@ class WhisperService: ObservableObject {
         if whisper == nil {
             warmup()
         }
+
+        if useDictionaryHintPrompt {
+            whisper?.params.initialPrompt = dictionaryHintPrompt
+        } else {
+            whisper?.params.initialPrompt = ""
+            #if DEBUG
+            print("WhisperService: Suppressing dictionary hint prompt for low-confidence capture.")
+            #endif
+        }
+
+        let restoreDictionaryHintPromptIfNeeded = { [weak self] in
+            guard let self, !useDictionaryHintPrompt else { return }
+            self.whisper?.params.initialPrompt = self.dictionaryHintPrompt
+        }
         
         #if DEBUG
         print("Transcribing \(audioFrames.count) raw frames...")
@@ -82,7 +100,10 @@ class WhisperService: ObservableObject {
                 
                 // Check if task was cancelled before proceeding
                 if Task.isCancelled {
-                    DispatchQueue.main.async { self.isTranscribing = false }
+                    DispatchQueue.main.async {
+                        self.isTranscribing = false
+                        restoreDictionaryHintPromptIfNeeded()
+                    }
                     return
                 }
                 
@@ -93,12 +114,16 @@ class WhisperService: ObservableObject {
                 
                 DispatchQueue.main.async {
                     self.isTranscribing = false
+                    restoreDictionaryHintPromptIfNeeded()
                     self.transcriptionText = cleanedText
                     completion(cleanedText)
                 }
             } catch {
                 if Task.isCancelled {
-                    DispatchQueue.main.async { self.isTranscribing = false }
+                    DispatchQueue.main.async {
+                        self.isTranscribing = false
+                        restoreDictionaryHintPromptIfNeeded()
+                    }
                     return
                 }
                 
@@ -107,6 +132,7 @@ class WhisperService: ObservableObject {
                 #endif
                 DispatchQueue.main.async {
                     self.isTranscribing = false
+                    restoreDictionaryHintPromptIfNeeded()
                     completion(nil)
                 }
             }

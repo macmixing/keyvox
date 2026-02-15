@@ -212,22 +212,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		9A1000012F4B000100AA0001 /* Paste */ = {
-			isa = PBXGroup;
-			children = (
-				9A1000032F4B000100AA0001 /* PasteAXInspector.swift */,
-				9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */,
-				9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */,
-				8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
-				9A1000022F4B000100AA0001 /* PasteModels.swift */,
-				9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */,
-				9A1000082F4B000100AA0001 /* PastePolicies.swift */,
-				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
-				9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */,
-			);
-			path = Paste;
-			sourceTree = "<group>";
-		};
 		8E6D05CF2F3C51D6003BD458 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -337,6 +321,22 @@
 				8F4401012F46010000DD4401 /* ListFormattingTypes.swift */,
 			);
 			path = TextProcessing;
+			sourceTree = "<group>";
+		};
+		9A1000012F4B000100AA0001 /* Paste */ = {
+			isa = PBXGroup;
+			children = (
+				9A1000032F4B000100AA0001 /* PasteAXInspector.swift */,
+				9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */,
+				9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */,
+				8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
+				9A1000022F4B000100AA0001 /* PasteModels.swift */,
+				9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */,
+				9A1000082F4B000100AA0001 /* PastePolicies.swift */,
+				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
+				9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */,
+			);
+			path = Paste;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

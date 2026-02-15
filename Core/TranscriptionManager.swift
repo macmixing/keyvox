@@ -147,8 +147,22 @@ class TranscriptionManager: ObservableObject {
             
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
-                if self.audioRecorder.lastCaptureWasAbsoluteSilence {
-                    WarningManager.shared.show(.microphoneSilence)
+                let microphoneName = self.audioRecorder.currentCaptureDeviceName
+                if self.audioRecorder.lastCaptureWasLongTrueSilence {
+                    WarningManager.shared.show(.microphoneSilence(
+                        reason: .noSpeechDetected,
+                        microphoneName: microphoneName
+                    ))
+                } else if self.audioRecorder.lastCaptureWasAbsoluteSilence {
+                    WarningManager.shared.show(.microphoneSilence(
+                        reason: .muted,
+                        microphoneName: microphoneName
+                    ))
+                } else if self.audioRecorder.lastCaptureWasLikelySilence {
+                    WarningManager.shared.show(.microphoneSilence(
+                        reason: .noSpeechDetected,
+                        microphoneName: microphoneName
+                    ))
                 }
                 self.state = .idle
                 return
@@ -160,7 +174,8 @@ class TranscriptionManager: ObservableObject {
             OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
             let transcribeStart = Date()
-            self.whisperService.transcribe(audioFrames: frames) { result in
+            let useDictionaryHintPrompt = self.audioRecorder.lastCaptureHadActiveSignal
+            self.whisperService.transcribe(audioFrames: frames, useDictionaryHintPrompt: useDictionaryHintPrompt) { result in
                 let transcribeDuration = Date().timeIntervalSince(transcribeStart)
                 #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")

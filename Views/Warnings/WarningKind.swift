@@ -1,7 +1,12 @@
 import Foundation
 
+enum MicrophoneSilenceReason {
+    case muted
+    case noSpeechDetected
+}
+
 enum WarningKind {
-    case microphoneSilence
+    case microphoneSilence(reason: MicrophoneSilenceReason, microphoneName: String)
     case accessibilityPermission
     case modelMissing
 
@@ -18,8 +23,13 @@ enum WarningKind {
 
     var title: String {
         switch self {
-        case .microphoneSilence:
-            return "No microphone audio detected"
+        case .microphoneSilence(let reason, _):
+            switch reason {
+            case .muted:
+                return "No microphone audio detected"
+            case .noSpeechDetected:
+                return "Didn't hear that!"
+            }
         case .accessibilityPermission:
             return "Accessibility access required"
         case .modelMissing:
@@ -29,8 +39,14 @@ enum WarningKind {
 
     var message: String {
         switch self {
-        case .microphoneSilence:
-            return "Your microphone may be muted. Check System Settings or switch the input device in KeyVox Settings."
+        case .microphoneSilence(let reason, let microphoneName):
+            let normalizedName = AudioSilenceGatePolicy.normalizedMicrophoneName(microphoneName)
+            switch reason {
+            case .muted:
+                return "Your \(normalizedName) mic may be muted. Check System Settings or switch the input device in KeyVox Settings."
+            case .noSpeechDetected:
+                return "KeyVox didn't pick up any speech from your \(normalizedName) microphone."
+            }
         case .accessibilityPermission:
             return "KeyVox needs Accessibility access to paste dictation into other apps. Enable it in System Settings, then try again."
         case .modelMissing:
