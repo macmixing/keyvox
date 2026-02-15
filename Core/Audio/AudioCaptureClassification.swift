@@ -5,6 +5,7 @@ struct AudioCaptureClassification {
     let hadActiveSignal: Bool
     let isAbsoluteSilence: Bool
     let silentWindowRatio: Float
+    let ambientFloorRMS: Float
     let isLongTrueSilence: Bool
     let speechRMS: Float
     let shouldRejectLikelySilence: Bool
@@ -17,13 +18,23 @@ enum AudioCaptureClassifier {
         snapshot: [Float],
         speechOnly: [Float],
         captureDuration: TimeInterval,
-        maxActiveSignalRunDuration: TimeInterval
+        maxActiveSignalRunDuration: TimeInterval,
+        lowConfidenceRMSCutoff: Float = AudioSilenceGatePolicy.lowConfidenceRMSCutoff,
+        trueSilenceWindowRMSThreshold: Float = AudioSilenceGatePolicy.trueSilenceWindowRMSThreshold
     ) -> AudioCaptureClassification {
         let isAbsoluteSilence = AudioSignalMetrics.peak(of: snapshot) < absoluteSilencePeakThreshold
         let hadActiveSignal = AudioSilenceGatePolicy.hadActiveSpeechEvidence(
             maxActiveSignalRunDuration: maxActiveSignalRunDuration
         )
-        let silentWindowRatio = AudioSilenceGatePolicy.trueSilenceWindowRatio(for: snapshot)
+        let ambientFloorRMS = AudioSignalMetrics.ambientFloorRMS(
+            of: snapshot,
+            windowSize: AudioSilenceGatePolicy.trueSilenceWindowSize,
+            percentile: AudioSilenceGatePolicy.ambientFloorPercentile
+        )
+        let silentWindowRatio = AudioSilenceGatePolicy.trueSilenceWindowRatio(
+            for: snapshot,
+            silenceThreshold: trueSilenceWindowRMSThreshold
+        )
         let isLongTrueSilence = AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
             captureDuration: captureDuration,
             hadActiveSignal: hadActiveSignal,
@@ -33,7 +44,10 @@ enum AudioCaptureClassifier {
         let shouldRejectLikelySilence = AudioSilenceGatePolicy.shouldRejectLikelySilence(
             captureDuration: captureDuration,
             hadActiveSignal: hadActiveSignal,
-            speechRMS: speechRMS
+            silentWindowRatio: silentWindowRatio,
+            speechRMS: speechRMS,
+            lowConfidenceRMSCutoff: lowConfidenceRMSCutoff,
+            ambientFloorRMS: ambientFloorRMS
         )
 
         return AudioCaptureClassification(
@@ -41,6 +55,7 @@ enum AudioCaptureClassifier {
             hadActiveSignal: hadActiveSignal,
             isAbsoluteSilence: isAbsoluteSilence,
             silentWindowRatio: silentWindowRatio,
+            ambientFloorRMS: ambientFloorRMS,
             isLongTrueSilence: isLongTrueSilence,
             speechRMS: speechRMS,
             shouldRejectLikelySilence: shouldRejectLikelySilence

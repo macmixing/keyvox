@@ -50,6 +50,24 @@ struct AudioCaptureClassificationTests {
         )
 
         #expect(result.hadActiveSignal)
-        #expect(!result.isLongTrueSilence)
+        #expect(result.isLongTrueSilence)
+        #expect(result.shouldRejectLikelySilence)
+    }
+
+    @Test
+    func classifyRejectsNoiseDominatedCaptureEvenWhenSilenceRatioIsLow() {
+        let snapshot = Array(repeating: Float(0.004), count: 16_000 * 4)
+        let speechOnly = Array(repeating: Float(0.0042), count: 16_000 * 2)
+
+        let result = AudioCaptureClassifier.classify(
+            snapshot: snapshot,
+            speechOnly: speechOnly,
+            captureDuration: 4.0,
+            maxActiveSignalRunDuration: AudioSilenceGatePolicy.minimumActiveSignalRunDuration + 0.01,
+            trueSilenceWindowRMSThreshold: 0.0018
+        )
+
+        #expect(result.silentWindowRatio == 0)
+        #expect(result.shouldRejectLikelySilence)
     }
 }

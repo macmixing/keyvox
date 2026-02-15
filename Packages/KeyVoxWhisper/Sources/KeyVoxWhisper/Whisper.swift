@@ -75,12 +75,14 @@ public final class Whisper {
                         let startTime = Int(whisper_full_get_segment_t0(whisperContext, Int32(index)) * 10)
                         let endTime = Int(whisper_full_get_segment_t1(whisperContext, Int32(index)) * 10)
                         let text = String(cString: cText)
+                        let noSpeechProbability = whisper_full_get_segment_no_speech_prob(whisperContext, Int32(index))
 
                         segments.append(
                             Segment(
                                 startTime: startTime,
                                 endTime: endTime,
-                                text: text
+                                text: text,
+                                noSpeechProbability: noSpeechProbability
                             )
                         )
                     }

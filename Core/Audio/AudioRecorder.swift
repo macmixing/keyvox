@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 import Combine
 import CoreMedia
+import CoreAudio
 
 enum LiveInputSignalState: Equatable {
     case dead
@@ -33,12 +34,21 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     @Published private(set) var lastCaptureHadActiveSignal: Bool = false
     @Published private(set) var lastCaptureWasLikelySilence: Bool = false
     @Published private(set) var lastCaptureWasLongTrueSilence: Bool = false
+    @Published private(set) var lastCaptureDuration: TimeInterval = 0
     private let deadSignalPeakThreshold: Float = 0.00012
-    private let activeSignalRMSThreshold: Float = 0.003
+    private let baseActiveSignalRMSThreshold: Float = 0.003
+    private let baseGapRemovalRMSThreshold: Float = 0.0023
+    private var sessionActiveSignalRMSThreshold: Float = 0.003
+    private var sessionGapRemovalRMSThreshold: Float = 0.0023
+    private var sessionLikelySilenceRMSCutoff: Float = AudioSilenceGatePolicy.lowConfidenceRMSCutoff
+    private var sessionTrueSilenceWindowRMSThreshold: Float = AudioSilenceGatePolicy.trueSilenceWindowRMSThreshold
+    private var sessionInputVolumeScalar: Float = AudioSilenceGatePolicy.defaultInputVolumeScalar
+    private var sessionThresholdScale: Float = 1.0
     private let deadStateHoldDuration: TimeInterval = 0.35
-    private let activeStateHoldDuration: TimeInterval = 0.20
+    private let visualActiveStateHoldDuration: TimeInterval = 0.16
+    private let visualActiveSignalThresholdMultiplier: Float = 1.85
     private var lastNonDeadSignalTime: Date = Date.distantPast
-    private var lastActiveSignalTime: Date = Date.distantPast
+    private var lastVisualActiveSignalTime: Date = Date.distantPast
     private var currentActiveSignalRunDuration: TimeInterval = 0
     private var maxActiveSignalRunDuration: TimeInterval = 0
     private var captureStartedAt = Date.distantPast
@@ -90,6 +100,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         // Map current device kind for conditional logic upstream
         currentDeviceKind = AudioDeviceManager.shared.availableMicrophones.first(where: { $0.id == device.uniqueID })?.kind ?? .builtIn
         currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName(device.localizedName)
+        configureSessionSilenceThresholds(for: device)
 
         // Converter is rebuilt lazily when first buffer arrives (or source format changes).
         converter = nil
@@ -102,9 +113,10 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         lastCaptureHadActiveSignal = false
         lastCaptureWasLikelySilence = false
         lastCaptureWasLongTrueSilence = false
+        lastCaptureDuration = 0
 
         lastNonDeadSignalTime = Date.distantPast
-        lastActiveSignalTime = Date.distantPast
+        lastVisualActiveSignalTime = Date.distantPast
         currentActiveSignalRunDuration = 0
         maxActiveSignalRunDuration = 0
         captureStartedAt = Date()
@@ -149,11 +161,14 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             let snapshot: [Float] = audioDataQueue.sync { audioData }
             let speechOnly = removeInternalGaps(from: snapshot)
             let captureDuration = Date().timeIntervalSince(captureStartedAt)
+            lastCaptureDuration = captureDuration
             let classification = AudioCaptureClassifier.classify(
                 snapshot: snapshot,
                 speechOnly: speechOnly,
                 captureDuration: captureDuration,
-                maxActiveSignalRunDuration: maxActiveSignalRunDuration
+                maxActiveSignalRunDuration: maxActiveSignalRunDuration,
+                lowConfidenceRMSCutoff: sessionLikelySilenceRMSCutoff,
+                trueSilenceWindowRMSThreshold: sessionTrueSilenceWindowRMSThreshold
             )
 
             lastCaptureWasAbsoluteSilence = classification.isAbsoluteSilence
@@ -164,7 +179,10 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
                 "Audio silence classification: duration=\(String(format: "%.2f", captureDuration))s " +
                 "activeSignal=\(lastCaptureHadActiveSignal) activeRun=\(String(format: "%.3f", maxActiveSignalRunDuration))s " +
                 "silentWindowRatio=\(String(format: "%.3f", classification.silentWindowRatio)) " +
-                "longTrueSilence=\(lastCaptureWasLongTrueSilence)"
+                "ambientFloor=\(String(format: "%.5f", classification.ambientFloorRMS)) " +
+                "longTrueSilence=\(lastCaptureWasLongTrueSilence) " +
+                "inputVolume=\(String(format: "%.2f", sessionInputVolumeScalar)) " +
+                "thresholdScale=\(String(format: "%.2f", sessionThresholdScale))"
             )
             #endif
 
@@ -267,8 +285,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         if peak > deadSignalPeakThreshold {
             lastNonDeadSignalTime = now
         }
-        if rms > activeSignalRMSThreshold {
-            lastActiveSignalTime = now
+        if rms > sessionActiveSignalRMSThreshold {
             currentActiveSignalRunDuration += frameDuration
             if currentActiveSignalRunDuration > maxActiveSignalRunDuration {
                 maxActiveSignalRunDuration = currentActiveSignalRunDuration
@@ -277,8 +294,13 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             currentActiveSignalRunDuration = 0
         }
 
+        let visualActiveThreshold = sessionActiveSignalRMSThreshold * visualActiveSignalThresholdMultiplier
+        if rms > visualActiveThreshold {
+            lastVisualActiveSignalTime = now
+        }
+
         let isDead = now.timeIntervalSince(lastNonDeadSignalTime) > deadStateHoldDuration
-        let isActive = now.timeIntervalSince(lastActiveSignalTime) <= activeStateHoldDuration
+        let isActive = now.timeIntervalSince(lastVisualActiveSignalTime) <= visualActiveStateHoldDuration
         let signalState: LiveInputSignalState = isDead ? .dead : (isActive ? .active : .quiet)
 
         DispatchQueue.main.async {
@@ -332,7 +354,7 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
     private func removeInternalGaps(from samples: [Float]) -> [Float] {
         guard !samples.isEmpty else { return [] }
 
-        let threshold: Float = 0.002 // Tuned: Sensitive enough for quiet speech
+        let threshold = sessionGapRemovalRMSThreshold
         let windowSize = 1600 // 100ms at 16kHz
         let paddingWindows = 8 // Tuned: 800ms padding to prevent clipping
         let minSpeechWindows = 2
@@ -429,6 +451,80 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             position: .unspecified
         )
         return discovery.devices
+    }
+
+    private func configureSessionSilenceThresholds(for device: AVCaptureDevice) {
+        let inputVolume = Self.inputVolumeScalar(for: device) ?? AudioSilenceGatePolicy.defaultInputVolumeScalar
+        let thresholdScale = AudioSilenceGatePolicy.thresholdScale(forInputVolume: inputVolume)
+
+        sessionInputVolumeScalar = inputVolume
+        sessionThresholdScale = thresholdScale
+        sessionActiveSignalRMSThreshold = baseActiveSignalRMSThreshold * thresholdScale
+        sessionGapRemovalRMSThreshold = baseGapRemovalRMSThreshold * thresholdScale
+        sessionLikelySilenceRMSCutoff = AudioSilenceGatePolicy.lowConfidenceRMSCutoff * thresholdScale
+        sessionTrueSilenceWindowRMSThreshold = AudioSilenceGatePolicy.trueSilenceWindowRMSThreshold * thresholdScale
+
+        #if DEBUG
+        print(
+            "Audio thresholds configured: inputVolume=\(String(format: "%.2f", inputVolume)) " +
+            "scale=\(String(format: "%.2f", thresholdScale)) " +
+            "activeRMS=\(sessionActiveSignalRMSThreshold) " +
+            "gapRMS=\(sessionGapRemovalRMSThreshold) " +
+            "likelySilenceRMS=\(sessionLikelySilenceRMSCutoff) " +
+            "trueSilenceRMS=\(sessionTrueSilenceWindowRMSThreshold)"
+        )
+        #endif
+    }
+
+    private static func inputVolumeScalar(for device: AVCaptureDevice) -> Float? {
+        let deviceUID = device.uniqueID as CFString
+        var deviceID = AudioDeviceID(kAudioObjectUnknown)
+        var dataSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDeviceForUID,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+
+        let status = withUnsafePointer(to: deviceUID) { uidPointer in
+            AudioObjectGetPropertyData(
+                AudioObjectID(kAudioObjectSystemObject),
+                &address,
+                UInt32(MemoryLayout<CFString>.size),
+                uidPointer,
+                &dataSize,
+                &deviceID
+            )
+        }
+
+        guard status == noErr, deviceID != kAudioObjectUnknown else { return nil }
+        return inputVolumeScalar(forAudioDeviceID: deviceID)
+    }
+
+    private static func inputVolumeScalar(forAudioDeviceID deviceID: AudioDeviceID) -> Float? {
+        let candidateElements: [UInt32] = [kAudioObjectPropertyElementMain, 1, 2]
+        for element in candidateElements {
+            var address = AudioObjectPropertyAddress(
+                mSelector: kAudioDevicePropertyVolumeScalar,
+                mScope: kAudioDevicePropertyScopeInput,
+                mElement: element
+            )
+            guard AudioObjectHasProperty(deviceID, &address) else { continue }
+
+            var volumeScalar: Float32 = 0
+            var dataSize = UInt32(MemoryLayout<Float32>.size)
+            let status = AudioObjectGetPropertyData(
+                deviceID,
+                &address,
+                0,
+                nil,
+                &dataSize,
+                &volumeScalar
+            )
+            guard status == noErr else { continue }
+            return min(max(volumeScalar, 0), 1)
+        }
+        return nil
     }
 
 }

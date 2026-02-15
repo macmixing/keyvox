@@ -25,6 +25,7 @@ class TranscriptionManager: ObservableObject {
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
     private let microphoneSilenceWarningDelay: TimeInterval = 0.5
+    private let noSpeechWarningMinimumCaptureDuration = AudioSilenceGatePolicy.longTrueSilenceMinimumDuration
     
     init() {
         setupBindings()
@@ -150,6 +151,7 @@ class TranscriptionManager: ObservableObject {
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
                 let microphoneName = self.audioRecorder.currentCaptureDeviceName
+                let shouldShowNoSpeechWarning = self.audioRecorder.lastCaptureDuration >= self.noSpeechWarningMinimumCaptureDuration
                 let showMicrophoneSilenceWarning: (WarningKind) -> Void = { kind in
                     DispatchQueue.main.asyncAfter(deadline: .now() + self.microphoneSilenceWarningDelay) {
                         WarningManager.shared.show(kind)
@@ -165,7 +167,7 @@ class TranscriptionManager: ObservableObject {
                         reason: .muted,
                         microphoneName: microphoneName
                     ))
-                } else if self.audioRecorder.lastCaptureWasLikelySilence {
+                } else if self.audioRecorder.lastCaptureWasLikelySilence && shouldShowNoSpeechWarning {
                     showMicrophoneSilenceWarning(.microphoneSilence(
                         reason: .noSpeechDetected,
                         microphoneName: microphoneName
@@ -190,6 +192,20 @@ class TranscriptionManager: ObservableObject {
                 
                 DispatchQueue.main.async {
                     let rawText = result ?? ""
+                    if rawText.isEmpty && self.whisperService.lastResultWasLikelyNoSpeech {
+                        OverlayManager.shared.hide()
+                        if self.audioRecorder.lastCaptureDuration >= self.noSpeechWarningMinimumCaptureDuration {
+                            let warning = WarningKind.microphoneSilence(
+                                reason: .noSpeechDetected,
+                                microphoneName: self.audioRecorder.currentCaptureDeviceName
+                            )
+                            DispatchQueue.main.asyncAfter(deadline: .now() + self.microphoneSilenceWarningDelay) {
+                                WarningManager.shared.show(warning)
+                            }
+                        }
+                        self.state = .idle
+                        return
+                    }
                     let renderMode = PasteService.shared.preferredListRenderModeForFocusedElement()
                     let text = self.postProcessor.process(
                         rawText,

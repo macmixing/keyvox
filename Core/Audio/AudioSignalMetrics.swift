@@ -49,4 +49,49 @@ enum AudioSignalMetrics {
 
         return Float(silentWindows) / Float(totalWindows)
     }
+
+    static func windowRMSValues(
+        for samples: [Float],
+        windowSize: Int
+    ) -> [Float] {
+        guard !samples.isEmpty else { return [] }
+        guard windowSize > 0 else { return [] }
+
+        let totalWindows = samples.count / windowSize
+        guard totalWindows > 0 else {
+            return [rms(of: samples)]
+        }
+
+        var values: [Float] = []
+        values.reserveCapacity(totalWindows)
+
+        for windowIndex in 0..<totalWindows {
+            let start = windowIndex * windowSize
+            let end = start + windowSize
+            values.append(rms(of: Array(samples[start..<end])))
+        }
+
+        return values
+    }
+
+    static func percentile(
+        _ percentile: Float,
+        of values: [Float]
+    ) -> Float {
+        guard !values.isEmpty else { return 0 }
+
+        let clampedPercentile = min(max(percentile, 0), 1)
+        let sorted = values.sorted()
+        let index = Int((Float(sorted.count - 1) * clampedPercentile).rounded(.toNearestOrAwayFromZero))
+        return sorted[min(max(index, 0), sorted.count - 1)]
+    }
+
+    static func ambientFloorRMS(
+        of samples: [Float],
+        windowSize: Int,
+        percentile floorPercentile: Float
+    ) -> Float {
+        let values = windowRMSValues(for: samples, windowSize: windowSize)
+        return percentile(floorPercentile, of: values)
+    }
 }

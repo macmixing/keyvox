@@ -6,9 +6,12 @@ import AVFoundation
 class WhisperService: ObservableObject {
     @Published var isTranscribing = false
     @Published var transcriptionText = ""
+    @Published private(set) var lastResultWasLikelyNoSpeech = false
     
     private var whisper: Whisper?
     private var dictionaryHintPrompt = ""
+    private let noSpeechSegmentProbabilityThreshold: Float = 0.72
+    private let noSpeechAverageProbabilityThreshold: Float = 0.80
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -70,6 +73,7 @@ class WhisperService: ObservableObject {
         }
         
         self.isTranscribing = true
+        self.lastResultWasLikelyNoSpeech = false
         
         // Ensure model is loaded (if warmup wasn't called/finished)
         if whisper == nil {
@@ -107,16 +111,29 @@ class WhisperService: ObservableObject {
                     return
                 }
                 
-                let text = segments?.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                
+                let transcribedSegments = segments ?? []
+                let text = transcribedSegments.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+                let hasSegments = !transcribedSegments.isEmpty
+                let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
+                    $0.noSpeechProbability >= self.noSpeechSegmentProbabilityThreshold
+                }
+                let averageNoSpeechProbability: Float = hasSegments
+                    ? transcribedSegments.reduce(0) { $0 + $1.noSpeechProbability } / Float(transcribedSegments.count)
+                    : 1.0
+                let likelyNoSpeechByDecoder = !hasSegments
+                    || allSegmentsHighNoSpeech
+                    || averageNoSpeechProbability >= self.noSpeechAverageProbabilityThreshold
+
                 // Collapse multiple spaces into a single space
                 let cleanedText = text.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                
+                let finalText = likelyNoSpeechByDecoder ? "" : cleanedText
+
                 DispatchQueue.main.async {
                     self.isTranscribing = false
                     restoreDictionaryHintPromptIfNeeded()
-                    self.transcriptionText = cleanedText
-                    completion(cleanedText)
+                    self.lastResultWasLikelyNoSpeech = likelyNoSpeechByDecoder
+                    self.transcriptionText = finalText
+                    completion(finalText)
                 }
             } catch {
                 if Task.isCancelled {
@@ -133,6 +150,7 @@ class WhisperService: ObservableObject {
                 DispatchQueue.main.async {
                     self.isTranscribing = false
                     restoreDictionaryHintPromptIfNeeded()
+                    self.lastResultWasLikelyNoSpeech = false
                     completion(nil)
                 }
             }
