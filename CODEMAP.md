@@ -7,7 +7,6 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 ## Architecture
 
-- **App**: app entry point, window lifecycle, shared defaults keys
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
 - **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
@@ -175,6 +174,7 @@ KeyVox/
 │   └── tests.yml
 ├── KeyVox.xcodeproj/
 ├── LICENSE.md
+├── THIRD_PARTY_NOTICES.md
 ├── README.md
 └── CODEMAP.md
 ```

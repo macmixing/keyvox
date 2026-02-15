@@ -27,6 +27,12 @@ License notice (from upstream `LICENSE`):
 ```
 Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved.
 
+Portions Copyright 2007-2009 Alan W Black, Kevin Lenzo, and
+Vishnu Pillai.
+
+All modifications made in this distribution are Copyright 2023
+Carnegie Mellon University.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
@@ -41,7 +47,14 @@ are met:
 THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY "AS IS" AND
 ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED.
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+NOR OTHER CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 ### 2) SCOWL (Spell Checker Oriented Word Lists)
@@ -53,7 +66,7 @@ PURPOSE ARE DISCLAIMED.
 Permission notice (from upstream `Copyright`):
 
 ```
-Copyright 2000-2024 by Kevin Atkinson
+Copyright 2000-2025 by Kevin Atkinson
 
 Permission to use, copy, modify, distribute and sell these word
 lists, the associated scripts, the output created from the scripts,
@@ -61,10 +74,19 @@ and its documentation for any purpose is hereby granted without fee,
 provided that the above copyright notice appears in all copies and
 that both that copyright notice and this permission notice appear in
 supporting documentation.
+
+THE WORD LISTS, SCRIPTS, AND OUTPUT FILES ARE PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER
+BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE WORD LISTS, SCRIPTS, OR OUTPUT FILES OR THE USE OR
+OTHER DEALINGS IN THEM.
 ```
 
 Upstream SCOWL copyright/source notice file:
-- `https://github.com/en-wl/wordlist/blob/<revision>/Copyright`
+- `https://github.com/en-wl/wordlist/blob/9829d649f007932ce672a1e8e13678a48be20d55/Copyright`
 
 ### 3) Phonetisaurus
 - Project: `AdolfVonKleist/Phonetisaurus`
@@ -83,3 +105,4 @@ Upstream SCOWL copyright/source notice file:
 1. `sources.lock.json` is the source-of-truth for pinned source revisions and checksums.
 2. Regeneration must pass `Tools/Pronunciation/verify_licenses.sh` before commit.
 3. If source snapshots are updated, this file and `README.md` must be updated in the same change.
+4. Repo-level third-party notice index: `THIRD_PARTY_NOTICES.md`.

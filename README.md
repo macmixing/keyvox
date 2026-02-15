@@ -190,5 +190,7 @@ KeyVox uses a dual-license model:
 
 - **Source code** is MIT-licensed.
 - **Branding and specified visual assets** are excluded and remain proprietary.
+- **Bundled third-party components/data/fonts** remain under their original licenses.
 
-See [`LICENSE.md`](LICENSE.md) for exact terms and the full list of excluded files/assets.
+See [`LICENSE.md`](LICENSE.md) for exact terms and excluded assets, and
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for third-party notices.

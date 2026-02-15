@@ -23,6 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ---
+## Third-Party Components and Data
+
+This repository includes third-party components and data that are **not**
+licensed under this repository's MIT terms and remain under their original
+licenses.
+
+Notable third-party items include:
+
+- `whisper.cpp` (MIT)
+- OpenAI Whisper code/model weights (MIT)
+- Pronunciation data derived from CMUdict (BSD-2-Clause style notice/disclaimer)
+- Pronunciation data derived from SCOWL (custom permissive notice text)
+- Kanit font (`OFL-1.1`)
+
+For full third-party notices, see `THIRD_PARTY_NOTICES.md` and
+`Resources/Pronunciation/LICENSES.md`.
+
+---
 ## Excluded Proprietary Assets and Branding
 
 The MIT License applies to all source code in this repository **except** for the files and assets explicitly listed below.

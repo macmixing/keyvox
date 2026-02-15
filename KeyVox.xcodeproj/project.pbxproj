@@ -33,6 +33,9 @@
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
 		8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8E927F6A2F3C7AA000C071B3 /* Credits.rtf */; };
+		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
+		AA1000122F50000100AA0001 /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000022F50000100AA0001 /* THIRD_PARTY_NOTICES.md */; };
+		AA1000132F50000100AA0001 /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000032F50000100AA0001 /* LICENSE.md */; };
 		8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */; };
 		8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
@@ -126,6 +129,9 @@
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		8E927F6A2F3C7AA000C071B3 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+		AA1000022F50000100AA0001 /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
+		AA1000032F50000100AA0001 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../LICENSE.md; sourceTree = "<group>"; };
 		8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVox.entitlements; sourceTree = "<group>"; };
 		8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
 		8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
@@ -274,6 +280,9 @@
 				8F3301052F45010000CC3301 /* Pronunciation */,
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
+				AA1000012F50000100AA0001 /* OFL.txt */,
+				AA1000022F50000100AA0001 /* THIRD_PARTY_NOTICES.md */,
+				AA1000032F50000100AA0001 /* LICENSE.md */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
 				8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */,
 				8E6D05D22F3C51D6003BD458 /* keyvox.icon */,
@@ -509,6 +518,9 @@
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
+				AA1000112F50000100AA0001 /* OFL.txt in Resources */,
+				AA1000122F50000100AA0001 /* THIRD_PARTY_NOTICES.md in Resources */,
+				AA1000132F50000100AA0001 /* LICENSE.md in Resources */,
 				8F3302052F45010000CC3301 /* Pronunciation in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
