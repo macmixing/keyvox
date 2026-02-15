@@ -154,6 +154,10 @@ KeyVox/
 │       ├── benchmarks/
 │       │   ├── coverage-corpus.txt
 │       │   ├── dictionary-entries.txt
+│       │   ├── evaluate/
+│       │   │   ├── EvaluateBenchmarkIO.swift
+│       │   │   ├── EvaluateBenchmarkRunner.swift
+│       │   │   └── EvaluateMatcherCore.swift
 │       │   ├── evaluate_matcher.swift
 │       │   ├── positive-cases.tsv
 │       │   ├── run_quality_gates.sh
@@ -270,6 +274,14 @@ KeyVox/
   - Enforces allowed-source and attribution policy before distribution.
 - `Tools/Pronunciation/benchmarks/run_quality_gates.sh`
   - Enforces coverage/hit-rate/false-positive/latency thresholds using benchmark fixtures.
+- `Tools/Pronunciation/benchmarks/evaluate_matcher.swift`
+  - Thin benchmark CLI entrypoint (`@main`) that delegates to modular evaluator helpers.
+- `Tools/Pronunciation/benchmarks/evaluate/EvaluateMatcherCore.swift`
+  - Offline matcher core used by pronunciation benchmark quality evaluation.
+- `Tools/Pronunciation/benchmarks/evaluate/EvaluateBenchmarkIO.swift`
+  - Benchmark fixture loading and shared parsing/stat helper functions.
+- `Tools/Pronunciation/benchmarks/evaluate/EvaluateBenchmarkRunner.swift`
+  - End-to-end metric computation and main execution wrapper.
 - `Core/Services/Paste/PasteService.swift`
   - Orchestrates paste pipeline (AX injection, menu fallback, recovery, clipboard restore).
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.

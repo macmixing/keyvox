@@ -44,6 +44,9 @@ trap 'rm -f "$TMP_BIN"' EXIT
 
 xcrun swiftc -O -module-cache-path /tmp/swift-module-cache \
   "$SCRIPT_DIR/evaluate_matcher.swift" \
+  "$SCRIPT_DIR/evaluate/EvaluateMatcherCore.swift" \
+  "$SCRIPT_DIR/evaluate/EvaluateBenchmarkIO.swift" \
+  "$SCRIPT_DIR/evaluate/EvaluateBenchmarkRunner.swift" \
   -o "$TMP_BIN"
 
 METRICS_OUTPUT="$("$TMP_BIN" --repo-root "$REPO_ROOT")"
