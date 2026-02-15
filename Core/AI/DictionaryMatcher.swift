@@ -36,6 +36,7 @@ final class DictionaryMatcher {
     private struct Candidate {
         let entry: CompiledEntry
         let score: ReplacementScore
+        let replacementSuffix: String
     }
 
     private struct ProposedReplacement {
@@ -46,9 +47,18 @@ final class DictionaryMatcher {
         let score: Double
     }
 
+    private struct JoinedObservedForm {
+        let normalized: String
+        let singularizedSecondToken: Bool
+        let replacementSuffix: String
+    }
+
     private let lexicon: PronunciationLexiconProviding
     private let encoder: PhoneticEncoder
     private let scorer: ReplacementScorer
+    private let splitJoinMinimumScore = 0.92
+    private let minimumSplitTokenLength = 3
+    private let possessiveStemScoreBoost = 0.06
 
     private var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
 
@@ -122,40 +132,49 @@ final class DictionaryMatcher {
                 let window = Array(tokens[start..<end])
                 let observedNormalized = window.map(\.normalized).joined(separator: " ")
                 let observedPhonetic = window.map(\.phonetic).joined(separator: " ")
+                let observedForms = observedFormsForWindow(
+                    tokenCount: tokenCount,
+                    observedNormalized: observedNormalized,
+                    observedPhonetic: observedPhonetic
+                )
 
                 var best: Candidate?
                 var secondBestScore = 0.0
 
                 for candidate in candidates {
-                    let baseScore = scorer.score(
-                        observedText: observedNormalized,
-                        observedPhonetic: observedPhonetic,
-                        candidateText: candidate.normalizedPhrase,
-                        candidatePhonetic: candidate.phoneticPhrase,
-                        previousToken: start > 0 ? tokens[start - 1].normalized : nil,
-                        nextToken: end < tokens.count ? tokens[end].normalized : nil
-                    )
+                    for form in observedForms {
+                        let baseScore = scorer.score(
+                            observedText: form.normalized,
+                            observedPhonetic: form.phonetic,
+                            candidateText: candidate.normalizedPhrase,
+                            candidatePhonetic: candidate.phoneticPhrase,
+                            previousToken: start > 0 ? tokens[start - 1].normalized : nil,
+                            nextToken: end < tokens.count ? tokens[end].normalized : nil
+                        )
 
-                    let boostedFinalScore = min(
-                        1.0,
-                        baseScore.final + tokenAlignmentBoost(window: window, candidate: candidate)
-                    )
-                    let score = ReplacementScore(
-                        text: baseScore.text,
-                        phonetic: baseScore.phonetic,
-                        context: baseScore.context,
-                        final: boostedFinalScore
-                    )
+                        let boostedFinalScore = min(
+                            1.0,
+                            baseScore.final
+                                + tokenAlignmentBoost(window: window, candidate: candidate)
+                                + possessiveBonus(for: form.replacementSuffix)
+                        )
+                        let score = ReplacementScore(
+                            text: baseScore.text,
+                            phonetic: baseScore.phonetic,
+                            context: baseScore.context,
+                            final: boostedFinalScore
+                        )
 
-                    if let currentBest = best {
-                        if score.final > currentBest.score.final {
-                            secondBestScore = currentBest.score.final
-                            best = Candidate(entry: candidate, score: score)
-                        } else if score.final > secondBestScore {
-                            secondBestScore = score.final
+                        if let currentBest = best {
+                            if score.final > currentBest.score.final {
+                                secondBestScore = currentBest.score.final
+                                best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
+                            } else if score.final > secondBestScore {
+                                secondBestScore = score.final
+                            }
+                        } else {
+                            best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
                         }
-                    } else {
-                        best = Candidate(entry: candidate, score: score)
                     }
                 }
 
@@ -171,7 +190,16 @@ final class DictionaryMatcher {
                 }
 
                 let threshold = scorer.threshold(for: tokenCount)
-                guard best.score.final >= threshold else {
+                let effectiveThreshold: Double
+                if tokenCount == 1, best.replacementSuffix == "'s" {
+                    // Possessive tails add noise; allow a slightly lower gate while keeping
+                    // common-word and ambiguity guards intact.
+                    effectiveThreshold = max(0.82, threshold - 0.08)
+                } else {
+                    effectiveThreshold = threshold
+                }
+
+                guard best.score.final >= effectiveThreshold else {
                     stats.rejectedLowScore += 1
                     continue
                 }
@@ -183,7 +211,7 @@ final class DictionaryMatcher {
                 }
 
                 if tokenCount == 1,
-                   lexicon.isCommonWord(window[0].normalized),
+                   lexicon.isCommonWord(baseTokenForCommonWordGuard(window[0].normalized)),
                    best.score.final < scorer.commonWordOverrideThreshold {
                     stats.rejectedCommonWord += 1
                     continue
@@ -191,9 +219,10 @@ final class DictionaryMatcher {
 
                 let range = combinedRange(from: window)
                 let observedRaw = (text as NSString).substring(with: range)
+                let replacementText = best.entry.phrase + best.replacementSuffix
 
                 // Skip if replacement text is already identical.
-                if observedRaw == best.entry.phrase {
+                if observedRaw == replacementText {
                     continue
                 }
 
@@ -202,10 +231,19 @@ final class DictionaryMatcher {
                         tokenStart: start,
                         tokenEndExclusive: end,
                         range: range,
-                        replacement: best.entry.phrase,
+                        replacement: replacementText,
                         score: best.score.final
                     )
                 )
+            }
+
+            if let splitReplacement = proposeSplitJoinReplacement(
+                start: start,
+                tokens: tokens,
+                text: text,
+                stats: &stats
+            ) {
+                proposed.append(splitReplacement)
             }
         }
 
@@ -283,6 +321,222 @@ final class DictionaryMatcher {
                     phonetic: encoder.signature(for: normalized, lexicon: lexicon)
                 )
             }
+    }
+
+    private func proposeSplitJoinReplacement(
+        start: Int,
+        tokens: [Token],
+        text: String,
+        stats: inout DebugStats
+    ) -> ProposedReplacement? {
+        let end = start + 2
+        guard end <= tokens.count else { return nil }
+        guard let oneTokenCandidates = entriesByTokenCount[1], !oneTokenCandidates.isEmpty else { return nil }
+
+        stats.attempted += 1
+
+        let window = Array(tokens[start..<end])
+        guard window[0].normalized.count >= minimumSplitTokenLength,
+              window[1].normalized.count >= minimumSplitTokenLength else {
+            stats.rejectedShortToken += 1
+            return nil
+        }
+
+        let forms = splitJoinForms(from: window)
+        guard !forms.isEmpty else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        var best: Candidate?
+        var secondBestScore = 0.0
+
+        for candidate in oneTokenCandidates {
+            let candidateToken = candidate.tokens[0]
+            let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
+
+            for form in forms {
+                // Only non-common dictionary entries can use plural-tail singularization.
+                if form.singularizedSecondToken && candidateIsCommonWord {
+                    continue
+                }
+
+                let observedPhonetic = encoder.signature(for: form.normalized, lexicon: lexicon)
+                let score = scorer.score(
+                    observedText: form.normalized,
+                    observedPhonetic: observedPhonetic,
+                    candidateText: candidate.normalizedPhrase,
+                    candidatePhonetic: candidate.phoneticPhrase,
+                    previousToken: start > 0 ? tokens[start - 1].normalized : nil,
+                    nextToken: end < tokens.count ? tokens[end].normalized : nil
+                )
+                let adjustedScore = ReplacementScore(
+                    text: score.text,
+                    phonetic: score.phonetic,
+                    context: score.context,
+                    final: min(1.0, score.final + possessiveBonus(for: form.replacementSuffix))
+                )
+
+                if let currentBest = best {
+                    if adjustedScore.final > currentBest.score.final {
+                        secondBestScore = currentBest.score.final
+                        best = Candidate(
+                            entry: candidate,
+                            score: adjustedScore,
+                            replacementSuffix: form.replacementSuffix
+                        )
+                    } else if adjustedScore.final > secondBestScore {
+                        secondBestScore = adjustedScore.final
+                    }
+                } else {
+                    best = Candidate(
+                        entry: candidate,
+                        score: adjustedScore,
+                        replacementSuffix: form.replacementSuffix
+                    )
+                }
+            }
+        }
+
+        guard let best else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
+        guard best.score.final >= threshold else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        if secondBestScore > 0,
+           (best.score.final - secondBestScore) < scorer.ambiguityMargin {
+            stats.rejectedAmbiguity += 1
+            return nil
+        }
+
+        if lexicon.isCommonWord(best.entry.tokens[0]),
+           best.score.final < scorer.commonWordOverrideThreshold {
+            stats.rejectedCommonWord += 1
+            return nil
+        }
+
+        let range = combinedRange(from: window)
+        let observedRaw = (text as NSString).substring(with: range)
+        let replacementText = best.entry.phrase + best.replacementSuffix
+        if observedRaw == replacementText {
+            return nil
+        }
+
+        return ProposedReplacement(
+            tokenStart: start,
+            tokenEndExclusive: end,
+            range: range,
+            replacement: replacementText,
+            score: best.score.final
+        )
+    }
+
+    private func splitJoinForms(from window: [Token]) -> [JoinedObservedForm] {
+        guard window.count == 2 else { return [] }
+
+        let first = window[0].normalized
+        let second = window[1].normalized
+
+        var forms: [JoinedObservedForm] = []
+        var seen = Set<String>()
+
+        let direct = first + second
+        if !direct.isEmpty, seen.insert(direct).inserted {
+            forms.append(
+                JoinedObservedForm(
+                    normalized: direct,
+                    singularizedSecondToken: false,
+                    replacementSuffix: ""
+                )
+            )
+        }
+
+        if second.hasSuffix("'s"), second.count > minimumSplitTokenLength {
+            let stem = String(second.dropLast(2))
+            if stem.count >= minimumSplitTokenLength {
+                let possessiveJoin = first + stem
+                if !possessiveJoin.isEmpty, seen.insert(possessiveJoin).inserted {
+                    forms.append(
+                        JoinedObservedForm(
+                            normalized: possessiveJoin,
+                            singularizedSecondToken: false,
+                            replacementSuffix: "'s"
+                        )
+                    )
+                }
+            }
+        }
+
+        if second.hasSuffix("s"),
+           !second.hasSuffix("'s"),
+           !second.hasSuffix("s'"),
+           second.count > minimumSplitTokenLength {
+            let singularSecond = String(second.dropLast())
+            if singularSecond.count >= minimumSplitTokenLength {
+                let singularized = first + singularSecond
+                if !singularized.isEmpty, seen.insert(singularized).inserted {
+                    forms.append(
+                        JoinedObservedForm(
+                            normalized: singularized,
+                            singularizedSecondToken: true,
+                            replacementSuffix: ""
+                        )
+                    )
+                }
+            }
+        }
+
+        return forms
+    }
+
+    private func observedFormsForWindow(
+        tokenCount: Int,
+        observedNormalized: String,
+        observedPhonetic: String
+    ) -> [(normalized: String, phonetic: String, replacementSuffix: String)] {
+        guard tokenCount == 1 else {
+            return [(normalized: observedNormalized, phonetic: observedPhonetic, replacementSuffix: "")]
+        }
+
+        var forms: [(normalized: String, phonetic: String, replacementSuffix: String)] = [
+            (normalized: observedNormalized, phonetic: observedPhonetic, replacementSuffix: "")
+        ]
+        var seen = Set<String>()
+        seen.insert("\(observedNormalized)|")
+
+        if observedNormalized.hasSuffix("'s"), observedNormalized.count > 3 {
+            let stem = String(observedNormalized.dropLast(2))
+            if stem.count >= 3 {
+                let key = "\(stem)|'s"
+                if seen.insert(key).inserted {
+                    forms.append((
+                        normalized: stem,
+                        phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                        replacementSuffix: "'s"
+                    ))
+                }
+            }
+        }
+
+        return forms
+    }
+
+    private func baseTokenForCommonWordGuard(_ token: String) -> String {
+        if token.hasSuffix("'s"), token.count > 3 {
+            return String(token.dropLast(2))
+        }
+
+        return token
+    }
+
+    private func possessiveBonus(for replacementSuffix: String) -> Double {
+        replacementSuffix == "'s" ? possessiveStemScoreBoost : 0
     }
 
     private func combinedRange(from tokens: [Token]) -> NSRange {
