@@ -56,6 +56,7 @@ final class WarningManager {
         setupMonitor()
     }
 
+    @MainActor
     func showPasteFailureRecovery(progress: Double, onDismiss: @escaping () -> Void) {
         playCancelSound()
 
@@ -90,10 +91,12 @@ final class WarningManager {
         recoveryWindow?.orderFrontRegardless()
     }
 
+    @MainActor
     func updatePasteFailureRecovery(progress: Double) {
         recoveryModel?.progress = max(0, min(1, progress))
     }
 
+    @MainActor
     func hidePasteFailureRecovery() {
         recoveryWindow?.orderOut(nil)
         recoveryModel = nil

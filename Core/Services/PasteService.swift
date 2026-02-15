@@ -4,7 +4,6 @@ class PasteService {
     static let shared = PasteService()
     // Serialize insertion side effects (AX writes, menu fallback, clipboard restore scheduling).
     private let pasteQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive)
-    private let recoveryCoordinator = PasteFailureRecoveryCoordinator.shared
 
     // Heuristic memory for consecutive dictation when AX metadata is incomplete.
     private let heuristicTTL: TimeInterval = 10
@@ -607,12 +606,16 @@ class PasteService {
 
     private func cancelActiveRecoveryOnMainThread() {
         if Thread.isMainThread {
-            recoveryCoordinator.cancelActiveRecoveryIfNeeded()
+            MainActor.assumeIsolated {
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+            }
             return
         }
 
         DispatchQueue.main.sync {
-            recoveryCoordinator.cancelActiveRecoveryIfNeeded()
+            MainActor.assumeIsolated {
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+            }
         }
     }
 
@@ -624,12 +627,16 @@ class PasteService {
         }
 
         if Thread.isMainThread {
-            recoveryCoordinator.startRecovery(restoreClipboard: restoreClosure)
+            MainActor.assumeIsolated {
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
+            }
             return
         }
 
-        DispatchQueue.main.async {
-            self.recoveryCoordinator.startRecovery(restoreClipboard: restoreClosure)
+        DispatchQueue.main.sync {
+            MainActor.assumeIsolated {
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
+            }
         }
     }
 
