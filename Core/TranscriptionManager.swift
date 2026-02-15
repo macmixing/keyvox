@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import ApplicationServices
 
+@MainActor
 class TranscriptionManager: ObservableObject {
     @Published var state: AppState = .idle
     @Published var lastTranscription: String = ""
