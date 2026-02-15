@@ -80,6 +80,8 @@ private struct DictionaryEntryRow: View {
     let onDelete: () -> Void
 
     @State private var isHovered = false
+    @State private var isEditHovered = false
+    @State private var isDeleteHovered = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -93,17 +95,19 @@ private struct DictionaryEntryRow: View {
             HStack(spacing: 10) {
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.white.opacity(isEditHovered ? 1.0 : 0.88))
                 }
                 .buttonStyle(.plain)
+                .onHover { isEditHovered = $0 }
 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.red.opacity(0.9))
+                        .foregroundColor(.red.opacity(isDeleteHovered ? 1.0 : 0.88))
                 }
                 .buttonStyle(.plain)
+                .onHover { isDeleteHovered = $0 }
             }
             .opacity(isHovered ? 1 : 0)
             .allowsHitTesting(isHovered)
