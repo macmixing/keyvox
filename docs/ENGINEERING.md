@@ -34,7 +34,11 @@ KeyVox is organized by responsibility:
 - `Core/Services/UpdateFeedConfig.swift`: Tracked update feed config + local override resolution.
 - `Core/Services/AppUpdateLogic.swift`: Pure update parsing/version/host validation helpers.
 
-For the full file-level map, see [`CODEMAP.md`](../CODEMAP.md).
+For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
+
+## Inference Model
+
+- KeyVox uses Whisper's multilingual base model (`ggml-base`) for on-device transcription.
 
 ## Post-Processing Order
 

@@ -9,6 +9,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 ## Why KeyVox
 
 - 🚀 Fast local transcription (no cloud transcription path)
+- 🌍 Uses the Whisper multilingual base model (`ggml-base`)
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
@@ -60,7 +61,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 ## Documentation
 
 - 📘 Engineering details: [`docs/ENGINEERING.md`](docs/ENGINEERING.md)
-- 🗺️ File/component map: [`CODEMAP.md`](CODEMAP.md)
+- 🗺️ File/component map: [`docs/CODEMAP.md`](docs/CODEMAP.md)
 - 📜 License terms: [`LICENSE.md`](LICENSE.md)
 - 📎 Third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
