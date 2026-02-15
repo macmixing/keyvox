@@ -216,6 +216,7 @@ class TranscriptionManager: ObservableObject {
                     
                     let pasteStart = Date()
                     if !text.isEmpty {
+                        self.appSettings.recordSpokenWords(from: text)
                         PasteService.shared.pasteText(text)
                     }
                     let pasteDuration = Date().timeIntervalSince(pasteStart)

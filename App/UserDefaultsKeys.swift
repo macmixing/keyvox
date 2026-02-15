@@ -16,5 +16,7 @@ enum UserDefaultsKeys {
     enum App {
         static let updateAlertLastShown = "KeyVox.App.UpdateAlertLastShown"
         static let updateAlertSnoozedUntil = "KeyVox.App.UpdateAlertSnoozedUntil"
+        static let wordsThisWeekCount = "KeyVox.App.WordsThisWeekCount"
+        static let wordsThisWeekWeekStart = "KeyVox.App.WordsThisWeekWeekStart"
     }
 }

@@ -19,10 +19,15 @@ extension SettingsView {
             
             Spacer()
             
-            // Version Info
-            Text("Version \(appVersion)")
-                .font(.custom("Kanit Medium", size: 10))
-                .foregroundColor(.secondary.opacity(0.5))
+            // Weekly Usage
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("Words this week:")
+                    .font(.custom("Kanit Medium", size: 14))
+                    .foregroundColor(.white.opacity(0.95))
+                Text(appSettings.wordsThisWeek.formatted())
+                    .font(.custom("Kanit Medium", size: 14))
+                    .foregroundColor(.yellow)
+            }
         }
         .padding(.horizontal, 32)
         .padding(.top, -8)

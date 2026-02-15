@@ -73,26 +73,39 @@ struct SettingsView: View {
                 }
             )
         }
+        .onAppear {
+            appSettings.refreshWeeklyWordCounterIfNeeded()
+        }
     }
     
     private var contentView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
-                switch selectedTab {
-                case .general:
-                    generalSettings
-                case .audio:
-                    audioSettings
-                case .model:
-                    modelSettings
-                case .information:
-                    informationSettings
+        ZStack(alignment: .bottomTrailing) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 32) {
+                    switch selectedTab {
+                    case .general:
+                        generalSettings
+                    case .audio:
+                        audioSettings
+                    case .model:
+                        modelSettings
+                    case .information:
+                        informationSettings
+                    }
                 }
+                .padding(.horizontal, 40)
+                .padding(.top, 32)
+                .padding(.bottom, 40)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, 40)
-            .padding(.top, 32)
-            .padding(.bottom, 40)
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if selectedTab == .information {
+                Text("Version \(appVersion)")
+                    .font(.custom("Kanit Medium", size: 10))
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .padding(.trailing, 32)
+                    .padding(.bottom, 24)
+            }
         }
     }
 }
