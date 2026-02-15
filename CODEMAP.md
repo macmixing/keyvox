@@ -69,8 +69,12 @@ KeyVox/
 │   │   ├── ListFormattingTypes.swift
 │   │   ├── ListPatternDetector.swift
 │   │   └── ListRenderer.swift
+│   ├── Audio/
+│   │   ├── AudioCaptureClassification.swift
+│   │   ├── AudioRecorder.swift
+│   │   ├── AudioSignalMetrics.swift
+│   │   └── AudioSilencePolicy.swift
 │   ├── AudioDeviceManager.swift
-│   ├── AudioRecorder.swift
 │   ├── KeyboardMonitor.swift
 │   ├── ModelDownloader.swift
 │   ├── Overlay/
@@ -169,7 +173,7 @@ KeyVox/
 
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape state.
 2. `Core/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
-3. `Core/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
+3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
 5. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
 6. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
@@ -209,8 +213,14 @@ KeyVox/
   - Microphone discovery, persistence, and selection policy.
 - `Core/ModelDownloader.swift`
   - Downloads `ggml-base.bin` plus CoreML encoder zip and validates readiness.
-- `Core/AudioRecorder.swift`
-  - AVCapture pipeline, live input signal classification, normalization.
+- `Core/Audio/AudioRecorder.swift`
+  - AVCapture pipeline orchestration, live input state tracking, gap removal, normalization.
+- `Core/Audio/AudioCaptureClassification.swift`
+  - Centralized per-capture classification (absolute silence, long true silence, likely-silence rejection).
+- `Core/Audio/AudioSilencePolicy.swift`
+  - Shared thresholds/rules for low-confidence capture rejection and long true-silence detection.
+- `Core/Audio/AudioSignalMetrics.swift`
+  - Pure signal metrics (RMS, peak, true-silence window ratio) used by capture classification.
 
 ### Service Layer (`Core/Services`)
 

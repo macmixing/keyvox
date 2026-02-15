@@ -51,7 +51,10 @@ KeyVox is organized by responsibility:
 
 - **`App/KeyVoxApp.swift`**: app entry point, menu bar scene, window lifecycle.
 - **`Core/TranscriptionManager.swift`**: central recording/transcription state machine.
-- **`Core/AudioRecorder.swift`**: 16kHz mono audio capture pipeline.
+- **`Core/Audio/AudioRecorder.swift`**: 16kHz mono audio capture pipeline orchestration.
+- **`Core/Audio/AudioCaptureClassification.swift`**: capture confidence/silence classification helper.
+- **`Core/Audio/AudioSilencePolicy.swift`**: shared silence-gate policy constants/rules.
+- **`Core/Audio/AudioSignalMetrics.swift`**: pure RMS/peak/window-ratio signal metrics.
 - **`Core/KeyboardMonitor.swift`**: global/local modifier and escape monitoring.
 - **`Core/Overlay/OverlayManager.swift`**: overlay lifecycle orchestration, panel wiring, and visibility state.
 - **`Core/Overlay/OverlayMotionController.swift`**: fling/reset motion sequencing and overshoot/settle animation flow.
@@ -117,7 +120,7 @@ KeyVox is organized by responsibility:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 
 ### Integration-Only Exclusions
-- Audio capture hardware/runtime behavior (`Core/AudioRecorder.swift`)
+- Audio capture hardware/runtime behavior (`Core/Audio/AudioRecorder.swift`)
 - Global keyboard hook behavior (`Core/KeyboardMonitor.swift`)
 - Overlay window rendering/interaction details (`Core/Overlay/OverlayManager.swift`, `Core/Overlay/OverlayPanel.swift`, `Views/RecordingOverlay.swift`)
 

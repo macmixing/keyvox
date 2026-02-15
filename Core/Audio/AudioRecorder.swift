@@ -147,42 +147,37 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
             // 3) normalize loudness
             // 4) return processed frames
             let snapshot: [Float] = audioDataQueue.sync { audioData }
-            lastCaptureWasAbsoluteSilence = isAbsoluteSilence(snapshot)
-            lastCaptureHadActiveSignal = AudioSilenceGatePolicy.hadActiveSpeechEvidence(
+            let speechOnly = removeInternalGaps(from: snapshot)
+            let captureDuration = Date().timeIntervalSince(captureStartedAt)
+            let classification = AudioCaptureClassifier.classify(
+                snapshot: snapshot,
+                speechOnly: speechOnly,
+                captureDuration: captureDuration,
                 maxActiveSignalRunDuration: maxActiveSignalRunDuration
             )
-            let captureDuration = Date().timeIntervalSince(captureStartedAt)
-            let silentWindowRatio = AudioSilenceGatePolicy.trueSilenceWindowRatio(for: snapshot)
-            lastCaptureWasLongTrueSilence = AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
-                captureDuration: captureDuration,
-                hadActiveSignal: lastCaptureHadActiveSignal,
-                silentWindowRatio: silentWindowRatio
-            )
+
+            lastCaptureWasAbsoluteSilence = classification.isAbsoluteSilence
+            lastCaptureHadActiveSignal = classification.hadActiveSignal
+            lastCaptureWasLongTrueSilence = classification.isLongTrueSilence
             #if DEBUG
             print(
                 "Audio silence classification: duration=\(String(format: "%.2f", captureDuration))s " +
                 "activeSignal=\(lastCaptureHadActiveSignal) activeRun=\(String(format: "%.3f", maxActiveSignalRunDuration))s " +
-                "silentWindowRatio=\(String(format: "%.3f", silentWindowRatio)) " +
+                "silentWindowRatio=\(String(format: "%.3f", classification.silentWindowRatio)) " +
                 "longTrueSilence=\(lastCaptureWasLongTrueSilence)"
             )
             #endif
 
-            let speechOnly = removeInternalGaps(from: snapshot)
-            let speechRMS = Self.rms(of: speechOnly)
             let outputFrames: [Float]
             if lastCaptureWasLongTrueSilence {
                 lastCaptureWasLikelySilence = false
                 outputFrames = []
-            } else if AudioSilenceGatePolicy.shouldRejectLikelySilence(
-                captureDuration: captureDuration,
-                hadActiveSignal: lastCaptureHadActiveSignal,
-                speechRMS: speechRMS
-            ) {
+            } else if classification.shouldRejectLikelySilence {
                 lastCaptureWasLikelySilence = true
                 #if DEBUG
                 print(
                     "Audio processed: Rejected likely silence (duration: \(String(format: "%.2f", captureDuration))s, " +
-                    "hadActiveSignal: \(lastCaptureHadActiveSignal), speechRMS: \(speechRMS))."
+                    "hadActiveSignal: \(lastCaptureHadActiveSignal), speechRMS: \(classification.speechRMS))."
                 )
                 #endif
                 outputFrames = []
@@ -436,105 +431,4 @@ class AudioRecorder: NSObject, ObservableObject, AVCaptureAudioDataOutputSampleB
         return discovery.devices
     }
 
-    private func isAbsoluteSilence(_ samples: [Float]) -> Bool {
-        guard !samples.isEmpty else { return true }
-
-        var peak: Float = 0
-        for sample in samples {
-            let magnitude = abs(sample)
-            if magnitude > peak {
-                peak = magnitude
-            }
-        }
-
-        // Treat near-zero PCM as a muted/disabled microphone capture.
-        return peak < 0.0001
-    }
-
-    private static func rms(of samples: [Float]) -> Float {
-        guard !samples.isEmpty else { return 0 }
-        var sumSquares: Float = 0
-        for sample in samples {
-            sumSquares += sample * sample
-        }
-        return sqrt(sumSquares / Float(samples.count))
-    }
-}
-
-struct AudioSilenceGatePolicy {
-    static let microphoneNameFallback = "current device"
-
-    static let longCaptureMinimumDuration: TimeInterval = 2.0
-    static let lowConfidenceRMSCutoff: Float = 0.0028
-    static let minimumActiveSignalRunDuration: TimeInterval = 0.14
-    static let longTrueSilenceMinimumDuration: TimeInterval = 5.0
-    static let trueSilenceWindowSize = 1600
-    static let trueSilenceWindowRMSThreshold: Float = 0.0014
-    static let trueSilenceMinimumWindowRatio: Float = 0.95
-
-    static func normalizedMicrophoneName(_ rawName: String) -> String {
-        let trimmed = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? microphoneNameFallback : trimmed
-    }
-
-    static func shouldRejectLikelySilence(
-        captureDuration: TimeInterval,
-        hadActiveSignal: Bool,
-        speechRMS: Float
-    ) -> Bool {
-        guard captureDuration >= longCaptureMinimumDuration else { return false }
-        guard !hadActiveSignal else { return false }
-        return speechRMS < lowConfidenceRMSCutoff
-    }
-
-    static func shouldFlagLongTrueSilence(
-        captureDuration: TimeInterval,
-        hadActiveSignal: Bool,
-        silentWindowRatio: Float
-    ) -> Bool {
-        guard captureDuration >= longTrueSilenceMinimumDuration else { return false }
-        guard !hadActiveSignal else { return false }
-        return silentWindowRatio >= trueSilenceMinimumWindowRatio
-    }
-
-    static func hadActiveSpeechEvidence(
-        maxActiveSignalRunDuration: TimeInterval
-    ) -> Bool {
-        maxActiveSignalRunDuration >= minimumActiveSignalRunDuration
-    }
-
-    static func trueSilenceWindowRatio(
-        for samples: [Float],
-        windowSize: Int = trueSilenceWindowSize,
-        silenceThreshold: Float = trueSilenceWindowRMSThreshold
-    ) -> Float {
-        guard !samples.isEmpty else { return 1.0 }
-        guard windowSize > 0 else { return 0 }
-
-        let totalWindows = samples.count / windowSize
-        guard totalWindows > 0 else {
-            return Self.rms(of: samples) < silenceThreshold ? 1.0 : 0.0
-        }
-
-        var silentWindows = 0
-        for windowIndex in 0..<totalWindows {
-            let start = windowIndex * windowSize
-            let end = start + windowSize
-            let windowRMS = Self.rms(of: Array(samples[start..<end]))
-            if windowRMS < silenceThreshold {
-                silentWindows += 1
-            }
-        }
-
-        return Float(silentWindows) / Float(totalWindows)
-    }
-
-    private static func rms(of samples: [Float]) -> Float {
-        guard !samples.isEmpty else { return 0 }
-        var sumSquares: Float = 0
-        for sample in samples {
-            sumSquares += sample * sample
-        }
-        return sqrt(sumSquares / Float(samples.count))
-    }
 }
