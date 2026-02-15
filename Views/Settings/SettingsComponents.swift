@@ -178,6 +178,7 @@ struct TipItem: View {
             Text(text)
                 .font(.custom("Kanit Medium", size: 11))
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

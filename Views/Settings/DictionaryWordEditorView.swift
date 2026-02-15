@@ -75,9 +75,18 @@ struct DictionaryWordEditorView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                TextField("KeyVox", text: $phrase)
+                TextField("", text: $phrase)
                     .font(.custom("Kanit Medium", size: 14))
                     .textFieldStyle(.roundedBorder)
+                    .overlay(alignment: .leading) {
+                        if phrase.isEmpty {
+                            Text("KeyVox")
+                                .font(.custom("Kanit Medium", size: 14))
+                                .foregroundColor(.secondary.opacity(0.5))
+                                .padding(.leading, 7)
+                                .allowsHitTesting(false)
+                        }
+                    }
                     .focused($isTextFieldFocused)
                     .submitLabel(.done)
                     .onSubmit {

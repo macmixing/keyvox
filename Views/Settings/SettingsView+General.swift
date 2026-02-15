@@ -38,6 +38,7 @@ extension SettingsView {
                 TipItem(icon: "shift", text: "Shift + Release for Hands-Free")
                 TipItem(icon: "escape", text: "Esc to Cancel")
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 }
