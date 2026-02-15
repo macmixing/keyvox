@@ -29,6 +29,15 @@ jobs:
       - name: Enforce core coverage
         run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
 
+  pronunciation-quality:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run pronunciation quality gates
+        run: Tools/Pronunciation/benchmarks/run_quality_gates.sh --repo-root "$GITHUB_WORKSPACE"
+
   package-tests:
     runs-on: macos-latest
     steps:
