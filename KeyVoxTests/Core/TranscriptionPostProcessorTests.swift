@@ -1,11 +1,10 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
-struct TranscriptionPostProcessorTests {
-    @Test
-    func appliesDictionaryCasingBeforeListFormatting() {
+final class TranscriptionPostProcessorTests: XCTestCase {
+    func testAppliesDictionaryCasingBeforeListFormatting() {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "Cueboard"),
@@ -17,12 +16,11 @@ struct TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        #expect(output.contains("1. Cueboard"))
-        #expect(output.contains("2. Cueboard"))
+        XCTAssertTrue(output.contains("1. Cueboard"))
+        XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
-    @Test
-    func singleLineModeCollapsesWhitespace() {
+    func testSingleLineModeCollapsesWhitespace() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -31,18 +29,16 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "Hello world")
+        XCTAssertTrue(output == "Hello world")
     }
 
-    @Test
-    func emptyInputReturnsEmpty() {
+    func testEmptyInputReturnsEmpty() {
         let processor = TranscriptionPostProcessor()
         let output = processor.process("", dictionaryEntries: [], renderMode: .multiline)
-        #expect(output.isEmpty)
+        XCTAssertTrue(output.isEmpty)
     }
 
-    @Test
-    func normalizesCompactAndDottedTimesWithMeridiem() {
+    func testNormalizesCompactAndDottedTimesWithMeridiem() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -51,11 +47,10 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "3:15 AM 3:17 AM 4:19 PM")
+        XCTAssertTrue(output == "3:15 AM 3:17 AM 4:19 PM")
     }
 
-    @Test
-    func preservesDaypartPhrasingWhileFixingTimeShape() {
+    func testPreservesDaypartPhrasingWhileFixingTimeShape() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -64,11 +59,10 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "I got there at 4:18 in the morning and left at 4:19 in the evening")
+        XCTAssertTrue(output == "I got there at 4:18 in the morning and left at 4:19 in the evening")
     }
 
-    @Test
-    func preservesDaypartPhrasingForHyphenSeparatedTimes() {
+    func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -77,11 +71,10 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "I think maybe 3:15 in the evening?")
+        XCTAssertTrue(output == "I think maybe 3:15 in the evening?")
     }
 
-    @Test
-    func normalizesTerminalAndAsFuzzyAm() {
+    func testNormalizesTerminalAndAsFuzzyAm() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -90,11 +83,10 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "4:15 AM. 3:15 AM")
+        XCTAssertTrue(output == "4:15 AM. 3:15 AM")
     }
 
-    @Test
-    func doesNotTreatConjunctionAndAsMeridiem() {
+    func testDoesNotTreatConjunctionAndAsMeridiem() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -103,6 +95,6 @@ struct TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        #expect(output == "I said 415 and 5:30 in the afternoon")
+        XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon")
     }
 }

@@ -1,34 +1,31 @@
 import AppKit
 import CoreGraphics
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct OverlayFlingPhysicsTests {
-    @Test
-    func rightwardVelocityHitsRightEdgeFirst() {
+final class OverlayFlingPhysicsTests: XCTestCase {
+    func testRightwardVelocityHitsRightEdgeFirst() {
         let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
         let origin = NSPoint(x: 20, y: 25)
         let velocity = CGVector(dx: 200, dy: 10)
 
         let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
 
-        #expect(impact?.edge == .right)
-        #expect(abs((impact?.originAtImpact.x ?? 0) - bounds.maxX) < 0.001)
+        XCTAssertTrue(impact?.edge == .right)
+        XCTAssertTrue(abs((impact?.originAtImpact.x ?? 0) - bounds.maxX) < 0.001)
     }
 
-    @Test
-    func diagonalVelocityUsesSmallestPositiveImpactTime() {
+    func testDiagonalVelocityUsesSmallestPositiveImpactTime() {
         let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
         let origin = NSPoint(x: 50, y: 50)
         let velocity = CGVector(dx: -100, dy: 200)
 
         let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
 
-        #expect(impact?.edge == .top)
+        XCTAssertTrue(impact?.edge == .top)
     }
 
-    @Test
-    func nearZeroVelocityHasNoImpact() {
+    func testNearZeroVelocityHasNoImpact() {
         let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
         let origin = NSPoint(x: 50, y: 50)
 
@@ -38,11 +35,10 @@ struct OverlayFlingPhysicsTests {
             bounds: bounds
         )
 
-        #expect(impact == nil)
+        XCTAssertTrue(impact == nil)
     }
 
-    @Test
-    func reflectionNormalizesAgainstEachEdgeNormal() {
+    func testReflectionNormalizesAgainstEachEdgeNormal() {
         assertReflected(
             velocity: CGVector(dx: -2, dy: 1),
             normal: FlingImpactEdge.left.normal,
@@ -65,8 +61,7 @@ struct OverlayFlingPhysicsTests {
         )
     }
 
-    @Test
-    func travelDurationClampsToMinAndMax() {
+    func testTravelDurationClampsToMinAndMax() {
         let minDuration = OverlayFlingPhysics.travelDuration(
             distance: 100,
             speed: 10_000,
@@ -80,8 +75,8 @@ struct OverlayFlingPhysicsTests {
             maxDuration: 0.30
         )
 
-        #expect(abs(minDuration - 0.12) < 0.0001)
-        #expect(abs(maxDuration - 0.30) < 0.0001)
+        XCTAssertTrue(abs(minDuration - 0.12) < 0.0001)
+        XCTAssertTrue(abs(maxDuration - 0.30) < 0.0001)
     }
 
     private func assertReflected(velocity: CGVector, normal: CGVector, expected: CGVector) {
@@ -89,7 +84,7 @@ struct OverlayFlingPhysicsTests {
         let expectedLength = hypot(expected.dx, expected.dy)
         let expectedUnit = CGVector(dx: expected.dx / expectedLength, dy: expected.dy / expectedLength)
 
-        #expect(abs(reflected.dx - expectedUnit.dx) < 0.0001)
-        #expect(abs(reflected.dy - expectedUnit.dy) < 0.0001)
+        XCTAssertTrue(abs(reflected.dx - expectedUnit.dx) < 0.0001)
+        XCTAssertTrue(abs(reflected.dy - expectedUnit.dy) < 0.0001)
     }
 }

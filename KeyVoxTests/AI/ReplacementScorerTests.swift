@@ -1,33 +1,29 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct ReplacementScorerTests {
-    @Test
-    func thresholdsMatchBalancedPolicy() {
+final class ReplacementScorerTests: XCTestCase {
+    func testThresholdsMatchBalancedPolicy() {
         let scorer = ReplacementScorer.balanced
-        #expect(scorer.threshold(for: 1) == 0.90)
-        #expect(scorer.threshold(for: 2) == 0.80)
-        #expect(scorer.threshold(for: 3) == 0.78)
-        #expect(scorer.threshold(for: 4) == 0.78)
+        XCTAssertTrue(scorer.threshold(for: 1) == 0.90)
+        XCTAssertTrue(scorer.threshold(for: 2) == 0.80)
+        XCTAssertTrue(scorer.threshold(for: 3) == 0.78)
+        XCTAssertTrue(scorer.threshold(for: 4) == 0.78)
     }
 
-    @Test
-    func ambiguityMarginIsConfigured() {
+    func testAmbiguityMarginIsConfigured() {
         let scorer = ReplacementScorer.balanced
-        #expect(scorer.ambiguityMargin == 0.05)
-        #expect(scorer.commonWordOverrideThreshold == 0.94)
+        XCTAssertTrue(scorer.ambiguityMargin == 0.05)
+        XCTAssertTrue(scorer.commonWordOverrideThreshold == 0.94)
     }
 
-    @Test
-    func similarityReturnsOneForExactAndLessForNearMatch() {
+    func testSimilarityReturnsOneForExactAndLessForNearMatch() {
         let scorer = ReplacementScorer.balanced
-        #expect(scorer.similarity(lhs: "esposito", rhs: "esposito") == 1)
-        #expect(scorer.similarity(lhs: "espicito", rhs: "esposito") < 1)
+        XCTAssertTrue(scorer.similarity(lhs: "esposito", rhs: "esposito") == 1)
+        XCTAssertTrue(scorer.similarity(lhs: "espicito", rhs: "esposito") < 1)
     }
 
-    @Test
-    func scoreBlendsTextPhoneticAndContext() {
+    func testScoreBlendsTextPhoneticAndContext() {
         let scorer = ReplacementScorer.balanced
         let withContext = scorer.score(
             observedText: "dom espicito",
@@ -47,6 +43,6 @@ struct ReplacementScorerTests {
             nextToken: nil
         )
 
-        #expect(withContext.final > withoutContext.final)
+        XCTAssertTrue(withContext.final > withoutContext.final)
     }
 }

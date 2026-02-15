@@ -1,10 +1,9 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct ListRendererTests {
-    @Test
-    func rendersMultilineWithLeadInColonAndTrailingText() {
+final class ListRendererTests: XCTestCase {
+    func testRendersMultilineWithLeadInColonAndTrailingText() {
         let renderer = ListRenderer()
         let list = DetectedList(
             leadingText: "Here is the plan",
@@ -16,11 +15,10 @@ struct ListRendererTests {
         )
 
         let rendered = renderer.render(list, mode: .multiline)
-        #expect(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nThen we rest")
+        XCTAssertTrue(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nThen we rest")
     }
 
-    @Test
-    func rendersSingleLineInlineWithSemicolons() {
+    func testRendersSingleLineInlineWithSemicolons() {
         let renderer = ListRenderer()
         let list = DetectedList(
             leadingText: "Tasks",
@@ -32,11 +30,10 @@ struct ListRendererTests {
         )
 
         let rendered = renderer.render(list, mode: .singleLineInline)
-        #expect(rendered == "Tasks: 1. Call vet; 2. Buy food done")
+        XCTAssertTrue(rendered == "Tasks: 1. Call vet; 2. Buy food done")
     }
 
-    @Test
-    func capitalizesFirstLetterOfTrailingTransition() {
+    func testCapitalizesFirstLetterOfTrailingTransition() {
         let renderer = ListRenderer()
         let list = DetectedList(
             leadingText: "Here is the plan",
@@ -48,6 +45,6 @@ struct ListRendererTests {
         )
 
         let rendered = renderer.render(list, mode: .multiline)
-        #expect(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nAnd everything is handled")
+        XCTAssertTrue(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nAnd everything is handled")
     }
 }

@@ -1,11 +1,10 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
-struct DictionaryMatcherCoreLogicTests {
-    @Test
-    func overlapResolverPrefersHigherScoreThenLongerSpanThenEarlierStart() {
+final class DictionaryMatcherCoreLogicTests: XCTestCase {
+    func testOverlapResolverPrefersHigherScoreThenLongerSpanThenEarlierStart() {
         let matcher = makeMatcher()
 
         let proposed: [DictionaryMatcher.ProposedReplacement] = [
@@ -18,15 +17,14 @@ struct DictionaryMatcherCoreLogicTests {
         var rejected = 0
         let selected = matcher.selectNonOverlapping(proposed: proposed, rejectedOverlapCounter: &rejected)
 
-        #expect(selected.contains(where: { $0.replacement == "C" }))
-        #expect(!selected.contains(where: { $0.replacement == "B" }))
-        #expect(!selected.contains(where: { $0.replacement == "A" }))
-        #expect(selected.contains(where: { $0.replacement == "D" }))
-        #expect(rejected == 2)
+        XCTAssertTrue(selected.contains(where: { $0.replacement == "C" }))
+        XCTAssertTrue(!selected.contains(where: { $0.replacement == "B" }))
+        XCTAssertTrue(!selected.contains(where: { $0.replacement == "A" }))
+        XCTAssertTrue(selected.contains(where: { $0.replacement == "D" }))
+        XCTAssertTrue(rejected == 2)
     }
 
-    @Test
-    func splitJoinFormsIncludeDirectPluralAndPossessiveVariants() {
+    func testSplitJoinFormsIncludeDirectPluralAndPossessiveVariants() {
         let matcher = makeMatcher()
 
         let pluralWindow: [DictionaryMatcher.Token] = [
@@ -35,8 +33,8 @@ struct DictionaryMatcherCoreLogicTests {
         ]
 
         let pluralForms = matcher.splitJoinForms(from: pluralWindow)
-        #expect(pluralForms.contains(where: { $0.normalized == "cueboards" && !$0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
-        #expect(pluralForms.contains(where: { $0.normalized == "cueboard" && $0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
+        XCTAssertTrue(pluralForms.contains(where: { $0.normalized == "cueboards" && !$0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
+        XCTAssertTrue(pluralForms.contains(where: { $0.normalized == "cueboard" && $0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
 
         let possessiveWindow: [DictionaryMatcher.Token] = [
             .init(raw: "cue", normalized: "cue", range: NSRange(location: 0, length: 3), phonetic: "K"),
@@ -44,11 +42,10 @@ struct DictionaryMatcherCoreLogicTests {
         ]
 
         let possessiveForms = matcher.splitJoinForms(from: possessiveWindow)
-        #expect(possessiveForms.contains(where: { $0.normalized == "cueboard" && !$0.singularizedSecondToken && $0.replacementSuffix == "'s" }))
+        XCTAssertTrue(possessiveForms.contains(where: { $0.normalized == "cueboard" && !$0.singularizedSecondToken && $0.replacementSuffix == "'s" }))
     }
 
-    @Test
-    func singleTokenPossessiveObservedFormsIncludeStemVariant() {
+    func testSingleTokenPossessiveObservedFormsIncludeStemVariant() {
         let matcher = makeMatcher()
 
         let forms = matcher.observedFormsForWindow(
@@ -57,16 +54,15 @@ struct DictionaryMatcherCoreLogicTests {
             observedPhonetic: "KBRDZ"
         )
 
-        #expect(forms.contains(where: { $0.normalized == "cueboard's" && $0.replacementSuffix.isEmpty }))
-        #expect(forms.contains(where: { $0.normalized == "cueboard" && $0.replacementSuffix == "'s" }))
+        XCTAssertTrue(forms.contains(where: { $0.normalized == "cueboard's" && $0.replacementSuffix.isEmpty }))
+        XCTAssertTrue(forms.contains(where: { $0.normalized == "cueboard" && $0.replacementSuffix == "'s" }))
     }
 
-    @Test
-    func textNormalizationMatchesExistingBehavior() {
-        #expect(TextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
-        #expect(TextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
-        #expect(TextNormalization.normalizedToken("Cue Board") == "cueboard")
-        #expect(TextNormalization.normalizedToken("  ") == "")
+    func testTextNormalizationMatchesExistingBehavior() {
+        XCTAssertTrue(TextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
+        XCTAssertTrue(TextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
+        XCTAssertTrue(TextNormalization.normalizedToken("Cue Board") == "cueboard")
+        XCTAssertTrue(TextNormalization.normalizedToken("  ") == "")
     }
 
     private func makeMatcher() -> DictionaryMatcher {

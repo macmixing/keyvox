@@ -183,17 +183,20 @@ class PasteService {
 
     private func cancelActiveRecoveryOnMainThread() {
         if Thread.isMainThread {
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
             }
             return
         }
 
-        DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+                semaphore.signal()
             }
         }
+        semaphore.wait()
     }
 
     private func startFailureRecoveryOnMainThread(
@@ -204,17 +207,20 @@ class PasteService {
         }
 
         if Thread.isMainThread {
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
             }
             return
         }
 
-        DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
+                semaphore.signal()
             }
         }
+        semaphore.wait()
     }
 
     private func restoreClipboardOnMainThread(

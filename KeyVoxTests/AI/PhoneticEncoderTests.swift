@@ -1,36 +1,33 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
-struct PhoneticEncoderTests {
-    @Test
-    func usesLexiconSignatureWhenAvailable() {
+final class PhoneticEncoderTests: XCTestCase {
+    func testUsesLexiconSignatureWhenAvailable() {
         let lexicon = FakeLexicon(pronunciations: ["cueboard": "KBRD"])
         let encoder = PhoneticEncoder()
 
         let signature = encoder.signature(for: "cueboard", lexicon: lexicon)
-        #expect(signature == "KBRD")
+        XCTAssertTrue(signature == "KBRD")
     }
 
-    @Test
-    func fallbackSignatureIsDeterministic() {
+    func testFallbackSignatureIsDeterministic() {
         let lexicon = FakeLexicon()
         let encoder = PhoneticEncoder()
 
         let one = encoder.signature(for: "esposito", lexicon: lexicon)
         let two = encoder.signature(for: "esposito", lexicon: lexicon)
 
-        #expect(!one.isEmpty)
-        #expect(one == two)
+        XCTAssertTrue(!one.isEmpty)
+        XCTAssertTrue(one == two)
     }
 
-    @Test
-    func phraseSignatureJoinsTokenSignatures() {
+    func testPhraseSignatureJoinsTokenSignatures() {
         let lexicon = FakeLexicon(pronunciations: ["migo": "MGO", "platform": "PLTRM"])
         let encoder = PhoneticEncoder()
 
         let signature = encoder.phraseSignature(for: ["migo", "platform"], lexicon: lexicon)
-        #expect(signature == "MGO PLTRM")
+        XCTAssertTrue(signature == "MGO PLTRM")
     }
 }

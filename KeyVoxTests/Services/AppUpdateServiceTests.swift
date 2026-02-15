@@ -1,86 +1,81 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-@Suite(.serialized)
 @MainActor
-struct AppUpdateServiceTests {
-    @Test
-    func manualCheckShowsNoUpdatePromptWhenRemoteNotNewer() async throws {
+final class AppUpdateServiceTests: XCTestCase {
+    func testManualCheckShowsNoUpdatePromptWhenRemoteNotNewer() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
         let session = makeMockSession()
 
         MockURLProtocol.handler = { _ in
-            let data = releaseData(tag: "0.0.0", htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v0.0.0", body: "No update")
-            return (okResponse(), data)
+            let data = self.releaseData(tag: "0.0.0", htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v0.0.0", body: "No update")
+            return (self.okResponse(), data)
         }
 
         let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
         service.checkForUpdatesManually()
         try await waitForCondition { promptPresenter.prompts.count == 1 }
 
-        #expect(promptPresenter.prompts[0].title == "You're Up to Date")
-        #expect(service.latestRemoteInfo?.version == "0.0.0")
+        XCTAssertTrue(promptPresenter.prompts[0].title == "You're Up to Date")
+        XCTAssertTrue(service.latestRemoteInfo?.version == "0.0.0")
     }
 
-    @Test
-    func autoCheckShowsUpdatePromptForNewerVersion() async throws {
+    func testAutoCheckShowsUpdatePromptForNewerVersion() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
         let session = makeMockSession()
 
         MockURLProtocol.handler = { _ in
-            let data = releaseData(
+            let data = self.releaseData(
                 tag: "999.0.0",
                 htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
                 body: "Major release",
                 dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
             )
-            return (okResponse(), data)
+            return (self.okResponse(), data)
         }
 
         let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
         service.checkForUpdatesIfNeeded()
         try await waitForCondition { promptPresenter.prompts.count == 1 }
 
-        #expect(promptPresenter.prompts[0].title == "KeyVox Update Available")
-        #expect(service.latestRemoteInfo?.version == "999.0.0")
+        XCTAssertTrue(promptPresenter.prompts[0].title == "KeyVox Update Available")
+        XCTAssertTrue(service.latestRemoteInfo?.version == "999.0.0")
     }
 
-    @Test
-    func checkSkipsPromptWhenUpdateUrlHostNotAllowlisted() async throws {
+    func testCheckSkipsPromptWhenUpdateUrlHostNotAllowlisted() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
         let session = makeMockSession()
 
         MockURLProtocol.handler = { _ in
-            let data = releaseData(tag: "999.0.0", htmlURL: "https://evil.example.com/releases/v999", body: "Bad host")
-            return (okResponse(), data)
+            let data = self.releaseData(tag: "999.0.0", htmlURL: "https://evil.example.com/releases/v999", body: "Bad host")
+            return (self.okResponse(), data)
         }
 
         let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
         service.checkForUpdatesIfNeeded()
         try await Task.sleep(nanoseconds: 200_000_000)
 
-        #expect(promptPresenter.prompts.isEmpty)
-        #expect(service.latestRemoteInfo == nil)
+        XCTAssertTrue(promptPresenter.prompts.isEmpty)
+        XCTAssertTrue(service.latestRemoteInfo == nil)
     }
 
-    @Test
-    func autoPromptCooldownIsPerLaunchAndIntervalBounded() async throws {
+    func testAutoPromptCooldownIsPerLaunchAndIntervalBounded() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
         let session = makeMockSession()
 
         MockURLProtocol.handler = { _ in
-            let data = releaseData(
+            let data = self.releaseData(
                 tag: "999.0.0",
                 htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
                 body: "Major release",
                 dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
             )
-            return (okResponse(), data)
+            return (self.okResponse(), data)
         }
 
         let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 5)
@@ -92,7 +87,7 @@ struct AppUpdateServiceTests {
 
         service.checkForUpdatesIfNeeded()
         try await Task.sleep(nanoseconds: 200_000_000)
-        #expect(promptPresenter.prompts.count == 1)
+        XCTAssertTrue(promptPresenter.prompts.count == 1)
 
         now.advance(by: 6)
         service.checkForUpdatesIfNeeded()

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AppKit
 
 struct OnboardingView: View {
     @ObservedObject var downloader = ModelDownloader.shared
@@ -126,6 +127,15 @@ struct OnboardingView: View {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         AXIsProcessTrustedWithOptions(options as CFDictionary)
 
+        if AXIsProcessTrusted() {
+            accessibilityAuthorized = true
+            accessibilityPollTimer?.invalidate()
+            accessibilityPollTimer = nil
+            return
+        }
+
+        openAccessibilitySettings()
+
         // Prevent stacking multiple timers
         accessibilityPollTimer?.invalidate()
 
@@ -137,6 +147,18 @@ struct OnboardingView: View {
                 timer.invalidate()
                 accessibilityPollTimer = nil
             }
+        }
+    }
+
+    private func openAccessibilitySettings() {
+        let candidateURLs: [URL] = [
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"),
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy"),
+            URL(fileURLWithPath: "/System/Applications/System Settings.app")
+        ].compactMap { $0 }
+
+        for url in candidateURLs where NSWorkspace.shared.open(url) {
+            return
         }
     }
     
