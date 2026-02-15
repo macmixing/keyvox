@@ -1,6 +1,10 @@
 import SwiftUI
 
 extension SettingsView {
+    private func isRecommendedMicrophone(_ microphone: MicrophoneOption) -> Bool {
+        microphone.kind == .builtIn
+    }
+
     var audioSettings: some View {
         VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
@@ -27,7 +31,7 @@ extension SettingsView {
                         
                         Text(microphoneSubtitle)
                             .font(.custom("Kanit Medium", size: 12))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(microphoneSubtitleColor)
                             .lineSpacing(2)
                             .fixedSize(horizontal: false, vertical: true)
                         
@@ -69,13 +73,29 @@ extension SettingsView {
 
         switch selected.kind {
         case .builtIn:
-            return "Built-in Microphone selected. Recommended for fastest startup and best reliability."
+            if isRecommendedMicrophone(selected) {
+                return "\(selected.name) selected. Recommended for fastest startup and best reliability."
+            }
+            return "\(selected.name) selected."
         case .airPods:
-            return "AirPods selected. Bluetooth mics may start slower and reduce dictation accuracy."
+            return "\(selected.name) selected. Bluetooth mics may start slower and reduce dictation accuracy."
         case .bluetooth:
-            return "Bluetooth microphone selected. Startup can be slower before dictation begins."
+            return "\(selected.name) selected. Startup can be slower before dictation begins."
         case .wiredOrOther:
-            return "External microphone selected. Built-in Microphone is still recommended for best speed."
+            return "\(selected.name) selected. Built-in Microphone is still recommended for best speed."
+        }
+    }
+
+    var microphoneSubtitleColor: Color {
+        guard let selected = audioDeviceManager.selectedMicrophone else {
+            return .secondary
+        }
+
+        switch selected.kind {
+        case .airPods, .bluetooth:
+            return .yellow
+        case .builtIn, .wiredOrOther:
+            return .secondary
         }
     }
 
@@ -84,7 +104,7 @@ extension SettingsView {
             return "Previously Selected Microphone (Unavailable)"
         }
 
-        if microphone.kind == .builtIn {
+        if isRecommendedMicrophone(microphone) {
             return "\(microphone.name) (Recommended)"
         }
 

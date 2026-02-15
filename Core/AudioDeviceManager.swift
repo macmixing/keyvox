@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import AVFoundation
+import CoreAudio
 
 enum MicrophoneKind {
     case builtIn
@@ -201,6 +202,16 @@ final class AudioDeviceManager: ObservableObject {
             return .airPods
         }
 
+        let transportType = UInt32(bitPattern: device.transportType)
+        if transportType == kAudioDeviceTransportTypeBluetooth ||
+            transportType == kAudioDeviceTransportTypeBluetoothLE {
+            return .bluetooth
+        }
+
+        if transportType == kAudioDeviceTransportTypeBuiltIn {
+            return .builtIn
+        }
+
         if lowered.contains("bluetooth") ||
             lowered.contains("hands-free") ||
             lowered.contains("headset") ||
@@ -209,16 +220,9 @@ final class AudioDeviceManager: ObservableObject {
             return .bluetooth
         }
 
-        if device.deviceType == .microphone {
-            return .builtIn
-        }
-
         if lowered.contains("built-in") ||
             lowered.contains("built in") ||
-            lowered.contains("internal") ||
-            lowered.contains("macbook") ||
-            lowered.contains("imac") ||
-            lowered.contains("mac mini") {
+            lowered.contains("internal") {
             return .builtIn
         }
 
