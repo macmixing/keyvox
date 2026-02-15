@@ -145,7 +145,7 @@ struct KeyVoxApp: App {
             menuBarImage
         }
         .menuBarExtraStyle(.window)
-        .onChange(of: appSettings.hasCompletedOnboarding) {
+        .onChange(of: appSettings.hasCompletedOnboarding) { _ in
             // Re-evaluates state
         }
     }

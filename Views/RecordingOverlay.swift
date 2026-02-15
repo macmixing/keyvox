@@ -43,7 +43,7 @@ struct RecordingOverlay: View {
         .scaleEffect(visibilityManager.isVisible ? 1.0 : 0.3)
         .opacity(visibilityManager.isVisible ? 1.0 : 0.0)
         .animation(.spring(response: 0.16, dampingFraction: 0.88), value: visibilityManager.isVisible)
-        .onChange(of: visibilityManager.shouldDismiss) { oldValue, newValue in
+        .onChange(of: visibilityManager.shouldDismiss) { newValue in
             if newValue {
                 withAnimation {
                     visibilityManager.isVisible = false

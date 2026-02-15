@@ -92,7 +92,7 @@ struct DictionaryWordEditorView: View {
                     .onSubmit {
                         saveFromEnter()
                     }
-                    .onChange(of: phrase) { _, _ in
+                    .onChange(of: phrase) { _ in
                         errorMessage = nil
                     }
 

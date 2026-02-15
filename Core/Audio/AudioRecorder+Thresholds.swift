@@ -4,8 +4,15 @@ import CoreAudio
 
 extension AudioRecorder {
     static func captureAudioDevices() -> [AVCaptureDevice] {
+        let deviceTypes: [AVCaptureDevice.DeviceType]
+        if #available(macOS 14.0, *) {
+            deviceTypes = [.microphone, .external]
+        } else {
+            deviceTypes = [.builtInMicrophone, .externalUnknown]
+        }
+
         let discovery = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.microphone, .external],
+            deviceTypes: deviceTypes,
             mediaType: .audio,
             position: .unspecified
         )
