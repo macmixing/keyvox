@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 extension SettingsView {
     private func isRecommendedMicrophone(_ microphone: MicrophoneOption) -> Bool {
@@ -86,7 +87,14 @@ extension SettingsView {
                                 .foregroundColor(.primary)
 
                             HStack(spacing: 12) {
-                                Slider(value: $appSettings.soundVolume, in: 0...1)
+                                Slider(
+                                    value: $appSettings.soundVolume,
+                                    in: 0...1,
+                                    onEditingChanged: { isEditing in
+                                        guard !isEditing else { return }
+                                        playStartSoundPreview()
+                                    }
+                                )
                                     .tint(.indigo)
                                     .disabled(!appSettings.isSoundEnabled)
 
@@ -149,5 +157,12 @@ extension SettingsView {
         }
 
         return microphone.name
+    }
+
+    private func playStartSoundPreview() {
+        guard appSettings.isSoundEnabled else { return }
+        guard let sound = NSSound(named: "Morse") else { return }
+        sound.volume = Float(appSettings.soundVolume)
+        sound.play()
     }
 }
