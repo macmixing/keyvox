@@ -83,6 +83,10 @@
 		9D4000112F4E000100AA0001 /* Audio/AudioSignalMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000022F4E000100AA0001 /* Audio/AudioSignalMetrics.swift */; };
 		9D4000122F4E000100AA0001 /* Audio/AudioSilencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000032F4E000100AA0001 /* Audio/AudioSilencePolicy.swift */; };
 		9D4000132F4E000100AA0001 /* Audio/AudioCaptureClassification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000042F4E000100AA0001 /* Audio/AudioCaptureClassification.swift */; };
+		9D4000142F4E000100AA0001 /* Audio/AudioRecorder+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000052F4E000100AA0001 /* Audio/AudioRecorder+Session.swift */; };
+		9D4000152F4E000100AA0001 /* Audio/AudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000062F4E000100AA0001 /* Audio/AudioRecorder+Streaming.swift */; };
+		9D4000162F4E000100AA0001 /* Audio/AudioRecorder+PostProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000072F4E000100AA0001 /* Audio/AudioRecorder+PostProcessing.swift */; };
+		9D4000172F4E000100AA0001 /* Audio/AudioRecorder+Thresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000082F4E000100AA0001 /* Audio/AudioRecorder+Thresholds.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -174,6 +178,10 @@
 		9D4000022F4E000100AA0001 /* Audio/AudioSignalMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSignalMetrics.swift; sourceTree = "<group>"; };
 		9D4000032F4E000100AA0001 /* Audio/AudioSilencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSilencePolicy.swift; sourceTree = "<group>"; };
 		9D4000042F4E000100AA0001 /* Audio/AudioCaptureClassification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureClassification.swift; sourceTree = "<group>"; };
+		9D4000052F4E000100AA0001 /* Audio/AudioRecorder+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Session.swift"; sourceTree = "<group>"; };
+		9D4000062F4E000100AA0001 /* Audio/AudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
+		9D4000072F4E000100AA0001 /* Audio/AudioRecorder+PostProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+PostProcessing.swift"; sourceTree = "<group>"; };
+		9D4000082F4E000100AA0001 /* Audio/AudioRecorder+Thresholds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Thresholds.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -393,6 +401,10 @@
 				isa = PBXGroup;
 				children = (
 					8E6D05CB2F3C51D6003BD458 /* Audio/AudioRecorder.swift */,
+					9D4000072F4E000100AA0001 /* Audio/AudioRecorder+PostProcessing.swift */,
+					9D4000052F4E000100AA0001 /* Audio/AudioRecorder+Session.swift */,
+					9D4000062F4E000100AA0001 /* Audio/AudioRecorder+Streaming.swift */,
+					9D4000082F4E000100AA0001 /* Audio/AudioRecorder+Thresholds.swift */,
 					9D4000042F4E000100AA0001 /* Audio/AudioCaptureClassification.swift */,
 					9D4000022F4E000100AA0001 /* Audio/AudioSignalMetrics.swift */,
 					9D4000032F4E000100AA0001 /* Audio/AudioSilencePolicy.swift */,
@@ -550,9 +562,13 @@
 				9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */,
 				9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */,
 				9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */,
-				9B2000152F4C000100AA0001 /* OverlayFlingPhysics.swift in Sources */,
-				9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */,
+					9B2000152F4C000100AA0001 /* OverlayFlingPhysics.swift in Sources */,
+					9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */,
 					8E6D05E22F3C5246003BD458 /* Audio/AudioRecorder.swift in Sources */,
+					9D4000162F4E000100AA0001 /* Audio/AudioRecorder+PostProcessing.swift in Sources */,
+					9D4000142F4E000100AA0001 /* Audio/AudioRecorder+Session.swift in Sources */,
+					9D4000152F4E000100AA0001 /* Audio/AudioRecorder+Streaming.swift in Sources */,
+					9D4000172F4E000100AA0001 /* Audio/AudioRecorder+Thresholds.swift in Sources */,
 					9D4000132F4E000100AA0001 /* Audio/AudioCaptureClassification.swift in Sources */,
 					9D4000112F4E000100AA0001 /* Audio/AudioSignalMetrics.swift in Sources */,
 					9D4000122F4E000100AA0001 /* Audio/AudioSilencePolicy.swift in Sources */,

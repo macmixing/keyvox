@@ -52,7 +52,11 @@ KeyVox is organized by responsibility:
 - **`App/KeyVoxApp.swift`**: app entry point, menu bar scene, window lifecycle.
 - **`App/AppSettingsStore.swift`**: centralized persisted user settings owner (trigger binding, system sounds, onboarding, selected microphone, update prompt timestamps).
 - **`Core/TranscriptionManager.swift`**: central recording/transcription state machine.
-- **`Core/Audio/AudioRecorder.swift`**: 16kHz mono audio capture pipeline orchestration.
+- **`Core/Audio/AudioRecorder.swift`**: recorder state holder + public start/stop orchestration.
+- **`Core/Audio/AudioRecorder+Session.swift`**: capture session/device lifecycle setup and teardown.
+- **`Core/Audio/AudioRecorder+Streaming.swift`**: sample conversion/downsampling + live waveform/signal state updates.
+- **`Core/Audio/AudioRecorder+PostProcessing.swift`**: stop-time gap removal/normalization/classification output path.
+- **`Core/Audio/AudioRecorder+Thresholds.swift`**: input-volume-based threshold profile calibration and CoreAudio lookups.
 - **`Core/Audio/AudioCaptureClassification.swift`**: capture confidence/silence classification helper.
 - **`Core/Audio/AudioSilencePolicy.swift`**: shared silence-gate policy constants/rules.
 - **`Core/Audio/AudioSignalMetrics.swift`**: pure RMS/peak/window-ratio signal metrics.
@@ -122,7 +126,7 @@ KeyVox is organized by responsibility:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 
 ### Integration-Only Exclusions
-- Audio capture hardware/runtime behavior (`Core/Audio/AudioRecorder.swift`)
+- Audio capture hardware/runtime behavior (`Core/Audio/AudioRecorder.swift`, `Core/Audio/AudioRecorder+Session.swift`, `Core/Audio/AudioRecorder+Streaming.swift`, `Core/Audio/AudioRecorder+PostProcessing.swift`, `Core/Audio/AudioRecorder+Thresholds.swift`)
 - Global keyboard hook behavior (`Core/KeyboardMonitor.swift`)
 - Overlay window rendering/interaction details (`Core/Overlay/OverlayManager.swift`, `Core/Overlay/OverlayPanel.swift`, `Views/RecordingOverlay.swift`)
 

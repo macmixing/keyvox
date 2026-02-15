@@ -73,6 +73,10 @@ KeyVox/
 │   │   └── ListRenderer.swift
 │   ├── Audio/
 │   │   ├── AudioCaptureClassification.swift
+│   │   ├── AudioRecorder+PostProcessing.swift
+│   │   ├── AudioRecorder+Session.swift
+│   │   ├── AudioRecorder+Streaming.swift
+│   │   ├── AudioRecorder+Thresholds.swift
 │   │   ├── AudioRecorder.swift
 │   │   ├── AudioSignalMetrics.swift
 │   │   └── AudioSilencePolicy.swift
@@ -225,7 +229,15 @@ KeyVox/
 - `Core/ModelDownloader.swift`
   - Downloads `ggml-base.bin` plus CoreML encoder zip and validates readiness.
 - `Core/Audio/AudioRecorder.swift`
-  - AVCapture pipeline orchestration, live input state tracking, gap removal, normalization.
+  - Audio-recorder state holder and public orchestration entrypoints (`startRecording`, `stopRecording`).
+- `Core/Audio/AudioRecorder+Session.swift`
+  - Capture session/device lifecycle setup and teardown.
+- `Core/Audio/AudioRecorder+Streaming.swift`
+  - Live sample conversion/downsampling, frame buffering, and quiet/dead/active waveform state updates.
+- `Core/Audio/AudioRecorder+PostProcessing.swift`
+  - Stop-time gap removal, normalization, capture classification, and final output frame selection.
+- `Core/Audio/AudioRecorder+Thresholds.swift`
+  - Input-volume-based threshold profile calibration and CoreAudio scalar lookup helpers.
 - `Core/Audio/AudioCaptureClassification.swift`
   - Centralized per-capture classification (absolute silence, long true silence, likely-silence rejection).
 - `Core/Audio/AudioSilencePolicy.swift`
