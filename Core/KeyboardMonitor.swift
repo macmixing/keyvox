@@ -44,6 +44,16 @@ final class KeyboardMonitor: ObservableObject {
             UserDefaults.standard.set(isSoundEnabled, forKey: UserDefaultsKeys.isSoundEnabled)
         }
     }
+    @Published var soundVolume: Double {
+        didSet {
+            let clamped = min(max(soundVolume, 0.0), 1.0)
+            if clamped != soundVolume {
+                soundVolume = clamped
+                return
+            }
+            UserDefaults.standard.set(soundVolume, forKey: UserDefaultsKeys.soundVolume)
+        }
+    }
 
     /// Expose the current binding so SwiftUI Settings can bind to it.
     @Published var triggerBinding: TriggerBinding {
@@ -97,6 +107,11 @@ final class KeyboardMonitor: ObservableObject {
         }
 
         self.isSoundEnabled = UserDefaults.standard.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
+        if let storedSoundVolume = UserDefaults.standard.object(forKey: UserDefaultsKeys.soundVolume) as? NSNumber {
+            self.soundVolume = min(max(storedSoundVolume.doubleValue, 0.0), 1.0)
+        } else {
+            self.soundVolume = 0.1
+        }
 
         startMonitoring()
 

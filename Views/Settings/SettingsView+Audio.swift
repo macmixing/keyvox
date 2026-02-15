@@ -50,14 +50,54 @@ extension SettingsView {
             }
             
             SettingsCard {
-                SettingsRow(
-                    icon: "speaker.wave.2.fill",
-                    title: "System Sounds",
-                    subtitle: "Play audio feedback when recording starts and ends."
-                ) {
-                    Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
-                        .toggleStyle(SwitchToggleStyle(tint: .indigo))
-                        .labelsHidden()
+                HStack(alignment: .top, spacing: 16) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.indigo.opacity(0.15))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.custom("Kanit Medium", size: 20))
+                            .foregroundColor(.indigo)
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(alignment: .top, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("System Sounds")
+                                    .font(.custom("Kanit Medium", size: 17))
+
+                                Text("Play audio feedback when recording starts and ends.")
+                                    .font(.custom("Kanit Medium", size: 12))
+                                    .foregroundColor(.secondary)
+                                    .lineSpacing(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            Spacer(minLength: 16)
+
+                            Toggle("", isOn: $keyboardMonitor.isSoundEnabled)
+                                .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                                .labelsHidden()
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Adjust volume")
+                                .font(.custom("Kanit Medium", size: 13))
+                                .foregroundColor(.primary)
+
+                            HStack(spacing: 12) {
+                                Slider(value: $keyboardMonitor.soundVolume, in: 0...1)
+                                    .tint(.indigo)
+                                    .disabled(!keyboardMonitor.isSoundEnabled)
+
+                                Text("\(Int((keyboardMonitor.soundVolume * 100).rounded()))%")
+                                    .font(.custom("Kanit Medium", size: 12))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 40, alignment: .trailing)
+                            }
+                        }
+                        .opacity(keyboardMonitor.isSoundEnabled ? 1 : 0.7)
+                    }
                 }
             }
         }

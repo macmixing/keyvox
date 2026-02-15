@@ -217,7 +217,7 @@ class TranscriptionManager: ObservableObject {
     private func playSound(named name: String) {
         guard keyboardMonitor.isSoundEnabled else { return }
         if let sound = NSSound(named: name) {
-            sound.volume = 0.1 // 10% volume
+            sound.volume = Float(keyboardMonitor.soundVolume)
             sound.play()
         }
     }
