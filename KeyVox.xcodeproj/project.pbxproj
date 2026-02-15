@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -611,19 +611,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2630;
-				LastUpgradeCheck = 2630;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					8EE004592F3BA59900BBAB30 = {
-						CreatedOnToolsVersion = 26.3;
+						CreatedOnToolsVersion = 15.2;
 					};
 					8EE602872F412B920094EC16 = {
-						CreatedOnToolsVersion = 26.3;
+						CreatedOnToolsVersion = 15.2;
 						TestTargetID = 8EE004592F3BA59900BBAB30;
 					};
 				};
 			};
 			buildConfigurationList = 8EE004552F3BA59900BBAB30 /* Build configuration list for PBXProject "KeyVox" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -631,11 +632,9 @@
 				Base,
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
-			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8EE0049C2F3BA70100BBAB30 /* XCLocalSwiftPackageReference "Packages/KeyVoxWhisper" */,
 			);
-			preferredProjectObjectVersion = 60;
 			productRefGroup = 8EE0045B2F3BA59900BBAB30 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
