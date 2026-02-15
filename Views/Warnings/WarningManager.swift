@@ -105,7 +105,7 @@ final class WarningManager {
     private func playCancelSound() {
         let appSettings = AppSettingsStore.shared
         guard appSettings.isSoundEnabled else { return }
-        if let sound = NSSound(named: "Bottle") {
+        if let sound = NSSound(named: "Submarine") {
             sound.volume = Float(appSettings.soundVolume)
             sound.play()
         }

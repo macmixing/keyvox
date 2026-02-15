@@ -24,6 +24,7 @@ class TranscriptionManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
+    private let microphoneSilenceWarningDelay: TimeInterval = 0.5
     
     init() {
         setupBindings()
@@ -149,18 +150,23 @@ class TranscriptionManager: ObservableObject {
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
                 let microphoneName = self.audioRecorder.currentCaptureDeviceName
+                let showMicrophoneSilenceWarning: (WarningKind) -> Void = { kind in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + self.microphoneSilenceWarningDelay) {
+                        WarningManager.shared.show(kind)
+                    }
+                }
                 if self.audioRecorder.lastCaptureWasLongTrueSilence {
-                    WarningManager.shared.show(.microphoneSilence(
+                    showMicrophoneSilenceWarning(.microphoneSilence(
                         reason: .noSpeechDetected,
                         microphoneName: microphoneName
                     ))
                 } else if self.audioRecorder.lastCaptureWasAbsoluteSilence {
-                    WarningManager.shared.show(.microphoneSilence(
+                    showMicrophoneSilenceWarning(.microphoneSilence(
                         reason: .muted,
                         microphoneName: microphoneName
                     ))
                 } else if self.audioRecorder.lastCaptureWasLikelySilence {
-                    WarningManager.shared.show(.microphoneSilence(
+                    showMicrophoneSilenceWarning(.microphoneSilence(
                         reason: .noSpeechDetected,
                         microphoneName: microphoneName
                     ))
