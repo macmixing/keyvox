@@ -86,6 +86,7 @@ KeyVox/
 │   │   ├── SettingsView+Sidebar.swift
 │   │   └── SettingsView.swift
 │   ├── Warnings/
+│   │   ├── PasteFailureRecoveryOverlayView.swift
 │   │   ├── WarningKind.swift
 │   │   ├── WarningManager.swift
 │   │   └── WarningOverlayView.swift
@@ -276,7 +277,11 @@ KeyVox/
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
 - `Views/Warnings/*`
-  - Blocking warning overlay and resolution actions.
+  - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
+- `Views/Warnings/WarningManager.swift`
+  - Owns warning panel lifecycle and paste-failure recovery panel presentation/update/dismiss.
+- `Views/Warnings/PasteFailureRecoveryOverlayView.swift`
+  - Lightweight interactive paste-failure recovery view with explicit `⌘ Cmd + V` guidance and indigo progress bar.
 - `Views/UpdatePromptOverlay.swift`
   - In-app update prompt UI.
 
