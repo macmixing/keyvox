@@ -19,10 +19,10 @@ struct MicrophoneOption: Identifiable, Equatable {
 
 final class AudioDeviceManager: ObservableObject {
     static let shared = AudioDeviceManager()
-    private static let captureDeviceConnectedNotification = Notification.Name(
+    static let captureDeviceConnectedNotification = Notification.Name(
         rawValue: "AVCaptureDeviceWasConnectedNotification"
     )
-    private static let captureDeviceDisconnectedNotification = Notification.Name(
+    static let captureDeviceDisconnectedNotification = Notification.Name(
         rawValue: "AVCaptureDeviceWasDisconnectedNotification"
     )
 
