@@ -83,7 +83,7 @@ final class TranscriptionPostProcessor {
 
         // Normalize spaced/compact meridiem forms while preserving spoken structure.
         output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2]):([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s+(?!\d)|[,;:!?\)\.])"#,
+            pattern: #"\b([1-9]|1[0-2]):([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
@@ -93,7 +93,7 @@ final class TranscriptionPostProcessor {
         }
 
         output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s+(?!\d)|[,;:!?\)\.])"#,
+            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
@@ -103,7 +103,7 @@ final class TranscriptionPostProcessor {
         }
 
         output = replacingMatches(
-            pattern: #"\b([0-9]{3,4})[\s-]*(\#(meridiemPattern))(?=$|\s+(?!\d)|[,;:!?\)\.])"#,
+            pattern: #"\b([0-9]{3,4})[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let digits = nsText.substring(with: match.range(at: 1))
