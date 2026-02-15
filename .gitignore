@@ -6,3 +6,6 @@ xcuserdata/
 Packages/**/.build/
 Packages/**/.swiftpm/
 .tmp.pronunciation-bench.*
+release_dmg_notarize.sh
+build/
+KeyVox.dmg
