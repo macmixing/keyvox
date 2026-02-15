@@ -61,6 +61,13 @@
 		8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */; };
 		8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */; };
 		8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */; };
+		9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000022F4B000100AA0001 /* PasteModels.swift */; };
+		9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000032F4B000100AA0001 /* PasteAXInspector.swift */; };
+		9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */; };
+		9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */; };
+		9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */; };
+		9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */; };
+		9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000082F4B000100AA0001 /* PastePolicies.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +137,13 @@
 		8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPresenting.swift; sourceTree = "<group>"; };
 		8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryOverlayView.swift; sourceTree = "<group>"; };
+		9A1000022F4B000100AA0001 /* PasteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteModels.swift; sourceTree = "<group>"; };
+		9A1000032F4B000100AA0001 /* PasteAXInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAXInspector.swift; sourceTree = "<group>"; };
+		9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAccessibilityInjector.swift; sourceTree = "<group>"; };
+		9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackExecutor.swift; sourceTree = "<group>"; };
+		9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshot.swift; sourceTree = "<group>"; };
+		9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingHeuristics.swift; sourceTree = "<group>"; };
+		9A1000082F4B000100AA0001 /* PastePolicies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePolicies.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -190,13 +204,28 @@
 			children = (
 				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
-				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
-				8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
+				9A1000012F4B000100AA0001 /* Paste */,
 				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
 				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		9A1000012F4B000100AA0001 /* Paste */ = {
+			isa = PBXGroup;
+			children = (
+				9A1000032F4B000100AA0001 /* PasteAXInspector.swift */,
+				9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */,
+				9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */,
+				8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
+				9A1000022F4B000100AA0001 /* PasteModels.swift */,
+				9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */,
+				9A1000082F4B000100AA0001 /* PastePolicies.swift */,
+				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
+				9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */,
+			);
+			path = Paste;
 			sourceTree = "<group>";
 		};
 		8E6D05CF2F3C51D6003BD458 /* Core */ = {
@@ -471,6 +500,13 @@
 				8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
+				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
+				9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
+				9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */,
+				9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */,
+				9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */,
+				9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */,
+				9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */,
 				8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
 			);

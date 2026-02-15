@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-14**
+**Last Updated: 2026-02-15**
 
 ## Project Overview
 
@@ -36,7 +36,16 @@ KeyVox/
 │   ├── Services/
 │   │   ├── AppUpdateLogic.swift
 │   │   ├── AppUpdateService.swift
-│   │   ├── PasteService.swift
+│   │   ├── Paste/
+│   │   │   ├── PasteAXInspector.swift
+│   │   │   ├── PasteAccessibilityInjector.swift
+│   │   │   ├── PasteClipboardSnapshot.swift
+│   │   │   ├── PasteFailureRecoveryCoordinator.swift
+│   │   │   ├── PasteMenuFallbackExecutor.swift
+│   │   │   ├── PasteModels.swift
+│   │   │   ├── PastePolicies.swift
+│   │   │   ├── PasteService.swift
+│   │   │   └── PasteSpacingHeuristics.swift
 │   │   ├── UpdatePromptPresenting.swift
 │   │   ├── UpdateFeedConfig.swift
 │   │   └── WhisperService.swift
@@ -148,7 +157,7 @@ KeyVox/
 3. `Core/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
 5. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
-6. `Core/Services/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
+6. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 7. `Core/OverlayManager.swift` owns overlay panel lifecycle, drag persistence, and per-display position restore.
 8. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
 
@@ -217,9 +226,25 @@ KeyVox/
   - Enforces allowed-source and attribution policy before distribution.
 - `Tools/Pronunciation/benchmarks/run_quality_gates.sh`
   - Enforces coverage/hit-rate/false-positive/latency thresholds using benchmark fixtures.
-- `Core/Services/PasteService.swift`
-  - Smart whitespace handling and robust clipboard restore.
+- `Core/Services/Paste/PasteService.swift`
+  - Orchestrates paste pipeline (AX injection, menu fallback, recovery, clipboard restore).
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
+- `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`
+  - Manages active paste-failure recovery session lifecycle, timers, and Command-V detection.
+- `Core/Services/Paste/PasteAXInspector.swift`
+  - Shared AX inspection helpers used by spacing, injector, and fallback verification.
+- `Core/Services/Paste/PasteAccessibilityInjector.swift`
+  - Direct AX selected-text insertion path with outcome classification.
+- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
+  - Menu bar Paste execution and verification loop for fallback insertion.
+- `Core/Services/Paste/PasteClipboardSnapshot.swift`
+  - Full-fidelity clipboard snapshot capture/restore utilities.
+- `Core/Services/Paste/PasteSpacingHeuristics.swift`
+  - Smart leading separator logic and cross-dictation spacing heuristics.
+- `Core/Services/Paste/PastePolicies.swift`
+  - Static policy helpers for list render mode and failure-recovery decisions.
+- `Core/Services/Paste/PasteModels.swift`
+  - Shared internal model/enums for paste pipeline collaborators.
 - `Core/Services/UpdateFeedConfig.swift`
   - Centralized update feed owner/repo defaults.
   - Supports optional local override file at `~/Library/Application Support/KeyVox/update-feed.override.json`.
