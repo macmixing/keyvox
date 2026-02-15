@@ -50,10 +50,17 @@ KeyVox/
 │   │   ├── UpdateFeedConfig.swift
 │   │   └── WhisperService.swift
 │   ├── AI/
+│   │   ├── Dictionary/
+│   │   │   ├── DictionaryEntry.swift
+│   │   │   ├── DictionaryMatcher.swift
+│   │   │   ├── DictionaryMatcherCandidateEvaluator.swift
+│   │   │   ├── DictionaryMatcherModels.swift
+│   │   │   ├── DictionaryMatcherOverlapResolver.swift
+│   │   │   ├── DictionaryMatcherSplitJoinEvaluator.swift
+│   │   │   ├── DictionaryMatcherTokenizer.swift
+│   │   │   ├── DictionaryStore.swift
+│   │   │   └── TextNormalization.swift
 │   │   ├── CustomVocabularyNormalizer.swift
-│   │   ├── DictionaryMatcher.swift
-│   │   ├── DictionaryEntry.swift
-│   │   ├── DictionaryStore.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
 │   │   └── ReplacementScorer.swift
@@ -115,6 +122,7 @@ KeyVox/
 │           └── WhisperParamsTests.swift
 ├── KeyVoxTests/
 │   ├── AI/
+│   │   └── Dictionary/
 │   ├── Core/
 │   ├── Fixtures/Updates/
 │   ├── Services/
@@ -212,10 +220,22 @@ KeyVox/
 
 ### Post-Processing (`Core` + `Core/AI` + `Core/TextProcessing`)
 
-- `Core/AI/DictionaryMatcher.swift`
-  - Performs balanced n-gram matching (1-4 tokens) against dictionary entries.
-  - Uses weighted text + phonetic + context scoring with ambiguity guardrails.
-  - Resolves overlap conflicts by highest-confidence replacement wins.
+- `Core/AI/Dictionary/DictionaryMatcher.swift`
+  - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
+- `Core/AI/Dictionary/DictionaryMatcherTokenizer.swift`
+  - Token extraction and range construction helpers used by matcher runtime.
+- `Core/AI/Dictionary/DictionaryMatcherCandidateEvaluator.swift`
+  - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
+- `Core/AI/Dictionary/DictionaryMatcherSplitJoinEvaluator.swift`
+  - Split-token to single-entry matching path with plural/possessive handling.
+- `Core/AI/Dictionary/DictionaryMatcherOverlapResolver.swift`
+  - Deterministic overlap pruning with confidence-first ordering.
+- `Core/AI/Dictionary/TextNormalization.swift`
+  - Shared phrase/token normalization used by dictionary matching and pronunciation lexicon loading.
+- `Core/AI/Dictionary/DictionaryStore.swift`
+  - Persistent custom dictionary storage, validation, and backup recovery.
+- `Core/AI/Dictionary/DictionaryEntry.swift`
+  - Canonical dictionary entry model.
 - `Core/AI/PronunciationLexicon.swift`
   - Loads bundled pronunciation signatures and common-word safety list from app resources.
 - `Core/AI/PhoneticEncoder.swift`

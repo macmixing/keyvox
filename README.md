@@ -60,7 +60,8 @@ KeyVox is organized by responsibility:
 - **`Core/Overlay/OverlayFlingPhysics.swift`**: pure fling impact/reflection/duration calculations.
 - **`Core/Services/WhisperService.swift`**: model loading and local transcription.
 - **`Core/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
-- **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
+- **`Core/AI/Dictionary/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
+- **`Core/AI/Dictionary/*`**: dictionary domain internals (storage, matcher components, normalization) are modularized here; see `CODEMAP.md` for the complete file-level map.
 - **`Core/TextProcessing/ListFormattingEngine.swift`**: deterministic numeric list detection/rendering layer.
 - **`Core/Services/Paste/PasteService.swift`**: text insertion orchestrator (AX insert, menu fallback, clipboard restore).
 - **`Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`**: failed-paste recovery window lifecycle and Command-V detection.

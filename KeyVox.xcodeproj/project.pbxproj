@@ -73,6 +73,12 @@
 		9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */; };
 		9B2000152F4C000100AA0001 /* OverlayFlingPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */; };
 		9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000062F4C000100AA0001 /* OverlayTypes.swift */; };
+		9C3000112F4D000100AA0001 /* DictionaryMatcherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000012F4D000100AA0001 /* DictionaryMatcherModels.swift */; };
+		9C3000122F4D000100AA0001 /* DictionaryMatcherTokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000022F4D000100AA0001 /* DictionaryMatcherTokenizer.swift */; };
+		9C3000132F4D000100AA0001 /* DictionaryMatcherCandidateEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000032F4D000100AA0001 /* DictionaryMatcherCandidateEvaluator.swift */; };
+		9C3000142F4D000100AA0001 /* DictionaryMatcherSplitJoinEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000042F4D000100AA0001 /* DictionaryMatcherSplitJoinEvaluator.swift */; };
+		9C3000152F4D000100AA0001 /* DictionaryMatcherOverlapResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000052F4D000100AA0001 /* DictionaryMatcherOverlapResolver.swift */; };
+		9C3000162F4D000100AA0001 /* TextNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000062F4D000100AA0001 /* TextNormalization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,15 +128,15 @@
 		8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionPostProcessor.swift; sourceTree = "<group>"; };
 		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
-		8F2201012F44010000BB2201 /* DictionaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntry.swift; sourceTree = "<group>"; };
-		8F2201022F44010000BB2201 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
+		8F2201012F44010000BB2201 /* DictionaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryEntry.swift; sourceTree = "<group>"; };
+		8F2201022F44010000BB2201 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryStore.swift; sourceTree = "<group>"; };
 		8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVocabularyNormalizer.swift; sourceTree = "<group>"; };
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		8F2201062F44010000BB2201 /* SettingsView+ModelDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelDictionary.swift"; sourceTree = "<group>"; };
 		8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDeletePromptView.swift; sourceTree = "<group>"; };
 		8F3301012F45010000CC3301 /* PhoneticEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneticEncoder.swift; sourceTree = "<group>"; };
 		8F3301022F45010000CC3301 /* PronunciationLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationLexicon.swift; sourceTree = "<group>"; };
-		8F3301032F45010000CC3301 /* DictionaryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryMatcher.swift; sourceTree = "<group>"; };
+		8F3301032F45010000CC3301 /* DictionaryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcher.swift; sourceTree = "<group>"; };
 		8F3301042F45010000CC3301 /* ReplacementScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplacementScorer.swift; sourceTree = "<group>"; };
 		8F3301052F45010000CC3301 /* Pronunciation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Pronunciation; sourceTree = "<group>"; };
 		8F4401012F46010000DD4401 /* ListFormattingTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingTypes.swift; sourceTree = "<group>"; };
@@ -154,6 +160,12 @@
 		9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistence.swift; sourceTree = "<group>"; };
 		9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysics.swift; sourceTree = "<group>"; };
 		9B2000062F4C000100AA0001 /* OverlayTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTypes.swift; sourceTree = "<group>"; };
+		9C3000012F4D000100AA0001 /* DictionaryMatcherModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcherModels.swift; sourceTree = "<group>"; };
+		9C3000022F4D000100AA0001 /* DictionaryMatcherTokenizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcherTokenizer.swift; sourceTree = "<group>"; };
+		9C3000032F4D000100AA0001 /* DictionaryMatcherCandidateEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcherCandidateEvaluator.swift; sourceTree = "<group>"; };
+		9C3000042F4D000100AA0001 /* DictionaryMatcherSplitJoinEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcherSplitJoinEvaluator.swift; sourceTree = "<group>"; };
+		9C3000052F4D000100AA0001 /* DictionaryMatcherOverlapResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcherOverlapResolver.swift; sourceTree = "<group>"; };
+		9C3000062F4D000100AA0001 /* TextNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/TextNormalization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -313,11 +325,17 @@
 			children = (
 				8F2201032F44010000BB2201 /* CustomVocabularyNormalizer.swift */,
 				8F3301032F45010000CC3301 /* DictionaryMatcher.swift */,
+				9C3000032F4D000100AA0001 /* DictionaryMatcherCandidateEvaluator.swift */,
+				9C3000012F4D000100AA0001 /* DictionaryMatcherModels.swift */,
+				9C3000052F4D000100AA0001 /* DictionaryMatcherOverlapResolver.swift */,
+				9C3000042F4D000100AA0001 /* DictionaryMatcherSplitJoinEvaluator.swift */,
+				9C3000022F4D000100AA0001 /* DictionaryMatcherTokenizer.swift */,
 				8F2201012F44010000BB2201 /* DictionaryEntry.swift */,
 				8F2201022F44010000BB2201 /* DictionaryStore.swift */,
 				8F3301012F45010000CC3301 /* PhoneticEncoder.swift */,
 				8F3301022F45010000CC3301 /* PronunciationLexicon.swift */,
 				8F3301042F45010000CC3301 /* ReplacementScorer.swift */,
+				9C3000062F4D000100AA0001 /* TextNormalization.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -482,6 +500,11 @@
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
 				8F2202032F44010000BB2201 /* CustomVocabularyNormalizer.swift in Sources */,
 				8F3302032F45010000CC3301 /* DictionaryMatcher.swift in Sources */,
+				9C3000132F4D000100AA0001 /* DictionaryMatcherCandidateEvaluator.swift in Sources */,
+				9C3000112F4D000100AA0001 /* DictionaryMatcherModels.swift in Sources */,
+				9C3000152F4D000100AA0001 /* DictionaryMatcherOverlapResolver.swift in Sources */,
+				9C3000142F4D000100AA0001 /* DictionaryMatcherSplitJoinEvaluator.swift in Sources */,
+				9C3000122F4D000100AA0001 /* DictionaryMatcherTokenizer.swift in Sources */,
 				8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */,
 				8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */,
 				8E57FBA42F3E449000935A26 /* SettingsView.swift in Sources */,
@@ -513,6 +536,7 @@
 				8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
 				8F2202012F44010000BB2201 /* DictionaryEntry.swift in Sources */,
 				8F2202022F44010000BB2201 /* DictionaryStore.swift in Sources */,
+				9C3000162F4D000100AA0001 /* TextNormalization.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
 				8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */,
