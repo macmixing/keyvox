@@ -36,13 +36,14 @@ KeyVox is built for low-latency, local transcription with deep macOS integration
 ### Injection & Feedback
 - **Accessibility-first insertion**: Attempts direct insertion in focused controls.
 - **Fallback insertion**: Uses menu-bar Paste automation when direct insertion is unavailable.
+- **Paste-failure recovery**: If both insertion paths fail, shows a recovery overlay with an indigo progress bar, `⌘V` guidance, and manual dismiss.
 - **Overlay feedback**: Floating recording/transcribing overlay with persisted position.
 - **Audio cues**: Start/stop/cancel sounds (when enabled).
 
 ### App Operations
 - **Onboarding flow**: Microphone, Accessibility, and model setup on first launch.
 - **Update checks**: Manual and timer-based checks backed by GitHub Releases metadata via `Core/Services/AppUpdateService.swift`.
-- **Warnings**: In-app warning overlays for missing model or permissions.
+- **Warnings**: In-app warning overlays for model/accessibility/microphone issues plus paste-recovery feedback.
 
 ## Architecture
 
@@ -57,7 +58,8 @@ KeyVox is organized by responsibility:
 - **`Core/TranscriptionPostProcessor.swift`**: post-transcription pipeline orchestration.
 - **`Core/AI/DictionaryMatcher.swift`**: offline n-gram custom-word matching with balanced scoring/guardrails.
 - **`Core/TextProcessing/ListFormattingEngine.swift`**: deterministic numeric list detection/rendering layer.
-- **`Core/Services/PasteService.swift`**: text insertion + fallback strategy.
+- **`Core/Services/Paste/PasteService.swift`**: text insertion orchestrator (AX insert, menu fallback, clipboard restore).
+- **`Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`**: failed-paste recovery window lifecycle and Command-V detection.
 - **`Core/Services/AppUpdateService.swift`**: GitHub Releases polling and update prompt triggers.
 - **`Core/Services/UpdateFeedConfig.swift`**: tracked default update feed config plus optional local override resolution.
 - **`Core/Services/AppUpdateLogic.swift`**: pure update parsing/version/host validation helpers.
@@ -103,11 +105,11 @@ KeyVox is organized by responsibility:
 ## Testing & Quality Gates
 
 - App unit tests:  
-  `xcodebuild -project KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES test`
+  `xcodebuild -project KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO -resultBundlePath /tmp/keyvox-tests.xcresult test`
 - Package unit tests (`KeyVoxWhisper`):  
   `swift test --package-path Packages/KeyVoxWhisper`
 - Core coverage gate (allowlisted deterministic files, threshold default `80%`):  
-  `Tools/Quality/check_core_coverage.sh <path-to-xcresult>`
+  `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 
 ### Integration-Only Exclusions
 - Audio capture hardware/runtime behavior (`Core/AudioRecorder.swift`)
