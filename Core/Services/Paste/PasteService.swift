@@ -79,9 +79,10 @@ class PasteService {
                 #if DEBUG
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
                 #endif
+                let verificationContext = self.menuFallbackExecutor.captureVerificationContext()
+                let initialUndoState = self.menuFallbackExecutor.captureUndoStateOnMainThread()
                 var textForMenuPaste = insertionText
                 var didTypeLeadingSpaces = false
-                let verificationContext = self.menuFallbackExecutor.captureVerificationContext()
 
                 // Some apps normalize leading spaces on paste. If AX injection fully failed,
                 // type leading spaces as key events, then paste the remaining text.
@@ -105,17 +106,35 @@ class PasteService {
                     case .unavailable:
                         didMenuFallbackInsert = false
                     case .actionSucceeded:
-                        if self.shouldTrustMenuSuccessWithoutAXVerification() {
+                        let trustWithoutAXVerification = self.shouldTrustMenuSuccessWithoutAXVerification()
+                        #if DEBUG
+                        print(
+                            "PASTE_TRUST_POLICY: bundleID=\(targetAppIdentity?.bundleID ?? "nil") " +
+                            "trustWithoutAX=\(trustWithoutAXVerification)"
+                        )
+                        #endif
+                        if trustWithoutAXVerification {
                             // Some apps (notably iMessage) can retarget Paste to the composer even
                             // when the currently focused AX element is not the final insertion target.
                             didMenuFallbackInsert = true
-                        } else {
-                            // Even when AXPress reports success, verify resulting AX state when possible
-                            // so we can catch no-op "successful" actions in apps like browser-based editors.
+                        } else if verificationContext != nil {
+                            // Prefer direct AX delta verification when available.
                             didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        } else {
+                            // AX focus can be unavailable in some editors (notably Electron on Ventura).
+                            // In that case, use Undo state transition as a deterministic insertion signal.
+                            didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                initialUndoState: initialUndoState
+                            )
                         }
                     case .actionErrored:
-                        didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        if verificationContext != nil {
+                            didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        } else {
+                            didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                initialUndoState: initialUndoState
+                            )
+                        }
                     }
                 }
             }
@@ -124,10 +143,19 @@ class PasteService {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
-            if !Self.shouldStartFailureRecovery(
+            let shouldStartFailureRecovery = Self.shouldStartFailureRecovery(
                 didAccessibilityInsertText: didAccessibilityInsertText,
                 didMenuFallbackInsert: didMenuFallbackInsert
-            ) {
+            )
+
+            #if DEBUG
+            print(
+                "PASTE_DECISION: axInsert=\(didAccessibilityInsertText) menuInsert=\(didMenuFallbackInsert) " +
+                "needsMenuFallback=\(needsMenuPasteFallback) shouldStartRecovery=\(shouldStartFailureRecovery)"
+            )
+            #endif
+
+            if !shouldStartFailureRecovery {
                 // Menu-driven paste can complete slightly after AX calls.
                 let restoreDelay: TimeInterval = needsMenuPasteFallback ? self.restoreDelayAfterMenuFallback : self.restoreDelayAfterAccessibilityInjection
                 self.restoreClipboardOnMainThread(from: savedSnapshot, delay: restoreDelay)
