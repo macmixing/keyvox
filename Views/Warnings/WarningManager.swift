@@ -36,8 +36,10 @@ final class WarningManager {
                     WarningManager.shared.hide()
                 },
                 openKeyVoxSettings: {
-                    WindowManager.shared.openSettings(tab: kind.settingsTab)
-                    WarningManager.shared.hide()
+                    Task { @MainActor in
+                        WindowManager.shared.openSettings(tab: kind.settingsTab)
+                        WarningManager.shared.hide()
+                    }
                 }
             )
         )
