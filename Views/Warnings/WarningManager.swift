@@ -6,6 +6,8 @@ final class WarningManager {
     private var window: NSPanel?
     private var localMonitor: Any?
     private var globalMonitor: Any?
+    private var recoveryWindow: NSPanel?
+    private var recoveryModel: PasteFailureRecoveryOverlayModel?
 
     func show(_ kind: WarningKind) {
         playCancelSound()
@@ -22,6 +24,7 @@ final class WarningManager {
             panel.isReleasedWhenClosed = false
             panel.backgroundColor = .clear
             panel.hasShadow = true
+            panel.isMovable = false
             panel.isMovableByWindowBackground = false
             window = panel
         }
@@ -53,6 +56,49 @@ final class WarningManager {
         setupMonitor()
     }
 
+    func showPasteFailureRecovery(progress: Double, onDismiss: @escaping () -> Void) {
+        playCancelSound()
+
+        if recoveryWindow == nil {
+            let panel = NSPanel(
+                contentRect: NSRect(x: 0, y: 0, width: 320, height: 128),
+                styleMask: [.nonactivatingPanel, .fullSizeContentView],
+                backing: .buffered,
+                defer: false
+            )
+            panel.isFloatingPanel = true
+            panel.level = .floating
+            panel.isReleasedWhenClosed = false
+            panel.backgroundColor = .clear
+            panel.hasShadow = true
+            panel.isMovable = true
+            panel.isMovableByWindowBackground = true
+            recoveryWindow = panel
+        }
+
+        let model = PasteFailureRecoveryOverlayModel(progress: progress, onDismiss: onDismiss)
+        recoveryModel = model
+        recoveryWindow?.contentView = NSHostingView(
+            rootView: PasteFailureRecoveryOverlayView(model: model)
+        )
+
+        if let screen = NSScreen.main {
+            let rect = screen.visibleFrame
+            recoveryWindow?.setFrameOrigin(NSPoint(x: rect.midX - 160, y: rect.minY + 50))
+        }
+
+        recoveryWindow?.orderFrontRegardless()
+    }
+
+    func updatePasteFailureRecovery(progress: Double) {
+        recoveryModel?.progress = max(0, min(1, progress))
+    }
+
+    func hidePasteFailureRecovery() {
+        recoveryWindow?.orderOut(nil)
+        recoveryModel = nil
+    }
+
     private func playCancelSound() {
         guard KeyboardMonitor.shared.isSoundEnabled else { return }
         if let sound = NSSound(named: "Bottle") {
@@ -81,6 +127,10 @@ final class WarningManager {
 
     func hide() {
         window?.orderOut(nil)
+        removeWarningDismissMonitors()
+    }
+
+    private func removeWarningDismissMonitors() {
         if let monitor = localMonitor {
             NSEvent.removeMonitor(monitor)
             localMonitor = nil

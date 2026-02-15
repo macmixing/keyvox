@@ -4,11 +4,14 @@ class PasteService {
     static let shared = PasteService()
     // Serialize insertion side effects (AX writes, menu fallback, clipboard restore scheduling).
     private let pasteQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive)
+    private let recoveryCoordinator = PasteFailureRecoveryCoordinator.shared
 
     // Heuristic memory for consecutive dictation when AX metadata is incomplete.
     private let heuristicTTL: TimeInterval = 10
     private let restoreDelayAfterMenuFallback: TimeInterval = 0.8
     private let restoreDelayAfterAccessibilityInjection: TimeInterval = 0.25
+    private let menuFallbackVerificationTimeout: TimeInterval = 0.6
+    private let menuFallbackVerificationPollInterval: TimeInterval = 0.05
     private var lastInsertionAppIdentity: AppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
@@ -35,9 +38,23 @@ class PasteService {
         let textToPaste: String
     }
 
+    private enum MenuFallbackAttemptResult {
+        case unavailable
+        case actionSucceeded
+        case actionErrored
+    }
+
+    private struct MenuFallbackVerificationContext {
+        let element: AXUIElement
+        let selectedRange: CFRange?
+        let valueLength: Int?
+    }
+
     // MARK: - Entry Point
     func pasteText(_ text: String) {
         guard !text.isEmpty else { return }
+        cancelActiveRecoveryOnMainThread()
+
         let insertionText = applySmartLeadingSeparatorIfNeeded(to: text)
         let targetAppIdentity = frontmostAppIdentity()
 
@@ -76,7 +93,7 @@ class PasteService {
                 #endif
             case .softSuccessNeedsFallback:
                 needsMenuPasteFallback = true
-                didAccessibilityInsertText = true
+                didAccessibilityInsertText = false
             case .failureNeedsFallback:
                 needsMenuPasteFallback = true
                 didAccessibilityInsertText = false
@@ -89,6 +106,7 @@ class PasteService {
                 #endif
                 var textForMenuPaste = insertionText
                 var didTypeLeadingSpaces = false
+                let verificationContext = self.captureMenuFallbackVerificationContext()
 
                 // Some apps normalize leading spaces on paste. If AX injection fully failed,
                 // type leading spaces as key events, then paste the remaining text.
@@ -108,8 +126,22 @@ class PasteService {
                 if textForMenuPaste.isEmpty {
                     didMenuFallbackInsert = didTypeLeadingSpaces
                 } else {
-                    let didPaste = self.pasteViaMenuBarOnMainThread()
-                    didMenuFallbackInsert = didPaste || didTypeLeadingSpaces
+                    switch self.pasteViaMenuBarOnMainThread() {
+                    case .unavailable:
+                        didMenuFallbackInsert = false
+                    case .actionSucceeded:
+                        if self.shouldTrustMenuSuccessWithoutAXVerification() {
+                            // Some apps (notably iMessage) can retarget Paste to the composer even
+                            // when the currently focused AX element is not the final insertion target.
+                            didMenuFallbackInsert = true
+                        } else {
+                            // Even when AXPress reports success, verify resulting AX state when possible
+                            // so we can catch no-op "successful" actions in apps like browser-based editors.
+                            didMenuFallbackInsert = self.verifyMenuFallbackInsertion(using: verificationContext)
+                        }
+                    case .actionErrored:
+                        didMenuFallbackInsert = self.verifyMenuFallbackInsertion(using: verificationContext)
+                    }
                 }
             }
 
@@ -117,40 +149,15 @@ class PasteService {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
-            // Menu-driven paste can complete slightly after AX calls.
-            let restoreDelay: TimeInterval = needsMenuPasteFallback ? self.restoreDelayAfterMenuFallback : self.restoreDelayAfterAccessibilityInjection
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + restoreDelay) {
-                let pb = NSPasteboard.general
-                pb.clearContents()
-
-                // Restore original clipboard items (files, images, rich text, etc.).
-                let itemsToWrite: [NSPasteboardItem] = savedSnapshot.map { itemDict in
-                    let newItem = NSPasteboardItem()
-                    for (type, data) in itemDict {
-                        newItem.setData(data, forType: type)
-                    }
-                    return newItem
-                }
-
-                if !itemsToWrite.isEmpty {
-                    let didWrite = pb.writeObjects(itemsToWrite)
-
-                    // Rare fallback path when writeObjects fails.
-                    if !didWrite {
-                        pb.clearContents()
-                        if let first = savedSnapshot.first {
-                            for (type, data) in first {
-                                pb.setData(data, forType: type)
-                            }
-                        }
-                    }
-                }
-
-                let restoredCount = itemsToWrite.count
-                #if DEBUG
-                print("Clipboard state restored (items: \(restoredCount)).")
-                #endif
+            if !Self.shouldStartFailureRecovery(
+                didAccessibilityInsertText: didAccessibilityInsertText,
+                didMenuFallbackInsert: didMenuFallbackInsert
+            ) {
+                // Menu-driven paste can complete slightly after AX calls.
+                let restoreDelay: TimeInterval = needsMenuPasteFallback ? self.restoreDelayAfterMenuFallback : self.restoreDelayAfterAccessibilityInjection
+                self.restoreClipboardOnMainThread(from: savedSnapshot, delay: restoreDelay)
+            } else {
+                self.startFailureRecoveryOnMainThread(savedSnapshot: savedSnapshot)
             }
         }
     }
@@ -189,6 +196,15 @@ class PasteService {
     private static let multilineListOverrideBundleIDs: Set<String> = [
         "com.apple.MobileSMS"
     ]
+
+    private static let menuSuccessTrustWithoutAXVerificationBundleIDs: Set<String> = [
+        "com.apple.MobileSMS"
+    ]
+
+    private func shouldTrustMenuSuccessWithoutAXVerification() -> Bool {
+        guard let bundleID = frontmostAppIdentity()?.bundleID else { return false }
+        return Self.menuSuccessTrustWithoutAXVerificationBundleIDs.contains(bundleID)
+    }
 
     // MARK: - Smart Spacing
     private func applySmartLeadingSeparatorIfNeeded(to text: String) -> String {
@@ -324,21 +340,21 @@ class PasteService {
     }
 
     // MARK: - Menu Fallback
-    private func pasteViaMenuBarOnMainThread() -> Bool {
+    private func pasteViaMenuBarOnMainThread() -> MenuFallbackAttemptResult {
         if Thread.isMainThread {
             return pasteViaMenuBar()
         }
 
-        var didSucceed = false
+        var outcome: MenuFallbackAttemptResult = .unavailable
         DispatchQueue.main.sync {
-            didSucceed = pasteViaMenuBar()
+            outcome = pasteViaMenuBar()
         }
-        return didSucceed
+        return outcome
     }
 
-    private func pasteViaMenuBar() -> Bool {
+    private func pasteViaMenuBar() -> MenuFallbackAttemptResult {
         // 1. Get the frontmost app
-        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return false }
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return .unavailable }
         let pid = frontApp.processIdentifier
         let accessibilityApp = AXUIElementCreateApplication(pid)
 
@@ -350,7 +366,7 @@ class PasteService {
             #if DEBUG
             print("Fallback Failed: Could not find Menu Bar.")
             #endif
-            return false
+            return .unavailable
         }
 
         let menuBarElement = menuBar as! AXUIElement
@@ -358,7 +374,7 @@ class PasteService {
         // Find "Paste" in any menu so this remains locale/layout resilient.
         var children: CFTypeRef?
         AXUIElementCopyAttributeValue(menuBarElement, kAXChildrenAttribute as CFString, &children)
-        guard let menuItems = children as? [AXUIElement] else { return false }
+        guard let menuItems = children as? [AXUIElement] else { return .unavailable }
 
         for menu in menuItems {
             if let pasteItem = findPasteMenuItem(in: menu) {
@@ -369,7 +385,7 @@ class PasteService {
                     #if DEBUG
                     print("Fallback Skipped: 'Paste' menu item is disabled (Context doesn't support pasting).")
                     #endif
-                    return false
+                    return .unavailable
                 }
 
                 #if DEBUG
@@ -380,21 +396,20 @@ class PasteService {
                     #if DEBUG
                     print("Fallback Success: AXPress triggered on Paste menu.")
                     #endif
+                    return .actionSucceeded
                 } else {
                     #if DEBUG
-                    print("Fallback Failed: AXPress returned error \(error.rawValue)")
+                    print("Fallback Warning: AXPress returned error \(error.rawValue). Verifying resulting text state...")
                     #endif
+                    return .actionErrored
                 }
-                // Soft success: AXPress return codes are inconsistent across apps.
-                // If Paste exists and is enabled, treat the attempt as an insertion signal.
-                return true
             }
         }
 
         #if DEBUG
         print("Fallback Failed: Could not find 'Paste' menu item in any menu.")
         #endif
-        return false
+        return .unavailable
     }
 
     private func findPasteMenuItem(in menu: AXUIElement) -> AXUIElement? {
@@ -431,6 +446,60 @@ class PasteService {
             }
         }
         return nil
+    }
+
+    private func captureMenuFallbackVerificationContext() -> MenuFallbackVerificationContext? {
+        guard let element = focusedUIElement() else { return nil }
+        return MenuFallbackVerificationContext(
+            element: element,
+            selectedRange: getSelectedRange(element: element),
+            valueLength: valueLengthForMenuVerification(element: element)
+        )
+    }
+
+    private func verifyMenuFallbackInsertion(using context: MenuFallbackVerificationContext?) -> Bool {
+        // If we cannot inspect AX state at all, avoid false "paste failed" overlays.
+        guard let context else { return true }
+
+        let initialRange = context.selectedRange
+        let initialLength = context.valueLength
+
+        var sawObservableAXState = (initialRange != nil || initialLength != nil)
+        let deadline = Date().addingTimeInterval(menuFallbackVerificationTimeout)
+
+        while Date() < deadline {
+            let currentRange = getSelectedRange(element: context.element)
+            let currentLength = valueLengthForMenuVerification(element: context.element)
+
+            if currentRange != nil || currentLength != nil {
+                sawObservableAXState = true
+            }
+
+            if let oldRange = initialRange, let currentRange {
+                if oldRange.location != currentRange.location || oldRange.length != currentRange.length {
+                    return true
+                }
+            }
+
+            if let oldLength = initialLength, let currentLength, oldLength != currentLength {
+                return true
+            }
+
+            usleep(useconds_t(menuFallbackVerificationPollInterval * 1_000_000))
+        }
+
+        // AX metadata is often unavailable in some editors; treat inconclusive checks as success
+        // to prevent false recovery prompts after a successful visible paste.
+        return !sawObservableAXState
+    }
+
+    private func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
+        var valueRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXValueAttribute as CFString, &valueRef) == .success,
+              let value = valueRef as? String else {
+            return nil
+        }
+        return (value as NSString).length
     }
 
     // MARK: - Accessibility Injection
@@ -534,6 +603,91 @@ class PasteService {
         lastInsertionAppIdentity = appIdentity
         lastInsertionAt = Date()
         lastInsertedTrailingCharacter = text.last
+    }
+
+    private func cancelActiveRecoveryOnMainThread() {
+        if Thread.isMainThread {
+            recoveryCoordinator.cancelActiveRecoveryIfNeeded()
+            return
+        }
+
+        DispatchQueue.main.sync {
+            recoveryCoordinator.cancelActiveRecoveryIfNeeded()
+        }
+    }
+
+    private func startFailureRecoveryOnMainThread(
+        savedSnapshot: [[NSPasteboard.PasteboardType: Data]]
+    ) {
+        let restoreClosure = { [savedSnapshot] in
+            Self.restoreClipboardSnapshot(savedSnapshot)
+        }
+
+        if Thread.isMainThread {
+            recoveryCoordinator.startRecovery(restoreClipboard: restoreClosure)
+            return
+        }
+
+        DispatchQueue.main.async {
+            self.recoveryCoordinator.startRecovery(restoreClipboard: restoreClosure)
+        }
+    }
+
+    private func restoreClipboardOnMainThread(
+        from savedSnapshot: [[NSPasteboard.PasteboardType: Data]],
+        delay: TimeInterval
+    ) {
+        let restoreBlock = { [savedSnapshot] in
+            Self.restoreClipboardSnapshot(savedSnapshot)
+        }
+
+        if Thread.isMainThread {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+    }
+
+    private static func restoreClipboardSnapshot(
+        _ savedSnapshot: [[NSPasteboard.PasteboardType: Data]]
+    ) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+
+        // Restore original clipboard items (files, images, rich text, etc.).
+        let itemsToWrite: [NSPasteboardItem] = savedSnapshot.map { itemDict in
+            let newItem = NSPasteboardItem()
+            for (type, data) in itemDict {
+                newItem.setData(data, forType: type)
+            }
+            return newItem
+        }
+
+        if !itemsToWrite.isEmpty {
+            let didWrite = pasteboard.writeObjects(itemsToWrite)
+
+            // Rare fallback path when writeObjects fails.
+            if !didWrite {
+                pasteboard.clearContents()
+                if let first = savedSnapshot.first {
+                    for (type, data) in first {
+                        pasteboard.setData(data, forType: type)
+                    }
+                }
+            }
+        }
+
+        #if DEBUG
+        print("Clipboard state restored (items: \(itemsToWrite.count)).")
+        #endif
+    }
+
+    static func shouldStartFailureRecovery(
+        didAccessibilityInsertText: Bool,
+        didMenuFallbackInsert: Bool
+    ) -> Bool {
+        !didAccessibilityInsertText && !didMenuFallbackInsert
     }
 
     // MARK: - Menu Transport

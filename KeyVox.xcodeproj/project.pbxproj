@@ -59,6 +59,8 @@
 		8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */; };
 		8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501022F47010000EE5501 /* AppUpdateLogic.swift */; };
 		8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */; };
+		8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */; };
+		8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,6 +128,8 @@
 		8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedConfig.swift; sourceTree = "<group>"; };
 		8F5501022F47010000EE5501 /* AppUpdateLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogic.swift; sourceTree = "<group>"; };
 		8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPresenting.swift; sourceTree = "<group>"; };
+		8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryCoordinator.swift; sourceTree = "<group>"; };
+		8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryOverlayView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -187,6 +191,7 @@
 				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
 				8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
+				8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
 				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
 				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
@@ -254,6 +259,7 @@
 				8EC700112F42000100C70001 /* WarningKind.swift */,
 				8EC700122F42000100C70001 /* WarningOverlayView.swift */,
 				8EC700132F42000100C70001 /* WarningManager.swift */,
+				8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */,
 			);
 			path = Warnings;
 			sourceTree = "<group>";
@@ -462,8 +468,10 @@
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
+				8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
+				8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
