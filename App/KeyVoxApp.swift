@@ -111,12 +111,22 @@ struct KeyVoxApp: App {
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
+
+    static func shouldUseAccessoryActivationPolicy(
+        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+    ) -> Bool {
+        if osVersion.majorVersion < 15 {
+            return true
+        }
+        if osVersion.majorVersion > 15 {
+            return false
+        }
+        return osVersion.minorVersion < 6
+    }
     
     init() {
-        // Fix for Ventura/Sonoma < 15.6 menu bar collision and event blocking
-        if #available(macOS 15.6, *) {
-            // Keep standard behavior on Sequoia+
-        } else {
+        // Fix for Ventura/Sonoma < 15.6 menu bar collision and event blocking.
+        if Self.shouldUseAccessoryActivationPolicy() {
             // Switch to accessory policy for older OS versions to prevent
             // the status item from blocking the Apple Logo.
             NSApplication.shared.setActivationPolicy(.accessory)
