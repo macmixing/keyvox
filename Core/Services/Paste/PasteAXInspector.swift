@@ -1,6 +1,9 @@
 import Cocoa
 
 final class PasteAXInspector {
+    private let focusedDescendantSearchMaxDepth = 8
+    private let focusedDescendantNodeLimit = 600
+
     // Ventura + some Electron apps can return stale/no AX data off the main thread.
     // Normalize AX reads onto main to keep focused element and verification stable.
     private func readAXOnMain<T>(_ block: () -> T) -> T {
@@ -89,20 +92,103 @@ final class PasteAXInspector {
             return nil
         }
 
+        // Best case: focused element is directly available on the focused window.
         var windowFocusedRef: CFTypeRef?
         let windowFocusedResult = AXUIElementCopyAttributeValue(
             focusedWindow,
             kAXFocusedUIElementAttribute as CFString,
             &windowFocusedRef
         )
-        guard windowFocusedResult == .success else { return nil }
-        return axElement(from: windowFocusedRef)
+        if windowFocusedResult == .success,
+           let windowFocusedElement = axElement(from: windowFocusedRef) {
+            return windowFocusedElement
+        }
+
+        // Electron-based editors can report nil for focused element attributes while still
+        // exposing focus deeper in the window AX tree.
+        return focusedElementFromWindowTree(focusedWindow)
     }
 
     private func axElement(from value: CFTypeRef?) -> AXUIElement? {
         guard let value else { return nil }
         guard CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
         return unsafeBitCast(value, to: AXUIElement.self)
+    }
+
+    private func focusedElementFromWindowTree(_ root: AXUIElement) -> AXUIElement? {
+        var queue: [(element: AXUIElement, depth: Int)] = [(root, 0)]
+        var head = 0
+        var visited: Set<UnsafeMutableRawPointer> = [elementIdentity(root)]
+
+        while head < queue.count, visited.count <= focusedDescendantNodeLimit {
+            let (node, depth) = queue[head]
+            head += 1
+
+            if depth > focusedDescendantSearchMaxDepth {
+                continue
+            }
+
+            if let focusedChild = focusedUIElementAttribute(from: node) {
+                return focusedChild
+            }
+
+            if depth > 0, isElementFocused(node) {
+                return node
+            }
+
+            for child in childElements(of: node) {
+                let identity = elementIdentity(child)
+                if visited.insert(identity).inserted {
+                    queue.append((child, depth + 1))
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func focusedUIElementAttribute(from element: AXUIElement) -> AXUIElement? {
+        var focusedRef: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(
+            element,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedRef
+        )
+        guard result == .success, let focusedElement = axElement(from: focusedRef) else {
+            return nil
+        }
+        return focusedElement
+    }
+
+    private func isElementFocused(_ element: AXUIElement) -> Bool {
+        var focusedRef: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(
+            element,
+            kAXFocusedAttribute as CFString,
+            &focusedRef
+        )
+        guard result == .success, let value = focusedRef as? Bool else {
+            return false
+        }
+        return value
+    }
+
+    private func childElements(of element: AXUIElement) -> [AXUIElement] {
+        var children: [AXUIElement] = []
+        for attribute in [kAXChildrenAttribute, kAXContentsAttribute] {
+            var rawValue: CFTypeRef?
+            let result = AXUIElementCopyAttributeValue(element, attribute as CFString, &rawValue)
+            guard result == .success,
+                  let elements = rawValue as? [AXUIElement] else {
+                continue
+            }
+            children.append(contentsOf: elements)
+        }
+        return children
+    }
+
+    private func elementIdentity(_ element: AXUIElement) -> UnsafeMutableRawPointer {
+        Unmanaged.passUnretained(element).toOpaque()
     }
 
     func roleString(for element: AXUIElement) -> String? {
