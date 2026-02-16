@@ -39,7 +39,9 @@ final class TranscriptionPostProcessor {
         }
 
         let listFormatted = listFormattingEngine.formatIfNeeded(normalized, renderMode: renderMode)
-        let timeNormalized = normalizeTimeExpressions(in: listFormatted)
+        let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
+        let colonNormalized = normalizeSpokenColonPunctuation(in: laughterNormalized)
+        let timeNormalized = normalizeTimeExpressions(in: colonNormalized)
         return normalizeOutputWhitespace(timeNormalized, renderMode: renderMode)
     }
 
@@ -68,6 +70,34 @@ final class TranscriptionPostProcessor {
             .map { "\($0.id.uuidString):\($0.phrase)" }
             .sorted()
             .joined(separator: "|")
+    }
+
+    private func normalizeLaughterExpressions(in text: String) -> String {
+        replacingMatches(pattern: #"\bha\s+ha\b"#, in: text) { _, _ in
+            "haha"
+        }
+    }
+
+    private func normalizeSpokenColonPunctuation(in text: String) -> String {
+        var output = text
+
+        // High-precision mapping for "between colon/colin X" -> "between: X".
+        output = replacingMatches(
+            pattern: #"\bbetween\s+col(?:on|in)(?=\s+[A-Za-z0-9])"#,
+            in: output
+        ) { _, _ in
+            "between:"
+        }
+
+        // Spoken punctuation form: "..., colon, ..." / "..., colin, ...".
+        output = replacingMatches(
+            pattern: #",\s*col(?:on|in)\s*,\s*"#,
+            in: output
+        ) { _, _ in
+            ": "
+        }
+
+        return output
     }
 
     private func normalizeTimeExpressions(in text: String) -> String {

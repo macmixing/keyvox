@@ -97,4 +97,76 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon")
     }
+
+    func testNormalizesHaHaToHaha() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Ha ha that was funny",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "haha that was funny")
+    }
+
+    func testNormalizesBetweenColonToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Let's pick between colon McDonalds or Burger King",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Let's pick between: McDonalds or Burger King")
+    }
+
+    func testNormalizesBetweenColinToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Let's pick between Colin McDonalds or Burger King",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Let's pick between: McDonalds or Burger King")
+    }
+
+    func testNormalizesCommaDelimitedColonToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm going to the store, colon, to buy some groceries.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "I'm going to the store: to buy some groceries.")
+    }
+
+    func testNormalizesCommaDelimitedColinToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm going to the store, Colin, to buy some groceries.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "I'm going to the store: to buy some groceries.")
+    }
+
+    func testKeepsStandaloneColonWordWithoutContext() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The word colon appears here",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "The word colon appears here")
+    }
 }
