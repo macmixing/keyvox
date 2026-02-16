@@ -54,10 +54,27 @@ class WindowManager: ObservableObject {
             self.openSettings(centered: true)
         }, openSettings: {
             self.openSettings()
+        }, beginAccessibilityAuthorization: {
+            self.lowerOnboardingWindowForAccessibilityPrompt()
+        }, endAccessibilityAuthorization: {
+            self.restoreOnboardingWindowAfterAccessibilityGranted()
         }))
         
         self.onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor
+    func lowerOnboardingWindowForAccessibilityPrompt() {
+        onboardingWindow?.level = .normal
+    }
+
+    @MainActor
+    func restoreOnboardingWindowAfterAccessibilityGranted() {
+        guard let onboardingWindow else { return }
+        onboardingWindow.level = .floating
+        onboardingWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
     

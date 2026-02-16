@@ -1,6 +1,5 @@
 import SwiftUI
 import AVFoundation
-import AppKit
 
 struct OnboardingView: View {
     @ObservedObject var downloader = ModelDownloader.shared
@@ -10,6 +9,8 @@ struct OnboardingView: View {
     
     var onComplete: () -> Void
     var openSettings: () -> Void
+    var beginAccessibilityAuthorization: () -> Void = {}
+    var endAccessibilityAuthorization: () -> Void = {}
     
     var body: some View {
         VStack(spacing: 20) {
@@ -124,6 +125,8 @@ struct OnboardingView: View {
     }
     
     private func requestAccessibilityAccess() {
+        beginAccessibilityAuthorization()
+
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         AXIsProcessTrustedWithOptions(options as CFDictionary)
 
@@ -131,10 +134,9 @@ struct OnboardingView: View {
             accessibilityAuthorized = true
             accessibilityPollTimer?.invalidate()
             accessibilityPollTimer = nil
+            endAccessibilityAuthorization()
             return
         }
-
-        openAccessibilitySettings()
 
         // Prevent stacking multiple timers
         accessibilityPollTimer?.invalidate()
@@ -143,22 +145,11 @@ struct OnboardingView: View {
             if AXIsProcessTrusted() {
                 DispatchQueue.main.async {
                     self.accessibilityAuthorized = true
+                    self.endAccessibilityAuthorization()
                 }
                 timer.invalidate()
                 accessibilityPollTimer = nil
             }
-        }
-    }
-
-    private func openAccessibilitySettings() {
-        let candidateURLs: [URL] = [
-            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"),
-            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy"),
-            URL(fileURLWithPath: "/System/Applications/System Settings.app")
-        ].compactMap { $0 }
-
-        for url in candidateURLs where NSWorkspace.shared.open(url) {
-            return
         }
     }
     
