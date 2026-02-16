@@ -72,6 +72,8 @@ class TranscriptionManager: ObservableObject {
     }
     
     private func handleTriggerKey(isPressed: Bool) {
+        guard appSettings.hasCompletedOnboarding else { return }
+
         if isPressed {
             if state == .idle {
                 startRecording()
