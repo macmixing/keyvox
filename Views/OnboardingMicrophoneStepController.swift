@@ -14,11 +14,18 @@ final class OnboardingMicrophoneStepController: ObservableObject {
     private let appSettings: AppSettingsStore
 
     init(
-        audioDeviceManager: AudioDeviceManager = .shared,
-        appSettings: AppSettingsStore = .shared
+        audioDeviceManager: AudioDeviceManager,
+        appSettings: AppSettingsStore
     ) {
         self.audioDeviceManager = audioDeviceManager
         self.appSettings = appSettings
+    }
+
+    convenience init() {
+        self.init(
+            audioDeviceManager: .shared,
+            appSettings: .shared
+        )
     }
 
     var microphoneStepButtonTitle: String {
