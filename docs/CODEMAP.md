@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-15**
+**Last Updated: 2026-02-16**
 
 ## Project Overview
 
@@ -132,11 +132,13 @@ KeyVox/
 ├── KeyVoxTests/
 │   ├── AI/
 │   │   └── Dictionary/
+│   ├── App/
 │   ├── Core/
 │   ├── Fixtures/Updates/
 │   ├── Services/
 │   ├── TestSupport/
-│   └── TextProcessing/
+│   ├── TextProcessing/
+│   └── Views/
 ├── Resources/
 │   ├── Assets.xcassets/
 │   ├── Pronunciation/
@@ -150,6 +152,9 @@ KeyVox/
 │   ├── logo.png
 │   └── keyvox.icon/
 ├── Tools/
+│   ├── README.md
+│   ├── ExploreAX.swift
+│   ├── ExploreAXApps.swift
 │   ├── Quality/
 │   │   └── check_core_coverage.sh
 │   ├── UpdateFeed/
@@ -301,6 +306,12 @@ KeyVox/
   - Benchmark fixture loading and shared parsing/stat helper functions.
 - `Tools/Pronunciation/benchmarks/evaluate/EvaluateBenchmarkRunner.swift`
   - End-to-end metric computation and main execution wrapper.
+- `Tools/ExploreAX.swift`
+  - Single-app (frontmost) Accessibility tree and candidate diagnostics for paste verification troubleshooting.
+- `Tools/ExploreAXApps.swift`
+  - Multi-app Accessibility scanner for comparing AX candidate quality across running apps.
+- `Tools/README.md`
+  - Maintainer/contributor guide for all scripts in `Tools/`.
 - `Core/Services/Paste/PasteService.swift`
   - Orchestrates paste pipeline (AX injection, menu fallback, recovery, clipboard restore).
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
@@ -312,6 +323,7 @@ KeyVox/
   - Direct AX selected-text insertion path with outcome classification.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
   - Menu bar Paste execution and verification loop for fallback insertion.
+  - Uses AX delta checks and an undo-state fallback path when AX verification context is unavailable.
 - `Core/Services/Paste/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
 - `Core/Services/Paste/PasteSpacingHeuristics.swift`
@@ -348,6 +360,7 @@ KeyVox/
   - Menu bar UI, status rendering, warning actions.
 - `Views/OnboardingView.swift`
   - First-run setup for permissions and model download.
+  - Accessibility step lowers onboarding z-order during system prompt flow and restores floating state on grant.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
 - `Views/Warnings/*`
@@ -372,7 +385,7 @@ KeyVox/
 
 ## System / Build Facts
 
-- App target deployment: **macOS 15.6**
+- Compatibility target: **macOS Ventura (13.5) and newer**
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
 - Package dependency: local `Packages/KeyVoxWhisper` wrapper over `whisper.cpp`

@@ -29,7 +29,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 
 ### Requirements
 
-- macOS 15.6 or later
+- macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
 
 ### Install and Run
