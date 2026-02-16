@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import Foundation
 
 @MainActor
@@ -17,8 +18,18 @@ final class PasteFailureRecoveryCoordinator {
     private var globalKeyMonitor: Any?
     private var lastCommandVAt: Date = .distantPast
     private var generation: Int = 0
+    private var cancellables = Set<AnyCancellable>()
 
-    private init() {}
+    private init() {
+        KeyboardMonitor.shared.$isTriggerKeyPressed
+            .dropFirst()
+            .sink { [weak self] isPressed in
+                guard let self else { return }
+                guard isPressed, self.isActive else { return }
+                self.completeRecovery(reason: .triggerPressed)
+            }
+            .store(in: &cancellables)
+    }
 
     func startRecovery(restoreClipboard: @escaping () -> Void) {
         cancelActiveRecoveryIfNeeded()
@@ -49,6 +60,7 @@ final class PasteFailureRecoveryCoordinator {
 
     private enum CompletionReason {
         case commandVDetected
+        case triggerPressed
         case escapePressed
         case manualDismiss
         case timeout
@@ -72,7 +84,7 @@ final class PasteFailureRecoveryCoordinator {
                 guard let self, self.generation == completionGeneration else { return }
                 restore()
             }
-        case .escapePressed, .manualDismiss, .timeout, .replacedByNewSession:
+        case .triggerPressed, .escapePressed, .manualDismiss, .timeout, .replacedByNewSession:
             restore()
         }
     }
