@@ -58,4 +58,18 @@ final class PastePoliciesStabilityTests: XCTestCase {
             ) == .singleLineInline
         )
     }
+
+    func testElectronFrameworkDetectionDoesNotDependOnBundleIDAllowlist() {
+        XCTAssertTrue(
+            PasteService.containsElectronFramework(
+                frameworkNames: ["App.framework", "Electron Framework.framework", "Squirrel.framework"]
+            )
+        )
+
+        XCTAssertFalse(
+            PasteService.containsElectronFramework(
+                frameworkNames: ["App.framework", "Sparkle.framework", "WebKit.framework"]
+            )
+        )
+    }
 }

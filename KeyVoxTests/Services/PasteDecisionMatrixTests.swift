@@ -127,4 +127,26 @@ final class PasteDecisionMatrixTests: XCTestCase {
             )
         )
     }
+
+    func testFirstMenuSuccessAttemptSuppressesWarmupFalseWarning() {
+        XCTAssertTrue(
+            PasteService.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
+                attempt: .actionSucceeded,
+                didAccessibilityInsertText: false,
+                didMenuFallbackInsert: false,
+                isFirstMenuSuccessAttemptForProcess: true
+            )
+        )
+    }
+
+    func testLaterMenuSuccessAttemptsDoNotSuppressWarning() {
+        XCTAssertFalse(
+            PasteService.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
+                attempt: .actionSucceeded,
+                didAccessibilityInsertText: false,
+                didMenuFallbackInsert: false,
+                isFirstMenuSuccessAttemptForProcess: false
+            )
+        )
+    }
 }
