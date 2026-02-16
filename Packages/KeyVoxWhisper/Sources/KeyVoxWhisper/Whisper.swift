@@ -3,18 +3,14 @@ import whisper
 
 public final class Whisper {
     private static let minimumInferenceFrameCount = 16_800
+    private static let venturaMajorVersion = 13
 
     private let whisperContext: OpaquePointer?
     public var params: WhisperParams
 
     public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
         self.params = params
-
-        let context = fileURL.path.withCString { path in
-            whisper_init_from_file(path)
-        }
-
-        self.whisperContext = context
+        self.whisperContext = Self.makeContext(fileURL: fileURL)
     }
 
     deinit {
@@ -90,6 +86,34 @@ public final class Whisper {
 
                 continuation.resume(returning: segments)
             }
+        }
+    }
+
+    private static func makeContext(fileURL: URL) -> OpaquePointer? {
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        let isVentura = osVersion.majorVersion == venturaMajorVersion
+
+        var contextParams = whisper_context_default_params()
+        if isVentura {
+            // Ventura-specific stability guard: avoid Metal init crash path in upstream binary.
+            contextParams.use_gpu = false
+            contextParams.flash_attn = false
+        }
+
+        let context = fileURL.path.withCString { path in
+            whisper_init_from_file_with_params(path, contextParams)
+        }
+
+        if context != nil || !isVentura {
+            return context
+        }
+
+        // Retry once on Ventura with explicit CPU settings.
+        var fallbackParams = whisper_context_default_params()
+        fallbackParams.use_gpu = false
+        fallbackParams.flash_attn = false
+        return fileURL.path.withCString { path in
+            whisper_init_from_file_with_params(path, fallbackParams)
         }
     }
 }

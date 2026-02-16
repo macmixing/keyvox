@@ -9,6 +9,8 @@ struct OnboardingView: View {
     
     var onComplete: () -> Void
     var openSettings: () -> Void
+    var beginAccessibilityAuthorization: () -> Void = {}
+    var endAccessibilityAuthorization: () -> Void = {}
     
     var body: some View {
         VStack(spacing: 20) {
@@ -123,8 +125,18 @@ struct OnboardingView: View {
     }
     
     private func requestAccessibilityAccess() {
+        beginAccessibilityAuthorization()
+
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         AXIsProcessTrustedWithOptions(options as CFDictionary)
+
+        if AXIsProcessTrusted() {
+            accessibilityAuthorized = true
+            accessibilityPollTimer?.invalidate()
+            accessibilityPollTimer = nil
+            endAccessibilityAuthorization()
+            return
+        }
 
         // Prevent stacking multiple timers
         accessibilityPollTimer?.invalidate()
@@ -133,6 +145,7 @@ struct OnboardingView: View {
             if AXIsProcessTrusted() {
                 DispatchQueue.main.async {
                     self.accessibilityAuthorized = true
+                    self.endAccessibilityAuthorization()
                 }
                 timer.invalidate()
                 accessibilityPollTimer = nil

@@ -29,10 +29,15 @@ KeyVox is organized by responsibility:
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/TextProcessing/ListFormattingEngine.swift`: Deterministic list detection/rendering.
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
+- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback execution and verification (AX-delta first, undo-state fallback when AX context is unavailable).
 - `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`: Paste failure-recovery lifecycle.
 - `Core/Services/AppUpdateService.swift`: GitHub Releases polling and update prompt logic.
 - `Core/Services/UpdateFeedConfig.swift`: Tracked update feed config + local override resolution.
 - `Core/Services/AppUpdateLogic.swift`: Pure update parsing/version/host validation helpers.
+
+## Platform Compatibility
+
+- Supported macOS range: Ventura (macOS 13.5) and newer.
 
 For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
@@ -76,6 +81,19 @@ Maintainers can override the update feed locally without changing tracked defaul
   `swift test --package-path Packages/KeyVoxWhisper`
 - Core coverage gate:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
+
+## Tooling
+
+- Tooling guide:
+  `Tools/README.md`
+- Frontmost-app AX diagnostics:
+  `Tools/ExploreAX.swift`
+- Multi-app AX diagnostics:
+  `Tools/ExploreAXApps.swift`
+- Pronunciation pipeline/regeneration scripts:
+  `Tools/Pronunciation/*`
+- Update-feed local override helper:
+  `Tools/UpdateFeed/configure_local_feed.sh`
 
 ### Integration-Only Exclusions
 

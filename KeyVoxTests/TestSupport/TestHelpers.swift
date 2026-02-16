@@ -1,5 +1,5 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
@@ -28,7 +28,7 @@ final class MutableNow {
 }
 
 final class MockURLProtocol: URLProtocol {
-    nonisolated(unsafe) static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool {
         true
@@ -98,7 +98,7 @@ func waitForCondition(
     let start = Date()
     while !condition() {
         if Date().timeIntervalSince(start) > timeout {
-            Issue.record("Timed out waiting for async condition")
+            XCTFail("Timed out waiting for async condition")
             throw CancellationError()
         }
         try await Task.sleep(nanoseconds: pollInterval)

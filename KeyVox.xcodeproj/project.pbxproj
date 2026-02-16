@@ -112,6 +112,10 @@
 		AB3000202F60000100AA0001 /* ListRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000222F60000100AA0001 /* ListRendererTests.swift */; };
 		AB3000212F60000100AA0001 /* latest_without_dmg.json in Resources */ = {isa = PBXBuildFile; fileRef = AB2000122F60000100AA0001 /* latest_without_dmg.json */; };
 		AB3000222F60000100AA0001 /* latest_with_dmg.json in Resources */ = {isa = PBXBuildFile; fileRef = AB2000132F60000100AA0001 /* latest_with_dmg.json */; };
+		AB3000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift */; };
+		AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */; };
+		AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */; };
+		AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -232,12 +236,17 @@
 		AB2000202F60000100AA0001 /* ListFormattingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingEngineTests.swift; sourceTree = "<group>"; };
 		AB2000212F60000100AA0001 /* ListPatternDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternDetectorTests.swift; sourceTree = "<group>"; };
 		AB2000222F60000100AA0001 /* ListRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListRendererTests.swift; sourceTree = "<group>"; };
+		AB2000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxAppActivationPolicyTests.swift; sourceTree = "<group>"; };
+		AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerCompatibilityTests.swift; sourceTree = "<group>"; };
+		AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePoliciesStabilityTests.swift; sourceTree = "<group>"; };
+		AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDecisionMatrixTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8EE602892F412B920094EC16 /* KeyVoxTests */ = {
 			isa = PBXGroup;
 			children = (
+				AB1000102F60000100AA0001 /* App */,
 				AB1000012F60000100AA0001 /* AI */,
 				AB1000032F60000100AA0001 /* Core */,
 				AB1000042F60000100AA0001 /* Fixtures */,
@@ -498,6 +507,7 @@
 			isa = PBXGroup;
 			children = (
 				AB2000022F60000100AA0001 /* AudioCaptureClassificationTests.swift */,
+				AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */,
 				AB2000052F60000100AA0001 /* AudioSilenceGatePolicyTests.swift */,
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
@@ -528,7 +538,9 @@
 			children = (
 				AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */,
 				AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */,
+				AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */,
 				AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */,
+				AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */,
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
 				AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */,
 			);
@@ -559,6 +571,14 @@
 				AB2000142F60000100AA0001 /* WarningKindTests.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		AB1000102F60000100AA0001 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AB2000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift */,
+			);
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -758,8 +778,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB3000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift in Sources */,
 				AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */,
 				AB3000022F60000100AA0001 /* AudioCaptureClassificationTests.swift in Sources */,
+				AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */,
 				AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */,
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000052F60000100AA0001 /* AudioSilenceGatePolicyTests.swift in Sources */,
@@ -773,6 +795,8 @@
 				AB3000132F60000100AA0001 /* AppUpdateLogicTests.swift in Sources */,
 				AB3000142F60000100AA0001 /* PasteServiceListRenderModeTests.swift in Sources */,
 				AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */,
+				AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */,
+				AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */,
 				AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */,
 				AB3000172F60000100AA0001 /* UpdateFeedResolverTests.swift in Sources */,
 				AB3000182F60000100AA0001 /* ListFormattingEngineTests.swift in Sources */,

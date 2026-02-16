@@ -1,29 +1,26 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
-struct DictionaryMatcherTests {
-    @Test
-    func exactPhraseIsPreserved() {
+final class DictionaryMatcherTests: XCTestCase {
+    func testExactPhraseIsPreserved() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
         let result = matcher.apply(to: "Dom Esposito")
-        #expect(result.text == "Dom Esposito")
+        XCTAssertTrue(result.text == "Dom Esposito")
     }
 
-    @Test
-    func phoneticMissIsCorrectedForCustomName() {
+    func testPhoneticMissIsCorrectedForCustomName() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
         let result = matcher.apply(to: "Dom Espicito")
-        #expect(result.text == "Dom Esposito")
+        XCTAssertTrue(result.text == "Dom Esposito")
     }
 
-    @Test
-    func commonWordGuardPreventsAggressiveReplacement() {
+    func testCommonWordGuardPreventsAggressiveReplacement() {
         let lexicon = FakeLexicon(
             pronunciations: [
                 "cueboard": "KBRD",
@@ -35,11 +32,10 @@ struct DictionaryMatcherTests {
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "keyboard shortcuts")
-        #expect(result.text == "keyboard shortcuts")
+        XCTAssertTrue(result.text == "keyboard shortcuts")
     }
 
-    @Test
-    func overlapResolutionKeepsBestNonOverlappingReplacement() {
+    func testOverlapResolutionKeepsBestNonOverlappingReplacement() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "MiGo Platform"),
@@ -47,61 +43,55 @@ struct DictionaryMatcherTests {
         ])
 
         let result = matcher.apply(to: "migo platform is live")
-        #expect(result.text == "MiGo Platform is live")
+        XCTAssertTrue(result.text == "MiGo Platform is live")
     }
 
-    @Test
-    func splitTwoTokensJoinToSingleBrand() {
+    func testSplitTwoTokensJoinToSingleBrand() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "open cue board now")
-        #expect(result.text == "open Cueboard now")
+        XCTAssertTrue(result.text == "open Cueboard now")
     }
 
-    @Test
-    func pluralSecondTokenCanJoinForBrand() {
+    func testPluralSecondTokenCanJoinForBrand() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "this is cue boards")
-        #expect(result.text == "this is Cueboard")
+        XCTAssertTrue(result.text == "this is Cueboard")
     }
 
-    @Test
-    func splitJoinDoesNotInferPossessive() {
+    func testSplitJoinDoesNotInferPossessive() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "this is a test of cue boards abilities")
-        #expect(result.text == "this is a test of Cueboard abilities")
+        XCTAssertTrue(result.text == "this is a test of Cueboard abilities")
     }
 
-    @Test
-    func possessiveSingleTokenKeepsSuffixWhileCorrectingWord() {
+    func testPossessiveSingleTokenKeepsSuffixWhileCorrectingWord() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "show CuBoard's abilities")
-        #expect(result.text == "show Cueboard's abilities")
+        XCTAssertTrue(result.text == "show Cueboard's abilities")
     }
 
-    @Test
-    func splitJoinPossessiveKeepsSuffixWhileCorrectingWord() {
+    func testSplitJoinPossessiveKeepsSuffixWhileCorrectingWord() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "show cue board's abilities")
-        #expect(result.text == "show Cueboard's abilities")
+        XCTAssertTrue(result.text == "show Cueboard's abilities")
     }
 
-    @Test
-    func doesNotOvercorrectCommonPhrase() {
+    func testDoesNotOvercorrectCommonPhrase() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "we use cue cards often")
-        #expect(result.text == "we use cue cards often")
+        XCTAssertTrue(result.text == "we use cue cards often")
     }
 
     private func makeMatcher() -> DictionaryMatcher {

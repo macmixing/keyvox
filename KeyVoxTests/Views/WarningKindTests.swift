@@ -1,50 +1,46 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct WarningKindTests {
-    @Test
-    func noSpeechVariantUsesRequestedTitleAndMessage() {
+final class WarningKindTests: XCTestCase {
+    func testNoSpeechVariantUsesRequestedTitleAndMessage() {
         let kind = WarningKind.microphoneSilence(
             reason: .noSpeechDetected,
             microphoneName: "Built-in Microphone"
         )
 
-        #expect(kind.title == "Didn't hear that!")
-        #expect(
+        XCTAssertTrue(kind.title == "Didn't hear that!")
+        XCTAssertTrue(
             kind.message == "KeyVox didn't pick up any speech from your Built-in Microphone microphone."
         )
     }
 
-    @Test
-    func mutedVariantIncludesHardwareNameInMessage() {
+    func testMutedVariantIncludesHardwareNameInMessage() {
         let kind = WarningKind.microphoneSilence(
             reason: .muted,
             microphoneName: "MacBook Pro Microphone"
         )
 
-        #expect(
+        XCTAssertTrue(
             kind.message == "Your MacBook Pro Microphone mic may be muted. Check System Settings or switch the input device in KeyVox Settings."
         )
     }
 
-    @Test
-    func microphoneSilenceVariantsKeepSameActions() {
+    func testMicrophoneSilenceVariantsKeepSameActions() {
         let muted = WarningKind.microphoneSilence(reason: .muted, microphoneName: "Mic A")
         let noSpeech = WarningKind.microphoneSilence(reason: .noSpeechDetected, microphoneName: "Mic B")
 
-        #expect(muted.settingsTab == .audio)
-        #expect(noSpeech.settingsTab == .audio)
-        #expect(muted.showsKeyVoxSettingsButton)
-        #expect(noSpeech.showsKeyVoxSettingsButton)
-        #expect(muted.systemSettingsURL != nil)
-        #expect(noSpeech.systemSettingsURL != nil)
+        XCTAssertTrue(muted.settingsTab == .audio)
+        XCTAssertTrue(noSpeech.settingsTab == .audio)
+        XCTAssertTrue(muted.showsKeyVoxSettingsButton)
+        XCTAssertTrue(noSpeech.showsKeyVoxSettingsButton)
+        XCTAssertTrue(muted.systemSettingsURL != nil)
+        XCTAssertTrue(noSpeech.systemSettingsURL != nil)
     }
 
-    @Test
-    func blankMicrophoneNameFallsBackToCurrentDevice() {
+    func testBlankMicrophoneNameFallsBackToCurrentDevice() {
         let kind = WarningKind.microphoneSilence(reason: .muted, microphoneName: "   ")
-        #expect(
+        XCTAssertTrue(
             kind.message == "Your current device mic may be muted. Check System Settings or switch the input device in KeyVox Settings."
         )
     }

@@ -73,7 +73,6 @@ struct BarView: View {
             )
             .shadow(color: .yellow.opacity(0.9), radius: 4, x: 0, y: 0) // The "Glow"
             .frame(width: isDevModeOversized ? 24 : 4, height: height)
-            .animation(.linear(duration: 0.1), value: ripplePhase)
             .animation(.spring(response: 0.3, dampingFraction: 0.9), value: value)
             .onAppear {
                 startRippleAnimation()

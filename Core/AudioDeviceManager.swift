@@ -19,6 +19,12 @@ struct MicrophoneOption: Identifiable, Equatable {
 
 final class AudioDeviceManager: ObservableObject {
     static let shared = AudioDeviceManager()
+    static let captureDeviceConnectedNotification = Notification.Name(
+        rawValue: "AVCaptureDeviceWasConnectedNotification"
+    )
+    static let captureDeviceDisconnectedNotification = Notification.Name(
+        rawValue: "AVCaptureDeviceWasDisconnectedNotification"
+    )
 
     private let appSettings = AppSettingsStore.shared
 
@@ -131,7 +137,7 @@ final class AudioDeviceManager: ObservableObject {
 
     private func startMonitoringCaptureDevices() {
         let connectedObserver = NotificationCenter.default.addObserver(
-            forName: AVCaptureDevice.wasConnectedNotification,
+            forName: Self.captureDeviceConnectedNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -139,7 +145,7 @@ final class AudioDeviceManager: ObservableObject {
         }
 
         let disconnectedObserver = NotificationCenter.default.addObserver(
-            forName: AVCaptureDevice.wasDisconnectedNotification,
+            forName: Self.captureDeviceDisconnectedNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in

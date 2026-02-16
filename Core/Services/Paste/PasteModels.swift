@@ -30,7 +30,16 @@ enum PasteMenuFallbackAttemptResult {
 }
 
 struct PasteMenuFallbackVerificationContext {
+    let snapshots: [PasteMenuFallbackVerificationSnapshot]
+}
+
+struct PasteMenuFallbackVerificationSnapshot {
     let element: AXUIElement
     let selectedRange: CFRange?
     let valueLength: Int?
+}
+
+struct PasteMenuFallbackUndoState {
+    let title: String?
+    let isEnabled: Bool?
 }

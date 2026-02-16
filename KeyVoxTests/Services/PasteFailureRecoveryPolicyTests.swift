@@ -1,32 +1,31 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct PasteFailureRecoveryPolicyTests {
-    @Test
-    func startsRecoveryOnlyWhenBothPathsFail() {
-        #expect(
+final class PasteFailureRecoveryPolicyTests: XCTestCase {
+    func testStartsRecoveryOnlyWhenBothPathsFail() {
+        XCTAssertTrue(
             PasteService.shouldStartFailureRecovery(
                 didAccessibilityInsertText: false,
                 didMenuFallbackInsert: false
             )
         )
 
-        #expect(
+        XCTAssertTrue(
             !PasteService.shouldStartFailureRecovery(
                 didAccessibilityInsertText: true,
                 didMenuFallbackInsert: false
             )
         )
 
-        #expect(
+        XCTAssertTrue(
             !PasteService.shouldStartFailureRecovery(
                 didAccessibilityInsertText: false,
                 didMenuFallbackInsert: true
             )
         )
 
-        #expect(
+        XCTAssertTrue(
             !PasteService.shouldStartFailureRecovery(
                 didAccessibilityInsertText: true,
                 didMenuFallbackInsert: true

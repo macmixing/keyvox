@@ -42,9 +42,7 @@ struct StatusMenuView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
                             WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
-                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
-                                    NSWorkspace.shared.open(url)
-                                }
+                                resolveMicrophonePermission()
                             }
                         }
                         
@@ -109,6 +107,7 @@ struct StatusMenuView: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: downloader.isModelDownloaded)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: AXIsProcessTrusted())
         .onAppear {
+            micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
             downloader.refreshModelStatus()
         }
     }
@@ -159,6 +158,34 @@ struct StatusMenuView: View {
         case .recording: return .recording
         case .transcribing: return .transcribing
         case .error(let msg): return .error(msg)
+        }
+    }
+
+    private func resolveMicrophonePermission() {
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+
+        switch status {
+        case .authorized:
+            micAuthorized = true
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                DispatchQueue.main.async {
+                    self.micAuthorized = granted
+                    if !granted {
+                        self.openMicrophonePrivacySettings()
+                    }
+                }
+            }
+        case .denied, .restricted:
+            openMicrophonePrivacySettings()
+        @unknown default:
+            openMicrophonePrivacySettings()
+        }
+    }
+
+    private func openMicrophonePrivacySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+            NSWorkspace.shared.open(url)
         }
     }
 }

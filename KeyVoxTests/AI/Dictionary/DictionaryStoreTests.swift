@@ -1,34 +1,35 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
 @MainActor
-struct DictionaryStoreTests {
-    @Test
-    func addUpdateDeleteAndReloadPersistence() throws {
+final class DictionaryStoreTests: XCTestCase {
+    func testAddUpdateDeleteAndReloadPersistence() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
             try store.add(phrase: " Cueboard ")
-            #expect(store.entries.count == 1)
-            #expect(store.entries[0].phrase == "Cueboard")
+            XCTAssertTrue(store.entries.count == 1)
+            XCTAssertTrue(store.entries[0].phrase == "Cueboard")
 
-            let id = try #require(store.entries.first?.id)
+            guard let id = store.entries.first?.id else {
+                XCTFail("Expected at least one entry after add")
+                return
+            }
             try store.update(id: id, phrase: "MiGo Platform")
-            #expect(store.entries[0].phrase == "MiGo Platform")
+            XCTAssertTrue(store.entries[0].phrase == "MiGo Platform")
 
             store.delete(id: id)
-            #expect(store.entries.isEmpty)
+            XCTAssertTrue(store.entries.isEmpty)
 
             try store.add(phrase: "Dom Esposito")
             let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
-            #expect(reloaded.entries.map(\.phrase) == ["Dom Esposito"])
+            XCTAssertTrue(reloaded.entries.map(\.phrase) == ["Dom Esposito"])
         }
     }
 
-    @Test
-    func duplicateAndEmptyValidation() throws {
+    func testDuplicateAndEmptyValidation() throws {
         try withTemporaryDirectory { root in
             let store = DictionaryStore(
                 fileManager: .default,
@@ -37,24 +38,23 @@ struct DictionaryStoreTests {
 
             do {
                 try store.add(phrase: "  ")
-                Issue.record("Expected empty phrase validation error")
+                XCTFail("Expected empty phrase validation error")
             } catch let error as DictionaryStoreError {
-                #expect(error == .emptyPhrase)
+                XCTAssertTrue(error == .emptyPhrase)
             }
 
             try store.add(phrase: "Cueboard")
 
             do {
                 try store.add(phrase: "cueboard")
-                Issue.record("Expected duplicate phrase validation error")
+                XCTFail("Expected duplicate phrase validation error")
             } catch let error as DictionaryStoreError {
-                #expect(error == .duplicatePhrase)
+                XCTAssertTrue(error == .duplicatePhrase)
             }
         }
     }
 
-    @Test
-    func whisperHintPromptRespectsCaps() throws {
+    func testWhisperHintPromptRespectsCaps() throws {
         try withTemporaryDirectory { root in
             let store = DictionaryStore(
                 fileManager: .default,
@@ -66,15 +66,14 @@ struct DictionaryStoreTests {
             try store.add(phrase: "Dom Esposito")
 
             let prompt = store.whisperHintPrompt(maxEntries: 2, maxChars: 80)
-            #expect(prompt.hasPrefix("Domain vocabulary: "))
-            #expect(prompt.contains("Cueboard"))
-            #expect(prompt.contains("MiGo Platform"))
-            #expect(!prompt.contains("Dom Esposito"))
+            XCTAssertTrue(prompt.hasPrefix("Domain vocabulary: "))
+            XCTAssertTrue(prompt.contains("Cueboard"))
+            XCTAssertTrue(prompt.contains("MiGo Platform"))
+            XCTAssertTrue(!prompt.contains("Dom Esposito"))
         }
     }
 
-    @Test
-    func failedSaveDoesNotWipeExistingDictionaryFile() throws {
+    func testFailedSaveDoesNotWipeExistingDictionaryFile() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let writer = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -86,23 +85,22 @@ struct DictionaryStoreTests {
 
             do {
                 try failingStore.add(phrase: "Cueboard")
-                Issue.record("Expected save failure")
+                XCTFail("Expected save failure")
             } catch let error as DictionaryStoreError {
-                #expect(error == .saveFailed)
+                XCTAssertTrue(error == .saveFailed)
             }
 
             let dictionaryFile = base
                 .appendingPathComponent("Dictionary", isDirectory: true)
                 .appendingPathComponent("dictionary.json")
             let persisted = try String(contentsOf: dictionaryFile, encoding: .utf8)
-            #expect(persisted.contains("Dom Esposito"))
-            #expect(!persisted.contains("Cueboard"))
-            #expect(failingStore.saveErrorMessage?.isEmpty == false)
+            XCTAssertTrue(persisted.contains("Dom Esposito"))
+            XCTAssertTrue(!persisted.contains("Cueboard"))
+            XCTAssertTrue(failingStore.saveErrorMessage?.isEmpty == false)
         }
     }
 
-    @Test
-    func corruptPrimaryRecoversFromBackup() throws {
+    func testCorruptPrimaryRecoversFromBackup() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
@@ -114,13 +112,12 @@ struct DictionaryStoreTests {
             try makePayload(phrases: ["Dom Esposito"]).write(to: backup)
 
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
-            #expect(store.entries.map(\.phrase) == ["Dom Esposito"])
-            #expect(store.loadWarningMessage?.contains("recovered from backup") == true)
+            XCTAssertTrue(store.entries.map(\.phrase) == ["Dom Esposito"])
+            XCTAssertTrue(store.loadWarningMessage?.contains("recovered from backup") == true)
         }
     }
 
-    @Test
-    func corruptBothFilesTriggersQuarantineAndReset() throws {
+    func testCorruptBothFilesTriggersQuarantineAndReset() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
@@ -132,12 +129,12 @@ struct DictionaryStoreTests {
             try "broken-backup".data(using: .utf8)!.write(to: backup)
 
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
-            #expect(store.entries.isEmpty)
-            #expect(store.loadWarningMessage == "Dictionary data was corrupted and reset.")
+            XCTAssertTrue(store.entries.isEmpty)
+            XCTAssertTrue(store.loadWarningMessage == "Dictionary data was corrupted and reset.")
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: dictionaryDir.path)
             let quarantined = contents.filter { $0.contains(".corrupt.") }
-            #expect(quarantined.count >= 2)
+            XCTAssertTrue(quarantined.count >= 2)
         }
     }
 

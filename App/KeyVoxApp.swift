@@ -27,7 +27,7 @@ class WindowManager: ObservableObject {
         
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 520),
-            styleMask: [.fullSizeContentView],
+            styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -41,6 +41,8 @@ class WindowManager: ObservableObject {
         window.isOpaque = false
         window.hasShadow = true
         window.isMovableByWindowBackground = true
+        window.level = .floating
+        window.hidesOnDeactivate = false
         window.center()
         
         
@@ -52,10 +54,27 @@ class WindowManager: ObservableObject {
             self.openSettings(centered: true)
         }, openSettings: {
             self.openSettings()
+        }, beginAccessibilityAuthorization: {
+            self.lowerOnboardingWindowForAccessibilityPrompt()
+        }, endAccessibilityAuthorization: {
+            self.restoreOnboardingWindowAfterAccessibilityGranted()
         }))
         
         self.onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor
+    func lowerOnboardingWindowForAccessibilityPrompt() {
+        onboardingWindow?.level = .normal
+    }
+
+    @MainActor
+    func restoreOnboardingWindowAfterAccessibilityGranted() {
+        guard let onboardingWindow else { return }
+        onboardingWindow.level = .floating
+        onboardingWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
     
@@ -109,8 +128,27 @@ struct KeyVoxApp: App {
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
+
+    static func shouldUseAccessoryActivationPolicy(
+        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+    ) -> Bool {
+        if osVersion.majorVersion < 15 {
+            return true
+        }
+        if osVersion.majorVersion > 15 {
+            return false
+        }
+        return osVersion.minorVersion < 6
+    }
     
     init() {
+        // Fix for Ventura/Sonoma < 15.6 menu bar collision and event blocking.
+        if Self.shouldUseAccessoryActivationPolicy() {
+            // Switch to accessory policy for older OS versions to prevent
+            // the status item from blocking the Apple Logo.
+            NSApplication.shared.setActivationPolicy(.accessory)
+        }
+
         // App initialization
         DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {
             if !AppSettingsStore.shared.hasCompletedOnboarding {

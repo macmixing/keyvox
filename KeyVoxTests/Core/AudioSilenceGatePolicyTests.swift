@@ -1,11 +1,10 @@
 import Foundation
-import Testing
+import XCTest
 @testable import KeyVox
 
-struct AudioSilenceGatePolicyTests {
-    @Test
-    func rejectsLongCaptureWithoutActiveSignalWhenRMSIsLow() {
-        #expect(
+final class AudioSilenceGatePolicyTests: XCTestCase {
+    func testRejectsLongCaptureWithoutActiveSignalWhenRMSIsLow() {
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldRejectLikelySilence(
                 captureDuration: 2.5,
                 hadActiveSignal: false,
@@ -15,9 +14,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func allowsLongCaptureWithoutActiveSignalWhenRMSIsHigher() {
-        #expect(
+    func testAllowsLongCaptureWithoutActiveSignalWhenRMSIsHigher() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldRejectLikelySilence(
                 captureDuration: 2.5,
                 hadActiveSignal: false,
@@ -27,9 +25,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func allowsShortCaptureWithoutActiveSignalEvenWhenRMSIsLow() {
-        #expect(
+    func testAllowsShortCaptureWithoutActiveSignalEvenWhenRMSIsLow() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldRejectLikelySilence(
                 captureDuration: 1.0,
                 hadActiveSignal: false,
@@ -39,9 +36,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func rejectsLongCaptureWhenActiveSignalWasObservedButMostlySilent() {
-        #expect(
+    func testRejectsLongCaptureWhenActiveSignalWasObservedButMostlySilent() {
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldRejectLikelySilence(
                 captureDuration: 4.0,
                 hadActiveSignal: true,
@@ -51,9 +47,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func allowsLongCaptureWhenActiveSignalWasObservedAndSilenceRatioIsLower() {
-        #expect(
+    func testAllowsLongCaptureWhenActiveSignalWasObservedAndSilenceRatioIsLower() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldRejectLikelySilence(
                 captureDuration: 4.0,
                 hadActiveSignal: true,
@@ -63,9 +58,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func flagsLongTrueSilenceWhenDurationAndRatioMatch() {
-        #expect(
+    func testFlagsLongTrueSilenceWhenDurationAndRatioMatch() {
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
                 captureDuration: 5.5,
                 hadActiveSignal: false,
@@ -74,12 +68,11 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func flagsLongTrueSilenceWithBriefSpikeStillAboveRatioThreshold() {
+    func testFlagsLongTrueSilenceWithBriefSpikeStillAboveRatioThreshold() {
         let samples = makeSamples(windowCount: 100, noisyWindowIndexes: Set([42]), noisyAmplitude: 0.0022)
         let ratio = AudioSilenceGatePolicy.trueSilenceWindowRatio(for: samples)
-        #expect(ratio >= AudioSilenceGatePolicy.trueSilenceMinimumWindowRatio)
-        #expect(
+        XCTAssertTrue(ratio >= AudioSilenceGatePolicy.trueSilenceMinimumWindowRatio)
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
                 captureDuration: 6.0,
                 hadActiveSignal: false,
@@ -88,9 +81,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func flagsLongTrueSilenceWhenActiveSignalWasObservedAndSilenceIsNearTotal() {
-        #expect(
+    func testFlagsLongTrueSilenceWhenActiveSignalWasObservedAndSilenceIsNearTotal() {
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
                 captureDuration: 8.0,
                 hadActiveSignal: true,
@@ -99,9 +91,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func doesNotFlagLongTrueSilenceWhenActiveSignalWasObservedAndSilenceRatioIsNotExtreme() {
-        #expect(
+    func testDoesNotFlagLongTrueSilenceWhenActiveSignalWasObservedAndSilenceRatioIsNotExtreme() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
                 captureDuration: 8.0,
                 hadActiveSignal: true,
@@ -110,9 +101,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func doesNotFlagLongTrueSilenceWhenDurationIsBelowThreshold() {
-        #expect(
+    func testDoesNotFlagLongTrueSilenceWhenDurationIsBelowThreshold() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
                 captureDuration: 4.9,
                 hadActiveSignal: false,
@@ -121,34 +111,31 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func requiresSustainedActiveSignalRunToMarkCaptureAsActive() {
-        #expect(
+    func testRequiresSustainedActiveSignalRunToMarkCaptureAsActive() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.hadActiveSpeechEvidence(
                 maxActiveSignalRunDuration: AudioSilenceGatePolicy.minimumActiveSignalRunDuration - 0.01
             )
         )
-        #expect(
+        XCTAssertTrue(
             AudioSilenceGatePolicy.hadActiveSpeechEvidence(
                 maxActiveSignalRunDuration: AudioSilenceGatePolicy.minimumActiveSignalRunDuration + 0.01
             )
         )
     }
 
-    @Test
-    func thresholdScaleTracksInputVolumeAndStaysClamped() {
+    func testThresholdScaleTracksInputVolumeAndStaysClamped() {
         let lowScale = AudioSilenceGatePolicy.thresholdScale(forInputVolume: 0.0)
         let mediumScale = AudioSilenceGatePolicy.thresholdScale(forInputVolume: 0.5)
         let highScale = AudioSilenceGatePolicy.thresholdScale(forInputVolume: 1.0)
 
-        #expect(lowScale == AudioSilenceGatePolicy.thresholdScaleMinimum)
-        #expect(mediumScale == 1.0)
-        #expect(highScale == AudioSilenceGatePolicy.thresholdScaleMaximum)
+        XCTAssertTrue(lowScale == AudioSilenceGatePolicy.thresholdScaleMinimum)
+        XCTAssertTrue(mediumScale == 1.0)
+        XCTAssertTrue(highScale == AudioSilenceGatePolicy.thresholdScaleMaximum)
     }
 
-    @Test
-    func rejectsNoiseDominatedCaptureWhenSpeechRMSIsNearAmbientFloor() {
-        #expect(
+    func testRejectsNoiseDominatedCaptureWhenSpeechRMSIsNearAmbientFloor() {
+        XCTAssertTrue(
             AudioSilenceGatePolicy.shouldRejectNoiseDominatedCapture(
                 hadActiveSignal: true,
                 speechRMS: 0.0042,
@@ -157,9 +144,8 @@ struct AudioSilenceGatePolicyTests {
         )
     }
 
-    @Test
-    func keepsCaptureWhenSpeechRMSSeparatesFromAmbientFloor() {
-        #expect(
+    func testKeepsCaptureWhenSpeechRMSSeparatesFromAmbientFloor() {
+        XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldRejectNoiseDominatedCapture(
                 hadActiveSignal: false,
                 speechRMS: 0.0075,

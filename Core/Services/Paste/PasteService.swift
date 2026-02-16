@@ -14,6 +14,8 @@ class PasteService {
     private var lastInsertionAppIdentity: PasteAppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
+    private var seenMenuSuccessAttemptProcessKeys: Set<String> = []
+    private var warmupSuppressionEligibilityByProcessKey: [String: Bool] = [:]
 
     private let axInspector = PasteAXInspector()
     private lazy var accessibilityInjector = PasteAccessibilityInjector(axInspector: axInspector)
@@ -75,6 +77,8 @@ class PasteService {
             }
 
             var didMenuFallbackInsert = false
+            var menuAttempt: PasteMenuFallbackAttemptResult?
+            var isFirstMenuSuccessAttemptForProcess = false
             if needsMenuPasteFallback {
                 #if DEBUG
                 print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
@@ -82,6 +86,9 @@ class PasteService {
                 var textForMenuPaste = insertionText
                 var didTypeLeadingSpaces = false
                 let verificationContext = self.menuFallbackExecutor.captureVerificationContext()
+                let initialUndoState = (verificationContext == nil)
+                    ? self.menuFallbackExecutor.captureUndoStateOnMainThread()
+                    : nil
 
                 // Some apps normalize leading spaces on paste. If AX injection fully failed,
                 // type leading spaces as key events, then paste the remaining text.
@@ -99,32 +106,67 @@ class PasteService {
                 }
 
                 if textForMenuPaste.isEmpty {
-                    didMenuFallbackInsert = didTypeLeadingSpaces
+                    didMenuFallbackInsert = Self.didMenuFallbackInsertForEmptyClipboardPayload(
+                        didTypeLeadingSpaces: didTypeLeadingSpaces
+                    )
                 } else {
-                    switch self.menuFallbackExecutor.pasteViaMenuBarOnMainThread() {
+                    let menuAttemptResult = self.menuFallbackExecutor.pasteViaMenuBarOnMainThread()
+                    menuAttempt = menuAttemptResult
+                    var trustWithoutAXVerification = false
+                    var verificationPassed = false
+
+                    if case .actionSucceeded = menuAttemptResult,
+                       self.shouldAllowFirstMenuSuccessWarmupSuppression(for: targetAppIdentity) {
+                        isFirstMenuSuccessAttemptForProcess = !self.hasSeenMenuSuccessAttempt(for: targetAppIdentity)
+                        self.markMenuSuccessAttemptSeen(for: targetAppIdentity)
+                    }
+
+                    switch menuAttemptResult {
                     case .unavailable:
-                        didMenuFallbackInsert = false
+                        break
                     case .actionSucceeded:
-                        if self.shouldTrustMenuSuccessWithoutAXVerification() {
-                            // Some apps (notably iMessage) can retarget Paste to the composer even
-                            // when the currently focused AX element is not the final insertion target.
-                            didMenuFallbackInsert = true
-                        } else {
-                            // Even when AXPress reports success, verify resulting AX state when possible
-                            // so we can catch no-op "successful" actions in apps like browser-based editors.
-                            didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        trustWithoutAXVerification = self.shouldTrustMenuSuccessWithoutAXVerification()
+                        if !trustWithoutAXVerification {
+                            if verificationContext != nil {
+                                // Even when AXPress reports success, verify resulting AX state when possible
+                                // so we can catch no-op "successful" actions in apps like browser-based editors.
+                                verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                            } else {
+                                verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                    initialUndoState: initialUndoState
+                                )
+                            }
                         }
                     case .actionErrored:
-                        didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        if verificationContext != nil {
+                            verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        } else {
+                            verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                initialUndoState: initialUndoState
+                            )
+                        }
                     }
+
+                    didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(
+                        attempt: menuAttemptResult,
+                        trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
+                        verificationPassed: verificationPassed
+                    )
                 }
             }
+
+            let suppressFirstWarmupFailureWarning = Self.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
+                attempt: menuAttempt,
+                didAccessibilityInsertText: didAccessibilityInsertText,
+                didMenuFallbackInsert: didMenuFallbackInsert,
+                isFirstMenuSuccessAttemptForProcess: isFirstMenuSuccessAttemptForProcess
+            )
 
             if didAccessibilityInsertText || didMenuFallbackInsert {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
-            if !Self.shouldStartFailureRecovery(
+            if suppressFirstWarmupFailureWarning || !Self.shouldStartFailureRecovery(
                 didAccessibilityInsertText: didAccessibilityInsertText,
                 didMenuFallbackInsert: didMenuFallbackInsert
             ) {
@@ -160,6 +202,21 @@ class PasteService {
         PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(bundleID: frontmostAppIdentity()?.bundleID)
     }
 
+    private func shouldAllowFirstMenuSuccessWarmupSuppression(for appIdentity: PasteAppIdentity?) -> Bool {
+        guard let key = menuSuccessAttemptProcessKey(for: appIdentity),
+              let appIdentity else {
+            return false
+        }
+
+        if let cached = warmupSuppressionEligibilityByProcessKey[key] {
+            return cached
+        }
+
+        let isEligible = Self.hasElectronFramework(processID: appIdentity.pid)
+        warmupSuppressionEligibilityByProcessKey[key] = isEligible
+        return isEligible
+    }
+
     // MARK: - Heuristic Identity / Memory
     private func frontmostAppIdentity() -> PasteAppIdentity? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
@@ -183,17 +240,20 @@ class PasteService {
 
     private func cancelActiveRecoveryOnMainThread() {
         if Thread.isMainThread {
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
             }
             return
         }
 
-        DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+                semaphore.signal()
             }
         }
+        semaphore.wait()
     }
 
     private func startFailureRecoveryOnMainThread(
@@ -204,17 +264,20 @@ class PasteService {
         }
 
         if Thread.isMainThread {
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
             }
             return
         }
 
-        DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
                 PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
+                semaphore.signal()
             }
         }
+        semaphore.wait()
     }
 
     private func restoreClipboardOnMainThread(
@@ -241,6 +304,92 @@ class PasteService {
             didAccessibilityInsertText: didAccessibilityInsertText,
             didMenuFallbackInsert: didMenuFallbackInsert
         )
+    }
+
+    // MARK: - Testable Decision Helpers
+    static func didMenuFallbackInsertForEmptyClipboardPayload(
+        didTypeLeadingSpaces: Bool
+    ) -> Bool {
+        didTypeLeadingSpaces
+    }
+
+    static func didMenuFallbackInsertForMenuAttempt(
+        attempt: PasteMenuFallbackAttemptResult,
+        trustMenuSuccessWithoutAXVerification: Bool,
+        verificationPassed: Bool
+    ) -> Bool {
+        switch attempt {
+        case .unavailable:
+            return false
+        case .actionSucceeded:
+            return trustMenuSuccessWithoutAXVerification || verificationPassed
+        case .actionErrored:
+            return verificationPassed
+        }
+    }
+
+    static func shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
+        attempt: PasteMenuFallbackAttemptResult?,
+        didAccessibilityInsertText: Bool,
+        didMenuFallbackInsert: Bool,
+        isFirstMenuSuccessAttemptForProcess: Bool
+    ) -> Bool {
+        guard isFirstMenuSuccessAttemptForProcess else { return false }
+        guard !didAccessibilityInsertText else { return false }
+        guard !didMenuFallbackInsert else { return false }
+        if case .actionSucceeded = attempt {
+            return true
+        }
+        return false
+    }
+
+    private func menuSuccessAttemptProcessKey(for appIdentity: PasteAppIdentity?) -> String? {
+        guard let appIdentity else { return nil }
+        let bundleID = appIdentity.bundleID ?? "<unknown>"
+        return "\(bundleID)#\(appIdentity.pid)"
+    }
+
+    private func hasSeenMenuSuccessAttempt(for appIdentity: PasteAppIdentity?) -> Bool {
+        guard let key = menuSuccessAttemptProcessKey(for: appIdentity) else { return false }
+        return seenMenuSuccessAttemptProcessKeys.contains(key)
+    }
+
+    private func markMenuSuccessAttemptSeen(for appIdentity: PasteAppIdentity?) {
+        guard let key = menuSuccessAttemptProcessKey(for: appIdentity) else { return }
+        seenMenuSuccessAttemptProcessKeys.insert(key)
+    }
+
+    static func hasElectronFramework(processID: pid_t) -> Bool {
+        guard let app = NSRunningApplication(processIdentifier: processID),
+              let bundleURL = app.bundleURL else {
+            return false
+        }
+
+        let electronFrameworkURL = bundleURL
+            .appendingPathComponent("Contents", isDirectory: true)
+            .appendingPathComponent("Frameworks", isDirectory: true)
+            .appendingPathComponent("Electron Framework.framework", isDirectory: true)
+
+        if FileManager.default.fileExists(atPath: electronFrameworkURL.path) {
+            return true
+        }
+
+        let frameworksDirectory = bundleURL
+            .appendingPathComponent("Contents", isDirectory: true)
+            .appendingPathComponent("Frameworks", isDirectory: true)
+
+        guard let frameworkNames = try? FileManager.default.contentsOfDirectory(atPath: frameworksDirectory.path) else {
+            return false
+        }
+
+        return containsElectronFramework(frameworkNames: frameworkNames)
+    }
+
+    static func containsElectronFramework(frameworkNames: [String]) -> Bool {
+        frameworkNames.contains { name in
+            let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            return normalized == "electron framework.framework" || normalized.contains("electron framework.framework")
+        }
     }
 
     // MARK: - Menu Transport
