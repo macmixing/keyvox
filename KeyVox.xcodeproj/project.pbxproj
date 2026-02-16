@@ -116,6 +116,8 @@
 		AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */; };
 		AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */; };
 		AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */; };
+		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
+		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -240,6 +242,8 @@
 		AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerCompatibilityTests.swift; sourceTree = "<group>"; };
 		AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePoliciesStabilityTests.swift; sourceTree = "<group>"; };
 		AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDecisionMatrixTests.swift; sourceTree = "<group>"; };
+		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
+		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -357,6 +361,7 @@
 			children = (
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */,
+				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
 			path = Components;
@@ -369,6 +374,7 @@
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				8EC700212F42000100C70001 /* Warnings */,
 				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
+				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
 				8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
 				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
@@ -748,6 +754,8 @@
 				8F2202022F44010000BB2201 /* Dictionary/DictionaryStore.swift in Sources */,
 				9C3000162F4D000100AA0001 /* Dictionary/TextNormalization.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
+				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
+				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
 				8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */,
 				8F3302022F45010000CC3301 /* PronunciationLexicon.swift in Sources */,

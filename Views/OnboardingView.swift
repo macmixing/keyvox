@@ -1,9 +1,9 @@
 import SwiftUI
-import AVFoundation
 
 struct OnboardingView: View {
     @ObservedObject var downloader = ModelDownloader.shared
-    @State private var micAuthorized: Bool = false
+    @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
+    @StateObject private var microphoneStepController = OnboardingMicrophoneStepController()
     @State private var accessibilityAuthorized: Bool = false
     @State private var accessibilityPollTimer: Timer?
     
@@ -13,84 +13,98 @@ struct OnboardingView: View {
     var endAccessibilityAuthorization: () -> Void = {}
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
-            VStack(spacing: 8) {
-                KeyVoxLogo(size: 80)
-                
-                VStack(spacing: 4) {
-                    Text("Welcome to KeyVox")
-                        .font(.custom("Kanit Medium", size: 32))
-                        .foregroundColor(.indigo)
-                    
-                    Text("Let's get you set up in three quick steps.")
-                        .font(.custom("Kanit Medium", size: 14))
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding(.top, 50)
-            
-            // Steps
-            VStack(spacing: 12) {
-                OnboardingStepRow(
-                    isCompleted: micAuthorized,
-                    stepNumber: 1,
-                    title: "Microphone Access",
-                    description: "KeyVox needs to hear you to transcribe.",
-                    buttonTitle: micAuthorized ? "Authorized" : "Grant Access",
-                    action: requestMicAccess
-                )
-                
-                OnboardingStepRow(
-                    isCompleted: accessibilityAuthorized,
-                    stepNumber: 2,
-                    title: "Accessibility Access",
-                    description: "Required to paste text into other apps.",
-                    buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
-                    action: requestAccessibilityAccess
-                )
-                
-                OnboardingStepRow(
-                    isCompleted: downloader.isModelDownloaded,
-                    stepNumber: 3,
-                    title: "AI Model Setup",
-                    description: "Download the OpenAI Whisper engine.",
-                    buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
-                    action: setupModel
-                ) {
-                    if downloader.isDownloading {
-                        ModelDownloadProgress(progress: downloader.progress)
-                            .padding(.top, 8)
+        ZStack {
+            VStack(spacing: 20) {
+                // Header
+                VStack(spacing: 8) {
+                    KeyVoxLogo(size: 80)
+
+                    VStack(spacing: 4) {
+                        Text("Welcome to KeyVox")
+                            .font(.custom("Kanit Medium", size: 32))
+                            .foregroundColor(.indigo)
+
+                        Text("Let's get you set up in three quick steps.")
+                            .font(.custom("Kanit Medium", size: 14))
+                            .foregroundColor(.secondary)
                     }
                 }
-            }
-            .padding(.horizontal, 30)
-            
+                .padding(.top, 50)
 
-            
-            // Footer - Persistent Button
-            VStack(spacing: 12) {
-                Button(action: onComplete) {
-                    Text("Start Using KeyVox")
-                        .font(.custom("Kanit Medium", size: 16))
-                        .foregroundColor(allStepsCompleted ? .black : .white.opacity(0.3))
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 12)
-                        .frame(minWidth: 240)
-                        .background(allStepsCompleted ? Color.yellow : Color.white.opacity(0.05))
-                        .cornerRadius(25)
-                        .shadow(color: allStepsCompleted ? .yellow.opacity(0.3) : .clear, radius: 10)
+                // Steps
+                VStack(spacing: 12) {
+                    OnboardingStepRow(
+                        isCompleted: microphoneStepController.isMicStepCompleted,
+                        stepNumber: 1,
+                        title: "Microphone Access",
+                        description: "KeyVox needs to hear you to transcribe.",
+                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
+                        action: microphoneStepController.requestMicAccess
+                    )
+
+                    OnboardingStepRow(
+                        isCompleted: accessibilityAuthorized,
+                        stepNumber: 2,
+                        title: "Accessibility Access",
+                        description: "Required to paste text into other apps.",
+                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
+                        action: requestAccessibilityAccess
+                    )
+
+                    OnboardingStepRow(
+                        isCompleted: downloader.isModelDownloaded,
+                        stepNumber: 3,
+                        title: "AI Model Setup",
+                        description: "Download the OpenAI Whisper engine.",
+                        buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
+                        action: setupModel
+                    ) {
+                        if downloader.isDownloading {
+                            ModelDownloadProgress(progress: downloader.progress)
+                                .padding(.top, 8)
+                        }
+                    }
                 }
-                .buttonStyle(.plain)
-                .disabled(!allStepsCompleted)
-                
-                Text("Complete all steps to proceed")
-                    .font(.custom("Kanit Medium", size: 11))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .opacity(allStepsCompleted ? 0 : 1)
+                .padding(.horizontal, 30)
+
+                // Footer - Persistent Button
+                VStack(spacing: 12) {
+                    Button(action: onComplete) {
+                        Text("Start Using KeyVox")
+                            .font(.custom("Kanit Medium", size: 16))
+                            .foregroundColor(allStepsCompleted ? .black : .white.opacity(0.3))
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 12)
+                            .frame(minWidth: 240)
+                            .background(allStepsCompleted ? Color.yellow : Color.white.opacity(0.05))
+                            .cornerRadius(25)
+                            .shadow(color: allStepsCompleted ? .yellow.opacity(0.3) : .clear, radius: 10)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!allStepsCompleted)
+
+                    Text("Complete all steps to proceed")
+                        .font(.custom("Kanit Medium", size: 11))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .opacity(allStepsCompleted ? 0 : 1)
+                }
+            }
+            .padding(.bottom, 32)
+            .disabled(microphoneStepController.showMicSelectionPrompt)
+
+            if microphoneStepController.showMicSelectionPrompt {
+                Color.black.opacity(0.35)
+                    .ignoresSafeArea()
+
+                OnboardingMicrophonePickerView(
+                    selectedMicrophoneUID: $microphoneStepController.onboardingMicSelectionUID,
+                    microphones: audioDeviceManager.pickerMicrophones,
+                    onConfirm: microphoneStepController.confirmOnboardingMicrophoneSelection
+                )
+                .frame(width: 310)
+                .padding(.horizontal, 20)
             }
         }
-        .padding(.bottom, 32)
         .frame(width: 500, height: 520)
         .background(
             Color.indigo.opacity(0.15)
@@ -99,29 +113,24 @@ struct OnboardingView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .onAppear {
             checkCurrentStatus()
+            microphoneStepController.handleOnboardingAppear()
         }
         .onDisappear {
             accessibilityPollTimer?.invalidate()
             accessibilityPollTimer = nil
         }
+        .onChange(of: audioDeviceManager.pickerMicrophones.map(\.id)) { _ in
+            microphoneStepController.handleMicrophoneOptionsChanged()
+        }
         .animation(.spring(), value: allStepsCompleted)
     }
-    
+
     private var allStepsCompleted: Bool {
-        micAuthorized && accessibilityAuthorized && downloader.isModelDownloaded
+        microphoneStepController.isMicStepCompleted && accessibilityAuthorized && downloader.isModelDownloaded
     }
     
     private func checkCurrentStatus() {
-        micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
         accessibilityAuthorized = AXIsProcessTrusted()
-    }
-    
-    private func requestMicAccess() {
-        AVCaptureDevice.requestAccess(for: .audio) { _ in
-            DispatchQueue.main.async {
-                self.micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-            }
-        }
     }
     
     private func requestAccessibilityAccess() {

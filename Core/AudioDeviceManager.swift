@@ -35,6 +35,9 @@ final class AudioDeviceManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     var selectedMicrophoneUID: String { appSettings.selectedMicrophoneUID }
+    var hasRecommendedBuiltInMicrophone: Bool {
+        Self.containsRecommendedBuiltInMicrophone(availableMicrophones)
+    }
 
     private init() {
         availableMicrophones = Self.discoverInputMicrophones()
@@ -109,6 +112,10 @@ final class AudioDeviceManager: ObservableObject {
 
     private var builtInMicrophone: MicrophoneOption? {
         availableMicrophones.first(where: { $0.kind == .builtIn && $0.isAvailable })
+    }
+
+    static func containsRecommendedBuiltInMicrophone(_ microphones: [MicrophoneOption]) -> Bool {
+        microphones.contains { $0.kind == .builtIn && $0.isAvailable }
     }
 
     private func applyInitialSelectionPolicy() {
