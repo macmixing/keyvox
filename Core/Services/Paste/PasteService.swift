@@ -112,7 +112,7 @@ class PasteService {
                     var trustWithoutAXVerification = false
                     var verificationPassed = false
 
-                    if menuAttemptResult == .actionSucceeded,
+                    if case .actionSucceeded = menuAttemptResult,
                        self.shouldAllowFirstMenuSuccessWarmupSuppression(for: targetAppIdentity) {
                         isFirstMenuSuccessAttemptForProcess = !self.hasSeenMenuSuccessAttempt(for: targetAppIdentity)
                         self.markMenuSuccessAttemptSeen(for: targetAppIdentity)
@@ -322,7 +322,10 @@ class PasteService {
         guard isFirstMenuSuccessAttemptForProcess else { return false }
         guard !didAccessibilityInsertText else { return false }
         guard !didMenuFallbackInsert else { return false }
-        return attempt == .actionSucceeded
+        if case .actionSucceeded = attempt {
+            return true
+        }
+        return false
     }
 
     private func menuSuccessAttemptProcessKey(for appIdentity: PasteAppIdentity?) -> String? {
