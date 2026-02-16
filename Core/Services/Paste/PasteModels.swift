@@ -34,8 +34,3 @@ struct PasteMenuFallbackVerificationContext {
     let selectedRange: CFRange?
     let valueLength: Int?
 }
-
-struct PasteMenuFallbackUndoState {
-    let title: String?
-    let isEnabled: Bool?
-}

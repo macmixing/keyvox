@@ -28,66 +28,19 @@ final class PasteAXInspector {
     }
 
     func focusedUIElement() -> AXUIElement? {
-        if let element = focusedUIElementFromSystemWide() {
-            return element
-        }
-
-        return focusedUIElementFromFrontmostApp()
-    }
-
-    private func focusedUIElementFromSystemWide() -> AXUIElement? {
         let systemWideElement = AXUIElementCreateSystemWide()
         var focusedElementRef: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(
+        let focusResult = AXUIElementCopyAttributeValue(
             systemWideElement,
             kAXFocusedUIElementAttribute as CFString,
             &focusedElementRef
         )
-        guard result == .success else { return nil }
-        return axElement(from: focusedElementRef)
-    }
 
-    private func focusedUIElementFromFrontmostApp() -> AXUIElement? {
-        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return nil }
-        let appElement = AXUIElementCreateApplication(frontApp.processIdentifier)
-
-        // First try app-level focused element.
-        var focusedRef: CFTypeRef?
-        let focusedResult = AXUIElementCopyAttributeValue(
-            appElement,
-            kAXFocusedUIElementAttribute as CFString,
-            &focusedRef
-        )
-        if focusedResult == .success, let focusedElement = axElement(from: focusedRef) {
-            return focusedElement
-        }
-
-        // Then try focused window -> focused element.
-        var focusedWindowRef: CFTypeRef?
-        let windowResult = AXUIElementCopyAttributeValue(
-            appElement,
-            kAXFocusedWindowAttribute as CFString,
-            &focusedWindowRef
-        )
-        guard windowResult == .success,
-              let focusedWindow = axElement(from: focusedWindowRef) else {
+        guard focusResult == .success, let focusedElementRef else { return nil }
+        guard CFGetTypeID(focusedElementRef) == AXUIElementGetTypeID() else {
             return nil
         }
-
-        var windowFocusedRef: CFTypeRef?
-        let windowFocusedResult = AXUIElementCopyAttributeValue(
-            focusedWindow,
-            kAXFocusedUIElementAttribute as CFString,
-            &windowFocusedRef
-        )
-        guard windowFocusedResult == .success else { return nil }
-        return axElement(from: windowFocusedRef)
-    }
-
-    private func axElement(from value: CFTypeRef?) -> AXUIElement? {
-        guard let value else { return nil }
-        guard CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
-        return unsafeBitCast(value, to: AXUIElement.self)
+        return unsafeBitCast(focusedElementRef, to: AXUIElement.self)
     }
 
     func roleString(for element: AXUIElement) -> String? {
