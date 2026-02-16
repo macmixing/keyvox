@@ -3,7 +3,7 @@ import SwiftUI
 struct OnboardingMicrophonePickerView: View {
     @Binding var selectedMicrophoneUID: String
     let microphones: [MicrophoneOption]
-    let onConfirm: () -> Void
+    let onConfirm: @MainActor () -> Void
 
     private var canConfirmSelection: Bool {
         !selectedMicrophoneUID.isEmpty && !microphones.isEmpty

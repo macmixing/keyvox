@@ -173,7 +173,7 @@ struct OnboardingStepRow<Content: View>: View {
     let title: String
     let description: String
     let buttonTitle: String
-    let action: () -> Void
+    let action: @MainActor () -> Void
     let extraContent: Content
     
     init(
@@ -182,7 +182,7 @@ struct OnboardingStepRow<Content: View>: View {
         title: String,
         description: String,
         buttonTitle: String,
-        action: @escaping () -> Void,
+        action: @escaping @MainActor () -> Void,
         @ViewBuilder extraContent: () -> Content = { EmptyView() }
     ) {
         self.isCompleted = isCompleted
@@ -226,7 +226,9 @@ struct OnboardingStepRow<Content: View>: View {
                 
                 Spacer()
                 
-                Button(action: action) {
+                Button {
+                    action()
+                } label: {
                     Text(buttonTitle)
                         .font(.custom("Kanit Medium", size: 12))
                         .foregroundColor(isCompleted ? .green : .white)
