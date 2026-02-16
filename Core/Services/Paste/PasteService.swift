@@ -86,6 +86,9 @@ class PasteService {
                 var textForMenuPaste = insertionText
                 var didTypeLeadingSpaces = false
                 let verificationContext = self.menuFallbackExecutor.captureVerificationContext()
+                let initialUndoState = (verificationContext == nil)
+                    ? self.menuFallbackExecutor.captureUndoStateOnMainThread()
+                    : nil
 
                 // Some apps normalize leading spaces on paste. If AX injection fully failed,
                 // type leading spaces as key events, then paste the remaining text.
@@ -124,12 +127,24 @@ class PasteService {
                     case .actionSucceeded:
                         trustWithoutAXVerification = self.shouldTrustMenuSuccessWithoutAXVerification()
                         if !trustWithoutAXVerification {
-                            // Even when AXPress reports success, verify resulting AX state when possible
-                            // so we can catch no-op "successful" actions in apps like browser-based editors.
-                            verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                            if verificationContext != nil {
+                                // Even when AXPress reports success, verify resulting AX state when possible
+                                // so we can catch no-op "successful" actions in apps like browser-based editors.
+                                verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                            } else {
+                                verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                    initialUndoState: initialUndoState
+                                )
+                            }
                         }
                     case .actionErrored:
-                        verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        if verificationContext != nil {
+                            verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        } else {
+                            verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                                initialUndoState: initialUndoState
+                            )
+                        }
                     }
 
                     didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(

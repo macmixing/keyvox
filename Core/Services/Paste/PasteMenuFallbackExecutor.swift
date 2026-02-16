@@ -85,6 +85,32 @@ final class PasteMenuFallbackExecutor {
         return false
     }
 
+    func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState? {
+        if Thread.isMainThread {
+            return captureUndoState()
+        }
+
+        var state: PasteMenuFallbackUndoState?
+        DispatchQueue.main.sync {
+            state = captureUndoState()
+        }
+        return state
+    }
+
+    func verifyInsertionWithoutAXContextOnMainThread(
+        initialUndoState: PasteMenuFallbackUndoState?
+    ) -> Bool {
+        if Thread.isMainThread {
+            return verifyInsertionWithoutAXContext(initialUndoState: initialUndoState)
+        }
+
+        var result = false
+        DispatchQueue.main.sync {
+            result = verifyInsertionWithoutAXContext(initialUndoState: initialUndoState)
+        }
+        return result
+    }
+
     private func pasteViaMenuBar() -> PasteMenuFallbackAttemptResult {
         // 1. Get the frontmost app
         guard let frontApp = NSWorkspace.shared.frontmostApplication else { return .unavailable }
@@ -145,6 +171,51 @@ final class PasteMenuFallbackExecutor {
         return .unavailable
     }
 
+    private func captureUndoState() -> PasteMenuFallbackUndoState? {
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return nil }
+        let pid = frontApp.processIdentifier
+        let accessibilityApp = AXUIElementCreateApplication(pid)
+
+        var menuBar: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(accessibilityApp, kAXMenuBarAttribute as CFString, &menuBar)
+        guard result == .success, let menuBar else { return nil }
+        guard CFGetTypeID(menuBar) == AXUIElementGetTypeID() else { return nil }
+        let menuBarElement = unsafeBitCast(menuBar, to: AXUIElement.self)
+
+        var children: CFTypeRef?
+        AXUIElementCopyAttributeValue(menuBarElement, kAXChildrenAttribute as CFString, &children)
+        guard let menuItems = children as? [AXUIElement] else { return nil }
+
+        for menu in menuItems {
+            if let undoItem = findUndoMenuItem(in: menu) {
+                return PasteMenuFallbackUndoState(
+                    title: menuItemTitle(undoItem),
+                    isEnabled: menuItemEnabled(undoItem)
+                )
+            }
+        }
+
+        return nil
+    }
+
+    private func verifyInsertionWithoutAXContext(
+        initialUndoState: PasteMenuFallbackUndoState?
+    ) -> Bool {
+        guard let initialUndoState else { return false }
+
+        let deadline = Date().addingTimeInterval(verificationTimeout)
+        while Date() < deadline {
+            if let currentUndoState = captureUndoState(),
+               undoStateChanged(from: initialUndoState, to: currentUndoState) {
+                return true
+            }
+
+            usleep(useconds_t(verificationPollInterval * 1_000_000))
+        }
+
+        return false
+    }
+
     private func findPasteMenuItem(in menu: AXUIElement) -> AXUIElement? {
         // Expected structure: menu bar item -> submenu -> actionable menu entries.
 
@@ -181,12 +252,92 @@ final class PasteMenuFallbackExecutor {
         return nil
     }
 
+    private func findUndoMenuItem(in menu: AXUIElement) -> AXUIElement? {
+        var children: CFTypeRef?
+        AXUIElementCopyAttributeValue(menu, kAXChildrenAttribute as CFString, &children)
+        guard let items = children as? [AXUIElement], let subMenu = items.first else { return nil }
+
+        var subChildren: CFTypeRef?
+        AXUIElementCopyAttributeValue(subMenu, kAXChildrenAttribute as CFString, &subChildren)
+        guard let subItems = subChildren as? [AXUIElement] else { return nil }
+
+        for item in subItems {
+            if menuItemIdentifier(item) == "undo:" {
+                return item
+            }
+
+            if menuItemCmdChar(item) == "Z" {
+                let modifiers = menuItemCmdModifiers(item)
+                let hasShiftModifier = (modifiers ?? 0) & 1 != 0
+                let hasNoCommandModifier = (modifiers ?? 0) & 8 != 0
+                if !hasShiftModifier && !hasNoCommandModifier {
+                    return item
+                }
+            }
+
+            if let title = menuItemTitle(item), title.hasPrefix("Undo") {
+                return item
+            }
+        }
+
+        return nil
+    }
+
     private func snapshot(for element: AXUIElement) -> PasteMenuFallbackVerificationSnapshot {
         PasteMenuFallbackVerificationSnapshot(
             element: element,
             selectedRange: axInspector.selectedRange(for: element),
             valueLength: axInspector.valueLengthForMenuVerification(element: element)
         )
+    }
+
+    private func undoStateChanged(
+        from oldState: PasteMenuFallbackUndoState,
+        to newState: PasteMenuFallbackUndoState
+    ) -> Bool {
+        oldState.title != newState.title || oldState.isEnabled != newState.isEnabled
+    }
+
+    private func menuItemIdentifier(_ item: AXUIElement) -> String? {
+        var idValue: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(item, "AXIdentifier" as CFString, &idValue) == .success else { return nil }
+        return idValue as? String
+    }
+
+    private func menuItemCmdChar(_ item: AXUIElement) -> String? {
+        var cmdChar: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(item, kAXMenuItemCmdCharAttribute as CFString, &cmdChar) == .success,
+              let charStr = cmdChar as? String else {
+            return nil
+        }
+        return charStr.uppercased()
+    }
+
+    private func menuItemCmdModifiers(_ item: AXUIElement) -> Int? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(item, kAXMenuItemCmdModifiersAttribute as CFString, &value) == .success else {
+            return nil
+        }
+
+        if let number = value as? NSNumber {
+            return number.intValue
+        }
+
+        return nil
+    }
+
+    private func menuItemTitle(_ item: AXUIElement) -> String? {
+        var title: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &title) == .success else { return nil }
+        return title as? String
+    }
+
+    private func menuItemEnabled(_ item: AXUIElement) -> Bool? {
+        var enabled: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(item, kAXEnabledAttribute as CFString, &enabled) == .success else {
+            return nil
+        }
+        return enabled as? Bool
     }
 
     private func elementHash(_ element: AXUIElement) -> UInt {

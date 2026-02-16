@@ -38,3 +38,8 @@ struct PasteMenuFallbackVerificationSnapshot {
     let selectedRange: CFRange?
     let valueLength: Int?
 }
+
+struct PasteMenuFallbackUndoState {
+    let title: String?
+    let isEnabled: Bool?
+}
