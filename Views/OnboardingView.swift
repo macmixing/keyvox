@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import AVFoundation
 
 struct OnboardingView: View {
     @ObservedObject var downloader = ModelDownloader.shared
@@ -9,6 +11,7 @@ struct OnboardingView: View {
     
     var onComplete: () -> Void
     var openSettings: () -> Void
+    var beginMicrophoneAuthorization: () -> Void = {}
     var beginAccessibilityAuthorization: () -> Void = {}
     var endAccessibilityAuthorization: () -> Void = {}
     
@@ -39,7 +42,7 @@ struct OnboardingView: View {
                         title: "Microphone Access",
                         description: "KeyVox needs to hear you to transcribe.",
                         buttonTitle: microphoneStepController.microphoneStepButtonTitle,
-                        action: microphoneStepController.requestMicAccess
+                        action: requestMicrophoneAccess
                     )
 
                     OnboardingStepRow(
@@ -122,6 +125,9 @@ struct OnboardingView: View {
         .onChange(of: audioDeviceManager.pickerMicrophones.map(\.id)) { _ in
             microphoneStepController.handleMicrophoneOptionsChanged()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            microphoneStepController.handleAppDidBecomeActive()
+        }
         .animation(.spring(), value: allStepsCompleted)
     }
 
@@ -131,6 +137,15 @@ struct OnboardingView: View {
     
     private func checkCurrentStatus() {
         accessibilityAuthorized = AXIsProcessTrusted()
+    }
+
+    @MainActor
+    private func requestMicrophoneAccess() {
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        if status == .denied || status == .restricted {
+            beginMicrophoneAuthorization()
+        }
+        microphoneStepController.requestMicAccess()
     }
     
     private func requestAccessibilityAccess() {

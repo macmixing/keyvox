@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import AppKit
 import Combine
 
 @MainActor
@@ -32,6 +33,10 @@ final class OnboardingMicrophoneStepController: ObservableObject {
         if isMicStepCompleted {
             return "Authorized"
         }
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        if status == .denied || status == .restricted {
+            return "Open Settings"
+        }
         if pendingMicAuthorizationCompletion {
             return "Choose Mic"
         }
@@ -43,11 +48,20 @@ final class OnboardingMicrophoneStepController: ObservableObject {
     }
 
     func handleOnboardingAppear() {
-        micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        micSelectionConfirmed = micAuthorized && !appSettings.selectedMicrophoneUID.isEmpty
+        updateMicAuthorizationState()
 
         guard micAuthorized else { return }
         evaluateMicrophoneSelectionRequirement()
+    }
+
+    func handleAppDidBecomeActive() {
+        let wasAuthorized = micAuthorized
+        updateMicAuthorizationState()
+
+        guard micAuthorized else { return }
+        if !wasAuthorized || showMicSelectionPrompt || pendingMicAuthorizationCompletion {
+            evaluateMicrophoneSelectionRequirement()
+        }
     }
 
     func requestMicAccess() {
@@ -71,15 +85,11 @@ final class OnboardingMicrophoneStepController: ObservableObject {
                 }
             }
         case .denied, .restricted:
-            micAuthorized = false
-            micSelectionConfirmed = false
-            pendingMicAuthorizationCompletion = false
-            showMicSelectionPrompt = false
+            openMicrophonePrivacySettings()
+            updateMicAuthorizationState()
         @unknown default:
-            micAuthorized = false
-            micSelectionConfirmed = false
-            pendingMicAuthorizationCompletion = false
-            showMicSelectionPrompt = false
+            openMicrophonePrivacySettings()
+            updateMicAuthorizationState()
         }
     }
 
@@ -148,5 +158,21 @@ final class OnboardingMicrophoneStepController: ObservableObject {
         }
 
         onboardingMicSelectionUID = microphones[0].id
+    }
+
+    private func updateMicAuthorizationState() {
+        micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+        micSelectionConfirmed = micAuthorized && !appSettings.selectedMicrophoneUID.isEmpty
+        if micAuthorized {
+            return
+        }
+        pendingMicAuthorizationCompletion = false
+        showMicSelectionPrompt = false
+    }
+
+    private func openMicrophonePrivacySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }

@@ -54,6 +54,8 @@ class WindowManager: ObservableObject {
             self.openSettings(centered: true)
         }, openSettings: {
             self.openSettings()
+        }, beginMicrophoneAuthorization: {
+            self.lowerOnboardingWindowForMicrophoneAuthorization()
         }, beginAccessibilityAuthorization: {
             self.lowerOnboardingWindowForAccessibilityPrompt()
         }, endAccessibilityAuthorization: {
@@ -71,13 +73,18 @@ class WindowManager: ObservableObject {
     }
 
     @MainActor
+    func lowerOnboardingWindowForMicrophoneAuthorization() {
+        onboardingWindow?.level = .normal
+    }
+
+    @MainActor
     func restoreOnboardingWindowAfterAccessibilityGranted() {
         guard let onboardingWindow else { return }
         onboardingWindow.level = .floating
         onboardingWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     @MainActor
     func openSettings(centered: Bool = true, tab: SettingsTab = .general) {
         let settingsSize = SettingsView.preferredWindowSize
