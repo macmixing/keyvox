@@ -95,6 +95,7 @@ KeyVox/
 │   ├── Components/
 │   │   ├── ConfirmDeletePromptView.swift
 │   │   ├── KeyVoxLogo.swift
+│   │   ├── OnboardingMicrophonePickerView.swift
 │   │   └── UIComponents.swift
 │   ├── Settings/
 │   │   ├── DictionaryWordEditorView.swift
@@ -112,6 +113,7 @@ KeyVox/
 │   │   ├── WarningKind.swift
 │   │   ├── WarningManager.swift
 │   │   └── WarningOverlayView.swift
+│   ├── OnboardingMicrophoneStepController.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
 │   ├── StatusMenuView.swift
@@ -207,6 +209,14 @@ KeyVox/
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
+- `Views/OnboardingView.swift`
+  - Onboarding step orchestration UI.
+  - Delegates microphone Step 1 flow logic to `OnboardingMicrophoneStepController`.
+- `Views/OnboardingMicrophoneStepController.swift`
+  - Owns onboarding microphone authorization and no-built-in gating behavior.
+  - Drives microphone-step completion state and prompt visibility.
+- `Views/Components/OnboardingMicrophonePickerView.swift`
+  - Presentation-only onboarding modal for required microphone selection confirmation.
 
 ### Core Managers
 

@@ -34,6 +34,9 @@ KeyVox is organized by responsibility:
 - `Core/Services/AppUpdateService.swift`: GitHub Releases polling and update prompt logic.
 - `Core/Services/UpdateFeedConfig.swift`: Tracked update feed config + local override resolution.
 - `Core/Services/AppUpdateLogic.swift`: Pure update parsing/version/host validation helpers.
+- `Views/OnboardingView.swift`: Onboarding UI flow orchestration across setup steps.
+- `Views/OnboardingMicrophoneStepController.swift`: Onboarding Step 1 microphone authorization/gating state and actions.
+- `Views/Components/OnboardingMicrophonePickerView.swift`: Onboarding microphone selection modal UI (presentation-only).
 
 ## Platform Compatibility
 
