@@ -99,24 +99,33 @@ class PasteService {
                 }
 
                 if textForMenuPaste.isEmpty {
-                    didMenuFallbackInsert = didTypeLeadingSpaces
+                    didMenuFallbackInsert = Self.didMenuFallbackInsertForEmptyClipboardPayload(
+                        didTypeLeadingSpaces: didTypeLeadingSpaces
+                    )
                 } else {
-                    switch self.menuFallbackExecutor.pasteViaMenuBarOnMainThread() {
+                    let menuAttempt = self.menuFallbackExecutor.pasteViaMenuBarOnMainThread()
+                    var trustWithoutAXVerification = false
+                    var verificationPassed = false
+
+                    switch menuAttempt {
                     case .unavailable:
-                        didMenuFallbackInsert = false
+                        break
                     case .actionSucceeded:
-                        if self.shouldTrustMenuSuccessWithoutAXVerification() {
-                            // Some apps (notably iMessage) can retarget Paste to the composer even
-                            // when the currently focused AX element is not the final insertion target.
-                            didMenuFallbackInsert = true
-                        } else {
+                        trustWithoutAXVerification = self.shouldTrustMenuSuccessWithoutAXVerification()
+                        if !trustWithoutAXVerification {
                             // Even when AXPress reports success, verify resulting AX state when possible
                             // so we can catch no-op "successful" actions in apps like browser-based editors.
-                            didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                            verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
                         }
                     case .actionErrored:
-                        didMenuFallbackInsert = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
                     }
+
+                    didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(
+                        attempt: menuAttempt,
+                        trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
+                        verificationPassed: verificationPassed
+                    )
                 }
             }
 
@@ -247,6 +256,28 @@ class PasteService {
             didAccessibilityInsertText: didAccessibilityInsertText,
             didMenuFallbackInsert: didMenuFallbackInsert
         )
+    }
+
+    // MARK: - Testable Decision Helpers
+    static func didMenuFallbackInsertForEmptyClipboardPayload(
+        didTypeLeadingSpaces: Bool
+    ) -> Bool {
+        didTypeLeadingSpaces
+    }
+
+    static func didMenuFallbackInsertForMenuAttempt(
+        attempt: PasteMenuFallbackAttemptResult,
+        trustMenuSuccessWithoutAXVerification: Bool,
+        verificationPassed: Bool
+    ) -> Bool {
+        switch attempt {
+        case .unavailable:
+            return false
+        case .actionSucceeded:
+            return trustMenuSuccessWithoutAXVerification || verificationPassed
+        case .actionErrored:
+            return verificationPassed
+        }
     }
 
     // MARK: - Menu Transport
