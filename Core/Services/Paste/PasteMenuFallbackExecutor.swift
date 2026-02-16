@@ -1,12 +1,12 @@
 import Cocoa
 
 final class PasteMenuFallbackExecutor {
-    private let axInspector: PasteAXInspector
+    private let axInspector: PasteAXInspecting
     private let verificationTimeout: TimeInterval
     private let verificationPollInterval: TimeInterval
 
     init(
-        axInspector: PasteAXInspector,
+        axInspector: PasteAXInspecting,
         verificationTimeout: TimeInterval,
         verificationPollInterval: TimeInterval
     ) {
@@ -28,48 +28,61 @@ final class PasteMenuFallbackExecutor {
     }
 
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? {
-        guard let element = axInspector.focusedUIElement() else { return nil }
-        return PasteMenuFallbackVerificationContext(
-            element: element,
-            selectedRange: axInspector.selectedRange(for: element),
-            valueLength: axInspector.valueLengthForMenuVerification(element: element)
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return nil }
+
+        var snapshots: [PasteMenuFallbackVerificationSnapshot] = []
+        var seen = Set<UInt>()
+
+        if let focused = axInspector.focusedUIElement() {
+            let key = elementHash(focused)
+            if !seen.contains(key) {
+                seen.insert(key)
+                snapshots.append(snapshot(for: focused))
+            }
+        }
+
+        let discovered = axInspector.candidateVerificationElements(
+            for: frontApp.processIdentifier,
+            maxDepth: 14,
+            maxNodes: 8_000,
+            maxCandidates: 16
         )
+
+        for element in discovered {
+            let key = elementHash(element)
+            if seen.contains(key) { continue }
+            seen.insert(key)
+            snapshots.append(snapshot(for: element))
+        }
+
+        guard !snapshots.isEmpty else { return nil }
+        return PasteMenuFallbackVerificationContext(snapshots: snapshots)
     }
 
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool {
-        // If we cannot inspect AX state at all, avoid false "paste failed" overlays.
-        guard let context else { return true }
-
-        let initialRange = context.selectedRange
-        let initialLength = context.valueLength
-
-        var sawObservableAXState = (initialRange != nil || initialLength != nil)
+        guard let context, !context.snapshots.isEmpty else { return false }
         let deadline = Date().addingTimeInterval(verificationTimeout)
 
         while Date() < deadline {
-            let currentRange = axInspector.selectedRange(for: context.element)
-            let currentLength = axInspector.valueLengthForMenuVerification(element: context.element)
+            for snapshot in context.snapshots {
+                let currentRange = axInspector.selectedRange(for: snapshot.element)
+                let currentLength = axInspector.valueLengthForMenuVerification(element: snapshot.element)
 
-            if currentRange != nil || currentLength != nil {
-                sawObservableAXState = true
-            }
+                if let oldRange = snapshot.selectedRange, let currentRange {
+                    if oldRange.location != currentRange.location || oldRange.length != currentRange.length {
+                        return true
+                    }
+                }
 
-            if let oldRange = initialRange, let currentRange {
-                if oldRange.location != currentRange.location || oldRange.length != currentRange.length {
+                if let oldLength = snapshot.valueLength, let currentLength, oldLength != currentLength {
                     return true
                 }
-            }
-
-            if let oldLength = initialLength, let currentLength, oldLength != currentLength {
-                return true
             }
 
             usleep(useconds_t(verificationPollInterval * 1_000_000))
         }
 
-        // AX metadata is often unavailable in some editors; treat inconclusive checks as success
-        // to prevent false recovery prompts after a successful visible paste.
-        return !sawObservableAXState
+        return false
     }
 
     private func pasteViaMenuBar() -> PasteMenuFallbackAttemptResult {
@@ -166,5 +179,17 @@ final class PasteMenuFallbackExecutor {
             }
         }
         return nil
+    }
+
+    private func snapshot(for element: AXUIElement) -> PasteMenuFallbackVerificationSnapshot {
+        PasteMenuFallbackVerificationSnapshot(
+            element: element,
+            selectedRange: axInspector.selectedRange(for: element),
+            valueLength: axInspector.valueLengthForMenuVerification(element: element)
+        )
+    }
+
+    private func elementHash(_ element: AXUIElement) -> UInt {
+        UInt(bitPattern: Unmanaged.passUnretained(element).toOpaque())
     }
 }

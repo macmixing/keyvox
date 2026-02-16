@@ -1,6 +1,22 @@
 import Cocoa
 
-final class PasteAXInspector {
+protocol PasteAXInspecting {
+    func focusedInsertionContext() -> PasteInsertionContext?
+    func focusedUIElement() -> AXUIElement?
+    func roleString(for element: AXUIElement) -> String?
+    func selectedRange(for element: AXUIElement) -> CFRange?
+    func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
+    func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character?
+    func valueLengthForMenuVerification(element: AXUIElement) -> Int?
+    func candidateVerificationElements(
+        for pid: pid_t,
+        maxDepth: Int,
+        maxNodes: Int,
+        maxCandidates: Int
+    ) -> [AXUIElement]
+}
+
+final class PasteAXInspector: PasteAXInspecting {
     func focusedInsertionContext() -> PasteInsertionContext? {
         guard let focusedElement = focusedUIElement() else { return nil }
 
@@ -109,5 +125,123 @@ final class PasteAXInspector {
             return nil
         }
         return (value as NSString).length
+    }
+
+    func candidateVerificationElements(
+        for pid: pid_t,
+        maxDepth: Int = 12,
+        maxNodes: Int = 4_000,
+        maxCandidates: Int = 12
+    ) -> [AXUIElement] {
+        let app = AXUIElementCreateApplication(pid)
+        var roots: [AXUIElement] = []
+
+        if let focusedWindow = elementAttribute(app, attribute: kAXFocusedWindowAttribute as String) {
+            roots.append(focusedWindow)
+        }
+
+        roots.append(app)
+
+        if let windows = elementsAttribute(app, attribute: kAXWindowsAttribute as String) {
+            roots.append(contentsOf: windows)
+        }
+
+        var queue: [(element: AXUIElement, depth: Int)] = roots.map { ($0, 0) }
+        var visited = Set<UInt>()
+        var scanned = 0
+        var out: [AXUIElement] = []
+
+        while !queue.isEmpty && scanned < maxNodes && out.count < maxCandidates {
+            let item = queue.removeFirst()
+            let element = item.element
+            let depth = item.depth
+
+            let key = elementHash(element)
+            if visited.contains(key) { continue }
+            visited.insert(key)
+            scanned += 1
+
+            if isVerifiableTextTarget(element) {
+                out.append(element)
+                if out.count >= maxCandidates { break }
+            }
+
+            guard depth < maxDepth else { continue }
+            for child in children(of: element) {
+                queue.append((child, depth + 1))
+            }
+        }
+
+        return out
+    }
+
+    private func children(of element: AXUIElement) -> [AXUIElement] {
+        var childrenRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef) == .success,
+              let children = childrenRef as? [AXUIElement] else {
+            return []
+        }
+        return children
+    }
+
+    private func elementAttribute(_ element: AXUIElement, attribute: String) -> AXUIElement? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success,
+              let ref,
+              CFGetTypeID(ref) == AXUIElementGetTypeID() else {
+            return nil
+        }
+        return unsafeBitCast(ref, to: AXUIElement.self)
+    }
+
+    private func elementsAttribute(_ element: AXUIElement, attribute: String) -> [AXUIElement]? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success else {
+            return nil
+        }
+        return ref as? [AXUIElement]
+    }
+
+    private func isVerifiableTextTarget(_ element: AXUIElement) -> Bool {
+        let role = roleString(for: element)
+        if role == "AXTextField" || role == "AXSearchField" || role == "AXTextArea" || role == "AXTextView" {
+            return true
+        }
+
+        if boolAttribute(element, attribute: "AXEditable") == true {
+            return true
+        }
+
+        let hasRange = selectedRange(for: element) != nil
+        let hasValueLength = valueLengthForMenuVerification(element: element) != nil
+
+        if (hasRange || hasValueLength) &&
+            (isAttributeSettable(element, attribute: kAXSelectedTextAttribute as String) == true ||
+             isAttributeSettable(element, attribute: kAXSelectedTextRangeAttribute as String) == true ||
+             isAttributeSettable(element, attribute: kAXValueAttribute as String) == true) {
+            return true
+        }
+
+        return false
+    }
+
+    private func boolAttribute(_ element: AXUIElement, attribute: String) -> Bool? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success else {
+            return nil
+        }
+        return ref as? Bool
+    }
+
+    private func isAttributeSettable(_ element: AXUIElement, attribute: String) -> Bool? {
+        var settable: DarwinBoolean = false
+        guard AXUIElementIsAttributeSettable(element, attribute as CFString, &settable) == .success else {
+            return nil
+        }
+        return settable.boolValue
+    }
+
+    private func elementHash(_ element: AXUIElement) -> UInt {
+        return UInt(bitPattern: Unmanaged.passUnretained(element).toOpaque())
     }
 }
