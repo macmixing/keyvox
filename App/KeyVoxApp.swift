@@ -121,7 +121,7 @@ class WindowManager: ObservableObject {
             window.backgroundColor = .clear
             window.isOpaque = false
             window.hasShadow = true
-            window.level = .floating
+            window.level = .normal
             window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
@@ -130,6 +130,7 @@ class WindowManager: ObservableObject {
         }
 
         window.setContentSize(settingsSize)
+        window.level = .normal
         window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
         
         if centered {
