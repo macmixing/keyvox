@@ -19,7 +19,7 @@ struct ListRenderer {
         if !leadIn.isEmpty {
             switch mode {
             case .multiline:
-                composed = leadIn + "\n" + composed
+                composed = leadIn + "\n\n" + composed
             case .singleLineInline:
                 composed = leadIn + " " + composed
             }
@@ -28,7 +28,7 @@ struct ListRenderer {
         if !trailing.isEmpty {
             switch mode {
             case .multiline:
-                composed += "\n" + trailing
+                composed += "\n\n" + trailing
             case .singleLineInline:
                 composed += " " + trailing
             }

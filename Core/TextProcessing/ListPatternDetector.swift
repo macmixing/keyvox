@@ -30,7 +30,17 @@ struct ListPatternDetector {
     func detectList(in text: String) -> DetectedList? {
         let markers = markers(in: text)
         guard markers.count >= 2 else { return nil }
-        guard let bestRun = bestMonotonicRun(from: markers), bestRun.count >= 2 else { return nil }
+        let detection: (run: [Marker], renumberSequentially: Bool)?
+        if let bestRun = bestMonotonicRun(from: markers, in: text), bestRun.count >= 2 {
+            detection = (bestRun, false)
+        } else if let restartedRun = restartedOneRunAcrossParagraphBreaks(from: markers, in: text),
+                  restartedRun.count >= 2 {
+            detection = (restartedRun, true)
+        } else {
+            detection = nil
+        }
+        guard let detection else { return nil }
+        let bestRun = detection.run
 
         let nsText = text as NSString
         let firstMarkerStart = bestRun[0].markerTokenStart
@@ -53,7 +63,8 @@ struct ListPatternDetector {
                 guard let cleanedItem = sanitizeItemContent(rawContent) else { return nil }
                 content = cleanedItem
             }
-            items.append(DetectedListItem(spokenIndex: marker.number, content: content))
+            let spokenIndex = detection.renumberSequentially ? (index + 1) : marker.number
+            items.append(DetectedListItem(spokenIndex: spokenIndex, content: content))
         }
 
         guard items.count >= 2 else { return nil }
@@ -93,8 +104,9 @@ struct ListPatternDetector {
         }
     }
 
-    private func bestMonotonicRun(from markers: [Marker]) -> [Marker]? {
+    private func bestMonotonicRun(from markers: [Marker], in text: String) -> [Marker]? {
         guard !markers.isEmpty else { return nil }
+        let nsText = text as NSString
 
         var best: [Marker] = []
         var current: [Marker] = [markers[0]]
@@ -103,9 +115,92 @@ struct ListPatternDetector {
             if let previous = current.last, marker.number == previous.number + 1 {
                 current.append(marker)
             } else {
-                if current.count > best.count {
+                if shouldPrefer(run: current, over: best, in: nsText) {
                     best = current
                 }
+                current = [marker]
+            }
+        }
+
+        if shouldPrefer(run: current, over: best, in: nsText) {
+            best = current
+        }
+
+        return best.count >= 2 ? best : nil
+    }
+
+    private func shouldPrefer(run candidate: [Marker], over existing: [Marker], in nsText: NSString) -> Bool {
+        guard !candidate.isEmpty else { return false }
+        guard !existing.isEmpty else { return true }
+
+        if candidate.count != existing.count {
+            return candidate.count > existing.count
+        }
+
+        let candidateStrength = runStrength(candidate, in: nsText)
+        let existingStrength = runStrength(existing, in: nsText)
+        if candidateStrength != existingStrength {
+            return candidateStrength > existingStrength
+        }
+
+        let candidateStart = candidate.first?.markerTokenStart ?? 0
+        let existingStart = existing.first?.markerTokenStart ?? 0
+        return candidateStart > existingStart
+    }
+
+    private func runStrength(_ run: [Marker], in nsText: NSString) -> Int {
+        run.reduce(0) { partial, marker in
+            var score = partial
+            if markerHasExplicitDelimiter(marker, in: nsText) { score += 2 }
+            if markerHasBoundaryBefore(marker, in: nsText) { score += 1 }
+            return score
+        }
+    }
+
+    private func markerHasExplicitDelimiter(_ marker: Marker, in nsText: NSString) -> Bool {
+        let spanLength = max(0, marker.contentStart - marker.markerTokenStart)
+        guard spanLength > 0 else { return false }
+        let span = nsText.substring(with: NSRange(location: marker.markerTokenStart, length: spanLength))
+        let explicitPattern = #"(?i)^(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*[.\):\-,]"#
+        return span.range(of: explicitPattern, options: .regularExpression) != nil
+    }
+
+    private func markerHasBoundaryBefore(_ marker: Marker, in nsText: NSString) -> Bool {
+        guard marker.markerTokenStart > 0 else { return true }
+        let prefix = nsText.substring(to: marker.markerTokenStart)
+        let boundaryPattern = #"(?:^|[\n\r]|[.!?:;])\s*$"#
+        return prefix.range(of: boundaryPattern, options: .regularExpression) != nil
+    }
+
+    // Paragraph chunking can restart list numbering context between chunks
+    // (e.g. "one ...", "one ...", "one ..."). Recover list intent only when
+    // those restarts are separated by explicit paragraph breaks.
+    private func restartedOneRunAcrossParagraphBreaks(from markers: [Marker], in text: String) -> [Marker]? {
+        guard markers.count >= 2 else { return nil }
+        let nsText = text as NSString
+
+        var best: [Marker] = []
+        var current: [Marker] = []
+
+        for marker in markers {
+            guard marker.number == 1 else {
+                if current.count > best.count { best = current }
+                current = []
+                continue
+            }
+
+            guard let previous = current.last else {
+                current = [marker]
+                continue
+            }
+
+            let gapStart = previous.contentStart
+            let gapLength = max(0, marker.markerTokenStart - gapStart)
+            let gap = nsText.substring(with: NSRange(location: gapStart, length: gapLength))
+            if gap.contains("\n\n") {
+                current.append(marker)
+            } else {
+                if current.count > best.count { best = current }
                 current = [marker]
             }
         }
@@ -134,33 +229,18 @@ struct ListPatternDetector {
     }
 
     private func splitLastItemAndTrailing(_ raw: String) -> (itemText: String, trailingText: String) {
+        let paragraphToken = "__KVX_PARAGRAPH_BREAK__"
         let normalized = raw
+            .replacingOccurrences(
+                of: #"\n[ \t]*\n+"#,
+                with: " \(paragraphToken) ",
+                options: .regularExpression
+            )
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !normalized.isEmpty else {
             return ("", "")
-        }
-
-        // First pass: split on the first clear sentence boundary.
-        if let split = firstRegexSplit(normalized, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 3 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
-                return (split.0, split.1)
-            }
-        }
-
-        // Second pass: split long causal commentary off the last list item.
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\s+.+)$"#
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 2 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
-                return (split.0, split.1)
-            }
         }
 
         // Prefer explicit sentence break before common post-list transition cues.
@@ -170,7 +250,10 @@ struct ListPatternDetector {
         ) {
             let full = String(normalized[match])
             if let split = firstRegexSplit(full, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) {
-                return (split.0, split.1)
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
             }
         }
 
@@ -183,7 +266,25 @@ struct ListPatternDetector {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
             if itemWordCount >= 3 && trailingWordCount >= 3 {
-                return (split.0, split.1)
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
+        // Split long causal commentary off the last list item.
+        if let split = firstRegexSplit(
+            normalized,
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\s+.+)$"#
+        ) {
+            let itemWordCount = split.0.split(separator: " ").count
+            let trailingWordCount = split.1.split(separator: " ").count
+            if itemWordCount >= 2 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
             }
         }
 
@@ -194,12 +295,35 @@ struct ListPatternDetector {
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 3 && trailingWordCount >= 3 {
-                return (split.0, split.1)
+            if itemWordCount >= 2 && trailingWordCount >= 3 {
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
             }
         }
 
-        return (normalized, "")
+        // Final pass: split on a generic sentence boundary.
+        if let split = firstRegexSplit(normalized, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) {
+            let itemWordCount = split.0.split(separator: " ").count
+            let trailingWordCount = split.1.split(separator: " ").count
+            if itemWordCount >= 3 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
+        return (restoreParagraphBreaks(in: normalized, paragraphToken: paragraphToken), "")
+    }
+
+    private func restoreParagraphBreaks(in text: String, paragraphToken: String) -> String {
+        let restored = text.replacingOccurrences(of: paragraphToken, with: "\n\n")
+        return restored
+            .replacingOccurrences(of: #"[ \t]+"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"[ \t]*\n\n[ \t]*"#, with: "\n\n", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func firstRegexSplit(_ text: String, pattern: String) -> (String, String)? {

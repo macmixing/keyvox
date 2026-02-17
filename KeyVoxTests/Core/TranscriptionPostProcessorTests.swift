@@ -32,6 +32,54 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output == "Hello world")
     }
 
+    func testMultilineModePreservesSingleParagraphBreak() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\nSecond paragraph.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
+    }
+
+    func testMultilineModeCollapsesExtraBlankLines() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\n\n\nSecond paragraph.\n\n\nThird paragraph.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.")
+    }
+
+    func testMultilineModeTrimsLeadingAndTrailingBlankLines() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "\n\nFirst paragraph.\n\nSecond paragraph.\n\n",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
+    }
+
+    func testSingleLineModeFlattensParagraphBreaks() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\nSecond paragraph.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "First paragraph. Second paragraph.")
+    }
+
     func testEmptyInputReturnsEmpty() {
         let processor = TranscriptionPostProcessor()
         let output = processor.process("", dictionaryEntries: [], renderMode: .multiline)

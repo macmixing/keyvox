@@ -68,4 +68,57 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.items.last?.content == "call mom")
         XCTAssertTrue(detected?.trailingText == "and because we leave early")
     }
+
+    func testDetectsRestartedOneMarkersAcrossParagraphBreaks() {
+        let detector = ListPatternDetector()
+        let text = """
+        For this trip:
+
+        one pack charger
+
+        one pack toothbrush
+
+        one pack socks
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
+        XCTAssertTrue(detected?.items.map(\.content) == ["pack charger", "pack toothbrush", "pack socks"])
+    }
+
+    func testDoesNotDetectRestartedOneMarkersWithoutParagraphBreaks() {
+        let detector = ListPatternDetector()
+        let text = "one pack charger one pack toothbrush one pack socks"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected == nil)
+    }
+
+    func testPreservesParagraphBreaksInTrailingCommentary() {
+        let detector = ListPatternDetector()
+        let text = """
+        Today one get dog food two charge phone three call mom and now this is important.
+
+        This is still part of trailing commentary.
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(
+            detected?.trailingText
+                == "and now this is important.\n\nThis is still part of trailing commentary."
+        )
+    }
+
+    func testPrefersExplicitListMarkersOverIncidentalProseNumbers() {
+        let detector = ListPatternDetector()
+        let text = "This one is kind of interesting. It starts out probably about two months ago. One, Cueboard, Two, KeyVox"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(detected?.items.count == 2)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Cueboard", "KeyVox"])
+    }
 }
