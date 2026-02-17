@@ -9,6 +9,19 @@ import SwiftUI
 import AVFoundation
 import Combine
 
+final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        Task { @MainActor in
+            if AppSettingsStore.shared.hasCompletedOnboarding {
+                WindowManager.shared.openSettings(centered: true)
+            } else {
+                WindowManager.shared.showOnboarding()
+            }
+        }
+        return false
+    }
+}
+
 class WindowManager: ObservableObject {
     static let shared = WindowManager()
     
@@ -130,6 +143,7 @@ class WindowManager: ObservableObject {
 
 @main
 struct KeyVoxApp: App {
+    @NSApplicationDelegateAdaptor(KeyVoxAppDelegate.self) private var appDelegate
     @StateObject private var transcriptionManager = TranscriptionManager()
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
