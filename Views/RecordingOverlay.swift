@@ -6,9 +6,16 @@ import SwiftUI
 private let isDevModeOversized = false // Set to false for normal size
 
 struct RecordingOverlay: View {
+    private static let phaseStep: Double = 0.1
+    private static let quietPhaseStep: Double = 0.06 // Slower than processing, but still visibly alive in quiet rooms.
+    private static let phaseWrapPeriod: Double = .pi * 2
+
     @ObservedObject var recorder: AudioRecorder
     var isTranscribing: Bool
     @ObservedObject var visibilityManager: OverlayVisibilityManager
+    @State private var ripplePhase: Double = 0
+    @State private var quietPhase: Double = 0
+    @State private var rippleTimer: Timer?
 
     static var panelSize: CGSize {
         CGSize(
@@ -34,7 +41,9 @@ struct RecordingOverlay: View {
                         value: Double(recorder.audioLevel),
                         index: index,
                         isTranscribing: isTranscribing,
-                        signalState: recorder.liveInputSignalState
+                        signalState: recorder.liveInputSignalState,
+                        ripplePhase: ripplePhase,
+                        quietPhase: quietPhase
                     )
                 }
             }
@@ -50,22 +59,45 @@ struct RecordingOverlay: View {
                 }
             }
         }
+        .onAppear {
+            startRippleAnimation()
+        }
+        .onDisappear {
+            stopRippleAnimation()
+        }
+    }
+
+    private func startRippleAnimation() {
+        // Prevent stacking multiple timers if the view re-appears.
+        if rippleTimer != nil { return }
+
+        rippleTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+            // Timer tick updates are safe on the main run loop.
+            ripplePhase += Self.phaseStep
+            quietPhase += Self.quietPhaseStep
+            if ripplePhase >= Self.phaseWrapPeriod {
+                // Subtract instead of hard-reset so we keep sub-frame remainder and avoid visible jumps.
+                ripplePhase -= Self.phaseWrapPeriod
+            }
+            if quietPhase >= Self.phaseWrapPeriod {
+                quietPhase -= Self.phaseWrapPeriod
+            }
+        }
+    }
+
+    private func stopRippleAnimation() {
+        rippleTimer?.invalidate()
+        rippleTimer = nil
     }
 }
 
 struct BarView: View {
-    private static let phaseStep: Double = 0.1
-    private static let quietPhaseStep: Double = 0.06 // Slower than processing, but still visibly alive in quiet rooms.
-    private static let phaseWrapPeriod: Double = .pi * 2
-
     var value: Double
     var index: Int
     var isTranscribing: Bool
     var signalState: LiveInputSignalState
-    
-    @State private var ripplePhase: Double = 0
-    @State private var quietPhase: Double = 0
-    @State private var rippleTimer: Timer?
+    var ripplePhase: Double
+    var quietPhase: Double
     
     var body: some View {
         RoundedRectangle(cornerRadius: 26)
@@ -79,12 +111,6 @@ struct BarView: View {
             .shadow(color: .yellow.opacity(0.9), radius: 4, x: 0, y: 0) // The "Glow"
             .frame(width: isDevModeOversized ? 24 : 4, height: height)
             .animation(.spring(response: 0.3, dampingFraction: 0.9), value: value)
-            .onAppear {
-                startRippleAnimation()
-            }
-            .onDisappear {
-                stopRippleAnimation()
-            }
     }
     
     var height: CGFloat {
@@ -128,28 +154,5 @@ struct BarView: View {
         let multipliers: [Double] = [0.4, 0.7, 1.0, 0.7, 0.4]
         let dynamicHeight = CGFloat(value * multipliers[index]) * maxHeight
         return max(minHeight, dynamicHeight)
-    }
-    
-    private func startRippleAnimation() {
-        // Prevent stacking multiple timers if the view re-appears
-        if rippleTimer != nil { return }
-
-        rippleTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
-            // Timer tick updates are safe to do on the main run loop (scheduledTimer runs there by default)
-            ripplePhase += Self.phaseStep
-            quietPhase += Self.quietPhaseStep
-            if ripplePhase >= Self.phaseWrapPeriod {
-                // Subtract instead of hard-reset so we keep sub-frame remainder and avoid visible jumps.
-                ripplePhase -= Self.phaseWrapPeriod
-            }
-            if quietPhase >= Self.phaseWrapPeriod {
-                quietPhase -= Self.phaseWrapPeriod
-            }
-        }
-    }
-
-    private func stopRippleAnimation() {
-        rippleTimer?.invalidate()
-        rippleTimer = nil
     }
 }
