@@ -2,6 +2,23 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
+## Design Philosophy
+
+KeyVox follows a strict engineering contract:
+
+- No silent data loss.
+- No hidden telemetry.
+- No background collection of user speech.
+- No surprise behavior.
+
+User data is treated as sacred.  
+If the clipboard is modified, it must be restored.  
+If behavior changes based on a setting, it must be explicit and predictable.  
+If something could fail, it must fail safely.
+
+KeyVox is designed to be local-first, transparent, and deterministic.  
+Convenience must never come at the cost of trust.
+
 ## Architecture Overview
 
 KeyVox is organized by responsibility:
