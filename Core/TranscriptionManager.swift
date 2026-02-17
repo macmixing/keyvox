@@ -2,6 +2,112 @@ import SwiftUI
 import Combine
 import ApplicationServices
 
+protocol DictationTranscriptionProviding: AnyObject {
+    var lastResultWasLikelyNoSpeech: Bool { get }
+    func transcribe(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool,
+        enableAutoParagraphs: Bool,
+        completion: @escaping (String?) -> Void
+    )
+}
+
+extension WhisperService: DictationTranscriptionProviding {}
+
+struct DictationPipelineResult {
+    let rawText: String
+    let finalText: String
+    let wasLikelyNoSpeech: Bool
+    let inferenceDuration: TimeInterval
+    let pasteDuration: TimeInterval
+}
+
+@MainActor
+final class DictationPipeline {
+    private let transcriptionProvider: DictationTranscriptionProviding
+    private let postProcessor: TranscriptionPostProcessor
+    private let dictionaryEntriesProvider: () -> [DictionaryEntry]
+    private let autoParagraphsEnabledProvider: () -> Bool
+    private let listRenderModeProvider: () -> ListRenderMode
+    private let recordSpokenWords: (String) -> Void
+    private let pasteText: (String) -> Void
+
+    init(
+        transcriptionProvider: DictationTranscriptionProviding,
+        postProcessor: TranscriptionPostProcessor,
+        dictionaryEntriesProvider: @escaping () -> [DictionaryEntry],
+        autoParagraphsEnabledProvider: @escaping () -> Bool,
+        listRenderModeProvider: @escaping () -> ListRenderMode,
+        recordSpokenWords: @escaping (String) -> Void,
+        pasteText: @escaping (String) -> Void
+    ) {
+        self.transcriptionProvider = transcriptionProvider
+        self.postProcessor = postProcessor
+        self.dictionaryEntriesProvider = dictionaryEntriesProvider
+        self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
+        self.listRenderModeProvider = listRenderModeProvider
+        self.recordSpokenWords = recordSpokenWords
+        self.pasteText = pasteText
+    }
+
+    func run(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool,
+        completion: @escaping (DictationPipelineResult) -> Void
+    ) {
+        let inferenceStart = Date()
+        let autoParagraphsEnabled = autoParagraphsEnabledProvider()
+        transcriptionProvider.transcribe(
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: useDictionaryHintPrompt,
+            enableAutoParagraphs: autoParagraphsEnabled
+        ) { [weak self] result in
+            guard let self else { return }
+
+            let inferenceDuration = Date().timeIntervalSince(inferenceStart)
+            let rawText = result ?? ""
+            let wasLikelyNoSpeech = rawText.isEmpty && self.transcriptionProvider.lastResultWasLikelyNoSpeech
+
+            guard !wasLikelyNoSpeech else {
+                completion(
+                    DictationPipelineResult(
+                        rawText: rawText,
+                        finalText: "",
+                        wasLikelyNoSpeech: true,
+                        inferenceDuration: inferenceDuration,
+                        pasteDuration: 0
+                    )
+                )
+                return
+            }
+
+            let pasteStart = Date()
+            let finalText = self.postProcessor.process(
+                rawText,
+                dictionaryEntries: self.dictionaryEntriesProvider(),
+                renderMode: self.listRenderModeProvider()
+            )
+
+            if !finalText.isEmpty {
+                self.recordSpokenWords(finalText)
+                self.pasteText(finalText)
+            }
+
+            let pasteDuration = Date().timeIntervalSince(pasteStart)
+
+            completion(
+                DictationPipelineResult(
+                    rawText: rawText,
+                    finalText: finalText,
+                    wasLikelyNoSpeech: false,
+                    inferenceDuration: inferenceDuration,
+                    pasteDuration: pasteDuration
+                )
+            )
+        }
+    }
+}
+
 @MainActor
 class TranscriptionManager: ObservableObject {
     @Published var state: AppState = .idle
@@ -20,6 +126,25 @@ class TranscriptionManager: ObservableObject {
     private let whisperService = WhisperService()
     private let dictionaryStore = DictionaryStore.shared
     private let postProcessor = TranscriptionPostProcessor()
+    private lazy var dictationPipeline = DictationPipeline(
+        transcriptionProvider: whisperService,
+        postProcessor: postProcessor,
+        dictionaryEntriesProvider: { [weak self] in
+            self?.dictionaryStore.entries ?? []
+        },
+        autoParagraphsEnabledProvider: { [weak self] in
+            self?.appSettings.autoParagraphsEnabled ?? true
+        },
+        listRenderModeProvider: {
+            PasteService.shared.preferredListRenderModeForFocusedElement()
+        },
+        recordSpokenWords: { [weak self] text in
+            self?.appSettings.recordSpokenWords(from: text)
+        },
+        pasteText: { text in
+            PasteService.shared.pasteText(text)
+        }
+    )
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
@@ -187,22 +312,18 @@ class TranscriptionManager: ObservableObject {
             // Transition overlay to transcription ripples only when we have frames to process.
             OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
-            let transcribeStart = Date()
             let useDictionaryHintPrompt = self.audioRecorder.lastCaptureHadActiveSignal
-            let autoParagraphsEnabled = self.appSettings.autoParagraphsEnabled
-            self.whisperService.transcribe(
+            self.dictationPipeline.run(
                 audioFrames: frames,
-                useDictionaryHintPrompt: useDictionaryHintPrompt,
-                enableAutoParagraphs: autoParagraphsEnabled
-            ) { result in
-                let transcribeDuration = Date().timeIntervalSince(transcribeStart)
+                useDictionaryHintPrompt: useDictionaryHintPrompt
+            ) { pipelineResult in
+                let transcribeDuration = pipelineResult.inferenceDuration
                 #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")
                 #endif
                 
                 DispatchQueue.main.async {
-                    let rawText = result ?? ""
-                    if rawText.isEmpty && self.whisperService.lastResultWasLikelyNoSpeech {
+                    if pipelineResult.wasLikelyNoSpeech {
                         OverlayManager.shared.hide()
                         if self.audioRecorder.lastCaptureDuration >= self.noSpeechWarningMinimumCaptureDuration {
                             let warning = WarningKind.microphoneSilence(
@@ -216,20 +337,9 @@ class TranscriptionManager: ObservableObject {
                         self.state = .idle
                         return
                     }
-                    let renderMode = PasteService.shared.preferredListRenderModeForFocusedElement()
-                    let text = self.postProcessor.process(
-                        rawText,
-                        dictionaryEntries: self.dictionaryStore.entries,
-                        renderMode: renderMode
-                    )
-                    self.lastTranscription = text
-                    
-                    let pasteStart = Date()
-                    if !text.isEmpty {
-                        self.appSettings.recordSpokenWords(from: text)
-                        PasteService.shared.pasteText(text)
-                    }
-                    let pasteDuration = Date().timeIntervalSince(pasteStart)
+                    self.lastTranscription = pipelineResult.finalText
+
+                    let pasteDuration = pipelineResult.pasteDuration
                     #if DEBUG
                     print("3. Injection trigger: \(String(format: "%.3f", pasteDuration))s")
                     #endif
