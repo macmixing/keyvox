@@ -6,6 +6,18 @@ struct PasteMenuFallbackExecutionResult {
     let suppressFirstWarmupFailureWarning: Bool
 }
 
+protocol PasteMenuFallbackCoordinating {
+    func executeMenuFallback(
+        insertionText: String,
+        didAccessibilityInsertText: Bool,
+        targetAppIdentity: PasteAppIdentity?,
+        menuFallbackExecutor: PasteMenuFallbackExecuting,
+        shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
+        setClipboardStringOnMainThread: (String) -> Void,
+        typeLeadingSpacesOnMainThread: (Int) -> Bool
+    ) -> PasteMenuFallbackExecutionResult
+}
+
 final class PasteMenuFallbackCoordinator {
     private var seenMenuSuccessAttemptProcessKeys: Set<String> = []
     private var warmupSuppressionEligibilityByProcessKey: [String: Bool] = [:]
@@ -250,3 +262,5 @@ final class PasteMenuFallbackCoordinator {
         return PasteMenuFallbackTransport(leadingSpacesToType: leadingSpaces, textToPaste: remainingText)
     }
 }
+
+extension PasteMenuFallbackCoordinator: PasteMenuFallbackCoordinating {}

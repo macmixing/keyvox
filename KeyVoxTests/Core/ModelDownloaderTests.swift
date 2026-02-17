@@ -4,6 +4,44 @@ import XCTest
 
 @MainActor
 final class ModelDownloaderTests: XCTestCase {
+    func testRefreshOnInitTrueHydratesModelReady() throws {
+        try withTemporaryDirectory { dir in
+            let modelURL = dir
+                .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("ggml-base.bin")
+            try writeBytes(count: 12, to: modelURL)
+
+            let downloader = ModelDownloader(
+                fileManager: FileManager.default,
+                modelURLOverride: modelURL,
+                minGGMLBytes: 10,
+                refreshOnInit: true
+            )
+
+            XCTAssertTrue(downloader.modelReady)
+        }
+    }
+
+    func testRefreshOnInitFalseLeavesDefaultModelReadyStateUntilRefresh() throws {
+        try withTemporaryDirectory { dir in
+            let modelURL = dir
+                .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("ggml-base.bin")
+            try writeBytes(count: 12, to: modelURL)
+
+            let downloader = ModelDownloader(
+                fileManager: FileManager.default,
+                modelURLOverride: modelURL,
+                minGGMLBytes: 10,
+                refreshOnInit: false
+            )
+
+            XCTAssertFalse(downloader.modelReady)
+            downloader.refreshModelStatus()
+            XCTAssertTrue(downloader.modelReady)
+        }
+    }
+
     func testRefreshModelStatusIsFalseWhenModelMissing() throws {
         try withTemporaryDirectory { dir in
             let downloader = makeDownloader(in: dir, minBytes: 10)
@@ -91,7 +129,59 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: coreMLDir.path))
     }
 
-    private func makeDownloader(in directory: URL, minBytes: Int64) -> ModelDownloader {
+    func testDownloadBaseModelInitializesTaskProgressAndResumesTasks() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [101, 202])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+
+        XCTAssertTrue(downloader.isDownloading)
+        XCTAssertEqual(downloader.progress, 0, accuracy: 0.0001)
+        XCTAssertNil(downloader.errorMessage)
+        XCTAssertEqual(sessionFactory.makeCount, 1)
+        XCTAssertEqual(sessionFactory.createdSession.downloadURLs.count, 2)
+        XCTAssertEqual(sessionFactory.createdSession.tasks[0].resumeCalls, 1)
+        XCTAssertEqual(sessionFactory.createdSession.tasks[1].resumeCalls, 1)
+
+        let snapshot = downloader.taskProgressSnapshot
+        XCTAssertEqual(snapshot[101]?.written, 0)
+        XCTAssertEqual(snapshot[101]?.total, 140_000_000)
+        XCTAssertEqual(snapshot[202]?.written, 0)
+        XCTAssertEqual(snapshot[202]?.total, 50_000_000)
+    }
+
+    func testDownloadBaseModelIsGuardedWhenAlreadyDownloading() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [301, 302])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+        downloader.downloadBaseModel()
+
+        XCTAssertEqual(sessionFactory.makeCount, 1)
+        XCTAssertEqual(sessionFactory.createdSession.downloadURLs.count, 2)
+    }
+
+    private func makeDownloader(
+        in directory: URL,
+        minBytes: Int64,
+        makeDownloadSession: @escaping ModelDownloader.SessionFactory = { delegate in
+            RecordingSessionFactory(taskIDs: [1, 2]).makeSession(delegate: delegate)
+        }
+    ) -> ModelDownloader {
         let modelURL = directory
             .appendingPathComponent("Models", isDirectory: true)
             .appendingPathComponent("ggml-base.bin")
@@ -100,7 +190,8 @@ final class ModelDownloaderTests: XCTestCase {
             fileManager: FileManager.default,
             modelURLOverride: modelURL,
             minGGMLBytes: minBytes,
-            refreshOnInit: false
+            refreshOnInit: false,
+            makeDownloadSession: makeDownloadSession
         )
     }
 
@@ -126,5 +217,54 @@ final class ModelDownloaderTests: XCTestCase {
             .appendingPathComponent("KeyVoxTests-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         return root
+    }
+}
+
+private final class RecordingSessionFactory {
+    private let taskIDs: [Int]
+    private(set) var makeCount = 0
+    private(set) var createdSession: RecordingDownloadSession!
+
+    init(taskIDs: [Int]) {
+        self.taskIDs = taskIDs
+    }
+
+    func makeSession(delegate: URLSessionDownloadDelegate) -> ModelDownloadSessioning {
+        _ = delegate
+        makeCount += 1
+        createdSession = RecordingDownloadSession(taskIDs: taskIDs)
+        return createdSession
+    }
+}
+
+private final class RecordingDownloadSession: ModelDownloadSessioning {
+    private let taskIDs: [Int]
+    private var nextIndex = 0
+    private(set) var downloadURLs: [URL] = []
+    private(set) var tasks: [RecordingDownloadTask] = []
+
+    init(taskIDs: [Int]) {
+        self.taskIDs = taskIDs
+    }
+
+    func downloadTask(with url: URL) -> ModelDownloadTasking {
+        downloadURLs.append(url)
+        let task = RecordingDownloadTask(taskIdentifier: taskIDs[nextIndex])
+        nextIndex += 1
+        tasks.append(task)
+        return task
+    }
+}
+
+private final class RecordingDownloadTask: ModelDownloadTasking {
+    let taskIdentifier: Int
+    private(set) var resumeCalls = 0
+
+    init(taskIdentifier: Int) {
+        self.taskIdentifier = taskIdentifier
+    }
+
+    func resume() {
+        resumeCalls += 1
     }
 }

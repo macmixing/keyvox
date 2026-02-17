@@ -127,6 +127,9 @@
 		AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */; };
 		AB3000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */; };
 		AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */; };
+		AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */; };
+		AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */; };
+		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 /* End PBXBuildFile section */
@@ -264,6 +267,9 @@
 		AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinatorExecutionTests.swift; sourceTree = "<group>"; };
 		AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshotTests.swift; sourceTree = "<group>"; };
 		AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStoreTests.swift; sourceTree = "<group>"; };
+		AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionTests.swift; sourceTree = "<group>"; };
+		AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerTests.swift; sourceTree = "<group>"; };
+		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -540,7 +546,9 @@
 			children = (
 				AB2000022F60000100AA0001 /* AudioCaptureClassificationTests.swift */,
 				AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */,
+				AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */,
 				AB2000052F60000100AA0001 /* AudioSilenceGatePolicyTests.swift */,
+				AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */,
 				AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */,
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
@@ -577,6 +585,7 @@
 				AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */,
 				AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */,
 				AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */,
+				AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */,
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
 				AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */,
 				AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */,
@@ -846,11 +855,14 @@
 				AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */,
 				AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */,
 				AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */,
+				AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */,
 				AB3000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift in Sources */,
 				AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */,
 				AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */,
 				AB3000172F60000100AA0001 /* UpdateFeedResolverTests.swift in Sources */,
 				AB3000302F60000100AA0001 /* ModelDownloaderTests.swift in Sources */,
+				AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */,
+				AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */,
 				AB3000182F60000100AA0001 /* ListFormattingEngineTests.swift in Sources */,
 				AB3000192F60000100AA0001 /* ListPatternDetectorTests.swift in Sources */,
 				AB3000202F60000100AA0001 /* ListRendererTests.swift in Sources */,

@@ -1,7 +1,50 @@
 import Foundation
 import Combine
 
+protocol ModelDownloadTasking {
+    var taskIdentifier: Int { get }
+    func resume()
+}
+
+protocol ModelDownloadSessioning {
+    func downloadTask(with url: URL) -> ModelDownloadTasking
+}
+
+private final class URLSessionDownloadTaskAdapter: ModelDownloadTasking {
+    private let task: URLSessionDownloadTask
+
+    init(task: URLSessionDownloadTask) {
+        self.task = task
+    }
+
+    var taskIdentifier: Int {
+        task.taskIdentifier
+    }
+
+    func resume() {
+        task.resume()
+    }
+}
+
+private final class URLSessionDownloadSessionAdapter: ModelDownloadSessioning {
+    private let session: URLSession
+
+    init(configuration: URLSessionConfiguration, delegate: URLSessionDownloadDelegate) {
+        self.session = URLSession(
+            configuration: configuration,
+            delegate: delegate,
+            delegateQueue: nil
+        )
+    }
+
+    func downloadTask(with url: URL) -> ModelDownloadTasking {
+        URLSessionDownloadTaskAdapter(task: session.downloadTask(with: url))
+    }
+}
+
 class ModelDownloader: ObservableObject {
+    typealias SessionFactory = (URLSessionDownloadDelegate) -> ModelDownloadSessioning
+
     static let shared = ModelDownloader()
 
     @Published var progress: Double = 0
@@ -12,6 +55,12 @@ class ModelDownloader: ObservableObject {
     private var taskProgress: [Int: (written: Int64, total: Int64)] = [:]
     private let fileManager: FileManager
     private let modelURLProvider: () -> URL
+    private let makeDownloadSession: SessionFactory
+    private var activeDownloadSession: ModelDownloadSessioning?
+
+    var taskProgressSnapshot: [Int: (written: Int64, total: Int64)] {
+        taskProgress
+    }
 
     var modelURL: URL {
         let resolved = modelURLProvider()
@@ -37,10 +86,17 @@ class ModelDownloader: ObservableObject {
         fileManager: FileManager = .default,
         modelURLOverride: URL? = nil,
         minGGMLBytes: Int64 = 90_000_000,
-        refreshOnInit: Bool = true
+        refreshOnInit: Bool = true,
+        makeDownloadSession: @escaping SessionFactory = { delegate in
+            URLSessionDownloadSessionAdapter(
+                configuration: .default,
+                delegate: delegate
+            )
+        }
     ) {
         self.fileManager = fileManager
         self.minGGMLBytes = minGGMLBytes
+        self.makeDownloadSession = makeDownloadSession
         if let modelURLOverride {
             self.modelURLProvider = { modelURLOverride }
         } else {
@@ -77,11 +133,9 @@ class ModelDownloader: ObservableObject {
         errorMessage = nil
         taskProgress.removeAll()
 
-        let session = URLSession(
-            configuration: .default,
-            delegate: DownloadDelegate(downloader: self),
-            delegateQueue: nil
-        )
+        let delegate = DownloadDelegate(downloader: self)
+        let session = makeDownloadSession(delegate)
+        activeDownloadSession = session
 
         let taskA = session.downloadTask(with: ggmlURL)
         let taskB = session.downloadTask(with: coreMLURL)
@@ -126,6 +180,7 @@ class ModelDownloader: ObservableObject {
                 if !self.modelReady {
                     self.errorMessage = "Model download completed, but validation failed. Please retry the download."
                 }
+                self.activeDownloadSession = nil
             }
         }
     }
