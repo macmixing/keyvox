@@ -48,6 +48,9 @@ final class DictionaryStore: ObservableObject {
         loadFromDisk()
     }
 
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
+
     func add(phrase: String) throws {
         let cleanedPhrase = normalizeInput(phrase)
         guard !cleanedPhrase.isEmpty else {

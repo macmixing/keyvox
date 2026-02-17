@@ -8,6 +8,9 @@ final class TranscriptionPostProcessor {
     private let listFormattingEngine = ListFormattingEngine()
     private var dictionaryFingerprint = ""
 
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
+
     func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
         let fingerprint = fingerprint(for: entries)
         guard fingerprint != dictionaryFingerprint else { return }
