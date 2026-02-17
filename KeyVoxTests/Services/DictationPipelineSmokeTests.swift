@@ -6,6 +6,48 @@ import XCTest
 final class DictationPipelineSmokeTests: XCTestCase {
     private static var retainedServices: [PasteService] = []
 
+    func testDictionaryHintPromptGateSkipsVeryShortUtterances() {
+        XCTAssertFalse(
+            TranscriptionManager.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: false,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.28,
+                maxActiveSignalRunDuration: 0.24
+            )
+        )
+
+        XCTAssertFalse(
+            TranscriptionManager.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: false,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.62,
+                maxActiveSignalRunDuration: 0.20
+            )
+        )
+
+        XCTAssertTrue(
+            TranscriptionManager.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: false,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.65,
+                maxActiveSignalRunDuration: 0.44
+            )
+        )
+
+        XCTAssertFalse(
+            TranscriptionManager.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: true,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.70,
+                maxActiveSignalRunDuration: 0.44
+            )
+        )
+    }
+
     func testDictationPipelineSmokeEndToEndBoundaries() async throws {
         let initialSnapshot: PasteClipboardSnapshot.Snapshot = [[.string: Data("before".utf8)]]
         let dictionaryEntries = [DictionaryEntry(phrase: "Cueboard")]

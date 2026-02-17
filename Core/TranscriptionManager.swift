@@ -307,10 +307,29 @@ class TranscriptionManager: ObservableObject {
     private let defaultStopSoundDelay: TimeInterval = 0.0
     private let microphoneSilenceWarningDelay: TimeInterval = 0.5
     private let noSpeechWarningMinimumCaptureDuration = AudioSilenceGatePolicy.longTrueSilenceMinimumDuration
+    private let dictionaryHintPromptMinimumCaptureDuration: TimeInterval = 0.45
+    private let dictionaryHintPromptMinimumActiveSignalRunDuration: TimeInterval = 0.35
     
     init() {
         setupBindings()
         whisperService.warmup()
+    }
+
+    nonisolated static func shouldUseDictionaryHintPrompt(
+        lastCaptureHadActiveSignal: Bool,
+        lastCaptureWasLikelySilence: Bool,
+        lastCaptureWasLongTrueSilence: Bool,
+        lastCaptureDuration: TimeInterval,
+        maxActiveSignalRunDuration: TimeInterval,
+        minimumCaptureDuration: TimeInterval = 0.45,
+        minimumActiveSignalRunDuration: TimeInterval = 0.35
+    ) -> Bool {
+        guard lastCaptureHadActiveSignal else { return false }
+        guard !lastCaptureWasLikelySilence else { return false }
+        guard !lastCaptureWasLongTrueSilence else { return false }
+        guard lastCaptureDuration >= minimumCaptureDuration else { return false }
+        guard maxActiveSignalRunDuration >= minimumActiveSignalRunDuration else { return false }
+        return true
     }
 
     // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
@@ -468,9 +487,15 @@ class TranscriptionManager: ObservableObject {
             // Transition overlay to transcription ripples only when we have frames to process.
             OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
-            let useDictionaryHintPrompt = self.audioRecorder.lastCaptureHadActiveSignal
-                && !self.audioRecorder.lastCaptureWasLikelySilence
-                && !self.audioRecorder.lastCaptureWasLongTrueSilence
+            let useDictionaryHintPrompt = Self.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
+                lastCaptureWasLikelySilence: self.audioRecorder.lastCaptureWasLikelySilence,
+                lastCaptureWasLongTrueSilence: self.audioRecorder.lastCaptureWasLongTrueSilence,
+                lastCaptureDuration: self.audioRecorder.lastCaptureDuration,
+                maxActiveSignalRunDuration: self.audioRecorder.maxActiveSignalRunDuration,
+                minimumCaptureDuration: self.dictionaryHintPromptMinimumCaptureDuration,
+                minimumActiveSignalRunDuration: self.dictionaryHintPromptMinimumActiveSignalRunDuration
+            )
             self.dictationPipeline.run(
                 audioFrames: frames,
                 useDictionaryHintPrompt: useDictionaryHintPrompt
