@@ -4,22 +4,32 @@ import XCTest
 
 final class PasteServiceListRenderModeTests: XCTestCase {
     func testSingleLineRolesMapToInlineMode() {
-        XCTAssertTrue(PasteService.listRenderMode(forAXRole: "AXTextField") == .singleLineInline)
-        XCTAssertTrue(PasteService.listRenderMode(forAXRole: "AXSearchField") == .singleLineInline)
-        XCTAssertTrue(PasteService.listRenderMode(forAXRole: "AXComboBox") == .singleLineInline)
+        assertListRenderMode(PasteService.listRenderMode(forAXRole: "AXTextField"), equals: .singleLineInline)
+        assertListRenderMode(PasteService.listRenderMode(forAXRole: "AXSearchField"), equals: .singleLineInline)
+        assertListRenderMode(PasteService.listRenderMode(forAXRole: "AXComboBox"), equals: .singleLineInline)
     }
 
     func testUnknownOrMultilineRolesDefaultToMultiline() {
-        XCTAssertTrue(PasteService.listRenderMode(forAXRole: "AXTextArea") == .multiline)
-        XCTAssertTrue(PasteService.listRenderMode(forAXRole: nil) == .multiline)
+        assertListRenderMode(PasteService.listRenderMode(forAXRole: "AXTextArea"), equals: .multiline)
+        assertListRenderMode(PasteService.listRenderMode(forAXRole: nil), equals: .multiline)
     }
 
     func testMessagesBundleOverrideForcesMultiline() {
-        XCTAssertTrue(
+        assertListRenderMode(
             PasteService.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.apple.MobileSMS"
-            ) == .multiline
+            ),
+            equals: .multiline
         )
+    }
+
+    private func assertListRenderMode(_ actual: ListRenderMode, equals expected: ListRenderMode) {
+        switch (actual, expected) {
+        case (.multiline, .multiline), (.singleLineInline, .singleLineInline):
+            XCTAssertTrue(true)
+        default:
+            XCTFail("Unexpected list render mode")
+        }
     }
 }

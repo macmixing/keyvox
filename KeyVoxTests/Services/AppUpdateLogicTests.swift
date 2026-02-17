@@ -23,8 +23,17 @@ final class AppUpdateLogicTests: XCTestCase {
     }
 
     func testMapReleaseInfoPrefersDmgAsset() throws {
-        let fixture = try loadFixtureData(named: "latest_with_dmg")
-        let release = try JSONDecoder().decode(GitHubLatestReleaseResponse.self, from: fixture)
+        let release = GitHubLatestReleaseResponse(
+            tagName: "v1.2.0",
+            body: "Release notes",
+            htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
+            assets: [
+                GitHubReleaseAsset(
+                    name: "KeyVox-1.2.0.dmg",
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0.dmg"
+                )
+            ]
+        )
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped != nil)
@@ -33,8 +42,12 @@ final class AppUpdateLogicTests: XCTestCase {
     }
 
     func testMapReleaseInfoFallsBackToHtmlWhenNoDmg() throws {
-        let fixture = try loadFixtureData(named: "latest_without_dmg")
-        let release = try JSONDecoder().decode(GitHubLatestReleaseResponse.self, from: fixture)
+        let release = GitHubLatestReleaseResponse(
+            tagName: "v1.2.0",
+            body: "Release notes",
+            htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
+            assets: []
+        )
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped != nil)

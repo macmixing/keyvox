@@ -11,7 +11,11 @@ final class OverlayFlingPhysicsTests: XCTestCase {
 
         let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
 
-        XCTAssertTrue(impact?.edge == .right)
+        guard let edge = impact?.edge else {
+            XCTFail("Expected impact edge")
+            return
+        }
+        assertEdge(edge, equals: .right)
         XCTAssertTrue(abs((impact?.originAtImpact.x ?? 0) - bounds.maxX) < 0.001)
     }
 
@@ -22,7 +26,11 @@ final class OverlayFlingPhysicsTests: XCTestCase {
 
         let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
 
-        XCTAssertTrue(impact?.edge == .top)
+        guard let edge = impact?.edge else {
+            XCTFail("Expected impact edge")
+            return
+        }
+        assertEdge(edge, equals: .top)
     }
 
     func testNearZeroVelocityHasNoImpact() {
@@ -86,5 +94,14 @@ final class OverlayFlingPhysicsTests: XCTestCase {
 
         XCTAssertTrue(abs(reflected.dx - expectedUnit.dx) < 0.0001)
         XCTAssertTrue(abs(reflected.dy - expectedUnit.dy) < 0.0001)
+    }
+
+    private func assertEdge(_ actual: FlingImpactEdge, equals expected: FlingImpactEdge) {
+        switch (actual, expected) {
+        case (.left, .left), (.right, .right), (.bottom, .bottom), (.top, .top):
+            XCTAssertTrue(true)
+        default:
+            XCTFail("Unexpected edge: \(actual), expected: \(expected)")
+        }
     }
 }

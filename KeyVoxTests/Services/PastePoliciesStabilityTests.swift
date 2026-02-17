@@ -29,36 +29,41 @@ final class PastePoliciesStabilityTests: XCTestCase {
     }
 
     func testListMultilineOverridePolicyMatchesPreFixBehavior() {
-        XCTAssertTrue(
+        assertListRenderMode(
             PastePolicies.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.apple.MobileSMS"
-            ) == .multiline
+            ),
+            equals: .multiline
         )
 
-        XCTAssertTrue(
+        assertListRenderMode(
             PastePolicies.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.microsoft.VSCode"
-            ) == .singleLineInline
+            ),
+            equals: .singleLineInline
         )
-        XCTAssertTrue(
+        assertListRenderMode(
             PastePolicies.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.openai.codex"
-            ) == .singleLineInline
+            ),
+            equals: .singleLineInline
         )
-        XCTAssertTrue(
+        assertListRenderMode(
             PastePolicies.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.google.antigravity"
-            ) == .singleLineInline
+            ),
+            equals: .singleLineInline
         )
-        XCTAssertTrue(
+        assertListRenderMode(
             PastePolicies.listRenderMode(
                 forAXRole: "AXTextField",
                 bundleID: "com.exafunction.windsurf"
-            ) == .singleLineInline
+            ),
+            equals: .singleLineInline
         )
     }
 
@@ -74,5 +79,14 @@ final class PastePoliciesStabilityTests: XCTestCase {
                 frameworkNames: ["App.framework", "Sparkle.framework", "WebKit.framework"]
             )
         )
+    }
+
+    private func assertListRenderMode(_ actual: ListRenderMode, equals expected: ListRenderMode) {
+        switch (actual, expected) {
+        case (.multiline, .multiline), (.singleLineInline, .singleLineInline):
+            XCTAssertTrue(true)
+        default:
+            XCTFail("Unexpected list render mode")
+        }
     }
 }
