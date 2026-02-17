@@ -116,6 +116,8 @@
 		AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */; };
 		AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */; };
 		AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */; };
+		AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */; };
+		AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 /* End PBXBuildFile section */
@@ -242,6 +244,8 @@
 		AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerCompatibilityTests.swift; sourceTree = "<group>"; };
 		AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePoliciesStabilityTests.swift; sourceTree = "<group>"; };
 		AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDecisionMatrixTests.swift; sourceTree = "<group>"; };
+		AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackExecutorTests.swift; sourceTree = "<group>"; };
+		AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteWarningGuardrailTests.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -546,8 +550,10 @@
 				AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */,
 				AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */,
 				AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */,
+				AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */,
 				AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */,
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
+				AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */,
 				AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */,
 			);
 			path = Services;
@@ -805,6 +811,8 @@
 				AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */,
 				AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */,
 				AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */,
+				AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */,
+				AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */,
 				AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */,
 				AB3000172F60000100AA0001 /* UpdateFeedResolverTests.swift in Sources */,
 				AB3000182F60000100AA0001 /* ListFormattingEngineTests.swift in Sources */,
