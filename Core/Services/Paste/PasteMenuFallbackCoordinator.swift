@@ -82,8 +82,10 @@ final class PasteMenuFallbackCoordinator {
                 didTypeLeadingSpaces: didTypeLeadingSpaces
             )
         } else {
+            let liveVerificationProcessID =
+                menuFallbackExecutor.frontmostProcessIDOnMainThread() ?? targetAppIdentity?.pid
             let liveValueChangeSession = menuFallbackExecutor.startLiveValueChangeVerificationSession(
-                processID: targetAppIdentity?.pid
+                processID: liveVerificationProcessID
             )
             defer {
                 menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSession)

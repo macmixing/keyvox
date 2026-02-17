@@ -338,6 +338,7 @@ private final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
 
 private final class NoopFallbackExecutor: PasteMenuFallbackExecuting {
     func pasteViaMenuBarOnMainThread() -> PasteMenuFallbackAttemptResult { .unavailable }
+    func frontmostProcessIDOnMainThread() -> pid_t? { nil }
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? { nil }
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool {
         _ = context

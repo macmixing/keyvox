@@ -2,6 +2,7 @@ import Cocoa
 
 protocol PasteMenuFallbackExecuting {
     func pasteViaMenuBarOnMainThread() -> PasteMenuFallbackAttemptResult
+    func frontmostProcessIDOnMainThread() -> pid_t?
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext?
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool
     func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState?
@@ -47,6 +48,18 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
             outcome = pasteViaMenuBar()
         }
         return outcome
+    }
+
+    func frontmostProcessIDOnMainThread() -> pid_t? {
+        if Thread.isMainThread {
+            return frontmostProcessID()
+        }
+
+        var processID: pid_t?
+        DispatchQueue.main.sync {
+            processID = frontmostProcessID()
+        }
+        return processID
     }
 
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? {
@@ -270,5 +283,9 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
 
     private func elementHash(_ element: AXUIElement) -> UInt {
         UInt(bitPattern: Unmanaged.passUnretained(element).toOpaque())
+    }
+
+    private func frontmostProcessID() -> pid_t? {
+        NSWorkspace.shared.frontmostApplication?.processIdentifier
     }
 }
