@@ -53,13 +53,21 @@ extension SettingsView {
                             .foregroundColor(.red)
                     }
 
-                    if dictionaryStore.entries.isEmpty {
+                    let sortedEntries = dictionaryStore.entries.sorted {
+                        let order = $0.phrase.localizedCaseInsensitiveCompare($1.phrase)
+                        if order == .orderedSame {
+                            return $0.id.uuidString < $1.id.uuidString
+                        }
+                        return order == .orderedAscending
+                    }
+
+                    if sortedEntries.isEmpty {
                         Text("No custom words added yet.")
                             .font(.custom("Kanit Medium", size: 12))
                             .foregroundColor(.secondary)
                     } else {
                         VStack(spacing: 8) {
-                            ForEach(dictionaryStore.entries) { entry in
+                            ForEach(sortedEntries) { entry in
                                 DictionaryEntryRow(
                                     entry: entry,
                                     onEdit: { dictionaryEditorMode = .edit(entry) },
