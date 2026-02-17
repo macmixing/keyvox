@@ -110,6 +110,13 @@ class PasteService {
                         didTypeLeadingSpaces: didTypeLeadingSpaces
                     )
                 } else {
+                    let liveValueChangeSession = self.menuFallbackExecutor.startLiveValueChangeVerificationSession(
+                        processID: targetAppIdentity?.pid
+                    )
+                    defer {
+                        self.menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSession)
+                    }
+
                     let menuAttemptResult = self.menuFallbackExecutor.pasteViaMenuBarOnMainThread()
                     menuAttempt = menuAttemptResult
                     var trustWithoutAXVerification = false
@@ -134,6 +141,11 @@ class PasteService {
                             } else {
                                 verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
                                     initialUndoState: initialUndoState
+                                )
+                            }
+                            if !verificationPassed {
+                                verificationPassed = self.menuFallbackExecutor.verifyInsertionUsingLiveValueChangeSession(
+                                    liveValueChangeSession
                                 )
                             }
                         }
