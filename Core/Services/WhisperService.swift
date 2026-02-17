@@ -60,6 +60,7 @@ class WhisperService: ObservableObject {
     func transcribe(
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool = true,
+        enableAutoParagraphs: Bool = true,
         completion: @escaping (String?) -> Void
     ) {
         // Hardening: ensure only one transcription runs at a time
@@ -145,7 +146,10 @@ class WhisperService: ObservableObject {
                     return
                 }
                 
-                let text = chunkTexts.joined(separator: "\n\n").trimmingCharacters(in: .whitespacesAndNewlines)
+                let paragraphSeparator = enableAutoParagraphs ? "\n\n" : " "
+                let text = chunkTexts
+                    .joined(separator: paragraphSeparator)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
                 let hasSegments = !transcribedSegments.isEmpty
                 let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
                     $0.noSpeechProbability >= self.noSpeechSegmentProbabilityThreshold
@@ -162,6 +166,7 @@ class WhisperService: ObservableObject {
                 #if DEBUG
                 print(
                     "WhisperService paragraphing: segments=\(transcribedSegments.count) " +
+                    "enabled=\(enableAutoParagraphs) " +
                     "hasParagraphBreaks=\(finalText.contains("\n\n"))"
                 )
                 #endif
@@ -200,7 +205,7 @@ class WhisperService: ObservableObject {
         Task {
             do {
                 let audioFrames = try loadAndResample(url: audioURL)
-                transcribe(audioFrames: audioFrames, completion: completion)
+                transcribe(audioFrames: audioFrames, enableAutoParagraphs: true, completion: completion)
             } catch {
                 completion(nil)
             }

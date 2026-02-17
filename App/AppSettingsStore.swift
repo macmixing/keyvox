@@ -41,6 +41,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var autoParagraphsEnabled: Bool {
+        didSet {
+            defaults.set(autoParagraphsEnabled, forKey: UserDefaultsKeys.autoParagraphsEnabled)
+        }
+    }
+
     @Published var isSoundEnabled: Bool {
         didSet {
             defaults.set(isSoundEnabled, forKey: UserDefaultsKeys.isSoundEnabled)
@@ -111,6 +117,8 @@ final class AppSettingsStore: ObservableObject {
         } else {
             triggerBinding = .rightOption
         }
+
+        autoParagraphsEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
 
         isSoundEnabled = defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
         if let storedVolume = defaults.object(forKey: UserDefaultsKeys.soundVolume) as? NSNumber {
