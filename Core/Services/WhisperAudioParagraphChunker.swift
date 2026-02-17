@@ -23,7 +23,7 @@ struct WhisperAudioParagraphChunker {
         init(
             windowSize: Int = 1_600,               // 100ms at 16kHz
             minChunkFrames: Int = 32_000,          // 2s
-            minSilentWindowsForSplit: Int = 10,    // 1s
+            minSilentWindowsForSplit: Int = 15,    // 1.5s Silence before paragraph break
             ambientFloorPercentile: Float = 0.20,
             minimumSilenceThreshold: Float = 0.0025,
             silenceThresholdMultiplier: Float = 2.2
