@@ -177,6 +177,49 @@ final class DictationPipelineSmokeTests: XCTestCase {
         XCTAssertEqual(recovery.startCalls, 0)
     }
 
+    func testDictationPipelineSuppressesDictionaryPromptEchoHallucination() async {
+        let dictionaryEntries = [
+            DictionaryEntry(phrase: "MiGo"),
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+            DictionaryEntry(phrase: "main"),
+            DictionaryEntry(phrase: "cue"),
+            DictionaryEntry(phrase: "subcue")
+        ]
+
+        let oneWordSpam = """
+        MiGo, KeyVox, KeyVox, KeyVox, Dom Esposito, Cueboard, main, cue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue
+        """
+        let longSilenceNoiseSpam = """
+        Vox, KeyVox, KeyVox, KeyVox, Dom Esposito, Cueboard, main, cue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, subcue, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee, ee
+        """
+
+        for spam in [oneWordSpam, longSilenceNoiseSpam] {
+            let transcription = StubTranscriptionProvider(result: spam)
+            var spokenWordRecords: [String] = []
+            var pastedPayloads: [String] = []
+
+            let pipeline = DictationPipeline(
+                transcriptionProvider: transcription,
+                postProcessor: TranscriptionPostProcessor(),
+                dictionaryEntriesProvider: { dictionaryEntries },
+                autoParagraphsEnabledProvider: { true },
+                listRenderModeProvider: { .multiline },
+                recordSpokenWords: { spokenWordRecords.append($0) },
+                pasteText: { pastedPayloads.append($0) }
+            )
+
+            let result = await runPipeline(pipeline, useDictionaryHintPrompt: true)
+
+            XCTAssertTrue(result.wasLikelyNoSpeech)
+            XCTAssertEqual(result.finalText, "")
+            XCTAssertEqual(spokenWordRecords, [])
+            XCTAssertEqual(pastedPayloads, [])
+            XCTAssertEqual(transcription.useDictionaryHintPromptFlags, [true])
+        }
+    }
+
     private func runPipeline(
         _ pipeline: DictationPipeline,
         frames: [Float] = [0.1, 0.2, 0.3],
@@ -224,6 +267,7 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
     private let result: String?
     var lastResultWasLikelyNoSpeech: Bool
     private(set) var autoParagraphFlags: [Bool] = []
+    private(set) var useDictionaryHintPromptFlags: [Bool] = []
 
     init(result: String?, lastResultWasLikelyNoSpeech: Bool = false) {
         self.result = result
@@ -237,7 +281,7 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         completion: @escaping (String?) -> Void
     ) {
         _ = audioFrames
-        _ = useDictionaryHintPrompt
+        useDictionaryHintPromptFlags.append(useDictionaryHintPrompt)
         autoParagraphFlags.append(enableAutoParagraphs)
         completion(result)
     }
