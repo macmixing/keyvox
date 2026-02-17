@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State internal var showLegal = false
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
     @State internal var dictionaryDeleteTarget: DictionaryEntry?
+    @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
 
     init(initialTab: SettingsTab = .general) {
         _selectedTab = State(initialValue: initialTab)

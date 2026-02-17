@@ -1,5 +1,12 @@
 import SwiftUI
 
+enum DictionarySortMode: String, CaseIterable, Identifiable {
+    case alphabetical = "A-Z"
+    case recentlyAdded = "Recently Added"
+
+    var id: Self { self }
+}
+
 extension SettingsView {
     var dictionarySettings: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -53,21 +60,37 @@ extension SettingsView {
                             .foregroundColor(.red)
                     }
 
-                    let sortedEntries = dictionaryStore.entries.sorted {
-                        let order = $0.phrase.localizedCaseInsensitiveCompare($1.phrase)
-                        if order == .orderedSame {
-                            return $0.id.uuidString < $1.id.uuidString
+                    let displayedEntries = dictionarySortMode == .alphabetical
+                        ? dictionaryStore.entries.sorted {
+                            let order = $0.phrase.localizedCaseInsensitiveCompare($1.phrase)
+                            if order == .orderedSame {
+                                return $0.id.uuidString < $1.id.uuidString
+                            }
+                            return order == .orderedAscending
                         }
-                        return order == .orderedAscending
-                    }
+                        : Array(dictionaryStore.entries.reversed())
 
-                    if sortedEntries.isEmpty {
+                    if displayedEntries.isEmpty {
                         Text("No custom words added yet.")
                             .font(.custom("Kanit Medium", size: 12))
                             .foregroundColor(.secondary)
                     } else {
+                        HStack {
+                            Spacer()
+                            Picker("", selection: $dictionarySortMode) {
+                                ForEach(DictionarySortMode.allCases) { mode in
+                                    Text(mode.rawValue).tag(mode)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(width: 220)
+                            .controlSize(.small)
+                            .labelsHidden()
+                            Spacer()
+                        }
+
                         VStack(spacing: 8) {
-                            ForEach(sortedEntries) { entry in
+                            ForEach(displayedEntries) { entry in
                                 DictionaryEntryRow(
                                     entry: entry,
                                     onEdit: { dictionaryEditorMode = .edit(entry) },
