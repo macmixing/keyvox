@@ -108,22 +108,27 @@ struct ListPatternDetector {
         guard !markers.isEmpty else { return nil }
         let nsText = text as NSString
 
-        var best: [Marker] = []
-        var current: [Marker] = [markers[0]]
+        // Build best monotonic subsequence ending at each marker, so we can
+        // skip noise markers (e.g. incidental "one" in prose) and still keep
+        // the intended 1->2->3 list flow.
+        var bestEndingAt = Array(repeating: [Marker](), count: markers.count)
 
-        for marker in markers.dropFirst() {
-            if let previous = current.last, marker.number == previous.number + 1 {
-                current.append(marker)
-            } else {
-                if shouldPrefer(run: current, over: best, in: nsText) {
-                    best = current
+        for i in markers.indices {
+            var bestForCurrent: [Marker] = [markers[i]]
+            for j in 0..<i where markers[i].number == markers[j].number + 1 {
+                let previousRun = bestEndingAt[j]
+                guard !previousRun.isEmpty else { continue }
+                let candidate = previousRun + [markers[i]]
+                if shouldPrefer(run: candidate, over: bestForCurrent, in: nsText) {
+                    bestForCurrent = candidate
                 }
-                current = [marker]
             }
+            bestEndingAt[i] = bestForCurrent
         }
 
-        if shouldPrefer(run: current, over: best, in: nsText) {
-            best = current
+        var best: [Marker] = []
+        for run in bestEndingAt where shouldPrefer(run: run, over: best, in: nsText) {
+            best = run
         }
 
         return best.count >= 2 ? best : nil
@@ -245,7 +250,7 @@ struct ListPatternDetector {
 
         // Prefer explicit sentence break before common post-list transition cues.
         if let match = normalized.range(
-            of: #"(?i)^(.+?[.!?])\s+((?:and|also|now|okay|ok|so|then|next|finally|after that|anyway|anyways)\b.*)$"#,
+            of: #"(?i)^(.+?[.!?])\s+((?:and|also|now|okay|ok|so|then|next|finally|after that|after all that|anyway|anyways)\b.*)$"#,
             options: .regularExpression
         ) {
             let full = String(normalized[match])
@@ -261,7 +266,7 @@ struct ListPatternDetector {
         // "... <last item>, and <new thought>"
         if let split = firstRegexSplit(
             normalized,
-            pattern: #"(?i)^(.{8,}?),\s+((?:and\s+(?:now|then|i|we|everything|that|this|there)|now|okay|ok|so|anyway|anyways|also)\b.*)$"#
+            pattern: #"(?i)^(.{8,}?),\s+((?:and\s+(?:now|then|i|we|everything|that|this|there|by|after)|after all that|now|okay|ok|so|anyway|anyways|also)\b.*)$"#
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
@@ -280,7 +285,14 @@ struct ListPatternDetector {
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 2 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
+            let itemAlreadyContainsSentenceBoundary = split.0.range(
+                of: #"(?i)[.!?]\s+\S"#,
+                options: .regularExpression
+            ) != nil
+            if itemWordCount >= 2 &&
+                trailingWordCount >= 3 &&
+                !startsLikeListMarker(split.1) &&
+                !itemAlreadyContainsSentenceBoundary {
                 return (
                     restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
                     restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
@@ -291,7 +303,7 @@ struct ListPatternDetector {
         // Fallback for speech without hard punctuation ("... and now ...").
         if let split = firstRegexSplit(
             normalized,
-            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+(?:now|then|i|we)|now|okay|ok|so|anyway|anyways|also|i\s+(?:need|want|have|should)|we\s+(?:need|want|have|should))\s+.+)$"#
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+(?:now|then|i|we|by|after)|after all that|now|okay|ok|so|anyway|anyways|also|i\s+(?:need|want|have|should)|we\s+(?:need|want|have|should))\s+.+)$"#
         ) {
             let itemWordCount = split.0.split(separator: " ").count
             let trailingWordCount = split.1.split(separator: " ").count
