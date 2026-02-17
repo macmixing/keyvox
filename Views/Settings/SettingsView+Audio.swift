@@ -108,6 +108,7 @@ extension SettingsView {
                     }
                 }
             }
+            .padding(.top, 12)
         }
     }
     

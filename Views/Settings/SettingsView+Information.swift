@@ -22,7 +22,6 @@ extension SettingsView {
                     }
                 }
             }
-            .padding(.bottom, 12)
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 10) {
