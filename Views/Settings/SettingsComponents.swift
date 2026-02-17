@@ -102,6 +102,7 @@ struct SettingsRow<Accessory: View>: View {
             .layoutPriority(1)
             
             accessory
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }

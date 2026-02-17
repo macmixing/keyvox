@@ -80,6 +80,11 @@
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KVX_MODEL_DOWNLOAD_PREVIEW_ERROR"
+            value = "low_disk"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

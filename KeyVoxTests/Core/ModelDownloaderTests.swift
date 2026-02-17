@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import Darwin
 @testable import KeyVox
 
 @MainActor
@@ -90,7 +91,14 @@ final class ModelDownloaderTests: XCTestCase {
         let dir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        let downloader = makeDownloader(in: dir, minBytes: 10)
+        let sessionFactory = RecordingSessionFactory(taskIDs: [1, 2])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
 
         downloader.updateTaskProgress(id: 1, written: 25, total: 100)
         downloader.updateTaskProgress(id: 2, written: 50, total: 100)
@@ -175,9 +183,113 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertEqual(sessionFactory.createdSession.downloadURLs.count, 2)
     }
 
+    func testDownloadBaseModelStopsBeforeStartingWhenDiskSpaceIsInsufficient() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [401, 402])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            requiredDownloadBytes: 1_000,
+            freeSpaceProvider: { _ in 200 },
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+
+        XCTAssertFalse(downloader.isDownloading)
+        XCTAssertEqual(downloader.progress, 0, accuracy: 0.0001)
+        XCTAssertEqual(sessionFactory.makeCount, 0)
+        XCTAssertTrue(downloader.taskProgressSnapshot.isEmpty)
+        XCTAssertNotNil(downloader.errorMessage)
+        XCTAssertTrue(downloader.errorMessage?.contains("Not enough free disk space") == true)
+    }
+
+    func testHandleDownloadFailureResetsDownloadStateAndShowsLowDiskMessage() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [501, 502])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+        downloader.updateTaskProgress(id: 501, written: 40, total: 100)
+        downloader.updateTaskProgress(id: 502, written: 20, total: 100)
+        try await waitForCondition { downloader.progress >= 0.30 }
+
+        let task = URLSession(configuration: .ephemeral).dataTask(with: URL(string: "https://example.com")!)
+        let error = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))
+        downloader.handleDownloadFailure(task: task, error: error)
+
+        try await waitForCondition {
+            !downloader.isDownloading &&
+            downloader.progress == 0 &&
+            downloader.taskProgressSnapshot.isEmpty &&
+            downloader.errorMessage != nil
+        }
+
+        XCTAssertTrue(downloader.errorMessage?.contains("low disk space") == true)
+    }
+
+    func testDownloadBaseModelPreviewLowDiskErrorFromEnvironmentSkipsNetwork() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [601, 602])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            environmentProvider: { ["KVX_MODEL_DOWNLOAD_PREVIEW_ERROR": "low_disk"] },
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+
+        XCTAssertFalse(downloader.isDownloading)
+        XCTAssertEqual(downloader.progress, 0, accuracy: 0.0001)
+        XCTAssertTrue(downloader.taskProgressSnapshot.isEmpty)
+        XCTAssertEqual(sessionFactory.makeCount, 0)
+        XCTAssertEqual(
+            downloader.errorMessage,
+            "Model download failed due to low disk space. Free space and try again."
+        )
+    }
+
+    func testDownloadBaseModelPreviewGenericErrorFromEnvironmentSkipsNetwork() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [701, 702])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            environmentProvider: { ["KVX_MODEL_DOWNLOAD_PREVIEW_ERROR": "generic"] },
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+
+        XCTAssertFalse(downloader.isDownloading)
+        XCTAssertEqual(downloader.progress, 0, accuracy: 0.0001)
+        XCTAssertTrue(downloader.taskProgressSnapshot.isEmpty)
+        XCTAssertEqual(sessionFactory.makeCount, 0)
+        XCTAssertEqual(
+            downloader.errorMessage,
+            "Model download failed. Check your network/storage and retry."
+        )
+    }
+
     private func makeDownloader(
         in directory: URL,
         minBytes: Int64,
+        requiredDownloadBytes: Int64 = 220_000_000,
+        freeSpaceProvider: @escaping ModelDownloader.FreeSpaceProvider = { _ in nil },
+        environmentProvider: @escaping ModelDownloader.EnvironmentProvider = { [:] },
         makeDownloadSession: @escaping ModelDownloader.SessionFactory = { delegate in
             RecordingSessionFactory(taskIDs: [1, 2]).makeSession(delegate: delegate)
         }
@@ -191,6 +303,9 @@ final class ModelDownloaderTests: XCTestCase {
             modelURLOverride: modelURL,
             minGGMLBytes: minBytes,
             refreshOnInit: false,
+            requiredDownloadBytes: requiredDownloadBytes,
+            freeSpaceProvider: freeSpaceProvider,
+            environmentProvider: environmentProvider,
             makeDownloadSession: makeDownloadSession
         )
     }
