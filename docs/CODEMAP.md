@@ -44,6 +44,7 @@ KeyVox/
 │   │   │   ├── PasteClipboardSnapshot.swift
 │   │   │   ├── PasteFailureRecoveryCoordinator.swift
 │   │   │   ├── PasteMenuFallbackExecutor.swift
+│   │   │   ├── PasteMenuFallbackCoordinator.swift
 │   │   │   ├── PasteMenuScanner.swift
 │   │   │   ├── PasteModels.swift
 │   │   │   ├── PastePolicies.swift
@@ -336,6 +337,9 @@ KeyVox/
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
   - Orchestrates menu fallback execution and verification decisions.
   - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
+- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`
+  - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
+  - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
 - `Core/Services/Paste/PasteMenuScanner.swift`
   - Encapsulates menu traversal/discovery for Paste and Undo menu items.
   - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.

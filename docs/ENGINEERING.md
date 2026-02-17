@@ -30,6 +30,7 @@ KeyVox is organized by responsibility:
 - `Core/TextProcessing/ListFormattingEngine.swift`: Deterministic list detection/rendering.
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
+- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, and fallback transport normalization.
 - `Core/Services/Paste/PasteMenuScanner.swift`: Menu-bar traversal and Paste/Undo menu item discovery helpers.
 - `Core/Services/Paste/PasteAXLiveSession.swift`: Live AX observer session for value-change verification.
 - `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`: Paste failure-recovery lifecycle.

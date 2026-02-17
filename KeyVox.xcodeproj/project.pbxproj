@@ -70,6 +70,7 @@
 		9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000082F4B000100AA0001 /* PastePolicies.swift */; };
 		9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */; };
 		9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */; };
+		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
 		9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000032F4C000100AA0001 /* OverlayMotionController.swift */; };
 		9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */; };
@@ -200,6 +201,7 @@
 		9A1000082F4B000100AA0001 /* PastePolicies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePolicies.swift; sourceTree = "<group>"; };
 		9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuScanner.swift; sourceTree = "<group>"; };
 		9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAXLiveSession.swift; sourceTree = "<group>"; };
+		9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinator.swift; sourceTree = "<group>"; };
 		9B2000022F4C000100AA0001 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		9B2000032F4C000100AA0001 /* OverlayMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayMotionController.swift; sourceTree = "<group>"; };
 		9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistence.swift; sourceTree = "<group>"; };
@@ -463,6 +465,7 @@
 					8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */,
 					9A1000022F4B000100AA0001 /* PasteModels.swift */,
 					9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */,
+					9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */,
 					9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */,
 					9A1000082F4B000100AA0001 /* PastePolicies.swift */,
 					8E6D05C82F3C51D6003BD458 /* PasteService.swift */,
@@ -785,9 +788,10 @@
 				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
 					9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
 					9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */,
-					9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */,
-					9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */,
-					9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */,
+						9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */,
+						9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */,
+						9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */,
+						9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */,
 					9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */,
 				9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */,
 				9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */,
