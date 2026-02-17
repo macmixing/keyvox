@@ -1,6 +1,11 @@
 import Cocoa
 
-final class PasteAXLiveSession {
+protocol PasteAXLiveSessioning {
+    func waitForSignal(timeout: TimeInterval, pollInterval: TimeInterval) -> Bool
+    func close()
+}
+
+final class PasteAXLiveSession: PasteAXLiveSessioning {
     private let processID: pid_t
     private var observer: AXObserver?
     private let runLoopSource: CFRunLoopSource

@@ -26,6 +26,10 @@ jobs:
             -resultBundlePath /tmp/keyvox-tests.xcresult \
             test
 
+      - name: Publish coverage summary
+        run: |
+          Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult >> "$GITHUB_STEP_SUMMARY"
+
       - name: Enforce core coverage
         run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
 

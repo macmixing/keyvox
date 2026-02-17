@@ -1,10 +1,10 @@
 import Foundation
 
 final class PasteSpacingHeuristics {
-    private let axInspector: PasteAXInspector
+    private let axInspector: PasteAXInspecting
     private let heuristicTTL: TimeInterval
 
-    init(axInspector: PasteAXInspector, heuristicTTL: TimeInterval) {
+    init(axInspector: PasteAXInspecting, heuristicTTL: TimeInterval) {
         self.axInspector = axInspector
         self.heuristicTTL = heuristicTTL
     }
