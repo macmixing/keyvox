@@ -19,6 +19,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 
 - 🎙️ Hold-to-talk dictation with optional hands-free mode
 - ⚙️ Configurable trigger binding (Option, Command, Control, or Fn)
+- 📓 Optional auto-paragraph splitting for multiline dictation
 - 🧾 Custom dictionary with phonetic-aware matching
 - 🧱 Deterministic list formatting and safe text post-processing
 - 📍 Draggable recording overlay with persisted position
@@ -48,6 +49,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 2. Hold trigger, speak, release to transcribe and insert.
 3. Hold **Shift** while releasing to continue recording hands-free.
 4. Press **Esc** to cancel an active recording/transcription session.
+5. (Optional) In Settings > General, keep **Paragraphs** enabled to split multiline dictation on pauses.
 
 ## Troubleshooting
 
@@ -60,8 +62,8 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 
 ## Documentation
 
-- 📘 Engineering details: [`docs/ENGINEERING.md`](docs/ENGINEERING.md)
-- 🗺️ File/component map: [`docs/CODEMAP.md`](docs/CODEMAP.md)
+- 📘 Engineering details: [`Docs/ENGINEERING.md`](Docs/ENGINEERING.md)
+- 🗺️ File/component map: [`Docs/CODEMAP.md`](Docs/CODEMAP.md)
 - 📜 License terms: [`LICENSE.md`](LICENSE.md)
 - 📎 Third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 

@@ -8,7 +8,7 @@ KeyVox is organized by responsibility:
 
 - `App/KeyVoxApp.swift`: App entry point, menu bar scene, and window lifecycle.
 - `App/AppSettingsStore.swift`: Central persisted settings owner (`triggerBinding`, `autoParagraphsEnabled`, sound, onboarding, update prompts, weekly words).
-- `Core/TranscriptionManager.swift`: Recording/transcription state orchestration.
+- `Core/TranscriptionManager.swift`: Recording/transcription state orchestration plus internal `DictationPipeline` boundary used by smoke/integration tests.
 - `Core/Audio/AudioRecorder.swift`: Recorder state holder and public start/stop flow.
 - `Core/Audio/AudioRecorder+Session.swift`: Capture session/device lifecycle.
 - `Core/Audio/AudioRecorder+Streaming.swift`: Sample conversion/downsampling and live signal state.

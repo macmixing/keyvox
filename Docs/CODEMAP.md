@@ -186,7 +186,7 @@ KeyVox/
 │       └── verify_licenses.sh
 ├── .github/workflows/
 │   └── tests.yml
-├── docs/
+├── Docs/
 │   ├── CODEMAP.md
 │   └── ENGINEERING.md
 ├── KeyVox.xcodeproj/
@@ -215,6 +215,7 @@ KeyVox/
 - `App/KeyVoxApp.swift`
   - App entry point and menu bar scene.
   - Owns onboarding/settings windows via `WindowManager`.
+  - Cancels app termination once to close Settings first when the Settings window is visible.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, weekly word count).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -233,6 +234,7 @@ KeyVox/
 
 - `Core/TranscriptionManager.swift`
   - Orchestrates recording, transcription, and paste.
+  - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
 - `Core/KeyboardMonitor.swift`
@@ -403,6 +405,8 @@ KeyVox/
   - Accessibility step lowers onboarding z-order during system prompt flow and restores floating state on grant.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
+- `Views/Settings/SettingsView+ModelDictionary.swift`
+  - Dictionary management UI plus A-Z/Recently Added list sort toggle (hidden when no entries exist).
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`
