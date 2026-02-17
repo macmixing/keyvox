@@ -52,6 +52,7 @@ KeyVox/
 │   │   │   └── PasteSpacingHeuristics.swift
 │   │   ├── UpdatePromptPresenting.swift
 │   │   ├── UpdateFeedConfig.swift
+│   │   ├── WhisperAudioParagraphChunker.swift
 │   │   └── WhisperService.swift
 │   ├── AI/
 │   │   ├── Dictionary/
@@ -160,8 +161,11 @@ KeyVox/
 │   ├── README.md
 │   ├── ExploreAX.swift
 │   ├── ExploreAXApps.swift
+│   ├── ExplorePasteSignal.sh
+│   ├── ObservePasteAXNotifications.swift
 │   ├── Quality/
-│   │   └── check_core_coverage.sh
+│   │   ├── check_core_coverage.sh
+│   │   └── coverage_summary.sh
 │   ├── UpdateFeed/
 │   │   ├── configure_local_feed.sh
 │   │   └── update-feed.override.example.json
@@ -182,11 +186,14 @@ KeyVox/
 │       └── verify_licenses.sh
 ├── .github/workflows/
 │   └── tests.yml
+├── docs/
+│   ├── CODEMAP.md
+│   └── ENGINEERING.md
 ├── KeyVox.xcodeproj/
 ├── LICENSE.md
 ├── THIRD_PARTY_NOTICES.md
 ├── README.md
-└── CODEMAP.md
+└── release_dmg_notarize.sh
 ```
 
 ## Core Runtime Flow
@@ -194,11 +201,12 @@ KeyVox/
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape state.
 2. `Core/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
-4. `Core/Services/WhisperService.swift` transcribes locally through `KeyVoxWhisper`.
-5. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, then deterministic list formatting.
-6. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
-7. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
-8. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
+4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
+5. `Core/Services/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
+6. `Core/TranscriptionPostProcessor.swift` applies dictionary correction, list formatting, and final whitespace normalization by render mode.
+7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
+8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
+9. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
 
 ## Key Components
 
@@ -208,7 +216,7 @@ KeyVox/
   - App entry point and menu bar scene.
   - Owns onboarding/settings windows via `WindowManager`.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, sound settings, onboarding, selected microphone, update prompt timestamps).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, weekly word count).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
@@ -265,9 +273,13 @@ KeyVox/
 
 ### Service Layer (`Core/Services`)
 
+- `Core/Services/WhisperAudioParagraphChunker.swift`
+  - Splits long captures into paragraph-sized chunks using deterministic RMS silence windows.
+  - Uses configurable chunk-size and silence-run guardrails to avoid over-splitting.
 - `Core/Services/WhisperService.swift`
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
+  - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
 
 ### Post-Processing (`Core` + `Core/AI` + `Core/TextProcessing`)
 
@@ -323,6 +335,10 @@ KeyVox/
   - Single-app (frontmost) Accessibility tree and candidate diagnostics for paste verification troubleshooting.
 - `Tools/ExploreAXApps.swift`
   - Multi-app Accessibility scanner for comparing AX candidate quality across running apps.
+- `Tools/ObservePasteAXNotifications.swift`
+  - Captures AX notifications for focused targets during paste debugging.
+- `Tools/ExplorePasteSignal.sh`
+  - Repeatable shell harness for probing paste signal behavior and AX fallback timing.
 - `Tools/README.md`
   - Maintainer/contributor guide for all scripts in `Tools/`.
 - `Core/Services/Paste/PasteService.swift`
@@ -340,6 +356,7 @@ KeyVox/
 - `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`
   - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
   - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
+  - Binds live AX value-change verification to runtime frontmost PID (with captured target fallback).
 - `Core/Services/Paste/PasteMenuScanner.swift`
   - Encapsulates menu traversal/discovery for Paste and Undo menu items.
   - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.
@@ -374,6 +391,8 @@ KeyVox/
   - Template for local override JSON shape (the active override lives in Application Support, not in the repo).
 - `Tools/Quality/check_core_coverage.sh`
   - Enforces allowlisted core-file coverage threshold from `.xcresult` using `xccov`.
+- `Tools/Quality/coverage_summary.sh`
+  - Emits markdown coverage summaries for CI job step output.
 
 ### UI Layer
 
@@ -396,9 +415,13 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps
+  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, weekly word counters
 - Preference key catalog: `App/UserDefaultsKeys.swift`
+- Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
+- Weekly word-counter keys:
+  - `KeyVox.App.WordsThisWeekCount`
+  - `KeyVox.App.WordsThisWeekWeekStart`
 - Overlay placement:
   - preferred display key: `KeyVox.RecordingOverlayPreferredDisplayKey`
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`

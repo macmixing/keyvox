@@ -7,7 +7,7 @@ This document contains implementation and maintainer-focused details that are in
 KeyVox is organized by responsibility:
 
 - `App/KeyVoxApp.swift`: App entry point, menu bar scene, and window lifecycle.
-- `App/AppSettingsStore.swift`: Central persisted settings owner.
+- `App/AppSettingsStore.swift`: Central persisted settings owner (`triggerBinding`, `autoParagraphsEnabled`, sound, onboarding, update prompts, weekly words).
 - `Core/TranscriptionManager.swift`: Recording/transcription state orchestration.
 - `Core/Audio/AudioRecorder.swift`: Recorder state holder and public start/stop flow.
 - `Core/Audio/AudioRecorder+Session.swift`: Capture session/device lifecycle.
@@ -25,12 +25,13 @@ KeyVox is organized by responsibility:
 - `Core/Overlay/OverlayPanel.swift`: Drag sampling, double-click reset, release velocity capture.
 - `Core/Overlay/OverlayFlingPhysics.swift`: Pure fling impact/reflection/duration calculations.
 - `Core/Services/WhisperService.swift`: Local model loading and transcription.
+- `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
 - `Core/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/TextProcessing/ListFormattingEngine.swift`: Deterministic list detection/rendering.
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
-- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, and fallback transport normalization.
+- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, fallback transport normalization, and runtime-PID live AX verification binding.
 - `Core/Services/Paste/PasteMenuScanner.swift`: Menu-bar traversal and Paste/Undo menu item discovery helpers.
 - `Core/Services/Paste/PasteAXLiveSession.swift`: Live AX observer session for value-change verification.
 - `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`: Paste failure-recovery lifecycle.
@@ -53,10 +54,12 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 ## Post-Processing Order
 
-1. Whisper returns raw transcript text.
-2. Dictionary correction applies custom-word adherence.
-3. List formatting applies numeric list rendering when confident.
-4. Final text is inserted via the paste service.
+1. `WhisperAudioParagraphChunker` computes conservative chunk boundaries from silence windows.
+2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
+3. Dictionary correction applies custom-word adherence.
+4. List formatting applies numeric list rendering when confidence gates pass.
+5. Laughter/time normalization and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
+6. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 
@@ -87,6 +90,8 @@ Maintainers can override the update feed locally without changing tracked defaul
   `swift test --package-path Packages/KeyVoxWhisper`
 - Core coverage gate:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
+- Coverage markdown summary:
+  `Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult`
 
 ## Tooling
 
@@ -96,6 +101,10 @@ Maintainers can override the update feed locally without changing tracked defaul
   `Tools/ExploreAX.swift`
 - Multi-app AX diagnostics:
   `Tools/ExploreAXApps.swift`
+- Paste signal probe harness:
+  `Tools/ExplorePasteSignal.sh`
+- AX notification observer for paste debugging:
+  `Tools/ObservePasteAXNotifications.swift`
 - Pronunciation pipeline/regeneration scripts:
   `Tools/Pronunciation/*`
 - Update-feed local override helper:

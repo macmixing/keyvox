@@ -37,6 +37,30 @@ Notes:
 - Matches app `localizedName` (case-insensitive exact name match).
 - Does not launch apps; only scans apps that are already running.
 
+### `ObservePasteAXNotifications.swift`
+
+Live AX observer for a running app process. Useful for debugging whether paste flows emit
+`AXValueChanged` / selection notifications that menu-fallback verification depends on.
+
+Examples:
+
+```bash
+swift Tools/ObservePasteAXNotifications.swift --app "Slack" --trigger cmdv --duration 3
+swift Tools/ObservePasteAXNotifications.swift --app "Slack" --trigger menu --duration 3
+```
+
+### `ExplorePasteSignal.sh`
+
+Batch probe harness for paste-signal timing. Runs repeated trials, triggers paste, and captures
+`ExploreAX` dumps at configurable delays into `/tmp/paste-signal-probe` (or custom `--out-dir`).
+
+Examples:
+
+```bash
+Tools/ExplorePasteSignal.sh --app "Slack" --mode cmdv --trials 3
+Tools/ExplorePasteSignal.sh --app "Slack" --mode menu --delays "0.05 0.10 0.20 0.40 0.80 1.20"
+```
+
 ## Pronunciation Pipeline
 
 ### `Pronunciation/build_lexicon.sh`
@@ -105,4 +129,13 @@ Optional threshold override:
 
 ```bash
 CORE_COVERAGE_THRESHOLD=85 Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
+```
+
+### `Quality/coverage_summary.sh`
+
+Builds a markdown coverage summary (overall app + core aggregate + lowest-coverage core files),
+useful for CI step summaries.
+
+```bash
+Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult
 ```
