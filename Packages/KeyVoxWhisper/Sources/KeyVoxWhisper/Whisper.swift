@@ -1,21 +1,99 @@
 import Foundation
-import whisper
+@preconcurrency import whisper
+
+private struct WhisperContextHandle: @unchecked Sendable {
+    let raw: OpaquePointer
+}
+
+private struct WhisperParamsHandle: @unchecked Sendable {
+    let raw: whisper_full_params
+}
+
+struct WhisperRuntime {
+    var contextDefaultParams: () -> whisper_context_params
+    var initFromFileWithParams: (_ path: UnsafePointer<CChar>, _ params: whisper_context_params) -> OpaquePointer?
+    var freeContext: (_ context: OpaquePointer) -> Void
+    var full: (
+        _ context: OpaquePointer,
+        _ params: whisper_full_params,
+        _ samples: UnsafePointer<Float>?,
+        _ sampleCount: Int32
+    ) -> Int32
+    var fullNSegments: (_ context: OpaquePointer) -> Int32
+    var fullGetSegmentText: (_ context: OpaquePointer, _ index: Int32) -> UnsafePointer<CChar>?
+    var fullGetSegmentT0: (_ context: OpaquePointer, _ index: Int32) -> Int64
+    var fullGetSegmentT1: (_ context: OpaquePointer, _ index: Int32) -> Int64
+    var fullGetSegmentNoSpeechProb: (_ context: OpaquePointer, _ index: Int32) -> Float
+
+    static let live = WhisperRuntime(
+        contextDefaultParams: { whisper_context_default_params() },
+        initFromFileWithParams: { path, params in
+            whisper_init_from_file_with_params(path, params)
+        },
+        freeContext: { context in
+            whisper_free(context)
+        },
+        full: { context, params, samples, sampleCount in
+            whisper_full(context, params, samples, sampleCount)
+        },
+        fullNSegments: { context in
+            whisper_full_n_segments(context)
+        },
+        fullGetSegmentText: { context, index in
+            whisper_full_get_segment_text(context, index)
+        },
+        fullGetSegmentT0: { context, index in
+            whisper_full_get_segment_t0(context, index)
+        },
+        fullGetSegmentT1: { context, index in
+            whisper_full_get_segment_t1(context, index)
+        },
+        fullGetSegmentNoSpeechProb: { context, index in
+            whisper_full_get_segment_no_speech_prob(context, index)
+        }
+    )
+}
 
 public final class Whisper {
     private static let minimumInferenceFrameCount = 16_800
     private static let venturaMajorVersion = 13
 
+    private let runtime: WhisperRuntime
+    private let inferenceQueue: DispatchQueue
     private let whisperContext: OpaquePointer?
     public var params: WhisperParams
 
     public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
+        self.runtime = .live
+        self.inferenceQueue = DispatchQueue.global(qos: .userInitiated)
         self.params = params
-        self.whisperContext = Self.makeContext(fileURL: fileURL)
+        self.whisperContext = Self.makeContext(
+            fileURL: fileURL,
+            runtime: runtime,
+            osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
+        )
+    }
+
+    init(
+        fromFileURL fileURL: URL,
+        withParams params: WhisperParams = .default,
+        runtime: WhisperRuntime,
+        osVersionProvider: @escaping () -> OperatingSystemVersion,
+        inferenceQueue: DispatchQueue
+    ) {
+        self.runtime = runtime
+        self.inferenceQueue = inferenceQueue
+        self.params = params
+        self.whisperContext = Self.makeContext(
+            fileURL: fileURL,
+            runtime: runtime,
+            osVersionProvider: osVersionProvider
+        )
     }
 
     deinit {
         if let whisperContext {
-            whisper_free(whisperContext)
+            runtime.freeContext(whisperContext)
         }
     }
 
@@ -38,15 +116,18 @@ public final class Whisper {
             framesForInference = audioFrames
         }
 
-        let paramsSnapshot = params.whisperParams
+        let paramsSnapshot = WhisperParamsHandle(raw: params.whisperParams)
+        let context = WhisperContextHandle(raw: whisperContext)
+        let runtime = self.runtime
+        let inferenceQueue = self.inferenceQueue
 
         return try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                var localParams = paramsSnapshot
+            inferenceQueue.async {
+                let localParams = paramsSnapshot.raw
 
                 let status = framesForInference.withUnsafeBufferPointer { buffer in
-                    whisper_full(
-                        whisperContext,
+                    runtime.full(
+                        context.raw,
                         localParams,
                         buffer.baseAddress,
                         Int32(buffer.count)
@@ -58,20 +139,20 @@ public final class Whisper {
                     return
                 }
 
-                let segmentCount = Int(whisper_full_n_segments(whisperContext))
+                let segmentCount = Int(runtime.fullNSegments(context.raw))
                 var segments: [Segment] = []
                 segments.reserveCapacity(segmentCount)
 
                 if segmentCount > 0 {
                     for index in 0..<segmentCount {
-                        guard let cText = whisper_full_get_segment_text(whisperContext, Int32(index)) else {
+                        guard let cText = runtime.fullGetSegmentText(context.raw, Int32(index)) else {
                             continue
                         }
 
-                        let startTime = Int(whisper_full_get_segment_t0(whisperContext, Int32(index)) * 10)
-                        let endTime = Int(whisper_full_get_segment_t1(whisperContext, Int32(index)) * 10)
+                        let startTime = Int(runtime.fullGetSegmentT0(context.raw, Int32(index)) * 10)
+                        let endTime = Int(runtime.fullGetSegmentT1(context.raw, Int32(index)) * 10)
                         let text = String(cString: cText)
-                        let noSpeechProbability = whisper_full_get_segment_no_speech_prob(whisperContext, Int32(index))
+                        let noSpeechProbability = runtime.fullGetSegmentNoSpeechProb(context.raw, Int32(index))
 
                         segments.append(
                             Segment(
@@ -89,11 +170,15 @@ public final class Whisper {
         }
     }
 
-    private static func makeContext(fileURL: URL) -> OpaquePointer? {
-        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+    private static func makeContext(
+        fileURL: URL,
+        runtime: WhisperRuntime,
+        osVersionProvider: () -> OperatingSystemVersion
+    ) -> OpaquePointer? {
+        let osVersion = osVersionProvider()
         let isVentura = osVersion.majorVersion == venturaMajorVersion
 
-        var contextParams = whisper_context_default_params()
+        var contextParams = runtime.contextDefaultParams()
         if isVentura {
             // Ventura-specific stability guard: avoid Metal init crash path in upstream binary.
             contextParams.use_gpu = false
@@ -101,7 +186,7 @@ public final class Whisper {
         }
 
         let context = fileURL.path.withCString { path in
-            whisper_init_from_file_with_params(path, contextParams)
+            runtime.initFromFileWithParams(path, contextParams)
         }
 
         if context != nil || !isVentura {
@@ -109,11 +194,11 @@ public final class Whisper {
         }
 
         // Retry once on Ventura with explicit CPU settings.
-        var fallbackParams = whisper_context_default_params()
+        var fallbackParams = runtime.contextDefaultParams()
         fallbackParams.use_gpu = false
         fallbackParams.flash_attn = false
         return fileURL.path.withCString { path in
-            whisper_init_from_file_with_params(path, fallbackParams)
+            runtime.initFromFileWithParams(path, fallbackParams)
         }
     }
 }
