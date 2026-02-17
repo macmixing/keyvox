@@ -39,7 +39,7 @@ extension SettingsView {
                 SettingsRow(
                     icon: "text.alignleft",
                     title: "Paragraphs",
-                    subtitle: "Automatically split dictated text into paragraphs in multiline fields."
+                    subtitle: "Start new paragraphs automatically after brief pauses in multiline fields."
                 ) {
                     Toggle("", isOn: $appSettings.autoParagraphsEnabled)
                         .toggleStyle(.switch)
