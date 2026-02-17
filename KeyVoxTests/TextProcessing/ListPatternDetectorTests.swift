@@ -43,7 +43,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.count == 3)
-        XCTAssertTrue(detected?.items.last?.content == "when I end the list")
+        XCTAssertTrue(detected?.items.last?.content == "When I end the list")
         XCTAssertTrue(detected?.trailingText == "and everything's done")
     }
 
@@ -54,7 +54,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.count == 3)
-        XCTAssertTrue(detected?.items.last?.content == "call mom")
+        XCTAssertTrue(detected?.items.last?.content == "Call mom")
         XCTAssertTrue(detected?.trailingText == "because we leave early")
     }
 
@@ -65,7 +65,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.count == 3)
-        XCTAssertTrue(detected?.items.last?.content == "call mom")
+        XCTAssertTrue(detected?.items.last?.content == "Call mom")
         XCTAssertTrue(detected?.trailingText == "and because we leave early")
     }
 
@@ -84,7 +84,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
-        XCTAssertTrue(detected?.items.map(\.content) == ["pack charger", "pack toothbrush", "pack socks"])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Pack charger", "Pack toothbrush", "Pack socks"])
     }
 
     func testDoesNotDetectRestartedOneMarkersWithoutParagraphBreaks() {
@@ -135,7 +135,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
-        XCTAssertTrue(detected?.items.last?.content == "there's no way out of here")
+        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here")
         XCTAssertTrue(
             detected?.trailingText
                 == "After all that, I'm going to have to do something with my brain\n\nBecause now it's raining outside and I can't take my dog to go to the bathroom."
@@ -154,7 +154,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
-        XCTAssertTrue(detected?.items.last?.content == "get some groceries")
+        XCTAssertTrue(detected?.items.last?.content == "Get some groceries")
         XCTAssertTrue(
             detected?.trailingText
                 == "and by the end of the day we'll probably have nothing else left to fix, but these couple of things\n\nBecause that's just what we do."
@@ -173,7 +173,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [2, 3])
-        XCTAssertTrue(detected?.items.last?.content == "there's no way out of here")
+        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here")
         XCTAssertTrue(
             detected?.trailingText
                 == "After all that, I'm going to have to do something with my brain\n\nBecause now it's raining outside and I can't take my dog to go to the bathroom."
@@ -192,10 +192,20 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
-        XCTAssertTrue(detected?.items.last?.content == "get some groceries")
+        XCTAssertTrue(detected?.items.last?.content == "Get some groceries")
         XCTAssertTrue(
             detected?.trailingText
                 == "There's really nothing else to do, but just talk a little bit more and hope this splits things out right\n\nBecause I'm just trying to make it work."
         )
+    }
+
+    func testCapitalizesItemsAndStripsTerminalPunctuation() {
+        let detector = ListPatternDetector()
+        let text = "one buy groceries, two walk dog."
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog"])
     }
 }

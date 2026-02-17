@@ -225,12 +225,31 @@ struct ListPatternDetector {
         cleaned = cleaned
             .replacingOccurrences(of: "^(?i)(and|then|next)\\b[\\s,:-]*", with: "", options: .regularExpression)
             .replacingOccurrences(of: "(?i)[\\s,:-]*(and|then|next)$", with: "", options: .regularExpression)
-            .trimmingCharacters(in: CharacterSet(charactersIn: " \t\n\r.,;:!?-"))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        cleaned = stripTerminalPunctuation(in: cleaned)
 
         guard cleaned.count >= 2 else { return nil }
         guard cleaned.rangeOfCharacter(from: .letters) != nil else { return nil }
 
-        return cleaned
+        return capitalizeFirstLetter(in: cleaned)
+    }
+
+    private func stripTerminalPunctuation(in text: String) -> String {
+        text
+            .replacingOccurrences(
+                of: #"[\"'”’\)\]\}]*[.,;:!?…]+[\"'”’\)\]\}]*$"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func capitalizeFirstLetter(in text: String) -> String {
+        guard let firstLetter = text.firstIndex(where: { $0.isLetter }) else { return text }
+        var capitalized = text
+        capitalized.replaceSubrange(firstLetter...firstLetter, with: String(text[firstLetter]).uppercased())
+        return capitalized
     }
 
     private func splitLastItemAndTrailing(_ raw: String) -> (itemText: String, trailingText: String) {
