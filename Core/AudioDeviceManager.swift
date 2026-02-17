@@ -17,6 +17,64 @@ struct MicrophoneOption: Identifiable, Equatable {
     let isAvailable: Bool
 }
 
+struct AudioDeviceClassificationInput {
+    let name: String
+    let transportType: UInt32
+}
+
+protocol AudioDeviceSettingsStoring: AnyObject {
+    var selectedMicrophoneUID: String { get set }
+    var selectedMicrophoneUIDPublisher: AnyPublisher<String, Never> { get }
+}
+
+final class AppSettingsAudioDeviceStore: AudioDeviceSettingsStoring {
+    private let defaults: UserDefaults
+    private let subject: CurrentValueSubject<String, Never>
+    private let notificationCenter: NotificationCenter
+    private var defaultsObserver: NSObjectProtocol?
+
+    init(
+        defaults: UserDefaults = .standard,
+        notificationCenter: NotificationCenter = .default
+    ) {
+        self.defaults = defaults
+        self.notificationCenter = notificationCenter
+        let initial = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+        self.subject = CurrentValueSubject(initial)
+
+        defaultsObserver = notificationCenter.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: defaults,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            let latest = self.defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+            if latest != self.subject.value {
+                self.subject.send(latest)
+            }
+        }
+    }
+
+    deinit {
+        if let defaultsObserver {
+            notificationCenter.removeObserver(defaultsObserver)
+        }
+    }
+
+    var selectedMicrophoneUID: String {
+        get { subject.value }
+        set {
+            guard newValue != subject.value else { return }
+            defaults.set(newValue, forKey: UserDefaultsKeys.selectedMicrophoneUID)
+            subject.send(newValue)
+        }
+    }
+
+    var selectedMicrophoneUIDPublisher: AnyPublisher<String, Never> {
+        subject.eraseToAnyPublisher()
+    }
+}
+
 final class AudioDeviceManager: ObservableObject {
     static let shared = AudioDeviceManager()
     static let captureDeviceConnectedNotification = Notification.Name(
@@ -26,45 +84,70 @@ final class AudioDeviceManager: ObservableObject {
         rawValue: "AVCaptureDeviceWasDisconnectedNotification"
     )
 
-    private let appSettings = AppSettingsStore.shared
-
     @Published private(set) var availableMicrophones: [MicrophoneOption] = []
     @Published private(set) var selectedMicrophone: MicrophoneOption?
+
+    private let settingsStore: AudioDeviceSettingsStoring
+    private let defaults: UserDefaults
+    private let discoverInputMicrophonesProvider: () -> [MicrophoneOption]
+    private let captureAudioDevicesProvider: () -> [AVCaptureDevice]
+    private let notificationCenter: NotificationCenter
+    private let startMonitoringOnInit: Bool
 
     private var deviceObservers: [NSObjectProtocol] = []
     private var cancellables = Set<AnyCancellable>()
 
-    var selectedMicrophoneUID: String { appSettings.selectedMicrophoneUID }
+    var selectedMicrophoneUID: String { settingsStore.selectedMicrophoneUID }
+    var hasRecommendedBuiltInMicrophone: Bool {
+        Self.containsRecommendedBuiltInMicrophone(availableMicrophones)
+    }
 
-    private init() {
-        availableMicrophones = Self.discoverInputMicrophones()
+    init(
+        settingsStore: AudioDeviceSettingsStoring = AppSettingsAudioDeviceStore(),
+        defaults: UserDefaults = .standard,
+        discoverInputMicrophones: @escaping () -> [MicrophoneOption] = AudioDeviceManager.discoverInputMicrophones,
+        captureAudioDevices: @escaping () -> [AVCaptureDevice] = AudioDeviceManager.captureAudioDevices,
+        notificationCenter: NotificationCenter = .default,
+        startMonitoringOnInit: Bool = true
+    ) {
+        self.settingsStore = settingsStore
+        self.defaults = defaults
+        self.discoverInputMicrophonesProvider = discoverInputMicrophones
+        self.captureAudioDevicesProvider = captureAudioDevices
+        self.notificationCenter = notificationCenter
+        self.startMonitoringOnInit = startMonitoringOnInit
+
+        availableMicrophones = discoverInputMicrophonesProvider()
         applyInitialSelectionPolicy()
         syncSelectedMicrophone()
-        appSettings.$selectedMicrophoneUID
+        settingsStore.selectedMicrophoneUIDPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.syncSelectedMicrophone()
             }
             .store(in: &cancellables)
-        startMonitoringCaptureDevices()
+
+        if startMonitoringOnInit {
+            startMonitoringCaptureDevices()
+        }
     }
 
     deinit {
         for observer in deviceObservers {
-            NotificationCenter.default.removeObserver(observer)
+            notificationCenter.removeObserver(observer)
         }
     }
 
     var pickerMicrophones: [MicrophoneOption] {
-        guard !appSettings.selectedMicrophoneUID.isEmpty,
+        guard !settingsStore.selectedMicrophoneUID.isEmpty,
               selectedMicrophone == nil,
-              !availableMicrophones.contains(where: { $0.id == appSettings.selectedMicrophoneUID }) else {
+              !availableMicrophones.contains(where: { $0.id == settingsStore.selectedMicrophoneUID }) else {
             return availableMicrophones
         }
 
         // Preserve a missing persisted selection so users can see why the old choice is no longer active.
         let unavailable = MicrophoneOption(
-            id: appSettings.selectedMicrophoneUID,
+            id: settingsStore.selectedMicrophoneUID,
             name: "Previously Selected Microphone (Unavailable)",
             kind: .wiredOrOther,
             isAvailable: false
@@ -78,12 +161,12 @@ final class AudioDeviceManager: ObservableObject {
             return selectedDevice
         }
 
-        if !appSettings.selectedMicrophoneUID.isEmpty,
-           let selectedFromUID = deviceForID(appSettings.selectedMicrophoneUID) {
+        if !settingsStore.selectedMicrophoneUID.isEmpty,
+           let selectedFromUID = deviceForID(settingsStore.selectedMicrophoneUID) {
             return selectedFromUID
         }
 
-        return builtInCaptureDevice() ?? AVCaptureDevice.default(for: .audio) ?? Self.captureAudioDevices().first
+        return builtInCaptureDevice() ?? AVCaptureDevice.default(for: .audio) ?? captureAudioDevicesProvider().first
     }
 
     func builtInCaptureDevice() -> AVCaptureDevice? {
@@ -92,13 +175,13 @@ final class AudioDeviceManager: ObservableObject {
             return device
         }
 
-        return Self.captureAudioDevices().first {
+        return captureAudioDevicesProvider().first {
             Self.classifyDeviceKind(for: $0) == .builtIn
         }
     }
 
     func refreshAvailableMicrophones() {
-        let discovered = Self.discoverInputMicrophones()
+        let discovered = discoverInputMicrophonesProvider()
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -111,32 +194,54 @@ final class AudioDeviceManager: ObservableObject {
         availableMicrophones.first(where: { $0.kind == .builtIn && $0.isAvailable })
     }
 
-    private func applyInitialSelectionPolicy() {
-        let defaults = UserDefaults.standard
-        let hasInitialized = defaults.bool(forKey: UserDefaultsKeys.hasInitializedMicrophoneDefault)
+    static func containsRecommendedBuiltInMicrophone(_ microphones: [MicrophoneOption]) -> Bool {
+        microphones.contains { $0.kind == .builtIn && $0.isAvailable }
+    }
 
-        if !hasInitialized {
-            if let builtInMicrophone {
-                appSettings.selectedMicrophoneUID = builtInMicrophone.id
-            } else if let first = availableMicrophones.first {
-                appSettings.selectedMicrophoneUID = first.id
+    static func preferredInitialSelectionUID(
+        availableMicrophones: [MicrophoneOption],
+        persistedSelectedUID: String,
+        hasInitializedDefault: Bool
+    ) -> String? {
+        let builtIn = availableMicrophones.first(where: { $0.kind == .builtIn && $0.isAvailable })
+
+        if !hasInitializedDefault {
+            if let builtIn {
+                return builtIn.id
             }
-
-            defaults.set(true, forKey: UserDefaultsKeys.hasInitializedMicrophoneDefault)
-            return
+            return availableMicrophones.first?.id
         }
 
-        if appSettings.selectedMicrophoneUID.isEmpty, let builtInMicrophone {
-            appSettings.selectedMicrophoneUID = builtInMicrophone.id
+        if persistedSelectedUID.isEmpty, let builtIn {
+            return builtIn.id
+        }
+
+        return nil
+    }
+
+    private func applyInitialSelectionPolicy() {
+        let hasInitialized = defaults.bool(forKey: UserDefaultsKeys.hasInitializedMicrophoneDefault)
+        let initialUID = Self.preferredInitialSelectionUID(
+            availableMicrophones: availableMicrophones,
+            persistedSelectedUID: settingsStore.selectedMicrophoneUID,
+            hasInitializedDefault: hasInitialized
+        )
+
+        if let initialUID {
+            settingsStore.selectedMicrophoneUID = initialUID
+        }
+
+        if !hasInitialized {
+            defaults.set(true, forKey: UserDefaultsKeys.hasInitializedMicrophoneDefault)
         }
     }
 
     private func syncSelectedMicrophone() {
-        selectedMicrophone = availableMicrophones.first(where: { $0.id == appSettings.selectedMicrophoneUID })
+        selectedMicrophone = availableMicrophones.first(where: { $0.id == settingsStore.selectedMicrophoneUID })
     }
 
     private func startMonitoringCaptureDevices() {
-        let connectedObserver = NotificationCenter.default.addObserver(
+        let connectedObserver = notificationCenter.addObserver(
             forName: Self.captureDeviceConnectedNotification,
             object: nil,
             queue: .main
@@ -144,7 +249,7 @@ final class AudioDeviceManager: ObservableObject {
             self?.refreshAvailableMicrophones()
         }
 
-        let disconnectedObserver = NotificationCenter.default.addObserver(
+        let disconnectedObserver = notificationCenter.addObserver(
             forName: Self.captureDeviceDisconnectedNotification,
             object: nil,
             queue: .main
@@ -156,20 +261,24 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     private func deviceForID(_ uniqueID: String) -> AVCaptureDevice? {
-        Self.captureAudioDevices().first(where: { $0.uniqueID == uniqueID })
+        captureAudioDevicesProvider().first(where: { $0.uniqueID == uniqueID })
     }
 
-    nonisolated private static func discoverInputMicrophones() -> [MicrophoneOption] {
-        captureAudioDevices()
-            .map { device in
-                MicrophoneOption(
-                    id: device.uniqueID,
-                    name: device.localizedName,
-                    kind: classifyDeviceKind(for: device),
-                    isAvailable: true
-                )
-            }
-            .sorted(by: microphoneSortPredicate)
+    nonisolated static func discoverInputMicrophones() -> [MicrophoneOption] {
+        let devices = captureAudioDevices()
+        let mapped = devices.map { device in
+            MicrophoneOption(
+                id: device.uniqueID,
+                name: device.localizedName,
+                kind: classifyDeviceKind(for: device),
+                isAvailable: true
+            )
+        }
+        return sortedMicrophones(mapped)
+    }
+
+    nonisolated static func sortedMicrophones(_ microphones: [MicrophoneOption]) -> [MicrophoneOption] {
+        microphones.sorted(by: microphoneSortPredicate)
     }
 
     nonisolated private static func captureAudioDevices() -> [AVCaptureDevice] {
@@ -213,20 +322,19 @@ final class AudioDeviceManager: ObservableObject {
         }
     }
 
-    nonisolated private static func classifyDeviceKind(for device: AVCaptureDevice) -> MicrophoneKind {
-        let lowered = device.localizedName.lowercased()
+    nonisolated static func classifyDeviceKind(_ input: AudioDeviceClassificationInput) -> MicrophoneKind {
+        let lowered = input.name.lowercased()
 
         if lowered.contains("airpods") {
             return .airPods
         }
 
-        let transportType = UInt32(bitPattern: device.transportType)
-        if transportType == kAudioDeviceTransportTypeBluetooth ||
-            transportType == kAudioDeviceTransportTypeBluetoothLE {
+        if input.transportType == kAudioDeviceTransportTypeBluetooth ||
+            input.transportType == kAudioDeviceTransportTypeBluetoothLE {
             return .bluetooth
         }
 
-        if transportType == kAudioDeviceTransportTypeBuiltIn {
+        if input.transportType == kAudioDeviceTransportTypeBuiltIn {
             return .builtIn
         }
 
@@ -246,5 +354,14 @@ final class AudioDeviceManager: ObservableObject {
         }
 
         return .wiredOrOther
+    }
+
+    nonisolated private static func classifyDeviceKind(for device: AVCaptureDevice) -> MicrophoneKind {
+        classifyDeviceKind(
+            AudioDeviceClassificationInput(
+                name: device.localizedName,
+                transportType: UInt32(bitPattern: device.transportType)
+            )
+        )
     }
 }

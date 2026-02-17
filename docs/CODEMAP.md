@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-16**
+**Last Updated: 2026-02-17**
 
 ## Project Overview
 
@@ -40,9 +40,12 @@ KeyVox/
 │   │   ├── Paste/
 │   │   │   ├── PasteAXInspector.swift
 │   │   │   ├── PasteAccessibilityInjector.swift
+│   │   │   ├── PasteAXLiveSession.swift
 │   │   │   ├── PasteClipboardSnapshot.swift
 │   │   │   ├── PasteFailureRecoveryCoordinator.swift
 │   │   │   ├── PasteMenuFallbackExecutor.swift
+│   │   │   ├── PasteMenuFallbackCoordinator.swift
+│   │   │   ├── PasteMenuScanner.swift
 │   │   │   ├── PasteModels.swift
 │   │   │   ├── PastePolicies.swift
 │   │   │   ├── PasteService.swift
@@ -95,6 +98,7 @@ KeyVox/
 │   ├── Components/
 │   │   ├── ConfirmDeletePromptView.swift
 │   │   ├── KeyVoxLogo.swift
+│   │   ├── OnboardingMicrophonePickerView.swift
 │   │   └── UIComponents.swift
 │   ├── Settings/
 │   │   ├── DictionaryWordEditorView.swift
@@ -112,6 +116,7 @@ KeyVox/
 │   │   ├── WarningKind.swift
 │   │   ├── WarningManager.swift
 │   │   └── WarningOverlayView.swift
+│   ├── OnboardingMicrophoneStepController.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
 │   ├── StatusMenuView.swift
@@ -207,6 +212,14 @@ KeyVox/
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
+- `Views/OnboardingView.swift`
+  - Onboarding step orchestration UI.
+  - Delegates microphone Step 1 flow logic to `OnboardingMicrophoneStepController`.
+- `Views/OnboardingMicrophoneStepController.swift`
+  - Owns onboarding microphone authorization and no-built-in gating behavior.
+  - Drives microphone-step completion state and prompt visibility.
+- `Views/Components/OnboardingMicrophonePickerView.swift`
+  - Presentation-only onboarding modal for required microphone selection confirmation.
 
 ### Core Managers
 
@@ -322,8 +335,16 @@ KeyVox/
 - `Core/Services/Paste/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
-  - Menu bar Paste execution and verification loop for fallback insertion.
-  - Uses AX delta checks and an undo-state fallback path when AX verification context is unavailable.
+  - Orchestrates menu fallback execution and verification decisions.
+  - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
+- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`
+  - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
+  - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
+- `Core/Services/Paste/PasteMenuScanner.swift`
+  - Encapsulates menu traversal/discovery for Paste and Undo menu items.
+  - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.
+- `Core/Services/Paste/PasteAXLiveSession.swift`
+  - Encapsulates AXObserver lifecycle used for live value-change verification during menu fallback.
 - `Core/Services/Paste/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
 - `Core/Services/Paste/PasteSpacingHeuristics.swift`

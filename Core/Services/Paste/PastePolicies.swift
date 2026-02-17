@@ -6,7 +6,10 @@ enum PastePolicies {
     ]
 
     static let menuSuccessTrustWithoutAXVerificationBundleIDs: Set<String> = [
-        "com.apple.MobileSMS"
+        "com.apple.MobileSMS",
+        // Numbers accepts Paste into non-text canvas contexts (for example inserting a floating text object),
+        // where AX text verifiers cannot reliably observe a value/range change.
+        "com.apple.iWork.Numbers"
     ]
 
     static func listRenderMode(forAXRole role: String?, bundleID: String?) -> ListRenderMode {

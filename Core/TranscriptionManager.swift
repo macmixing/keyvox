@@ -31,6 +31,9 @@ class TranscriptionManager: ObservableObject {
         setupBindings()
         whisperService.warmup()
     }
+
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
     
     private func setupBindings() {
         keyboardMonitor.$isTriggerKeyPressed
@@ -186,7 +189,12 @@ class TranscriptionManager: ObservableObject {
             
             let transcribeStart = Date()
             let useDictionaryHintPrompt = self.audioRecorder.lastCaptureHadActiveSignal
-            self.whisperService.transcribe(audioFrames: frames, useDictionaryHintPrompt: useDictionaryHintPrompt) { result in
+            let autoParagraphsEnabled = self.appSettings.autoParagraphsEnabled
+            self.whisperService.transcribe(
+                audioFrames: frames,
+                useDictionaryHintPrompt: useDictionaryHintPrompt,
+                enableAutoParagraphs: autoParagraphsEnabled
+            ) { result in
                 let transcribeDuration = Date().timeIntervalSince(transcribeStart)
                 #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")

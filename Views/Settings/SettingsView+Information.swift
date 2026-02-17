@@ -67,12 +67,6 @@ extension SettingsView {
                             }
                             .buttonStyle(DepressedButtonStyle())
                         }
-
-                        GitHubSupportLink(onOpen: {
-                            dismiss()
-                        })
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.top, 12)
                     }
                 }
             }
@@ -89,7 +83,13 @@ extension SettingsView {
                 }
                 .buttonStyle(DepressedButtonStyle())
                 .padding(.leading, 8)
+
                 Spacer()
+
+                GitHubSupportLink(onOpen: {
+                    dismiss()
+                })
+                .padding(.trailing, 8)
             }
             .padding(.top, 8)
         }

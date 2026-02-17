@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class AppSettingsStore: ObservableObject {
     static let shared = AppSettingsStore()
 
@@ -37,6 +38,12 @@ final class AppSettingsStore: ObservableObject {
     @Published var triggerBinding: TriggerBinding {
         didSet {
             defaults.set(triggerBinding.rawValue, forKey: UserDefaultsKeys.triggerBinding)
+        }
+    }
+
+    @Published var autoParagraphsEnabled: Bool {
+        didSet {
+            defaults.set(autoParagraphsEnabled, forKey: UserDefaultsKeys.autoParagraphsEnabled)
         }
     }
 
@@ -81,23 +88,37 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
+    private let calendar: Calendar
+    private let now: () -> Date
     private let defaultSoundVolume: Double = 0.1
     private var wordsThisWeekStart: Date
 
-    private init() {
-        let calendar = Calendar.current
-        let now = Date()
-        let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
+
+    init(
+        defaults: UserDefaults = .standard,
+        calendar: Calendar = .current,
+        now: @escaping () -> Date = Date.init
+    ) {
+        self.defaults = defaults
+        self.calendar = calendar
+        self.now = now
+
+        let nowDate = now()
+        let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: nowDate)?.start ?? nowDate
 
         hasCompletedOnboarding = defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding)
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.triggerBinding),
-           let binding = KeyboardMonitor.TriggerBinding(rawValue: raw) {
+           let binding = TriggerBinding(rawValue: raw) {
             triggerBinding = binding
         } else {
             triggerBinding = .rightOption
         }
+
+        autoParagraphsEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
 
         isSoundEnabled = defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
         if let storedVolume = defaults.object(forKey: UserDefaultsKeys.soundVolume) as? NSNumber {
@@ -123,8 +144,9 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
-    func recordSpokenWords(from text: String, at date: Date = Date()) {
-        rolloverWordsCounterIfNeeded(referenceDate: date)
+    func recordSpokenWords(from text: String, at date: Date? = nil) {
+        let referenceDate = date ?? now()
+        rolloverWordsCounterIfNeeded(referenceDate: referenceDate)
 
         let count = text
             .split(whereSeparator: \.isWhitespace)
@@ -134,12 +156,12 @@ final class AppSettingsStore: ObservableObject {
         wordsThisWeek += count
     }
 
-    func refreshWeeklyWordCounterIfNeeded(referenceDate: Date = Date()) {
-        rolloverWordsCounterIfNeeded(referenceDate: referenceDate)
+    func refreshWeeklyWordCounterIfNeeded(referenceDate: Date? = nil) {
+        let evaluatedDate = referenceDate ?? now()
+        rolloverWordsCounterIfNeeded(referenceDate: evaluatedDate)
     }
 
     private func rolloverWordsCounterIfNeeded(referenceDate: Date) {
-        let calendar = Calendar.current
         let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
         guard !calendar.isDate(wordsThisWeekStart, inSameDayAs: currentWeekStart) else {
             return

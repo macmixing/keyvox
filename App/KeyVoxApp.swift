@@ -9,6 +9,19 @@ import SwiftUI
 import AVFoundation
 import Combine
 
+final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        Task { @MainActor in
+            if AppSettingsStore.shared.hasCompletedOnboarding {
+                WindowManager.shared.openSettings(centered: true)
+            } else {
+                WindowManager.shared.showOnboarding()
+            }
+        }
+        return false
+    }
+}
+
 class WindowManager: ObservableObject {
     static let shared = WindowManager()
     
@@ -54,6 +67,8 @@ class WindowManager: ObservableObject {
             self.openSettings(centered: true)
         }, openSettings: {
             self.openSettings()
+        }, beginMicrophoneAuthorization: {
+            self.lowerOnboardingWindowForMicrophoneAuthorization()
         }, beginAccessibilityAuthorization: {
             self.lowerOnboardingWindowForAccessibilityPrompt()
         }, endAccessibilityAuthorization: {
@@ -71,13 +86,18 @@ class WindowManager: ObservableObject {
     }
 
     @MainActor
+    func lowerOnboardingWindowForMicrophoneAuthorization() {
+        onboardingWindow?.level = .normal
+    }
+
+    @MainActor
     func restoreOnboardingWindowAfterAccessibilityGranted() {
         guard let onboardingWindow else { return }
         onboardingWindow.level = .floating
         onboardingWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     @MainActor
     func openSettings(centered: Bool = true, tab: SettingsTab = .general) {
         let settingsSize = SettingsView.preferredWindowSize
@@ -101,7 +121,7 @@ class WindowManager: ObservableObject {
             window.backgroundColor = .clear
             window.isOpaque = false
             window.hasShadow = true
-            window.level = .floating
+            window.level = .normal
             window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
@@ -110,6 +130,7 @@ class WindowManager: ObservableObject {
         }
 
         window.setContentSize(settingsSize)
+        window.level = .normal
         window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
         
         if centered {
@@ -123,6 +144,7 @@ class WindowManager: ObservableObject {
 
 @main
 struct KeyVoxApp: App {
+    @NSApplicationDelegateAdaptor(KeyVoxAppDelegate.self) private var appDelegate
     @StateObject private var transcriptionManager = TranscriptionManager()
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared

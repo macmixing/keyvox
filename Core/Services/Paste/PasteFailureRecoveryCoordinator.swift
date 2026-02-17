@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import Foundation
 
 @MainActor
@@ -17,8 +18,21 @@ final class PasteFailureRecoveryCoordinator {
     private var globalKeyMonitor: Any?
     private var lastCommandVAt: Date = .distantPast
     private var generation: Int = 0
+    private var cancellables = Set<AnyCancellable>()
 
-    private init() {}
+    private init() {
+        KeyboardMonitor.shared.$isTriggerKeyPressed
+            .dropFirst()
+            .sink { [weak self] isPressed in
+                guard let self else { return }
+                guard isPressed, self.isActive else { return }
+                self.completeRecovery(reason: .triggerPressed)
+            }
+            .store(in: &cancellables)
+    }
+
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
 
     func startRecovery(restoreClipboard: @escaping () -> Void) {
         cancelActiveRecoveryIfNeeded()
@@ -49,6 +63,8 @@ final class PasteFailureRecoveryCoordinator {
 
     private enum CompletionReason {
         case commandVDetected
+        case triggerPressed
+        case escapePressed
         case manualDismiss
         case timeout
         case replacedByNewSession
@@ -71,7 +87,7 @@ final class PasteFailureRecoveryCoordinator {
                 guard let self, self.generation == completionGeneration else { return }
                 restore()
             }
-        case .manualDismiss, .timeout, .replacedByNewSession:
+        case .triggerPressed, .escapePressed, .manualDismiss, .timeout, .replacedByNewSession:
             restore()
         }
     }
@@ -138,6 +154,12 @@ final class PasteFailureRecoveryCoordinator {
 
     private func handleKeyDown(_ event: NSEvent) {
         guard isActive else { return }
+
+        if event.keyCode == 53 { // Escape
+            completeRecovery(reason: .escapePressed)
+            return
+        }
+
         guard event.modifierFlags.contains(.command) else { return }
         guard event.charactersIgnoringModifiers?.lowercased() == "v" else { return }
 

@@ -29,11 +29,17 @@ KeyVox is organized by responsibility:
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/TextProcessing/ListFormattingEngine.swift`: Deterministic list detection/rendering.
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
-- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback execution and verification (AX-delta first, undo-state fallback when AX context is unavailable).
+- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
+- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, and fallback transport normalization.
+- `Core/Services/Paste/PasteMenuScanner.swift`: Menu-bar traversal and Paste/Undo menu item discovery helpers.
+- `Core/Services/Paste/PasteAXLiveSession.swift`: Live AX observer session for value-change verification.
 - `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`: Paste failure-recovery lifecycle.
 - `Core/Services/AppUpdateService.swift`: GitHub Releases polling and update prompt logic.
 - `Core/Services/UpdateFeedConfig.swift`: Tracked update feed config + local override resolution.
 - `Core/Services/AppUpdateLogic.swift`: Pure update parsing/version/host validation helpers.
+- `Views/OnboardingView.swift`: Onboarding UI flow orchestration across setup steps.
+- `Views/OnboardingMicrophoneStepController.swift`: Onboarding Step 1 microphone authorization/gating state and actions.
+- `Views/Components/OnboardingMicrophonePickerView.swift`: Onboarding microphone selection modal UI (presentation-only).
 
 ## Platform Compatibility
 

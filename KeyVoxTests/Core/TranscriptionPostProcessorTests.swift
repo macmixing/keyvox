@@ -32,6 +32,54 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output == "Hello world")
     }
 
+    func testMultilineModePreservesSingleParagraphBreak() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\nSecond paragraph.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
+    }
+
+    func testMultilineModeCollapsesExtraBlankLines() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\n\n\nSecond paragraph.\n\n\nThird paragraph.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.")
+    }
+
+    func testMultilineModeTrimsLeadingAndTrailingBlankLines() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "\n\nFirst paragraph.\n\nSecond paragraph.\n\n",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
+    }
+
+    func testSingleLineModeFlattensParagraphBreaks() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "First paragraph.\n\nSecond paragraph.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "First paragraph. Second paragraph.")
+    }
+
     func testEmptyInputReturnsEmpty() {
         let processor = TranscriptionPostProcessor()
         let output = processor.process("", dictionaryEntries: [], renderMode: .multiline)
@@ -96,5 +144,101 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
 
         XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon")
+    }
+
+    func testNormalizesHaHaToHaha() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Ha ha that was funny",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "haha that was funny")
+    }
+
+    func testKeepsBetweenColonPhraseLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Let's pick between colon McDonalds or Burger King",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Let's pick between colon McDonalds or Burger King")
+    }
+
+    func testKeepsBetweenColinPhraseLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Let's pick between Colin McDonalds or Burger King",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Let's pick between Colin McDonalds or Burger King")
+    }
+
+    func testKeepsCommaDelimitedColonPhraseLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm going to the store, colon, to buy some groceries.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "I'm going to the store, colon, to buy some groceries.")
+    }
+
+    func testKeepsCommaDelimitedColinPhraseLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm going to the store, Colin, to buy some groceries.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "I'm going to the store, Colin, to buy some groceries.")
+    }
+
+    func testKeepsStandaloneColonWordWithoutContext() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The word colon appears here",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "The word colon appears here")
+    }
+
+    func testKeepsTerminalCommaDelimitedColinPhraseLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Next task, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Next task, Colin.")
+    }
+
+    func testDoesNotRewriteSingleWordGreetingColin() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Hi, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Hi, Colin.")
     }
 }

@@ -1,33 +1,205 @@
 import Cocoa
 
+protocol PasteClipboardAdapting {
+    func captureSnapshot() -> PasteClipboardSnapshot.Snapshot
+    func setString(_ text: String)
+    func restore(_ snapshot: PasteClipboardSnapshot.Snapshot)
+}
+
+final class SystemPasteboardAdapter: PasteClipboardAdapting {
+    private let pasteboard: NSPasteboard
+
+    init(pasteboard: NSPasteboard = .general) {
+        self.pasteboard = pasteboard
+    }
+
+    func captureSnapshot() -> PasteClipboardSnapshot.Snapshot {
+        PasteClipboardSnapshot.captureCurrentPasteboardItems(pasteboard)
+    }
+
+    func setString(_ text: String) {
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+    }
+
+    func restore(_ snapshot: PasteClipboardSnapshot.Snapshot) {
+        PasteClipboardSnapshot.restore(snapshot, to: pasteboard)
+    }
+}
+
+protocol PasteFailureRecoveryControlling {
+    func cancelActiveRecoveryIfNeeded()
+    func startRecovery(restoreClipboard: @escaping () -> Void)
+}
+
+final class MainThreadPasteFailureRecoveryController: PasteFailureRecoveryControlling {
+    func cancelActiveRecoveryIfNeeded() {
+        if Thread.isMainThread {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+            }
+            return
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+
+    func startRecovery(restoreClipboard: @escaping () -> Void) {
+        if Thread.isMainThread {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClipboard)
+            }
+            return
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClipboard)
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+}
+
+protocol PasteSpacingHeuristicApplying {
+    func applySmartLeadingSeparatorIfNeeded(
+        to text: String,
+        currentIdentity: PasteAppIdentity?,
+        lastInsertionAppIdentity: PasteAppIdentity?,
+        lastInsertionAt: Date,
+        lastInsertedTrailingCharacter: Character?,
+        identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool
+    ) -> String
+}
+
+extension PasteSpacingHeuristics: PasteSpacingHeuristicApplying {}
+
+struct PasteServiceExecutionPlan {
+    let shouldRememberInsertion: Bool
+    let shouldStartFailureRecovery: Bool
+    let restoreDelay: TimeInterval?
+
+    static func build(
+        didAccessibilityInsertText: Bool,
+        didMenuFallbackInsert: Bool,
+        usedMenuFallbackPath: Bool,
+        suppressFirstWarmupFailureWarning: Bool,
+        shouldStartFailureRecovery: Bool,
+        restoreDelayAfterMenuFallback: TimeInterval,
+        restoreDelayAfterAccessibilityInjection: TimeInterval
+    ) -> PasteServiceExecutionPlan {
+        let rememberInsertion = didAccessibilityInsertText || didMenuFallbackInsert
+        let shouldRecover = !suppressFirstWarmupFailureWarning && shouldStartFailureRecovery
+
+        if shouldRecover {
+            return PasteServiceExecutionPlan(
+                shouldRememberInsertion: rememberInsertion,
+                shouldStartFailureRecovery: true,
+                restoreDelay: nil
+            )
+        }
+
+        return PasteServiceExecutionPlan(
+            shouldRememberInsertion: rememberInsertion,
+            shouldStartFailureRecovery: false,
+            restoreDelay: usedMenuFallbackPath
+                ? restoreDelayAfterMenuFallback
+                : restoreDelayAfterAccessibilityInjection
+        )
+    }
+}
+
+private struct PasteAccessibilityExecutionDecision {
+    let needsMenuFallback: Bool
+    let didAccessibilityInsertText: Bool
+
+    static func from(_ outcome: PasteAccessibilityInjectionOutcome) -> PasteAccessibilityExecutionDecision {
+        switch outcome {
+        case .verifiedSuccess:
+            return PasteAccessibilityExecutionDecision(
+                needsMenuFallback: false,
+                didAccessibilityInsertText: true
+            )
+        case .softSuccessNeedsFallback, .failureNeedsFallback:
+            return PasteAccessibilityExecutionDecision(
+                needsMenuFallback: true,
+                didAccessibilityInsertText: false
+            )
+        }
+    }
+}
+
 class PasteService {
     static let shared = PasteService()
-    // Serialize insertion side effects (AX writes, menu fallback, clipboard restore scheduling).
-    private let pasteQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive)
 
-    // Heuristic memory for consecutive dictation when AX metadata is incomplete.
-    private let heuristicTTL: TimeInterval = 10
-    private let restoreDelayAfterMenuFallback: TimeInterval = 0.8
-    private let restoreDelayAfterAccessibilityInjection: TimeInterval = 0.25
-    private let menuFallbackVerificationTimeout: TimeInterval = 0.6
-    private let menuFallbackVerificationPollInterval: TimeInterval = 0.05
+    private let pasteQueue: DispatchQueue
+    private let restoreDelayAfterMenuFallback: TimeInterval
+    private let restoreDelayAfterAccessibilityInjection: TimeInterval
     private var lastInsertionAppIdentity: PasteAppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
-    private var seenMenuSuccessAttemptProcessKeys: Set<String> = []
-    private var warmupSuppressionEligibilityByProcessKey: [String: Bool] = [:]
 
-    private let axInspector = PasteAXInspector()
-    private lazy var accessibilityInjector = PasteAccessibilityInjector(axInspector: axInspector)
-    private lazy var menuFallbackExecutor = PasteMenuFallbackExecutor(
-        axInspector: axInspector,
-        verificationTimeout: menuFallbackVerificationTimeout,
-        verificationPollInterval: menuFallbackVerificationPollInterval
-    )
-    private lazy var spacingHeuristics = PasteSpacingHeuristics(
-        axInspector: axInspector,
-        heuristicTTL: heuristicTTL
-    )
+    private let axInspector: PasteAXInspecting
+    private let accessibilityInjector: PasteAccessibilityInjecting
+    private let menuFallbackExecutor: PasteMenuFallbackExecuting
+    private let menuFallbackCoordinator: PasteMenuFallbackCoordinating
+    private let spacingHeuristics: PasteSpacingHeuristicApplying
+    private let clipboardAdapter: PasteClipboardAdapting
+    private let failureRecoveryController: PasteFailureRecoveryControlling
+    private let frontmostAppIdentityProvider: () -> PasteAppIdentity?
+    private let clockNow: () -> Date
+
+    init(
+        pasteQueue: DispatchQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive),
+        heuristicTTL: TimeInterval = 10,
+        restoreDelayAfterMenuFallback: TimeInterval = 0.8,
+        restoreDelayAfterAccessibilityInjection: TimeInterval = 0.25,
+        menuFallbackVerificationTimeout: TimeInterval = 0.6,
+        menuFallbackVerificationPollInterval: TimeInterval = 0.05,
+        frontmostAppIdentityProvider: (() -> PasteAppIdentity?)? = nil,
+        clockNow: @escaping () -> Date = Date.init,
+        clipboardAdapter: PasteClipboardAdapting = SystemPasteboardAdapter(),
+        failureRecoveryController: PasteFailureRecoveryControlling = MainThreadPasteFailureRecoveryController(),
+        axInspector: PasteAXInspecting = PasteAXInspector(),
+        accessibilityInjector: PasteAccessibilityInjecting? = nil,
+        menuFallbackExecutor: PasteMenuFallbackExecuting? = nil,
+        menuFallbackCoordinator: PasteMenuFallbackCoordinating = PasteMenuFallbackCoordinator(),
+        spacingHeuristics: PasteSpacingHeuristicApplying? = nil
+    ) {
+        self.pasteQueue = pasteQueue
+        self.restoreDelayAfterMenuFallback = restoreDelayAfterMenuFallback
+        self.restoreDelayAfterAccessibilityInjection = restoreDelayAfterAccessibilityInjection
+        self.frontmostAppIdentityProvider = frontmostAppIdentityProvider
+            ?? { PasteService.defaultFrontmostAppIdentity() }
+        self.clockNow = clockNow
+        self.clipboardAdapter = clipboardAdapter
+        self.failureRecoveryController = failureRecoveryController
+
+        self.axInspector = axInspector
+        self.accessibilityInjector = accessibilityInjector
+            ?? PasteAccessibilityInjector(axInspector: axInspector)
+        self.menuFallbackExecutor = menuFallbackExecutor
+            ?? PasteMenuFallbackExecutor(
+                axInspector: axInspector,
+                verificationTimeout: menuFallbackVerificationTimeout,
+                verificationPollInterval: menuFallbackVerificationPollInterval
+            )
+        self.menuFallbackCoordinator = menuFallbackCoordinator
+        self.spacingHeuristics = spacingHeuristics
+            ?? PasteSpacingHeuristics(
+                axInspector: axInspector,
+                heuristicTTL: heuristicTTL
+            )
+    }
 
     // MARK: - Entry Point
     func pasteText(_ text: String) {
@@ -45,12 +217,10 @@ class PasteService {
         )
 
         // Preserve full clipboard fidelity before writing insertion payload.
-        let pasteboard = NSPasteboard.general
-        let savedSnapshot = PasteClipboardSnapshot.captureCurrentPasteboardItems(pasteboard)
+        let savedSnapshot = clipboardAdapter.captureSnapshot()
 
         // Menu fallback uses Cmd+V semantics, so payload must be in the clipboard.
-        pasteboard.clearContents()
-        pasteboard.setString(insertionText, forType: .string)
+        clipboardAdapter.setString(insertionText)
 
         #if DEBUG
         print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
@@ -58,123 +228,52 @@ class PasteService {
 
         pasteQueue.async {
             let injectionOutcome = self.accessibilityInjector.injectTextViaAccessibility(insertionText)
-            let needsMenuPasteFallback: Bool
-            let didAccessibilityInsertText: Bool
+            let accessibilityDecision = PasteAccessibilityExecutionDecision.from(injectionOutcome)
 
-            switch injectionOutcome {
-            case .verifiedSuccess:
-                needsMenuPasteFallback = false
-                didAccessibilityInsertText = true
-                #if DEBUG
+            #if DEBUG
+            if case .verifiedSuccess = injectionOutcome {
                 print("SUCCESS: Text injected surgically via Accessibility API.")
-                #endif
-            case .softSuccessNeedsFallback:
-                needsMenuPasteFallback = true
-                didAccessibilityInsertText = false
-            case .failureNeedsFallback:
-                needsMenuPasteFallback = true
-                didAccessibilityInsertText = false
             }
+            #endif
 
             var didMenuFallbackInsert = false
-            var menuAttempt: PasteMenuFallbackAttemptResult?
-            var isFirstMenuSuccessAttemptForProcess = false
-            if needsMenuPasteFallback {
-                #if DEBUG
-                print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
-                #endif
-                var textForMenuPaste = insertionText
-                var didTypeLeadingSpaces = false
-                let verificationContext = self.menuFallbackExecutor.captureVerificationContext()
-                let initialUndoState = (verificationContext == nil)
-                    ? self.menuFallbackExecutor.captureUndoStateOnMainThread()
-                    : nil
-
-                // Some apps normalize leading spaces on paste. If AX injection fully failed,
-                // type leading spaces as key events, then paste the remaining text.
-                if !didAccessibilityInsertText {
-                    let transport = self.menuFallbackTransport(for: insertionText)
-                    textForMenuPaste = transport.textToPaste
-
-                    if transport.leadingSpacesToType > 0 {
-                        didTypeLeadingSpaces = self.typeLeadingSpacesOnMainThread(count: transport.leadingSpacesToType)
-                    }
-                }
-
-                if textForMenuPaste != insertionText {
-                    self.setClipboardStringOnMainThread(textForMenuPaste)
-                }
-
-                if textForMenuPaste.isEmpty {
-                    didMenuFallbackInsert = Self.didMenuFallbackInsertForEmptyClipboardPayload(
-                        didTypeLeadingSpaces: didTypeLeadingSpaces
-                    )
-                } else {
-                    let menuAttemptResult = self.menuFallbackExecutor.pasteViaMenuBarOnMainThread()
-                    menuAttempt = menuAttemptResult
-                    var trustWithoutAXVerification = false
-                    var verificationPassed = false
-
-                    if case .actionSucceeded = menuAttemptResult,
-                       self.shouldAllowFirstMenuSuccessWarmupSuppression(for: targetAppIdentity) {
-                        isFirstMenuSuccessAttemptForProcess = !self.hasSeenMenuSuccessAttempt(for: targetAppIdentity)
-                        self.markMenuSuccessAttemptSeen(for: targetAppIdentity)
-                    }
-
-                    switch menuAttemptResult {
-                    case .unavailable:
-                        break
-                    case .actionSucceeded:
-                        trustWithoutAXVerification = self.shouldTrustMenuSuccessWithoutAXVerification()
-                        if !trustWithoutAXVerification {
-                            if verificationContext != nil {
-                                // Even when AXPress reports success, verify resulting AX state when possible
-                                // so we can catch no-op "successful" actions in apps like browser-based editors.
-                                verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
-                            } else {
-                                verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
-                                    initialUndoState: initialUndoState
-                                )
-                            }
-                        }
-                    case .actionErrored:
-                        if verificationContext != nil {
-                            verificationPassed = self.menuFallbackExecutor.verifyInsertion(using: verificationContext)
-                        } else {
-                            verificationPassed = self.menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
-                                initialUndoState: initialUndoState
-                            )
-                        }
-                    }
-
-                    didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(
-                        attempt: menuAttemptResult,
-                        trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
-                        verificationPassed: verificationPassed
-                    )
-                }
+            var suppressFirstWarmupFailureWarning = false
+            if accessibilityDecision.needsMenuFallback {
+                let menuFallbackExecution = self.menuFallbackCoordinator.executeMenuFallback(
+                    insertionText: insertionText,
+                    didAccessibilityInsertText: accessibilityDecision.didAccessibilityInsertText,
+                    targetAppIdentity: targetAppIdentity,
+                    menuFallbackExecutor: self.menuFallbackExecutor,
+                    shouldTrustMenuSuccessWithoutAXVerification: { self.shouldTrustMenuSuccessWithoutAXVerification() },
+                    setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
+                    typeLeadingSpacesOnMainThread: { self.typeLeadingSpacesOnMainThread(count: $0) }
+                )
+                didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
+                suppressFirstWarmupFailureWarning = menuFallbackExecution.suppressFirstWarmupFailureWarning
             }
 
-            let suppressFirstWarmupFailureWarning = Self.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
-                attempt: menuAttempt,
-                didAccessibilityInsertText: didAccessibilityInsertText,
+            let executionPlan = PasteServiceExecutionPlan.build(
+                didAccessibilityInsertText: accessibilityDecision.didAccessibilityInsertText,
                 didMenuFallbackInsert: didMenuFallbackInsert,
-                isFirstMenuSuccessAttemptForProcess: isFirstMenuSuccessAttemptForProcess
+                usedMenuFallbackPath: accessibilityDecision.needsMenuFallback,
+                suppressFirstWarmupFailureWarning: suppressFirstWarmupFailureWarning,
+                shouldStartFailureRecovery: Self.shouldStartFailureRecovery(
+                    didAccessibilityInsertText: accessibilityDecision.didAccessibilityInsertText,
+                    didMenuFallbackInsert: didMenuFallbackInsert
+                ),
+                restoreDelayAfterMenuFallback: self.restoreDelayAfterMenuFallback,
+                restoreDelayAfterAccessibilityInjection: self.restoreDelayAfterAccessibilityInjection
             )
 
-            if didAccessibilityInsertText || didMenuFallbackInsert {
+            if executionPlan.shouldRememberInsertion {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
-            if suppressFirstWarmupFailureWarning || !Self.shouldStartFailureRecovery(
-                didAccessibilityInsertText: didAccessibilityInsertText,
-                didMenuFallbackInsert: didMenuFallbackInsert
-            ) {
-                // Menu-driven paste can complete slightly after AX calls.
-                let restoreDelay: TimeInterval = needsMenuPasteFallback ? self.restoreDelayAfterMenuFallback : self.restoreDelayAfterAccessibilityInjection
-                self.restoreClipboardOnMainThread(from: savedSnapshot, delay: restoreDelay)
-            } else {
+            if executionPlan.shouldStartFailureRecovery {
                 self.startFailureRecoveryOnMainThread(savedSnapshot: savedSnapshot)
+            } else {
+                let delay = executionPlan.restoreDelay ?? self.restoreDelayAfterAccessibilityInjection
+                self.restoreClipboardOnMainThread(from: savedSnapshot, delay: delay)
             }
         }
     }
@@ -202,27 +301,16 @@ class PasteService {
         PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(bundleID: frontmostAppIdentity()?.bundleID)
     }
 
-    private func shouldAllowFirstMenuSuccessWarmupSuppression(for appIdentity: PasteAppIdentity?) -> Bool {
-        guard let key = menuSuccessAttemptProcessKey(for: appIdentity),
-              let appIdentity else {
-            return false
-        }
-
-        if let cached = warmupSuppressionEligibilityByProcessKey[key] {
-            return cached
-        }
-
-        let isEligible = Self.hasElectronFramework(processID: appIdentity.pid)
-        warmupSuppressionEligibilityByProcessKey[key] = isEligible
-        return isEligible
-    }
-
     // MARK: - Heuristic Identity / Memory
-    private func frontmostAppIdentity() -> PasteAppIdentity? {
+    private static func defaultFrontmostAppIdentity() -> PasteAppIdentity? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         let rawBundleID = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
         let bundleID = (rawBundleID?.isEmpty == false) ? rawBundleID : nil
         return PasteAppIdentity(bundleID: bundleID, pid: app.processIdentifier)
+    }
+
+    private func frontmostAppIdentity() -> PasteAppIdentity? {
+        frontmostAppIdentityProvider()
     }
 
     private func appIdentityMatches(_ lhs: PasteAppIdentity, _ rhs: PasteAppIdentity) -> Bool {
@@ -234,63 +322,30 @@ class PasteService {
 
     private func rememberSuccessfulInsertion(of text: String, in appIdentity: PasteAppIdentity?) {
         lastInsertionAppIdentity = appIdentity
-        lastInsertionAt = Date()
+        lastInsertionAt = clockNow()
         lastInsertedTrailingCharacter = text.last
     }
 
     private func cancelActiveRecoveryOnMainThread() {
-        if Thread.isMainThread {
-            Task { @MainActor in
-                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
-            }
-            return
-        }
-
-        let semaphore = DispatchSemaphore(value: 0)
-        DispatchQueue.main.async {
-            Task { @MainActor in
-                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
-                semaphore.signal()
-            }
-        }
-        semaphore.wait()
+        failureRecoveryController.cancelActiveRecoveryIfNeeded()
     }
 
     private func startFailureRecoveryOnMainThread(
         savedSnapshot: PasteClipboardSnapshot.Snapshot
     ) {
-        let restoreClosure = { [savedSnapshot] in
-            PasteClipboardSnapshot.restore(savedSnapshot)
+        let restoreClosure = { [clipboardAdapter] in
+            clipboardAdapter.restore(savedSnapshot)
         }
 
-        if Thread.isMainThread {
-            Task { @MainActor in
-                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
-            }
-            return
-        }
-
-        let semaphore = DispatchSemaphore(value: 0)
-        DispatchQueue.main.async {
-            Task { @MainActor in
-                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClosure)
-                semaphore.signal()
-            }
-        }
-        semaphore.wait()
+        failureRecoveryController.startRecovery(restoreClipboard: restoreClosure)
     }
 
     private func restoreClipboardOnMainThread(
         from savedSnapshot: PasteClipboardSnapshot.Snapshot,
         delay: TimeInterval
     ) {
-        let restoreBlock = { [savedSnapshot] in
-            PasteClipboardSnapshot.restore(savedSnapshot)
-        }
-
-        if Thread.isMainThread {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
-            return
+        let restoreBlock = { [clipboardAdapter] in
+            clipboardAdapter.restore(savedSnapshot)
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
@@ -310,7 +365,9 @@ class PasteService {
     static func didMenuFallbackInsertForEmptyClipboardPayload(
         didTypeLeadingSpaces: Bool
     ) -> Bool {
-        didTypeLeadingSpaces
+        PasteMenuFallbackCoordinator.didMenuFallbackInsertForEmptyClipboardPayload(
+            didTypeLeadingSpaces: didTypeLeadingSpaces
+        )
     }
 
     static func didMenuFallbackInsertForMenuAttempt(
@@ -318,14 +375,11 @@ class PasteService {
         trustMenuSuccessWithoutAXVerification: Bool,
         verificationPassed: Bool
     ) -> Bool {
-        switch attempt {
-        case .unavailable:
-            return false
-        case .actionSucceeded:
-            return trustMenuSuccessWithoutAXVerification || verificationPassed
-        case .actionErrored:
-            return verificationPassed
-        }
+        PasteMenuFallbackCoordinator.didMenuFallbackInsertForMenuAttempt(
+            attempt: attempt,
+            trustMenuSuccessWithoutAXVerification: trustMenuSuccessWithoutAXVerification,
+            verificationPassed: verificationPassed
+        )
     }
 
     static func shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
@@ -334,87 +388,30 @@ class PasteService {
         didMenuFallbackInsert: Bool,
         isFirstMenuSuccessAttemptForProcess: Bool
     ) -> Bool {
-        guard isFirstMenuSuccessAttemptForProcess else { return false }
-        guard !didAccessibilityInsertText else { return false }
-        guard !didMenuFallbackInsert else { return false }
-        if case .actionSucceeded = attempt {
-            return true
-        }
-        return false
-    }
-
-    private func menuSuccessAttemptProcessKey(for appIdentity: PasteAppIdentity?) -> String? {
-        guard let appIdentity else { return nil }
-        let bundleID = appIdentity.bundleID ?? "<unknown>"
-        return "\(bundleID)#\(appIdentity.pid)"
-    }
-
-    private func hasSeenMenuSuccessAttempt(for appIdentity: PasteAppIdentity?) -> Bool {
-        guard let key = menuSuccessAttemptProcessKey(for: appIdentity) else { return false }
-        return seenMenuSuccessAttemptProcessKeys.contains(key)
-    }
-
-    private func markMenuSuccessAttemptSeen(for appIdentity: PasteAppIdentity?) {
-        guard let key = menuSuccessAttemptProcessKey(for: appIdentity) else { return }
-        seenMenuSuccessAttemptProcessKeys.insert(key)
+        PasteMenuFallbackCoordinator.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
+            attempt: attempt,
+            didAccessibilityInsertText: didAccessibilityInsertText,
+            didMenuFallbackInsert: didMenuFallbackInsert,
+            isFirstMenuSuccessAttemptForProcess: isFirstMenuSuccessAttemptForProcess
+        )
     }
 
     static func hasElectronFramework(processID: pid_t) -> Bool {
-        guard let app = NSRunningApplication(processIdentifier: processID),
-              let bundleURL = app.bundleURL else {
-            return false
-        }
-
-        let electronFrameworkURL = bundleURL
-            .appendingPathComponent("Contents", isDirectory: true)
-            .appendingPathComponent("Frameworks", isDirectory: true)
-            .appendingPathComponent("Electron Framework.framework", isDirectory: true)
-
-        if FileManager.default.fileExists(atPath: electronFrameworkURL.path) {
-            return true
-        }
-
-        let frameworksDirectory = bundleURL
-            .appendingPathComponent("Contents", isDirectory: true)
-            .appendingPathComponent("Frameworks", isDirectory: true)
-
-        guard let frameworkNames = try? FileManager.default.contentsOfDirectory(atPath: frameworksDirectory.path) else {
-            return false
-        }
-
-        return containsElectronFramework(frameworkNames: frameworkNames)
+        PasteMenuFallbackCoordinator.hasElectronFramework(processID: processID)
     }
 
     static func containsElectronFramework(frameworkNames: [String]) -> Bool {
-        frameworkNames.contains { name in
-            let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            return normalized == "electron framework.framework" || normalized.contains("electron framework.framework")
-        }
-    }
-
-    // MARK: - Menu Transport
-    private func menuFallbackTransport(for text: String) -> PasteMenuFallbackTransport {
-        let leadingSpaces = text.prefix { $0 == " " }.count
-        guard leadingSpaces > 0 else {
-            return PasteMenuFallbackTransport(leadingSpacesToType: 0, textToPaste: text)
-        }
-
-        let remainingText = String(text.dropFirst(leadingSpaces))
-        return PasteMenuFallbackTransport(leadingSpacesToType: leadingSpaces, textToPaste: remainingText)
+        PasteMenuFallbackCoordinator.containsElectronFramework(frameworkNames: frameworkNames)
     }
 
     private func setClipboardStringOnMainThread(_ text: String) {
         if Thread.isMainThread {
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(text, forType: .string)
+            clipboardAdapter.setString(text)
             return
         }
 
         DispatchQueue.main.sync {
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(text, forType: .string)
+            clipboardAdapter.setString(text)
         }
     }
 

@@ -8,6 +8,9 @@ final class TranscriptionPostProcessor {
     private let listFormattingEngine = ListFormattingEngine()
     private var dictionaryFingerprint = ""
 
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
+
     func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
         let fingerprint = fingerprint(for: entries)
         guard fingerprint != dictionaryFingerprint else { return }
@@ -39,7 +42,8 @@ final class TranscriptionPostProcessor {
         }
 
         let listFormatted = listFormattingEngine.formatIfNeeded(normalized, renderMode: renderMode)
-        let timeNormalized = normalizeTimeExpressions(in: listFormatted)
+        let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
+        let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
         return normalizeOutputWhitespace(timeNormalized, renderMode: renderMode)
     }
 
@@ -57,9 +61,33 @@ final class TranscriptionPostProcessor {
                         .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                 }
-                .filter { !$0.isEmpty }
 
-            return normalizedLines.joined(separator: "\n")
+            var collapsedLines: [String] = []
+            collapsedLines.reserveCapacity(normalizedLines.count)
+
+            var previousWasBlank = false
+            for line in normalizedLines {
+                let isBlank = line.isEmpty
+                if isBlank {
+                    if collapsedLines.isEmpty || previousWasBlank {
+                        continue
+                    }
+                    collapsedLines.append("")
+                    previousWasBlank = true
+                } else {
+                    collapsedLines.append(line)
+                    previousWasBlank = false
+                }
+            }
+
+            while collapsedLines.first?.isEmpty == true {
+                collapsedLines.removeFirst()
+            }
+            while collapsedLines.last?.isEmpty == true {
+                collapsedLines.removeLast()
+            }
+
+            return collapsedLines.joined(separator: "\n")
         }
     }
 
@@ -68,6 +96,12 @@ final class TranscriptionPostProcessor {
             .map { "\($0.id.uuidString):\($0.phrase)" }
             .sorted()
             .joined(separator: "|")
+    }
+
+    private func normalizeLaughterExpressions(in text: String) -> String {
+        replacingMatches(pattern: #"\bha\s+ha\b"#, in: text) { _, _ in
+            "haha"
+        }
     }
 
     private func normalizeTimeExpressions(in text: String) -> String {

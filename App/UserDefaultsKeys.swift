@@ -5,6 +5,7 @@ import Foundation
 enum UserDefaultsKeys {
     static let hasCompletedOnboarding = "KeyVox.HasCompletedOnboarding"
     static let triggerBinding         = "KeyVox.TriggerBinding"
+    static let autoParagraphsEnabled  = "KeyVox.AutoParagraphsEnabled"
     static let isSoundEnabled         = "KeyVox.IsSoundEnabled"
     static let soundVolume            = "KeyVox.SoundVolume"
     static let selectedMicrophoneUID  = "KeyVox.SelectedMicrophoneUID"

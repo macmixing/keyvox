@@ -33,6 +33,7 @@ struct WarningOverlayView: View {
                         .tint(.indigo)
                         .controlSize(.small)
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
             } else {
                 HStack {
                     Spacer(minLength: 0)
