@@ -6,15 +6,43 @@ struct PasteMenuFallbackExecutionResult {
     let suppressFirstWarmupFailureWarning: Bool
 }
 
+protocol PasteMenuFallbackCoordinating {
+    func executeMenuFallback(
+        insertionText: String,
+        didAccessibilityInsertText: Bool,
+        targetAppIdentity: PasteAppIdentity?,
+        menuFallbackExecutor: PasteMenuFallbackExecuting,
+        shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
+        setClipboardStringOnMainThread: (String) -> Void,
+        typeLeadingSpacesOnMainThread: (Int) -> Bool
+    ) -> PasteMenuFallbackExecutionResult
+}
+
 final class PasteMenuFallbackCoordinator {
     private var seenMenuSuccessAttemptProcessKeys: Set<String> = []
     private var warmupSuppressionEligibilityByProcessKey: [String: Bool] = [:]
+    private let electronFrameworkDetector: (pid_t) -> Bool
+
+    init(
+        electronFrameworkDetector: ((pid_t) -> Bool)? = nil
+    ) {
+        if let electronFrameworkDetector {
+            self.electronFrameworkDetector = electronFrameworkDetector
+        } else {
+            self.electronFrameworkDetector = { processID in
+                PasteMenuFallbackCoordinator.hasElectronFramework(processID: processID)
+            }
+        }
+    }
+
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     func executeMenuFallback(
         insertionText: String,
         didAccessibilityInsertText: Bool,
         targetAppIdentity: PasteAppIdentity?,
-        menuFallbackExecutor: PasteMenuFallbackExecutor,
+        menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
         typeLeadingSpacesOnMainThread: (Int) -> Bool
@@ -203,7 +231,7 @@ final class PasteMenuFallbackCoordinator {
             return cached
         }
 
-        let isEligible = Self.hasElectronFramework(processID: appIdentity.pid)
+        let isEligible = electronFrameworkDetector(appIdentity.pid)
         warmupSuppressionEligibilityByProcessKey[key] = isEligible
         return isEligible
     }
@@ -234,3 +262,5 @@ final class PasteMenuFallbackCoordinator {
         return PasteMenuFallbackTransport(leadingSpacesToType: leadingSpaces, textToPaste: remainingText)
     }
 }
+
+extension PasteMenuFallbackCoordinator: PasteMenuFallbackCoordinating {}

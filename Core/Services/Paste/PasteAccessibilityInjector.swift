@@ -1,9 +1,13 @@
 import Cocoa
 
-final class PasteAccessibilityInjector {
-    private let axInspector: PasteAXInspector
+protocol PasteAccessibilityInjecting {
+    func injectTextViaAccessibility(_ text: String) -> PasteAccessibilityInjectionOutcome
+}
 
-    init(axInspector: PasteAXInspector) {
+final class PasteAccessibilityInjector {
+    private let axInspector: PasteAXInspecting
+
+    init(axInspector: PasteAXInspecting) {
         self.axInspector = axInspector
     }
 
@@ -61,3 +65,5 @@ final class PasteAccessibilityInjector {
         return .softSuccessNeedsFallback
     }
 }
+
+extension PasteAccessibilityInjector: PasteAccessibilityInjecting {}

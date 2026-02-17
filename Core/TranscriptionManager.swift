@@ -31,6 +31,9 @@ class TranscriptionManager: ObservableObject {
         setupBindings()
         whisperService.warmup()
     }
+
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
     
     private func setupBindings() {
         keyboardMonitor.$isTriggerKeyPressed

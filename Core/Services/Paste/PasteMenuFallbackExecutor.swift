@@ -1,6 +1,25 @@
 import Cocoa
 
-final class PasteMenuFallbackExecutor {
+protocol PasteMenuFallbackExecuting {
+    func pasteViaMenuBarOnMainThread() -> PasteMenuFallbackAttemptResult
+    func captureVerificationContext() -> PasteMenuFallbackVerificationContext?
+    func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool
+    func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState?
+    func verifyInsertionWithoutAXContextOnMainThread(
+        initialUndoState: PasteMenuFallbackUndoState?
+    ) -> Bool
+    func startLiveValueChangeVerificationSession(
+        processID: pid_t?
+    ) -> PasteAXLiveSessioning?
+    func verifyInsertionUsingLiveValueChangeSession(
+        _ session: PasteAXLiveSessioning?
+    ) -> Bool
+    func finishLiveValueChangeVerificationSession(
+        _ session: PasteAXLiveSessioning?
+    )
+}
+
+final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
     private let axInspector: PasteAXInspecting
     private let menuScanner: PasteMenuScanner
     private let verificationTimeout: TimeInterval
@@ -116,13 +135,13 @@ final class PasteMenuFallbackExecutor {
 
     func startLiveValueChangeVerificationSession(
         processID: pid_t?
-    ) -> PasteAXLiveSession? {
+    ) -> PasteAXLiveSessioning? {
         guard let processID else { return nil }
         return PasteAXLiveSession(processID: processID)
     }
 
     func verifyInsertionUsingLiveValueChangeSession(
-        _ session: PasteAXLiveSession?
+        _ session: PasteAXLiveSessioning?
     ) -> Bool {
         guard let session else { return false }
         return session.waitForSignal(
@@ -132,7 +151,7 @@ final class PasteMenuFallbackExecutor {
     }
 
     func finishLiveValueChangeVerificationSession(
-        _ session: PasteAXLiveSession?
+        _ session: PasteAXLiveSessioning?
     ) {
         session?.close()
     }

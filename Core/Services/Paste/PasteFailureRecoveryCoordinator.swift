@@ -31,6 +31,9 @@ final class PasteFailureRecoveryCoordinator {
             .store(in: &cancellables)
     }
 
+    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
+    nonisolated deinit {}
+
     func startRecovery(restoreClipboard: @escaping () -> Void) {
         cancelActiveRecoveryIfNeeded()
         generation += 1
