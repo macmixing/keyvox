@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-16**
+**Last Updated: 2026-02-17**
 
 ## Project Overview
 
@@ -40,9 +40,11 @@ KeyVox/
 │   │   ├── Paste/
 │   │   │   ├── PasteAXInspector.swift
 │   │   │   ├── PasteAccessibilityInjector.swift
+│   │   │   ├── PasteAXLiveSession.swift
 │   │   │   ├── PasteClipboardSnapshot.swift
 │   │   │   ├── PasteFailureRecoveryCoordinator.swift
 │   │   │   ├── PasteMenuFallbackExecutor.swift
+│   │   │   ├── PasteMenuScanner.swift
 │   │   │   ├── PasteModels.swift
 │   │   │   ├── PastePolicies.swift
 │   │   │   ├── PasteService.swift
@@ -332,8 +334,13 @@ KeyVox/
 - `Core/Services/Paste/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
-  - Menu bar Paste execution and verification loop for fallback insertion.
-  - Uses AX delta checks and an undo-state fallback path when AX verification context is unavailable.
+  - Orchestrates menu fallback execution and verification decisions.
+  - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
+- `Core/Services/Paste/PasteMenuScanner.swift`
+  - Encapsulates menu traversal/discovery for Paste and Undo menu items.
+  - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.
+- `Core/Services/Paste/PasteAXLiveSession.swift`
+  - Encapsulates AXObserver lifecycle used for live value-change verification during menu fallback.
 - `Core/Services/Paste/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
 - `Core/Services/Paste/PasteSpacingHeuristics.swift`
