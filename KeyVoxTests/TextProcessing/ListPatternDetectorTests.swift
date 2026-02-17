@@ -208,4 +208,14 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
         XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog"])
     }
+
+    func testKeepsFormattingWhenSpokenNumberSkipsAhead() {
+        let detector = ListPatternDetector()
+        let text = "Today one buy groceries two walk dog four call mom five charge phone"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 4, 5])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog", "Call mom", "Charge phone"])
+    }
 }

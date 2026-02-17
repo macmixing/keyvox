@@ -115,7 +115,7 @@ struct ListPatternDetector {
 
         for i in markers.indices {
             var bestForCurrent: [Marker] = [markers[i]]
-            for j in 0..<i where markers[i].number == markers[j].number + 1 {
+            for j in 0..<i where markers[i].number > markers[j].number {
                 let previousRun = bestEndingAt[j]
                 guard !previousRun.isEmpty else { continue }
                 let candidate = previousRun + [markers[i]]
@@ -154,12 +154,27 @@ struct ListPatternDetector {
     }
 
     private func runStrength(_ run: [Marker], in nsText: NSString) -> Int {
-        run.reduce(0) { partial, marker in
+        guard !run.isEmpty else { return 0 }
+
+        var score = run.reduce(0) { partial, marker in
             var score = partial
             if markerHasExplicitDelimiter(marker, in: nsText) { score += 2 }
             if markerHasBoundaryBefore(marker, in: nsText) { score += 1 }
             return score
         }
+
+        // Prefer naturally contiguous counting while still allowing skipped
+        // numbers (e.g. 1, 2, 4) so later markers remain list items.
+        for index in 1..<run.count {
+            let delta = run[index].number - run[index - 1].number
+            if delta == 1 {
+                score += 2
+            } else if delta == 2 {
+                score += 1
+            }
+        }
+
+        return score
     }
 
     private func markerHasExplicitDelimiter(_ marker: Marker, in nsText: NSString) -> Bool {
