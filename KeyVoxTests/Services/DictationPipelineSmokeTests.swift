@@ -128,6 +128,55 @@ final class DictationPipelineSmokeTests: XCTestCase {
         }
     }
 
+    func testDictationPipelineSmokeComposedFeaturesParagraphListCustomWords() async throws {
+        let initialSnapshot: PasteClipboardSnapshot.Snapshot = [[.string: Data("before".utf8)]]
+        let input = "project notes one cue board design two cue board review\n\nand we should meet at 415 pm"
+        let expected = "project notes:\n\n1. Cueboard design\n2. Cueboard review\n\nAnd we should meet at 4:15 PM"
+        let dictionaryEntries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let transcription = StubTranscriptionProvider(result: input)
+        let clipboard = RecordingClipboardAdapter(snapshotToCapture: initialSnapshot)
+        let recovery = RecordingFailureRecoveryController(executesRestoreImmediately: false)
+        let injector = StubAccessibilityInjector(outcome: .verifiedSuccess)
+        let coordinator = StubMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: nil,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let pasteService = makePasteService(
+            clipboard: clipboard,
+            recovery: recovery,
+            injector: injector,
+            coordinator: coordinator
+        )
+
+        var spokenWordRecords: [String] = []
+        let pipeline = DictationPipeline(
+            transcriptionProvider: transcription,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { dictionaryEntries },
+            autoParagraphsEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { spokenWordRecords.append($0) },
+            pasteText: { pasteService.pasteText($0) }
+        )
+
+        let result = await runPipeline(pipeline)
+
+        XCTAssertFalse(result.wasLikelyNoSpeech)
+        XCTAssertEqual(result.finalText, expected)
+        XCTAssertEqual(transcription.autoParagraphFlags, [true])
+        XCTAssertEqual(spokenWordRecords, [expected])
+
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        XCTAssertEqual(clipboard.clipboardBefore, initialSnapshot)
+        XCTAssertEqual(clipboard.pastedPayloads, [expected])
+        XCTAssertEqual(clipboard.clipboardAfter, initialSnapshot)
+        XCTAssertEqual(clipboard.restoreCalls, 1)
+        XCTAssertEqual(recovery.startCalls, 0)
+    }
+
     private func runPipeline(
         _ pipeline: DictationPipeline,
         frames: [Float] = [0.1, 0.2, 0.3],
