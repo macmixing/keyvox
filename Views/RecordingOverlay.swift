@@ -54,12 +54,17 @@ struct RecordingOverlay: View {
 }
 
 struct BarView: View {
+    private static let phaseStep: Double = 0.1
+    private static let quietPhaseStep: Double = 0.06 // Slower than processing, but still visibly alive in quiet rooms.
+    private static let phaseWrapPeriod: Double = .pi * 2
+
     var value: Double
     var index: Int
     var isTranscribing: Bool
     var signalState: LiveInputSignalState
     
     @State private var ripplePhase: Double = 0
+    @State private var quietPhase: Double = 0
     @State private var rippleTimer: Timer?
     
     var body: some View {
@@ -101,13 +106,22 @@ struct BarView: View {
         }
 
         if signalState == .quiet {
-            // Quiet room noise: tiny "live" motion so users know the mic is hot.
-            let quietWaveOffset = (ripplePhase * 0.45) + Double(index) * 0.65
-            let quietWave = (sin(quietWaveOffset) * 0.5) + 0.5
+            // Ambient room-noise loop:
+            // 1) slightly raised baseline, 2) gentle per-bar wiggle bed, 3) tiny right-to-left ripple on top.
+            let quietWaveOffset = quietPhase + Double(index) * 0.8
+            let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
+            let wiggleOffset = (quietPhase * 0.9) + Double(index) * 1.35
+            let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
             let quietLevel = min(max(value / 0.14, 0), 1)
-            let subtleBaseLift: CGFloat = isDevModeOversized ? 3.2 : 1.2
-            let subtleWaveRange: CGFloat = isDevModeOversized ? 6.8 : 2.6
-            return flatHeight + (CGFloat(quietLevel) * subtleBaseLift) + (CGFloat(quietWave) * subtleWaveRange)
+            let ambientBaseLift: CGFloat = isDevModeOversized ? 3.2 : 1.2
+            let quietLevelLift: CGFloat = isDevModeOversized ? 2.3 : 0.8
+            let ambientWiggleRange: CGFloat = isDevModeOversized ? 2.6 : 0.9
+            let subtleRippleRange: CGFloat = isDevModeOversized ? 5.4 : 2.0
+            return flatHeight
+                + ambientBaseLift
+                + (CGFloat(quietLevel) * quietLevelLift)
+                + (CGFloat(ambientWiggle) * ambientWiggleRange)
+                + (CGFloat(quietRipple) * subtleRippleRange)
         }
 
         // Normal audio-reactive animation while recording and signal is present.
@@ -122,9 +136,14 @@ struct BarView: View {
 
         rippleTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
             // Timer tick updates are safe to do on the main run loop (scheduledTimer runs there by default)
-            ripplePhase += 0.1
-            if ripplePhase > .pi * 2 {
-                ripplePhase = 0
+            ripplePhase += Self.phaseStep
+            quietPhase += Self.quietPhaseStep
+            if ripplePhase >= Self.phaseWrapPeriod {
+                // Subtract instead of hard-reset so we keep sub-frame remainder and avoid visible jumps.
+                ripplePhase -= Self.phaseWrapPeriod
+            }
+            if quietPhase >= Self.phaseWrapPeriod {
+                quietPhase -= Self.phaseWrapPeriod
             }
         }
     }
