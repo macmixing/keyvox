@@ -14,6 +14,7 @@ final class AppSettingsStoreTests: XCTestCase {
 
         XCTAssertFalse(store.hasCompletedOnboarding)
         XCTAssertEqual(store.triggerBinding, .rightOption)
+        XCTAssertTrue(store.autoParagraphsEnabled)
         XCTAssertTrue(store.isSoundEnabled)
         XCTAssertEqual(store.soundVolume, 0.1, accuracy: 0.0001)
         XCTAssertEqual(store.selectedMicrophoneUID, "")
@@ -35,6 +36,7 @@ final class AppSettingsStoreTests: XCTestCase {
 
         defaults.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
         defaults.set(AppSettingsStore.TriggerBinding.leftCommand.rawValue, forKey: UserDefaultsKeys.triggerBinding)
+        defaults.set(false, forKey: UserDefaultsKeys.autoParagraphsEnabled)
         defaults.set(false, forKey: UserDefaultsKeys.isSoundEnabled)
         defaults.set(1.8, forKey: UserDefaultsKeys.soundVolume)
         defaults.set("mic-123", forKey: UserDefaultsKeys.selectedMicrophoneUID)
@@ -47,6 +49,7 @@ final class AppSettingsStoreTests: XCTestCase {
 
         XCTAssertTrue(store.hasCompletedOnboarding)
         XCTAssertEqual(store.triggerBinding, .leftCommand)
+        XCTAssertFalse(store.autoParagraphsEnabled)
         XCTAssertFalse(store.isSoundEnabled)
         XCTAssertEqual(store.soundVolume, 1.0, accuracy: 0.0001)
         XCTAssertEqual(store.selectedMicrophoneUID, "mic-123")
@@ -113,6 +116,7 @@ final class AppSettingsStoreTests: XCTestCase {
 
         store.hasCompletedOnboarding = true
         store.triggerBinding = .rightCommand
+        store.autoParagraphsEnabled = false
         store.isSoundEnabled = false
         store.selectedMicrophoneUID = "usb-mic"
         store.updateAlertLastShown = lastShown
@@ -120,6 +124,7 @@ final class AppSettingsStoreTests: XCTestCase {
 
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding))
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.triggerBinding), AppSettingsStore.TriggerBinding.rightCommand.rawValue)
+        XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool, false)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool, false)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)

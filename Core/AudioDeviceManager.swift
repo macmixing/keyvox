@@ -28,19 +28,50 @@ protocol AudioDeviceSettingsStoring: AnyObject {
 }
 
 final class AppSettingsAudioDeviceStore: AudioDeviceSettingsStoring {
-    private let appSettings: AppSettingsStore
+    private let defaults: UserDefaults
+    private let subject: CurrentValueSubject<String, Never>
+    private let notificationCenter: NotificationCenter
+    private var defaultsObserver: NSObjectProtocol?
 
-    init(appSettings: AppSettingsStore = .shared) {
-        self.appSettings = appSettings
+    init(
+        defaults: UserDefaults = .standard,
+        notificationCenter: NotificationCenter = .default
+    ) {
+        self.defaults = defaults
+        self.notificationCenter = notificationCenter
+        let initial = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+        self.subject = CurrentValueSubject(initial)
+
+        defaultsObserver = notificationCenter.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: defaults,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            let latest = self.defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+            if latest != self.subject.value {
+                self.subject.send(latest)
+            }
+        }
+    }
+
+    deinit {
+        if let defaultsObserver {
+            notificationCenter.removeObserver(defaultsObserver)
+        }
     }
 
     var selectedMicrophoneUID: String {
-        get { appSettings.selectedMicrophoneUID }
-        set { appSettings.selectedMicrophoneUID = newValue }
+        get { subject.value }
+        set {
+            guard newValue != subject.value else { return }
+            defaults.set(newValue, forKey: UserDefaultsKeys.selectedMicrophoneUID)
+            subject.send(newValue)
+        }
     }
 
     var selectedMicrophoneUIDPublisher: AnyPublisher<String, Never> {
-        appSettings.$selectedMicrophoneUID.eraseToAnyPublisher()
+        subject.eraseToAnyPublisher()
     }
 }
 

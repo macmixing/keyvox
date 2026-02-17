@@ -50,7 +50,10 @@ extension AudioRecorder {
             outputFrames = []
         } else {
             lastCaptureWasLikelySilence = false
-            outputFrames = normalizeForTranscription(speechOnly)
+            #if DEBUG
+            print("Audio processed: Preserving internal silence for transcription timing fidelity.")
+            #endif
+            outputFrames = normalizeForTranscription(snapshot)
         }
 
         return outputFrames

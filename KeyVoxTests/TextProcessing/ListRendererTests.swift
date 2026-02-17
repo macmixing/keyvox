@@ -15,7 +15,7 @@ final class ListRendererTests: XCTestCase {
         )
 
         let rendered = renderer.render(list, mode: .multiline)
-        XCTAssertTrue(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nThen we rest")
+        XCTAssertTrue(rendered == "Here is the plan:\n\n1. Get dog food\n2. Charge phone\n\nThen we rest")
     }
 
     func testRendersSingleLineInlineWithSemicolons() {
@@ -45,6 +45,6 @@ final class ListRendererTests: XCTestCase {
         )
 
         let rendered = renderer.render(list, mode: .multiline)
-        XCTAssertTrue(rendered == "Here is the plan:\n1. Get dog food\n2. Charge phone\nAnd everything is handled")
+        XCTAssertTrue(rendered == "Here is the plan:\n\n1. Get dog food\n2. Charge phone\n\nAnd everything is handled")
     }
 }

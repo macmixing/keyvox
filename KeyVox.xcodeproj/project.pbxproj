@@ -27,6 +27,7 @@
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
 		8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */; };
 		8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C92F3C51D6003BD458 /* WhisperService.swift */; };
+		F0A000022F80000100AA0001 /* WhisperAudioParagraphChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */; };
 		8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C82F3C51D6003BD458 /* PasteService.swift */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
@@ -130,6 +131,7 @@
 		AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */; };
 		AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */; };
 		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
+		AB3000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 /* End PBXBuildFile section */
@@ -157,6 +159,7 @@
 		8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
 		8E6D05C82F3C51D6003BD458 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
 		8E6D05C92F3C51D6003BD458 /* WhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperService.swift; sourceTree = "<group>"; };
+		F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunker.swift; sourceTree = "<group>"; };
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
@@ -270,6 +273,7 @@
 		AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionTests.swift; sourceTree = "<group>"; };
 		AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerTests.swift; sourceTree = "<group>"; };
 		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
+		AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunkerTests.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -346,6 +350,7 @@
 				9A1000012F4B000100AA0001 /* Paste */,
 				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
+				F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */,
 				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
 			);
 			path = Services;
@@ -589,6 +594,7 @@
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
 				AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */,
 				AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */,
+				AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */,
 				AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */,
 			);
 			path = Services;
@@ -811,6 +817,7 @@
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
 				8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
+				F0A000022F80000100AA0001 /* WhisperAudioParagraphChunker.swift in Sources */,
 				8E6D05E72F3C5251003BD458 /* PasteService.swift in Sources */,
 				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
 					9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
@@ -852,6 +859,7 @@
 				AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */,
 				AB3000252F60000100AA0001 /* PastePoliciesStabilityTests.swift in Sources */,
 				AB3000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift in Sources */,
+				AB3000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift in Sources */,
 				AB3000262F60000100AA0001 /* PasteDecisionMatrixTests.swift in Sources */,
 				AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */,
 				AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */,

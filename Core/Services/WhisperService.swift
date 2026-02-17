@@ -12,6 +12,7 @@ class WhisperService: ObservableObject {
     private var dictionaryHintPrompt = ""
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
+    private let paragraphChunker = WhisperAudioParagraphChunker()
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -59,6 +60,7 @@ class WhisperService: ObservableObject {
     func transcribe(
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool = true,
+        enableAutoParagraphs: Bool = true,
         completion: @escaping (String?) -> Void
     ) {
         // Hardening: ensure only one transcription runs at a time
@@ -100,7 +102,40 @@ class WhisperService: ObservableObject {
         
         transcriptionTask = Task {
             do {
-                let segments = try await whisper?.transcribe(audioFrames: audioFrames)
+                let chunkResult = self.paragraphChunker.split(audioFrames)
+                #if DEBUG
+                let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }
+                print(
+                    "WhisperService chunking: chunks=\(chunkResult.chunks.count) " +
+                    "boundariesMs=\(boundaryMs) silenceThreshold=\(String(format: "%.5f", chunkResult.silenceThreshold))"
+                )
+                #endif
+
+                var transcribedSegments: [Segment] = []
+                var chunkTexts: [String] = []
+                for chunk in chunkResult.chunks {
+                    if Task.isCancelled {
+                        DispatchQueue.main.async {
+                            self.isTranscribing = false
+                            restoreDictionaryHintPromptIfNeeded()
+                        }
+                        return
+                    }
+
+                    let chunkFrames = Array(audioFrames[chunk.startFrame..<chunk.endFrame])
+                    guard !chunkFrames.isEmpty else { continue }
+
+                    let segments = try await whisper?.transcribe(audioFrames: chunkFrames) ?? []
+                    transcribedSegments.append(contentsOf: segments)
+                    let chunkText = segments
+                        .map { $0.text }
+                        .joined(separator: " ")
+                        .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !chunkText.isEmpty {
+                        chunkTexts.append(chunkText)
+                    }
+                }
                 
                 // Check if task was cancelled before proceeding
                 if Task.isCancelled {
@@ -111,8 +146,10 @@ class WhisperService: ObservableObject {
                     return
                 }
                 
-                let transcribedSegments = segments ?? []
-                let text = transcribedSegments.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+                let paragraphSeparator = enableAutoParagraphs ? "\n\n" : " "
+                let text = chunkTexts
+                    .joined(separator: paragraphSeparator)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
                 let hasSegments = !transcribedSegments.isEmpty
                 let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
                     $0.noSpeechProbability >= self.noSpeechSegmentProbabilityThreshold
@@ -124,9 +161,15 @@ class WhisperService: ObservableObject {
                     || allSegmentsHighNoSpeech
                     || averageNoSpeechProbability >= self.noSpeechAverageProbabilityThreshold
 
-                // Collapse multiple spaces into a single space
-                let cleanedText = text.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                let cleanedText = self.normalizeChunkedOutputWhitespace(text)
                 let finalText = likelyNoSpeechByDecoder ? "" : cleanedText
+                #if DEBUG
+                print(
+                    "WhisperService paragraphing: segments=\(transcribedSegments.count) " +
+                    "enabled=\(enableAutoParagraphs) " +
+                    "hasParagraphBreaks=\(finalText.contains("\n\n"))"
+                )
+                #endif
 
                 DispatchQueue.main.async {
                     self.isTranscribing = false
@@ -162,7 +205,7 @@ class WhisperService: ObservableObject {
         Task {
             do {
                 let audioFrames = try loadAndResample(url: audioURL)
-                transcribe(audioFrames: audioFrames, completion: completion)
+                transcribe(audioFrames: audioFrames, enableAutoParagraphs: true, completion: completion)
             } catch {
                 completion(nil)
             }
@@ -221,5 +264,19 @@ class WhisperService: ObservableObject {
         }
         
         return nil
+    }
+
+    private func normalizeChunkedOutputWhitespace(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+
+        let normalizedLines = text
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { line in
+                String(line)
+                    .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespaces)
+            }
+
+        return normalizedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

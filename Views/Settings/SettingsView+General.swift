@@ -29,6 +29,23 @@ extension SettingsView {
             
             // Tips as part of General or Info
             tipsSection
+
+            Text("STYLE")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
+                .padding(.leading, 4)
+
+            SettingsCard {
+                SettingsRow(
+                    icon: "text.alignleft",
+                    title: "Paragraphs",
+                    subtitle: "Automatically split dictated text into paragraphs in multiline fields."
+                ) {
+                    Toggle("", isOn: $appSettings.autoParagraphsEnabled)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                }
+            }
         }
     }
     

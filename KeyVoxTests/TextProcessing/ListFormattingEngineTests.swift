@@ -8,8 +8,8 @@ final class ListFormattingEngineTests: XCTestCase {
         let text = "Need to do this one buy groceries two walk dog"
 
         let output = engine.formatIfNeeded(text, renderMode: .multiline)
-        XCTAssertTrue(output.contains("1. buy groceries"))
-        XCTAssertTrue(output.contains("2. walk dog"))
+        XCTAssertTrue(output.contains("1. Buy groceries"))
+        XCTAssertTrue(output.contains("2. Walk dog"))
     }
 
     func testLeavesNonListTextUnchanged() {

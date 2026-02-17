@@ -99,8 +99,7 @@ struct SettingsRow<Accessory: View>: View {
                     .lineSpacing(2)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
-            Spacer(minLength: 16)
+            .layoutPriority(1)
             
             accessory
         }
