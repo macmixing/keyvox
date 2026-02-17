@@ -7,6 +7,9 @@ final class PastePoliciesStabilityTests: XCTestCase {
         XCTAssertTrue(
             PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(bundleID: "com.apple.MobileSMS")
         )
+        XCTAssertTrue(
+            PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(bundleID: "com.apple.iWork.Numbers")
+        )
 
         XCTAssertFalse(
             PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(bundleID: nil)
