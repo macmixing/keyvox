@@ -20,6 +20,15 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
         }
         return false
     }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if let settingsWindow = WindowManager.shared.settingsWindow, settingsWindow.isVisible {
+            settingsWindow.orderOut(nil)
+            return .terminateCancel
+        }
+
+        return .terminateNow
+    }
 }
 
 class WindowManager: ObservableObject {
