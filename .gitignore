@@ -1,11 +1,20 @@
+# macOS metadata
 *.DS_Store
 
-# Xcode user-specific files
+# Xcode user-specific state
 *.xcuserstate
 xcuserdata/
+
+# SwiftPM build metadata (for local package development)
 Packages/**/.build/
 Packages/**/.swiftpm/
+
+# Local tooling scratch files
 .tmp.pronunciation-bench.*
-release_dmg_notarize.sh
+
+# Local build artifacts / generated distributables
 build/
 KeyVox.dmg
+
+# Local release helper script copy
+release_dmg_notarize.sh
