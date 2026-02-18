@@ -36,14 +36,28 @@ extension SettingsView {
                 .padding(.leading, 4)
 
             SettingsCard {
-                SettingsRow(
-                    icon: "text.alignleft",
-                    title: "Paragraphs",
-                    subtitle: "Start new paragraphs automatically after brief pauses in multiline fields."
-                ) {
-                    Toggle("", isOn: $appSettings.autoParagraphsEnabled)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
+                VStack(spacing: 12) {
+                    SettingsRow(
+                        icon: "list.bullet",
+                        title: "Lists",
+                        subtitle: "Format spoken numbered lists automatically when detected."
+                    ) {
+                        Toggle("", isOn: $appSettings.listFormattingEnabled)
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                    }
+
+                    Divider()
+
+                    SettingsRow(
+                        icon: "text.alignleft",
+                        title: "Paragraphs",
+                        subtitle: "Start new paragraphs automatically after brief pauses in multiline fields."
+                    ) {
+                        Toggle("", isOn: $appSettings.autoParagraphsEnabled)
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                    }
                 }
             }
         }

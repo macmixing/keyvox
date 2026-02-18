@@ -20,6 +20,35 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
+    func testListFormattingDisabledKeepsProseAndOtherNormalizations() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Need to do this one cue board two cue board ha ha 415 pm",
+            dictionaryEntries: entries,
+            renderMode: .multiline,
+            listFormattingEnabled: false
+        )
+
+        XCTAssertEqual(output, "Need to do this one Cueboard two Cueboard haha 4:15 PM")
+    }
+
+    func testListFormattingEnabledStillFormatsWhenExplicitlyTrue() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Need to do this one cue board two cue board",
+            dictionaryEntries: entries,
+            renderMode: .multiline,
+            listFormattingEnabled: true
+        )
+
+        XCTAssertTrue(output.contains("1. Cueboard"))
+        XCTAssertTrue(output.contains("2. Cueboard"))
+    }
+
     func testSingleLineModeCollapsesWhitespace() {
         let processor = TranscriptionPostProcessor()
 

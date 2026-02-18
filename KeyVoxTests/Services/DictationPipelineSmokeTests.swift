@@ -78,6 +78,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
                 postProcessor: TranscriptionPostProcessor(),
                 dictionaryEntriesProvider: { dictionaryEntries },
                 autoParagraphsEnabledProvider: { true },
+                listFormattingEnabledProvider: { true },
                 listRenderModeProvider: { .multiline },
                 recordSpokenWords: { spokenWordRecords.append($0) },
                 pasteText: { pasteService.pasteText($0) }
@@ -113,6 +114,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
                 postProcessor: TranscriptionPostProcessor(),
                 dictionaryEntriesProvider: { [] },
                 autoParagraphsEnabledProvider: { true },
+                listFormattingEnabledProvider: { true },
                 listRenderModeProvider: { .multiline },
                 recordSpokenWords: { spokenWordRecords.append($0) },
                 pasteText: { pastedPayloads.append($0) }
@@ -149,6 +151,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
                 postProcessor: TranscriptionPostProcessor(),
                 dictionaryEntriesProvider: { dictionaryEntries },
                 autoParagraphsEnabledProvider: { true },
+                listFormattingEnabledProvider: { true },
                 listRenderModeProvider: { .multiline },
                 recordSpokenWords: { _ in },
                 pasteText: { pasteService.pasteText($0) }
@@ -198,6 +201,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
             postProcessor: TranscriptionPostProcessor(),
             dictionaryEntriesProvider: { dictionaryEntries },
             autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
             listRenderModeProvider: { .multiline },
             recordSpokenWords: { spokenWordRecords.append($0) },
             pasteText: { pasteService.pasteText($0) }
@@ -216,6 +220,54 @@ final class DictationPipelineSmokeTests: XCTestCase {
         XCTAssertEqual(clipboard.pastedPayloads, [expected])
         XCTAssertEqual(clipboard.clipboardAfter, initialSnapshot)
         XCTAssertEqual(clipboard.restoreCalls, 1)
+        XCTAssertEqual(recovery.startCalls, 0)
+    }
+
+    func testDictationPipelineKeepsPastePathWhenListFormattingDisabled() async throws {
+        let initialSnapshot: PasteClipboardSnapshot.Snapshot = [[.string: Data("before".utf8)]]
+        let input = "Need to do this one cue board two cue board"
+        let expected = "Need to do this one Cueboard two Cueboard"
+        let dictionaryEntries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let transcription = StubTranscriptionProvider(result: input)
+        let clipboard = RecordingClipboardAdapter(snapshotToCapture: initialSnapshot)
+        let recovery = RecordingFailureRecoveryController(executesRestoreImmediately: false)
+        let injector = StubAccessibilityInjector(outcome: .verifiedSuccess)
+        let coordinator = StubMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: nil,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let pasteService = makePasteService(
+            clipboard: clipboard,
+            recovery: recovery,
+            injector: injector,
+            coordinator: coordinator
+        )
+
+        var spokenWordRecords: [String] = []
+        let pipeline = DictationPipeline(
+            transcriptionProvider: transcription,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { dictionaryEntries },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { false },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { spokenWordRecords.append($0) },
+            pasteText: { pasteService.pasteText($0) }
+        )
+
+        let result = await runPipeline(pipeline)
+
+        XCTAssertFalse(result.wasLikelyNoSpeech)
+        XCTAssertEqual(result.finalText, expected)
+        XCTAssertEqual(spokenWordRecords, [expected])
+
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        XCTAssertEqual(clipboard.clipboardBefore, initialSnapshot)
+        XCTAssertEqual(clipboard.pastedPayloads, [expected])
+        XCTAssertEqual(clipboard.clipboardAfter, initialSnapshot)
         XCTAssertEqual(recovery.startCalls, 0)
     }
 
@@ -247,6 +299,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
                 postProcessor: TranscriptionPostProcessor(),
                 dictionaryEntriesProvider: { dictionaryEntries },
                 autoParagraphsEnabledProvider: { true },
+                listFormattingEnabledProvider: { true },
                 listRenderModeProvider: { .multiline },
                 recordSpokenWords: { spokenWordRecords.append($0) },
                 pasteText: { pastedPayloads.append($0) }

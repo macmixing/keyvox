@@ -18,7 +18,12 @@ final class TranscriptionPostProcessor {
         dictionaryMatcher.rebuildIndex(entries: entries)
     }
 
-    func process(_ text: String, dictionaryEntries: [DictionaryEntry], renderMode: ListRenderMode) -> String {
+    func process(
+        _ text: String,
+        dictionaryEntries: [DictionaryEntry],
+        renderMode: ListRenderMode,
+        listFormattingEnabled: Bool = true
+    ) -> String {
         guard !text.isEmpty else { return "" }
 
         updateDictionaryEntries(dictionaryEntries)
@@ -42,7 +47,9 @@ final class TranscriptionPostProcessor {
         }
 
         let idiomNormalized = normalizeIdioms(in: normalized)
-        let listFormatted = listFormattingEngine.formatIfNeeded(idiomNormalized, renderMode: renderMode)
+        let listFormatted = listFormattingEnabled
+            ? listFormattingEngine.formatIfNeeded(idiomNormalized, renderMode: renderMode)
+            : idiomNormalized
         let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
         let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
         return normalizeOutputWhitespace(timeNormalized, renderMode: renderMode)

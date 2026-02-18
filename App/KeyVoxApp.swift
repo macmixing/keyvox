@@ -23,6 +23,8 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         if let settingsWindow = WindowManager.shared.settingsWindow, settingsWindow.isVisible {
+            // Intentional: first quit closes Settings instead of terminating, so
+            // users don't accidentally exit KeyVox while actively editing settings.
             settingsWindow.orderOut(nil)
             return .terminateCancel
         }

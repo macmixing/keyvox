@@ -26,6 +26,7 @@ final class DictationPipeline {
     private let postProcessor: TranscriptionPostProcessor
     private let dictionaryEntriesProvider: () -> [DictionaryEntry]
     private let autoParagraphsEnabledProvider: () -> Bool
+    private let listFormattingEnabledProvider: () -> Bool
     private let listRenderModeProvider: () -> ListRenderMode
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
@@ -35,6 +36,7 @@ final class DictationPipeline {
         postProcessor: TranscriptionPostProcessor,
         dictionaryEntriesProvider: @escaping () -> [DictionaryEntry],
         autoParagraphsEnabledProvider: @escaping () -> Bool,
+        listFormattingEnabledProvider: @escaping () -> Bool,
         listRenderModeProvider: @escaping () -> ListRenderMode,
         recordSpokenWords: @escaping (String) -> Void,
         pasteText: @escaping (String) -> Void
@@ -43,6 +45,7 @@ final class DictationPipeline {
         self.postProcessor = postProcessor
         self.dictionaryEntriesProvider = dictionaryEntriesProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
+        self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.listRenderModeProvider = listRenderModeProvider
         self.recordSpokenWords = recordSpokenWords
         self.pasteText = pasteText
@@ -84,7 +87,8 @@ final class DictationPipeline {
             let finalText = self.postProcessor.process(
                 rawText,
                 dictionaryEntries: dictionaryEntries,
-                renderMode: self.listRenderModeProvider()
+                renderMode: self.listRenderModeProvider(),
+                listFormattingEnabled: self.listFormattingEnabledProvider()
             )
 
             if DictationPromptEchoGuard.shouldTreatAsNoSpeech(

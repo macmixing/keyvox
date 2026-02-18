@@ -29,6 +29,9 @@ class TranscriptionManager: ObservableObject {
         autoParagraphsEnabledProvider: { [weak self] in
             self?.appSettings.autoParagraphsEnabled ?? true
         },
+        listFormattingEnabledProvider: { [weak self] in
+            self?.appSettings.listFormattingEnabled ?? true
+        },
         listRenderModeProvider: {
             PasteService.shared.preferredListRenderModeForFocusedElement()
         },
