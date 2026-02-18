@@ -39,7 +39,18 @@ struct ListPatternRunSelector {
             best = run
         }
 
-        return best.count >= 2 ? best : nil
+        guard best.count >= 2 else { return nil }
+        guard isCredibleTwoItemGap(run: best, in: nsText) else { return nil }
+        return best
+    }
+
+    // Prevent prose like "one for X and three for Y" from being detected as a
+    // two-item list while still allowing explicit skipped numbering ("1. ... 3. ...").
+    private func isCredibleTwoItemGap(run: [ListPatternMarker], in nsText: NSString) -> Bool {
+        guard run.count == 2 else { return true }
+        let delta = run[1].number - run[0].number
+        guard delta > 1 else { return true }
+        return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText) }
     }
 
     private func shouldPrefer(run candidate: [ListPatternMarker], over existing: [ListPatternMarker], in nsText: NSString) -> Bool {
