@@ -20,8 +20,11 @@
 		8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */; };
 		8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */; };
 		8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */; };
-		8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */; };
-		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
+			8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */; };
+			C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
+			C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */; };
+			C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
+			8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
@@ -163,8 +166,11 @@
 		F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunker.swift; sourceTree = "<group>"; };
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
-		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
-		8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
+			8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
+			C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
+			C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+Validation.swift"; sourceTree = "<group>"; };
+			C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
+			8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D22F3C51D6003BD458 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
@@ -358,23 +364,34 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		8E6D05CF2F3C51D6003BD458 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */,
-				8F2201002F44010000BB2201 /* AI */,
-				9D4000012F4E000100AA0001 /* Audio */,
-				8F4401002F46010000DD4401 /* TextProcessing */,
-				8E6D05CA2F3C51D6003BD458 /* Services */,
-				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
-				8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
-				8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */,
-				9B2000012F4C000100AA0001 /* Overlay */,
-				8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
+			8E6D05CF2F3C51D6003BD458 /* Core */ = {
+				isa = PBXGroup;
+				children = (
+					8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */,
+					8F2201002F44010000BB2201 /* AI */,
+					9D4000012F4E000100AA0001 /* Audio */,
+					8F4401002F46010000DD4401 /* TextProcessing */,
+					8E6D05CA2F3C51D6003BD458 /* Services */,
+					8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
+					8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
+					C11000002F90000100AA0001 /* ModelDownloader */,
+					9B2000012F4C000100AA0001 /* Overlay */,
+					8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */,
+				);
+				path = Core;
+				sourceTree = "<group>";
+			};
+			C11000002F90000100AA0001 /* ModelDownloader */ = {
+				isa = PBXGroup;
+				children = (
+					8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */,
+					C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */,
+					C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */,
+					C11000042F90000100AA0001 /* ModelDownloadTransport.swift */,
+				);
+				path = ModelDownloader;
+				sourceTree = "<group>";
+			};
 		8E6D05D32F3C51D6003BD458 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -782,9 +799,12 @@
 				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
 				8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
 				9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */,
-				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
-				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
-				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
+					8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
+					8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
+					C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */,
+					C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */,
+					C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */,
+					8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
 				8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */,
 				9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */,
 				9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */,
