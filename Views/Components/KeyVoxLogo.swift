@@ -3,7 +3,11 @@ import SwiftUI
 // NOTE: This file contains the proprietary KeyVox logo implementation
 // referenced in LICENSE.md under Proprietary Assets and Branding.
 struct KeyVoxLogo: View {
+    private static let phaseStep: Double = 0.1
+    private static let phaseWrapPeriod: Double = .pi * 2
+
     @State private var ripplePhase: Double = 0
+    @State private var rippleTimer: Timer?
     var size: CGFloat = 44
     
     var body: some View {
@@ -24,15 +28,27 @@ struct KeyVoxLogo: View {
         .onAppear {
             startRippleAnimation()
         }
+        .onDisappear {
+            stopRippleAnimation()
+        }
     }
     
     private func startRippleAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
-            ripplePhase += 0.1
-            if ripplePhase > .pi * 2 {
-                ripplePhase = 0
+        // Prevent stacking multiple timers if the view is recreated.
+        if rippleTimer != nil { return }
+
+        rippleTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+            ripplePhase += Self.phaseStep
+            if ripplePhase >= Self.phaseWrapPeriod {
+                // Keep sub-frame remainder to avoid visible jumps.
+                ripplePhase -= Self.phaseWrapPeriod
             }
         }
+    }
+
+    private func stopRippleAnimation() {
+        rippleTimer?.invalidate()
+        rippleTimer = nil
     }
 }
 

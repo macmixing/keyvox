@@ -16,7 +16,13 @@ class AudioRecorder: NSObject, ObservableObject {
 
     var audioData: [Float] = []
     let audioDataQueue = DispatchQueue(label: "AudioRecorder.audioDataQueue")
-    let captureQueue = DispatchQueue(label: "AudioRecorder.captureQueue")
+    let captureQueueSpecificKey = DispatchSpecificKey<UInt8>()
+    let captureQueueSpecificValue: UInt8 = 1
+    lazy var captureQueue: DispatchQueue = {
+        let queue = DispatchQueue(label: "AudioRecorder.captureQueue")
+        queue.setSpecific(key: captureQueueSpecificKey, value: captureQueueSpecificValue)
+        return queue
+    }()
     // Recorder contract is still mono Float32 @ 16kHz for downstream transcription.
     let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
     let normalizationTargetPeak: Float = 0.9

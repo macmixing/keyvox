@@ -1,7 +1,16 @@
 import XCTest
+import whisper
 @testable import KeyVoxWhisper
 
 final class WhisperParamsTests: XCTestCase {
+    func testStrategyInitializerSetsExpectedWhisperStrategy() {
+        let greedy = WhisperParams(strategy: .greedy)
+        XCTAssertEqual(greedy.whisperParams.strategy, WHISPER_SAMPLING_GREEDY)
+
+        let beam = WhisperParams(strategy: .beamSearch)
+        XCTAssertEqual(beam.whisperParams.strategy, WHISPER_SAMPLING_BEAM_SEARCH)
+    }
+
     func testInitialPromptTrimsAndClears() {
         let params = WhisperParams.default
 
@@ -28,5 +37,23 @@ final class WhisperParamsTests: XCTestCase {
 
         params.suppress_non_speech_tokens = false
         XCTAssertFalse(params.suppress_non_speech_tokens)
+    }
+
+    func testDynamicMemberReadWriteRoundtrip() {
+        let params = WhisperParams.default
+        params.n_threads = 6
+
+        XCTAssertEqual(params.n_threads, 6)
+    }
+
+    func testLanguageGetterFallsBackToAutoWhenRawValueUnknown() {
+        let params = WhisperParams.default
+        let unknown = strdup("zz")
+        XCTAssertNotNil(unknown)
+
+        params.whisperParams.language = UnsafePointer(unknown)
+        XCTAssertEqual(params.language, .auto)
+
+        free(unknown)
     }
 }

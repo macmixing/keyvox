@@ -22,9 +22,12 @@ ALLOWLIST=(
   "/Core/AI/Dictionary/DictionaryMatcher.swift"
   "/Core/AI/ReplacementScorer.swift"
   "/Core/AI/PhoneticEncoder.swift"
-  "/Core/TextProcessing/ListPatternDetector.swift"
-  "/Core/TextProcessing/ListRenderer.swift"
-  "/Core/TextProcessing/ListFormattingEngine.swift"
+  "/Core/Lists/ListPatternDetector.swift"
+  "/Core/Lists/ListPatternMarkerParser.swift"
+  "/Core/Lists/ListPatternRunSelector.swift"
+  "/Core/Lists/ListPatternTrailingSplitter.swift"
+  "/Core/Lists/ListRenderer.swift"
+  "/Core/Lists/ListFormattingEngine.swift"
   "/Core/TranscriptionPostProcessor.swift"
 )
 

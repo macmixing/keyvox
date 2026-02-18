@@ -5,7 +5,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case general = "General"
     case audio = "Audio"
     case model = "AI Engine"
-    case information = "Information"
+    case more = "More"
     
     var id: String { self.rawValue }
     
@@ -14,7 +14,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .general: return "keyboard"
         case .audio: return "mic.fill"
         case .model: return "cpu"
-        case .information: return "info.circle.fill"
+        case .more: return "star.fill"
         }
     }
 }
@@ -102,6 +102,7 @@ struct SettingsRow<Accessory: View>: View {
             .layoutPriority(1)
             
             accessory
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }

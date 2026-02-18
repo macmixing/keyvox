@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-17**
+**Last Updated: 2026-02-18**
 
 ## Project Overview
 
@@ -10,7 +10,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
 - **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
-- **Core/TextProcessing**: deterministic text formatting (list detection/rendering)
+- **Core/Lists**: deterministic text formatting (list detection/rendering)
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -69,10 +69,14 @@ KeyVox/
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
 │   │   └── ReplacementScorer.swift
-│   ├── TextProcessing/
+│   ├── Lists/
 │   │   ├── ListFormattingEngine.swift
 │   │   ├── ListFormattingTypes.swift
 │   │   ├── ListPatternDetector.swift
+│   │   ├── ListPatternMarker.swift
+│   │   ├── ListPatternMarkerParser.swift
+│   │   ├── ListPatternRunSelector.swift
+│   │   ├── ListPatternTrailingSplitter.swift
 │   │   └── ListRenderer.swift
 │   ├── Audio/
 │   │   ├── AudioCaptureClassification.swift
@@ -85,7 +89,11 @@ KeyVox/
 │   │   └── AudioSilencePolicy.swift
 │   ├── AudioDeviceManager.swift
 │   ├── KeyboardMonitor.swift
-│   ├── ModelDownloader.swift
+│   ├── ModelDownloader/
+│   │   ├── ModelDownloadTransport.swift
+│   │   ├── ModelDownloader+DownloadLifecycle.swift
+│   │   ├── ModelDownloader+Validation.swift
+│   │   └── ModelDownloader.swift
 │   ├── Overlay/
 │   │   ├── OverlayFlingPhysics.swift
 │   │   ├── OverlayManager.swift
@@ -93,8 +101,11 @@ KeyVox/
 │   │   ├── OverlayPanel.swift
 │   │   ├── OverlayScreenPersistence.swift
 │   │   └── OverlayTypes.swift
-│   ├── TranscriptionPostProcessor.swift
-│   └── TranscriptionManager.swift
+│   ├── Transcription/
+│   │   ├── DictationPipeline.swift
+│   │   ├── DictationPromptEchoGuard.swift
+│   │   └── TranscriptionManager.swift
+│   └── TranscriptionPostProcessor.swift
 ├── Views/
 │   ├── Components/
 │   │   ├── ConfirmDeletePromptView.swift
@@ -143,7 +154,7 @@ KeyVox/
 │   ├── Fixtures/Updates/
 │   ├── Services/
 │   ├── TestSupport/
-│   ├── TextProcessing/
+│   ├── Lists/
 │   └── Views/
 ├── Resources/
 │   ├── Assets.xcassets/
@@ -186,7 +197,7 @@ KeyVox/
 │       └── verify_licenses.sh
 ├── .github/workflows/
 │   └── tests.yml
-├── docs/
+├── Docs/
 │   ├── CODEMAP.md
 │   └── ENGINEERING.md
 ├── KeyVox.xcodeproj/
@@ -199,7 +210,7 @@ KeyVox/
 ## Core Runtime Flow
 
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape state.
-2. `Core/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
+2. `Core/Transcription/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Core/Services/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
@@ -215,6 +226,7 @@ KeyVox/
 - `App/KeyVoxApp.swift`
   - App entry point and menu bar scene.
   - Owns onboarding/settings windows via `WindowManager`.
+  - Cancels app termination once to close Settings first when the Settings window is visible.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, weekly word count).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -231,10 +243,15 @@ KeyVox/
 
 ### Core Managers
 
-- `Core/TranscriptionManager.swift`
+- `Core/Transcription/TranscriptionManager.swift`
   - Orchestrates recording, transcription, and paste.
+  - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
+- `Core/Transcription/DictationPipeline.swift`
+  - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
+- `Core/Transcription/DictationPromptEchoGuard.swift`
+  - Gates dictionary-hint prompt use for short/low-confidence captures to reduce prompt-echo hallucination behavior.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
@@ -252,8 +269,12 @@ KeyVox/
 - `Core/AudioDeviceManager.swift`
   - Microphone discovery and selection policy.
   - Uses `AppSettingsStore.selectedMicrophoneUID` for persisted selection.
-- `Core/ModelDownloader.swift`
+- `Core/ModelDownloader/ModelDownloader.swift`
   - Downloads `ggml-base.bin` plus CoreML encoder zip and validates readiness.
+- `Core/ModelDownloader/ModelDownloader+DownloadLifecycle.swift`
+  - Owns URLSession delegate callbacks, progress state transitions, and failure completion handling.
+- `Core/ModelDownloader/ModelDownloader+Validation.swift`
+  - Validates downloaded model artifacts and enforces readiness checks before marking model available.
 - `Core/Audio/AudioRecorder.swift`
   - Audio-recorder state holder and public orchestration entrypoints (`startRecording`, `stopRecording`).
 - `Core/Audio/AudioRecorder+Session.swift`
@@ -281,7 +302,7 @@ KeyVox/
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
 
-### Post-Processing (`Core` + `Core/AI` + `Core/TextProcessing`)
+### Post-Processing (`Core` + `Core/AI` + `Core/Lists`)
 
 - `Core/AI/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
@@ -305,14 +326,22 @@ KeyVox/
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/AI/ReplacementScorer.swift`
   - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
-- `Core/TextProcessing/ListFormattingEngine.swift`
+- `Core/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
-- `Core/TextProcessing/ListPatternDetector.swift`
+- `Core/Lists/ListPatternDetector.swift`
   - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
-- `Core/TextProcessing/ListRenderer.swift`
+- `Core/Lists/ListPatternMarkerParser.swift`
+  - Parses spoken/typed marker tokens into canonical marker metadata used by list detection.
+- `Core/Lists/ListPatternRunSelector.swift`
+  - Selects best monotonic list run and enforces confidence guards before formatting.
+- `Core/Lists/ListPatternTrailingSplitter.swift`
+  - Splits trailing prose off list items while preserving valid list item content.
+- `Core/Lists/ListPatternMarker.swift`
+  - Shared marker model for parser/detector/run-selection helpers.
+- `Core/Lists/ListRenderer.swift`
   - Renders detected lists as multiline (`1. ...`) or single-line inline (`1. ...; 2. ...`) based on target context.
-- `Core/TextProcessing/ListFormattingTypes.swift`
+- `Core/Lists/ListFormattingTypes.swift`
   - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
@@ -403,6 +432,8 @@ KeyVox/
   - Accessibility step lowers onboarding z-order during system prompt flow and restores floating state on grant.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
+- `Views/Settings/SettingsView+ModelDictionary.swift`
+  - Dictionary management UI plus A-Z/Recently Added list sort toggle (hidden when no entries exist).
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`

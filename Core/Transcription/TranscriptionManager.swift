@@ -20,16 +20,57 @@ class TranscriptionManager: ObservableObject {
     private let whisperService = WhisperService()
     private let dictionaryStore = DictionaryStore.shared
     private let postProcessor = TranscriptionPostProcessor()
+    private lazy var dictationPipeline = DictationPipeline(
+        transcriptionProvider: whisperService,
+        postProcessor: postProcessor,
+        dictionaryEntriesProvider: { [weak self] in
+            self?.dictionaryStore.entries ?? []
+        },
+        autoParagraphsEnabledProvider: { [weak self] in
+            self?.appSettings.autoParagraphsEnabled ?? true
+        },
+        listFormattingEnabledProvider: { [weak self] in
+            self?.appSettings.listFormattingEnabled ?? true
+        },
+        listRenderModeProvider: {
+            PasteService.shared.preferredListRenderModeForFocusedElement()
+        },
+        recordSpokenWords: { [weak self] text in
+            self?.appSettings.recordSpokenWords(from: text)
+        },
+        pasteText: { text in
+            PasteService.shared.pasteText(text)
+        }
+    )
     private var isLocked = false
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
     private let microphoneSilenceWarningDelay: TimeInterval = 0.5
     private let noSpeechWarningMinimumCaptureDuration = AudioSilenceGatePolicy.longTrueSilenceMinimumDuration
+    private let dictionaryHintPromptMinimumCaptureDuration: TimeInterval = 0.45
+    private let dictionaryHintPromptMinimumActiveSignalRunDuration: TimeInterval = 0.35
     
     init() {
         setupBindings()
         whisperService.warmup()
+    }
+
+    nonisolated static func shouldUseDictionaryHintPrompt(
+        lastCaptureHadActiveSignal: Bool,
+        lastCaptureWasLikelySilence: Bool,
+        lastCaptureWasLongTrueSilence: Bool,
+        lastCaptureDuration: TimeInterval,
+        maxActiveSignalRunDuration: TimeInterval,
+        minimumCaptureDuration: TimeInterval = 0.45,
+        minimumActiveSignalRunDuration: TimeInterval = 0.35
+    ) -> Bool {
+        guard lastCaptureHadActiveSignal else { return false }
+        guard !lastCaptureWasLikelySilence else { return false }
+        guard !lastCaptureWasLongTrueSilence else { return false }
+        guard lastCaptureDuration >= minimumCaptureDuration else { return false }
+        guard maxActiveSignalRunDuration >= minimumActiveSignalRunDuration else { return false }
+        return true
     }
 
     // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
@@ -187,22 +228,26 @@ class TranscriptionManager: ObservableObject {
             // Transition overlay to transcription ripples only when we have frames to process.
             OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
-            let transcribeStart = Date()
-            let useDictionaryHintPrompt = self.audioRecorder.lastCaptureHadActiveSignal
-            let autoParagraphsEnabled = self.appSettings.autoParagraphsEnabled
-            self.whisperService.transcribe(
+            let useDictionaryHintPrompt = Self.shouldUseDictionaryHintPrompt(
+                lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
+                lastCaptureWasLikelySilence: self.audioRecorder.lastCaptureWasLikelySilence,
+                lastCaptureWasLongTrueSilence: self.audioRecorder.lastCaptureWasLongTrueSilence,
+                lastCaptureDuration: self.audioRecorder.lastCaptureDuration,
+                maxActiveSignalRunDuration: self.audioRecorder.maxActiveSignalRunDuration,
+                minimumCaptureDuration: self.dictionaryHintPromptMinimumCaptureDuration,
+                minimumActiveSignalRunDuration: self.dictionaryHintPromptMinimumActiveSignalRunDuration
+            )
+            self.dictationPipeline.run(
                 audioFrames: frames,
-                useDictionaryHintPrompt: useDictionaryHintPrompt,
-                enableAutoParagraphs: autoParagraphsEnabled
-            ) { result in
-                let transcribeDuration = Date().timeIntervalSince(transcribeStart)
+                useDictionaryHintPrompt: useDictionaryHintPrompt
+            ) { pipelineResult in
+                let transcribeDuration = pipelineResult.inferenceDuration
                 #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")
                 #endif
                 
                 DispatchQueue.main.async {
-                    let rawText = result ?? ""
-                    if rawText.isEmpty && self.whisperService.lastResultWasLikelyNoSpeech {
+                    if pipelineResult.wasLikelyNoSpeech {
                         OverlayManager.shared.hide()
                         if self.audioRecorder.lastCaptureDuration >= self.noSpeechWarningMinimumCaptureDuration {
                             let warning = WarningKind.microphoneSilence(
@@ -216,20 +261,9 @@ class TranscriptionManager: ObservableObject {
                         self.state = .idle
                         return
                     }
-                    let renderMode = PasteService.shared.preferredListRenderModeForFocusedElement()
-                    let text = self.postProcessor.process(
-                        rawText,
-                        dictionaryEntries: self.dictionaryStore.entries,
-                        renderMode: renderMode
-                    )
-                    self.lastTranscription = text
-                    
-                    let pasteStart = Date()
-                    if !text.isEmpty {
-                        self.appSettings.recordSpokenWords(from: text)
-                        PasteService.shared.pasteText(text)
-                    }
-                    let pasteDuration = Date().timeIntervalSince(pasteStart)
+                    self.lastTranscription = pipelineResult.finalText
+
+                    let pasteDuration = pipelineResult.pasteDuration
                     #if DEBUG
                     print("3. Injection trigger: \(String(format: "%.3f", pasteDuration))s")
                     #endif

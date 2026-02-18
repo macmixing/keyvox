@@ -96,6 +96,8 @@ extension AudioRecorder {
                 session.stopRunning()
             }
 
+            drainPendingCaptureQueueWork()
+
             captureSession = nil
             captureInput = nil
             audioCaptureOutput = nil
@@ -106,5 +108,12 @@ extension AudioRecorder {
         }
 
         guard isRecording else { return }
+    }
+
+    private func drainPendingCaptureQueueWork() {
+        guard DispatchQueue.getSpecific(key: captureQueueSpecificKey) != captureQueueSpecificValue else {
+            return
+        }
+        captureQueue.sync {}
     }
 }

@@ -58,12 +58,19 @@ struct OnboardingView: View {
                         isCompleted: downloader.isModelDownloaded,
                         stepNumber: 3,
                         title: "AI Model Setup",
-                        description: "Download the OpenAI Whisper engine.",
+                        description: "OpenAI Whisper Base (~190 MB)",
                         buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
                         action: setupModel
                     ) {
                         if downloader.isDownloading {
                             ModelDownloadProgress(progress: downloader.progress)
+                                .padding(.top, 8)
+                        } else if let error = downloader.errorMessage {
+                            Text(error)
+                                .font(.custom("Kanit Medium", size: 10))
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .padding(.top, 8)
                         }
                     }

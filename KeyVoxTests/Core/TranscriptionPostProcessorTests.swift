@@ -20,6 +20,35 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
+    func testListFormattingDisabledKeepsProseAndOtherNormalizations() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Need to do this one cue board two cue board ha ha 415 pm",
+            dictionaryEntries: entries,
+            renderMode: .multiline,
+            listFormattingEnabled: false
+        )
+
+        XCTAssertEqual(output, "Need to do this one Cueboard two Cueboard haha 4:15 PM")
+    }
+
+    func testListFormattingEnabledStillFormatsWhenExplicitlyTrue() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Need to do this one cue board two cue board",
+            dictionaryEntries: entries,
+            renderMode: .multiline,
+            listFormattingEnabled: true
+        )
+
+        XCTAssertTrue(output.contains("1. Cueboard"))
+        XCTAssertTrue(output.contains("2. Cueboard"))
+    }
+
     func testSingleLineModeCollapsesWhitespace() {
         let processor = TranscriptionPostProcessor()
 
@@ -240,5 +269,44 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
 
         XCTAssertTrue(output == "Hi, Colin.")
+    }
+
+    func testNormalizesHoleInOneIdiom() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I was golfing last week and I got a hole in one because there were opponents ahead of me",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
+    }
+
+    func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I want to summarize this in one first item in two second item",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output.contains("1. First item"))
+        XCTAssertTrue(output.contains("2. Second item"))
+    }
+
+    func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I was golfing last week and I got a hole in one because there were two opponents ahead of me",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
+        XCTAssertFalse(output.contains("\n1. "))
+        XCTAssertFalse(output.contains("\n2. "))
     }
 }

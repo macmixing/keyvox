@@ -9,10 +9,12 @@ struct SettingsView: View {
     @ObservedObject internal var downloader = ModelDownloader.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
     @ObservedObject internal var dictionaryStore = DictionaryStore.shared
+    @StateObject internal var loginItemController = LoginItemController()
     @State internal var selectedTab: SettingsTab
     @State internal var showLegal = false
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
     @State internal var dictionaryDeleteTarget: DictionaryEntry?
+    @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
 
     init(initialTab: SettingsTab = .general) {
         _selectedTab = State(initialValue: initialTab)
@@ -89,8 +91,8 @@ struct SettingsView: View {
                         audioSettings
                     case .model:
                         modelSettings
-                    case .information:
-                        informationSettings
+                    case .more:
+                        moreSettings
                     }
                 }
                 .padding(.horizontal, 40)
@@ -99,7 +101,7 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if selectedTab == .information {
+            if selectedTab == .more {
                 Text("Version \(appVersion)")
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary.opacity(0.5))

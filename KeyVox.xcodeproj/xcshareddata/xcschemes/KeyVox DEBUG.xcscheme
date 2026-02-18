@@ -78,7 +78,12 @@
          <EnvironmentVariable
             key = "KEYVOX_FORCE_MIC_PICKER"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KVX_MODEL_DOWNLOAD_PREVIEW_ERROR"
+            value = "low_disk"
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

@@ -1,5 +1,16 @@
 import Foundation
 
+protocol PasteSpacingHeuristicApplying {
+    func applySmartLeadingSeparatorIfNeeded(
+        to text: String,
+        currentIdentity: PasteAppIdentity?,
+        lastInsertionAppIdentity: PasteAppIdentity?,
+        lastInsertionAt: Date,
+        lastInsertedTrailingCharacter: Character?,
+        identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool
+    ) -> String
+}
+
 final class PasteSpacingHeuristics {
     private let axInspector: PasteAXInspecting
     private let heuristicTTL: TimeInterval
@@ -95,3 +106,5 @@ final class PasteSpacingHeuristics {
         return previousIsWordLike || previousIsTriggerPunctuation
     }
 }
+
+extension PasteSpacingHeuristics: PasteSpacingHeuristicApplying {}

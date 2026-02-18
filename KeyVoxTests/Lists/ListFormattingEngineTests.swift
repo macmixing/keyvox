@@ -19,4 +19,12 @@ final class ListFormattingEngineTests: XCTestCase {
         let output = engine.formatIfNeeded(text, renderMode: .multiline)
         XCTAssertTrue(output == text)
     }
+
+    func testFormatsListWhenNumberingSkipsAhead() {
+        let engine = ListFormattingEngine()
+        let text = "Need to do this one buy groceries two walk dog four call mom"
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertTrue(output == "Need to do this:\n\n1. Buy groceries\n2. Walk dog\n4. Call mom")
+    }
 }

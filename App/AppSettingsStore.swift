@@ -47,6 +47,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var listFormattingEnabled: Bool {
+        didSet {
+            defaults.set(listFormattingEnabled, forKey: UserDefaultsKeys.listFormattingEnabled)
+        }
+    }
+
     @Published var isSoundEnabled: Bool {
         didSet {
             defaults.set(isSoundEnabled, forKey: UserDefaultsKeys.isSoundEnabled)
@@ -119,6 +125,7 @@ final class AppSettingsStore: ObservableObject {
         }
 
         autoParagraphsEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+        listFormattingEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
 
         isSoundEnabled = defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool ?? true
         if let storedVolume = defaults.object(forKey: UserDefaultsKeys.soundVolume) as? NSNumber {

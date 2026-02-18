@@ -20,6 +20,17 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
         }
         return false
     }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if let settingsWindow = WindowManager.shared.settingsWindow, settingsWindow.isVisible {
+            // Intentional: first quit closes Settings instead of terminating, so
+            // users don't accidentally exit KeyVox while actively editing settings.
+            settingsWindow.orderOut(nil)
+            return .terminateCancel
+        }
+
+        return .terminateNow
+    }
 }
 
 class WindowManager: ObservableObject {
@@ -99,8 +110,9 @@ class WindowManager: ObservableObject {
     }
 
     @MainActor
-    func openSettings(centered: Bool = true, tab: SettingsTab = .general) {
+    func openSettings(centered: Bool = true, tab: SettingsTab? = nil) {
         let settingsSize = SettingsView.preferredWindowSize
+        let isNewWindow = (settingsWindow == nil)
 
         let window: NSWindow
         if let existing = settingsWindow {
@@ -125,13 +137,18 @@ class WindowManager: ObservableObject {
             window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
-            window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
+            window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab ?? .general))
             self.settingsWindow = window
+        }
+
+        if !isNewWindow, let requestedTab = tab {
+            // Only rebuild settings content when the caller explicitly requests a tab.
+            // This preserves the user's current tab selection for passive reopen flows (e.g. Dock click).
+            window.contentView = NSHostingView(rootView: SettingsView(initialTab: requestedTab))
         }
 
         window.setContentSize(settingsSize)
         window.level = .normal
-        window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab))
         
         if centered {
             window.center()

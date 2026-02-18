@@ -2,6 +2,49 @@ import AppKit
 import Combine
 import Foundation
 
+protocol PasteFailureRecoveryControlling {
+    func cancelActiveRecoveryIfNeeded()
+    func startRecovery(restoreClipboard: @escaping () -> Void)
+}
+
+final class MainThreadPasteFailureRecoveryController: PasteFailureRecoveryControlling {
+    func cancelActiveRecoveryIfNeeded() {
+        if Thread.isMainThread {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+            }
+            return
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.cancelActiveRecoveryIfNeeded()
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+
+    func startRecovery(restoreClipboard: @escaping () -> Void) {
+        if Thread.isMainThread {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClipboard)
+            }
+            return
+        }
+
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            Task { @MainActor in
+                PasteFailureRecoveryCoordinator.shared.startRecovery(restoreClipboard: restoreClipboard)
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+}
+
 @MainActor
 final class PasteFailureRecoveryCoordinator {
     static let shared = PasteFailureRecoveryCoordinator()

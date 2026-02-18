@@ -1,24 +1,50 @@
 import SwiftUI
 
 extension SettingsView {
-    var informationSettings: some View {
+    var moreSettings: some View {
         VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
-            
-            // About Section
+
             VStack(alignment: .leading, spacing: 10) {
-                Text("ABOUT")
+                Text("SYSTEM")
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
-                
+
                 SettingsCard {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("KeyVox is a local first dictation tool that uses OpenAI's Whisper model to transcribe your voice into any application at the speed of thought.")
-                            .font(.custom("Kanit Medium", size: 14))
-                            .foregroundColor(.secondary)
-                            .lineSpacing(4)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 10) {
+                        SettingsRow(
+                            icon: "person.crop.circle.badge.checkmark",
+                            title: "Launch at Login",
+                            subtitle: loginItemController.subtitle
+                        ) {
+                            Toggle(
+                                "",
+                                isOn: Binding(
+                                    get: { loginItemController.isEnabled },
+                                    set: { loginItemController.setEnabled($0) }
+                                )
+                            )
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                            .disabled(loginItemController.isUpdating)
+                        }
+
+                        if let errorMessage = loginItemController.errorMessage {
+                            Text(errorMessage)
+                                .font(.custom("Kanit Medium", size: 11))
+                                .foregroundColor(.orange)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
+                        if loginItemController.shouldShowOpenSystemSettingsAction {
+                            Button("Open Login Items Settings") {
+                                loginItemController.openLoginItemsSettings()
+                            }
+                            .font(.custom("Kanit Medium", size: 12))
+                            .foregroundColor(.indigo)
+                            .buttonStyle(DepressedButtonStyle())
+                        }
                     }
                 }
             }
@@ -51,7 +77,7 @@ extension SettingsView {
                             Spacer()
 
                             Button(action: {
-                                if let url = URL(string: "https://cueboard.app?utm_source=keyvox") {
+                                if let url = URL(string: "https://cueboard.app?utm_source=keyvox-app-settings") {
                                     NSWorkspace.shared.open(url)
                                     dismiss()
                                 }
@@ -91,6 +117,9 @@ extension SettingsView {
                 .padding(.trailing, 8)
             }
             .padding(.top, 8)
+        }
+        .onAppear {
+            loginItemController.refreshStatus()
         }
     }
 }

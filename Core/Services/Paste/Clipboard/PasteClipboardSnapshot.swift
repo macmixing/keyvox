@@ -1,5 +1,32 @@
 import Cocoa
 
+protocol PasteClipboardAdapting {
+    func captureSnapshot() -> PasteClipboardSnapshot.Snapshot
+    func setString(_ text: String)
+    func restore(_ snapshot: PasteClipboardSnapshot.Snapshot)
+}
+
+final class SystemPasteboardAdapter: PasteClipboardAdapting {
+    private let pasteboard: NSPasteboard
+
+    init(pasteboard: NSPasteboard = .general) {
+        self.pasteboard = pasteboard
+    }
+
+    func captureSnapshot() -> PasteClipboardSnapshot.Snapshot {
+        PasteClipboardSnapshot.captureCurrentPasteboardItems(pasteboard)
+    }
+
+    func setString(_ text: String) {
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+    }
+
+    func restore(_ snapshot: PasteClipboardSnapshot.Snapshot) {
+        PasteClipboardSnapshot.restore(snapshot, to: pasteboard)
+    }
+}
+
 enum PasteClipboardSnapshot {
     typealias Snapshot = [[NSPasteboard.PasteboardType: Data]]
 

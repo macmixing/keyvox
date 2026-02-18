@@ -208,4 +208,42 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
         XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog"])
     }
+
+    func testKeepsFormattingWhenSpokenNumberSkipsAhead() {
+        let detector = ListPatternDetector()
+        let text = "Today one buy groceries two walk dog four call mom five charge phone"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertTrue(detected != nil)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 4, 5])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog", "Call mom", "Charge phone"])
+    }
+
+    func testDoesNotDetectTwoItemNonConsecutiveProseNumbers() {
+        let detector = ListPatternDetector()
+        let text = "I need one for my desk and three for the office"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDetectsExplicitTwoItemNonConsecutiveListMarkers() {
+        let detector = ListPatternDetector()
+        let text = "1. buy groceries 3. call mom"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Buy groceries", "Call mom"])
+    }
+
+    func testDoesNotTriggerListFromOneForOnePhrase() {
+        let detector = ListPatternDetector()
+        let text = """
+        The migration should match one for one across environments. But should we run the validation right now and check if the output is identical? There should only be two extra rows in the summary report.
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
 }
