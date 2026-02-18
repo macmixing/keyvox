@@ -1,4 +1,5 @@
 import AppKit
+import QuartzCore
 import SwiftUI
 
 final class WarningManager {
@@ -6,11 +7,23 @@ final class WarningManager {
     private var window: NSPanel?
     private var localMonitor: Any?
     private var globalMonitor: Any?
+    private var autoDismissWorkItem: DispatchWorkItem?
+    private var hoverExitDismissWorkItem: DispatchWorkItem?
+    private var isWarningHovered: Bool = false
+    private var warningPresentationID: UInt = 0
+    private let autoDismissDelay: TimeInterval = 6.0
+    private let hoverExitDismissDelay: TimeInterval = 2.0
+    private let dismissAnimationDuration: TimeInterval = 0.42
+    private let dismissSlideDistance: CGFloat = 64
     private var recoveryWindow: NSPanel?
     private var recoveryModel: PasteFailureRecoveryOverlayModel?
 
     func show(_ kind: WarningKind) {
         playCancelSound()
+        cancelDismissSchedules()
+        isWarningHovered = false
+        warningPresentationID &+= 1
+        let currentPresentationID = warningPresentationID
 
         if window == nil {
             let panel = NSPanel(
@@ -29,7 +42,7 @@ final class WarningManager {
             window = panel
         }
 
-        window?.contentView = NSHostingView(
+        let contentView = WarningTrackingHostingView(
             rootView: WarningOverlayView(
                 kind: kind,
                 openSystemSettings: {
@@ -46,14 +59,20 @@ final class WarningManager {
                 }
             )
         )
+        contentView.hoverChanged = { [weak self] isHovered in
+            self?.handleWarningHoverChanged(isHovered, presentationID: currentPresentationID)
+        }
+        window?.contentView = contentView
 
         if let screen = NSScreen.main {
             let rect = screen.visibleFrame
             window?.setFrameOrigin(NSPoint(x: rect.midX - 130, y: rect.minY + 50))
         }
 
+        window?.alphaValue = 1
         window?.orderFrontRegardless()
         setupMonitor()
+        scheduleAutoDismiss(for: currentPresentationID)
     }
 
     @MainActor
@@ -133,8 +152,7 @@ final class WarningManager {
     }
 
     func hide() {
-        window?.orderOut(nil)
-        removeWarningDismissMonitors()
+        hideWithDismissTransition(expectedPresentationID: nil)
     }
 
     private func removeWarningDismissMonitors() {
@@ -146,5 +164,143 @@ final class WarningManager {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil
         }
+    }
+
+    private func scheduleAutoDismiss(for presentationID: UInt) {
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            if self.isWarningHovered {
+                return
+            }
+            self.hideWithDismissTransition(expectedPresentationID: presentationID)
+        }
+        autoDismissWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + autoDismissDelay, execute: workItem)
+    }
+
+    private func cancelAutoDismiss() {
+        autoDismissWorkItem?.cancel()
+        autoDismissWorkItem = nil
+    }
+
+    private func scheduleHoverExitDismiss(for presentationID: UInt) {
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            guard !self.isWarningHovered else { return }
+            self.hideWithDismissTransition(expectedPresentationID: presentationID)
+        }
+        hoverExitDismissWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + hoverExitDismissDelay, execute: workItem)
+    }
+
+    private func cancelHoverExitDismiss() {
+        hoverExitDismissWorkItem?.cancel()
+        hoverExitDismissWorkItem = nil
+    }
+
+    private func cancelDismissSchedules() {
+        cancelAutoDismiss()
+        cancelHoverExitDismiss()
+    }
+
+    private func handleWarningHoverChanged(_ isHovered: Bool, presentationID: UInt) {
+        guard presentationID == warningPresentationID else { return }
+        isWarningHovered = isHovered
+
+        if isHovered {
+            cancelAutoDismiss()
+            cancelHoverExitDismiss()
+        } else {
+            cancelHoverExitDismiss()
+            scheduleHoverExitDismiss(for: presentationID)
+        }
+    }
+
+    private func hideWithDismissTransition(expectedPresentationID: UInt?) {
+        if let expectedPresentationID, expectedPresentationID != warningPresentationID {
+            return
+        }
+        cancelDismissSchedules()
+        isWarningHovered = false
+        guard let window, window.isVisible else {
+            removeWarningDismissMonitors()
+            return
+        }
+
+        guard let contentView = window.contentView else {
+            window.orderOut(nil)
+            removeWarningDismissMonitors()
+            return
+        }
+        contentView.wantsLayer = true
+        guard let layer = contentView.layer else {
+            window.orderOut(nil)
+            removeWarningDismissMonitors()
+            return
+        }
+
+        let startPosition = layer.position
+        let endPosition = CGPoint(x: startPosition.x, y: startPosition.y - dismissSlideDistance)
+
+        let move = CABasicAnimation(keyPath: "position.y")
+        move.fromValue = startPosition.y
+        move.toValue = endPosition.y
+
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 1
+        fade.toValue = 0
+
+        let group = CAAnimationGroup()
+        group.animations = [move, fade]
+        group.duration = dismissAnimationDuration
+        group.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        group.fillMode = .forwards
+        group.isRemovedOnCompletion = false
+
+        layer.add(group, forKey: "warningDismiss")
+        layer.position = endPosition
+        layer.opacity = 0
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + dismissAnimationDuration) { [weak self] in
+            guard let self else { return }
+            window.orderOut(nil)
+            layer.removeAnimation(forKey: "warningDismiss")
+            layer.position = startPosition
+            layer.opacity = 1
+            window.alphaValue = 1
+            self.removeWarningDismissMonitors()
+        }
+    }
+}
+
+private final class WarningTrackingHostingView: NSHostingView<WarningOverlayView> {
+    var hoverChanged: ((Bool) -> Void)?
+    private var trackingAreaRef: NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+
+        if let trackingAreaRef {
+            removeTrackingArea(trackingAreaRef)
+        }
+
+        let trackingArea = NSTrackingArea(
+            rect: .zero,
+            options: [.activeAlways, .inVisibleRect, .mouseEnteredAndExited],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(trackingArea)
+        trackingAreaRef = trackingArea
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
+        hoverChanged?(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
+        hoverChanged?(false)
     }
 }
