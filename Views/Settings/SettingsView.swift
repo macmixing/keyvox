@@ -9,6 +9,7 @@ struct SettingsView: View {
     @ObservedObject internal var downloader = ModelDownloader.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
     @ObservedObject internal var dictionaryStore = DictionaryStore.shared
+    @StateObject internal var loginItemController = LoginItemController()
     @State internal var selectedTab: SettingsTab
     @State internal var showLegal = false
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?

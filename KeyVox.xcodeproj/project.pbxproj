@@ -89,8 +89,9 @@
 		9D4000152F4E000100AA0001 /* AudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000062F4E000100AA0001 /* AudioRecorder+Streaming.swift */; };
 		9D4000162F4E000100AA0001 /* AudioRecorder+PostProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000072F4E000100AA0001 /* AudioRecorder+PostProcessing.swift */; };
 		9D4000172F4E000100AA0001 /* AudioRecorder+Thresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000082F4E000100AA0001 /* AudioRecorder+Thresholds.swift */; };
-		9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5000012F4F000100AA0001 /* AppSettingsStore.swift */; };
-		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
+			9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5000012F4F000100AA0001 /* AppSettingsStore.swift */; };
+			D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
+			AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
 		AA1000122F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */; };
 		AA1000132F50000100AA0001 /* ../LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000032F50000100AA0001 /* ../LICENSE.md */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
@@ -241,8 +242,9 @@
 		9D4000062F4E000100AA0001 /* AudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
 		9D4000072F4E000100AA0001 /* AudioRecorder+PostProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+PostProcessing.swift"; sourceTree = "<group>"; };
 		9D4000082F4E000100AA0001 /* AudioRecorder+Thresholds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Thresholds.swift"; sourceTree = "<group>"; };
-		9E5000012F4F000100AA0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
-		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+			9E5000012F4F000100AA0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
+			D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
+			AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
 		AA1000032F50000100AA0001 /* ../LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../LICENSE.md; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
@@ -334,13 +336,14 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		8E6D05C52F3C51C9003BD458 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				9E5000012F4F000100AA0001 /* AppSettingsStore.swift */,
-				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
-				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
-			);
+			8E6D05C52F3C51C9003BD458 /* App */ = {
+				isa = PBXGroup;
+				children = (
+					9E5000012F4F000100AA0001 /* AppSettingsStore.swift */,
+					D15000012FA1000100AA0001 /* LoginItemController.swift */,
+					8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
+					8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
+				);
 			path = App;
 			sourceTree = "<group>";
 		};
@@ -863,8 +866,9 @@
 				8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
 				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
 				8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
-				9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */,
-				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
+					9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */,
+					D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */,
+					8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */,
 				C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */,
