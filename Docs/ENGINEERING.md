@@ -45,7 +45,7 @@ KeyVox is organized by responsibility:
 - `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
 - `Core/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
-- `Core/TextProcessing/ListFormattingEngine.swift`: Deterministic list detection/rendering.
+- `Core/Lists/ListFormattingEngine.swift`: Deterministic list detection/rendering.
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
 - `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, fallback transport normalization, and runtime-PID live AX verification binding.

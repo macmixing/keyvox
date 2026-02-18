@@ -56,6 +56,10 @@
 		8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401022F46010000DD4401 /* ListPatternDetector.swift */; };
 		8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401032F46010000DD4401 /* ListRenderer.swift */; };
 		8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4401042F46010000DD4401 /* ListFormattingEngine.swift */; };
+		C14000112F93000100AA0001 /* ListPatternMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000012F93000100AA0001 /* ListPatternMarker.swift */; };
+		C14000122F93000100AA0001 /* ListPatternMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */; };
+		C14000132F93000100AA0001 /* ListPatternRunSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000032F93000100AA0001 /* ListPatternRunSelector.swift */; };
+		C14000142F93000100AA0001 /* ListPatternTrailingSplitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000042F93000100AA0001 /* ListPatternTrailingSplitter.swift */; };
 		8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */; };
 		8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501022F47010000EE5501 /* AppUpdateLogic.swift */; };
 		8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */; };
@@ -204,6 +208,10 @@
 		8F4401022F46010000DD4401 /* ListPatternDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternDetector.swift; sourceTree = "<group>"; };
 		8F4401032F46010000DD4401 /* ListRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListRenderer.swift; sourceTree = "<group>"; };
 		8F4401042F46010000DD4401 /* ListFormattingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFormattingEngine.swift; sourceTree = "<group>"; };
+		C14000012F93000100AA0001 /* ListPatternMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarker.swift; sourceTree = "<group>"; };
+		C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarkerParser.swift; sourceTree = "<group>"; };
+		C14000032F93000100AA0001 /* ListPatternRunSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternRunSelector.swift; sourceTree = "<group>"; };
+		C14000042F93000100AA0001 /* ListPatternTrailingSplitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternTrailingSplitter.swift; sourceTree = "<group>"; };
 		8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedConfig.swift; sourceTree = "<group>"; };
 		8F5501022F47010000EE5501 /* AppUpdateLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogic.swift; sourceTree = "<group>"; };
 		8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPresenting.swift; sourceTree = "<group>"; };
@@ -357,7 +365,7 @@
 				C13000002F92000100AA0001 /* Transcription */,
 				8F2201002F44010000BB2201 /* AI */,
 				9D4000012F4E000100AA0001 /* Audio */,
-				8F4401002F46010000DD4401 /* TextProcessing */,
+				8F4401002F46010000DD4401 /* Lists */,
 				8E6D05CA2F3C51D6003BD458 /* Services */,
 				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
 				8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
@@ -450,7 +458,7 @@
 				AB1000042F60000100AA0001 /* Fixtures */,
 				AB1000062F60000100AA0001 /* Services */,
 				AB1000072F60000100AA0001 /* TestSupport */,
-				AB1000082F60000100AA0001 /* TextProcessing */,
+				AB1000082F60000100AA0001 /* Lists */,
 				AB1000092F60000100AA0001 /* Views */,
 			);
 			path = KeyVoxTests;
@@ -476,15 +484,19 @@
 			path = AI;
 			sourceTree = "<group>";
 		};
-		8F4401002F46010000DD4401 /* TextProcessing */ = {
+		8F4401002F46010000DD4401 /* Lists */ = {
 			isa = PBXGroup;
 			children = (
 				8F4401042F46010000DD4401 /* ListFormattingEngine.swift */,
 				8F4401022F46010000DD4401 /* ListPatternDetector.swift */,
+				C14000012F93000100AA0001 /* ListPatternMarker.swift */,
+				C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */,
+				C14000032F93000100AA0001 /* ListPatternRunSelector.swift */,
+				C14000042F93000100AA0001 /* ListPatternTrailingSplitter.swift */,
 				8F4401032F46010000DD4401 /* ListRenderer.swift */,
 				8F4401012F46010000DD4401 /* ListFormattingTypes.swift */,
 			);
-			path = TextProcessing;
+			path = Lists;
 			sourceTree = "<group>";
 		};
 		9A1000012F4B000100AA0001 /* Paste */ = {
@@ -612,14 +624,14 @@
 			path = TestSupport;
 			sourceTree = "<group>";
 		};
-		AB1000082F60000100AA0001 /* TextProcessing */ = {
+		AB1000082F60000100AA0001 /* Lists */ = {
 			isa = PBXGroup;
 			children = (
 				AB2000202F60000100AA0001 /* ListFormattingEngineTests.swift */,
 				AB2000212F60000100AA0001 /* ListPatternDetectorTests.swift */,
 				AB2000222F60000100AA0001 /* ListRendererTests.swift */,
 			);
-			path = TextProcessing;
+			path = Lists;
 			sourceTree = "<group>";
 		};
 		AB1000092F60000100AA0001 /* Views */ = {
@@ -885,6 +897,10 @@
 				8F3302042F45010000CC3301 /* ReplacementScorer.swift in Sources */,
 				8F4402042F46010000DD4401 /* ListFormattingEngine.swift in Sources */,
 				8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */,
+				C14000112F93000100AA0001 /* ListPatternMarker.swift in Sources */,
+				C14000122F93000100AA0001 /* ListPatternMarkerParser.swift in Sources */,
+				C14000132F93000100AA0001 /* ListPatternRunSelector.swift in Sources */,
+				C14000142F93000100AA0001 /* ListPatternTrailingSplitter.swift in Sources */,
 				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */,

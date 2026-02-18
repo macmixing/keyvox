@@ -10,7 +10,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
 - **Core/AI**: dictionary storage + post-transcription normalization/matching helpers
-- **Core/TextProcessing**: deterministic text formatting (list detection/rendering)
+- **Core/Lists**: deterministic text formatting (list detection/rendering)
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -69,7 +69,7 @@ KeyVox/
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
 │   │   └── ReplacementScorer.swift
-│   ├── TextProcessing/
+│   ├── Lists/
 │   │   ├── ListFormattingEngine.swift
 │   │   ├── ListFormattingTypes.swift
 │   │   ├── ListPatternDetector.swift
@@ -143,7 +143,7 @@ KeyVox/
 │   ├── Fixtures/Updates/
 │   ├── Services/
 │   ├── TestSupport/
-│   ├── TextProcessing/
+│   ├── Lists/
 │   └── Views/
 ├── Resources/
 │   ├── Assets.xcassets/
@@ -283,7 +283,7 @@ KeyVox/
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
 
-### Post-Processing (`Core` + `Core/AI` + `Core/TextProcessing`)
+### Post-Processing (`Core` + `Core/AI` + `Core/Lists`)
 
 - `Core/AI/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
@@ -307,14 +307,14 @@ KeyVox/
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/AI/ReplacementScorer.swift`
   - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
-- `Core/TextProcessing/ListFormattingEngine.swift`
+- `Core/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
-- `Core/TextProcessing/ListPatternDetector.swift`
+- `Core/Lists/ListPatternDetector.swift`
   - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
-- `Core/TextProcessing/ListRenderer.swift`
+- `Core/Lists/ListRenderer.swift`
   - Renders detected lists as multiline (`1. ...`) or single-line inline (`1. ...; 2. ...`) based on target context.
-- `Core/TextProcessing/ListFormattingTypes.swift`
+- `Core/Lists/ListFormattingTypes.swift`
   - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
