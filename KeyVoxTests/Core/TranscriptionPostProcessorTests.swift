@@ -266,4 +266,18 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("1. First item"))
         XCTAssertTrue(output.contains("2. Second item"))
     }
+
+    func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I was golfing last week and I got a hole in one because there were two opponents ahead of me",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
+        XCTAssertFalse(output.contains("\n1. "))
+        XCTAssertFalse(output.contains("\n2. "))
+    }
 }
