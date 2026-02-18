@@ -241,4 +241,29 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertTrue(output == "Hi, Colin.")
     }
+
+    func testNormalizesHoleInOneIdiom() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I was golfing last week and I got a hole in one because there were opponents ahead of me",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
+    }
+
+    func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I want to summarize this in one first item in two second item",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output.contains("1. First item"))
+        XCTAssertTrue(output.contains("2. Second item"))
+    }
 }

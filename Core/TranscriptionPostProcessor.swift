@@ -41,7 +41,8 @@ final class TranscriptionPostProcessor {
             normalized = vocabularyNormalizer.normalize(text, with: dictionaryEntries)
         }
 
-        let listFormatted = listFormattingEngine.formatIfNeeded(normalized, renderMode: renderMode)
+        let idiomNormalized = normalizeIdioms(in: normalized)
+        let listFormatted = listFormattingEngine.formatIfNeeded(idiomNormalized, renderMode: renderMode)
         let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
         let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
         return normalizeOutputWhitespace(timeNormalized, renderMode: renderMode)
@@ -101,6 +102,12 @@ final class TranscriptionPostProcessor {
     private func normalizeLaughterExpressions(in text: String) -> String {
         replacingMatches(pattern: #"\bha\s+ha\b"#, in: text) { _, _ in
             "haha"
+        }
+    }
+
+    private func normalizeIdioms(in text: String) -> String {
+        replacingMatches(pattern: #"\bhole\s+in\s+one\b"#, in: text) { _, _ in
+            "hole-in-one"
         }
     }
 
