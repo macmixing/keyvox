@@ -218,4 +218,14 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 4, 5])
         XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog", "Call mom", "Charge phone"])
     }
+
+    func testDoesNotTriggerListFromOneForOnePhrase() {
+        let detector = ListPatternDetector()
+        let text = """
+        The migration should match one for one across environments. But should we run the validation right now and check if the output is identical? There should only be two extra rows in the summary report.
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
 }

@@ -5,6 +5,10 @@ struct ListPatternMarkerParser {
         let pattern = "(?i)(^|[\\s,;:])(?:(\\d{1,2})|(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve))(?:\\s*[\\.\\)\\:\\-,])?\\s+"
         return try! NSRegularExpression(pattern: pattern)
     }()
+    private static let oneForOneRegex: NSRegularExpression = {
+        let pattern = #"(?i)\b(?:one|1)\s+for\s+(?:one|1)\b"#
+        return try! NSRegularExpression(pattern: pattern)
+    }()
 
     private let spokenNumberMap: [String: Int] = [
         "one": 1,
@@ -25,6 +29,9 @@ struct ListPatternMarkerParser {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
         let matches = Self.markerRegex.matches(in: text, options: [], range: range)
+        let oneForOneRanges = Self.oneForOneRegex
+            .matches(in: text, options: [], range: range)
+            .map(\.range)
 
         return matches.compactMap { match -> ListPatternMarker? in
             let digitRange = match.range(at: 2)
@@ -46,6 +53,10 @@ struct ListPatternMarkerParser {
             }
 
             guard let markerNumber else { return nil }
+            if markerNumber == 1,
+               oneForOneRanges.contains(where: { NSLocationInRange(markerTokenStart, $0) }) {
+                return nil
+            }
             return ListPatternMarker(
                 number: markerNumber,
                 markerTokenStart: markerTokenStart,
