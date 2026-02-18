@@ -16,6 +16,10 @@ struct RecordingOverlay: View {
     @State private var ripplePhase: Double = 0
     @State private var quietPhase: Double = 0
     @State private var rippleTimer: Timer?
+    @State private var overlayScale: CGFloat = 0.12
+    @State private var overlayOpacity: Double = 0
+    @State private var popWorkItem: DispatchWorkItem?
+    @State private var settleWorkItem: DispatchWorkItem?
 
     static var panelSize: CGSize {
         CGSize(
@@ -49,21 +53,67 @@ struct RecordingOverlay: View {
             }
         }
         .padding(8)
-        .scaleEffect(visibilityManager.isVisible ? 1.0 : 0.3)
-        .opacity(visibilityManager.isVisible ? 1.0 : 0.0)
-        .animation(.spring(response: 0.16, dampingFraction: 0.88), value: visibilityManager.isVisible)
+        .scaleEffect(overlayScale)
+        .opacity(overlayOpacity)
+        .onChange(of: visibilityManager.isVisible) { isVisible in
+            animateOverlayVisibility(isVisible)
+        }
         .onChange(of: visibilityManager.shouldDismiss) { newValue in
             if newValue {
-                withAnimation {
-                    visibilityManager.isVisible = false
-                }
+                visibilityManager.isVisible = false
             }
         }
         .onAppear {
+            applyInitialOverlayVisibility()
             startRippleAnimation()
         }
         .onDisappear {
+            popWorkItem?.cancel()
+            popWorkItem = nil
+            settleWorkItem?.cancel()
+            settleWorkItem = nil
             stopRippleAnimation()
+        }
+    }
+
+    private func applyInitialOverlayVisibility() {
+        overlayScale = visibilityManager.isVisible ? 1.0 : 0.12
+        overlayOpacity = visibilityManager.isVisible ? 1.0 : 0.0
+    }
+
+    private func animateOverlayVisibility(_ isVisible: Bool) {
+        popWorkItem?.cancel()
+        popWorkItem = nil
+        settleWorkItem?.cancel()
+        settleWorkItem = nil
+
+        if isVisible {
+            overlayOpacity = 1.0
+            withAnimation(.easeOut(duration: 0.1)) {
+                overlayScale = 0.92
+            }
+
+            let pop = DispatchWorkItem {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.5, blendDuration: 0.04)) {
+                    overlayScale = 1.14
+                }
+            }
+            popWorkItem = pop
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: pop)
+
+            let settle = DispatchWorkItem {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.8, blendDuration: 0.06)) {
+                    overlayScale = 1.0
+                }
+            }
+            settleWorkItem = settle
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: settle)
+            return
+        }
+
+        withAnimation(.timingCurve(0.58, 0.0, 0.95, 0.32, duration: 0.18)) {
+            overlayScale = 0.12
+            overlayOpacity = 0.0
         }
     }
 

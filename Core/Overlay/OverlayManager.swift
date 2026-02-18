@@ -26,6 +26,7 @@ class OverlayManager {
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
+        let panelWasVisible = window?.isVisible ?? false
 
         if window == nil {
             let panelSize = RecordingOverlay.panelSize
@@ -61,12 +62,22 @@ class OverlayManager {
         ))
 
         visibilityManager.shouldDismiss = false
-        visibilityManager.isVisible = true
+        if !panelWasVisible {
+            visibilityManager.isVisible = false
+        }
 
         if let panel = window {
             configurePanelCallbacks(panel)
             panel.setFrameOrigin(screenPersistence.resolvedOriginForShow(panel: panel))
             panel.orderFrontRegardless()
+        }
+
+        if panelWasVisible {
+            visibilityManager.isVisible = true
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.visibilityManager.isVisible = true
+            }
         }
     }
 
