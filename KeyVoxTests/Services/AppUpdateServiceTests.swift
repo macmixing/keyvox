@@ -45,6 +45,30 @@ final class AppUpdateServiceTests: XCTestCase {
         XCTAssertTrue(service.latestRemoteInfo?.version == "999.0.0")
     }
 
+    func testManualCheckShowsUnavailablePromptWhenFetchFails() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let response = HTTPURLResponse(
+                url: URL(string: "https://api.github.com/repos/macmixing/keyvox/releases/latest")!,
+                statusCode: 404,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, Data())
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesManually()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertTrue(promptPresenter.prompts[0].title == "Updates Temporarily Unavailable")
+        XCTAssertTrue(promptPresenter.prompts[0].primaryButtonTitle == nil)
+        XCTAssertTrue(service.latestRemoteInfo == nil)
+    }
+
     func testCheckSkipsPromptWhenUpdateUrlHostNotAllowlisted() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))

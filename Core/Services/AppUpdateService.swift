@@ -115,7 +115,12 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func performUpdateCheck(isManualCheck: Bool) async {
-        guard let remoteInfo = await fetchLatestVersionInfo() else { return }
+        guard let remoteInfo = await fetchLatestVersionInfo() else {
+            if isManualCheck {
+                showUnavailableUpdatePrompt()
+            }
+            return
+        }
         guard shouldOfferUpdate(remoteInfo: remoteInfo) else {
             if isManualCheck {
                 showNoUpdatePrompt()
@@ -182,6 +187,20 @@ final class AppUpdateService: ObservableObject {
             message: "KeyVox \(local.version) (\(local.build)) is currently the latest version.",
             version: local.version,
             build: local.build,
+            dismissButtonTitle: "OK",
+            primaryButtonTitle: nil,
+            onPrimaryAction: nil,
+            onDismiss: {}
+        )
+        promptPresenter.show(prompt: prompt)
+    }
+
+    private func showUnavailableUpdatePrompt() {
+        let prompt = UpdatePrompt(
+            title: "Updates Temporarily Unavailable",
+            message: "We're a little busy right now. Please check back later.",
+            version: nil,
+            build: nil,
             dismissButtonTitle: "OK",
             primaryButtonTitle: nil,
             onPrimaryAction: nil,
