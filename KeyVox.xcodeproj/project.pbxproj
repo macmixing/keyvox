@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
+		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+General.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -24,7 +25,6 @@
 		8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */; };
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
-		8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
 		8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */; };
 		8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C92F3C51D6003BD458 /* WhisperService.swift */; };
@@ -137,6 +137,8 @@
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
 		C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */; };
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
+		C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000022F92000100AA0001 /* DictationPipeline.swift */; };
+		C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */; };
 		F0A000022F80000100AA0001 /* WhisperAudioParagraphChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */; };
 /* End PBXBuildFile section */
 
@@ -152,6 +154,7 @@
 
 /* Begin PBXFileReference section */
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
+		8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		8E57FB952F3E444B00935A26 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponents.swift; sourceTree = "<group>"; };
 		8E57FB962F3E444B00935A26 /* SettingsView+Audio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Audio.swift"; sourceTree = "<group>"; };
@@ -166,7 +169,6 @@
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
-		8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D22F3C51D6003BD458 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
@@ -283,6 +285,8 @@
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
 		C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+Validation.swift"; sourceTree = "<group>"; };
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
+		C13000022F92000100AA0001 /* DictationPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipeline.swift; sourceTree = "<group>"; };
+		C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPromptEchoGuard.swift; sourceTree = "<group>"; };
 		F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -350,6 +354,7 @@
 			isa = PBXGroup;
 			children = (
 				8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */,
+				C13000002F92000100AA0001 /* Transcription */,
 				8F2201002F44010000BB2201 /* AI */,
 				9D4000012F4E000100AA0001 /* Audio */,
 				8F4401002F46010000DD4401 /* TextProcessing */,
@@ -358,7 +363,6 @@
 				8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
 				C11000002F90000100AA0001 /* ModelDownloader */,
 				9B2000012F4C000100AA0001 /* Overlay */,
-				8E6D05CE2F3C51D6003BD458 /* TranscriptionManager.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -692,6 +696,16 @@
 			path = Heuristics;
 			sourceTree = "<group>";
 		};
+		C13000002F92000100AA0001 /* Transcription */ = {
+			isa = PBXGroup;
+			children = (
+				8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */,
+				C13000022F92000100AA0001 /* DictationPipeline.swift */,
+				C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */,
+			);
+			path = Transcription;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -816,6 +830,7 @@
 				9C3000132F4D000100AA0001 /* Dictionary/DictionaryMatcherCandidateEvaluator.swift in Sources */,
 				9C3000112F4D000100AA0001 /* Dictionary/DictionaryMatcherModels.swift in Sources */,
 				9C3000152F4D000100AA0001 /* Dictionary/DictionaryMatcherOverlapResolver.swift in Sources */,
+				8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */,
 				9C3000142F4D000100AA0001 /* Dictionary/DictionaryMatcherSplitJoinEvaluator.swift in Sources */,
 				9C3000122F4D000100AA0001 /* Dictionary/DictionaryMatcherTokenizer.swift in Sources */,
 				8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */,
@@ -858,7 +873,6 @@
 				9D4000112F4E000100AA0001 /* AudioSignalMetrics.swift in Sources */,
 				9D4000122F4E000100AA0001 /* AudioSilencePolicy.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
-				8E6D05E32F3C5246003BD458 /* TranscriptionManager.swift in Sources */,
 				8F2202012F44010000BB2201 /* Dictionary/DictionaryEntry.swift in Sources */,
 				8F2202022F44010000BB2201 /* Dictionary/DictionaryStore.swift in Sources */,
 				9C3000162F4D000100AA0001 /* Dictionary/TextNormalization.swift in Sources */,
@@ -873,6 +887,8 @@
 				8F4402022F46010000DD4401 /* ListPatternDetector.swift in Sources */,
 				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
+				C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */,
+				C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
