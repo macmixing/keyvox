@@ -47,6 +47,7 @@
 		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
 		8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */; };
 		8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */; };
+		D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */; };
 		8F3302012F45010000CC3301 /* PhoneticEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301012F45010000CC3301 /* PhoneticEncoder.swift */; };
 		8F3302022F45010000CC3301 /* PronunciationLexicon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301022F45010000CC3301 /* PronunciationLexicon.swift */; };
 		8F3302032F45010000CC3301 /* Dictionary/DictionaryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3301032F45010000CC3301 /* Dictionary/DictionaryMatcher.swift */; };
@@ -200,6 +201,7 @@
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictionarySection.swift"; sourceTree = "<group>"; };
 		8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDeletePromptView.swift; sourceTree = "<group>"; };
+		D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelSection.swift"; sourceTree = "<group>"; };
 		8F3301012F45010000CC3301 /* PhoneticEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneticEncoder.swift; sourceTree = "<group>"; };
 		8F3301022F45010000CC3301 /* PronunciationLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationLexicon.swift; sourceTree = "<group>"; };
 		8F3301032F45010000CC3301 /* Dictionary/DictionaryMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary/DictionaryMatcher.swift; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 				8E57FB962F3E444B00935A26 /* SettingsView+Audio.swift */,
 				8E57FB972F3E444B00935A26 /* SettingsView+General.swift */,
 				8E57FB982F3E444B00935A26 /* SettingsView+More.swift */,
+				D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */,
 				8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */,
 				8E57FB992F3E444B00935A26 /* SettingsView+Dictionary.swift */,
 				8E57FB9A2F3E444B00935A26 /* SettingsView+Sidebar.swift */,
@@ -858,6 +861,7 @@
 				8E57FB9F2F3E444B00935A26 /* SettingsView+Dictionary.swift in Sources */,
 				8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */,
 				8E57FBA02F3E444B00935A26 /* SettingsView+More.swift in Sources */,
+				D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Audio.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
 				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,
