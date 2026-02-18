@@ -78,7 +78,7 @@ struct SettingsView: View {
         }
         .onAppear {
             appSettings.refreshWeeklyWordCounterIfNeeded()
-            if selectedTab == .model {
+            if selectedTab == .dictionary {
                 hasVisitedDictionaryTab = true
             }
         }
@@ -88,7 +88,7 @@ struct SettingsView: View {
             }
         }
         .onChange(of: selectedTab) { newTab in
-            if newTab == .model {
+            if newTab == .dictionary {
                 hasVisitedDictionaryTab = true
             }
         }
@@ -103,8 +103,8 @@ struct SettingsView: View {
                         generalSettings
                     case .audio:
                         audioSettings
-                    case .model:
-                        modelSettings
+                    case .dictionary:
+                        dictionaryTabSettings
                     case .more:
                         moreSettings
                     }
