@@ -12,6 +12,10 @@ if [[ ! -d "$RESULT_BUNDLE" ]]; then
   exit 2
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+CORE_PREFIX="${REPO_ROOT}/Core/"
+
 REPORT_FILE="$(mktemp)"
 trap 'rm -f "$REPORT_FILE"' EXIT
 
@@ -25,8 +29,8 @@ else
 fi
 
 core_stats="$(
-  awk '
-    /^    \/Users\/domesposito\/Projects\/KeyVox\/Core\// {
+  awk -v core_prefix="$CORE_PREFIX" '
+    $1 ~ "^" core_prefix {
       counts = $3
       gsub(/[()]/, "", counts)
       split(counts, a, "/")
@@ -49,15 +53,15 @@ core_exec="$(echo "$core_stats" | awk '{print $3}')"
 
 echo "## Coverage Summary"
 echo
-echo "- Overall (`KeyVox.app`): **${overall_display}**"
-echo "- Core (`/Core/*` aggregate): **${core_pct}% (${core_cov}/${core_exec})**"
+echo "- Overall (\`KeyVox.app\`): **${overall_display}**"
+echo "- Core (\`/Core/*\` aggregate): **${core_pct}% (${core_cov}/${core_exec})**"
 echo
 echo "### Lowest-Coverage Core Files (>= 40 executable lines)"
 echo
 echo "| Coverage | Lines | File |"
 echo "|---:|---:|---|"
-awk '
-  /^    \/Users\/domesposito\/Projects\/KeyVox\/Core\// {
+awk -v core_prefix="$CORE_PREFIX" '
+  $1 ~ "^" core_prefix {
     file = $1
     cov = $2
     counts = $3

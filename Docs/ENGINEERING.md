@@ -25,7 +25,9 @@ KeyVox is organized by responsibility:
 
 - `App/KeyVoxApp.swift`: App entry point, menu bar scene, and window lifecycle.
 - `App/AppSettingsStore.swift`: Central persisted settings owner (`triggerBinding`, `autoParagraphsEnabled`, sound, onboarding, update prompts, weekly words).
-- `Core/TranscriptionManager.swift`: Recording/transcription state orchestration plus internal `DictationPipeline` boundary used by smoke/integration tests.
+- `Core/Transcription/TranscriptionManager.swift`: Recording/transcription state orchestration plus internal `DictationPipeline` boundary used by smoke/integration tests.
+- `Core/Transcription/DictationPipeline.swift`: Injectable transcribe -> post-process -> paste boundary used by runtime wiring and smoke tests.
+- `Core/Transcription/DictationPromptEchoGuard.swift`: Short-utterance prompt-hint guard to reduce dictionary-prompt echo artifacts.
 - `Core/Audio/AudioRecorder.swift`: Recorder state holder and public start/stop flow.
 - `Core/Audio/AudioRecorder+Session.swift`: Capture session/device lifecycle.
 - `Core/Audio/AudioRecorder+Streaming.swift`: Sample conversion/downsampling and live signal state.
@@ -36,6 +38,9 @@ KeyVox is organized by responsibility:
 - `Core/Audio/AudioSignalMetrics.swift`: Pure RMS/peak/window-ratio metrics.
 - `Core/KeyboardMonitor.swift`: Global/local modifier and escape monitoring.
 - `Core/AudioDeviceManager.swift`: Microphone discovery/selection and active device resolution.
+- `Core/ModelDownloader/ModelDownloader.swift`: Download orchestration for Whisper model artifacts.
+- `Core/ModelDownloader/ModelDownloader+DownloadLifecycle.swift`: URLSession progress/completion/error handling and download state transitions.
+- `Core/ModelDownloader/ModelDownloader+Validation.swift`: Artifact validation and readiness checks.
 - `Core/Overlay/OverlayManager.swift`: Overlay lifecycle orchestration and visibility state.
 - `Core/Overlay/OverlayMotionController.swift`: Fling/reset motion sequencing.
 - `Core/Overlay/OverlayScreenPersistence.swift`: Per-display origin persistence and clamping.
@@ -45,7 +50,7 @@ KeyVox is organized by responsibility:
 - `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
 - `Core/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
-- `Core/Lists/ListFormattingEngine.swift`: Deterministic list detection/rendering.
+- `Core/Lists/*`: Deterministic list detection/rendering (detector + parser/run-selection/trailing-split helpers and renderer).
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
 - `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, fallback transport normalization, and runtime-PID live AX verification binding.
