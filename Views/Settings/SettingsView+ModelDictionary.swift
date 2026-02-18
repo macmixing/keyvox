@@ -52,12 +52,16 @@ extension SettingsView {
                         Text(warning)
                             .font(.custom("Kanit Medium", size: 11))
                             .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
 
                     if let saveError = dictionaryStore.saveErrorMessage {
                         Text(saveError)
                             .font(.custom("Kanit Medium", size: 11))
                             .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
 
                     let displayedEntries = dictionarySortMode == .alphabetical
