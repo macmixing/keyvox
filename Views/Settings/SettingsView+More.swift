@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension SettingsView {
-    var informationSettings: some View {
+    var moreSettings: some View {
         VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
 

@@ -91,8 +91,8 @@ struct SettingsView: View {
                         audioSettings
                     case .model:
                         modelSettings
-                    case .information:
-                        informationSettings
+                    case .more:
+                        moreSettings
                     }
                 }
                 .padding(.horizontal, 40)
@@ -101,7 +101,7 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if selectedTab == .information {
+            if selectedTab == .more {
                 Text("Version \(appVersion)")
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary.opacity(0.5))
