@@ -77,7 +77,7 @@ extension SettingsView {
                             Spacer()
 
                             Button(action: {
-                                if let url = URL(string: "https://cueboard.app?utm_source=keyvox") {
+                                if let url = URL(string: "https://cueboard.app?utm_source=keyvox-app-settings") {
                                     NSWorkspace.shared.open(url)
                                     dismiss()
                                 }
