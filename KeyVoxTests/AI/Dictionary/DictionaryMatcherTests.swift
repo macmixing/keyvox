@@ -210,6 +210,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "www.example.com")
     }
 
+    func testMatcherPreservesTerminalPunctuationForShortProseWithAtDomainPattern() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [])
+
+        let result = matcher.apply(to: "Contact me at example.com.")
+        XCTAssertEqual(result.text, "Contact me at example.com.")
+    }
+
     private func makeMatcher() -> DictionaryMatcher {
         let lexicon = FakeLexicon(pronunciations: [
             "dom": "DM",

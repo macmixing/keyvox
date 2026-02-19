@@ -21,10 +21,6 @@ extension DictionaryMatcher {
         pattern: #"(?i)^[A-Z0-9._%+\-]+@[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+$"#,
         options: []
     )
-    private static let standaloneSpokenEmailRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)^[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,2}\s+at\s+[A-Z0-9\-]+(?:\s*\.\s*[A-Z0-9\-]+)+$"#,
-        options: []
-    )
     private static let standaloneWebsiteRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"(?i)^(?:www\s*\.\s*)?[A-Z0-9\-]+(?:\s*\.\s*[A-Z0-9\-]+)+$"#,
         options: []
@@ -267,10 +263,6 @@ extension DictionaryMatcher {
     private func isStandaloneEmailOrWebsite(_ text: String) -> Bool {
         let range = NSRange(location: 0, length: (text as NSString).length)
         if let regex = Self.standaloneLiteralEmailRegex,
-           regex.firstMatch(in: text, options: [], range: range) != nil {
-            return true
-        }
-        if let regex = Self.standaloneSpokenEmailRegex,
            regex.firstMatch(in: text, options: [], range: range) != nil {
             return true
         }
