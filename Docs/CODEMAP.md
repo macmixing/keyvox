@@ -112,7 +112,12 @@ KeyVox/
 │   ├── Transcription/
 │   │   ├── DictationPipeline.swift
 │   │   ├── DictationPromptEchoGuard.swift
-│   │   ├── TimeExpressionNormalizer.swift
+│   │   ├── Normalization/
+│   │   │   ├── TimeExpressionNormalizer.swift
+│   │   │   ├── TranscriptionLaughterNormalizer.swift
+│   │   │   ├── TranscriptionCapitalizationNormalizer.swift
+│   │   │   ├── TranscriptionTerminalPunctuationNormalizer.swift
+│   │   │   └── TranscriptionWhitespaceNormalizer.swift
 │   │   ├── TranscriptionManager.swift
 │   │   └── TranscriptionPostProcessor.swift
 ├── Views/
@@ -224,7 +229,7 @@ KeyVox/
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Core/Services/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
-6. `Core/Transcription/TranscriptionPostProcessor.swift` applies dictionary correction, email normalization/repair, list formatting, and final punctuation/whitespace normalization by render mode.
+6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Transcription/Normalization/`.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 9. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
@@ -263,9 +268,17 @@ KeyVox/
 - `Core/Transcription/DictationPromptEchoGuard.swift`
   - Gates dictionary-hint prompt use for short/low-confidence captures to reduce prompt-echo hallucination behavior.
 - `Core/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (dictionary, list, laughter, time, email boundary, and final punctuation/whitespace passes).
-- `Core/Transcription/TimeExpressionNormalizer.swift`
+  - Post-transcription orchestration (dictionary, list, laughter, time, email boundary, then delegated normalization passes).
+- `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
+- `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`
+  - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
+- `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`
+  - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
+- `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`
+  - Sentence-start/text-start/line-break capitalization with email/domain safety guards.
+- `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`
+  - Appends terminal period for sentence-like outputs ending in formatted times when punctuation is absent.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
@@ -499,7 +512,10 @@ KeyVox/
   - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to focus on spoken/literal/standalone resolution paths.
 - Post-processing moved under Transcription and time normalization extracted:
   - Removed: `Core/TranscriptionPostProcessor.swift`
-  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/TimeExpressionNormalizer.swift`
+  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`
+- Post-processing normalization responsibilities were split into focused helpers:
+  - Added: `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`
+  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules instead of owning all normalization internals.
 - Project source graph update:
   - `KeyVox.xcodeproj/project.pbxproj` updated for renamed/moved files above.
 

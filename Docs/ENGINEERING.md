@@ -51,7 +51,11 @@ KeyVox is organized by responsibility:
 - `Core/Services/WhisperService.swift`: Local model loading and transcription.
 - `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
 - `Core/Transcription/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
-- `Core/Transcription/TimeExpressionNormalizer.swift`: Extracted time-shape/meridiem normalization helper used by post-processing.
+- `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`: Extracted time-shape/meridiem normalization helper used by post-processing.
+- `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`: Dedicated laughter normalization helper kept separate from time normalization.
+- `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`: Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
+- `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`: Text-start/sentence-boundary/line-break capitalization with email/domain guards.
+- `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/AI/EmailAddressTextNormalization.swift`: Shared non-dictionary email literal cleanup utility.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
@@ -94,8 +98,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 3. `EmailAddressTextNormalization` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
 5. List formatting applies numeric list rendering when confidence gates pass.
-6. Laughter/time normalization (`TimeExpressionNormalizer`), final email boundary repair, and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
-7. Terminal punctuation pass appends a sentence period when output ends in formatted time-like prose without punctuation.
+6. Dedicated laughter normalization (`TranscriptionLaughterNormalizer`) and time normalization (`TimeExpressionNormalizer`) run, followed by final email boundary repair.
+7. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
 8. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
@@ -192,6 +196,9 @@ These remain integration/manual-test territory by design.
   - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to keep only spoken/literal/standalone resolution logic.
 - Post-processing moved under `Core/Transcription` and time normalization was extracted:
   - Removed: `Core/TranscriptionPostProcessor.swift`
-  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/TimeExpressionNormalizer.swift`
+  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`
+- Post-processing normalization internals were split into focused helpers:
+  - Added: `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`
+  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules.
 - Project wiring:
   - `KeyVox.xcodeproj/project.pbxproj` updated to align source/build references with the renamed and moved files.

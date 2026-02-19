@@ -145,6 +145,10 @@
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
 		C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000022F92000100AA0001 /* DictationPipeline.swift */; };
 		C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */; };
+		C13000142F92000100AA0001 /* TranscriptionWhitespaceNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000052F92000100AA0001 /* TranscriptionWhitespaceNormalizer.swift */; };
+		C13000152F92000100AA0001 /* TranscriptionCapitalizationNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000062F92000100AA0001 /* TranscriptionCapitalizationNormalizer.swift */; };
+		C13000162F92000100AA0001 /* TranscriptionTerminalPunctuationNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000072F92000100AA0001 /* TranscriptionTerminalPunctuationNormalizer.swift */; };
+		C13000172F92000100AA0001 /* TranscriptionLaughterNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000082F92000100AA0001 /* TranscriptionLaughterNormalizer.swift */; };
 		C14000112F93000100AA0001 /* ListPatternMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000012F93000100AA0001 /* ListPatternMarker.swift */; };
 		C14000122F93000100AA0001 /* ListPatternMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */; };
 		C14000132F93000100AA0001 /* ListPatternRunSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000032F93000100AA0001 /* ListPatternRunSelector.swift */; };
@@ -304,6 +308,10 @@
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
 		C13000022F92000100AA0001 /* DictationPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipeline.swift; sourceTree = "<group>"; };
 		C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPromptEchoGuard.swift; sourceTree = "<group>"; };
+		C13000052F92000100AA0001 /* TranscriptionWhitespaceNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionWhitespaceNormalizer.swift; sourceTree = "<group>"; };
+		C13000062F92000100AA0001 /* TranscriptionCapitalizationNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionCapitalizationNormalizer.swift; sourceTree = "<group>"; };
+		C13000072F92000100AA0001 /* TranscriptionTerminalPunctuationNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionTerminalPunctuationNormalizer.swift; sourceTree = "<group>"; };
+		C13000082F92000100AA0001 /* TranscriptionLaughterNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionLaughterNormalizer.swift; sourceTree = "<group>"; };
 		C14000012F93000100AA0001 /* ListPatternMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarker.swift; sourceTree = "<group>"; };
 		C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarkerParser.swift; sourceTree = "<group>"; };
 		C14000032F93000100AA0001 /* ListPatternRunSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternRunSelector.swift; sourceTree = "<group>"; };
@@ -754,11 +762,23 @@
 			children = (
 				8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */,
 				8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */,
-				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
+				C13000042F92000100AA0001 /* Normalization */,
 				C13000022F92000100AA0001 /* DictationPipeline.swift */,
 				C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		C13000042F92000100AA0001 /* Normalization */ = {
+			isa = PBXGroup;
+			children = (
+				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
+				C13000052F92000100AA0001 /* TranscriptionWhitespaceNormalizer.swift */,
+				C13000062F92000100AA0001 /* TranscriptionCapitalizationNormalizer.swift */,
+				C13000072F92000100AA0001 /* TranscriptionTerminalPunctuationNormalizer.swift */,
+				C13000082F92000100AA0001 /* TranscriptionLaughterNormalizer.swift */,
+			);
+			path = Normalization;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -946,6 +966,10 @@
 				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				E71000112FB2000100AA0001 /* TimeExpressionNormalizer.swift in Sources */,
+				C13000142F92000100AA0001 /* TranscriptionWhitespaceNormalizer.swift in Sources */,
+				C13000152F92000100AA0001 /* TranscriptionCapitalizationNormalizer.swift in Sources */,
+				C13000162F92000100AA0001 /* TranscriptionTerminalPunctuationNormalizer.swift in Sources */,
+				C13000172F92000100AA0001 /* TranscriptionLaughterNormalizer.swift in Sources */,
 				C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */,
 				C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
