@@ -451,6 +451,18 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
     }
 
+    func testDoesNotFormatQuestionWithStepNumberAsListWhenTwoIsTranscribedAsDigit() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Where did you say 2. pause in step 3. where you talked about it?",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Where did you say 2. pause in step 3. where you talked about it?")
+    }
+
     func testNormalizesCompactEmailWithNearMatchDomainInsideNumberedList() {
         let processor = TranscriptionPostProcessor()
         let entries = [

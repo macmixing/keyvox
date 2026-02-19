@@ -255,4 +255,12 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNotNil(detected)
         XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
     }
+
+    func testDoesNotDetectListFromQuestionWithStepNumber() {
+        let detector = ListPatternDetector()
+        let text = "Where did you say 2. pause in step 3. where you talked about it?"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
 }

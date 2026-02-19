@@ -40,14 +40,26 @@ struct ListPatternRunSelector {
         }
 
         guard best.count >= 2 else { return nil }
+        guard isCredibleRunStart(run: best, in: nsText) else { return nil }
         guard isCredibleTwoItemGap(run: best, in: nsText) else { return nil }
         return best
+    }
+
+    // Runs that start above "1" are far more likely to be incidental prose
+    // (e.g. "step 3") unless the first marker starts at a strong boundary.
+    private func isCredibleRunStart(run: [ListPatternMarker], in nsText: NSString) -> Bool {
+        guard let first = run.first else { return false }
+        guard first.number > 1 else { return true }
+        return markerHasBoundaryBefore(first, in: nsText)
     }
 
     // Prevent prose like "one for X and three for Y" from being detected as a
     // two-item list while still allowing explicit skipped numbering ("1. ... 3. ...").
     private func isCredibleTwoItemGap(run: [ListPatternMarker], in nsText: NSString) -> Bool {
         guard run.count == 2 else { return true }
+        if run[0].number > 1 && !run.allSatisfy({ markerHasExplicitDelimiter($0, in: nsText) }) {
+            return false
+        }
         let delta = run[1].number - run[0].number
         guard delta > 1 else { return true }
         return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText) }
