@@ -138,6 +138,9 @@
 		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
 		AB3000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */; };
 		AB3000392F60000100AA0001 /* DictationPipelineSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */; };
+		AB3000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */; };
+		AB3000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */; };
+		AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
@@ -301,6 +304,9 @@
 		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
 		AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunkerTests.swift; sourceTree = "<group>"; };
 		AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipelineSmokeTests.swift; sourceTree = "<group>"; };
+		AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+Email.swift"; sourceTree = "<group>"; };
+		AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+CapitalizationAndTime.swift"; sourceTree = "<group>"; };
+		AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+LanguageHeuristics.swift"; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
@@ -622,6 +628,9 @@
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
 				AB2000062F60000100AA0001 /* TranscriptionPostProcessorTests.swift */,
+				AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */,
+				AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */,
+				AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1014,6 +1023,9 @@
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000052F60000100AA0001 /* AudioSilenceGatePolicyTests.swift in Sources */,
 				AB3000062F60000100AA0001 /* TranscriptionPostProcessorTests.swift in Sources */,
+				AB3000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift in Sources */,
+				AB3000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift in Sources */,
+				AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */,
 				AB3000072F60000100AA0001 /* PhoneticEncoderTests.swift in Sources */,
 				AB3000082F60000100AA0001 /* ReplacementScorerTests.swift in Sources */,
 				AB3000292F60000100AA0001 /* CustomVocabularyNormalizerTests.swift in Sources */,
