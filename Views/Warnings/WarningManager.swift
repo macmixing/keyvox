@@ -226,47 +226,22 @@ final class WarningManager {
             removeWarningDismissMonitors()
             return
         }
+        let startFrame = window.frame
+        var endFrame = startFrame
+        endFrame.origin.y -= dismissSlideDistance
+        let dismissingPresentationID = warningPresentationID
 
-        guard let contentView = window.contentView else {
-            window.orderOut(nil)
-            removeWarningDismissMonitors()
-            return
-        }
-        contentView.wantsLayer = true
-        guard let layer = contentView.layer else {
-            window.orderOut(nil)
-            removeWarningDismissMonitors()
-            return
-        }
-
-        let startPosition = layer.position
-        let endPosition = CGPoint(x: startPosition.x, y: startPosition.y - dismissSlideDistance)
-
-        let move = CABasicAnimation(keyPath: "position.y")
-        move.fromValue = startPosition.y
-        move.toValue = endPosition.y
-
-        let fade = CABasicAnimation(keyPath: "opacity")
-        fade.fromValue = 1
-        fade.toValue = 0
-
-        let group = CAAnimationGroup()
-        group.animations = [move, fade]
-        group.duration = dismissAnimationDuration
-        group.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        group.fillMode = .forwards
-        group.isRemovedOnCompletion = false
-
-        layer.add(group, forKey: "warningDismiss")
-        layer.position = endPosition
-        layer.opacity = 0
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + dismissAnimationDuration) { [weak self] in
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = dismissAnimationDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().setFrame(endFrame, display: false)
+            window.animator().alphaValue = 0
+        } completionHandler: { [weak self] in
             guard let self else { return }
+            // If a newer warning started while this one was animating out, do not mutate it.
+            guard dismissingPresentationID == self.warningPresentationID else { return }
             window.orderOut(nil)
-            layer.removeAnimation(forKey: "warningDismiss")
-            layer.position = startPosition
-            layer.opacity = 1
+            window.setFrame(startFrame, display: false)
             window.alphaValue = 1
             self.removeWarningDismissMonitors()
         }
