@@ -127,6 +127,445 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output == "3:15 AM 3:17 AM 4:19 PM")
     }
 
+    func testNormalizesSpokenEmailAddressToLowercaseLiteral() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "kathy@example.com")]
+
+        let output = processor.process(
+            "Kathy at example.com",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "kathy@example.com")
+    }
+
+    func testNormalizesSpokenEmailAndRespectsDictionaryMatch() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom@example.com")]
+
+        let output = processor.process(
+            "Dom at example.com",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "dom@example.com")
+    }
+
+    func testNormalizesSpokenEmailInsideSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "kathy@example.com")]
+
+        let output = processor.process(
+            "Yeah, my name is Dom Esposito and my email address is kathy at example.com.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is kathy@example.com.")
+    }
+
+    func testNormalizesCompactSpokenEmailAndAppliesDictionaryLikelyMatch() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "anthony@example.com")]
+
+        let output = processor.process(
+            "Yeah, my name is Dom Esposito and my email address is anthonyatexample.com.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is anthony@example.com.")
+    }
+
+    func testNormalizesSpokenEmailInsideSentenceWithMixedCasingDomain() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom@example.com")]
+
+        let output = processor.process(
+            "Yeah, my name is Dom Esposito and my email address is Dom at example.com.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is dom@example.com.")
+    }
+
+    func testNormalizesMultipleEmailAddressesInSingleSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            "You can reach me at Dom at example.com or kathy@example.com, either of those are fine.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
+    }
+
+    func testNormalizesTwoSpokenEmailAddressesInSingleSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            "You can reach me at Dom at example.com or kathy at example.com, either of those are fine.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
+    }
+
+    func testPreservesLiteralEmailWithDotLocalPartWithoutInjectedSpace() {
+        let processor = TranscriptionPostProcessor()
+        let email = "dom.esposito@example.com"
+        let entries = [DictionaryEntry(phrase: email)]
+
+        let output = processor.process(
+            "My email is \(email).",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "My email is \(email).")
+    }
+
+    func testNormalizesSpokenEmailAddressesInsideNumberedList() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I have a couple of email addresses. I'll give them to you:
+
+            1. Dom at example.com
+            2. Kathy at example.com
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I have a couple of email addresses. I'll give them to you:
+
+            1. dom@example.com
+            2. kathy@example.com
+            """
+        )
+    }
+
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraph() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1. Dom at example.com
+            2. Kathy at example.com
+
+            You can reach out to me anytime next week. That would be fine.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            You can reach out to me anytime next week. That would be fine.
+            """
+        )
+    }
+    
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraphUserPhrase() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1. Dom at example.com
+            2. Kathy at example.com
+
+            You can reach me anytime. That would be fine.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            You can reach me anytime. That would be fine.
+            """
+        )
+    }
+
+    func testNormalizesSpokenEmailsWhenNumberedMarkersHaveNoPostMarkerSpace() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1.Dom at example.com
+            2.Kathy at example.com
+
+            You can reach me anytime. That would be fine.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I have a couple of email addresses. Let me give them to you:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            You can reach me anytime. That would be fine.
+            """
+        )
+    }
+
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithCommaTrailingSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I have a couple of email addresses, let me give them to you:
+
+            1. Dom at example.com
+            2. Kathy at example.com
+
+            You can reach out to me anytime, that would be fine.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I have a couple of email addresses, let me give them to you:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            You can reach out to me anytime, that would be fine.
+            """
+        )
+    }
+
+    func testNormalizesSpokenEmailAddressesWithOhYeahLeadInAndTrailingSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            "I forgot to give you my email addresses. What are they? Oh yeah, one, dom at example.com. Two, kathy at example.com. Be sure to hit me up next week around Thursday.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I forgot to give you my email addresses. What are they? Oh yeah:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            Be sure to hit me up next week around Thursday.
+            """
+        )
+    }
+
+    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithoutPunctuation() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I forgot to give you my email addresses. What are they? Oh yeah:
+
+            1. dom@example.com
+            2. kathy@example.com Be sure to hit me up next week around Thursday
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I forgot to give you my email addresses. What are they? Oh yeah:
+
+            1. dom@example.com
+            2. kathy@example.com
+
+            Be sure to hit me up next week around Thursday
+            """
+        )
+    }
+
+    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithCommaContinuation() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+            DictionaryEntry(phrase: "anthony@example.com"),
+        ]
+
+        let output = processor.process(
+            """
+            I need to give you some email addresses so you can reach out to me at a later time:
+
+            1. dom@example.com
+            2. kathy@example.com
+            3. anthony@example.com, be sure to reach out to me next week.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            I need to give you some email addresses so you can reach out to me at a later time:
+
+            1. dom@example.com
+            2. kathy@example.com
+            3. anthony@example.com
+
+            be sure to reach out to me next week.
+            """
+        )
+    }
+
+    func testEmailListTrailingSplitWithDictionaryNoiseDeterministic() {
+        let processor = TranscriptionPostProcessor()
+        let firstEmail = "dom@example.com"
+        let secondEmail = "kathy@example.com"
+        let entries = [
+            DictionaryEntry(phrase: firstEmail),
+            DictionaryEntry(phrase: secondEmail),
+            DictionaryEntry(phrase: "anthony@example.com"),
+            DictionaryEntry(phrase: "contact@example.org"),
+            DictionaryEntry(phrase: "support@example.com"),
+            DictionaryEntry(phrase: "NorthBridge Systems"),
+            DictionaryEntry(phrase: "ClearPath Labs"),
+            DictionaryEntry(phrase: "SummitField Cloud"),
+        ]
+
+        let output = processor.process(
+            """
+            I forgot to give you my email addresses. What are they? Oh yeah:
+
+            1. \(firstEmail)
+            2. \(secondEmail) Be sure to hit me up next week around Thursday
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        let expected = """
+        I forgot to give you my email addresses. What are they? Oh yeah:
+
+        1. \(firstEmail)
+        2. \(secondEmail)
+
+        Be sure to hit me up next week around Thursday
+        """
+
+        XCTAssertEqual(output, expected)
+    }
+
+    func testAddsSpacingAndCapitalizationAfterCollapsedEmailSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "kathy@example.com")]
+
+        let output = processor.process(
+            "Oh yeah, itskathy@example.com.you can email me there.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Oh yeah, its kathy@example.com. You can email me there.")
+    }
+
+    func testDoesNotAttachLeadingWordsToEmailAndFixesFollowingSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Oh yeah, itsuh...dom@example.com.that's my email address.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Oh yeah, itsuh... dom@example.com. That's my email address.")
+    }
+
+    func testSeparatesCollapsedPrefixFromKnownDictionaryEmail() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "kathy@example.com")]
+
+        let output = processor.process(
+            "Oh yeah, myemailaddressiskathy@example.com.you can email me there.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Oh yeah, myemailaddressis kathy@example.com. You can email me there.")
+    }
+
     func testPreservesDaypartPhrasingWhileFixingTimeShape() {
         let processor = TranscriptionPostProcessor()
 

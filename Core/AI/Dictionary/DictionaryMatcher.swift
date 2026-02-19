@@ -27,6 +27,7 @@ final class DictionaryMatcher {
     let possessiveStemScoreBoost = 0.06
 
     var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
+    var emailEntriesByDomain: [String: [DictionaryEmailEntry]] = [:]
 
     init(
         lexicon: PronunciationLexiconProviding,
@@ -51,8 +52,13 @@ final class DictionaryMatcher {
 
     func rebuildIndex(entries: [DictionaryEntry]) {
         var grouped: [Int: [CompiledEntry]] = [:]
+        var emailGrouped: [String: [DictionaryEmailEntry]] = [:]
 
         for entry in entries {
+            if let emailEntry = DictionaryEmailEntry.fromPhrase(entry.phrase) {
+                emailGrouped[emailEntry.domain, default: []].append(emailEntry)
+            }
+
             let normalizedPhrase = TextNormalization.normalizedPhrase(entry.phrase)
             guard !normalizedPhrase.isEmpty else { continue }
 
@@ -71,6 +77,7 @@ final class DictionaryMatcher {
         }
 
         entriesByTokenCount = grouped
+        emailEntriesByDomain = emailGrouped
     }
 
     func apply(to text: String) -> DictionaryMatchResult {
@@ -78,13 +85,16 @@ final class DictionaryMatcher {
             return DictionaryMatchResult(text: "", stats: .empty)
         }
 
+        let dictionaryEmailNormalizedInput = normalizeEmailsUsingDictionary(in: text)
+        let emailNormalizedInput = TextNormalization.normalizeEmailAddresses(in: dictionaryEmailNormalizedInput)
+
         guard !entriesByTokenCount.isEmpty else {
-            return DictionaryMatchResult(text: text, stats: .empty)
+            return DictionaryMatchResult(text: emailNormalizedInput, stats: .empty)
         }
 
-        let tokens = tokenize(text)
+        let tokens = tokenize(emailNormalizedInput)
         guard !tokens.isEmpty else {
-            return DictionaryMatchResult(text: text, stats: .empty)
+            return DictionaryMatchResult(text: emailNormalizedInput, stats: .empty)
         }
 
         var stats = DebugStats()
@@ -101,7 +111,7 @@ final class DictionaryMatcher {
                     start: start,
                     tokenCount: tokenCount,
                     tokens: tokens,
-                    text: text,
+                    text: emailNormalizedInput,
                     candidates: candidates,
                     stats: &stats
                 ) {
@@ -112,7 +122,7 @@ final class DictionaryMatcher {
             if let splitReplacement = proposeSplitJoinReplacement(
                 start: start,
                 tokens: tokens,
-                text: text,
+                text: emailNormalizedInput,
                 stats: &stats
             ) {
                 proposed.append(splitReplacement)
@@ -120,15 +130,15 @@ final class DictionaryMatcher {
         }
 
         guard !proposed.isEmpty else {
-            return DictionaryMatchResult(text: text, stats: stats)
+            return DictionaryMatchResult(text: emailNormalizedInput, stats: stats)
         }
 
         let selected = selectNonOverlapping(proposed: proposed, rejectedOverlapCounter: &stats.rejectedOverlap)
         guard !selected.isEmpty else {
-            return DictionaryMatchResult(text: text, stats: stats)
+            return DictionaryMatchResult(text: emailNormalizedInput, stats: stats)
         }
 
-        var output = text
+        var output = emailNormalizedInput
         // Apply from right to left so earlier replacements do not invalidate later NSRanges.
         for item in selected.sorted(by: { $0.range.location > $1.range.location }) {
             guard let swiftRange = Range(item.range, in: output) else { continue }

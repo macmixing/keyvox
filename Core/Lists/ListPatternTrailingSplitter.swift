@@ -30,6 +30,82 @@ struct ListPatternTrailingSplitter {
             }
         }
 
+        // Deterministic email + comma boundary split:
+        // if a list item ends with an email and then comma-led prose starts, split after the email.
+        if let split = firstRegexSplit(
+            normalized,
+            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,})\\s*,\\s+(?:" +
+                NSRegularExpression.escapedPattern(for: paragraphToken) +
+                "\\s+)?(.+)$"
+        ) {
+            let itemWordCount = split.0.split(separator: " ").count
+            let trailingWordCount = split.1.split(separator: " ").count
+            let itemEndsWithEmail = split.0.range(
+                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$"#,
+                options: .regularExpression
+            ) != nil
+            if itemWordCount <= 4 &&
+                trailingWordCount >= 3 &&
+                itemEndsWithEmail &&
+                !startsLikeListMarker(split.1) &&
+                looksLikePostListContinuation(split.1) {
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
+        // Deterministic email boundary split:
+        // if a list item ends with an email and then prose starts, split right after the email.
+        if let split = firstRegexSplit(
+            normalized,
+            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}[.!?]?)\\s+(?:" +
+                NSRegularExpression.escapedPattern(for: paragraphToken) +
+                "\\s+)?(.+)$"
+        ) {
+            let itemWordCount = split.0.split(separator: " ").count
+            let trailingWordCount = split.1.split(separator: " ").count
+            let itemEndsWithEmail = split.0.range(
+                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}[.!?]?$"#,
+                options: .regularExpression
+            ) != nil
+            if itemWordCount <= 4 &&
+                trailingWordCount >= 3 &&
+                itemEndsWithEmail &&
+                !startsLikeListMarker(split.1) &&
+                looksLikePostListContinuation(split.1) {
+                return (
+                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
+        // Deterministic email + paragraph break split:
+        // if the last item is a short email-only line followed by a new paragraph, split at the break.
+        if let paragraphBreakRange = normalized.range(of: paragraphToken) {
+            let before = String(normalized[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let after = String(normalized[paragraphBreakRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let beforeWordCount = before.split(separator: " ").count
+            let afterWordCount = after.split(separator: " ").count
+            let beforeEndsWithEmail = before.range(
+                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$"#,
+                options: .regularExpression
+            ) != nil
+
+            if !before.isEmpty &&
+                !after.isEmpty &&
+                beforeEndsWithEmail &&
+                beforeWordCount <= 4 &&
+                afterWordCount >= 3 {
+                return (
+                    restoreParagraphBreaks(in: before, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: after, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
         // Common Whisper shape for post-list continuation:
         // "... <last item>, and <new thought>"
         if let split = firstRegexSplit(
@@ -95,6 +171,18 @@ struct ListPatternTrailingSplitter {
             }
         }
 
+        // Explicit paragraph breaks are deterministic fallback boundaries when no stronger split matched.
+        if let paragraphBreakRange = normalized.range(of: paragraphToken) {
+            let item = String(normalized[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let trailing = String(normalized[paragraphBreakRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !item.isEmpty && !trailing.isEmpty {
+                return (
+                    restoreParagraphBreaks(in: item, paragraphToken: paragraphToken),
+                    restoreParagraphBreaks(in: trailing, paragraphToken: paragraphToken)
+                )
+            }
+        }
+
         return (restoreParagraphBreaks(in: normalized, paragraphToken: paragraphToken), "")
     }
 
@@ -132,5 +220,29 @@ struct ListPatternTrailingSplitter {
             of: #"^(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\s*[.):\-,])?\s+"#,
             options: .regularExpression
         ) != nil
+    }
+
+    private func looksLikePostListContinuation(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+
+        let lower = trimmed.lowercased()
+        if lower.range(
+            of: #"^(?:you|i|we|he|she|they|that|this|be|please|and|now|okay|ok|so|then|next|finally|after|because)\b"#,
+            options: .regularExpression
+        ) != nil {
+            return true
+        }
+
+        let quoteTrimmed = trimmed.replacingOccurrences(
+            of: #"^[\"'“”‘’\(\[\{]+"#,
+            with: "",
+            options: .regularExpression
+        )
+        if let first = quoteTrimmed.first, first.isUppercase {
+            return true
+        }
+
+        return false
     }
 }

@@ -246,4 +246,13 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertNil(detected)
     }
+
+    func testDetectsSecondMarkerWhenAttachedAfterEmailDomain() {
+        let detector = ListPatternDetector()
+        let text = "I have a couple of email addresses. Let me give them to you: 1. Dom at example.com2. Kathy at example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+    }
 }

@@ -1,8 +1,21 @@
 import Foundation
 
 struct ListPatternMarkerParser {
+    private static let spokenNumberPattern =
+        "one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve"
+
     private static let markerRegex: NSRegularExpression = {
-        let pattern = "(?i)(^|[\\s,;:])(?:(\\d{1,2})|(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve))(?:\\s*[\\.\\)\\:\\-,])?\\s+"
+        let pattern =
+            "(?i)(^|[\\s,;:])" +
+            "(?:(\\d{1,2})|(\(spokenNumberPattern)))" +
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+        return try! NSRegularExpression(pattern: pattern)
+    }()
+    private static let markerAttachedToDomainRegex: NSRegularExpression = {
+        let pattern =
+            "(?i)(?:[A-Z0-9\\-]+(?:\\.[A-Z0-9\\-]+)*\\.[A-Z]{2,})" +
+            "((?:\\d{1,2})|(?:\(spokenNumberPattern)))" +
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let oneForOneRegex: NSRegularExpression = {
@@ -28,12 +41,13 @@ struct ListPatternMarkerParser {
     func markers(in text: String) -> [ListPatternMarker] {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
-        let matches = Self.markerRegex.matches(in: text, options: [], range: range)
+        let primaryMatches = Self.markerRegex.matches(in: text, options: [], range: range)
+        let attachedMatches = Self.markerAttachedToDomainRegex.matches(in: text, options: [], range: range)
         let oneForOneRanges = Self.oneForOneRegex
             .matches(in: text, options: [], range: range)
             .map(\.range)
 
-        return matches.compactMap { match -> ListPatternMarker? in
+        var markers: [ListPatternMarker] = primaryMatches.compactMap { match -> ListPatternMarker? in
             let digitRange = match.range(at: 2)
             let wordRange = match.range(at: 3)
 
@@ -63,5 +77,41 @@ struct ListPatternMarkerParser {
                 contentStart: match.range.location + match.range.length
             )
         }
+
+        markers.append(contentsOf: attachedMatches.compactMap { match -> ListPatternMarker? in
+            let tokenRange = match.range(at: 1)
+            guard tokenRange.location != NSNotFound else { return nil }
+
+            let token = nsText.substring(with: tokenRange).lowercased()
+            let markerNumber = Int(token) ?? spokenNumberMap[token]
+            guard let markerNumber else { return nil }
+
+            let markerTokenStart = tokenRange.location
+            if markerNumber == 1,
+               oneForOneRanges.contains(where: { NSLocationInRange(markerTokenStart, $0) }) {
+                return nil
+            }
+
+            return ListPatternMarker(
+                number: markerNumber,
+                markerTokenStart: markerTokenStart,
+                contentStart: match.range.location + match.range.length
+            )
+        })
+
+        let sorted = markers.sorted {
+            if $0.markerTokenStart != $1.markerTokenStart {
+                return $0.markerTokenStart < $1.markerTokenStart
+            }
+            return $0.contentStart < $1.contentStart
+        }
+
+        var deduped: [ListPatternMarker] = []
+        deduped.reserveCapacity(sorted.count)
+        for marker in sorted where deduped.last?.markerTokenStart != marker.markerTokenStart {
+            deduped.append(marker)
+        }
+
+        return deduped
     }
 }

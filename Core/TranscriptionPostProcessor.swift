@@ -26,11 +26,23 @@ final class TranscriptionPostProcessor {
     ) -> String {
         guard !text.isEmpty else { return "" }
 
+        #if DEBUG
+        logPipelineStage("input", text)
+        print(
+            "[KVXPost] settings listFormattingEnabled=\(listFormattingEnabled) " +
+            "renderMode=\(renderMode) dictionaryEntries=\(dictionaryEntries.count)"
+        )
+        #endif
+
         updateDictionaryEntries(dictionaryEntries)
+        let emailNormalizedInput = TextNormalization.normalizeEmailAddresses(in: text)
+        #if DEBUG
+        logPipelineStage("emailNormalizedInput", emailNormalizedInput)
+        #endif
 
         let normalized: String
         if enablePhoneticMatcher {
-            let matchResult = dictionaryMatcher.apply(to: text)
+            let matchResult = dictionaryMatcher.apply(to: emailNormalizedInput)
             #if DEBUG
             if matchResult.stats.attempted > 0 {
                 print(
@@ -40,19 +52,43 @@ final class TranscriptionPostProcessor {
                     "overlap=\(matchResult.stats.rejectedOverlap)"
                 )
             }
+            logPipelineStage("dictionaryNormalized", matchResult.text)
             #endif
             normalized = matchResult.text
         } else {
-            normalized = vocabularyNormalizer.normalize(text, with: dictionaryEntries)
+            normalized = vocabularyNormalizer.normalize(emailNormalizedInput, with: dictionaryEntries)
+            #if DEBUG
+            logPipelineStage("vocabularyNormalized", normalized)
+            #endif
         }
 
         let idiomNormalized = normalizeIdioms(in: normalized)
+        #if DEBUG
+        logPipelineStage("idiomNormalized", idiomNormalized)
+        #endif
         let listFormatted = listFormattingEnabled
             ? listFormattingEngine.formatIfNeeded(idiomNormalized, renderMode: renderMode)
             : idiomNormalized
+        #if DEBUG
+        logPipelineStage("listFormatted", listFormatted)
+        #endif
         let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
+        #if DEBUG
+        logPipelineStage("laughterNormalized", laughterNormalized)
+        #endif
         let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
-        return normalizeOutputWhitespace(timeNormalized, renderMode: renderMode)
+        #if DEBUG
+        logPipelineStage("timeNormalized", timeNormalized)
+        #endif
+        let emailNormalizedOutput = TextNormalization.normalizeEmailAddresses(in: timeNormalized)
+        #if DEBUG
+        logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
+        #endif
+        let output = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
+        #if DEBUG
+        logPipelineStage("output", output)
+        #endif
+        return output
     }
 
     private func normalizeOutputWhitespace(_ text: String, renderMode: ListRenderMode) -> String {
@@ -248,4 +284,46 @@ final class TranscriptionPostProcessor {
         if lettersOnly == "pm" { return "PM" }
         return value
     }
+
+    #if DEBUG
+    private static let debugEmailLikeRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: "[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}",
+        options: [.caseInsensitive]
+    )
+
+    private func logPipelineStage(_ stage: String, _ value: String) {
+        let summary = debugTextSummary(value)
+        if rawDebugTextLoggingEnabled {
+            let escaped = truncatedDebugEscaped(value, maxCharacters: 400)
+            print("[KVXPost] \(stage) \(summary) text=\(escaped)")
+        } else {
+            print("[KVXPost] \(stage) \(summary)")
+        }
+    }
+
+    private var rawDebugTextLoggingEnabled: Bool {
+        ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+    }
+
+    private func debugTextSummary(_ text: String) -> String {
+        let chars = text.count
+        let words = text.split(whereSeparator: \.isWhitespace).count
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).count
+        let atSigns = text.filter { $0 == "@" }.count
+        let emailLikeCount: Int = {
+            guard let regex = Self.debugEmailLikeRegex else { return 0 }
+            let nsText = text as NSString
+            let range = NSRange(location: 0, length: nsText.length)
+            return regex.numberOfMatches(in: text, options: [], range: range)
+        }()
+        return "chars=\(chars) words=\(words) lines=\(lines) at=\(atSigns) emailLike=\(emailLikeCount)"
+    }
+
+    private func truncatedDebugEscaped(_ text: String, maxCharacters: Int) -> String {
+        let escaped = text.replacingOccurrences(of: "\n", with: "\\n")
+        guard escaped.count > maxCharacters else { return escaped }
+        let end = escaped.index(escaped.startIndex, offsetBy: maxCharacters)
+        return "\(escaped[..<end])..."
+    }
+    #endif
 }
