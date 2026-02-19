@@ -6,11 +6,11 @@ final class TranscriptionPostProcessor {
     private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
-    private let laughterNormalizer = TranscriptionLaughterNormalizer()
+    private let laughterNormalizer = LaughterNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
-    private let whitespaceNormalizer = TranscriptionWhitespaceNormalizer()
-    private let capitalizationNormalizer = TranscriptionCapitalizationNormalizer()
-    private let terminalPunctuationNormalizer = TranscriptionTerminalPunctuationNormalizer()
+    private let whitespaceNormalizer = WhitespaceNormalizer()
+    private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
+    private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
     private var dictionaryFingerprint = ""
 
     // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
@@ -40,7 +40,7 @@ final class TranscriptionPostProcessor {
         #endif
 
         updateDictionaryEntries(dictionaryEntries)
-        let emailNormalizedInput = EmailAddressTextNormalization.normalize(in: text)
+        let emailNormalizedInput = EmailAddressNormalizer.normalize(in: text)
         #if DEBUG
         logPipelineStage("emailNormalizedInput", emailNormalizedInput)
         #endif
@@ -85,7 +85,7 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif
-        let emailNormalizedOutput = EmailAddressTextNormalization.normalize(in: timeNormalized)
+        let emailNormalizedOutput = EmailAddressNormalizer.normalize(in: timeNormalized)
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif

@@ -104,7 +104,7 @@ struct ListPatternDetector {
         guard cleaned.count >= 2 else { return nil }
         guard cleaned.rangeOfCharacter(from: .letters) != nil else { return nil }
 
-        if let normalizedDomainItem = WebsiteTextNormalization.normalizeLeadingDomainTokenCasing(in: cleaned) {
+        if let normalizedDomainItem = WebsiteNormalizer.normalizeLeadingDomainTokenCasing(in: cleaned) {
             return normalizedDomainItem
         }
 

@@ -8,7 +8,7 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(?:(\\d{1,2})|(\(spokenNumberPattern)))" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteTextNormalization.attachedDomainLookaheadPattern))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let markerAttachedToDomainRegex: NSRegularExpression = {
@@ -22,7 +22,7 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(to)" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteTextNormalization.attachedDomainLookaheadPattern))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let oneForOneRegex: NSRegularExpression = {
@@ -188,7 +188,7 @@ struct ListPatternMarkerParser {
         if punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil {
             return true
         }
-        return WebsiteTextNormalization.isCompactDomainToken(punctuationStripped)
+        return WebsiteNormalizer.isCompactDomainToken(punctuationStripped)
     }
 
     private func looksLikeEmailListItemStart(in nsText: NSString, from contentStart: Int) -> Bool {
@@ -200,7 +200,7 @@ struct ListPatternMarkerParser {
         if preview.range(of: emailLikePattern, options: .regularExpression) != nil {
             return true
         }
-        return WebsiteTextNormalization.hasLeadingCompactDomainToken(in: preview)
+        return WebsiteNormalizer.hasLeadingCompactDomainToken(in: preview)
     }
 
     private func isLikelyTimeComponent(at markerTokenStart: Int, in nsText: NSString) -> Bool {

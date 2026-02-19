@@ -267,7 +267,7 @@ extension DictionaryMatcher {
            regex.firstMatch(in: text, options: [], range: range) != nil {
             return true
         }
-        if WebsiteTextNormalization.isStandaloneWebsiteUtterance(text) {
+        if WebsiteNormalizer.isStandaloneWebsiteUtterance(text) {
             return true
         }
         return false

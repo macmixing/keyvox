@@ -1,6 +1,6 @@
 import Foundation
 
-struct TranscriptionTerminalPunctuationNormalizer {
+struct TerminalPunctuationNormalizer {
     private static let terminalTimeRegex = try? NSRegularExpression(
         pattern: #"(?i)\b(?:[1-9]|1[0-2]):[0-5][0-9]\s(?:AM|PM)\s*$"#
     )

@@ -1,6 +1,6 @@
 import Foundation
 
-struct TranscriptionLaughterNormalizer {
+struct LaughterNormalizer {
     private static let laughterPairRegex = try? NSRegularExpression(
         pattern: #"\bha\s+ha\b"#,
         options: [.caseInsensitive]

@@ -1,6 +1,6 @@
 import Foundation
 
-enum WebsiteTextNormalization {
+enum WebsiteNormalizer {
     static let attachedDomainLookaheadPattern = "(?=[A-Za-z0-9\\-]+(?:\\.[A-Za-z0-9\\-]+)+\\b)"
 
     private static let compactDomainTokenRegex: NSRegularExpression? = try? NSRegularExpression(

@@ -72,8 +72,6 @@ KeyVox/
 │   │   │   ├── DictionaryMatcher+Tokenizer.swift
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
-│   │   ├── EmailAddressTextNormalization.swift
-│   │   ├── WebsiteTextNormalization.swift
 │   │   ├── CustomVocabularyNormalizer.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
@@ -110,15 +108,17 @@ KeyVox/
 │   │   ├── OverlayPanel.swift
 │   │   ├── OverlayScreenPersistence.swift
 │   │   └── OverlayTypes.swift
+│   ├── Normalization/
+│   │   ├── EmailAddressNormalizer.swift
+│   │   ├── WebsiteNormalizer.swift
+│   │   ├── TimeExpressionNormalizer.swift
+│   │   ├── WhitespaceNormalizer.swift
+│   │   ├── SentenceCapitalizationNormalizer.swift
+│   │   ├── TerminalPunctuationNormalizer.swift
+│   │   └── LaughterNormalizer.swift
 │   ├── Transcription/
 │   │   ├── DictationPipeline.swift
 │   │   ├── DictationPromptEchoGuard.swift
-│   │   ├── Normalization/
-│   │   │   ├── TimeExpressionNormalizer.swift
-│   │   │   ├── TranscriptionLaughterNormalizer.swift
-│   │   │   ├── TranscriptionCapitalizationNormalizer.swift
-│   │   │   ├── TranscriptionTerminalPunctuationNormalizer.swift
-│   │   │   └── TranscriptionWhitespaceNormalizer.swift
 │   │   ├── TranscriptionManager.swift
 │   │   └── TranscriptionPostProcessor.swift
 ├── Views/
@@ -230,7 +230,7 @@ KeyVox/
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Core/Services/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
-6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Transcription/Normalization/`.
+6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 9. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
@@ -270,15 +270,15 @@ KeyVox/
   - Gates dictionary-hint prompt use for short/low-confidence captures to reduce prompt-echo hallucination behavior.
 - `Core/Transcription/TranscriptionPostProcessor.swift`
   - Post-transcription orchestration (dictionary, list, laughter, time, email boundary, then delegated normalization passes).
-- `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`
+- `Core/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
-- `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`
+- `Core/Normalization/LaughterNormalizer.swift`
   - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
-- `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`
+- `Core/Normalization/WhitespaceNormalizer.swift`
   - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
-- `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`
+- `Core/Normalization/SentenceCapitalizationNormalizer.swift`
   - Sentence-start/text-start/line-break capitalization with email/domain safety guards.
-- `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`
+- `Core/Normalization/TerminalPunctuationNormalizer.swift`
   - Appends terminal period for sentence-like outputs ending in formatted times when punctuation is absent.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
@@ -330,14 +330,14 @@ KeyVox/
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
 
-### Post-Processing (`Core` + `Core/AI` + `Core/Lists`)
+### Post-Processing (`Core` + `Core/Normalization` + `Core/AI` + `Core/Lists`)
 
 - `Core/AI/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
   - Maintains a domain-indexed email dictionary for spoken/literal email recovery.
-- `Core/AI/EmailAddressTextNormalization.swift`
+- `Core/Normalization/EmailAddressNormalizer.swift`
   - Shared non-dictionary email literal cleanup (casing, punctuation spacing, sentence-boundary repair, ellipsis normalization).
-- `Core/AI/WebsiteTextNormalization.swift`
+- `Core/Normalization/WebsiteNormalizer.swift`
   - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
   - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
@@ -376,11 +376,11 @@ KeyVox/
 - `Core/Lists/ListPatternDetector.swift`
   - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
-  - Delegates leading domain-token lowercasing to `WebsiteTextNormalization`.
+  - Delegates leading domain-token lowercasing to `WebsiteNormalizer`.
 - `Core/Lists/ListPatternMarkerParser.swift`
   - Parses spoken/typed marker tokens into canonical marker metadata used by list detection.
   - Handles markers attached to domains, spoken `to` as list marker 2 in email-list shapes, and time-component false-positive suppression.
-  - Uses `WebsiteTextNormalization` for domain-token heuristics to avoid duplicated website regex logic.
+  - Uses `WebsiteNormalizer` for domain-token heuristics to avoid duplicated website regex logic.
 - `Core/Lists/ListPatternRunSelector.swift`
   - Selects best monotonic list run and enforces confidence guards before formatting.
 - `Core/Lists/ListPatternTrailingSplitter.swift`
@@ -508,10 +508,10 @@ KeyVox/
   - Added: `Core/AI/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Models.swift`, `Core/AI/Dictionary/DictionaryMatcher+OverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Tokenizer.swift`
 - Dictionary/email normalization boundaries were separated:
   - Removed: `Core/AI/Dictionary/TextNormalization.swift`
-  - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/AI/EmailAddressTextNormalization.swift`
+  - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/Normalization/EmailAddressNormalizer.swift`
   - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
 - Website/domain helper extraction centralized cross-domain URL rules:
-  - Added: `Core/AI/WebsiteTextNormalization.swift`
+  - Added: `Core/Normalization/WebsiteNormalizer.swift`
   - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/Lists/ListPatternDetector.swift`, `Core/Lists/ListPatternMarkerParser.swift`
 - Dictionary email helper extensions were renamed:
   - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
@@ -521,9 +521,9 @@ KeyVox/
   - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to focus on spoken/literal/standalone resolution paths.
 - Post-processing moved under Transcription and time normalization extracted:
   - Removed: `Core/TranscriptionPostProcessor.swift`
-  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/Normalization/TimeExpressionNormalizer.swift`
+  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Normalization/TimeExpressionNormalizer.swift`
 - Post-processing normalization responsibilities were split into focused helpers:
-  - Added: `Core/Transcription/Normalization/TranscriptionWhitespaceNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionCapitalizationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`, `Core/Transcription/Normalization/TranscriptionLaughterNormalizer.swift`
+  - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules instead of owning all normalization internals.
 - Project source graph update:
   - `KeyVox.xcodeproj/project.pbxproj` updated for renamed/moved files above.

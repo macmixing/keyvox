@@ -1,6 +1,6 @@
 import Foundation
 
-struct TranscriptionCapitalizationNormalizer {
+struct SentenceCapitalizationNormalizer {
     private static let domainLikeTokenRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"(?i)^(?:https?://)?(?:www\.)?[a-z0-9\-]+(?:\.[a-z0-9\-]+)+/?$"#,
         options: []

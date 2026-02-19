@@ -86,7 +86,7 @@ final class DictionaryMatcher {
         }
 
         let dictionaryEmailNormalizedInput = normalizeEmailsUsingDictionary(in: text)
-        let emailNormalizedInput = EmailAddressTextNormalization.normalize(in: dictionaryEmailNormalizedInput)
+        let emailNormalizedInput = EmailAddressNormalizer.normalize(in: dictionaryEmailNormalizedInput)
 
         guard !entriesByTokenCount.isEmpty else {
             return DictionaryMatchResult(text: emailNormalizedInput, stats: .empty)

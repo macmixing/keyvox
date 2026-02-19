@@ -1,6 +1,6 @@
 import Foundation
 
-struct TranscriptionWhitespaceNormalizer {
+struct WhitespaceNormalizer {
     func normalize(_ text: String, renderMode: ListRenderMode) -> String {
         switch renderMode {
         case .singleLineInline:
