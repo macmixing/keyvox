@@ -1,6 +1,6 @@
 import Foundation
 
-enum TextNormalization {
+enum EmailAddressTextNormalization {
     private static let emailLiteralRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: "[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}",
         options: [.caseInsensitive]
@@ -18,23 +18,7 @@ enum TextNormalization {
         options: []
     )
 
-    static func normalizedPhrase(_ input: String) -> String {
-        let folded = input
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-
-        let lower = folded.lowercased()
-        let spaced = lower.replacingOccurrences(of: "[^a-z0-9']+", with: " ", options: .regularExpression)
-        return spaced
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-    }
-
-    static func normalizedToken(_ input: String) -> String {
-        let phrase = normalizedPhrase(input)
-        return phrase.replacingOccurrences(of: " ", with: "")
-    }
-
-    static func normalizeEmailAddresses(in input: String) -> String {
+    static func normalize(in input: String) -> String {
         guard !input.isEmpty else { return input }
 
         var output = input

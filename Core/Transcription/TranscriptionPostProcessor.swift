@@ -6,6 +6,7 @@ final class TranscriptionPostProcessor {
     private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
+    private let timeExpressionNormalizer = TimeExpressionNormalizer()
     private var dictionaryFingerprint = ""
 
     // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
@@ -35,7 +36,7 @@ final class TranscriptionPostProcessor {
         #endif
 
         updateDictionaryEntries(dictionaryEntries)
-        let emailNormalizedInput = TextNormalization.normalizeEmailAddresses(in: text)
+        let emailNormalizedInput = EmailAddressTextNormalization.normalize(in: text)
         #if DEBUG
         logPipelineStage("emailNormalizedInput", emailNormalizedInput)
         #endif
@@ -80,7 +81,7 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif
-        let emailNormalizedOutput = TextNormalization.normalizeEmailAddresses(in: timeNormalized)
+        let emailNormalizedOutput = EmailAddressTextNormalization.normalize(in: timeNormalized)
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
@@ -249,85 +250,7 @@ final class TranscriptionPostProcessor {
     }
 
     private func normalizeTimeExpressions(in text: String) -> String {
-        guard !text.isEmpty else { return text }
-
-        let daypartPattern =
-            "(?:in the morning|this morning|in the afternoon|this afternoon|in the evening|this evening|at night|tonight)"
-        let amMeridiemPattern = "(?:a\\.?m\\.?|am|a\\.?n\\.?|an)"
-        let pmMeridiemPattern = "(?:p\\.?m\\.?|pm)"
-        let meridiemPattern = "(?:\(amMeridiemPattern)|\(pmMeridiemPattern))"
-
-        var output = text
-
-        // Normalize spaced/compact meridiem forms while preserving spoken structure.
-        output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2]):([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
-            in: output
-        ) { match, nsText in
-            let hour = nsText.substring(with: match.range(at: 1))
-            let minute = nsText.substring(with: match.range(at: 2))
-            let meridiem = nsText.substring(with: match.range(at: 3))
-            return "\(hour):\(minute) \(normalizedMeridiem(meridiem))"
-        }
-
-        output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
-            in: output
-        ) { match, nsText in
-            let hour = nsText.substring(with: match.range(at: 1))
-            let minute = nsText.substring(with: match.range(at: 2))
-            let meridiem = nsText.substring(with: match.range(at: 3))
-            return "\(hour):\(minute) \(normalizedMeridiem(meridiem))"
-        }
-
-        output = replacingMatches(
-            pattern: #"\b([0-9]{3,4})[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
-            in: output
-        ) { match, nsText in
-            let digits = nsText.substring(with: match.range(at: 1))
-            guard let formatted = formattedCompactTime(digits) else { return nil }
-            let meridiem = nsText.substring(with: match.range(at: 2))
-            return "\(formatted) \(normalizedMeridiem(meridiem))"
-        }
-
-        // Balanced fuzzy-AM pass: map "AND" only when it behaves like a terminal meridiem token.
-        output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[:\.-]([0-5][0-9])[\s-]*and\.?(?=$|[,;:!?\)\.])"#,
-            in: output
-        ) { match, nsText in
-            let hour = nsText.substring(with: match.range(at: 1))
-            let minute = nsText.substring(with: match.range(at: 2))
-            return "\(hour):\(minute) AM"
-        }
-
-        output = replacingMatches(
-            pattern: #"\b([0-9]{3,4})[\s-]*and\.?(?=$|[,;:!?\)\.])"#,
-            in: output
-        ) { match, nsText in
-            let digits = nsText.substring(with: match.range(at: 1))
-            guard let formatted = formattedCompactTime(digits) else { return nil }
-            return "\(formatted) AM"
-        }
-
-        // Preserve spoken daypart phrases and only normalize malformed numeric time shape.
-        output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])(?=\s+\#(daypartPattern)\b)"#,
-            in: output
-        ) { match, nsText in
-            let hour = nsText.substring(with: match.range(at: 1))
-            let minute = nsText.substring(with: match.range(at: 2))
-            return "\(hour):\(minute)"
-        }
-
-        output = replacingMatches(
-            pattern: #"\b([0-9]{3,4})(?=\s+\#(daypartPattern)\b)"#,
-            in: output
-        ) { match, nsText in
-            let digits = nsText.substring(with: match.range(at: 1))
-            return formattedCompactTime(digits)
-        }
-
-        return output
+        timeExpressionNormalizer.normalize(in: text)
     }
 
     private func replacingMatches(
@@ -349,34 +272,6 @@ final class TranscriptionPostProcessor {
         }
 
         return mutable as String
-    }
-
-    private func formattedCompactTime(_ digits: String) -> String? {
-        guard digits.count == 3 || digits.count == 4 else { return nil }
-
-        let hourDigitsCount = digits.count - 2
-        let hourStart = digits.startIndex
-        let hourEnd = digits.index(hourStart, offsetBy: hourDigitsCount)
-        let minuteStart = hourEnd
-        let minuteEnd = digits.endIndex
-
-        guard let hour = Int(digits[hourStart..<hourEnd]),
-              let minute = Int(digits[minuteStart..<minuteEnd]),
-              (1...12).contains(hour),
-              (0...59).contains(minute) else {
-            return nil
-        }
-
-        return "\(hour):\(String(format: "%02d", minute))"
-    }
-
-    private func normalizedMeridiem(_ value: String) -> String {
-        let lettersOnly = value
-            .lowercased()
-            .replacingOccurrences(of: ".", with: "")
-        if lettersOnly == "am" || lettersOnly == "an" { return "AM" }
-        if lettersOnly == "pm" { return "PM" }
-        return value
     }
 
     #if DEBUG

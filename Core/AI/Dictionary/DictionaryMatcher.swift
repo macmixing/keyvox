@@ -59,7 +59,7 @@ final class DictionaryMatcher {
                 emailGrouped[emailEntry.domain, default: []].append(emailEntry)
             }
 
-            let normalizedPhrase = TextNormalization.normalizedPhrase(entry.phrase)
+            let normalizedPhrase = DictionaryTextNormalization.normalizedPhrase(entry.phrase)
             guard !normalizedPhrase.isEmpty else { continue }
 
             let tokens = normalizedPhrase.split(separator: " ").map(String.init)
@@ -86,7 +86,7 @@ final class DictionaryMatcher {
         }
 
         let dictionaryEmailNormalizedInput = normalizeEmailsUsingDictionary(in: text)
-        let emailNormalizedInput = TextNormalization.normalizeEmailAddresses(in: dictionaryEmailNormalizedInput)
+        let emailNormalizedInput = EmailAddressTextNormalization.normalize(in: dictionaryEmailNormalizedInput)
 
         guard !entriesByTokenCount.isEmpty else {
             return DictionaryMatchResult(text: emailNormalizedInput, stats: .empty)

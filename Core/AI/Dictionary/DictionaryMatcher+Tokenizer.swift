@@ -13,7 +13,7 @@ extension DictionaryMatcher {
             .matches(in: text, options: [], range: fullRange)
             .compactMap { match in
                 let raw = nsText.substring(with: match.range)
-                let normalized = TextNormalization.normalizedToken(raw)
+                let normalized = DictionaryTextNormalization.normalizedToken(raw)
                 guard !normalized.isEmpty else { return nil }
 
                 return Token(

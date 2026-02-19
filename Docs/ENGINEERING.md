@@ -50,11 +50,13 @@ KeyVox is organized by responsibility:
 - `Core/Overlay/OverlayFlingPhysics.swift`: Pure fling impact/reflection/duration calculations.
 - `Core/Services/WhisperService.swift`: Local model loading and transcription.
 - `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
-- `Core/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
+- `Core/Transcription/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
+- `Core/Transcription/TimeExpressionNormalizer.swift`: Extracted time-shape/meridiem normalization helper used by post-processing.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
+- `Core/AI/EmailAddressTextNormalization.swift`: Shared non-dictionary email literal cleanup utility.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
-- `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`: Local/domain resolution helpers with deterministic ambiguity guards and fuzzy domain recovery.
+- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
+- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`: Local/domain resolution helpers with deterministic ambiguity guards and fuzzy domain recovery.
 - `Core/Lists/*`: Deterministic list detection/rendering (detector + parser/run-selection/trailing-split helpers and renderer).
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
@@ -87,10 +89,10 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 1. `WhisperAudioParagraphChunker` computes conservative chunk boundaries from silence windows.
 2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
-3. Email literal normalization runs first (case + punctuation/sentence-boundary cleanup).
+3. `EmailAddressTextNormalization` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
 5. List formatting applies numeric list rendering when confidence gates pass.
-6. Laughter/time normalization, final email boundary repair, and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
+6. Laughter/time normalization (`TimeExpressionNormalizer`), final email boundary repair, and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
 7. Terminal punctuation pass appends a sentence period when output ends in formatted time-like prose without punctuation.
 8. Final text is inserted via the paste service.
 
@@ -171,39 +173,20 @@ These remain integration/manual-test territory by design.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
 
-## Branch Delta From `main`
+## Working Tree Delta From `HEAD`
 
-- Dictionary/email normalization additions:
-  - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
-  - `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`
-  - `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
-  - `Core/AI/Dictionary/DictionaryMatcher.swift`
-  - `Core/AI/Dictionary/TextNormalization.swift`
-  - `Core/AI/Dictionary/DictionaryStore.swift`
-  - Introduces domain-indexed dictionary email resolution, spoken/compact email normalization, and warning-state lifecycle cleanup in dictionary storage.
-- List hardening:
-  - `Core/Lists/ListPatternDetector.swift`
-  - `Core/Lists/ListPatternMarkerParser.swift`
-  - `Core/Lists/ListPatternTrailingSplitter.swift`
-  - Adds parser guards for attached-domain markers and time false positives, plus scored trailing split candidates for email/list continuations.
-- Post-processing orchestration updates:
-  - `Core/TranscriptionPostProcessor.swift`
-  - Adds stage-by-stage debug observability, email normalization before/after dictionary/list passes, and terminal period normalization for time-ended prose.
-- Settings and warning UX restructuring:
-  - `Views/Settings/SettingsComponents.swift`
-  - `Views/Settings/SettingsView.swift`
-  - `Views/Settings/SettingsView+Dictionary.swift`
-  - `Views/Settings/SettingsView+DictionarySection.swift` (renamed from `Views/Settings/SettingsView+ModelDictionary.swift`)
-  - `Views/Settings/SettingsView+ModelSection.swift` (renamed from `Views/Settings/SettingsView+Model.swift`)
-  - `Views/Settings/SettingsView+More.swift`
-  - `Views/StatusMenuView.swift`
-  - `Views/Warnings/WarningKind.swift`
-  - `Views/Warnings/WarningManager.swift`
-  - Promotes dictionary to its own tab, moves model controls into More, reroutes model-missing warning actions, and adds animated/hover-aware warning dismiss behavior.
-- Tests and project wiring updates:
-  - `KeyVoxTests/AI/Dictionary/DictionaryMatcherTests.swift`
-  - `KeyVoxTests/Core/TranscriptionPostProcessorTests.swift`
-  - `KeyVoxTests/Lists/ListPatternDetectorTests.swift`
-  - `KeyVoxTests/Services/DictationPipelineSmokeTests.swift`
-  - `KeyVox.xcodeproj/project.pbxproj`
-  - Expands deterministic coverage for email/list edge cases and aligns Xcode source graph with the new file structure.
+- Dictionary matcher file split renamed to extension-style files:
+  - Removed: `Core/AI/Dictionary/DictionaryMatcherCandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherModels.swift`, `Core/AI/Dictionary/DictionaryMatcherOverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcherSplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherTokenizer.swift`
+  - Added: `Core/AI/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Models.swift`, `Core/AI/Dictionary/DictionaryMatcher+OverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Tokenizer.swift`
+- Dictionary/email normalization boundaries were separated:
+  - Removed: `Core/AI/Dictionary/TextNormalization.swift`
+  - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/AI/EmailAddressTextNormalization.swift`
+  - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
+- Dictionary email helper extensions were renamed:
+  - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
+  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
+- Post-processing moved under `Core/Transcription` and time normalization was extracted:
+  - Removed: `Core/TranscriptionPostProcessor.swift`
+  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/TimeExpressionNormalizer.swift`
+- Project wiring:
+  - `KeyVox.xcodeproj/project.pbxproj` updated to align source/build references with the renamed and moved files.
