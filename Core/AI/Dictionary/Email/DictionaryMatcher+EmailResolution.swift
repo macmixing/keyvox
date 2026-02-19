@@ -6,6 +6,23 @@ private struct SpokenLocalCandidate {
 }
 
 extension DictionaryMatcher {
+    private struct StandaloneEmailHint {
+        let local: String
+        let tld: String?
+    }
+    private static let standaloneLiteralEmailHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*([A-Z0-9._%+\-]+)\s*@\s*([A-Z0-9.\-]+\.[A-Z]{2,})\s*$"#,
+        options: []
+    )
+    private static let standaloneSpokenEmailHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*([A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,2})\s+at\s+([A-Z0-9.\-\s]+)\s*$"#,
+        options: []
+    )
+    private static let standaloneWebsiteHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*(?:www[\s\.]+)?([A-Z0-9._%+\-]{2,})[\s\.]+([A-Z]{2,})\s*$"#,
+        options: []
+    )
+
     func resolveSpokenEmail(localRaw: String, domain: String) -> (prefix: String, entry: DictionaryEmailEntry)? {
         let candidates = spokenLocalCandidates(from: localRaw)
         guard !candidates.isEmpty else { return nil }
@@ -56,6 +73,45 @@ extension DictionaryMatcher {
         return ("", entry)
     }
 
+    func resolveStandaloneDictionaryEmail(in raw: String) -> DictionaryEmailEntry? {
+        guard let hint = standaloneEmailHint(from: raw) else { return nil }
+
+        var candidates = emailEntriesByDomain.values.flatMap { $0 }
+        guard !candidates.isEmpty else { return nil }
+
+        if let tld = hint.tld {
+            candidates = candidates.filter { entry in
+                guard let entryTLD = entry.domain.split(separator: ".").last else { return false }
+                return String(entryTLD) == tld
+            }
+        }
+        guard !candidates.isEmpty else { return nil }
+
+        let maxDistance = hint.local.count >= 8 ? 2 : 1
+
+        let ranked = candidates.map { entry in
+            let distance = levenshtein(hint.local, entry.local)
+            let lengthDelta = abs(hint.local.count - entry.local.count)
+            return (entry: entry, distance: distance, lengthDelta: lengthDelta)
+        }
+        .sorted {
+            if $0.distance != $1.distance { return $0.distance < $1.distance }
+            if $0.lengthDelta != $1.lengthDelta { return $0.lengthDelta < $1.lengthDelta }
+            return $0.entry.canonical < $1.entry.canonical
+        }
+
+        guard let best = ranked.first, best.distance <= maxDistance else { return nil }
+        if ranked.count > 1 {
+            let second = ranked[1]
+            // Require a clear winner before rewriting a short standalone utterance.
+            if second.distance == best.distance {
+                return nil
+            }
+        }
+
+        return best.entry
+    }
+
     func resolveEntry(local: String, domain: String) -> DictionaryEmailEntry? {
         guard let entries = emailEntriesByDomain[domain], !entries.isEmpty else { return nil }
 
@@ -103,131 +159,45 @@ extension DictionaryMatcher {
         return results
     }
 
-    func normalizeLocal(_ raw: String) -> String {
-        raw
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-            .lowercased()
-            .replacingOccurrences(of: "[^a-z0-9._%+\\-]", with: "", options: .regularExpression)
-    }
+    private func standaloneEmailHint(from raw: String) -> StandaloneEmailHint? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
 
-    func normalizeDomain(_ raw: String) -> String? {
-        var normalized = raw
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-            .lowercased()
-            .replacingOccurrences(of: "\\s+", with: "", options: .regularExpression)
-            .replacingOccurrences(of: "[^a-z0-9.\\-]", with: "", options: .regularExpression)
-            .replacingOccurrences(of: "\\.{2,}", with: ".", options: .regularExpression)
-            .trimmingCharacters(in: CharacterSet(charactersIn: ".-"))
+        let ns = trimmed as NSString
+        let range = NSRange(location: 0, length: ns.length)
 
-        let labels = normalized
-            .split(separator: ".", omittingEmptySubsequences: true)
-            .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "-")) }
-            .filter { !$0.isEmpty }
-        normalized = labels.joined(separator: ".")
-
-        guard labels.count >= 2 else { return nil }
-        guard let tld = labels.last,
-              tld.range(of: "^[a-z]{2,}$", options: .regularExpression) != nil else {
-            return nil
-        }
-
-        return normalized
-    }
-
-    func resolveDictionaryDomainCandidate(_ raw: String) -> (domain: String, overflow: String)? {
-        guard let normalized = normalizeDomain(raw) else { return nil }
-
-        if emailEntriesByDomain[normalized] != nil {
-            return (normalized, "")
-        }
-        if let fuzzyDomain = resolveFuzzyDomainCandidate(normalized) {
-            return (fuzzyDomain, "")
-        }
-
-        let labels = normalized.split(separator: ".").map(String.init)
-        guard labels.count >= 3 else { return nil }
-
-        for endIndexExclusive in stride(from: labels.count - 1, through: 2, by: -1) {
-            let candidateDomain = labels[..<endIndexExclusive].joined(separator: ".")
-            if emailEntriesByDomain[candidateDomain] != nil {
-                let overflow = labels[endIndexExclusive...].joined(separator: " ")
-                return (candidateDomain, overflow)
+        if let match = Self.standaloneLiteralEmailHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let domainRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw),
+               let domain = normalizeDomain(domainRaw),
+               let tld = domain.split(separator: ".").last.map(String.init) {
+                return StandaloneEmailHint(local: local, tld: tld)
             }
-            guard let fuzzyDomain = resolveFuzzyDomainCandidate(candidateDomain) else { continue }
+        }
 
-            let overflow = labels[endIndexExclusive...].joined(separator: " ")
-            return (fuzzyDomain, overflow)
+        if let match = Self.standaloneSpokenEmailHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let domainRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw),
+               let domain = normalizeDomain(domainRaw),
+               let tld = domain.split(separator: ".").last.map(String.init) {
+                return StandaloneEmailHint(local: local, tld: tld)
+            }
+        }
+
+        if let match = Self.standaloneWebsiteHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let tldRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw) {
+                let tld = tldRaw
+                    .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+                    .lowercased()
+                return StandaloneEmailHint(local: local, tld: tld)
+            }
         }
 
         return nil
-    }
-
-    private func resolveFuzzyDomainCandidate(_ candidateDomain: String) -> String? {
-        let candidateLabels = candidateDomain.split(separator: ".").map(String.init)
-        guard candidateLabels.count >= 2 else { return nil }
-
-        let candidateHost = candidateLabels.dropLast().joined(separator: ".")
-        guard !candidateHost.isEmpty else { return nil }
-
-        guard let candidateTLD = candidateLabels.last else { return nil }
-
-        let maxDistance = candidateHost.count >= 6 ? 2 : 1
-
-        let ranked = emailEntriesByDomain.keys.compactMap { knownDomain -> (domain: String, distance: Int, lengthDelta: Int)? in
-            let knownLabels = knownDomain.split(separator: ".").map(String.init)
-            guard knownLabels.count == candidateLabels.count else { return nil }
-            guard knownLabels.last == candidateTLD else { return nil }
-
-            let knownHost = knownLabels.dropLast().joined(separator: ".")
-            guard !knownHost.isEmpty else { return nil }
-            guard candidateHost.first == knownHost.first else { return nil }
-
-            let lengthDelta = abs(candidateHost.count - knownHost.count)
-            guard lengthDelta <= 2 else { return nil }
-
-            let distance = levenshtein(candidateHost, knownHost)
-            guard distance <= maxDistance else { return nil }
-            return (knownDomain, distance, lengthDelta)
-        }
-        .sorted {
-            if $0.distance != $1.distance { return $0.distance < $1.distance }
-            if $0.lengthDelta != $1.lengthDelta { return $0.lengthDelta < $1.lengthDelta }
-            return $0.domain < $1.domain
-        }
-
-        guard let best = ranked.first else { return nil }
-        if ranked.count > 1 {
-            let next = ranked[1]
-            if next.distance == best.distance && next.lengthDelta == best.lengthDelta {
-                return nil
-            }
-        }
-
-        return best.domain
-    }
-
-    func extractAttachedListMarker(from localRaw: String, boundary: String) -> (marker: String, local: String)? {
-        guard boundary.isEmpty || boundary.last?.isWhitespace == true || ",;:".contains(boundary) else {
-            return nil
-        }
-
-        guard let regex = try? NSRegularExpression(
-            pattern: "^(\\d{1,2})([\\.\\)\\:\\-])([A-Za-z][A-Za-z0-9._%+'\\-]*(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)$",
-            options: []
-        ) else {
-            return nil
-        }
-
-        let ns = localRaw as NSString
-        let range = NSRange(location: 0, length: ns.length)
-        guard let match = regex.firstMatch(in: localRaw, options: [], range: range) else {
-            return nil
-        }
-
-        let number = ns.substring(with: match.range(at: 1))
-        let delimiter = ns.substring(with: match.range(at: 2))
-        let local = ns.substring(with: match.range(at: 3))
-        return ("\(number)\(delimiter)", local)
     }
 
     func levenshtein(_ lhs: String, _ rhs: String) -> Int {

@@ -1,6 +1,6 @@
 import Foundation
 
-enum EmailAddressTextNormalization {
+enum EmailAddressNormalizer {
     private static let emailLiteralRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: "[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}",
         options: [.caseInsensitive]

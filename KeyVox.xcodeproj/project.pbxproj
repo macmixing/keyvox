@@ -10,6 +10,8 @@
 		8E0366E32F46F43600017017 /* DictionaryEmailEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366DF2F46F43600017017 /* DictionaryEmailEntry.swift */; };
 		8E0366E42F46F43600017017 /* DictionaryMatcher+EmailResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366E12F46F43600017017 /* DictionaryMatcher+EmailResolution.swift */; };
 		8E0366E52F46F43600017017 /* DictionaryMatcher+EmailNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366E02F46F43600017017 /* DictionaryMatcher+EmailNormalization.swift */; };
+		F1A100112FC1000100AA0001 /* DictionaryMatcher+EmailParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A100012FC1000100AA0001 /* DictionaryMatcher+EmailParsing.swift */; };
+		F1A100122FC1000100AA0001 /* DictionaryMatcher+EmailDomainResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A100022FC1000100AA0001 /* DictionaryMatcher+EmailDomainResolution.swift */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E4B08752F46F22800C5DB85 /* DictionaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08682F46F22800C5DB85 /* DictionaryEntry.swift */; };
@@ -85,7 +87,8 @@
 		9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */; };
 		9B2000152F4C000100AA0001 /* OverlayFlingPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */; };
 		9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000062F4C000100AA0001 /* OverlayTypes.swift */; };
-		9C3000162F4D000100AA0001 /* EmailAddressTextNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */; };
+		9C3000162F4D000100AA0001 /* EmailAddressNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000062F4D000100AA0001 /* EmailAddressNormalizer.swift */; };
+		F1B100112FC2000100AA0001 /* WebsiteNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B100012FC2000100AA0001 /* WebsiteNormalizer.swift */; };
 		9D4000112F4E000100AA0001 /* AudioSignalMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000022F4E000100AA0001 /* AudioSignalMetrics.swift */; };
 		9D4000122F4E000100AA0001 /* AudioSilencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000032F4E000100AA0001 /* AudioSilencePolicy.swift */; };
 		9D4000132F4E000100AA0001 /* AudioCaptureClassification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000042F4E000100AA0001 /* AudioCaptureClassification.swift */; };
@@ -136,6 +139,9 @@
 		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
 		AB3000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */; };
 		AB3000392F60000100AA0001 /* DictationPipelineSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */; };
+		AB3000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */; };
+		AB3000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */; };
+		AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
@@ -143,6 +149,11 @@
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
 		C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000022F92000100AA0001 /* DictationPipeline.swift */; };
 		C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */; };
+		C13000142F92000100AA0001 /* WhitespaceNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000052F92000100AA0001 /* WhitespaceNormalizer.swift */; };
+		C13000152F92000100AA0001 /* SentenceCapitalizationNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000062F92000100AA0001 /* SentenceCapitalizationNormalizer.swift */; };
+		C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */; };
+		C13000172F92000100AA0001 /* LaughterNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000082F92000100AA0001 /* LaughterNormalizer.swift */; };
+		C13000182F92000100AA0001 /* CharacterSpamNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */; };
 		C14000112F93000100AA0001 /* ListPatternMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000012F93000100AA0001 /* ListPatternMarker.swift */; };
 		C14000122F93000100AA0001 /* ListPatternMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */; };
 		C14000132F93000100AA0001 /* ListPatternRunSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000032F93000100AA0001 /* ListPatternRunSelector.swift */; };
@@ -244,7 +255,8 @@
 		9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistence.swift; sourceTree = "<group>"; };
 		9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysics.swift; sourceTree = "<group>"; };
 		9B2000062F4C000100AA0001 /* OverlayTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTypes.swift; sourceTree = "<group>"; };
-		9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAddressTextNormalization.swift; sourceTree = "<group>"; };
+		9C3000062F4D000100AA0001 /* EmailAddressNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAddressNormalizer.swift; sourceTree = "<group>"; };
+		F1B100012FC2000100AA0001 /* WebsiteNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteNormalizer.swift; sourceTree = "<group>"; };
 		9D4000022F4E000100AA0001 /* AudioSignalMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSignalMetrics.swift; sourceTree = "<group>"; };
 		9D4000032F4E000100AA0001 /* AudioSilencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSilencePolicy.swift; sourceTree = "<group>"; };
 		9D4000042F4E000100AA0001 /* AudioCaptureClassification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureClassification.swift; sourceTree = "<group>"; };
@@ -295,6 +307,9 @@
 		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
 		AB2000382F60000100AA0001 /* WhisperAudioParagraphChunkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunkerTests.swift; sourceTree = "<group>"; };
 		AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipelineSmokeTests.swift; sourceTree = "<group>"; };
+		AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+Email.swift"; sourceTree = "<group>"; };
+		AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+CapitalizationAndTime.swift"; sourceTree = "<group>"; };
+		AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+LanguageHeuristics.swift"; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
@@ -302,6 +317,11 @@
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
 		C13000022F92000100AA0001 /* DictationPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipeline.swift; sourceTree = "<group>"; };
 		C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPromptEchoGuard.swift; sourceTree = "<group>"; };
+		C13000052F92000100AA0001 /* WhitespaceNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhitespaceNormalizer.swift; sourceTree = "<group>"; };
+		C13000062F92000100AA0001 /* SentenceCapitalizationNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentenceCapitalizationNormalizer.swift; sourceTree = "<group>"; };
+		C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPunctuationNormalizer.swift; sourceTree = "<group>"; };
+		C13000082F92000100AA0001 /* LaughterNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaughterNormalizer.swift; sourceTree = "<group>"; };
+		C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSpamNormalizer.swift; sourceTree = "<group>"; };
 		C14000012F93000100AA0001 /* ListPatternMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarker.swift; sourceTree = "<group>"; };
 		C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarkerParser.swift; sourceTree = "<group>"; };
 		C14000032F93000100AA0001 /* ListPatternRunSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternRunSelector.swift; sourceTree = "<group>"; };
@@ -309,6 +329,8 @@
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelSection.swift"; sourceTree = "<group>"; };
 		E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeExpressionNormalizer.swift; sourceTree = "<group>"; };
+		F1A100012FC1000100AA0001 /* DictionaryMatcher+EmailParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+EmailParsing.swift"; sourceTree = "<group>"; };
+		F1A100022FC1000100AA0001 /* DictionaryMatcher+EmailDomainResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+EmailDomainResolution.swift"; sourceTree = "<group>"; };
 		F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAudioParagraphChunker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -336,7 +358,9 @@
 			children = (
 				8E0366DF2F46F43600017017 /* DictionaryEmailEntry.swift */,
 				8E0366E02F46F43600017017 /* DictionaryMatcher+EmailNormalization.swift */,
+				F1A100012FC1000100AA0001 /* DictionaryMatcher+EmailParsing.swift */,
 				8E0366E12F46F43600017017 /* DictionaryMatcher+EmailResolution.swift */,
+				F1A100022FC1000100AA0001 /* DictionaryMatcher+EmailDomainResolution.swift */,
 			);
 			path = Email;
 			sourceTree = "<group>";
@@ -404,6 +428,7 @@
 		8E6D05CF2F3C51D6003BD458 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				C13000042F92000100AA0001 /* Normalization */,
 				C13000002F92000100AA0001 /* Transcription */,
 				8F2201002F44010000BB2201 /* AI */,
 				9D4000012F4E000100AA0001 /* Audio */,
@@ -514,7 +539,6 @@
 				8F3301012F45010000CC3301 /* PhoneticEncoder.swift */,
 				8F3301022F45010000CC3301 /* PronunciationLexicon.swift */,
 				8F3301042F45010000CC3301 /* ReplacementScorer.swift */,
-				9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -608,6 +632,9 @@
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
 				AB2000062F60000100AA0001 /* TranscriptionPostProcessorTests.swift */,
+				AB2000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift */,
+				AB2000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift */,
+				AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -748,11 +775,25 @@
 			children = (
 				8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */,
 				8EE602822F4117470094EC16 /* TranscriptionPostProcessor.swift */,
-				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
 				C13000022F92000100AA0001 /* DictationPipeline.swift */,
 				C13000032F92000100AA0001 /* DictationPromptEchoGuard.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		C13000042F92000100AA0001 /* Normalization */ = {
+			isa = PBXGroup;
+			children = (
+				9C3000062F4D000100AA0001 /* EmailAddressNormalizer.swift */,
+				F1B100012FC2000100AA0001 /* WebsiteNormalizer.swift */,
+				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
+				C13000052F92000100AA0001 /* WhitespaceNormalizer.swift */,
+				C13000062F92000100AA0001 /* SentenceCapitalizationNormalizer.swift */,
+				C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */,
+				C13000082F92000100AA0001 /* LaughterNormalizer.swift */,
+				C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */,
+			);
+			path = Normalization;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -911,6 +952,8 @@
 				8E0366E32F46F43600017017 /* DictionaryEmailEntry.swift in Sources */,
 				8E0366E42F46F43600017017 /* DictionaryMatcher+EmailResolution.swift in Sources */,
 				8E0366E52F46F43600017017 /* DictionaryMatcher+EmailNormalization.swift in Sources */,
+				F1A100112FC1000100AA0001 /* DictionaryMatcher+EmailParsing.swift in Sources */,
+				F1A100122FC1000100AA0001 /* DictionaryMatcher+EmailDomainResolution.swift in Sources */,
 				9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */,
 				8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */,
 				9D4000162F4E000100AA0001 /* AudioRecorder+PostProcessing.swift in Sources */,
@@ -921,7 +964,8 @@
 				9D4000112F4E000100AA0001 /* AudioSignalMetrics.swift in Sources */,
 				9D4000122F4E000100AA0001 /* AudioSilencePolicy.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
-				9C3000162F4D000100AA0001 /* EmailAddressTextNormalization.swift in Sources */,
+				9C3000162F4D000100AA0001 /* EmailAddressNormalizer.swift in Sources */,
+				F1B100112FC2000100AA0001 /* WebsiteNormalizer.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
@@ -938,6 +982,11 @@
 				8F4402032F46010000DD4401 /* ListRenderer.swift in Sources */,
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				E71000112FB2000100AA0001 /* TimeExpressionNormalizer.swift in Sources */,
+				C13000142F92000100AA0001 /* WhitespaceNormalizer.swift in Sources */,
+				C13000152F92000100AA0001 /* SentenceCapitalizationNormalizer.swift in Sources */,
+				C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */,
+				C13000172F92000100AA0001 /* LaughterNormalizer.swift in Sources */,
+				C13000182F92000100AA0001 /* CharacterSpamNormalizer.swift in Sources */,
 				C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */,
 				C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,
@@ -982,6 +1031,9 @@
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000052F60000100AA0001 /* AudioSilenceGatePolicyTests.swift in Sources */,
 				AB3000062F60000100AA0001 /* TranscriptionPostProcessorTests.swift in Sources */,
+				AB3000402F60000100AA0001 /* TranscriptionPostProcessorTests+Email.swift in Sources */,
+				AB3000412F60000100AA0001 /* TranscriptionPostProcessorTests+CapitalizationAndTime.swift in Sources */,
+				AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */,
 				AB3000072F60000100AA0001 /* PhoneticEncoderTests.swift in Sources */,
 				AB3000082F60000100AA0001 /* ReplacementScorerTests.swift in Sources */,
 				AB3000292F60000100AA0001 /* CustomVocabularyNormalizerTests.swift in Sources */,

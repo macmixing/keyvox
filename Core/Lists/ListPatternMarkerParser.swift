@@ -8,7 +8,7 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(?:(\\d{1,2})|(\(spokenNumberPattern)))" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let markerAttachedToDomainRegex: NSRegularExpression = {
@@ -22,7 +22,7 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(to)" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let oneForOneRegex: NSRegularExpression = {
@@ -185,7 +185,10 @@ struct ListPatternMarkerParser {
 
         let emailLikePattern =
             #"(?i)^(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)$"#
-        return punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil
+        if punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil {
+            return true
+        }
+        return WebsiteNormalizer.isCompactDomainToken(punctuationStripped)
     }
 
     private func looksLikeEmailListItemStart(in nsText: NSString, from contentStart: Int) -> Bool {
@@ -194,7 +197,10 @@ struct ListPatternMarkerParser {
         let previewLength = min(100, nsText.length - contentStart)
         let preview = nsText.substring(with: NSRange(location: contentStart, length: previewLength))
         let emailLikePattern = #"(?i)^\s*(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)\b"#
-        return preview.range(of: emailLikePattern, options: .regularExpression) != nil
+        if preview.range(of: emailLikePattern, options: .regularExpression) != nil {
+            return true
+        }
+        return WebsiteNormalizer.hasLeadingCompactDomainToken(in: preview)
     }
 
     private func isLikelyTimeComponent(at markerTokenStart: Int, in nsText: NSString) -> Bool {

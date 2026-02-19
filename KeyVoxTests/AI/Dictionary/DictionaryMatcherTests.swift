@@ -148,6 +148,76 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Send it to dom@example.com thirteen people should receive it.")
     }
 
+    func testMatcherNormalizesSpokenEmailWhenDomainHostIsNearDictionaryMatch() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
+
+        let result = matcher.apply(to: "Zack Morby at writer.com")
+        XCTAssertEqual(result.text, "zackmorbi@rider.com")
+    }
+
+    func testMatcherNormalizesSpokenEmailWhenDomainIncludesSpacedDot() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
+
+        let result = matcher.apply(to: "Zack Morby at writer. Com")
+        XCTAssertEqual(result.text, "zackmorbi@rider.com")
+    }
+
+    func testMatcherPrefersExactSpokenDomainWhenItExistsInDictionary() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "zackmorbi@rider.com"),
+            DictionaryEntry(phrase: "zackmorby@writer.com"),
+        ])
+
+        let result = matcher.apply(to: "Zack Morby at writer.com")
+        XCTAssertEqual(result.text, "zackmorby@writer.com")
+    }
+
+    func testMatcherNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
+
+        let result = matcher.apply(to: "www. Zackmorbi. Com")
+        XCTAssertEqual(result.text, "zackmorbi@rider.com")
+    }
+
+    func testMatcherDoesNotNormalizeStandaloneUrlLikeUtteranceWhenAmbiguous() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "zackmorbi@rider.com"),
+            DictionaryEntry(phrase: "zackmorby@writer.com"),
+        ])
+
+        let result = matcher.apply(to: "www. Zackmorb. Com")
+        XCTAssertEqual(result.text, "www. Zackmorb. Com")
+    }
+
+    func testMatcherStripsTerminalPunctuationForStandaloneLiteralEmail() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
+
+        let result = matcher.apply(to: "dom@example.com.")
+        XCTAssertEqual(result.text, "dom@example.com")
+    }
+
+    func testMatcherStripsTerminalPunctuationForStandaloneWebsiteWithoutDictionaryMatch() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [])
+
+        let result = matcher.apply(to: "www.example.com.")
+        XCTAssertEqual(result.text, "www.example.com")
+    }
+
+    func testMatcherPreservesTerminalPunctuationForShortProseWithAtDomainPattern() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [])
+
+        let result = matcher.apply(to: "Contact me at example.com.")
+        XCTAssertEqual(result.text, "Contact me at example.com.")
+    }
+
     private func makeMatcher() -> DictionaryMatcher {
         let lexicon = FakeLexicon(pronunciations: [
             "dom": "DM",

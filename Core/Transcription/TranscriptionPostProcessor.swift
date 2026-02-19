@@ -6,7 +6,12 @@ final class TranscriptionPostProcessor {
     private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
+    private let laughterNormalizer = LaughterNormalizer()
+    private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
+    private let whitespaceNormalizer = WhitespaceNormalizer()
+    private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
+    private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
     private var dictionaryFingerprint = ""
 
     // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
@@ -36,7 +41,7 @@ final class TranscriptionPostProcessor {
         #endif
 
         updateDictionaryEntries(dictionaryEntries)
-        let emailNormalizedInput = EmailAddressTextNormalization.normalize(in: text)
+        let emailNormalizedInput = EmailAddressNormalizer.normalize(in: text)
         #if DEBUG
         logPipelineStage("emailNormalizedInput", emailNormalizedInput)
         #endif
@@ -73,161 +78,39 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("listFormatted", listFormatted)
         #endif
-        let laughterNormalized = normalizeLaughterExpressions(in: listFormatted)
+        let laughterNormalized = laughterNormalizer.normalize(in: listFormatted)
         #if DEBUG
         logPipelineStage("laughterNormalized", laughterNormalized)
         #endif
-        let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
+        let characterSpamNormalized = characterSpamNormalizer.normalize(in: laughterNormalized)
+        #if DEBUG
+        logPipelineStage("characterSpamNormalized", characterSpamNormalized)
+        #endif
+        let timeNormalized = normalizeTimeExpressions(in: characterSpamNormalized)
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif
-        let emailNormalizedOutput = EmailAddressTextNormalization.normalize(in: timeNormalized)
+        let emailNormalizedOutput = EmailAddressNormalizer.normalize(in: timeNormalized)
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
-        let whitespaceNormalized = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
-        let leadingConjunctionNormalized = capitalizeLeadingAndAtTextStart(whitespaceNormalized)
-        let sentenceStartNormalized = capitalizeAfterSentenceBoundary(leadingConjunctionNormalized)
-        let output = appendTerminalPeriodIfEndingInFormattedTime(sentenceStartNormalized)
+        let websiteNormalizedOutput = WebsiteNormalizer.normalizeDomainCasing(in: emailNormalizedOutput)
+        #if DEBUG
+        logPipelineStage("websiteNormalizedOutput", websiteNormalizedOutput)
+        #endif
+        let whitespaceNormalized = whitespaceNormalizer.normalize(websiteNormalizedOutput, renderMode: renderMode)
+        #if DEBUG
+        logPipelineStage("whitespaceNormalized", whitespaceNormalized)
+        #endif
+        let sentenceNormalized = capitalizationNormalizer.normalizeSentenceStarts(in: whitespaceNormalized)
+        #if DEBUG
+        logPipelineStage("sentenceNormalized", sentenceNormalized)
+        #endif
+        let output = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
         #if DEBUG
         logPipelineStage("output", output)
         #endif
         return output
-    }
-
-    private func normalizeOutputWhitespace(_ text: String, renderMode: ListRenderMode) -> String {
-        switch renderMode {
-        case .singleLineInline:
-            return text
-                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        case .multiline:
-            let normalizedLines = text
-                .split(separator: "\n", omittingEmptySubsequences: false)
-                .map { line in
-                    String(line)
-                        .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-
-            var collapsedLines: [String] = []
-            collapsedLines.reserveCapacity(normalizedLines.count)
-
-            var previousWasBlank = false
-            for line in normalizedLines {
-                let isBlank = line.isEmpty
-                if isBlank {
-                    if collapsedLines.isEmpty || previousWasBlank {
-                        continue
-                    }
-                    collapsedLines.append("")
-                    previousWasBlank = true
-                } else {
-                    collapsedLines.append(line)
-                    previousWasBlank = false
-                }
-            }
-
-            while collapsedLines.first?.isEmpty == true {
-                collapsedLines.removeFirst()
-            }
-            while collapsedLines.last?.isEmpty == true {
-                collapsedLines.removeLast()
-            }
-
-            return collapsedLines.joined(separator: "\n")
-        }
-    }
-
-    private func appendTerminalPeriodIfEndingInFormattedTime(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-
-        // Respect existing terminal punctuation, including punctuation before closing quotes/brackets.
-        if text.range(of: #"[.!?…][\"'”’\)\]\}]*\s*$"#, options: .regularExpression) != nil {
-            return text
-        }
-
-        let terminalTimePattern = #"(?i)\b(?:[1-9]|1[0-2]):[0-5][0-9]\s(?:AM|PM)\s*$"#
-        guard let regex = try? NSRegularExpression(pattern: terminalTimePattern) else { return text }
-
-        let nsText = text as NSString
-        let range = NSRange(location: 0, length: nsText.length)
-        guard let match = regex.firstMatch(in: text, options: [], range: range) else {
-            return text
-        }
-
-        // Only treat this as sentence-like if there is prose before the terminal time.
-        let prefix = nsText.substring(to: match.range.location)
-        guard prefix.range(of: #"\b[A-Za-z]{3,}\b"#, options: .regularExpression) != nil else {
-            return text
-        }
-
-        return text + "."
-    }
-
-    private func capitalizeLeadingAndAtTextStart(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        guard let regex = try? NSRegularExpression(
-            pattern: #"^(\s*["'“”‘’\(\[\{]*)(and)\b"#,
-            options: [.caseInsensitive]
-        ) else {
-            return text
-        }
-
-        let nsText = text as NSString
-        let range = NSRange(location: 0, length: nsText.length)
-        guard let match = regex.firstMatch(in: text, options: [], range: range) else { return text }
-
-        let prefix = nsText.substring(with: match.range(at: 1))
-        let mutable = NSMutableString(string: text)
-        mutable.replaceCharacters(in: match.range, with: "\(prefix)And")
-        return mutable as String
-    }
-
-    private func capitalizeAfterSentenceBoundary(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        guard let boundaryRegex = try? NSRegularExpression(
-            pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
-            options: []
-        ),
-        let emailPrefixRegex = try? NSRegularExpression(
-            pattern: #"^[a-z0-9._%+\-]+@"#,
-            options: [.caseInsensitive]
-        ) else {
-            return text
-        }
-
-        let nsText = text as NSString
-        let fullRange = NSRange(location: 0, length: nsText.length)
-        let matches = boundaryRegex.matches(in: text, options: [], range: fullRange)
-        guard !matches.isEmpty else { return text }
-
-        let mutable = NSMutableString(string: text)
-        for match in matches.reversed() {
-            let tokenStart = match.range(at: 3).location
-            let tokenTail = nsText.substring(with: NSRange(location: tokenStart, length: nsText.length - tokenStart))
-            let tokenTailRange = NSRange(location: 0, length: (tokenTail as NSString).length)
-            if emailPrefixRegex.firstMatch(in: tokenTail, options: [], range: tokenTailRange) != nil {
-                continue
-            }
-
-            let boundaryText = nsText.substring(with: match.range(at: 1))
-            if boundaryText.first == "." {
-                let prefixText = nsText.substring(to: match.range(at: 1).location)
-                let previousToken = prefixText.split(whereSeparator: \.isWhitespace).last.map(String.init) ?? ""
-                if previousToken.contains("@") {
-                    continue
-                }
-            }
-
-            let prefix = nsText.substring(with: match.range(at: 1))
-            let spacing = nsText.substring(with: match.range(at: 2))
-            let separator = spacing.isEmpty ? " " : spacing
-            let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
-            mutable.replaceCharacters(in: match.range, with: "\(prefix)\(separator)\(nextLetter)")
-        }
-
-        return mutable as String
     }
 
     private func fingerprint(for entries: [DictionaryEntry]) -> String {
@@ -235,12 +118,6 @@ final class TranscriptionPostProcessor {
             .map { "\($0.id.uuidString):\($0.phrase)" }
             .sorted()
             .joined(separator: "|")
-    }
-
-    private func normalizeLaughterExpressions(in text: String) -> String {
-        replacingMatches(pattern: #"\bha\s+ha\b"#, in: text) { _, _ in
-            "haha"
-        }
     }
 
     private func normalizeIdioms(in text: String) -> String {
