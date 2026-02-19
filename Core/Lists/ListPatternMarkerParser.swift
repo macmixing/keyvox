@@ -118,7 +118,16 @@ struct ListPatternMarkerParser {
             guard tokenRange.location != NSNotFound else { return nil }
 
             let markerTokenStart = tokenRange.location
-            guard nearestPriorMarkerNumber(before: markerTokenStart, in: markers) == 1 else {
+            guard let priorMarker = nearestPriorMarker(before: markerTokenStart, in: markers),
+                  priorMarker.number == 1 else {
+                return nil
+            }
+
+            guard looksLikeEmailListItemContent(
+                in: nsText,
+                contentStart: priorMarker.contentStart,
+                markerTokenStart: markerTokenStart
+            ) else {
                 return nil
             }
 
@@ -150,11 +159,33 @@ struct ListPatternMarkerParser {
         return deduped
     }
 
-    private func nearestPriorMarkerNumber(before index: Int, in markers: [ListPatternMarker]) -> Int? {
+    private func nearestPriorMarker(before index: Int, in markers: [ListPatternMarker]) -> ListPatternMarker? {
         markers
             .filter { $0.markerTokenStart < index }
-            .max { $0.markerTokenStart < $1.markerTokenStart }?
-            .number
+            .max { $0.markerTokenStart < $1.markerTokenStart }
+    }
+
+    private func looksLikeEmailListItemContent(in nsText: NSString, contentStart: Int, markerTokenStart: Int) -> Bool {
+        guard contentStart < markerTokenStart, markerTokenStart <= nsText.length else { return false }
+
+        let rawRange = NSRange(location: contentStart, length: markerTokenStart - contentStart)
+        let rawContent = nsText.substring(with: rawRange)
+        let collapsed = rawContent
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !collapsed.isEmpty else { return false }
+
+        let punctuationStripped = collapsed
+            .replacingOccurrences(
+                of: #"[\"'”’\)\]\}]*[.,;:!?…]+[\"'”’\)\]\}]*$"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let emailLikePattern =
+            #"(?i)^(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)$"#
+        return punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil
     }
 
     private func looksLikeEmailListItemStart(in nsText: NSString, from contentStart: Int) -> Bool {

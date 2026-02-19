@@ -263,4 +263,22 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertNil(detected)
     }
+
+    func testDoesNotTreatToAsSecondMarkerInRegularSentence() {
+        let detector = ListPatternDetector()
+        let text = "1. send email to dom@example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testTreatsToAsSecondMarkerForExplicitEmailListItems() {
+        let detector = ListPatternDetector()
+        let text = "1. dom@example.com to kathy@example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(detected?.items.map(\.content), ["Dom@example.com", "Kathy@example.com"])
+    }
 }
