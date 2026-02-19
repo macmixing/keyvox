@@ -49,6 +49,42 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
+    func testCollapsesExcessiveLaughterSpamRuns() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "haha haha haha haha haha haha haha haha haha haha ha",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Haha haha haha haha")
+    }
+
+    func testPreservesShortLaughterRunsWithoutSpamCollapse() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "haha haha haha",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Haha haha haha")
+    }
+
+    func testExpandsHahaHaTripletShorthand() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "haha ha",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Ha ha ha")
+    }
+
     func testSingleLineModeCollapsesWhitespace() {
         let processor = TranscriptionPostProcessor()
 
