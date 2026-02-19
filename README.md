@@ -65,6 +65,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 - 📘 Engineering details: [`Docs/ENGINEERING.md`](Docs/ENGINEERING.md)
 - 🗺️ File/component map: [`Docs/CODEMAP.md`](Docs/CODEMAP.md)
 - 📜 License terms: [`LICENSE.md`](LICENSE.md)
+- 📄 Trademark policy: [`TRADEMARK.md`](TRADEMARK.md)
 - 📎 Third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 
 ## License
