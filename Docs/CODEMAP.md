@@ -73,6 +73,7 @@ KeyVox/
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
 │   │   ├── EmailAddressTextNormalization.swift
+│   │   ├── WebsiteTextNormalization.swift
 │   │   ├── CustomVocabularyNormalizer.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
@@ -336,6 +337,9 @@ KeyVox/
   - Maintains a domain-indexed email dictionary for spoken/literal email recovery.
 - `Core/AI/EmailAddressTextNormalization.swift`
   - Shared non-dictionary email literal cleanup (casing, punctuation spacing, sentence-boundary repair, ellipsis normalization).
+- `Core/AI/WebsiteTextNormalization.swift`
+  - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
+  - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
@@ -372,9 +376,11 @@ KeyVox/
 - `Core/Lists/ListPatternDetector.swift`
   - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
+  - Delegates leading domain-token lowercasing to `WebsiteTextNormalization`.
 - `Core/Lists/ListPatternMarkerParser.swift`
   - Parses spoken/typed marker tokens into canonical marker metadata used by list detection.
   - Handles markers attached to domains, spoken `to` as list marker 2 in email-list shapes, and time-component false-positive suppression.
+  - Uses `WebsiteTextNormalization` for domain-token heuristics to avoid duplicated website regex logic.
 - `Core/Lists/ListPatternRunSelector.swift`
   - Selects best monotonic list run and enforces confidence guards before formatting.
 - `Core/Lists/ListPatternTrailingSplitter.swift`
@@ -504,6 +510,9 @@ KeyVox/
   - Removed: `Core/AI/Dictionary/TextNormalization.swift`
   - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/AI/EmailAddressTextNormalization.swift`
   - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
+- Website/domain helper extraction centralized cross-domain URL rules:
+  - Added: `Core/AI/WebsiteTextNormalization.swift`
+  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/Lists/ListPatternDetector.swift`, `Core/Lists/ListPatternMarkerParser.swift`
 - Dictionary email helper extensions were renamed:
   - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
   - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`

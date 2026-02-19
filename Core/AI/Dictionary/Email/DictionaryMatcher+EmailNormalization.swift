@@ -22,10 +22,6 @@ extension DictionaryMatcher {
         pattern: #"(?i)^[A-Z0-9._%+\-]+@[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+$"#,
         options: []
     )
-    private static let standaloneWebsiteRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)^(?:www\s*\.\s*)?[A-Z0-9\-]+(?:\s*\.\s*[A-Z0-9\-]+)+$"#,
-        options: []
-    )
 
     func normalizeEmailsUsingDictionary(in input: String) -> String {
         guard !input.isEmpty else { return input }
@@ -271,8 +267,7 @@ extension DictionaryMatcher {
            regex.firstMatch(in: text, options: [], range: range) != nil {
             return true
         }
-        if let regex = Self.standaloneWebsiteRegex,
-           regex.firstMatch(in: text, options: [], range: range) != nil {
+        if WebsiteTextNormalization.isStandaloneWebsiteUtterance(text) {
             return true
         }
         return false

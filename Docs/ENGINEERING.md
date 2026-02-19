@@ -58,6 +58,7 @@ KeyVox is organized by responsibility:
 - `Core/Transcription/Normalization/TranscriptionTerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/AI/EmailAddressTextNormalization.swift`: Shared non-dictionary email literal cleanup utility.
+- `Core/AI/WebsiteTextNormalization.swift`: Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks reused across list and email flows.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`: Domain candidate extraction and fuzzy-domain ranking/disambiguation helpers.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
@@ -188,6 +189,9 @@ These remain integration/manual-test territory by design.
   - Removed: `Core/AI/Dictionary/TextNormalization.swift`
   - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/AI/EmailAddressTextNormalization.swift`
   - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
+- Website/domain helper extraction centralized URL primitives:
+  - Added: `Core/AI/WebsiteTextNormalization.swift`
+  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/Lists/ListPatternDetector.swift`, `Core/Lists/ListPatternMarkerParser.swift`
 - Dictionary email helper extensions were renamed:
   - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
   - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`

@@ -88,6 +88,7 @@
 		9B2000152F4C000100AA0001 /* OverlayFlingPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */; };
 		9B2000162F4C000100AA0001 /* OverlayTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000062F4C000100AA0001 /* OverlayTypes.swift */; };
 		9C3000162F4D000100AA0001 /* EmailAddressTextNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */; };
+		F1B100112FC2000100AA0001 /* WebsiteTextNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1B100012FC2000100AA0001 /* WebsiteTextNormalization.swift */; };
 		9D4000112F4E000100AA0001 /* AudioSignalMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000022F4E000100AA0001 /* AudioSignalMetrics.swift */; };
 		9D4000122F4E000100AA0001 /* AudioSilencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000032F4E000100AA0001 /* AudioSilencePolicy.swift */; };
 		9D4000132F4E000100AA0001 /* AudioCaptureClassification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000042F4E000100AA0001 /* AudioCaptureClassification.swift */; };
@@ -254,6 +255,7 @@
 		9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysics.swift; sourceTree = "<group>"; };
 		9B2000062F4C000100AA0001 /* OverlayTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayTypes.swift; sourceTree = "<group>"; };
 		9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAddressTextNormalization.swift; sourceTree = "<group>"; };
+		F1B100012FC2000100AA0001 /* WebsiteTextNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteTextNormalization.swift; sourceTree = "<group>"; };
 		9D4000022F4E000100AA0001 /* AudioSignalMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSignalMetrics.swift; sourceTree = "<group>"; };
 		9D4000032F4E000100AA0001 /* AudioSilencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSilencePolicy.swift; sourceTree = "<group>"; };
 		9D4000042F4E000100AA0001 /* AudioCaptureClassification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureClassification.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 				8F3301022F45010000CC3301 /* PronunciationLexicon.swift */,
 				8F3301042F45010000CC3301 /* ReplacementScorer.swift */,
 				9C3000062F4D000100AA0001 /* EmailAddressTextNormalization.swift */,
+				F1B100012FC2000100AA0001 /* WebsiteTextNormalization.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -959,6 +962,7 @@
 				9D4000122F4E000100AA0001 /* AudioSilencePolicy.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
 				9C3000162F4D000100AA0001 /* EmailAddressTextNormalization.swift in Sources */,
+				F1B100112FC2000100AA0001 /* WebsiteTextNormalization.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
