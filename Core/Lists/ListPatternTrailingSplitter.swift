@@ -1,6 +1,12 @@
 import Foundation
 
 struct ListPatternTrailingSplitter {
+    private struct SplitCandidate {
+        let itemText: String
+        let trailingText: String
+        let score: Int
+    }
+
     func splitLastItemAndTrailing(_ raw: String) -> (itemText: String, trailingText: String) {
         let paragraphToken = "__KVX_PARAGRAPH_BREAK__"
         let normalized = raw
@@ -16,171 +22,35 @@ struct ListPatternTrailingSplitter {
             return ("", "")
         }
 
-        // Prefer explicit sentence break before common post-list transition cues.
-        if let match = normalized.range(
-            of: #"(?i)^(.+?[.!?])\s+((?:and|also|now|okay|ok|so|then|next|finally|after that|after all that|anyway|anyways)\b.*)$"#,
-            options: .regularExpression
-        ) {
-            let full = String(normalized[match])
-            if let split = firstRegexSplit(full, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
+        var candidates: [SplitCandidate] = []
+
+        if let candidate = emailCommaBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+            candidates.append(candidate)
+        }
+        if let candidate = emailBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+            candidates.append(candidate)
+        }
+        if let candidate = sentenceBoundaryCandidate(in: normalized) {
+            candidates.append(candidate)
+        }
+        if let candidate = paragraphBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+            candidates.append(candidate)
+        }
+        if let candidate = commaBoundaryCandidate(in: normalized) {
+            candidates.append(candidate)
+        }
+        if let candidate = causalBoundaryCandidate(in: normalized) {
+            candidates.append(candidate)
+        }
+        if let candidate = softBoundaryCandidate(in: normalized) {
+            candidates.append(candidate)
         }
 
-        // Deterministic email + comma boundary split:
-        // if a list item ends with an email and then comma-led prose starts, split after the email.
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,})\\s*,\\s+(?:" +
-                NSRegularExpression.escapedPattern(for: paragraphToken) +
-                "\\s+)?(.+)$"
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            let itemEndsWithEmail = split.0.range(
-                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$"#,
-                options: .regularExpression
-            ) != nil
-            if itemWordCount <= 4 &&
-                trailingWordCount >= 3 &&
-                itemEndsWithEmail &&
-                !startsLikeListMarker(split.1) &&
-                looksLikePostListContinuation(split.1) {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Deterministic email boundary split:
-        // if a list item ends with an email and then prose starts, split right after the email.
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}[.!?]?)\\s+(?:" +
-                NSRegularExpression.escapedPattern(for: paragraphToken) +
-                "\\s+)?(.+)$"
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            let itemEndsWithEmail = split.0.range(
-                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}[.!?]?$"#,
-                options: .regularExpression
-            ) != nil
-            if itemWordCount <= 4 &&
-                trailingWordCount >= 3 &&
-                itemEndsWithEmail &&
-                !startsLikeListMarker(split.1) &&
-                looksLikePostListContinuation(split.1) {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Deterministic email + paragraph break split:
-        // if the last item is a short email-only line followed by a new paragraph, split at the break.
-        if let paragraphBreakRange = normalized.range(of: paragraphToken) {
-            let before = String(normalized[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let after = String(normalized[paragraphBreakRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let beforeWordCount = before.split(separator: " ").count
-            let afterWordCount = after.split(separator: " ").count
-            let beforeEndsWithEmail = before.range(
-                of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$"#,
-                options: .regularExpression
-            ) != nil
-
-            if !before.isEmpty &&
-                !after.isEmpty &&
-                beforeEndsWithEmail &&
-                beforeWordCount <= 4 &&
-                afterWordCount >= 3 {
-                return (
-                    restoreParagraphBreaks(in: before, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: after, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Common Whisper shape for post-list continuation:
-        // "... <last item>, and <new thought>"
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: #"(?i)^(.{8,}?),\s+((?:and\s+(?:now|then|i|we|everything|that|this|there|by|after)|after all that|now|okay|ok|so|anyway|anyways|also)\b.*)$"#
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 3 && trailingWordCount >= 3 {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Split long causal commentary off the last list item.
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\s+.+)$"#
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            let itemAlreadyContainsSentenceBoundary = split.0.range(
-                of: #"(?i)[.!?]\s+\S"#,
-                options: .regularExpression
-            ) != nil
-            if itemWordCount >= 2 &&
-                trailingWordCount >= 3 &&
-                !startsLikeListMarker(split.1) &&
-                !itemAlreadyContainsSentenceBoundary {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Fallback for speech without hard punctuation ("... and now ...").
-        if let split = firstRegexSplit(
-            normalized,
-            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+(?:now|then|i|we|by|after)|after all that|now|okay|ok|so|anyway|anyways|also|i\s+(?:need|want|have|should)|we\s+(?:need|want|have|should))\s+.+)$"#
-        ) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 2 && trailingWordCount >= 3 {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Final pass: split on a generic sentence boundary.
-        if let split = firstRegexSplit(normalized, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) {
-            let itemWordCount = split.0.split(separator: " ").count
-            let trailingWordCount = split.1.split(separator: " ").count
-            if itemWordCount >= 3 && trailingWordCount >= 3 && !startsLikeListMarker(split.1) {
-                return (
-                    restoreParagraphBreaks(in: split.0, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: split.1, paragraphToken: paragraphToken)
-                )
-            }
-        }
-
-        // Explicit paragraph breaks are deterministic fallback boundaries when no stronger split matched.
-        if let paragraphBreakRange = normalized.range(of: paragraphToken) {
-            let item = String(normalized[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let trailing = String(normalized[paragraphBreakRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-            if !item.isEmpty && !trailing.isEmpty {
-                return (
-                    restoreParagraphBreaks(in: item, paragraphToken: paragraphToken),
-                    restoreParagraphBreaks(in: trailing, paragraphToken: paragraphToken)
-                )
-            }
+        if let best = bestCandidate(from: candidates) {
+            return (
+                restoreParagraphBreaks(in: best.itemText, paragraphToken: paragraphToken),
+                restoreParagraphBreaks(in: best.trailingText, paragraphToken: paragraphToken)
+            )
         }
 
         return (restoreParagraphBreaks(in: normalized, paragraphToken: paragraphToken), "")
@@ -211,6 +81,154 @@ struct ListPatternTrailingSplitter {
         return (item, tail)
     }
 
+    private func bestCandidate(from candidates: [SplitCandidate]) -> SplitCandidate? {
+        candidates.max { lhs, rhs in
+            if lhs.score != rhs.score {
+                return lhs.score < rhs.score
+            }
+            return lhs.itemText.count > rhs.itemText.count
+        }
+    }
+
+    private func makeCandidate(
+        item: String,
+        trailing: String,
+        score: Int,
+        minItemWords: Int = 2,
+        minTrailingWords: Int = 3,
+        requiresContinuationShape: Bool = false
+    ) -> SplitCandidate? {
+        let itemTrimmed = item.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trailingTrimmed = trailing.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !itemTrimmed.isEmpty, !trailingTrimmed.isEmpty else { return nil }
+        guard wordCount(itemTrimmed) >= minItemWords, wordCount(trailingTrimmed) >= minTrailingWords else { return nil }
+        guard !startsLikeListMarker(trailingTrimmed) else { return nil }
+        if requiresContinuationShape && !looksLikeContinuationStart(trailingTrimmed) {
+            return nil
+        }
+        return SplitCandidate(itemText: itemTrimmed, trailingText: trailingTrimmed, score: score)
+    }
+
+    private func emailCommaBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(
+            text,
+            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,})\\s*,\\s+(?:" +
+                NSRegularExpression.escapedPattern(for: paragraphToken) +
+                "\\s+)?(.+)$"
+        ) else {
+            return nil
+        }
+
+        guard wordCount(split.0) <= 4, endsWithEmail(split.0) else { return nil }
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 120,
+            minItemWords: 1,
+            requiresContinuationShape: true
+        )
+    }
+
+    private func emailBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(
+            text,
+            pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}[.!?]?)\\s+(?:" +
+                NSRegularExpression.escapedPattern(for: paragraphToken) +
+                "\\s+)?(.+)$"
+        ) else {
+            return nil
+        }
+
+        guard wordCount(split.0) <= 4, endsWithEmail(split.0) else { return nil }
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 110,
+            minItemWords: 1,
+            requiresContinuationShape: true
+        )
+    }
+
+    private func sentenceBoundaryCandidate(in text: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(text, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) else {
+            return nil
+        }
+        return makeCandidate(item: split.0, trailing: split.1, score: 100)
+    }
+
+    private func paragraphBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+        guard let paragraphBreakRange = text.range(of: paragraphToken) else { return nil }
+
+        let before = String(text[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let after = String(text[paragraphBreakRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !before.isEmpty, !after.isEmpty else { return nil }
+
+        let looksLikeEmailBoundary = endsWithEmail(before) && wordCount(before) <= 4
+        let score = looksLikeEmailBoundary ? 95 : 35
+        let minItemWords = looksLikeEmailBoundary ? 1 : 2
+        return makeCandidate(item: before, trailing: after, score: score, minItemWords: minItemWords)
+    }
+
+    private func commaBoundaryCandidate(in text: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(text, pattern: #"(?i)^(.{8,}?),\s+(.+)$"#) else {
+            return nil
+        }
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 60,
+            minItemWords: 3,
+            requiresContinuationShape: true
+        )
+    }
+
+    private func causalBoundaryCandidate(in text: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(
+            text,
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\b.+)$"#
+        ) else {
+            return nil
+        }
+        guard !containsInternalSentenceBoundary(split.0) else { return nil }
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 55,
+            requiresContinuationShape: true
+        )
+    }
+
+    private func softBoundaryCandidate(in text: String) -> SplitCandidate? {
+        guard let split = firstRegexSplit(
+            text,
+            pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:now|then|so|anyway|also)\b.+)$"#
+        ) else {
+            return nil
+        }
+        guard !containsInternalSentenceBoundary(split.0) else { return nil }
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 105,
+            requiresContinuationShape: true
+        )
+    }
+
+    private func endsWithEmail(_ text: String) -> Bool {
+        text.range(
+            of: #"(?i)[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}[.!?]?$"#,
+            options: .regularExpression
+        ) != nil
+    }
+
+    private func wordCount(_ text: String) -> Int {
+        text.split(whereSeparator: \.isWhitespace).count
+    }
+
+    private func containsInternalSentenceBoundary(_ text: String) -> Bool {
+        text.range(of: #"(?i)[.!?]\s+\S"#, options: .regularExpression) != nil
+    }
+
     private func startsLikeListMarker(_ text: String) -> Bool {
         let normalized = text
             .replacingOccurrences(of: "^\\s+", with: "", options: .regularExpression)
@@ -222,27 +240,21 @@ struct ListPatternTrailingSplitter {
         ) != nil
     }
 
-    private func looksLikePostListContinuation(_ text: String) -> Bool {
+    private func looksLikeContinuationStart(_ text: String) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
 
-        let lower = trimmed.lowercased()
-        if lower.range(
-            of: #"^(?:you|i|we|he|she|they|that|this|be|please|and|now|okay|ok|so|then|next|finally|after|because)\b"#,
+        if trimmed.range(
+            of: #"^[\"'“”‘’\(\[\{]*[A-Z]"#,
             options: .regularExpression
         ) != nil {
             return true
         }
 
-        let quoteTrimmed = trimmed.replacingOccurrences(
-            of: #"^[\"'“”‘’\(\[\{]+"#,
-            with: "",
+        let lower = trimmed.lowercased()
+        return lower.range(
+            of: #"^(?:and|but|so|then|because|since|as|now|anyway|also|please|be|you|i|we|he|she|they|it|that|this)\b"#,
             options: .regularExpression
-        )
-        if let first = quoteTrimmed.first, first.isUppercase {
-            return true
-        }
-
-        return false
+        ) != nil
     }
 }

@@ -105,9 +105,9 @@ final class ListPatternDetectorTests: XCTestCase {
 
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
-        XCTAssertTrue(
-            detected?.trailingText
-                == "and now this is important.\n\nThis is still part of trailing commentary."
+        XCTAssertEqual(
+            detected?.trailingText,
+            "and now this is important.\n\nThis is still part of trailing commentary."
         )
     }
 
