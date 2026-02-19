@@ -5,6 +5,18 @@ struct SentenceCapitalizationNormalizer {
         pattern: #"(?i)^(?:https?://)?(?:www\.)?[a-z0-9\-]+(?:\.[a-z0-9\-]+)+/?$"#,
         options: []
     )
+    private static let startOfTextRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"^(\s*["'“”‘’\(\[\{]*)([a-z])"#,
+        options: []
+    )
+    private static let sentenceBoundaryRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
+        options: []
+    )
+    private static let lineBreakRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(\n)([ \t]*["'“”‘’\(\[\{]*)([a-z])"#,
+        options: []
+    )
     private static let commonTopLevelDomains: Set<String> = [
         "com", "net", "org", "io", "app", "dev", "ai", "co", "me", "edu", "gov",
         "us", "uk", "ca", "au", "de", "fr", "jp"
@@ -21,12 +33,7 @@ struct SentenceCapitalizationNormalizer {
 
     private func capitalizeAtTextStart(_ text: String) -> String {
         guard !text.isEmpty else { return text }
-        guard let regex = try? NSRegularExpression(
-            pattern: #"^(\s*["'“”‘’\(\[\{]*)([a-z])"#,
-            options: []
-        ) else {
-            return text
-        }
+        guard let regex = Self.startOfTextRegex else { return text }
 
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
@@ -42,12 +49,7 @@ struct SentenceCapitalizationNormalizer {
 
     private func capitalizeAfterSentenceBoundary(_ text: String) -> String {
         guard !text.isEmpty else { return text }
-        guard let boundaryRegex = try? NSRegularExpression(
-            pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
-            options: []
-        ) else {
-            return text
-        }
+        guard let boundaryRegex = Self.sentenceBoundaryRegex else { return text }
 
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
@@ -88,12 +90,7 @@ struct SentenceCapitalizationNormalizer {
 
     private func capitalizeAfterLineBreak(_ text: String) -> String {
         guard !text.isEmpty else { return text }
-        guard let lineBreakRegex = try? NSRegularExpression(
-            pattern: #"(\n)([ \t]*["'“”‘’\(\[\{]*)([a-z])"#,
-            options: []
-        ) else {
-            return text
-        }
+        guard let lineBreakRegex = Self.lineBreakRegex else { return text }
 
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)

@@ -99,7 +99,13 @@ final class TranscriptionPostProcessor {
         logPipelineStage("websiteNormalizedOutput", websiteNormalizedOutput)
         #endif
         let whitespaceNormalized = whitespaceNormalizer.normalize(websiteNormalizedOutput, renderMode: renderMode)
+        #if DEBUG
+        logPipelineStage("whitespaceNormalized", whitespaceNormalized)
+        #endif
         let sentenceNormalized = capitalizationNormalizer.normalizeSentenceStarts(in: whitespaceNormalized)
+        #if DEBUG
+        logPipelineStage("sentenceNormalized", sentenceNormalized)
+        #endif
         let output = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
         #if DEBUG
         logPipelineStage("output", output)
