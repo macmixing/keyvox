@@ -187,6 +187,7 @@ final class TranscriptionPostProcessor {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
         guard let match = regex.firstMatch(in: text, options: [], range: range) else { return text }
+        if isAddressOrURLToken(firstToken(in: text)) { return text }
 
         let prefix = nsText.substring(with: match.range(at: 1))
         let nextLetter = nsText.substring(with: match.range(at: 2)).uppercased()
@@ -200,10 +201,6 @@ final class TranscriptionPostProcessor {
         guard let boundaryRegex = try? NSRegularExpression(
             pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
             options: []
-        ),
-        let emailPrefixRegex = try? NSRegularExpression(
-            pattern: #"^[a-z0-9._%+\-]+@"#,
-            options: [.caseInsensitive]
         ) else {
             return text
         }
@@ -217,8 +214,8 @@ final class TranscriptionPostProcessor {
         for match in matches.reversed() {
             let tokenStart = match.range(at: 3).location
             let tokenTail = nsText.substring(with: NSRange(location: tokenStart, length: nsText.length - tokenStart))
-            let tokenTailRange = NSRange(location: 0, length: (tokenTail as NSString).length)
-            if emailPrefixRegex.firstMatch(in: tokenTail, options: [], range: tokenTailRange) != nil {
+            let firstToken = tokenTail.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+            if isAddressOrURLToken(firstToken) {
                 continue
             }
 
@@ -261,6 +258,8 @@ final class TranscriptionPostProcessor {
 
         let mutable = NSMutableString(string: text)
         for match in matches.reversed() {
+            let tokenStart = match.range(at: 3).location
+            guard !lineStartsWithAddressOrURL(in: nsText, from: tokenStart) else { continue }
             let newline = nsText.substring(with: match.range(at: 1))
             let prefix = nsText.substring(with: match.range(at: 2))
             let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
@@ -268,6 +267,52 @@ final class TranscriptionPostProcessor {
         }
 
         return mutable as String
+    }
+
+    private func lineStartsWithAddressOrURL(in text: NSString, from location: Int) -> Bool {
+        guard location >= 0, location < text.length else { return false }
+        let suffix = text.substring(with: NSRange(location: location, length: text.length - location))
+        let line = suffix.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? ""
+        let firstToken = firstToken(in: line)
+        guard !firstToken.isEmpty else { return false }
+        return isAddressOrURLToken(firstToken)
+    }
+
+    private func isAddressOrURLToken(_ token: String) -> Bool {
+        let stripped = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!?"))
+        guard !stripped.isEmpty else { return false }
+
+        let lowered = stripped.lowercased()
+        if lowered.contains("@") {
+            let parts = lowered.split(separator: "@", maxSplits: 1, omittingEmptySubsequences: false)
+            if parts.count == 2, !parts[0].isEmpty, parts[1].contains(".") {
+                return true
+            }
+        }
+
+        var candidate = lowered
+        if candidate.hasPrefix("http://") {
+            candidate.removeFirst("http://".count)
+        } else if candidate.hasPrefix("https://") {
+            candidate.removeFirst("https://".count)
+        }
+        if let hostOnly = candidate.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false).first {
+            candidate = String(hostOnly)
+        }
+
+        let range = NSRange(location: 0, length: (candidate as NSString).length)
+        if let domainRegex = Self.domainLikeTokenRegex,
+           domainRegex.firstMatch(in: candidate, options: [], range: range) != nil {
+            return true
+        }
+        return false
+    }
+
+    private func firstToken(in text: String) -> String {
+        text
+            .split(whereSeparator: \.isWhitespace)
+            .first
+            .map(String.init) ?? ""
     }
 
     private func isLikelyDomainBoundary(_ text: String, dotLocation: Int) -> Bool {

@@ -779,6 +779,31 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
     }
 
+    func testDoesNotCapitalizeLowercaseEmailAtLineStart() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom@example.com")]
+
+        let output = processor.process(
+            "Reach me here:\ndom@example.com",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Reach me here:\ndom@example.com")
+    }
+
+    func testDoesNotCapitalizeLowercaseWebsiteAtLineStart() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Use this site:\nwww.example.com",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Use this site:\nwww.example.com")
+    }
+
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 
