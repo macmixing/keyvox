@@ -95,9 +95,10 @@ final class TranscriptionPostProcessor {
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
         let whitespaceNormalized = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
-        let leadingConjunctionNormalized = capitalizeLeadingAndAtTextStart(whitespaceNormalized)
-        let sentenceStartNormalized = capitalizeAfterSentenceBoundary(leadingConjunctionNormalized)
-        let output = appendTerminalPeriodIfEndingInFormattedTime(sentenceStartNormalized)
+        let textStartNormalized = capitalizeAtTextStart(whitespaceNormalized)
+        let sentenceStartNormalized = capitalizeAfterSentenceBoundary(textStartNormalized)
+        let lineStartNormalized = capitalizeAfterLineBreak(sentenceStartNormalized)
+        let output = appendTerminalPeriodIfEndingInFormattedTime(lineStartNormalized)
         #if DEBUG
         logPipelineStage("output", output)
         #endif
@@ -174,11 +175,11 @@ final class TranscriptionPostProcessor {
         return text + "."
     }
 
-    private func capitalizeLeadingAndAtTextStart(_ text: String) -> String {
+    private func capitalizeAtTextStart(_ text: String) -> String {
         guard !text.isEmpty else { return text }
         guard let regex = try? NSRegularExpression(
-            pattern: #"^(\s*["'“”‘’\(\[\{]*)(and)\b"#,
-            options: [.caseInsensitive]
+            pattern: #"^(\s*["'“”‘’\(\[\{]*)([a-z])"#,
+            options: []
         ) else {
             return text
         }
@@ -188,8 +189,9 @@ final class TranscriptionPostProcessor {
         guard let match = regex.firstMatch(in: text, options: [], range: range) else { return text }
 
         let prefix = nsText.substring(with: match.range(at: 1))
+        let nextLetter = nsText.substring(with: match.range(at: 2)).uppercased()
         let mutable = NSMutableString(string: text)
-        mutable.replaceCharacters(in: match.range, with: "\(prefix)And")
+        mutable.replaceCharacters(in: match.range, with: "\(prefix)\(nextLetter)")
         return mutable as String
     }
 
@@ -238,6 +240,31 @@ final class TranscriptionPostProcessor {
             let separator = spacing.isEmpty ? " " : spacing
             let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
             mutable.replaceCharacters(in: match.range, with: "\(prefix)\(separator)\(nextLetter)")
+        }
+
+        return mutable as String
+    }
+
+    private func capitalizeAfterLineBreak(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+        guard let lineBreakRegex = try? NSRegularExpression(
+            pattern: #"(\n)([ \t]*["'“”‘’\(\[\{]*)([a-z])"#,
+            options: []
+        ) else {
+            return text
+        }
+
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let matches = lineBreakRegex.matches(in: text, options: [], range: fullRange)
+        guard !matches.isEmpty else { return text }
+
+        let mutable = NSMutableString(string: text)
+        for match in matches.reversed() {
+            let newline = nsText.substring(with: match.range(at: 1))
+            let prefix = nsText.substring(with: match.range(at: 2))
+            let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
+            mutable.replaceCharacters(in: match.range, with: "\(newline)\(prefix)\(nextLetter)")
         }
 
         return mutable as String

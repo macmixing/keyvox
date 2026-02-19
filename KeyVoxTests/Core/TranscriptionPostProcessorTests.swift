@@ -763,6 +763,22 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
 
+    func testCapitalizesLowercaseTextStartAndAfterBlankLineInEmailSentence() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "zackmorbi@rider.com")]
+
+        let output = processor.process(
+            "please contact me at zackmorbi@rider.com, please.\n\ncontact me at zackmorbi@rider.com, please.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Please contact me at zackmorbi@rider.com, please.\n\nContact me at zackmorbi@rider.com, please."
+        )
+    }
+
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 
