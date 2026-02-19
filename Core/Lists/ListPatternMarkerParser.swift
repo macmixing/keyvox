@@ -3,12 +3,14 @@ import Foundation
 struct ListPatternMarkerParser {
     private static let spokenNumberPattern =
         "one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve"
+    private static let attachedDomainLookaheadPattern =
+        "(?=[A-Za-z0-9\\-]+(?:\\.[A-Za-z0-9\\-]+)+\\b)"
 
     private static let markerRegex: NSRegularExpression = {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(?:(\\d{1,2})|(\(spokenNumberPattern)))" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let markerAttachedToDomainRegex: NSRegularExpression = {
@@ -22,7 +24,7 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(^|[\\s,;:])" +
             "(to)" +
-            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let oneForOneRegex: NSRegularExpression = {
@@ -184,7 +186,7 @@ struct ListPatternMarkerParser {
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         let emailLikePattern =
-            #"(?i)^(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)$"#
+            #"(?i)^(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+|(?:https?:\/\/)?(?:www\.)?(?:[A-Z0-9\-]+\.)+[A-Z0-9\-]{2,})$"#
         return punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil
     }
 
@@ -193,7 +195,7 @@ struct ListPatternMarkerParser {
 
         let previewLength = min(100, nsText.length - contentStart)
         let preview = nsText.substring(with: NSRange(location: contentStart, length: previewLength))
-        let emailLikePattern = #"(?i)^\s*(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)\b"#
+        let emailLikePattern = #"(?i)^\s*(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+|(?:https?:\/\/)?(?:www\.)?(?:[A-Z0-9\-]+\.)+[A-Z0-9\-]{2,})\b"#
         return preview.range(of: emailLikePattern, options: .regularExpression) != nil
     }
 

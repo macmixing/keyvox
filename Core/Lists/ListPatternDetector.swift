@@ -1,6 +1,11 @@
 import Foundation
 
 struct ListPatternDetector {
+    private static let leadingDomainTokenRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^((?:https?:\/\/)?(?:www\.)?(?:[A-Z0-9\-]+\.)+[A-Z0-9\-]{2,}(?::\d{2,5})?)(.*)$"#,
+        options: []
+    )
+
     private let markerParser = ListPatternMarkerParser()
     private let runSelector = ListPatternRunSelector()
     private let trailingSplitter = ListPatternTrailingSplitter()
@@ -104,6 +109,10 @@ struct ListPatternDetector {
         guard cleaned.count >= 2 else { return nil }
         guard cleaned.rangeOfCharacter(from: .letters) != nil else { return nil }
 
+        if let normalizedDomainItem = normalizeDomainLikeItemCasing(in: cleaned) {
+            return normalizedDomainItem
+        }
+
         return capitalizeFirstLetter(in: cleaned)
     }
 
@@ -122,6 +131,22 @@ struct ListPatternDetector {
         var capitalized = text
         capitalized.replaceSubrange(firstLetter...firstLetter, with: String(text[firstLetter]).uppercased())
         return capitalized
+    }
+
+    private func normalizeDomainLikeItemCasing(in text: String) -> String? {
+        guard let regex = Self.leadingDomainTokenRegex else { return nil }
+
+        let nsText = text as NSString
+        let range = NSRange(location: 0, length: nsText.length)
+        guard let match = regex.firstMatch(in: text, options: [], range: range) else { return nil }
+
+        let domainRange = match.range(at: 1)
+        let suffixRange = match.range(at: 2)
+        guard domainRange.location != NSNotFound, suffixRange.location != NSNotFound else { return nil }
+
+        let domain = nsText.substring(with: domainRange).lowercased()
+        let suffix = nsText.substring(with: suffixRange)
+        return domain + suffix
     }
 
     #if DEBUG

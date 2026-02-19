@@ -558,4 +558,64 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Use this site:\nwww.example.com")
     }
+
+    func testFormatsAttachedNumericDomainMarkersAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "1google.com, 2example.com",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            1. google.com
+            2. example.com
+            """
+        )
+    }
+
+    func testLowercasesDomainItemsInExplicitNumberedList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            """
+            1. Google.com
+            2. Example.com
+            3. KeyVox.app
+            """,
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            1. google.com
+            2. example.com
+            3. keyvox.app
+            """
+        )
+    }
+
+    func testFormatsAttachedWebsiteMarkersUsingToHomophoneAndSpokenThree() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "1google.com, to alien.com, threekeyvox.app.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            1. google.com
+            2. alien.com
+            3. keyvox.app
+            """
+        )
+    }
 }
