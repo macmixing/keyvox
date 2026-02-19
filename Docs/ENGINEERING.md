@@ -55,8 +55,10 @@ KeyVox is organized by responsibility:
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/AI/EmailAddressTextNormalization.swift`: Shared non-dictionary email literal cleanup utility.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
+- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`: Domain candidate extraction and fuzzy-domain ranking/disambiguation helpers.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`: Local/domain resolution helpers with deterministic ambiguity guards and fuzzy domain recovery.
+- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`: Local/domain normalization and attached-marker parsing helpers reused by email normalization/resolution.
+- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`: Spoken/literal/standalone dictionary email resolution with deterministic ambiguity guards.
 - `Core/Lists/*`: Deterministic list detection/rendering (detector + parser/run-selection/trailing-split helpers and renderer).
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
@@ -185,6 +187,9 @@ These remain integration/manual-test territory by design.
 - Dictionary email helper extensions were renamed:
   - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
   - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
+- Dictionary email resolution helpers were split for maintainability:
+  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
+  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to keep only spoken/literal/standalone resolution logic.
 - Post-processing moved under `Core/Transcription` and time normalization was extracted:
   - Removed: `Core/TranscriptionPostProcessor.swift`
   - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Transcription/TimeExpressionNormalizer.swift`
