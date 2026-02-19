@@ -85,7 +85,9 @@ final class TranscriptionPostProcessor {
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
         let whitespaceNormalized = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
-        let output = appendTerminalPeriodIfEndingInFormattedTime(whitespaceNormalized)
+        let leadingConjunctionNormalized = capitalizeLeadingAndAtTextStart(whitespaceNormalized)
+        let sentenceStartNormalized = capitalizeAfterSentenceBoundary(leadingConjunctionNormalized)
+        let output = appendTerminalPeriodIfEndingInFormattedTime(sentenceStartNormalized)
         #if DEBUG
         logPipelineStage("output", output)
         #endif
@@ -160,6 +162,71 @@ final class TranscriptionPostProcessor {
         }
 
         return text + "."
+    }
+
+    private func capitalizeLeadingAndAtTextStart(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+        guard let regex = try? NSRegularExpression(
+            pattern: #"^(\s*["'“”‘’\(\[\{]*)(and)\b"#,
+            options: [.caseInsensitive]
+        ) else {
+            return text
+        }
+
+        let nsText = text as NSString
+        let range = NSRange(location: 0, length: nsText.length)
+        guard let match = regex.firstMatch(in: text, options: [], range: range) else { return text }
+
+        let prefix = nsText.substring(with: match.range(at: 1))
+        let mutable = NSMutableString(string: text)
+        mutable.replaceCharacters(in: match.range, with: "\(prefix)And")
+        return mutable as String
+    }
+
+    private func capitalizeAfterSentenceBoundary(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+        guard let boundaryRegex = try? NSRegularExpression(
+            pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
+            options: []
+        ),
+        let emailPrefixRegex = try? NSRegularExpression(
+            pattern: #"^[a-z0-9._%+\-]+@"#,
+            options: [.caseInsensitive]
+        ) else {
+            return text
+        }
+
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let matches = boundaryRegex.matches(in: text, options: [], range: fullRange)
+        guard !matches.isEmpty else { return text }
+
+        let mutable = NSMutableString(string: text)
+        for match in matches.reversed() {
+            let tokenStart = match.range(at: 3).location
+            let tokenTail = nsText.substring(with: NSRange(location: tokenStart, length: nsText.length - tokenStart))
+            let tokenTailRange = NSRange(location: 0, length: (tokenTail as NSString).length)
+            if emailPrefixRegex.firstMatch(in: tokenTail, options: [], range: tokenTailRange) != nil {
+                continue
+            }
+
+            let boundaryText = nsText.substring(with: match.range(at: 1))
+            if boundaryText.first == "." {
+                let prefixText = nsText.substring(to: match.range(at: 1).location)
+                let previousToken = prefixText.split(whereSeparator: \.isWhitespace).last.map(String.init) ?? ""
+                if previousToken.contains("@") {
+                    continue
+                }
+            }
+
+            let prefix = nsText.substring(with: match.range(at: 1))
+            let spacing = nsText.substring(with: match.range(at: 2))
+            let separator = spacing.isEmpty ? " " : spacing
+            let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
+            mutable.replaceCharacters(in: match.range, with: "\(prefix)\(separator)\(nextLetter)")
+        }
+
+        return mutable as String
     }
 
     private func fingerprint(for entries: [DictionaryEntry]) -> String {

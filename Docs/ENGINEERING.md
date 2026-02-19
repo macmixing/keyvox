@@ -2,6 +2,8 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
+**Last Updated: 2026-02-19**
+
 ## Design Philosophy
 
 KeyVox follows a strict engineering contract:
@@ -50,6 +52,9 @@ KeyVox is organized by responsibility:
 - `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
 - `Core/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
+- `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
+- `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
+- `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`: Local/domain resolution helpers with deterministic ambiguity guards and fuzzy domain recovery.
 - `Core/Lists/*`: Deterministic list detection/rendering (detector + parser/run-selection/trailing-split helpers and renderer).
 - `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
 - `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
@@ -63,6 +68,10 @@ KeyVox is organized by responsibility:
 - `Views/OnboardingView.swift`: Onboarding UI flow orchestration across setup steps.
 - `Views/OnboardingMicrophoneStepController.swift`: Onboarding Step 1 microphone authorization/gating state and actions.
 - `Views/Components/OnboardingMicrophonePickerView.swift`: Onboarding microphone selection modal UI (presentation-only).
+- `Views/Settings/SettingsView+Dictionary.swift`: Dictionary tab composition and support-note footer.
+- `Views/Settings/SettingsView+DictionarySection.swift`: Dictionary entry management list, sorting controls, and add/edit/delete actions.
+- `Views/Settings/SettingsView+ModelSection.swift`: Reusable model install/remove controls now embedded in More tab.
+- `Views/Warnings/WarningManager.swift`: Warning overlay lifecycle with hover-aware auto-dismiss and animated dismiss transitions.
 
 ## Platform Compatibility
 
@@ -78,10 +87,12 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 1. `WhisperAudioParagraphChunker` computes conservative chunk boundaries from silence windows.
 2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
-3. Dictionary correction applies custom-word adherence.
-4. List formatting applies numeric list rendering when confidence gates pass.
-5. Laughter/time normalization and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
-6. Final text is inserted via the paste service.
+3. Email literal normalization runs first (case + punctuation/sentence-boundary cleanup).
+4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
+5. List formatting applies numeric list rendering when confidence gates pass.
+6. Laughter/time normalization, final email boundary repair, and whitespace normalization run by render mode (`.multiline` preserves paragraph breaks; `.singleLineInline` flattens).
+7. Terminal punctuation pass appends a sentence period when output ends in formatted time-like prose without punctuation.
+8. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 
@@ -159,3 +170,40 @@ These remain integration/manual-test territory by design.
 - Keep branded visual tuning inside branded view files.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
+
+## Branch Delta From `main`
+
+- Dictionary/email normalization additions:
+  - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
+  - `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`
+  - `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
+  - `Core/AI/Dictionary/DictionaryMatcher.swift`
+  - `Core/AI/Dictionary/TextNormalization.swift`
+  - `Core/AI/Dictionary/DictionaryStore.swift`
+  - Introduces domain-indexed dictionary email resolution, spoken/compact email normalization, and warning-state lifecycle cleanup in dictionary storage.
+- List hardening:
+  - `Core/Lists/ListPatternDetector.swift`
+  - `Core/Lists/ListPatternMarkerParser.swift`
+  - `Core/Lists/ListPatternTrailingSplitter.swift`
+  - Adds parser guards for attached-domain markers and time false positives, plus scored trailing split candidates for email/list continuations.
+- Post-processing orchestration updates:
+  - `Core/TranscriptionPostProcessor.swift`
+  - Adds stage-by-stage debug observability, email normalization before/after dictionary/list passes, and terminal period normalization for time-ended prose.
+- Settings and warning UX restructuring:
+  - `Views/Settings/SettingsComponents.swift`
+  - `Views/Settings/SettingsView.swift`
+  - `Views/Settings/SettingsView+Dictionary.swift`
+  - `Views/Settings/SettingsView+DictionarySection.swift` (renamed from `Views/Settings/SettingsView+ModelDictionary.swift`)
+  - `Views/Settings/SettingsView+ModelSection.swift` (renamed from `Views/Settings/SettingsView+Model.swift`)
+  - `Views/Settings/SettingsView+More.swift`
+  - `Views/StatusMenuView.swift`
+  - `Views/Warnings/WarningKind.swift`
+  - `Views/Warnings/WarningManager.swift`
+  - Promotes dictionary to its own tab, moves model controls into More, reroutes model-missing warning actions, and adds animated/hover-aware warning dismiss behavior.
+- Tests and project wiring updates:
+  - `KeyVoxTests/AI/Dictionary/DictionaryMatcherTests.swift`
+  - `KeyVoxTests/Core/TranscriptionPostProcessorTests.swift`
+  - `KeyVoxTests/Lists/ListPatternDetectorTests.swift`
+  - `KeyVoxTests/Services/DictationPipelineSmokeTests.swift`
+  - `KeyVox.xcodeproj/project.pbxproj`
+  - Expands deterministic coverage for email/list edge cases and aligns Xcode source graph with the new file structure.

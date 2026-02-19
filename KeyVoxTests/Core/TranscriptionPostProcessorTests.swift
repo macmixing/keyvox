@@ -653,6 +653,66 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Go ahead and send me an email next week at 2:35 PM.")
     }
 
+    func testCapitalizesLowercaseWordAfterSentenceBoundaryPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Can you send me the notes? and then follow up tomorrow! then cc the team.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Can you send me the notes? And then follow up tomorrow! Then cc the team.")
+    }
+
+    func testCapitalizesAndAfterPeriodInUserPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I think you're so cool. and honestly, I wish I could be like you.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
+    }
+
+    func testCapitalizesAndAfterPeriodInFollowUpUserPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I think you're so cool. and honestly, we should hang out.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I think you're so cool. And honestly, we should hang out.")
+    }
+
+    func testCapitalizesLeadingAndAtChunkStart() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "and honestly, we should hang out.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "And honestly, we should hang out.")
+    }
+
+    func testCapitalizesAndAfterPeriodWhenRestartHasNoSpace() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I think you're so cool.and honestly, I wish I could be like you.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
+    }
+
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 
