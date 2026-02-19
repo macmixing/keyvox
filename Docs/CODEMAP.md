@@ -115,7 +115,8 @@ KeyVox/
 │   │   ├── WhitespaceNormalizer.swift
 │   │   ├── SentenceCapitalizationNormalizer.swift
 │   │   ├── TerminalPunctuationNormalizer.swift
-│   │   └── LaughterNormalizer.swift
+│   │   ├── LaughterNormalizer.swift
+│   │   └── CharacterSpamNormalizer.swift
 │   ├── Transcription/
 │   │   ├── DictationPipeline.swift
 │   │   ├── DictationPromptEchoGuard.swift
@@ -274,6 +275,8 @@ KeyVox/
   - Isolated time-shape and meridiem normalization helper used by post-processing.
 - `Core/Normalization/LaughterNormalizer.swift`
   - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
+- `Core/Normalization/CharacterSpamNormalizer.swift`
+  - Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
 - `Core/Normalization/WhitespaceNormalizer.swift`
   - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
 - `Core/Normalization/SentenceCapitalizationNormalizer.swift`
@@ -340,6 +343,8 @@ KeyVox/
 - `Core/Normalization/WebsiteNormalizer.swift`
   - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
   - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
+- `Core/Normalization/CharacterSpamNormalizer.swift`
+  - Shared model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
@@ -525,6 +530,9 @@ KeyVox/
 - Post-processing normalization responsibilities were split into focused helpers:
   - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules instead of owning all normalization internals.
+- Character spam guard was added for model-noise hardening:
+  - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
+  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
 - Project source graph update:
   - `KeyVox.xcodeproj/project.pbxproj` updated for renamed/moved files above.
 

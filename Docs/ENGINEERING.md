@@ -53,6 +53,7 @@ KeyVox is organized by responsibility:
 - `Core/Transcription/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
 - `Core/Normalization/TimeExpressionNormalizer.swift`: Extracted time-shape/meridiem normalization helper used by post-processing.
 - `Core/Normalization/LaughterNormalizer.swift`: Dedicated laughter normalization helper kept separate from time normalization.
+- `Core/Normalization/CharacterSpamNormalizer.swift`: Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
 - `Core/Normalization/WhitespaceNormalizer.swift`: Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
 - `Core/Normalization/SentenceCapitalizationNormalizer.swift`: Text-start/sentence-boundary/line-break capitalization with email/domain guards.
 - `Core/Normalization/TerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
@@ -99,7 +100,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
 5. List formatting applies numeric list rendering when confidence gates pass.
-6. Dedicated laughter normalization (`LaughterNormalizer`) and time normalization (`TimeExpressionNormalizer`) run, followed by final email boundary repair.
+6. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
 7. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
 8. Final text is inserted via the paste service.
 
@@ -204,5 +205,8 @@ These remain integration/manual-test territory by design.
 - Post-processing normalization internals were split into focused helpers:
   - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules.
+- Character spam hardening was added for post-processing noise suppression:
+  - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
+  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
 - Project wiring:
   - `KeyVox.xcodeproj/project.pbxproj` updated to align source/build references with the renamed and moved files.

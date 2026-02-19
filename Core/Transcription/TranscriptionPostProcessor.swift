@@ -7,6 +7,7 @@ final class TranscriptionPostProcessor {
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
     private let laughterNormalizer = LaughterNormalizer()
+    private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
     private let whitespaceNormalizer = WhitespaceNormalizer()
     private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
@@ -81,7 +82,11 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("laughterNormalized", laughterNormalized)
         #endif
-        let timeNormalized = normalizeTimeExpressions(in: laughterNormalized)
+        let characterSpamNormalized = characterSpamNormalizer.normalize(in: laughterNormalized)
+        #if DEBUG
+        logPipelineStage("characterSpamNormalized", characterSpamNormalized)
+        #endif
+        let timeNormalized = normalizeTimeExpressions(in: characterSpamNormalized)
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif

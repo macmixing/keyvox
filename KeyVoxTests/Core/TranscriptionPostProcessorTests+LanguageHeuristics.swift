@@ -4,6 +4,56 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
+    func testCollapsesSingleCharacterSpamRun() {
+        let processor = TranscriptionPostProcessor()
+        let spam = String(repeating: "j", count: 140)
+
+        let output = processor.process(
+            spam,
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "J")
+    }
+    func testCollapsesUnicodeCircleCharacterSpamRun() {
+        let processor = TranscriptionPostProcessor()
+        let spam = String(repeating: "◯", count: 120)
+
+        let output = processor.process(
+            spam,
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "◯")
+    }
+    func testRandomizedCharacterSpamRunsAreCollapsed() {
+        let processor = TranscriptionPostProcessor()
+        var rng = SeededGenerator(state: 0xC0FFEE123456789)
+        let characters = Array("abcdefghijklmnopqrstuvwxyz0123456789@#$_-+=*")
+            + ["◯", "○", "◎", "●", "◉", "◌"]
+
+        for _ in 0..<60 {
+            let character = characters[Int.random(in: 0..<characters.count, using: &rng)]
+            let runLength = Int.random(in: 16...220, using: &rng)
+            let spam = String(repeating: String(character), count: runLength)
+
+            let output = processor.process(
+                "prefix \(spam) suffix",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertFalse(
+                containsCharacterSpamRun(output),
+                "Expected spam run to be collapsed for character='\(character)' length=\(runLength). Output=\(output)"
+            )
+            let normalizedOutput = output.lowercased()
+            XCTAssertTrue(normalizedOutput.contains("prefix"))
+            XCTAssertTrue(normalizedOutput.contains("suffix"))
+        }
+    }
     func testCollapsesExcessiveLaughterSpamRuns() {
         let processor = TranscriptionPostProcessor()
 
@@ -148,5 +198,20 @@ extension TranscriptionPostProcessorTests {
         XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
         XCTAssertFalse(output.contains("\n1. "))
         XCTAssertFalse(output.contains("\n2. "))
+    }
+
+    private func containsCharacterSpamRun(_ text: String) -> Bool {
+        let regex = try! NSRegularExpression(pattern: #"([^\s])\1{15,}"#, options: [])
+        let range = NSRange(location: 0, length: (text as NSString).length)
+        return regex.firstMatch(in: text, options: [], range: range) != nil
+    }
+}
+
+private struct SeededGenerator: RandomNumberGenerator {
+    var state: UInt64
+
+    mutating func next() -> UInt64 {
+        state = state &* 2862933555777941757 &+ 3037000493
+        return state
     }
 }
