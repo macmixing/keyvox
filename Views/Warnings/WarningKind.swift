@@ -61,7 +61,7 @@ enum WarningKind {
         case .accessibilityPermission:
             return .general
         case .modelMissing:
-            return .model
+            return .more
         }
     }
 

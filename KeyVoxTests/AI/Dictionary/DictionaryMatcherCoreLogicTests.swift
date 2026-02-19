@@ -59,10 +59,10 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
     }
 
     func testTextNormalizationMatchesExistingBehavior() {
-        XCTAssertTrue(TextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
-        XCTAssertTrue(TextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
-        XCTAssertTrue(TextNormalization.normalizedToken("Cue Board") == "cueboard")
-        XCTAssertTrue(TextNormalization.normalizedToken("  ") == "")
+        XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
+        XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
+        XCTAssertTrue(DictionaryTextNormalization.normalizedToken("Cue Board") == "cueboard")
+        XCTAssertTrue(DictionaryTextNormalization.normalizedToken("  ") == "")
     }
 
     private func makeMatcher() -> DictionaryMatcher {

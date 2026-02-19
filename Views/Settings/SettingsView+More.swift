@@ -45,6 +45,12 @@ extension SettingsView {
                             .foregroundColor(.indigo)
                             .buttonStyle(DepressedButtonStyle())
                         }
+
+                        Divider()
+                            .overlay(Color.white.opacity(0.14))
+                            .padding(.vertical, 2)
+
+                        ModelSettingsRow(downloader: downloader)
                     }
                 }
             }

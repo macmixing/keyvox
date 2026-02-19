@@ -1,6 +1,6 @@
 import Foundation
 
-enum TextNormalization {
+enum DictionaryTextNormalization {
     static func normalizedPhrase(_ input: String) -> String {
         let folded = input
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)

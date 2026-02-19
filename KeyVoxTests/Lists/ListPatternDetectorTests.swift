@@ -105,9 +105,9 @@ final class ListPatternDetectorTests: XCTestCase {
 
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
-        XCTAssertTrue(
-            detected?.trailingText
-                == "and now this is important.\n\nThis is still part of trailing commentary."
+        XCTAssertEqual(
+            detected?.trailingText,
+            "and now this is important.\n\nThis is still part of trailing commentary."
         )
     }
 
@@ -245,5 +245,40 @@ final class ListPatternDetectorTests: XCTestCase {
 
         let detected = detector.detectList(in: text)
         XCTAssertNil(detected)
+    }
+
+    func testDetectsSecondMarkerWhenAttachedAfterEmailDomain() {
+        let detector = ListPatternDetector()
+        let text = "I have a couple of email addresses. Let me give them to you: 1. Dom at example.com2. Kathy at example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+    }
+
+    func testDoesNotDetectListFromQuestionWithStepNumber() {
+        let detector = ListPatternDetector()
+        let text = "Where did you say 2. pause in step 3. where you talked about it?"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDoesNotTreatToAsSecondMarkerInRegularSentence() {
+        let detector = ListPatternDetector()
+        let text = "1. send email to dom@example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testTreatsToAsSecondMarkerForExplicitEmailListItems() {
+        let detector = ListPatternDetector()
+        let text = "1. dom@example.com to kathy@example.com"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(detected?.items.map(\.content), ["Dom@example.com", "Kathy@example.com"])
     }
 }

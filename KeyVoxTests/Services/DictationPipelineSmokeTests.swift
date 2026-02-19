@@ -176,7 +176,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
     func testDictationPipelineSmokeComposedFeaturesParagraphListCustomWords() async throws {
         let initialSnapshot: PasteClipboardSnapshot.Snapshot = [[.string: Data("before".utf8)]]
         let input = "project notes one cue board design two cue board review\n\nand we should meet at 415 pm"
-        let expected = "project notes:\n\n1. Cueboard design\n2. Cueboard review\n\nAnd we should meet at 4:15 PM"
+        let expected = "project notes:\n\n1. Cueboard design\n2. Cueboard review\n\nAnd we should meet at 4:15 PM."
         let dictionaryEntries = [DictionaryEntry(phrase: "Cueboard")]
 
         let transcription = StubTranscriptionProvider(result: input)

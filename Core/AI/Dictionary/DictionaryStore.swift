@@ -113,6 +113,11 @@ final class DictionaryStore: ObservableObject {
         return appendedCount == 0 ? "" : prompt
     }
 
+    func clearWarnings() {
+        loadWarningMessage = nil
+        saveErrorMessage = nil
+    }
+
     private var dictionaryDirectoryURL: URL {
         appSupportDirectoryURL.appendingPathComponent("Dictionary", isDirectory: true)
     }

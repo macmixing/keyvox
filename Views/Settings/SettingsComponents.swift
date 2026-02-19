@@ -4,7 +4,7 @@ import SwiftUI
 enum SettingsTab: String, CaseIterable, Identifiable {
     case general = "General"
     case audio = "Audio"
-    case model = "AI Engine"
+    case dictionary = "Dictionary"
     case more = "More"
     
     var id: String { self.rawValue }
@@ -13,7 +13,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "keyboard"
         case .audio: return "mic.fill"
-        case .model: return "cpu"
+        case .dictionary: return "text.book.closed.fill"
         case .more: return "star.fill"
         }
     }

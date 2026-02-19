@@ -53,7 +53,7 @@ final class PronunciationLexicon: PronunciationLexiconProviding {
                 let signature = String(pieces[1]).trimmingCharacters(in: .whitespacesAndNewlines)
 
                 guard !rawWord.isEmpty, !signature.isEmpty else { return }
-                let normalized = TextNormalization.normalizedToken(rawWord)
+                let normalized = DictionaryTextNormalization.normalizedToken(rawWord)
                 guard !normalized.isEmpty else { return }
 
                 map[normalized] = signature
@@ -85,7 +85,7 @@ final class PronunciationLexicon: PronunciationLexiconProviding {
                 let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty, !trimmed.hasPrefix("#") else { return }
 
-                let normalized = TextNormalization.normalizedToken(trimmed)
+                let normalized = DictionaryTextNormalization.normalizedToken(trimmed)
                 guard !normalized.isEmpty else { return }
                 loadedWords.insert(normalized)
             }

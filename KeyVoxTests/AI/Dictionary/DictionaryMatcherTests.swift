@@ -94,6 +94,60 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "we use cue cards often")
     }
 
+    func testMatcherNormalizesSpokenEmailAddress() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
+
+        let result = matcher.apply(to: "Dom at example.com")
+        XCTAssertEqual(result.text, "dom@example.com")
+    }
+
+    func testMatcherNormalizesMultipleEmailAddressesInSentence() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ])
+
+        let result = matcher.apply(
+            to: "You can reach me at Dom at example.com or kathy@example.com, either of those are fine."
+        )
+        XCTAssertEqual(result.text, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
+    }
+
+    func testMatcherNormalizesTwoSpokenEmailAddressesInSentence() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ])
+
+        let result = matcher.apply(
+            to: "You can reach me at Dom at example.com or kathy at example.com, either of those are fine."
+        )
+        XCTAssertEqual(result.text, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
+    }
+
+    func testMatcherNormalizesOvercapturedSpokenDomainWithPronounOverflow() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "kathy@example.com")])
+
+        let result = matcher.apply(
+            to: "Please email kathy at example.com.you can reach me there anytime."
+        )
+        XCTAssertEqual(result.text, "Please email kathy@example.com you can reach me there anytime.")
+    }
+
+    func testMatcherNormalizesOvercapturedSpokenDomainWithNumberWordOverflow() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
+
+        let result = matcher.apply(
+            to: "Send it to dom at example.com.thirteen people should receive it."
+        )
+        XCTAssertEqual(result.text, "Send it to dom@example.com thirteen people should receive it.")
+    }
+
     private func makeMatcher() -> DictionaryMatcher {
         let lexicon = FakeLexicon(pronunciations: [
             "dom": "DM",

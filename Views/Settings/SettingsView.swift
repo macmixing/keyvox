@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
     @State internal var dictionaryDeleteTarget: DictionaryEntry?
     @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
+    @State private var hasVisitedDictionaryTab = false
 
     init(initialTab: SettingsTab = .general) {
         _selectedTab = State(initialValue: initialTab)
@@ -77,6 +78,19 @@ struct SettingsView: View {
         }
         .onAppear {
             appSettings.refreshWeeklyWordCounterIfNeeded()
+            if selectedTab == .dictionary {
+                hasVisitedDictionaryTab = true
+            }
+        }
+        .onDisappear {
+            if hasVisitedDictionaryTab {
+                dictionaryStore.clearWarnings()
+            }
+        }
+        .onChange(of: selectedTab) { newTab in
+            if newTab == .dictionary {
+                hasVisitedDictionaryTab = true
+            }
         }
     }
     
@@ -89,8 +103,8 @@ struct SettingsView: View {
                         generalSettings
                     case .audio:
                         audioSettings
-                    case .model:
-                        modelSettings
+                    case .dictionary:
+                        dictionaryTabSettings
                     case .more:
                         moreSettings
                     }
