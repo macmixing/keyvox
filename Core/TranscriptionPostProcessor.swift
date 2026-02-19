@@ -84,7 +84,8 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
-        let output = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
+        let whitespaceNormalized = normalizeOutputWhitespace(emailNormalizedOutput, renderMode: renderMode)
+        let output = appendTerminalPeriodIfEndingInFormattedTime(whitespaceNormalized)
         #if DEBUG
         logPipelineStage("output", output)
         #endif
@@ -133,6 +134,32 @@ final class TranscriptionPostProcessor {
 
             return collapsedLines.joined(separator: "\n")
         }
+    }
+
+    private func appendTerminalPeriodIfEndingInFormattedTime(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+
+        // Respect existing terminal punctuation, including punctuation before closing quotes/brackets.
+        if text.range(of: #"[.!?…][\"'”’\)\]\}]*\s*$"#, options: .regularExpression) != nil {
+            return text
+        }
+
+        let terminalTimePattern = #"(?i)\b(?:[1-9]|1[0-2]):[0-5][0-9]\s(?:AM|PM)\s*$"#
+        guard let regex = try? NSRegularExpression(pattern: terminalTimePattern) else { return text }
+
+        let nsText = text as NSString
+        let range = NSRange(location: 0, length: nsText.length)
+        guard let match = regex.firstMatch(in: text, options: [], range: range) else {
+            return text
+        }
+
+        // Only treat this as sentence-like if there is prose before the terminal time.
+        let prefix = nsText.substring(to: match.range.location)
+        guard prefix.range(of: #"\b[A-Za-z]{3,}\b"#, options: .regularExpression) != nil else {
+            return text
+        }
+
+        return text + "."
     }
 
     private func fingerprint(for entries: [DictionaryEntry]) -> String {

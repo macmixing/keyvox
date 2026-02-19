@@ -31,7 +31,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             listFormattingEnabled: false
         )
 
-        XCTAssertEqual(output, "Need to do this one Cueboard two Cueboard haha 4:15 PM")
+        XCTAssertEqual(output, "Need to do this one Cueboard two Cueboard haha 4:15 PM.")
     }
 
     func testListFormattingEnabledStillFormatsWhenExplicitlyTrue() {
@@ -639,6 +639,18 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
 
         XCTAssertTrue(output == "I got there at 4:18 in the morning and left at 4:19 in the evening")
+    }
+
+    func testAddsPeriodWhenSentenceEndsWithFormattedTime() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Go ahead and send me an email next week at 2:35 PM",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Go ahead and send me an email next week at 2:35 PM.")
     }
 
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
