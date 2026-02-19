@@ -153,6 +153,44 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "dom@example.com")
     }
 
+    func testNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom.esposito@example.net")]
+
+        let output = processor.process(
+            "www. Domesposito. Net",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "dom.esposito@example.net")
+    }
+
+    func testStripsTerminalPunctuationForStandaloneLiteralEmailUtterance() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom@example.com")]
+
+        let output = processor.process(
+            "dom@example.com.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "dom@example.com")
+    }
+
+    func testStripsTerminalPunctuationForStandaloneWebsiteUtterance() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "www.example.com.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "www.example.com")
+    }
+
     func testNormalizesSpokenEmailInsideSentence() {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "kathy@example.com")]

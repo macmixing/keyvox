@@ -2,6 +2,15 @@ import Foundation
 
 @MainActor
 final class TranscriptionPostProcessor {
+    private static let domainLikeTokenRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^(?:https?://)?(?:www\.)?[a-z0-9\-]+(?:\.[a-z0-9\-]+)+/?$"#,
+        options: []
+    )
+    private static let commonTopLevelDomains: Set<String> = [
+        "com", "net", "org", "io", "app", "dev", "ai", "co", "me", "edu", "gov",
+        "us", "uk", "ca", "au", "de", "fr", "jp"
+    ]
+
     private let enablePhoneticMatcher = true
     private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
@@ -213,6 +222,10 @@ final class TranscriptionPostProcessor {
 
             let boundaryText = nsText.substring(with: match.range(at: 1))
             if boundaryText.first == "." {
+                if isLikelyDomainBoundary(text, dotLocation: match.range(at: 1).location) {
+                    continue
+                }
+
                 let prefixText = nsText.substring(to: match.range(at: 1).location)
                 let previousToken = prefixText.split(whereSeparator: \.isWhitespace).last.map(String.init) ?? ""
                 if previousToken.contains("@") {
@@ -228,6 +241,54 @@ final class TranscriptionPostProcessor {
         }
 
         return mutable as String
+    }
+
+    private func isLikelyDomainBoundary(_ text: String, dotLocation: Int) -> Bool {
+        guard dotLocation >= 0 else { return false }
+        let nsText = text as NSString
+        guard dotLocation < nsText.length else { return false }
+
+        var start = dotLocation
+        while start > 0 {
+            guard let scalar = UnicodeScalar(nsText.character(at: start - 1)) else { break }
+            if CharacterSet.whitespacesAndNewlines.contains(scalar) {
+                break
+            }
+            start -= 1
+        }
+
+        var end = dotLocation + 1
+        while end < nsText.length {
+            guard let scalar = UnicodeScalar(nsText.character(at: end)) else { break }
+            if CharacterSet.whitespacesAndNewlines.contains(scalar) {
+                break
+            }
+            end += 1
+        }
+
+        let tokenRange = NSRange(location: start, length: end - start)
+        guard tokenRange.length > 0 else { return false }
+
+        let token = nsText.substring(with: tokenRange)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}"))
+        guard !token.contains("@"), token.contains(".") else { return false }
+
+        guard let regex = Self.domainLikeTokenRegex else { return false }
+        let fullRange = NSRange(location: 0, length: (token as NSString).length)
+        guard regex.firstMatch(in: token, options: [], range: fullRange) != nil else { return false }
+
+        let normalized = token.lowercased()
+        if normalized.hasPrefix("http://") || normalized.hasPrefix("https://") || normalized.hasPrefix("www.") {
+            return true
+        }
+
+        let dotCount = normalized.filter { $0 == "." }.count
+        if dotCount >= 2 {
+            return true
+        }
+
+        guard let tld = normalized.split(separator: ".").last.map(String.init) else { return false }
+        return Self.commonTopLevelDomains.contains(tld)
     }
 
     private func fingerprint(for entries: [DictionaryEntry]) -> String {

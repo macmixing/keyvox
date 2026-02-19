@@ -2,7 +2,7 @@ import Foundation
 
 extension DictionaryMatcher {
     private static let spokenEmailCandidateRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: "(^|[^A-Za-z0-9._%+\\-])([A-Za-z0-9._%+'\\-]+(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)[ \\t]+at[ \\t]+([A-Za-z0-9\\-]+(?:\\.[A-Za-z0-9\\-]+)+)(?=$|[^A-Za-z0-9\\-])",
+        pattern: "(^|[^A-Za-z0-9._%+\\-])([A-Za-z0-9._%+'\\-]+(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)[ \\t]+at[ \\t]+([A-Za-z0-9\\-]+(?:[ \\t]*\\.[ \\t]*[A-Za-z0-9\\-]+)+)(?=$|[^A-Za-z0-9\\-])",
         options: [.caseInsensitive]
     )
     private static let compactSpokenEmailCandidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -13,19 +13,44 @@ extension DictionaryMatcher {
         pattern: "(?<![A-Za-z0-9._%+\\-])([A-Z0-9._%+\\-]+)@([A-Z0-9.\\-]+\\.[A-Z]{2,})",
         options: [.caseInsensitive]
     )
+    private static let standaloneTrailingPunctuationRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"^(\s*)(.+?)([.!?,:;]+)(\s*)$"#,
+        options: []
+    )
+    private static let standaloneLiteralEmailRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^[A-Z0-9._%+\-]+@[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+$"#,
+        options: []
+    )
+    private static let standaloneSpokenEmailRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,2}\s+at\s+[A-Z0-9\-]+(?:\s*\.\s*[A-Z0-9\-]+)+$"#,
+        options: []
+    )
+    private static let standaloneWebsiteRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^(?:www\s*\.\s*)?[A-Z0-9\-]+(?:\s*\.\s*[A-Z0-9\-]+)+$"#,
+        options: []
+    )
 
     func normalizeEmailsUsingDictionary(in input: String) -> String {
-        guard !input.isEmpty, !emailEntriesByDomain.isEmpty else { return input }
+        guard !input.isEmpty else { return input }
         #if DEBUG
         logEmailNormalization(
             "start domainCount=\(emailEntriesByDomain.count) input=\(debugTextSummary(input))"
         )
         #endif
 
-        var output = input
+        var output = stripTerminalPunctuationForStandaloneEmailOrWebsite(in: input)
+        guard !emailEntriesByDomain.isEmpty else {
+            #if DEBUG
+            logEmailNormalization("end output=\(debugTextSummary(output))")
+            #endif
+            return output
+        }
+
         output = applyUntilStable(output, using: replaceSpokenEmailCandidates(in:))
         output = applyUntilStable(output, using: replaceCompactEmailCandidates(in:))
         output = applyUntilStable(output, using: replaceLiteralEmailCandidates(in:))
+        output = replaceStandaloneShortUtteranceWithDictionaryEmail(in: output)
+        output = stripTerminalPunctuationForStandaloneEmailOrWebsite(in: output)
         #if DEBUG
         logEmailNormalization("end output=\(debugTextSummary(output))")
         #endif
@@ -63,7 +88,7 @@ extension DictionaryMatcher {
             #endif
             let attachedMarker = extractAttachedListMarker(from: localRawOriginal, boundary: boundary)
             let localRaw = attachedMarker?.local ?? localRawOriginal
-            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw) else {
+            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw, localHint: localRaw) else {
                 #if DEBUG
                 logEmailNormalization("spoken reject reason=domain_resolve_failed domain=\(debugDomainSummary(domainRaw))")
                 #endif
@@ -111,7 +136,7 @@ extension DictionaryMatcher {
             let boundary = nsText.substring(with: match.range(at: 1))
             let localRaw = normalizeLocal(nsText.substring(with: match.range(at: 2)))
             let domainRaw = nsText.substring(with: match.range(at: 3))
-            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw) else {
+            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw, localHint: localRaw) else {
                 #if DEBUG
                 logEmailNormalization("compact reject reason=domain_resolve_failed domain=\(debugDomainSummary(domainRaw))")
                 #endif
@@ -150,8 +175,9 @@ extension DictionaryMatcher {
         let mutable = NSMutableString(string: text)
         for match in matches.reversed() {
             let localRawOriginal = nsText.substring(with: match.range(at: 1))
+            let localRaw = normalizeLocal(localRawOriginal)
             let domainRaw = nsText.substring(with: match.range(at: 2))
-            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw) else {
+            guard let domainResolution = resolveDictionaryDomainCandidate(domainRaw, localHint: localRaw) else {
                 #if DEBUG
                 logEmailNormalization("literal reject reason=domain_resolve_failed domain=\(debugDomainSummary(domainRaw))")
                 #endif
@@ -159,7 +185,6 @@ extension DictionaryMatcher {
             }
             let domain = domainResolution.domain
 
-            let localRaw = normalizeLocal(localRawOriginal)
             guard let resolved = resolveLiteralEmail(localRaw: localRaw, localOriginal: localRawOriginal, domain: domain) else {
                 #if DEBUG
                 logEmailNormalization(
@@ -184,6 +209,76 @@ extension DictionaryMatcher {
         }
 
         return mutable as String
+    }
+
+    private func replaceStandaloneShortUtteranceWithDictionaryEmail(in text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return text }
+        guard !trimmed.contains("@") else { return text }
+        guard shouldAttemptStandaloneEmailFallback(trimmed) else { return text }
+
+        guard let resolved = resolveStandaloneDictionaryEmail(in: trimmed) else {
+            #if DEBUG
+            logEmailNormalization("standalone reject reason=resolve_failed text=\(debugTextSummary(trimmed))")
+            #endif
+            return text
+        }
+
+        #if DEBUG
+        logEmailNormalization(
+            "standalone replace replacementDomain=\(debugDomainSummary(resolved.domain)) local=\(debugTokenSummary(resolved.local))"
+        )
+        #endif
+        return resolved.canonical
+    }
+
+    private func shouldAttemptStandaloneEmailFallback(_ text: String) -> Bool {
+        let tokenCount = text.split(whereSeparator: \.isWhitespace).count
+        guard tokenCount > 0, tokenCount <= 4 else { return false }
+        guard text.count <= 64 else { return false }
+
+        if text.range(of: #"(?i)\bwww\b"#, options: .regularExpression) != nil {
+            return true
+        }
+        if text.range(of: #"(?i)\sat\s"#, options: .regularExpression) != nil {
+            return true
+        }
+        if text.range(of: #"(?i)\b(com|net|org|io|app|co|dev|ai|me|edu|gov)\b"#, options: .regularExpression) != nil,
+           text.contains(".") {
+            return true
+        }
+        return false
+    }
+
+    private func stripTerminalPunctuationForStandaloneEmailOrWebsite(in text: String) -> String {
+        guard let regex = Self.standaloneTrailingPunctuationRegex else { return text }
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        guard let match = regex.firstMatch(in: text, options: [], range: fullRange) else { return text }
+
+        let leading = nsText.substring(with: match.range(at: 1))
+        let core = nsText.substring(with: match.range(at: 2))
+        let trailingWhitespace = nsText.substring(with: match.range(at: 4))
+
+        guard isStandaloneEmailOrWebsite(core) else { return text }
+        return "\(leading)\(core)\(trailingWhitespace)"
+    }
+
+    private func isStandaloneEmailOrWebsite(_ text: String) -> Bool {
+        let range = NSRange(location: 0, length: (text as NSString).length)
+        if let regex = Self.standaloneLiteralEmailRegex,
+           regex.firstMatch(in: text, options: [], range: range) != nil {
+            return true
+        }
+        if let regex = Self.standaloneSpokenEmailRegex,
+           regex.firstMatch(in: text, options: [], range: range) != nil {
+            return true
+        }
+        if let regex = Self.standaloneWebsiteRegex,
+           regex.firstMatch(in: text, options: [], range: range) != nil {
+            return true
+        }
+        return false
     }
 
     #if DEBUG
