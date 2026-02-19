@@ -89,7 +89,11 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
-        let whitespaceNormalized = whitespaceNormalizer.normalize(emailNormalizedOutput, renderMode: renderMode)
+        let websiteNormalizedOutput = WebsiteNormalizer.normalizeDomainCasing(in: emailNormalizedOutput)
+        #if DEBUG
+        logPipelineStage("websiteNormalizedOutput", websiteNormalizedOutput)
+        #endif
+        let whitespaceNormalized = whitespaceNormalizer.normalize(websiteNormalizedOutput, renderMode: renderMode)
         let sentenceNormalized = capitalizationNormalizer.normalizeSentenceStarts(in: whitespaceNormalized)
         let output = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
         #if DEBUG

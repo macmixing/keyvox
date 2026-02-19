@@ -559,6 +559,25 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Use this site:\nwww.example.com")
     }
 
+    func testNormalizesWebsiteDomainCasingWithDictionaryBrandEntriesKeyVoxAndCueboard() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ]
+
+        let output = processor.process(
+            "www.KeyVox.app\nwww.Cueboard.app",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "www.keyvox.app\nwww.cueboard.app"
+        )
+    }
+
     func testFormatsAttachedNumericDomainMarkersAsList() {
         let processor = TranscriptionPostProcessor()
 
