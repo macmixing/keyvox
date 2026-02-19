@@ -425,6 +425,69 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
     }
 
+    func testFormatsLongEmailListWhenSecondMarkerUsesToHomophone() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.net"),
+            DictionaryEntry(phrase: "kathy@example.com"),
+        ]
+
+        let output = processor.process(
+            "Okay, so I wanted to talk to you about a couple of things and make sure that we were on the same page because I know you talked to someone the other day and he told me that you wanted to send me an email. So if you do, here's how you can reach me. I have a play if you know, there's a couple of places you could reach me at one dom at example.net to kathy at example.com. You can reach out anytime next week, maybe around 4:15 PM I don't know, in New York, something like that. Just let me know.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            Okay, so I wanted to talk to you about a couple of things and make sure that we were on the same page because I know you talked to someone the other day and he told me that you wanted to send me an email. So if you do, here's how you can reach me. I have a play if you know, there's a couple of places you could reach me at:
+
+            1. dom@example.net
+            2. kathy@example.com
+
+            You can reach out anytime next week, maybe around 4:15 PM I don't know, in New York, something like that. Just let me know.
+            """
+        )
+    }
+
+    func testNormalizesCompactEmailWithNearMatchDomainInsideNumberedList() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "dom@example.net"),
+            DictionaryEntry(phrase: "contact@sample.org"),
+        ]
+
+        let output = processor.process(
+            """
+            Okay, so I wanted to talk to you real quick because I heard you were having some issues and I wanted to make sure everything was going okay. If you want to reach out to me, you can do so here.
+
+            And don't forget that I have an email address, both of them actually:
+
+            1. Domatexampel.net
+            2. contact@sample.org
+
+            You can reach out to me like next Thursday, maybe 2:30 PM if that works good for you.
+            """,
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            """
+            Okay, so I wanted to talk to you real quick because I heard you were having some issues and I wanted to make sure everything was going okay. If you want to reach out to me, you can do so here.
+
+            And don't forget that I have an email address, both of them actually:
+
+            1. dom@example.net
+            2. contact@sample.org
+
+            You can reach out to me like next Thursday, maybe 2:30 PM if that works good for you.
+            """
+        )
+    }
+
     func testSplitsTrailingSentenceAfterLiteralEmailListItemWithoutPunctuation() {
         let processor = TranscriptionPostProcessor()
         let entries = [

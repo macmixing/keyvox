@@ -32,7 +32,7 @@ extension SettingsView {
                             Text("Dictionary")
                                 .font(.custom("Kanit Medium", size: 17))
 
-                            Text("Add custom words and phrases to improve transcription consistency.")
+                            Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
                                 .font(.custom("Kanit Medium", size: 12))
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)

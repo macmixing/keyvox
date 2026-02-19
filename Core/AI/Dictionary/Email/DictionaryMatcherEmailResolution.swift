@@ -140,19 +140,70 @@ extension DictionaryMatcher {
         if emailEntriesByDomain[normalized] != nil {
             return (normalized, "")
         }
+        if let fuzzyDomain = resolveFuzzyDomainCandidate(normalized) {
+            return (fuzzyDomain, "")
+        }
 
         let labels = normalized.split(separator: ".").map(String.init)
         guard labels.count >= 3 else { return nil }
 
         for endIndexExclusive in stride(from: labels.count - 1, through: 2, by: -1) {
             let candidateDomain = labels[..<endIndexExclusive].joined(separator: ".")
-            guard emailEntriesByDomain[candidateDomain] != nil else { continue }
+            if emailEntriesByDomain[candidateDomain] != nil {
+                let overflow = labels[endIndexExclusive...].joined(separator: " ")
+                return (candidateDomain, overflow)
+            }
+            guard let fuzzyDomain = resolveFuzzyDomainCandidate(candidateDomain) else { continue }
 
             let overflow = labels[endIndexExclusive...].joined(separator: " ")
-            return (candidateDomain, overflow)
+            return (fuzzyDomain, overflow)
         }
 
         return nil
+    }
+
+    private func resolveFuzzyDomainCandidate(_ candidateDomain: String) -> String? {
+        let candidateLabels = candidateDomain.split(separator: ".").map(String.init)
+        guard candidateLabels.count >= 2 else { return nil }
+
+        let candidateHost = candidateLabels.dropLast().joined(separator: ".")
+        guard !candidateHost.isEmpty else { return nil }
+
+        guard let candidateTLD = candidateLabels.last else { return nil }
+
+        let maxDistance = candidateHost.count >= 6 ? 2 : 1
+
+        let ranked = emailEntriesByDomain.keys.compactMap { knownDomain -> (domain: String, distance: Int, lengthDelta: Int)? in
+            let knownLabels = knownDomain.split(separator: ".").map(String.init)
+            guard knownLabels.count == candidateLabels.count else { return nil }
+            guard knownLabels.last == candidateTLD else { return nil }
+
+            let knownHost = knownLabels.dropLast().joined(separator: ".")
+            guard !knownHost.isEmpty else { return nil }
+            guard candidateHost.first == knownHost.first else { return nil }
+
+            let lengthDelta = abs(candidateHost.count - knownHost.count)
+            guard lengthDelta <= 2 else { return nil }
+
+            let distance = levenshtein(candidateHost, knownHost)
+            guard distance <= maxDistance else { return nil }
+            return (knownDomain, distance, lengthDelta)
+        }
+        .sorted {
+            if $0.distance != $1.distance { return $0.distance < $1.distance }
+            if $0.lengthDelta != $1.lengthDelta { return $0.lengthDelta < $1.lengthDelta }
+            return $0.domain < $1.domain
+        }
+
+        guard let best = ranked.first else { return nil }
+        if ranked.count > 1 {
+            let next = ranked[1]
+            if next.distance == best.distance && next.lengthDelta == best.lengthDelta {
+                return nil
+            }
+        }
+
+        return best.domain
     }
 
     func extractAttachedListMarker(from localRaw: String, boundary: String) -> (marker: String, local: String)? {

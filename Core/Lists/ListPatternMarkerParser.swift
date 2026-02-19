@@ -18,6 +18,13 @@ struct ListPatternMarkerParser {
             "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
         return try! NSRegularExpression(pattern: pattern)
     }()
+    private static let spokenTwoHomophoneRegex: NSRegularExpression = {
+        let pattern =
+            "(?i)(^|[\\s,;:])" +
+            "(to)" +
+            "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z])))"
+        return try! NSRegularExpression(pattern: pattern)
+    }()
     private static let oneForOneRegex: NSRegularExpression = {
         let pattern = #"(?i)\b(?:one|1)\s+for\s+(?:one|1)\b"#
         return try! NSRegularExpression(pattern: pattern)
@@ -53,20 +60,26 @@ struct ListPatternMarkerParser {
 
             let markerNumber: Int?
             let markerTokenStart: Int
+            let isDigitToken: Bool
 
             if digitRange.location != NSNotFound {
                 let token = nsText.substring(with: digitRange)
                 markerNumber = Int(token)
                 markerTokenStart = digitRange.location
+                isDigitToken = true
             } else if wordRange.location != NSNotFound {
                 let token = nsText.substring(with: wordRange).lowercased()
                 markerNumber = spokenNumberMap[token]
                 markerTokenStart = wordRange.location
+                isDigitToken = false
             } else {
                 return nil
             }
 
             guard let markerNumber else { return nil }
+            if isDigitToken && isLikelyTimeComponent(at: markerTokenStart, in: nsText) {
+                return nil
+            }
             if markerNumber == 1,
                oneForOneRanges.contains(where: { NSLocationInRange(markerTokenStart, $0) }) {
                 return nil
@@ -99,6 +112,28 @@ struct ListPatternMarkerParser {
             )
         })
 
+        let spokenTwoMatches = Self.spokenTwoHomophoneRegex.matches(in: text, options: [], range: range)
+        markers.append(contentsOf: spokenTwoMatches.compactMap { match -> ListPatternMarker? in
+            let tokenRange = match.range(at: 2)
+            guard tokenRange.location != NSNotFound else { return nil }
+
+            let markerTokenStart = tokenRange.location
+            guard nearestPriorMarkerNumber(before: markerTokenStart, in: markers) == 1 else {
+                return nil
+            }
+
+            let contentStart = match.range.location + match.range.length
+            guard looksLikeEmailListItemStart(in: nsText, from: contentStart) else {
+                return nil
+            }
+
+            return ListPatternMarker(
+                number: 2,
+                markerTokenStart: markerTokenStart,
+                contentStart: contentStart
+            )
+        })
+
         let sorted = markers.sorted {
             if $0.markerTokenStart != $1.markerTokenStart {
                 return $0.markerTokenStart < $1.markerTokenStart
@@ -113,5 +148,35 @@ struct ListPatternMarkerParser {
         }
 
         return deduped
+    }
+
+    private func nearestPriorMarkerNumber(before index: Int, in markers: [ListPatternMarker]) -> Int? {
+        markers
+            .filter { $0.markerTokenStart < index }
+            .max { $0.markerTokenStart < $1.markerTokenStart }?
+            .number
+    }
+
+    private func looksLikeEmailListItemStart(in nsText: NSString, from contentStart: Int) -> Bool {
+        guard contentStart < nsText.length else { return false }
+
+        let previewLength = min(100, nsText.length - contentStart)
+        let preview = nsText.substring(with: NSRange(location: contentStart, length: previewLength))
+        let emailLikePattern = #"(?i)^\s*(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)\b"#
+        return preview.range(of: emailLikePattern, options: .regularExpression) != nil
+    }
+
+    private func isLikelyTimeComponent(at markerTokenStart: Int, in nsText: NSString) -> Bool {
+        guard markerTokenStart >= 2 else { return false }
+
+        let delimiterIndex = markerTokenStart - 1
+        let delimiter = nsText.substring(with: NSRange(location: delimiterIndex, length: 1))
+        guard delimiter == ":" || delimiter == "." || delimiter == "-" else {
+            return false
+        }
+
+        let hourIndex = delimiterIndex - 1
+        let hourCharacter = nsText.substring(with: NSRange(location: hourIndex, length: 1))
+        return hourCharacter.range(of: #"^\d$"#, options: .regularExpression) != nil
     }
 }
