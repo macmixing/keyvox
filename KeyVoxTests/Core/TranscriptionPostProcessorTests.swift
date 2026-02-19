@@ -598,7 +598,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             2. kathy@example.com
             3. anthony@example.com
 
-            be sure to reach out to me next week.
+            Be sure to reach out to me next week.
             """
         )
     }
@@ -849,7 +849,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "haha that was funny")
+        XCTAssertTrue(output == "Haha that was funny")
     }
 
     func testKeepsBetweenColonPhraseLiteral() {

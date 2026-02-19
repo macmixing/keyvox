@@ -319,6 +319,13 @@ final class TranscriptionPostProcessor {
         guard dotLocation >= 0 else { return false }
         let nsText = text as NSString
         guard dotLocation < nsText.length else { return false }
+        guard dotLocation + 1 < nsText.length else { return false }
+
+        let domainLabelCharacterSet = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-")
+        guard let nextScalar = UnicodeScalar(nsText.character(at: dotLocation + 1)),
+              domainLabelCharacterSet.contains(nextScalar) else {
+            return false
+        }
 
         var start = dotLocation
         while start > 0 {
@@ -343,7 +350,12 @@ final class TranscriptionPostProcessor {
 
         let token = nsText.substring(with: tokenRange)
             .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}"))
-        guard !token.contains("@"), token.contains(".") else { return false }
+            .replacingOccurrences(
+                of: #"[.,;:!?]+$"#,
+                with: "",
+                options: .regularExpression
+            )
+        guard !token.isEmpty, !token.contains("@"), token.contains(".") else { return false }
 
         guard let regex = Self.domainLikeTokenRegex else { return false }
         let fullRange = NSRange(location: 0, length: (token as NSString).length)
