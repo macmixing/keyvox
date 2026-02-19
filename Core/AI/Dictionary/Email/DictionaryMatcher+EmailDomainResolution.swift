@@ -1,6 +1,11 @@
 import Foundation
 
 extension DictionaryMatcher {
+    private static let domainLabelRegex = try! NSRegularExpression(
+        pattern: "[A-Za-z0-9\\-]+",
+        options: []
+    )
+
     func resolveDictionaryDomainCandidate(_ raw: String, localHint: String? = nil) -> (domain: String, overflow: String)? {
         guard let labelBundle = extractDomainLabels(from: raw) else { return nil }
         let normalizedLabels = labelBundle.normalized
@@ -32,13 +37,9 @@ extension DictionaryMatcher {
     }
 
     private func extractDomainLabels(from raw: String) -> (normalized: [String], raw: [String])? {
-        guard let regex = try? NSRegularExpression(pattern: "[A-Za-z0-9\\-]+", options: []) else {
-            return nil
-        }
-
         let ns = raw as NSString
         let range = NSRange(location: 0, length: ns.length)
-        let matches = regex.matches(in: raw, options: [], range: range)
+        let matches = Self.domainLabelRegex.matches(in: raw, options: [], range: range)
         guard !matches.isEmpty else { return nil }
 
         var rawLabels: [String] = []

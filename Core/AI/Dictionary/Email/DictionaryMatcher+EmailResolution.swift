@@ -10,6 +10,18 @@ extension DictionaryMatcher {
         let local: String
         let tld: String?
     }
+    private static let standaloneLiteralEmailHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*([A-Z0-9._%+\-]+)\s*@\s*([A-Z0-9.\-]+\.[A-Z]{2,})\s*$"#,
+        options: []
+    )
+    private static let standaloneSpokenEmailHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*([A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,2})\s+at\s+([A-Z0-9.\-\s]+)\s*$"#,
+        options: []
+    )
+    private static let standaloneWebsiteHintRegex = try! NSRegularExpression(
+        pattern: #"(?i)^\s*(?:www[\s\.]+)?([A-Z0-9._%+\-]{2,})[\s\.]+([A-Z]{2,})\s*$"#,
+        options: []
+    )
 
     func resolveSpokenEmail(localRaw: String, domain: String) -> (prefix: String, entry: DictionaryEmailEntry)? {
         let candidates = spokenLocalCandidates(from: localRaw)
@@ -151,55 +163,37 @@ extension DictionaryMatcher {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
-        if let regex = try? NSRegularExpression(
-            pattern: #"(?i)^\s*([A-Z0-9._%+\-]+)\s*@\s*([A-Z0-9.\-]+\.[A-Z]{2,})\s*$"#,
-            options: []
-        ) {
-            let ns = trimmed as NSString
-            let range = NSRange(location: 0, length: ns.length)
-            if let match = regex.firstMatch(in: trimmed, options: [], range: range) {
-                let localRaw = ns.substring(with: match.range(at: 1))
-                let domainRaw = ns.substring(with: match.range(at: 2))
-                if let local = nonEmptyNormalizedLocal(localRaw),
-                   let domain = normalizeDomain(domainRaw),
-                   let tld = domain.split(separator: ".").last.map(String.init) {
-                    return StandaloneEmailHint(local: local, tld: tld)
-                }
+        let ns = trimmed as NSString
+        let range = NSRange(location: 0, length: ns.length)
+
+        if let match = Self.standaloneLiteralEmailHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let domainRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw),
+               let domain = normalizeDomain(domainRaw),
+               let tld = domain.split(separator: ".").last.map(String.init) {
+                return StandaloneEmailHint(local: local, tld: tld)
             }
         }
 
-        if let regex = try? NSRegularExpression(
-            pattern: #"(?i)^\s*([A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,2})\s+at\s+([A-Z0-9.\-\s]+)\s*$"#,
-            options: []
-        ) {
-            let ns = trimmed as NSString
-            let range = NSRange(location: 0, length: ns.length)
-            if let match = regex.firstMatch(in: trimmed, options: [], range: range) {
-                let localRaw = ns.substring(with: match.range(at: 1))
-                let domainRaw = ns.substring(with: match.range(at: 2))
-                if let local = nonEmptyNormalizedLocal(localRaw),
-                   let domain = normalizeDomain(domainRaw),
-                   let tld = domain.split(separator: ".").last.map(String.init) {
-                    return StandaloneEmailHint(local: local, tld: tld)
-                }
+        if let match = Self.standaloneSpokenEmailHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let domainRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw),
+               let domain = normalizeDomain(domainRaw),
+               let tld = domain.split(separator: ".").last.map(String.init) {
+                return StandaloneEmailHint(local: local, tld: tld)
             }
         }
 
-        if let regex = try? NSRegularExpression(
-            pattern: #"(?i)^\s*(?:www[\s\.]+)?([A-Z0-9._%+\-]{2,})[\s\.]+([A-Z]{2,})\s*$"#,
-            options: []
-        ) {
-            let ns = trimmed as NSString
-            let range = NSRange(location: 0, length: ns.length)
-            if let match = regex.firstMatch(in: trimmed, options: [], range: range) {
-                let localRaw = ns.substring(with: match.range(at: 1))
-                let tldRaw = ns.substring(with: match.range(at: 2))
-                if let local = nonEmptyNormalizedLocal(localRaw) {
-                    let tld = tldRaw
-                        .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-                        .lowercased()
-                    return StandaloneEmailHint(local: local, tld: tld)
-                }
+        if let match = Self.standaloneWebsiteHintRegex.firstMatch(in: trimmed, options: [], range: range) {
+            let localRaw = ns.substring(with: match.range(at: 1))
+            let tldRaw = ns.substring(with: match.range(at: 2))
+            if let local = nonEmptyNormalizedLocal(localRaw) {
+                let tld = tldRaw
+                    .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+                    .lowercased()
+                return StandaloneEmailHint(local: local, tld: tld)
             }
         }
 

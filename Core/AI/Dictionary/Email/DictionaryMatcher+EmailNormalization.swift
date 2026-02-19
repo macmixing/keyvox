@@ -1,6 +1,7 @@
 import Foundation
 
 extension DictionaryMatcher {
+    private static let maxStabilizationIterations = 8
     private static let spokenEmailCandidateRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: "(^|[^A-Za-z0-9._%+\\-])([A-Za-z0-9._%+'\\-]+(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)[ \\t]+at[ \\t]+([A-Za-z0-9\\-]+(?:[ \\t]*\\.[ \\t]*[A-Za-z0-9\\-]+)+)(?=$|[^A-Za-z0-9\\-])",
         options: [.caseInsensitive]
@@ -55,11 +56,15 @@ extension DictionaryMatcher {
 
     private func applyUntilStable(_ text: String, using transform: (String) -> String) -> String {
         var current = text
-        while true {
+        for _ in 0..<Self.maxStabilizationIterations {
             let next = transform(current)
             guard next != current else { return current }
             current = next
         }
+        #if DEBUG
+        logEmailNormalization("stabilization limit reached iterations=\(Self.maxStabilizationIterations)")
+        #endif
+        return current
     }
 
     private func replaceSpokenEmailCandidates(in text: String) -> String {
@@ -239,7 +244,7 @@ extension DictionaryMatcher {
         if text.range(of: #"(?i)\sat\s"#, options: .regularExpression) != nil {
             return true
         }
-        if text.range(of: #"(?i)\b(com|net|org|io|app|co|dev|ai|me|edu|gov)\b"#, options: .regularExpression) != nil,
+        if text.range(of: #"(?i)\b(com|net|org|io|app|co|dev|ai|me|edu|gov|uk)\b"#, options: .regularExpression) != nil,
            text.contains(".") {
             return true
         }

@@ -1,6 +1,11 @@
 import Foundation
 
 extension DictionaryMatcher {
+    private static let attachedListMarkerRegex = try! NSRegularExpression(
+        pattern: "^(\\d{1,2})([\\.\\)\\:\\-])([A-Za-z][A-Za-z0-9._%+'\\-]*(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)$",
+        options: []
+    )
+
     func nonEmptyNormalizedLocal(_ raw: String) -> String? {
         let normalized = normalizeLocal(raw)
         return normalized.isEmpty ? nil : normalized
@@ -42,16 +47,9 @@ extension DictionaryMatcher {
             return nil
         }
 
-        guard let regex = try? NSRegularExpression(
-            pattern: "^(\\d{1,2})([\\.\\)\\:\\-])([A-Za-z][A-Za-z0-9._%+'\\-]*(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)$",
-            options: []
-        ) else {
-            return nil
-        }
-
         let ns = localRaw as NSString
         let range = NSRange(location: 0, length: ns.length)
-        guard let match = regex.firstMatch(in: localRaw, options: [], range: range) else {
+        guard let match = Self.attachedListMarkerRegex.firstMatch(in: localRaw, options: [], range: range) else {
             return nil
         }
 
