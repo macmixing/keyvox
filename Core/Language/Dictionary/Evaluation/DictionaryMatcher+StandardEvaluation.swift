@@ -183,11 +183,13 @@ extension DictionaryMatcher {
             effectiveThreshold = threshold
         }
         var requiresPeerSupport = false
+        var singleTokenCandidatePhonetic: String?
 
         if tokenCount == 1 {
             let observedToken = window[0]
             let candidateToken = best.entry.tokens[0]
             let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
+            singleTokenCandidatePhonetic = candidatePhonetic
             let textSimilarity = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
             let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
             let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
@@ -306,9 +308,9 @@ extension DictionaryMatcher {
             if !stylizedBrandBypass,
                isStylizedSingleTokenEntry(best.entry),
                allowStylizedBySurface,
-               let candidateToken = best.entry.tokens.first {
+               let candidateToken = best.entry.tokens.first,
+               let candidatePhonetic = singleTokenCandidatePhonetic {
                 let textSimilarity = scorer.similarity(lhs: window[0].normalized, rhs: candidateToken)
-                let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
                 if hasStrongStylizedFallbackPhoneticEvidence(
                     observed: window[0].normalized,
                     candidate: candidateToken,

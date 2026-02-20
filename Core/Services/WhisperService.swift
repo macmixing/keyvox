@@ -13,9 +13,8 @@ class WhisperService: ObservableObject {
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
     private let paragraphChunker = WhisperAudioParagraphChunker()
-    // Keep prompt hinting disabled for now so we can measure and harden 
-    // core phonetic matching accuracy without hint-induced bias.
-    private let isPromptHintingEnabled = false 
+    // Intentionally disabled while validating phonetic matching without hint bias.
+    private let isPromptHintingEnabled = false
     private let suspiciousShortResultMinChunkSeconds: Double = 1.35
     private let suspiciousShortResultMaxWords = 2
     private let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35
@@ -385,9 +384,7 @@ class WhisperService: ObservableObject {
         } else {
             averageNoSpeechProbability = primary.reduce(0) { $0 + $1.noSpeechProbability } / Float(primary.count)
         }
-        if isSuspiciousShortResult {
-            guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
-        }
+        guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
 
         return true
     }
@@ -426,14 +423,20 @@ class WhisperService: ObservableObject {
             print("WhisperService segments: chunk=\(chunkIndex + 1)/\(totalChunks) count=0")
             return
         }
+        let rawDebugTextLoggingEnabled = ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
 
         let segmentSummaries = segments.prefix(3).enumerated().map { index, segment in
-            let compactText = segment.text
-                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            let truncated = compactText.count > 80 ? String(compactText.prefix(80)) + "…" : compactText
+            let loggedText: String
+            if rawDebugTextLoggingEnabled {
+                let compactText = segment.text
+                    .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                loggedText = compactText.count > 80 ? String(compactText.prefix(80)) + "…" : compactText
+            } else {
+                loggedText = "<redacted>"
+            }
             return
-                "#\(index + 1){start=\(segment.startTime),end=\(segment.endTime),p=\(String(format: "%.3f", segment.noSpeechProbability)),text=\(truncated)}"
+                "#\(index + 1){start=\(segment.startTime),end=\(segment.endTime),p=\(String(format: "%.3f", segment.noSpeechProbability)),text=\(loggedText)}"
         }.joined(separator: " ")
 
         print(
