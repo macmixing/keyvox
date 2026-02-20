@@ -120,7 +120,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "Let's pick between Colin McDonalds or Burger King")
     }
-    func testKeepsCommaDelimitedColonPhraseLiteral() {
+    func testNormalizesCommaDelimitedColonPhraseToPunctuation() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -129,9 +129,31 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I'm going to the store, colon, to buy some groceries.")
+        XCTAssertTrue(output == "I'm going to the store: To buy some groceries.")
     }
-    func testKeepsCommaDelimitedColinPhraseLiteral() {
+    func testNormalizesCommaDelimitedLowercaseColinPhraseToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Example, colin, exhibit A",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Example: Exhibit A")
+    }
+    func testRemovesTerminalPeriodForShortStandaloneColonAssociation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Example, colon, exhibit A.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Example: Exhibit A")
+    }
+    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -141,6 +163,54 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertTrue(output == "I'm going to the store, Colin, to buy some groceries.")
+    }
+    func testKeepsCommaDelimitedCollinNameLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met, Collin, yesterday at lunch.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "I met, Collin, yesterday at lunch.")
+    }
+    func testColonNormalizationStaysCompatibleWithWebsiteNormalization() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Please visit www.KeyVox.app, colon, support docs",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Please visit www.keyvox.app: Support docs")
+    }
+    func testColonNormalizationStaysCompatibleWithDictionaryBrandWords() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Brand update, colon, cue board roadmap",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertTrue(output == "Brand update: Cueboard roadmap")
+    }
+    func testColonNormalizationStaysCompatibleWithListFormatting() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Project notes, colon, one cue board design two website launch",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output.hasPrefix("Project notes:"))
+        XCTAssertTrue(output.contains("1. Cueboard design"))
+        XCTAssertTrue(output.contains("2. Website launch"))
     }
     func testKeepsStandaloneColonWordWithoutContext() {
         let processor = TranscriptionPostProcessor()

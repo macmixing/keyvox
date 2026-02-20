@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-02-19**
+**Last Updated: 2026-02-20**
 
 ## Design Philosophy
 
@@ -56,6 +56,7 @@ KeyVox is organized by responsibility:
 - `Core/Normalization/CharacterSpamNormalizer.swift`: Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
 - `Core/Normalization/WhitespaceNormalizer.swift`: Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
 - `Core/Normalization/SentenceCapitalizationNormalizer.swift`: Text-start/sentence-boundary/line-break capitalization with email/domain guards.
+- `Core/Normalization/ColonNormalizer.swift`: Converts spoken/delimiter colon forms into deterministic `:` punctuation with homophone and punctuation guards.
 - `Core/Normalization/TerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/Normalization/EmailAddressNormalizer.swift`: Shared non-dictionary email literal cleanup utility.
@@ -99,10 +100,11 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
-5. List formatting applies numeric list rendering when confidence gates pass.
-6. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
-7. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
-8. Final text is inserted via the paste service.
+5. `ColonNormalizer` converts spoken/delimiter colon phrases into deterministic punctuation before list parsing.
+6. List formatting applies numeric list rendering when confidence gates pass.
+7. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
+8. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
+9. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 
@@ -203,7 +205,7 @@ These remain integration/manual-test territory by design.
   - Removed: `Core/TranscriptionPostProcessor.swift`
   - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Normalization/TimeExpressionNormalizer.swift`
 - Post-processing normalization internals were split into focused helpers:
-  - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
+  - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/ColonNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules.
 - Character spam hardening was added for post-processing noise suppression:
   - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
