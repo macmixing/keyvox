@@ -34,7 +34,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
 
         let pluralForms = matcher.splitJoinForms(from: pluralWindow)
         XCTAssertTrue(pluralForms.contains(where: { $0.normalized == "cueboards" && !$0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
-        XCTAssertTrue(pluralForms.contains(where: { $0.normalized == "cueboard" && $0.singularizedSecondToken && $0.replacementSuffix.isEmpty }))
+        XCTAssertTrue(pluralForms.contains(where: { $0.normalized == "cueboard" && $0.singularizedSecondToken && $0.replacementSuffix == "s" }))
 
         let possessiveWindow: [DictionaryMatcher.Token] = [
             .init(raw: "cue", normalized: "cue", range: NSRange(location: 0, length: 3), phonetic: "K"),

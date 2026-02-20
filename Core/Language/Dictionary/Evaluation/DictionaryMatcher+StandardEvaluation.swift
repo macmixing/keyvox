@@ -55,12 +55,26 @@ extension DictionaryMatcher {
                 let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
                 let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
                 let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
+                let pluralHomophoneBonus: Double
+                if tokenCount == 1,
+                   form.replacementSuffix == "s",
+                   candidate.tokens.count == 1,
+                   !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidate.tokens[0])),
+                   adjustedPhoneticScore >= 0.95,
+                   baseScore.text >= 0.35 {
+                    // Deterministic lane for plural homophone near-misses such as
+                    // "queues" -> "cues" when the dictionary term is singular.
+                    pluralHomophoneBonus = 0.14
+                } else {
+                    pluralHomophoneBonus = 0
+                }
 
                 let boostedFinalScore = min(
                     1.0,
                     adjustedBaseFinal
                         + tokenAlignmentBoost(window: window, candidate: candidate)
                         + possessiveBonus(for: form.replacementSuffix)
+                        + pluralHomophoneBonus
                 )
                 let score = ReplacementScore(
                     text: baseScore.text,
@@ -99,6 +113,10 @@ extension DictionaryMatcher {
             // Possessive tails add noise; allow a slightly lower gate while keeping
             // common-word and ambiguity guards intact.
             effectiveThreshold = max(0.82, threshold - 0.08)
+        } else if tokenCount == 1, best.replacementSuffix == "s", best.score.phonetic >= 0.92 {
+            // Spoken plurals can be transcribed as close homophones ("queues" vs "cues");
+            // allow a guarded lane when phonetic evidence is very strong.
+            effectiveThreshold = max(0.78, threshold - 0.12)
         } else if tokenCount == 2, best.replacementSuffix == "'s" {
             // Two-token possessive near-misses can lose apostrophes in Whisper output.
             // Keep this tighter than single-token possessives but allow a modest lift.

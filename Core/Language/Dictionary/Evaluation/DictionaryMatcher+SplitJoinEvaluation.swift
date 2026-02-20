@@ -74,6 +74,8 @@ extension DictionaryMatcher {
                 let adjustedBaseFinal = min(1.0, score.final + (scorer.phoneticWeight * phoneticDelta))
                 let possessiveStylizedBonus =
                     (form.replacementSuffix == "'s" && isStylizedSingleTokenEntry(candidate)) ? 0.04 : 0.0
+                let pluralSplitJoinBonus =
+                    (form.singularizedSecondToken && form.replacementSuffix == "s" && !candidateIsCommonWord) ? 0.06 : 0.0
                 let anchoredStylizedBonus: Double
                 if isStylizedSingleTokenEntry(candidate), candidateToken.hasPrefix(window[0].normalized) {
                     anchoredStylizedBonus = 0.06
@@ -89,6 +91,7 @@ extension DictionaryMatcher {
                         adjustedBaseFinal
                             + possessiveBonus(for: form.replacementSuffix)
                             + possessiveStylizedBonus
+                            + pluralSplitJoinBonus
                             + anchoredStylizedBonus
                     )
                 )
@@ -121,6 +124,13 @@ extension DictionaryMatcher {
 
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
         var effectiveThreshold = threshold
+        if best.replacementSuffix == "s",
+           !lexicon.isCommonWord(best.entry.tokens[0]),
+           best.score.phonetic >= 0.95 {
+            // Guarded plural split-join lane for strong homophone evidence
+            // (for example "sub queues" -> "subcues").
+            effectiveThreshold = min(effectiveThreshold, 0.84)
+        }
         if isStylizedSingleTokenEntry(best.entry) {
             let candidateToken = best.entry.tokens[0]
             let similarity = splitJoinStylizedSimilarity(window: window, candidateToken: candidateToken)
@@ -179,7 +189,11 @@ extension DictionaryMatcher {
 
         let range = combinedRange(from: window)
         let observedRaw = (text as NSString).substring(with: range)
-        let replacementText = best.entry.phrase + replacementSuffix
+        let normalizedReplacementSuffix = resolvedSplitJoinReplacementSuffix(
+            basePhrase: best.entry.phrase,
+            desiredSuffix: replacementSuffix
+        )
+        let replacementText = best.entry.phrase + normalizedReplacementSuffix
         if observedRaw == replacementText {
             return nil
         }
@@ -241,7 +255,7 @@ extension DictionaryMatcher {
                         JoinedObservedForm(
                             normalized: singularized,
                             singularizedSecondToken: true,
-                            replacementSuffix: ""
+                            replacementSuffix: "s"
                         )
                     )
                 }
@@ -325,6 +339,11 @@ extension DictionaryMatcher {
             || token.hasSuffix("ce")
             || token.hasSuffix("se")
             || token.hasSuffix("ze")
+    }
+
+    private func resolvedSplitJoinReplacementSuffix(basePhrase: String, desiredSuffix: String) -> String {
+        guard desiredSuffix == "s" else { return desiredSuffix }
+        return basePhrase.lowercased().hasSuffix("s") ? "" : "s"
     }
 
     private func isLikelyDomainTokenSplit(window: [Token], text: String) -> Bool {

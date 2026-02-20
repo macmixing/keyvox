@@ -310,7 +310,7 @@ final class DictionaryMatcherTests: XCTestCase {
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "this is cue boards")
-        XCTAssertTrue(result.text == "this is Cueboard")
+        XCTAssertTrue(result.text == "this is Cueboards")
     }
 
     func testSplitJoinDoesNotInferPossessive() {
@@ -318,7 +318,38 @@ final class DictionaryMatcherTests: XCTestCase {
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "this is a test of cue boards abilities")
-        XCTAssertTrue(result.text == "this is a test of Cueboard abilities")
+        XCTAssertTrue(result.text == "this is a test of Cueboards abilities")
+    }
+
+    func testSplitJoinPreservesPluralForSingularDictionaryEntry() {
+        let lexicon = FakeLexicon(pronunciations: [
+            "sub": "SB",
+            "cue": "K",
+            "cues": "KZ",
+            "subcue": "SBK",
+            "subcues": "SBKZ",
+        ])
+        let matcher = DictionaryMatcher(lexicon: lexicon, encoder: PhoneticEncoder(), scorer: .balanced)
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "subcue")])
+
+        let result = matcher.apply(to: "you make sub cues.")
+        XCTAssertEqual(result.text, "you make subcues.")
+    }
+
+    func testCorrectsQueueHomophonesForCueAndSubcueEntries() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Cueboard"),
+            DictionaryEntry(phrase: "cue"),
+            DictionaryEntry(phrase: "subcue"),
+        ])
+
+        let result = matcher.apply(to: "Inside of the app cue board, you can make queues and sub queues.")
+        XCTAssertEqual(result.text, "Inside of the app Cueboard, you can make cues and subcues.")
     }
 
     func testPossessiveSingleTokenKeepsSuffixWhileCorrectingWord() {

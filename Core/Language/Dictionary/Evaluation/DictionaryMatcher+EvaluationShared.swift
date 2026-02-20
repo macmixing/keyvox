@@ -45,6 +45,7 @@ extension DictionaryMatcher {
         seen.insert("\(observedNormalized)|")
 
         if tokenCount == 1 {
+            let observedRawToken = window.first?.raw ?? observedNormalized
             if observedNormalized.hasSuffix("'s"), observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast(2))
                 if stem.count >= 3 {
@@ -55,6 +56,33 @@ extension DictionaryMatcher {
                             phonetic: encoder.signature(for: stem, lexicon: lexicon),
                             replacementSuffix: "'s"
                         ))
+                    }
+                }
+            } else if observedNormalized.hasSuffix("s"),
+                      !observedNormalized.hasSuffix("s'"),
+                      observedNormalized.count > 3 {
+                let stem = String(observedNormalized.dropLast())
+                if stem.count >= 3 {
+                    let pluralKey = "\(stem)|s"
+                    if seen.insert(pluralKey).inserted {
+                        forms.append((
+                            normalized: stem,
+                            phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                            replacementSuffix: "s"
+                        ))
+                    }
+
+                    // Preserve implicit possessive recovery for proper-name-like tokens.
+                    let startsUppercase = observedRawToken.unicodeScalars.first?.properties.isUppercase == true
+                    if startsUppercase {
+                        let possessiveKey = "\(stem)|'s"
+                        if seen.insert(possessiveKey).inserted {
+                            forms.append((
+                                normalized: stem,
+                                phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                                replacementSuffix: "'s"
+                            ))
+                        }
                     }
                 }
             }
