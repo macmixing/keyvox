@@ -164,10 +164,9 @@ class WhisperService: ObservableObject {
                     let chunkText = segments
                         .map { $0.text }
                         .joined(separator: " ")
-                        .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !chunkText.isEmpty {
-                        chunkTexts.append(chunkText)
+                    let normalizedChunkText = normalizeWhitespace(chunkText)
+                    if !normalizedChunkText.isEmpty {
+                        chunkTexts.append(normalizedChunkText)
                     }
                 }
                 
@@ -406,9 +405,14 @@ class WhisperService: ObservableObject {
     }
 
     private func compactSegmentText(_ segments: [Segment]) -> String {
-        segments
+        let joinedText = segments
             .map { $0.text }
             .joined(separator: " ")
+        return normalizeWhitespace(joinedText)
+    }
+
+    private func normalizeWhitespace(_ text: String) -> String {
+        text
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -428,9 +432,7 @@ class WhisperService: ObservableObject {
         let segmentSummaries = segments.prefix(3).enumerated().map { index, segment in
             let loggedText: String
             if rawDebugTextLoggingEnabled {
-                let compactText = segment.text
-                    .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                let compactText = normalizeWhitespace(segment.text)
                 loggedText = compactText.count > 80 ? String(compactText.prefix(80)) + "…" : compactText
             } else {
                 loggedText = "<redacted>"
