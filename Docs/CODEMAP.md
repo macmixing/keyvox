@@ -65,11 +65,17 @@ KeyVox/
 │   │   │   │   ├── DictionaryMatcher+EmailParsing.swift
 │   │   │   │   └── DictionaryMatcher+EmailResolution.swift
 │   │   │   ├── Evaluation/
-│   │   │   │   ├── DictionaryMatcher+EvaluationShared.swift
 │   │   │   │   ├── DictionaryMatcher+MergedTokenEvaluation.swift
-│   │   │   │   ├── DictionaryMatcher+SplitJoinEvaluation.swift
 │   │   │   │   ├── DictionaryMatcher+StandardEvaluation.swift
-│   │   │   │   └── DictionaryMatcher+ThreeTokenEvaluation.swift
+│   │   │   │   ├── DictionaryMatcher+ThreeTokenEvaluation.swift
+│   │   │   │   ├── Helpers/
+│   │   │   │   │   ├── DictionaryMatcher+EvaluationEvidenceHelpers.swift
+│   │   │   │   │   ├── DictionaryMatcher+EvaluationStylizedHelpers.swift
+│   │   │   │   │   └── DictionaryMatcher+EvaluationSuffixHelpers.swift
+│   │   │   │   └── SplitJoin/
+│   │   │   │       ├── DictionaryMatcher+SplitJoinForms.swift
+│   │   │   │       ├── DictionaryMatcher+SplitJoinGuards.swift
+│   │   │   │       └── DictionaryMatcher+SplitJoinScoring.swift
 │   │   │   ├── DictionaryEntry.swift
 │   │   │   ├── DictionaryMatcher.swift
 │   │   │   ├── DictionaryMatcher+Models.swift
@@ -387,14 +393,22 @@ KeyVox/
   - Token extraction and range construction helpers used by matcher runtime.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
-- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+SplitJoinEvaluation.swift`
-  - Split-token to single-entry matching path with plural/possessive handling.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
   - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
   - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
-- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+EvaluationShared.swift`
-  - Shared evaluator helpers (stylized evidence, possessive inference, token-alignment, and common-word guard helpers).
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
+  - Shared stylized-token evidence and fallback-phonetic helpers used by standard/split-join evaluators.
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationSuffixHelpers.swift`
+  - Shared possessive/plural form generation and suffix inference helpers used by evaluators.
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
+  - Shared split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
+  - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
+  - Split-join observed-form generation and replacement-suffix normalization helpers.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
+  - Split-join guard heuristics (domain-shape suppression, anchoring checks, possessive-sound inference).
 - `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
 - `Core/Language/Dictionary/DictionaryTextNormalization.swift`

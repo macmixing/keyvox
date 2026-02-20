@@ -1,12 +1,6 @@
 import Foundation
 
 extension DictionaryMatcher {
-    private static let domainLabelTokenRegex: NSRegularExpression? = try? NSRegularExpression(
-        // Generic DNS label shape (no hardcoded TLD list).
-        pattern: #"(?i)^[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?$"#,
-        options: []
-    )
-
     func proposeSplitJoinReplacement(
         start: Int,
         tokens: [Token],
@@ -207,64 +201,6 @@ extension DictionaryMatcher {
         )
     }
 
-    func splitJoinForms(from window: [Token]) -> [JoinedObservedForm] {
-        guard window.count == 2 else { return [] }
-
-        let first = window[0].normalized
-        let second = window[1].normalized
-
-        var forms: [JoinedObservedForm] = []
-        var seen = Set<String>()
-
-        let direct = first + second
-        if !direct.isEmpty, seen.insert(direct).inserted {
-            forms.append(
-                JoinedObservedForm(
-                    normalized: direct,
-                    singularizedSecondToken: false,
-                    replacementSuffix: ""
-                )
-            )
-        }
-
-        if second.hasSuffix("'s"), second.count > minimumSplitTokenLength {
-            let stem = String(second.dropLast(2))
-            if stem.count >= minimumSplitTokenLength {
-                let possessiveJoin = first + stem
-                if !possessiveJoin.isEmpty, seen.insert(possessiveJoin).inserted {
-                    forms.append(
-                        JoinedObservedForm(
-                            normalized: possessiveJoin,
-                            singularizedSecondToken: false,
-                            replacementSuffix: "'s"
-                        )
-                    )
-                }
-            }
-        }
-
-        if second.hasSuffix("s"),
-           !second.hasSuffix("'s"),
-           !second.hasSuffix("s'"),
-           second.count > minimumSplitTokenLength {
-            let singularSecond = String(second.dropLast())
-            if singularSecond.count >= minimumSplitTokenLength {
-                let singularized = first + singularSecond
-                if !singularized.isEmpty, seen.insert(singularized).inserted {
-                    forms.append(
-                        JoinedObservedForm(
-                            normalized: singularized,
-                            singularizedSecondToken: true,
-                            replacementSuffix: "s"
-                        )
-                    )
-                }
-            }
-        }
-
-        return forms
-    }
-
     private func splitJoinStylizedFallbackPhoneticSimilarity(
         observedNormalized: String,
         observedPhonetic: String,
@@ -307,56 +243,5 @@ extension DictionaryMatcher {
         }
 
         return (bestText, bestPhonetic, bestBlended)
-    }
-
-    private func isAnchoredStylizedSplitJoin(window: [Token], candidateToken: String) -> Bool {
-        guard window.count == 2 else { return false }
-        let observedFirst = window[0].normalized
-        guard observedFirst.count >= 3 else { return false }
-        return candidateToken.hasPrefix(observedFirst)
-    }
-
-    private func shouldInferSplitJoinPossessiveSuffix(
-        observedCombined: String,
-        observedTail: String,
-        candidate: String,
-        nextToken: Token?
-    ) -> Bool {
-        guard nextToken != nil else { return false }
-        guard !candidate.hasSuffix("s") else { return false }
-        let hasPossessiveSoundEnding =
-            hasPossessiveLikeEnding(observedCombined)
-            || hasPossessiveLikeEnding(observedTail)
-        return hasPossessiveSoundEnding
-    }
-
-    private func hasPossessiveLikeEnding(_ token: String) -> Bool {
-        token.hasSuffix("s")
-            || token.hasSuffix("x")
-            || token.hasSuffix("z")
-            || token.hasSuffix("ss")
-            || token.hasSuffix("xe")
-            || token.hasSuffix("ce")
-            || token.hasSuffix("se")
-            || token.hasSuffix("ze")
-    }
-
-    private func resolvedSplitJoinReplacementSuffix(basePhrase: String, desiredSuffix: String) -> String {
-        guard desiredSuffix == "s" else { return desiredSuffix }
-        return basePhrase.lowercased().hasSuffix("s") ? "" : "s"
-    }
-
-    private func isLikelyDomainTokenSplit(window: [Token], text: String) -> Bool {
-        guard window.count == 2 else { return false }
-        let second = window[1].normalized
-        guard second.count >= 2 else { return false }
-        guard let regex = Self.domainLabelTokenRegex else { return false }
-        let secondRange = NSRange(location: 0, length: (second as NSString).length)
-        guard regex.firstMatch(in: second, options: [], range: secondRange) != nil else { return false }
-
-        let nsText = text as NSString
-        let dotBeforeSecond = window[1].range.location > 0
-            && nsText.substring(with: NSRange(location: window[1].range.location - 1, length: 1)) == "."
-        return dotBeforeSecond
     }
 }
