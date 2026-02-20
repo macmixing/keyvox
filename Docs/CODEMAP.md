@@ -352,11 +352,11 @@ KeyVox/
   - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
   - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
 - `Core/Normalization/ColonNormalizer.swift`
-  - Shared spoken-colon normalizer used before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
+  - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Core/Normalization/CharacterSpamNormalizer.swift`
-  - Shared model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
+  - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
 - `Core/Normalization/AllCapsOverrideNormalizer.swift`
-  - Shared final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
+  - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`

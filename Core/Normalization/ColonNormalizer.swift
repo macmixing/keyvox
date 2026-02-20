@@ -30,7 +30,7 @@ struct ColonNormalizer {
             replacedSpokenColon = true
         }
 
-        guard let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
+        guard replacedSpokenColon, let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
             let normalized = mutable as String
             return stripTerminalPunctuationForShortStandaloneAssociation(in: normalized, replacedSpokenColon: replacedSpokenColon)
         }

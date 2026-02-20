@@ -96,7 +96,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Haha that was funny")
+        XCTAssertEqual(output, "Haha that was funny")
     }
     func testKeepsBetweenColonPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -107,7 +107,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Let's pick between colon McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between colon McDonalds or Burger King")
     }
     func testKeepsBetweenColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -118,7 +118,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Let's pick between Colin McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between Colin McDonalds or Burger King")
     }
     func testNormalizesCommaDelimitedColonPhraseToPunctuation() {
         let processor = TranscriptionPostProcessor()
@@ -129,7 +129,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I'm going to the store: To buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store: To buy some groceries.")
     }
     func testNormalizesCommaDelimitedLowercaseColinPhraseToPunctuation() {
         let processor = TranscriptionPostProcessor()
@@ -140,7 +140,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Example: Exhibit A")
+        XCTAssertEqual(output, "Example: Exhibit A")
     }
     func testRemovesTerminalPeriodForShortStandaloneColonAssociation() {
         let processor = TranscriptionPostProcessor()
@@ -151,7 +151,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Example: Exhibit A")
+        XCTAssertEqual(output, "Example: Exhibit A")
     }
     func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -162,7 +162,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I'm going to the store, Colin, to buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store, Colin, to buy some groceries.")
     }
     func testKeepsCommaDelimitedCollinNameLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -173,7 +173,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I met, Collin, yesterday at lunch.")
+        XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
     }
     func testColonNormalizationStaysCompatibleWithWebsiteNormalization() {
         let processor = TranscriptionPostProcessor()
@@ -184,7 +184,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Please visit www.keyvox.app: Support docs")
+        XCTAssertEqual(output, "Please visit www.keyvox.app: Support docs")
     }
     func testColonNormalizationStaysCompatibleWithDictionaryBrandWords() {
         let processor = TranscriptionPostProcessor()
@@ -196,7 +196,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Brand update: Cueboard roadmap")
+        XCTAssertEqual(output, "Brand update: Cueboard roadmap")
     }
     func testColonNormalizationStaysCompatibleWithListFormatting() {
         let processor = TranscriptionPostProcessor()
@@ -221,7 +221,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "The word colon appears here")
+        XCTAssertEqual(output, "The word colon appears here")
     }
     func testKeepsTerminalCommaDelimitedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -232,7 +232,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Next task, Colin.")
+        XCTAssertEqual(output, "Next task, Colin.")
     }
     func testDoesNotRewriteSingleWordGreetingColin() {
         let processor = TranscriptionPostProcessor()
@@ -243,7 +243,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Hi, Colin.")
+        XCTAssertEqual(output, "Hi, Colin.")
     }
     func testNormalizesHoleInOneIdiom() {
         let processor = TranscriptionPostProcessor()
@@ -254,7 +254,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
     }
     func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
         let processor = TranscriptionPostProcessor()
@@ -265,7 +265,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
         XCTAssertFalse(output.contains("\n1. "))
         XCTAssertFalse(output.contains("\n2. "))
     }

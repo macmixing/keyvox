@@ -33,7 +33,7 @@ class TranscriptionManager: ObservableObject {
             self?.appSettings.listFormattingEnabled ?? true
         },
         capsLockEnabledProvider: { [weak self] in
-            self?.keyboardMonitor.isCapsLockOn ?? false
+            self?.cachedCapsLockIsOn ?? false
         },
         listRenderModeProvider: {
             PasteService.shared.preferredListRenderModeForFocusedElement()
@@ -46,6 +46,7 @@ class TranscriptionManager: ObservableObject {
         }
     )
     private var isLocked = false
+    private var cachedCapsLockIsOn = false
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
@@ -55,6 +56,7 @@ class TranscriptionManager: ObservableObject {
     private let dictionaryHintPromptMinimumActiveSignalRunDuration: TimeInterval = 0.35
     
     init() {
+        cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()
         whisperService.warmup()
     }
@@ -90,6 +92,13 @@ class TranscriptionManager: ObservableObject {
             .dropFirst()
             .sink { [weak self] _ in
                 self?.abortRecording()
+            }
+            .store(in: &cancellables)
+
+        keyboardMonitor.$isCapsLockOn
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isOn in
+                self?.cachedCapsLockIsOn = isOn
             }
             .store(in: &cancellables)
 
@@ -178,6 +187,7 @@ class TranscriptionManager: ObservableObject {
         #endif
         
         isLocked = false
+        cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
 
         audioRecorder.stopRecording { [weak self] frames in
             guard let self = self else { return }
