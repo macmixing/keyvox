@@ -39,7 +39,7 @@ extension DictionaryMatcher {
         guard observedSecond.count >= 5, candidateSecond.count >= 5 else { return false }
         guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateSecond)) else { return false }
 
-        let candidateSecondPhonetic = encoder.signature(for: candidateSecond, lexicon: lexicon)
+        let candidateSecondPhonetic = encoder.scoringSignature(for: candidateSecond, lexicon: lexicon)
         let secondTextSimilarity = scorer.similarity(lhs: observedSecond, rhs: candidateSecond)
         let secondPhoneticSimilarity = scorer.similarity(lhs: window[1].phonetic, rhs: candidateSecondPhonetic)
 
@@ -59,7 +59,7 @@ extension DictionaryMatcher {
         guard observedSecond.first == candidateSecond.first else { return false }
         guard observedSecond.last == candidateSecond.last else { return false }
 
-        let candidateSecondPhonetic = encoder.signature(for: candidateSecond, lexicon: lexicon)
+        let candidateSecondPhonetic = encoder.scoringSignature(for: candidateSecond, lexicon: lexicon)
         let secondTextSimilarity = scorer.similarity(lhs: observedSecond, rhs: candidateSecond)
         let secondPhoneticSimilarity = scorer.similarity(lhs: window[1].phonetic, rhs: candidateSecondPhonetic)
 
@@ -72,7 +72,7 @@ extension DictionaryMatcher {
         guard window.count == candidate.tokens.count else { return 0 }
         guard !window.isEmpty else { return 0 }
 
-        let candidatePhonetics = candidate.tokens.map { encoder.signature(for: $0, lexicon: lexicon) }
+        let candidatePhonetics = candidate.tokens.map { encoder.scoringSignature(for: $0, lexicon: lexicon) }
         var exactMatches = 0
         var strongMatches = 0
         var firstTokenExact = false

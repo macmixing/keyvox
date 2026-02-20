@@ -37,8 +37,8 @@ extension DictionaryMatcher {
             guard observedFirst == candidateFirst else { continue }
             guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateLast)) else { continue }
 
-            let observedLastPhonetic = encoder.signature(for: observedLastStem, lexicon: lexicon)
-            let candidateLastPhonetic = encoder.signature(for: candidateLast, lexicon: lexicon)
+            let observedLastPhonetic = encoder.scoringSignature(for: observedLastStem, lexicon: lexicon)
+            let candidateLastPhonetic = encoder.scoringSignature(for: candidateLast, lexicon: lexicon)
             let lastTextSimilarity = scorer.similarity(lhs: observedLastStem, rhs: candidateLast)
             let lastPhoneticSimilarity = scorer.similarity(lhs: observedLastPhonetic, rhs: candidateLastPhonetic)
             let requiresPossessiveRecovery = possessive.suffix == "'s"
@@ -49,7 +49,7 @@ extension DictionaryMatcher {
             }
 
             let observedNormalized = "\(observedFirst) \(observedLastStem)"
-            let observedPhonetic = encoder.phraseSignature(for: [observedFirst, observedLastStem], lexicon: lexicon)
+            let observedPhonetic = encoder.scoringPhraseSignature(for: [observedFirst, observedLastStem], lexicon: lexicon)
             let baseScore = scorer.score(
                 observedText: observedNormalized,
                 observedPhonetic: observedPhonetic,
@@ -132,7 +132,7 @@ extension DictionaryMatcher {
         stats.attempted += 1
 
         let observedCombined = observedMid + observedTail
-        let observedCombinedPhonetic = encoder.signature(for: observedCombined, lexicon: lexicon)
+        let observedCombinedPhonetic = encoder.scoringSignature(for: observedCombined, lexicon: lexicon)
 
         var best: Candidate?
         var secondBestScore = 0.0
@@ -142,18 +142,21 @@ extension DictionaryMatcher {
             let candidateFirst = candidate.tokens[0]
             let candidateSecond = candidate.tokens[1]
             guard candidateSecond.count >= observedTail.count else { continue }
+            guard observedFirst == candidateFirst
+                || (observedFirst.count <= 3
+                    && !lexicon.isCommonWord(baseTokenForCommonWordGuard(observedFirst))) else { continue }
 
             let firstTextSimilarity = scorer.similarity(lhs: observedFirst, rhs: candidateFirst)
             let firstPhoneticSimilarity = scorer.similarity(
                 lhs: window[0].phonetic,
-                rhs: encoder.signature(for: candidateFirst, lexicon: lexicon)
+                rhs: encoder.scoringSignature(for: candidateFirst, lexicon: lexicon)
             )
             guard firstTextSimilarity >= 0.20 || firstPhoneticSimilarity >= 0.42 else { continue }
 
             let combinedTextSimilarity = scorer.similarity(lhs: observedCombined, rhs: candidateSecond)
             let combinedPhoneticSimilarity = scorer.similarity(
                 lhs: observedCombinedPhonetic,
-                rhs: encoder.signature(for: candidateSecond, lexicon: lexicon)
+                rhs: encoder.scoringSignature(for: candidateSecond, lexicon: lexicon)
             )
             guard combinedTextSimilarity >= 0.66 || combinedPhoneticSimilarity >= 0.68 else { continue }
 

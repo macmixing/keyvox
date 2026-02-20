@@ -23,6 +23,11 @@ extension DictionaryMatcher {
             return nil
         }
 
+        let isHyphenSingleLetterLane =
+            isExplicitHyphenDelimitedSplit(window: window, text: text)
+            && window[0].normalized.count == 1
+            && window[1].normalized.count >= 4
+
         let containsShortToken =
             window[0].normalized.count < minimumSplitTokenLength
             || window[1].normalized.count < minimumSplitTokenLength
@@ -31,7 +36,7 @@ extension DictionaryMatcher {
             let hasExactJoinCandidate = forms.contains { form in
                 exactJoinedCandidates.contains(form.normalized)
             }
-            guard hasExactJoinCandidate else {
+            guard hasExactJoinCandidate || isHyphenSingleLetterLane else {
                 stats.rejectedShortToken += 1
                 return nil
             }
@@ -50,7 +55,7 @@ extension DictionaryMatcher {
                     continue
                 }
 
-                let observedPhonetic = encoder.signature(for: form.normalized, lexicon: lexicon)
+                let observedPhonetic = encoder.scoringSignature(for: form.normalized, lexicon: lexicon)
                 let score = scorer.score(
                     observedText: form.normalized,
                     observedPhonetic: observedPhonetic,
@@ -118,6 +123,26 @@ extension DictionaryMatcher {
 
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
         var effectiveThreshold = threshold
+        if isHyphenSingleLetterLane {
+            let observedJoined = window.map(\.normalized).joined()
+            let candidateToken = best.entry.tokens[0]
+            let textSimilarity = scorer.similarity(lhs: observedJoined, rhs: candidateToken)
+            let observedPhonetic = encoder.scoringSignature(for: observedJoined, lexicon: lexicon)
+            let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
+            let phoneticSimilarity = scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic)
+
+            let qualifiesHyphenSingleLetterLane =
+                !lexicon.isCommonWord(candidateToken)
+                && candidateToken.hasSuffix(window[1].normalized)
+                && textSimilarity >= 0.62
+                && phoneticSimilarity >= 0.98
+
+            guard qualifiesHyphenSingleLetterLane else {
+                stats.rejectedShortToken += 1
+                return nil
+            }
+            effectiveThreshold = min(effectiveThreshold, 0.78)
+        }
         if best.replacementSuffix == "s",
            !lexicon.isCommonWord(best.entry.tokens[0]),
            best.score.phonetic >= 0.95 {
@@ -228,8 +253,8 @@ extension DictionaryMatcher {
 
         for form in forms {
             let textSimilarity = scorer.similarity(lhs: form.normalized, rhs: candidateToken)
-            let observedPhonetic = encoder.signature(for: form.normalized, lexicon: lexicon)
-            let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+            let observedPhonetic = encoder.scoringSignature(for: form.normalized, lexicon: lexicon)
+            let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
             let runtimePhoneticSimilarity = scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic)
             let observedFallback = encoder.fallbackSignature(for: form.normalized)
             let candidateFallback = encoder.fallbackSignature(for: candidateToken)

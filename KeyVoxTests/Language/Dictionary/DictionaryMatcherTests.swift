@@ -239,6 +239,100 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox and my name is Dom Esposito.")
     }
 
+    func testDisambiguatesCommonWordBrandTailToCorrectDictionaryEntryWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "I'm using an app called Keybox from Dom Espicito, the creator of Keyboard."
+        )
+        XCTAssertEqual(
+            result.text,
+            "I'm using an app called KeyVox from Dom Esposito, the creator of Cueboard."
+        )
+    }
+
+    func testPreservesFromBeforeExactTwoTokenNameWhileNormalizingOtherBrand() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "I created an app called KeyVox from Dom Esposito, the creator of cueboard."
+        )
+        XCTAssertEqual(
+            result.text,
+            "I created an app called KeyVox from Dom Esposito, the creator of Cueboard."
+        )
+    }
+
+    func testCorrectsHyphenatedSingleLetterBrandTailAlongsideNameCorrection() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "Dom Espacito is the creator of Q-Board."
+        )
+        XCTAssertEqual(
+            result.text,
+            "Dom Esposito is the creator of Cueboard."
+        )
+    }
+
+    func testDoesNotReplaceKeyboardWithDictionaryBrandWhenWordAlreadyLexiconKnown() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "I love typing on this keyboard.")
+        XCTAssertEqual(result.text, "I love typing on this keyboard.")
+    }
+
+    func testKeepsCommonWordKeyboardInProseWhenBrandMentionAlsoExists() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "Dom Esposito is the creator of Cueboard and I love typing on this keyboard."
+        )
+        XCTAssertEqual(
+            result.text,
+            "Dom Esposito is the creator of Cueboard and I love typing on this keyboard."
+        )
+    }
+
     func testCommonWordGuardPreventsAggressiveReplacement() {
         let lexicon = FakeLexicon(
             pronunciations: [

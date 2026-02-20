@@ -26,7 +26,7 @@ extension DictionaryMatcher {
                     if seen.insert(key).inserted {
                         forms.append((
                             normalized: stem,
-                            phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                            phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
                             replacementSuffix: "'s"
                         ))
                     }
@@ -40,7 +40,7 @@ extension DictionaryMatcher {
                     if seen.insert(pluralKey).inserted {
                         forms.append((
                             normalized: stem,
-                            phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                            phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
                             replacementSuffix: "s"
                         ))
                     }
@@ -52,7 +52,7 @@ extension DictionaryMatcher {
                         if seen.insert(possessiveKey).inserted {
                             forms.append((
                                 normalized: stem,
-                                phonetic: encoder.signature(for: stem, lexicon: lexicon),
+                                phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
                                 replacementSuffix: "'s"
                             ))
                         }
@@ -74,7 +74,7 @@ extension DictionaryMatcher {
                 if seen.insert(key).inserted {
                     forms.append((
                         normalized: normalized,
-                        phonetic: encoder.phraseSignature(for: [first, stem], lexicon: lexicon),
+                        phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
                         replacementSuffix: "'s"
                     ))
                 }
@@ -90,7 +90,7 @@ extension DictionaryMatcher {
                 if seen.insert(key).inserted {
                     forms.append((
                         normalized: normalized,
-                        phonetic: encoder.phraseSignature(for: [first, stem], lexicon: lexicon),
+                        phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
                         replacementSuffix: "'s"
                     ))
                 }
@@ -118,9 +118,9 @@ extension DictionaryMatcher {
         guard !candidate.hasSuffix("s") else { return false }
         guard observed.hasSuffix("s") || observed.hasSuffix("x") || observed.hasSuffix("z") else { return false }
 
-        let candidatePhonetic = encoder.signature(for: candidate, lexicon: lexicon)
+        let candidatePhonetic = encoder.scoringSignature(for: candidate, lexicon: lexicon)
         let candidateWithS = "\(candidate)s"
-        let candidateWithSPhonetic = encoder.signature(for: candidateWithS, lexicon: lexicon)
+        let candidateWithSPhonetic = encoder.scoringSignature(for: candidateWithS, lexicon: lexicon)
         let observedFallback = encoder.fallbackSignature(for: observed)
         let candidateFallback = encoder.fallbackSignature(for: candidate)
         let candidateWithSFallback = encoder.fallbackSignature(for: candidateWithS)

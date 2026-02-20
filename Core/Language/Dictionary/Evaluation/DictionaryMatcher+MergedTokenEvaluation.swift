@@ -23,7 +23,7 @@ extension DictionaryMatcher {
                 guard observed.normalized.count > tail.count, observed.normalized.hasSuffix(tail) else { continue }
 
                 let mergedCandidate = candidate.tokens.joined()
-                let mergedCandidatePhonetic = encoder.signature(for: mergedCandidate, lexicon: lexicon)
+                let mergedCandidatePhonetic = encoder.scoringSignature(for: mergedCandidate, lexicon: lexicon)
                 let baseScore = scorer.score(
                     observedText: observed.normalized,
                     observedPhonetic: observed.phonetic,
@@ -35,8 +35,8 @@ extension DictionaryMatcher {
 
                 let observedHead = String(observed.normalized.dropLast(tail.count))
                 let candidateHead = String(mergedCandidate.dropLast(tail.count))
-                let observedHeadPhonetic = encoder.signature(for: observedHead, lexicon: lexicon)
-                let candidateHeadPhonetic = encoder.signature(for: candidateHead, lexicon: lexicon)
+                let observedHeadPhonetic = encoder.scoringSignature(for: observedHead, lexicon: lexicon)
+                let candidateHeadPhonetic = encoder.scoringSignature(for: candidateHead, lexicon: lexicon)
                 let headTextSimilarity = scorer.similarity(lhs: observedHead, rhs: candidateHead)
                 let headPhoneticSimilarity = scorer.similarity(lhs: observedHeadPhonetic, rhs: candidateHeadPhonetic)
 

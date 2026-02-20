@@ -27,6 +27,23 @@ extension DictionaryMatcher {
         let range: NSRange
         let replacement: String
         let score: Double
+        let requiresPeerSupport: Bool
+
+        init(
+            tokenStart: Int,
+            tokenEndExclusive: Int,
+            range: NSRange,
+            replacement: String,
+            score: Double,
+            requiresPeerSupport: Bool = false
+        ) {
+            self.tokenStart = tokenStart
+            self.tokenEndExclusive = tokenEndExclusive
+            self.range = range
+            self.replacement = replacement
+            self.score = score
+            self.requiresPeerSupport = requiresPeerSupport
+        }
     }
 
     struct JoinedObservedForm {

@@ -69,7 +69,7 @@ final class DictionaryMatcher {
             let tokens = normalizedPhrase.split(separator: " ").map(String.init)
             guard !tokens.isEmpty, tokens.count <= 4 else { continue }
 
-            let phoneticPhrase = encoder.phraseSignature(for: tokens, lexicon: lexicon)
+            let phoneticPhrase = encoder.scoringPhraseSignature(for: tokens, lexicon: lexicon)
             let compiled = CompiledEntry(
                 phrase: entry.phrase,
                 normalizedPhrase: normalizedPhrase,
@@ -164,7 +164,15 @@ final class DictionaryMatcher {
             return DictionaryMatchResult(text: emailNormalizedInput, stats: stats)
         }
 
-        let selected = selectNonOverlapping(proposed: proposed, rejectedOverlapCounter: &stats.rejectedOverlap)
+        var selected = selectNonOverlapping(proposed: proposed, rejectedOverlapCounter: &stats.rejectedOverlap)
+        if selected.contains(where: \.requiresPeerSupport) {
+            let hasIndependentSupport = selected.contains(where: { !$0.requiresPeerSupport })
+            if !hasIndependentSupport {
+                let rejectedCount = selected.filter(\.requiresPeerSupport).count
+                stats.rejectedCommonWord += rejectedCount
+                selected.removeAll(where: \.requiresPeerSupport)
+            }
+        }
         guard !selected.isEmpty else {
             return DictionaryMatchResult(text: emailNormalizedInput, stats: stats)
         }

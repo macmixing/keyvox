@@ -124,21 +124,34 @@ extension DictionaryMatcher {
         } else {
             effectiveThreshold = threshold
         }
+        var requiresPeerSupport = false
 
         if tokenCount == 1 {
             let observedToken = window[0]
             let candidateToken = best.entry.tokens[0]
-            let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+            let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
             let textSimilarity = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
             let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
             let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
             let stylizedSingleTokenEntry = isStylizedSingleTokenEntry(best.entry)
+            let observedHasRuntimePronunciation = lexicon.pronunciation(for: observedToken.normalized) != nil
+            let candidateHasRuntimePronunciation = lexicon.pronunciation(for: candidateToken) != nil
             let allowStylizedFallbackBySurface =
                 allowStylizedFallbackForCommonObservedToken(
                     token: observedToken,
                     tokenIndex: start,
                     totalTokens: tokens.count
                 )
+
+            if observedHasRuntimePronunciation,
+               !candidateHasRuntimePronunciation,
+               !stylizedSingleTokenEntry,
+               textSimilarity < 0.70 {
+                // Guard risky common-word -> brand hops unless corroborated by another
+                // independent replacement in the same utterance.
+                requiresPeerSupport = true
+            }
+
             if stylizedSingleTokenEntry,
                !allowStylizedFallbackBySurface,
                textSimilarity < 0.82 {
@@ -223,19 +236,21 @@ extension DictionaryMatcher {
 
         if tokenCount == 1,
            lexicon.isCommonWord(baseTokenForCommonWordGuard(window[0].normalized)) {
+            let allowStylizedBySurface = allowStylizedFallbackForCommonObservedToken(
+                token: window[0],
+                tokenIndex: start,
+                totalTokens: tokens.count
+            )
             var stylizedBrandBypass =
                 isStylizedSingleTokenEntry(best.entry)
+                && allowStylizedBySurface
                 && best.score.final >= 0.82
             if !stylizedBrandBypass,
                isStylizedSingleTokenEntry(best.entry),
-               allowStylizedFallbackForCommonObservedToken(
-                   token: window[0],
-                   tokenIndex: start,
-                   totalTokens: tokens.count
-               ),
+               allowStylizedBySurface,
                let candidateToken = best.entry.tokens.first {
                 let textSimilarity = scorer.similarity(lhs: window[0].normalized, rhs: candidateToken)
-                let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+                let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
                 if hasStrongStylizedFallbackPhoneticEvidence(
                     observed: window[0].normalized,
                     candidate: candidateToken,
@@ -288,7 +303,8 @@ extension DictionaryMatcher {
             tokenEndExclusive: tokenEndExclusive,
             range: range,
             replacement: replacementText,
-            score: best.score.final
+            score: best.score.final,
+            requiresPeerSupport: requiresPeerSupport
         )
     }
 }

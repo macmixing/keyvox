@@ -20,7 +20,7 @@ extension DictionaryMatcher {
                     raw: raw,
                     normalized: normalized,
                     range: match.range,
-                    phonetic: encoder.signature(for: normalized, lexicon: lexicon)
+                    phonetic: encoder.scoringSignature(for: normalized, lexicon: lexicon)
                 )
             }
     }
