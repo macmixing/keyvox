@@ -20,6 +20,97 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "Dom Esposito")
     }
 
+    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithA() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "My name is Dom Espacito.")
+        XCTAssertEqual(result.text, "My name is Dom Esposito.")
+    }
+
+    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithO() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "My name is Dom Espocito.")
+        XCTAssertEqual(result.text, "My name is Dom Esposito.")
+    }
+
+    func testCorrectsSingleTokenBrandNearMissWithoutPromptHinting() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "TaskVox")])
+
+        let result = matcher.apply(to: "Have you heard of Taskbox?")
+        XCTAssertEqual(result.text, "Have you heard of TaskVox?")
+    }
+
+    func testCorrectsStylizedSingleTokenBrandNearMissInSentence() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "My app is called Keybox.")
+        XCTAssertEqual(result.text, "My app is called KeyVox.")
+    }
+
+    func testCorrectsStylizedSingleTokenBrandWhenWhisperSplitsToken() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "My app is called key box.")
+        XCTAssertEqual(result.text, "My app is called KeyVox.")
+    }
+
+    func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "My app is called Keybox.")
+        XCTAssertEqual(result.text, "My app is called KeyVox.")
+    }
+
+    func testCorrectsTwoTokenNameNearMissWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "My name is Dom Espacito.")
+        XCTAssertEqual(result.text, "My name is Dom Esposito.")
+    }
+
+    func testCorrectsTwoTokenNameNearMissVariantWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "Dom Espicido.")
+        XCTAssertEqual(result.text, "Dom Esposito.")
+    }
+
+    func testCorrectsBrandAndNameNearMissesInSameSentenceWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "Dom Esposito"),
+        ])
+
+        let result = matcher.apply(to: "My app is called Keyvox and my name is Dom Espacito.")
+        XCTAssertEqual(result.text, "My app is called KeyVox and my name is Dom Esposito.")
+    }
+
     func testCommonWordGuardPreventsAggressiveReplacement() {
         let lexicon = FakeLexicon(
             pronunciations: [

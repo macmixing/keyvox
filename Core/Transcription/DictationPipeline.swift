@@ -144,7 +144,7 @@ final class DictationPipeline {
     private func logPipelineStage(_ stage: String, _ value: String) {
         let summary = debugTextSummary(value)
         if rawDebugTextLoggingEnabled {
-            print("[KVXPipeline] \(stage) \(summary) text=\(truncatedDebugEscaped(value, maxCharacters: 500))")
+            print("[KVXPipeline] \(stage) \(summary) text=\(escapedDebugText(value))")
         } else {
             print("[KVXPipeline] \(stage) \(summary)")
         }
@@ -162,11 +162,8 @@ final class DictationPipeline {
         return "chars=\(chars) words=\(words) lines=\(lines) firstToken=\(firstToken)"
     }
 
-    private func truncatedDebugEscaped(_ text: String, maxCharacters: Int) -> String {
-        let escaped = text.replacingOccurrences(of: "\n", with: "\\n")
-        guard escaped.count > maxCharacters else { return escaped }
-        let end = escaped.index(escaped.startIndex, offsetBy: maxCharacters)
-        return "\(escaped[..<end])..."
+    private func escapedDebugText(_ text: String) -> String {
+        text.replacingOccurrences(of: "\n", with: "\\n")
     }
     #endif
 }

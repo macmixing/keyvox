@@ -90,7 +90,24 @@ extension DictionaryMatcher {
         }
 
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
-        guard best.score.final >= threshold else {
+        var effectiveThreshold = threshold
+        if isStylizedSingleTokenEntry(best.entry) {
+            let joinedObserved = window.map(\.normalized).joined()
+            let joinedObservedPhonetic = encoder.signature(for: joinedObserved, lexicon: lexicon)
+            let candidateToken = best.entry.tokens[0]
+            let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+            let textSimilarity = scorer.similarity(lhs: joinedObserved, rhs: candidateToken)
+            let phoneticSimilarity = scorer.similarity(lhs: joinedObservedPhonetic, rhs: candidatePhonetic)
+
+            // Keep split-join strict by default, but allow stylized single-token
+            // brand-like entries when both text and phonetic evidence are strong.
+            let blendedSimilarity = (0.6 * textSimilarity) + (0.4 * phoneticSimilarity)
+            if textSimilarity >= 0.80, blendedSimilarity >= 0.70 {
+                effectiveThreshold = min(effectiveThreshold, 0.74)
+            }
+        }
+
+        guard best.score.final >= effectiveThreshold else {
             stats.rejectedLowScore += 1
             return nil
         }

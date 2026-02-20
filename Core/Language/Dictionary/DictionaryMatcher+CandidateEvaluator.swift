@@ -184,13 +184,66 @@ extension DictionaryMatcher {
         }
 
         let threshold = scorer.threshold(for: tokenCount)
-        let effectiveThreshold: Double
+        var effectiveThreshold: Double
         if tokenCount == 1, best.replacementSuffix == "'s" {
             // Possessive tails add noise; allow a slightly lower gate while keeping
             // common-word and ambiguity guards intact.
             effectiveThreshold = max(0.82, threshold - 0.08)
         } else {
             effectiveThreshold = threshold
+        }
+
+        if tokenCount == 1 {
+            let observedToken = window[0]
+            let candidateToken = best.entry.tokens[0]
+            let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+            let textSimilarity = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
+            let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
+            let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
+            let stylizedSingleTokenEntry = isStylizedSingleTokenEntry(best.entry)
+
+            if !isCommonWord,
+               stylizedSingleTokenEntry,
+               observedToken.normalized.count >= 5,
+               candidateToken.count >= 5 {
+                if hasStrongStylizedTextEvidence(
+                    observed: observedToken.normalized,
+                    candidate: candidateToken,
+                    textSimilarity: textSimilarity
+                ) {
+                    // Runtime lexicon pronunciations can disagree on letter-level
+                    // edits (e.g. one-character brand near-misses). If stylized
+                    // text evidence is very strong, avoid over-penalizing phonetics.
+                    effectiveThreshold = min(effectiveThreshold, 0.50)
+                } else if textSimilarity >= 0.82 {
+                    // Runtime lexicon coverage can vary; keep stylized single-token
+                    // brand corrections resilient when text evidence is strong.
+                    effectiveThreshold = min(effectiveThreshold, 0.72)
+                }
+            }
+
+            // Generic hardening for proper-noun-like single tokens when hinting is absent:
+            // require longer non-common tokens plus strong text/phonetic agreement.
+            if !isCommonWord,
+               observedToken.normalized.count >= 5,
+               candidateToken.count >= 5,
+               max(textSimilarity, phoneticSimilarity) >= 0.80,
+               ((0.6 * textSimilarity) + (0.4 * phoneticSimilarity)) >= 0.74 {
+                effectiveThreshold = min(effectiveThreshold, 0.78)
+            }
+        } else if tokenCount == 2,
+                  best.entry.tokens.count == 2 {
+            if hasStrongAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
+                // Runtime pronunciations for proper nouns can be sparse. When the first
+                // token anchors exactly and the second token is strongly similar, allow
+                // the match through a slightly lower gate.
+                effectiveThreshold = min(effectiveThreshold, 0.72)
+            } else if hasModerateAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
+                // Some near-miss surname variants are close in spelling shape but can
+                // diverge in runtime lexicon phonetics. Keep this fallback conservative
+                // with exact first-token anchoring and non-common long-tail requirements.
+                effectiveThreshold = min(effectiveThreshold, 0.55)
+            }
         }
 
         guard best.score.final >= effectiveThreshold else {
@@ -205,10 +258,15 @@ extension DictionaryMatcher {
         }
 
         if tokenCount == 1,
-           lexicon.isCommonWord(baseTokenForCommonWordGuard(window[0].normalized)),
-           best.score.final < scorer.commonWordOverrideThreshold {
-            stats.rejectedCommonWord += 1
-            return nil
+           lexicon.isCommonWord(baseTokenForCommonWordGuard(window[0].normalized)) {
+            let stylizedBrandBypass =
+                isStylizedSingleTokenEntry(best.entry)
+                && best.score.final >= 0.82
+            if !stylizedBrandBypass,
+               best.score.final < scorer.commonWordOverrideThreshold {
+                stats.rejectedCommonWord += 1
+                return nil
+            }
         }
 
         var tokenEndExclusive = end
@@ -301,6 +359,67 @@ extension DictionaryMatcher {
         return token
     }
 
+    func isStylizedSingleTokenEntry(_ entry: CompiledEntry) -> Bool {
+        guard entry.tokens.count == 1 else { return false }
+        guard !entry.phrase.contains(" ") else { return false }
+        let firstScalar = entry.phrase.unicodeScalars.first
+        return entry.phrase.unicodeScalars.contains { scalar in
+            guard scalar.properties.isUppercase else { return false }
+            return scalar != firstScalar
+        }
+    }
+
+    private func hasStrongStylizedTextEvidence(
+        observed: String,
+        candidate: String,
+        textSimilarity: Double
+    ) -> Bool {
+        guard textSimilarity >= 0.83 else { return false }
+        guard observed.unicodeScalars.first == candidate.unicodeScalars.first else { return false }
+        guard observed.unicodeScalars.last == candidate.unicodeScalars.last else { return false }
+        return true
+    }
+
+    private func hasStrongAnchoredTwoTokenEvidence(window: [Token], candidate: CompiledEntry) -> Bool {
+        guard window.count == 2, candidate.tokens.count == 2 else { return false }
+        let observedFirst = window[0].normalized
+        let observedSecond = window[1].normalized
+        let candidateFirst = candidate.tokens[0]
+        let candidateSecond = candidate.tokens[1]
+
+        guard observedFirst == candidateFirst else { return false }
+        guard observedSecond.count >= 5, candidateSecond.count >= 5 else { return false }
+        guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateSecond)) else { return false }
+
+        let candidateSecondPhonetic = encoder.signature(for: candidateSecond, lexicon: lexicon)
+        let secondTextSimilarity = scorer.similarity(lhs: observedSecond, rhs: candidateSecond)
+        let secondPhoneticSimilarity = scorer.similarity(lhs: window[1].phonetic, rhs: candidateSecondPhonetic)
+
+        return secondTextSimilarity >= 0.70 || secondPhoneticSimilarity >= 0.72
+    }
+
+    private func hasModerateAnchoredTwoTokenEvidence(window: [Token], candidate: CompiledEntry) -> Bool {
+        guard window.count == 2, candidate.tokens.count == 2 else { return false }
+        let observedFirst = window[0].normalized
+        let observedSecond = window[1].normalized
+        let candidateFirst = candidate.tokens[0]
+        let candidateSecond = candidate.tokens[1]
+
+        guard observedFirst == candidateFirst else { return false }
+        guard observedSecond.count >= 6, candidateSecond.count >= 6 else { return false }
+        guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateSecond)) else { return false }
+        guard observedSecond.first == candidateSecond.first else { return false }
+        guard observedSecond.last == candidateSecond.last else { return false }
+
+        let candidateSecondPhonetic = encoder.signature(for: candidateSecond, lexicon: lexicon)
+        let secondTextSimilarity = scorer.similarity(lhs: observedSecond, rhs: candidateSecond)
+        let secondPhoneticSimilarity = scorer.similarity(lhs: window[1].phonetic, rhs: candidateSecondPhonetic)
+
+        // Favor text shape for this fallback because runtime lexicon coverage can
+        // under-represent proper-name variants. Keep phonetic as an alternate path.
+        return secondTextSimilarity >= 0.60 || secondPhoneticSimilarity >= 0.68
+    }
+
     func possessiveBonus(for replacementSuffix: String) -> Double {
         replacementSuffix == "'s" ? possessiveStemScoreBoost : 0
     }
@@ -340,6 +459,9 @@ extension DictionaryMatcher {
             let phoneticTail = scorer.similarity(lhs: window[1].phonetic, rhs: candidatePhonetics[1])
             if textTail >= 0.70 || phoneticTail >= 0.72 {
                 return 0.12
+            }
+            if textTail >= 0.60 || phoneticTail >= 0.68 {
+                return 0.08
             }
         }
 
