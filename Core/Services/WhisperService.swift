@@ -13,7 +13,9 @@ class WhisperService: ObservableObject {
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
     private let paragraphChunker = WhisperAudioParagraphChunker()
-    private let isPromptHintingEnabled = false
+    // Keep prompt hinting disabled for now so we can measure and harden 
+    // core phonetic matching accuracy without hint-induced bias.
+    private let isPromptHintingEnabled = false 
     private let suspiciousShortResultMinChunkSeconds: Double = 1.35
     private let suspiciousShortResultMaxWords = 2
     private let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35

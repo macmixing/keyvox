@@ -158,7 +158,12 @@ final class DictationPipeline {
         let chars = text.count
         let words = text.split(whereSeparator: \.isWhitespace).count
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).count
-        let firstToken = text.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+        let firstToken: String
+        if rawDebugTextLoggingEnabled {
+            firstToken = text.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+        } else {
+            firstToken = "<redacted>"
+        }
         return "chars=\(chars) words=\(words) lines=\(lines) firstToken=\(firstToken)"
     }
 

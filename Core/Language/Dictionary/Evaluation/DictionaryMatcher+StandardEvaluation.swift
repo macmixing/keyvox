@@ -58,6 +58,7 @@ extension DictionaryMatcher {
         var secondBestScore = 0.0
 
         for candidate in candidates {
+            var bestForCandidate: Candidate?
             for form in observedForms {
                 let baseScore = scorer.score(
                     observedText: form.normalized,
@@ -115,16 +116,30 @@ extension DictionaryMatcher {
                     final: boostedFinalScore
                 )
 
-                if let currentBest = best {
-                    if score.final > currentBest.score.final {
-                        secondBestScore = currentBest.score.final
-                        best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
-                    } else if score.final > secondBestScore {
-                        secondBestScore = score.final
+                let candidateScore = Candidate(
+                    entry: candidate,
+                    score: score,
+                    replacementSuffix: form.replacementSuffix
+                )
+                if let currentBestForCandidate = bestForCandidate {
+                    if candidateScore.score.final > currentBestForCandidate.score.final {
+                        bestForCandidate = candidateScore
                     }
                 } else {
-                    best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
+                    bestForCandidate = candidateScore
                 }
+            }
+
+            guard let bestForCandidate else { continue }
+            if let currentBest = best {
+                if bestForCandidate.score.final > currentBest.score.final {
+                    secondBestScore = currentBest.score.final
+                    best = bestForCandidate
+                } else if bestForCandidate.score.final > secondBestScore {
+                    secondBestScore = bestForCandidate.score.final
+                }
+            } else {
+                best = bestForCandidate
             }
         }
 
