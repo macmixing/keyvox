@@ -92,6 +92,83 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
+    func testCapitalizesStandaloneLowercasePronounIInProse() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm sorry i love you.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I'm sorry I love you.")
+    }
+    func testCapitalizesMultipleStandaloneLowercasePronounIWithPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "i, then i; finally i.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I, then I; finally I.")
+    }
+    func testCapitalizesStandalonePronounIWithoutTouchingEmbeddedWords() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "inside bit i am",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Inside bit I am")
+    }
+    func testKeepsEmailLocalPartLowercaseIAndCapitalizesStandalonePronounI() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "reach me at i@example.com and i will reply",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Reach me at i@example.com and I will reply")
+    }
+    func testKeepsURLSubdomainLowercaseIAndCapitalizesStandalonePronounI() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "visit https://i.example.com and i can explain",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Visit https://i.example.com and I can explain")
+    }
+    func testDoesNotCapitalizeVariableIInCodeishLine() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "for (i = 0; i < n; i++) { total += i; }",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "For (i = 0; i < n; i++) { total += i; }")
+    }
+    func testDoesNotCapitalizeVariableIInAssignmentLikeLine() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "let i = value",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Let i = value")
+    }
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 

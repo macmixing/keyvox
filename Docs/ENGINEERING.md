@@ -29,7 +29,7 @@ KeyVox is organized by responsibility:
 - `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Core/AI/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering.
-- `Core/Normalization/`: Ordered pure normalization passes (email/website, colon, laughter, spam, whitespace, capitalization, terminal punctuation, all-caps override).
+- `Core/Normalization/`: Ordered pure normalization passes (email/website, colon, math, laughter, spam, whitespace, capitalization, terminal punctuation, all-caps override) plus shared normalization utilities (for example code-ish line detection guards).
 - `Core/Services/`: Whisper inference, paste/injection, and update/checking services.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
@@ -54,11 +54,12 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
 5. `ColonNormalizer` converts spoken/delimiter colon phrases into deterministic punctuation before list parsing.
-6. List formatting applies numeric list rendering when confidence gates pass.
-7. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
-8. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
-9. `AllCapsOverrideNormalizer` applies a final uppercase override when Caps Lock mode is active.
-10. Final text is inserted via the paste service.
+6. `MathExpressionNormalizer` converts high-confidence spoken math into deterministic symbol form while preserving protected URL/email/code/time/date/version spans.
+7. List formatting applies numeric list rendering when confidence gates pass.
+8. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
+9. Normalization helpers apply render-mode whitespace, capitalization guards (including shared code-ish line guards), and terminal-time punctuation completion.
+10. `AllCapsOverrideNormalizer` applies a final uppercase override when Caps Lock mode is active.
+11. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 

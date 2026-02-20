@@ -9,6 +9,7 @@ final class TranscriptionPostProcessor {
     private let laughterNormalizer = LaughterNormalizer()
     private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
+    private let mathExpressionNormalizer = MathExpressionNormalizer()
     private let colonNormalizer = ColonNormalizer()
     private let allCapsOverrideNormalizer = AllCapsOverrideNormalizer()
     private let whitespaceNormalizer = WhitespaceNormalizer()
@@ -79,9 +80,13 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("colonNormalized", colonNormalized)
         #endif
+        let mathNormalized = mathExpressionNormalizer.normalize(in: colonNormalized)
+        #if DEBUG
+        logPipelineStage("mathNormalized", mathNormalized)
+        #endif
         let listFormatted = listFormattingEnabled
-            ? listFormattingEngine.formatIfNeeded(colonNormalized, renderMode: renderMode)
-            : colonNormalized
+            ? listFormattingEngine.formatIfNeeded(mathNormalized, renderMode: renderMode)
+            : mathNormalized
         #if DEBUG
         logPipelineStage("listFormatted", listFormatted)
         #endif
