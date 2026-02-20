@@ -64,12 +64,16 @@ KeyVox/
 │   │   │   │   ├── DictionaryMatcher+EmailNormalization.swift
 │   │   │   │   ├── DictionaryMatcher+EmailParsing.swift
 │   │   │   │   └── DictionaryMatcher+EmailResolution.swift
+│   │   │   ├── Evaluation/
+│   │   │   │   ├── DictionaryMatcher+EvaluationShared.swift
+│   │   │   │   ├── DictionaryMatcher+MergedTokenEvaluation.swift
+│   │   │   │   ├── DictionaryMatcher+SplitJoinEvaluation.swift
+│   │   │   │   ├── DictionaryMatcher+StandardEvaluation.swift
+│   │   │   │   └── DictionaryMatcher+ThreeTokenEvaluation.swift
 │   │   │   ├── DictionaryEntry.swift
 │   │   │   ├── DictionaryMatcher.swift
-│   │   │   ├── DictionaryMatcher+CandidateEvaluator.swift
 │   │   │   ├── DictionaryMatcher+Models.swift
 │   │   │   ├── DictionaryMatcher+OverlapResolver.swift
-│   │   │   ├── DictionaryMatcher+SplitJoinEvaluator.swift
 │   │   │   ├── DictionaryMatcher+Tokenizer.swift
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
@@ -381,10 +385,16 @@ KeyVox/
   - Resolves spoken/literal/standalone dictionary email candidates and local-part ambiguity via deterministic guards.
 - `Core/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
   - Token extraction and range construction helpers used by matcher runtime.
-- `Core/Language/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
-- `Core/Language/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+SplitJoinEvaluation.swift`
   - Split-token to single-entry matching path with plural/possessive handling.
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
+  - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
+  - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+EvaluationShared.swift`
+  - Shared evaluator helpers (stylized evidence, possessive inference, token-alignment, and common-word guard helpers).
 - `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
 - `Core/Language/Dictionary/DictionaryTextNormalization.swift`

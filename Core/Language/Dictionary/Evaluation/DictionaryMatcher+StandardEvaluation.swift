@@ -1,0 +1,276 @@
+import Foundation
+
+extension DictionaryMatcher {
+    func proposeStandardReplacement(
+        start: Int,
+        tokenCount: Int,
+        tokens: [Token],
+        text: String,
+        candidates: [CompiledEntry],
+        stats: inout DebugStats
+    ) -> ProposedReplacement? {
+        stats.attempted += 1
+
+        let end = start + tokenCount
+        let window = Array(tokens[start..<end])
+        let observedNormalized = window.map(\.normalized).joined(separator: " ")
+        let observedPhonetic = window.map(\.phonetic).joined(separator: " ")
+        let observedForms = observedFormsForWindow(
+            tokenCount: tokenCount,
+            window: window,
+            observedNormalized: observedNormalized,
+            observedPhonetic: observedPhonetic
+        )
+
+        var best: Candidate?
+        var secondBestScore = 0.0
+
+        for candidate in candidates {
+            for form in observedForms {
+                let baseScore = scorer.score(
+                    observedText: form.normalized,
+                    observedPhonetic: form.phonetic,
+                    candidateText: candidate.normalizedPhrase,
+                    candidatePhonetic: candidate.phoneticPhrase,
+                    previousToken: start > 0 ? tokens[start - 1].normalized : nil,
+                    nextToken: end < tokens.count ? tokens[end].normalized : nil
+                )
+
+                let fallbackPhoneticSimilarity = stylizedFallbackPhoneticSimilarity(
+                    tokenCount: tokenCount,
+                    observedNormalized: form.normalized,
+                    observedPhonetic: form.phonetic,
+                    candidate: candidate
+                )
+                let allowStylizedFallbackBySurface =
+                    tokenCount != 1
+                    || !isStylizedSingleTokenEntry(candidate)
+                    || allowStylizedFallbackForCommonObservedToken(
+                        token: window[0],
+                        tokenIndex: start,
+                        totalTokens: tokens.count
+                    )
+                let gatedFallbackPhoneticSimilarity =
+                    allowStylizedFallbackBySurface ? fallbackPhoneticSimilarity : 0
+                let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
+                let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
+                let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
+
+                let boostedFinalScore = min(
+                    1.0,
+                    adjustedBaseFinal
+                        + tokenAlignmentBoost(window: window, candidate: candidate)
+                        + possessiveBonus(for: form.replacementSuffix)
+                )
+                let score = ReplacementScore(
+                    text: baseScore.text,
+                    phonetic: adjustedPhoneticScore,
+                    context: baseScore.context,
+                    final: boostedFinalScore
+                )
+
+                if let currentBest = best {
+                    if score.final > currentBest.score.final {
+                        secondBestScore = currentBest.score.final
+                        best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
+                    } else if score.final > secondBestScore {
+                        secondBestScore = score.final
+                    }
+                } else {
+                    best = Candidate(entry: candidate, score: score, replacementSuffix: form.replacementSuffix)
+                }
+            }
+        }
+
+        guard let best else { return nil }
+
+        let exactMatch = observedNormalized == best.entry.normalizedPhrase
+
+        if tokenCount == 1,
+           window[0].normalized.count < 3,
+           !exactMatch {
+            stats.rejectedShortToken += 1
+            return nil
+        }
+
+        let threshold = scorer.threshold(for: tokenCount)
+        var effectiveThreshold: Double
+        if tokenCount == 1, best.replacementSuffix == "'s" {
+            // Possessive tails add noise; allow a slightly lower gate while keeping
+            // common-word and ambiguity guards intact.
+            effectiveThreshold = max(0.82, threshold - 0.08)
+        } else if tokenCount == 2, best.replacementSuffix == "'s" {
+            // Two-token possessive near-misses can lose apostrophes in Whisper output.
+            // Keep this tighter than single-token possessives but allow a modest lift.
+            effectiveThreshold = max(0.70, threshold - 0.10)
+        } else {
+            effectiveThreshold = threshold
+        }
+
+        if tokenCount == 1 {
+            let observedToken = window[0]
+            let candidateToken = best.entry.tokens[0]
+            let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+            let textSimilarity = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
+            let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
+            let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
+            let stylizedSingleTokenEntry = isStylizedSingleTokenEntry(best.entry)
+            let allowStylizedFallbackBySurface =
+                allowStylizedFallbackForCommonObservedToken(
+                    token: observedToken,
+                    tokenIndex: start,
+                    totalTokens: tokens.count
+                )
+            if stylizedSingleTokenEntry,
+               !allowStylizedFallbackBySurface,
+               textSimilarity < 0.82 {
+                stats.rejectedLowScore += 1
+                return nil
+            }
+
+            if stylizedSingleTokenEntry,
+               observedToken.normalized.count >= 4,
+               candidateToken.count >= 5 {
+                if hasStrongStylizedTextEvidence(
+                    observed: observedToken.normalized,
+                    candidate: candidateToken,
+                    textSimilarity: textSimilarity
+                ) {
+                    // Runtime lexicon pronunciations can disagree on letter-level
+                    // edits (e.g. one-character brand near-misses). If stylized
+                    // text evidence is very strong, avoid over-penalizing phonetics.
+                    effectiveThreshold = min(effectiveThreshold, 0.50)
+                } else if textSimilarity >= 0.82 {
+                    // Runtime lexicon coverage can vary; keep stylized single-token
+                    // brand corrections resilient when text evidence is strong.
+                    effectiveThreshold = min(effectiveThreshold, 0.72)
+                } else if hasStrongStylizedFallbackPhoneticEvidence(
+                    observed: observedToken.normalized,
+                    candidate: candidateToken,
+                    observedPhonetic: observedToken.phonetic,
+                    candidatePhonetic: candidatePhonetic,
+                    textSimilarity: textSimilarity
+                ), allowStylizedFallbackBySurface {
+                    // Runtime lexicon phonemes for proper nouns can be sparse or absent.
+                    // If fallback grapheme-phonetic evidence is very strong, permit a
+                    // lower gate for stylized dictionary terms.
+                    effectiveThreshold = min(effectiveThreshold, 0.60)
+                } else if hasModerateStylizedFallbackPhoneticEvidence(
+                    observed: observedToken.normalized,
+                    candidate: candidateToken,
+                    observedPhonetic: observedToken.phonetic,
+                    candidatePhonetic: candidatePhonetic,
+                    textSimilarity: textSimilarity
+                ), allowStylizedFallbackBySurface {
+                    // Allow an additional conservative lane for all-caps/near-miss
+                    // stylized tokens that preserve start anchoring and fallback shape.
+                    effectiveThreshold = min(effectiveThreshold, 0.55)
+                }
+            }
+
+            // Generic hardening for proper-noun-like single tokens when hinting is absent:
+            // require longer non-common tokens plus strong text/phonetic agreement.
+            if !isCommonWord,
+               observedToken.normalized.count >= 5,
+               candidateToken.count >= 5,
+               max(textSimilarity, phoneticSimilarity) >= 0.80,
+               ((0.6 * textSimilarity) + (0.4 * phoneticSimilarity)) >= 0.74 {
+                effectiveThreshold = min(effectiveThreshold, 0.78)
+            }
+        } else if tokenCount == 2,
+                  best.entry.tokens.count == 2 {
+            if hasStrongAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
+                // Runtime pronunciations for proper nouns can be sparse. When the first
+                // token anchors exactly and the second token is strongly similar, allow
+                // the match through a slightly lower gate.
+                effectiveThreshold = min(effectiveThreshold, 0.72)
+            } else if hasModerateAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
+                // Some near-miss surname variants are close in spelling shape but can
+                // diverge in runtime lexicon phonetics. Keep this fallback conservative
+                // with exact first-token anchoring and non-common long-tail requirements.
+                effectiveThreshold = min(effectiveThreshold, 0.55)
+            }
+        }
+
+        guard best.score.final >= effectiveThreshold else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        if secondBestScore > 0,
+           (best.score.final - secondBestScore) < scorer.ambiguityMargin {
+            stats.rejectedAmbiguity += 1
+            return nil
+        }
+
+        if tokenCount == 1,
+           lexicon.isCommonWord(baseTokenForCommonWordGuard(window[0].normalized)) {
+            var stylizedBrandBypass =
+                isStylizedSingleTokenEntry(best.entry)
+                && best.score.final >= 0.82
+            if !stylizedBrandBypass,
+               isStylizedSingleTokenEntry(best.entry),
+               allowStylizedFallbackForCommonObservedToken(
+                   token: window[0],
+                   tokenIndex: start,
+                   totalTokens: tokens.count
+               ),
+               let candidateToken = best.entry.tokens.first {
+                let textSimilarity = scorer.similarity(lhs: window[0].normalized, rhs: candidateToken)
+                let candidatePhonetic = encoder.signature(for: candidateToken, lexicon: lexicon)
+                if hasStrongStylizedFallbackPhoneticEvidence(
+                    observed: window[0].normalized,
+                    candidate: candidateToken,
+                    observedPhonetic: window[0].phonetic,
+                    candidatePhonetic: candidatePhonetic,
+                    textSimilarity: textSimilarity
+                ), best.score.final >= 0.58 {
+                    stylizedBrandBypass = true
+                }
+            }
+            if !stylizedBrandBypass,
+               best.score.final < scorer.commonWordOverrideThreshold {
+                stats.rejectedCommonWord += 1
+                return nil
+            }
+        }
+
+        var tokenEndExclusive = end
+        var range = combinedRange(from: window)
+        if shouldConsumeSplitTailToken(window: window, candidate: best.entry, nextToken: end < tokens.count ? tokens[end] : nil) {
+            tokenEndExclusive = end + 1
+            range = combinedRange(from: Array(tokens[start..<tokenEndExclusive]))
+        }
+
+        var replacementSuffix = best.replacementSuffix
+        if replacementSuffix.isEmpty,
+           tokenCount == 1,
+           isStylizedSingleTokenEntry(best.entry),
+           let candidateToken = best.entry.tokens.first {
+            let nextToken = end < tokens.count ? tokens[end] : nil
+            if shouldInferPossessiveSuffix(
+                observed: window[0].normalized,
+                observedPhonetic: window[0].phonetic,
+                candidate: candidateToken,
+                nextToken: nextToken
+            ) {
+                replacementSuffix = "'s"
+            }
+        }
+
+        let observedRaw = (text as NSString).substring(with: range)
+        let replacementText = best.entry.phrase + replacementSuffix
+
+        if observedRaw == replacementText {
+            return nil
+        }
+
+        return ProposedReplacement(
+            tokenStart: start,
+            tokenEndExclusive: tokenEndExclusive,
+            range: range,
+            replacement: replacementText,
+            score: best.score.final
+        )
+    }
+}
