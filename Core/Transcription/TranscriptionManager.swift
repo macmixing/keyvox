@@ -16,6 +16,7 @@ class TranscriptionManager: ObservableObject {
     
     let keyboardMonitor = KeyboardMonitor.shared
     private let appSettings = AppSettingsStore.shared
+    private let modelDownloader = ModelDownloader.shared
     private let audioRecorder = AudioRecorder()
     private let whisperService = WhisperService()
     private let dictionaryStore = DictionaryStore.shared
@@ -110,6 +111,22 @@ class TranscriptionManager: ObservableObject {
                 self.whisperService.updateDictionaryHintPrompt(hintPrompt)
             }
             .store(in: &cancellables)
+
+        modelDownloader.$modelReady
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isReady in
+                guard let self else { return }
+                if isReady {
+                    // If the model was downloaded after app startup, pre-warm immediately
+                    // so the next hotkey transcription path avoids cold-start latency.
+                    self.whisperService.warmup()
+                } else {
+                    // Keep memory state aligned with on-disk model lifecycle.
+                    self.whisperService.unloadModel()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func abortRecording() {
@@ -155,8 +172,8 @@ class TranscriptionManager: ObservableObject {
     
     private func startRecording() {
         guard case .idle = state else { return }
-        ModelDownloader.shared.refreshModelStatus()
-        guard ModelDownloader.shared.isModelDownloaded else {
+        modelDownloader.refreshModelStatus()
+        guard modelDownloader.isModelDownloaded else {
             OverlayManager.shared.hide()
             WarningManager.shared.show(.modelMissing)
             return

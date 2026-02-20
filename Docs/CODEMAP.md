@@ -9,7 +9,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
-- **Core/AI**: dictionary matching, pronunciation/scoring, and shared text normalization helpers
+- **Core/Language**: dictionary matching, pronunciation/scoring, and shared text normalization helpers
 - **Core/Lists**: deterministic text formatting (list detection/rendering)
 - **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
@@ -56,7 +56,7 @@ KeyVox/
 │   │   ├── UpdateFeedConfig.swift
 │   │   ├── WhisperAudioParagraphChunker.swift
 │   │   └── WhisperService.swift
-│   ├── AI/
+│   ├── Language/
 │   │   ├── Dictionary/
 │   │   │   ├── Email/
 │   │   │   │   ├── DictionaryEmailEntry.swift
@@ -169,7 +169,7 @@ KeyVox/
 │           ├── WhisperCoreTests.swift
 │           └── WhisperParamsTests.swift
 ├── KeyVoxTests/
-│   ├── AI/
+│   ├── Language/
 │   │   └── Dictionary/
 │   ├── App/
 │   ├── Core/
@@ -348,9 +348,9 @@ KeyVox/
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
 
-### Post-Processing (`Core` + `Core/Normalization` + `Core/AI` + `Core/Lists`)
+### Post-Processing (`Core` + `Core/Normalization` + `Core/Language` + `Core/Lists`)
 
-- `Core/AI/Dictionary/DictionaryMatcher.swift`
+- `Core/Language/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
   - Maintains a domain-indexed email dictionary for spoken/literal email recovery.
 - `Core/Normalization/EmailAddressNormalizer.swift`
@@ -369,36 +369,36 @@ KeyVox/
   - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
 - `Core/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
-- `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
+- `Core/Language/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
+- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
   - Domain candidate extraction and fuzzy-domain disambiguation helpers for dictionary email matching.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`
+- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`
   - Detects spoken (`name at domain`), compact (`nameatdomain`), and literal email candidates and rewrites them using dictionary-backed resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
+- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
   - Shared local/domain normalization and attached-list-marker parsing helpers used by email normalization/resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
+- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
   - Resolves spoken/literal/standalone dictionary email candidates and local-part ambiguity via deterministic guards.
-- `Core/AI/Dictionary/DictionaryMatcher+Tokenizer.swift`
+- `Core/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
   - Token extraction and range construction helpers used by matcher runtime.
-- `Core/AI/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`
+- `Core/Language/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
-- `Core/AI/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`
+- `Core/Language/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`
   - Split-token to single-entry matching path with plural/possessive handling.
-- `Core/AI/Dictionary/DictionaryMatcher+OverlapResolver.swift`
+- `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
-- `Core/AI/Dictionary/DictionaryTextNormalization.swift`
+- `Core/Language/Dictionary/DictionaryTextNormalization.swift`
   - Shared phrase/token normalization used by dictionary matching and pronunciation lexicon loading.
-- `Core/AI/Dictionary/DictionaryStore.swift`
+- `Core/Language/Dictionary/DictionaryStore.swift`
   - Persistent custom dictionary storage, validation, and backup recovery.
   - Exposes warning-clear helper for settings lifecycle cleanup.
-- `Core/AI/Dictionary/DictionaryEntry.swift`
+- `Core/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
-- `Core/AI/PronunciationLexicon.swift`
+- `Core/Language/PronunciationLexicon.swift`
   - Loads bundled pronunciation signatures and common-word safety list from app resources.
-- `Core/AI/PhoneticEncoder.swift`
+- `Core/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
-- `Core/AI/ReplacementScorer.swift`
+- `Core/Language/ReplacementScorer.swift`
   - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
 - `Core/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
