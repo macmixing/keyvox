@@ -9,6 +9,7 @@ struct MathExpressionNormalizer {
         pattern: #"[+\-*/^=%]"#,
         options: []
     )
+    private static let maxChainedOperatorPasses = 4
     private static let protectedEmailRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}"#,
         options: [.caseInsensitive]
@@ -39,10 +40,6 @@ struct MathExpressionNormalizer {
     )
     private static let protectedVersionRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\d+(?:\.\d+){2,}\b"#,
-        options: []
-    )
-    private static let assignmentLikeRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\b[A-Za-z_][A-Za-z0-9_]*\s*=\s*"#,
         options: []
     )
     private static let mathTriggerRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -226,7 +223,7 @@ struct MathExpressionNormalizer {
 
     private func normalizeChainedOperatorWords(in text: String) -> String {
         var current = text
-        for _ in 0..<4 {
+        for _ in 0..<Self.maxChainedOperatorPasses {
             let next = replaceMatches(in: current, using: Self.expressionOperatorRegex) { match, nsText in
                 let lhs = normalizeMathSymbolSpacing(nsText.substring(with: match.range(at: 1)))
                 let operatorWord = nsText.substring(with: match.range(at: 2)).lowercased()
@@ -262,27 +259,7 @@ struct MathExpressionNormalizer {
     }
 
     private func isLikelyCodeishLine(_ line: String) -> Bool {
-        if line.contains("`") { return true }
-
-        let codeOperators = ["==", "!=", "<=", ">=", "=>", "->", "::", "&&", "||", "++", "--"]
-        if codeOperators.contains(where: line.contains) { return true }
-
-        if line.contains(";") {
-            let hasBracesOrBrackets = line.contains("{") || line.contains("}") || line.contains("[") || line.contains("]")
-            if hasBracesOrBrackets {
-                return true
-            }
-        }
-
-        if let assignmentRegex = Self.assignmentLikeRegex {
-            let nsLine = line as NSString
-            let range = NSRange(location: 0, length: nsLine.length)
-            if assignmentRegex.firstMatch(in: line, options: [], range: range) != nil {
-                return true
-            }
-        }
-
-        return false
+        CodeishLineDetector.isLikelyCodeishLine(line)
     }
 
     private func normalizeMathSymbolSpacing(_ text: String) -> String {

@@ -141,6 +141,7 @@
 		AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */; };
 		AB3000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift */; };
 		B21000112F61000100AA0001 /* MathExpressionNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */; };
+		B22000112F62000100AA0001 /* CodeishLineDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22000012F62000100AA0001 /* CodeishLineDetector.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
@@ -315,6 +316,7 @@
 		AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+LanguageHeuristics.swift"; sourceTree = "<group>"; };
 		AB2000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+MathNormalization.swift"; sourceTree = "<group>"; };
 		B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExpressionNormalizer.swift; sourceTree = "<group>"; };
+		B22000012F62000100AA0001 /* CodeishLineDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeishLineDetector.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
@@ -797,6 +799,7 @@
 				F1B100012FC2000100AA0001 /* WebsiteNormalizer.swift */,
 				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
 				B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */,
+				B22000012F62000100AA0001 /* CodeishLineDetector.swift */,
 				C13000052F92000100AA0001 /* WhitespaceNormalizer.swift */,
 				C13000062F92000100AA0001 /* SentenceCapitalizationNormalizer.swift */,
 				C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */,
@@ -995,6 +998,7 @@
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				E71000112FB2000100AA0001 /* TimeExpressionNormalizer.swift in Sources */,
 				B21000112F61000100AA0001 /* MathExpressionNormalizer.swift in Sources */,
+				B22000112F62000100AA0001 /* CodeishLineDetector.swift in Sources */,
 				C13000142F92000100AA0001 /* WhitespaceNormalizer.swift in Sources */,
 				C13000152F92000100AA0001 /* SentenceCapitalizationNormalizer.swift in Sources */,
 				C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */,
