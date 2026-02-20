@@ -1,5 +1,10 @@
 import Foundation
 
+private enum EvaluationSuffixConstants {
+    static let minimumStemLength = 3
+    static let possessiveSimilarityImprovementMinimum = 0.08
+}
+
 extension DictionaryMatcher {
     func observedFormsForWindow(
         tokenCount: Int,
@@ -21,7 +26,7 @@ extension DictionaryMatcher {
             let observedRawToken = window.first?.raw ?? observedNormalized
             if observedNormalized.hasSuffix("'s"), observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast(2))
-                if stem.count >= 3 {
+                if stem.count >= EvaluationSuffixConstants.minimumStemLength {
                     let key = "\(stem)|'s"
                     if seen.insert(key).inserted {
                         forms.append((
@@ -35,7 +40,7 @@ extension DictionaryMatcher {
                       !observedNormalized.hasSuffix("s'"),
                       observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast())
-                if stem.count >= 3 {
+                if stem.count >= EvaluationSuffixConstants.minimumStemLength {
                     let pluralKey = "\(stem)|s"
                     if seen.insert(pluralKey).inserted {
                         forms.append((
@@ -134,7 +139,7 @@ extension DictionaryMatcher {
             scorer.similarity(lhs: observedFallback, rhs: candidateWithSFallback)
         )
 
-        return possessiveSimilarity >= baseSimilarity + 0.08
+        return possessiveSimilarity >= baseSimilarity + EvaluationSuffixConstants.possessiveSimilarityImprovementMinimum
     }
 
     func possessiveBonus(for replacementSuffix: String) -> Double {

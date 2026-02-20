@@ -1,5 +1,36 @@
 import Foundation
 
+private enum ThreeTokenEvaluationConstants {
+    static let minimumObservedLastStemLength = 4
+
+    static let possessiveRecoveryTailTextMinimum = 0.34
+    static let standardTailTextMinimum = 0.56
+    static let possessiveRecoveryTailPhoneticMinimum = 0.38
+    static let standardTailPhoneticMinimum = 0.60
+
+    static let anchorBonus = 0.10
+    static let strongTailTextMinimum = 0.68
+    static let strongTailPhoneticMinimum = 0.72
+    static let strongTailBonus = 0.08
+    static let weakTailBonus = 0.04
+    static let middleInitialAcceptanceThreshold = 0.58
+
+    static let minimumObservedMidLength = 3
+    static let minimumObservedTailLength = 2
+    static let shortObservedFirstMaximumLength = 3
+    static let compressedFirstTextMinimum = 0.20
+    static let compressedFirstPhoneticMinimum = 0.42
+    static let compressedCombinedTextMinimum = 0.66
+    static let compressedCombinedPhoneticMinimum = 0.68
+    static let compressedTailSimilarityMinimum = 0.66
+    static let compressedStrongCombinedTextMinimum = 0.76
+    static let compressedStrongCombinedPhoneticMinimum = 0.78
+    static let compressedBonusBase = 0.10
+    static let compressedBonusStrong = 0.08
+    static let compressedBonusWeak = 0.04
+    static let compressedTailAcceptanceThreshold = 0.62
+}
+
 extension DictionaryMatcher {
     func proposeMiddleInitialThreeTokenReplacement(
         start: Int,
@@ -21,7 +52,7 @@ extension DictionaryMatcher {
 
         let possessive = normalizedPossessiveStem(for: observedLastRaw)
         let observedLastStem = possessive.stem
-        guard observedLastStem.count >= 4 else {
+        guard observedLastStem.count >= ThreeTokenEvaluationConstants.minimumObservedLastStemLength else {
             stats.rejectedLowScore += 1
             return nil
         }
@@ -42,8 +73,12 @@ extension DictionaryMatcher {
             let lastTextSimilarity = scorer.similarity(lhs: observedLastStem, rhs: candidateLast)
             let lastPhoneticSimilarity = scorer.similarity(lhs: observedLastPhonetic, rhs: candidateLastPhonetic)
             let requiresPossessiveRecovery = possessive.suffix == "'s"
-            let minimumTailTextSimilarity = requiresPossessiveRecovery ? 0.34 : 0.56
-            let minimumTailPhoneticSimilarity = requiresPossessiveRecovery ? 0.38 : 0.60
+            let minimumTailTextSimilarity = requiresPossessiveRecovery
+                ? ThreeTokenEvaluationConstants.possessiveRecoveryTailTextMinimum
+                : ThreeTokenEvaluationConstants.standardTailTextMinimum
+            let minimumTailPhoneticSimilarity = requiresPossessiveRecovery
+                ? ThreeTokenEvaluationConstants.possessiveRecoveryTailPhoneticMinimum
+                : ThreeTokenEvaluationConstants.standardTailPhoneticMinimum
             guard lastTextSimilarity >= minimumTailTextSimilarity || lastPhoneticSimilarity >= minimumTailPhoneticSimilarity else {
                 continue
             }
@@ -59,8 +94,12 @@ extension DictionaryMatcher {
                 nextToken: end < tokens.count ? tokens[end].normalized : nil
             )
 
-            let anchorBonus = 0.10
-            let tailBonus = (lastTextSimilarity >= 0.68 || lastPhoneticSimilarity >= 0.72) ? 0.08 : 0.04
+            let anchorBonus = ThreeTokenEvaluationConstants.anchorBonus
+            let tailBonus =
+                (lastTextSimilarity >= ThreeTokenEvaluationConstants.strongTailTextMinimum
+                 || lastPhoneticSimilarity >= ThreeTokenEvaluationConstants.strongTailPhoneticMinimum)
+                ? ThreeTokenEvaluationConstants.strongTailBonus
+                : ThreeTokenEvaluationConstants.weakTailBonus
             let score = ReplacementScore(
                 text: baseScore.text,
                 phonetic: baseScore.phonetic,
@@ -86,7 +125,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        guard best.score.final >= 0.58 else {
+        guard best.score.final >= ThreeTokenEvaluationConstants.middleInitialAcceptanceThreshold else {
             stats.rejectedLowScore += 1
             return nil
         }
@@ -128,7 +167,8 @@ extension DictionaryMatcher {
         let observedMid = window[1].normalized
         let observedTail = window[2].normalized
 
-        guard observedMid.count >= 3, observedTail.count >= 2 else { return nil }
+        guard observedMid.count >= ThreeTokenEvaluationConstants.minimumObservedMidLength,
+              observedTail.count >= ThreeTokenEvaluationConstants.minimumObservedTailLength else { return nil }
         stats.attempted += 1
 
         let observedCombined = observedMid + observedTail
@@ -143,7 +183,7 @@ extension DictionaryMatcher {
             let candidateSecond = candidate.tokens[1]
             guard candidateSecond.count >= observedTail.count else { continue }
             guard observedFirst == candidateFirst
-                || (observedFirst.count <= 3
+                || (observedFirst.count <= ThreeTokenEvaluationConstants.shortObservedFirstMaximumLength
                     && !lexicon.isCommonWord(baseTokenForCommonWordGuard(observedFirst))) else { continue }
 
             let firstTextSimilarity = scorer.similarity(lhs: observedFirst, rhs: candidateFirst)
@@ -151,18 +191,20 @@ extension DictionaryMatcher {
                 lhs: window[0].phonetic,
                 rhs: encoder.scoringSignature(for: candidateFirst, lexicon: lexicon)
             )
-            guard firstTextSimilarity >= 0.20 || firstPhoneticSimilarity >= 0.42 else { continue }
+            guard firstTextSimilarity >= ThreeTokenEvaluationConstants.compressedFirstTextMinimum
+                || firstPhoneticSimilarity >= ThreeTokenEvaluationConstants.compressedFirstPhoneticMinimum else { continue }
 
             let combinedTextSimilarity = scorer.similarity(lhs: observedCombined, rhs: candidateSecond)
             let combinedPhoneticSimilarity = scorer.similarity(
                 lhs: observedCombinedPhonetic,
                 rhs: encoder.scoringSignature(for: candidateSecond, lexicon: lexicon)
             )
-            guard combinedTextSimilarity >= 0.66 || combinedPhoneticSimilarity >= 0.68 else { continue }
+            guard combinedTextSimilarity >= ThreeTokenEvaluationConstants.compressedCombinedTextMinimum
+                || combinedPhoneticSimilarity >= ThreeTokenEvaluationConstants.compressedCombinedPhoneticMinimum else { continue }
 
             let candidateTail = String(candidateSecond.suffix(observedTail.count))
             let tailSimilarity = scorer.similarity(lhs: observedTail, rhs: candidateTail)
-            guard tailSimilarity >= 0.66 else { continue }
+            guard tailSimilarity >= ThreeTokenEvaluationConstants.compressedTailSimilarityMinimum else { continue }
 
             let observedNormalized = "\(observedFirst) \(observedCombined)"
             let observedPhonetic = "\(window[0].phonetic) \(observedCombinedPhonetic)"
@@ -175,7 +217,11 @@ extension DictionaryMatcher {
                 nextToken: end < tokens.count ? tokens[end].normalized : nil
             )
 
-            let bonus = 0.10 + ((combinedTextSimilarity >= 0.76 || combinedPhoneticSimilarity >= 0.78) ? 0.08 : 0.04)
+            let bonus = ThreeTokenEvaluationConstants.compressedBonusBase
+                + ((combinedTextSimilarity >= ThreeTokenEvaluationConstants.compressedStrongCombinedTextMinimum
+                    || combinedPhoneticSimilarity >= ThreeTokenEvaluationConstants.compressedStrongCombinedPhoneticMinimum)
+                   ? ThreeTokenEvaluationConstants.compressedBonusStrong
+                   : ThreeTokenEvaluationConstants.compressedBonusWeak)
             let score = ReplacementScore(
                 text: baseScore.text,
                 phonetic: baseScore.phonetic,
@@ -200,7 +246,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        guard best.score.final >= 0.62 else {
+        guard best.score.final >= ThreeTokenEvaluationConstants.compressedTailAcceptanceThreshold else {
             stats.rejectedLowScore += 1
             return nil
         }

@@ -1,5 +1,25 @@
 import Foundation
 
+private enum EvaluationEvidenceConstants {
+    static let strongAnchoredMinimumTokenLength = 5
+    static let strongAnchoredTextMinimum = 0.70
+    static let strongAnchoredPhoneticMinimum = 0.72
+
+    static let moderateAnchoredMinimumTokenLength = 6
+    static let moderateAnchoredTextMinimum = 0.60
+    static let moderateAnchoredPhoneticMinimum = 0.68
+
+    static let blendedTextWeight = 0.55
+    static let blendedPhoneticWeight = 0.45
+    static let strongMatchMinimum = 0.78
+
+    static let strongTailAlignmentBoost = 0.12
+    static let moderateTailAlignmentBoost = 0.08
+    static let firstTokenExactAlignmentBoost = 0.08
+    static let exactAndStrongAlignmentBoost = 0.06
+    static let allStrongAlignmentBoost = 0.04
+}
+
 extension DictionaryMatcher {
     func shouldConsumeSplitTailToken(
         window: [Token],
@@ -36,14 +56,16 @@ extension DictionaryMatcher {
         let candidateSecond = candidate.tokens[1]
 
         guard observedFirst == candidateFirst else { return false }
-        guard observedSecond.count >= 5, candidateSecond.count >= 5 else { return false }
+        guard observedSecond.count >= EvaluationEvidenceConstants.strongAnchoredMinimumTokenLength,
+              candidateSecond.count >= EvaluationEvidenceConstants.strongAnchoredMinimumTokenLength else { return false }
         guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateSecond)) else { return false }
 
         let candidateSecondPhonetic = encoder.scoringSignature(for: candidateSecond, lexicon: lexicon)
         let secondTextSimilarity = scorer.similarity(lhs: observedSecond, rhs: candidateSecond)
         let secondPhoneticSimilarity = scorer.similarity(lhs: window[1].phonetic, rhs: candidateSecondPhonetic)
 
-        return secondTextSimilarity >= 0.70 || secondPhoneticSimilarity >= 0.72
+        return secondTextSimilarity >= EvaluationEvidenceConstants.strongAnchoredTextMinimum
+            || secondPhoneticSimilarity >= EvaluationEvidenceConstants.strongAnchoredPhoneticMinimum
     }
 
     func hasModerateAnchoredTwoTokenEvidence(window: [Token], candidate: CompiledEntry) -> Bool {
@@ -54,7 +76,8 @@ extension DictionaryMatcher {
         let candidateSecond = candidate.tokens[1]
 
         guard observedFirst == candidateFirst else { return false }
-        guard observedSecond.count >= 6, candidateSecond.count >= 6 else { return false }
+        guard observedSecond.count >= EvaluationEvidenceConstants.moderateAnchoredMinimumTokenLength,
+              candidateSecond.count >= EvaluationEvidenceConstants.moderateAnchoredMinimumTokenLength else { return false }
         guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateSecond)) else { return false }
         guard observedSecond.first == candidateSecond.first else { return false }
         guard observedSecond.last == candidateSecond.last else { return false }
@@ -65,7 +88,8 @@ extension DictionaryMatcher {
 
         // Favor text shape for this fallback because runtime lexicon coverage can
         // under-represent proper-name variants. Keep phonetic as an alternate path.
-        return secondTextSimilarity >= 0.60 || secondPhoneticSimilarity >= 0.68
+        return secondTextSimilarity >= EvaluationEvidenceConstants.moderateAnchoredTextMinimum
+            || secondPhoneticSimilarity >= EvaluationEvidenceConstants.moderateAnchoredPhoneticMinimum
     }
 
     func tokenAlignmentBoost(window: [Token], candidate: CompiledEntry) -> Double {
@@ -83,7 +107,8 @@ extension DictionaryMatcher {
 
             let textScore = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
             let phoneticScore = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetics[index])
-            let blendedScore = (0.55 * textScore) + (0.45 * phoneticScore)
+            let blendedScore = (EvaluationEvidenceConstants.blendedTextWeight * textScore)
+                + (EvaluationEvidenceConstants.blendedPhoneticWeight * phoneticScore)
 
             if textScore == 1.0 {
                 exactMatches += 1
@@ -92,7 +117,9 @@ extension DictionaryMatcher {
                 }
             }
 
-            if textScore >= 0.78 || phoneticScore >= 0.78 || blendedScore >= 0.78 {
+            if textScore >= EvaluationEvidenceConstants.strongMatchMinimum
+                || phoneticScore >= EvaluationEvidenceConstants.strongMatchMinimum
+                || blendedScore >= EvaluationEvidenceConstants.strongMatchMinimum {
                 strongMatches += 1
             }
         }
@@ -101,24 +128,26 @@ extension DictionaryMatcher {
         if window.count == 2, firstTokenExact {
             let textTail = scorer.similarity(lhs: window[1].normalized, rhs: candidate.tokens[1])
             let phoneticTail = scorer.similarity(lhs: window[1].phonetic, rhs: candidatePhonetics[1])
-            if textTail >= 0.70 || phoneticTail >= 0.72 {
-                return 0.12
+            if textTail >= EvaluationEvidenceConstants.strongAnchoredTextMinimum
+                || phoneticTail >= EvaluationEvidenceConstants.strongAnchoredPhoneticMinimum {
+                return EvaluationEvidenceConstants.strongTailAlignmentBoost
             }
-            if textTail >= 0.60 || phoneticTail >= 0.68 {
-                return 0.08
+            if textTail >= EvaluationEvidenceConstants.moderateAnchoredTextMinimum
+                || phoneticTail >= EvaluationEvidenceConstants.moderateAnchoredPhoneticMinimum {
+                return EvaluationEvidenceConstants.moderateTailAlignmentBoost
             }
         }
 
         if firstTokenExact && strongMatches == window.count {
-            return 0.08
+            return EvaluationEvidenceConstants.firstTokenExactAlignmentBoost
         }
 
         if exactMatches >= 1 && strongMatches == window.count {
-            return 0.06
+            return EvaluationEvidenceConstants.exactAndStrongAlignmentBoost
         }
 
         if strongMatches == window.count {
-            return 0.04
+            return EvaluationEvidenceConstants.allStrongAlignmentBoost
         }
 
         return 0

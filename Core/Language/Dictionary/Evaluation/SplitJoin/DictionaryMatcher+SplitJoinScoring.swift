@@ -1,5 +1,36 @@
 import Foundation
 
+private enum SplitJoinScoringConstants {
+    static let hyphenLaneMinimumFirstTokenLength = 1
+    static let hyphenLaneMinimumSecondTokenLength = 4
+    static let hyphenLaneTextSimilarityMinimum = 0.62
+    static let hyphenLanePhoneticSimilarityMinimum = 0.98
+    static let hyphenLaneThreshold = 0.78
+
+    static let possessiveStylizedBonus = 0.04
+    static let pluralSplitJoinBonus = 0.06
+    static let anchoredStylizedBonus = 0.06
+
+    static let pluralSplitJoinPhoneticMinimum = 0.95
+    static let pluralSplitJoinThreshold = 0.84
+
+    static let stylizedStrongTextMinimum = 0.80
+    static let stylizedStrongBlendedMinimum = 0.70
+    static let stylizedStrongThreshold = 0.74
+
+    static let stylizedModerateTextMinimum = 0.68
+    static let stylizedModerateBlendedMinimum = 0.62
+    static let stylizedModerateThreshold = 0.62
+
+    static let stylizedAnchoredTextMinimum = 0.40
+    static let stylizedAnchoredPhoneticMinimum = 0.60
+    static let stylizedAnchoredBlendedMinimum = 0.48
+    static let stylizedAnchoredThreshold = 0.44
+
+    static let blendedTextWeight = 0.6
+    static let blendedPhoneticWeight = 0.4
+}
+
 extension DictionaryMatcher {
     func proposeSplitJoinReplacement(
         start: Int,
@@ -25,8 +56,8 @@ extension DictionaryMatcher {
 
         let isHyphenSingleLetterLane =
             isExplicitHyphenDelimitedSplit(window: window, text: text)
-            && window[0].normalized.count == 1
-            && window[1].normalized.count >= 4
+            && window[0].normalized.count == SplitJoinScoringConstants.hyphenLaneMinimumFirstTokenLength
+            && window[1].normalized.count >= SplitJoinScoringConstants.hyphenLaneMinimumSecondTokenLength
 
         let containsShortToken =
             window[0].normalized.count < minimumSplitTokenLength
@@ -72,12 +103,16 @@ extension DictionaryMatcher {
                 let phoneticDelta = max(0, fallbackPhoneticSimilarity - score.phonetic)
                 let adjustedBaseFinal = min(1.0, score.final + (scorer.phoneticWeight * phoneticDelta))
                 let possessiveStylizedBonus =
-                    (form.replacementSuffix == "'s" && isStylizedSingleTokenEntry(candidate)) ? 0.04 : 0.0
+                    (form.replacementSuffix == "'s" && isStylizedSingleTokenEntry(candidate))
+                    ? SplitJoinScoringConstants.possessiveStylizedBonus
+                    : 0.0
                 let pluralSplitJoinBonus =
-                    (form.singularizedSecondToken && form.replacementSuffix == "s" && !candidateIsCommonWord) ? 0.06 : 0.0
+                    (form.singularizedSecondToken && form.replacementSuffix == "s" && !candidateIsCommonWord)
+                    ? SplitJoinScoringConstants.pluralSplitJoinBonus
+                    : 0.0
                 let anchoredStylizedBonus: Double
                 if isStylizedSingleTokenEntry(candidate), candidateToken.hasPrefix(window[0].normalized) {
-                    anchoredStylizedBonus = 0.06
+                    anchoredStylizedBonus = SplitJoinScoringConstants.anchoredStylizedBonus
                 } else {
                     anchoredStylizedBonus = 0
                 }
@@ -134,21 +169,21 @@ extension DictionaryMatcher {
             let qualifiesHyphenSingleLetterLane =
                 !lexicon.isCommonWord(candidateToken)
                 && candidateToken.hasSuffix(window[1].normalized)
-                && textSimilarity >= 0.62
-                && phoneticSimilarity >= 0.98
+                && textSimilarity >= SplitJoinScoringConstants.hyphenLaneTextSimilarityMinimum
+                && phoneticSimilarity >= SplitJoinScoringConstants.hyphenLanePhoneticSimilarityMinimum
 
             guard qualifiesHyphenSingleLetterLane else {
                 stats.rejectedShortToken += 1
                 return nil
             }
-            effectiveThreshold = min(effectiveThreshold, 0.78)
+            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.hyphenLaneThreshold)
         }
         if best.replacementSuffix == "s",
            !lexicon.isCommonWord(best.entry.tokens[0]),
-           best.score.phonetic >= 0.95 {
+           best.score.phonetic >= SplitJoinScoringConstants.pluralSplitJoinPhoneticMinimum {
             // Guarded plural split-join lane for strong homophone evidence
             // (for example "sub queues" -> "subcues").
-            effectiveThreshold = min(effectiveThreshold, 0.84)
+            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.pluralSplitJoinThreshold)
         }
         if isStylizedSingleTokenEntry(best.entry) {
             let candidateToken = best.entry.tokens[0]
@@ -156,22 +191,24 @@ extension DictionaryMatcher {
 
             // Keep split-join strict by default, but allow stylized single-token
             // brand-like entries when both text and phonetic evidence are strong.
-            if similarity.text >= 0.80, similarity.blended >= 0.70 {
-                effectiveThreshold = min(effectiveThreshold, 0.74)
-            } else if similarity.text >= 0.68, similarity.blended >= 0.62 {
+            if similarity.text >= SplitJoinScoringConstants.stylizedStrongTextMinimum,
+               similarity.blended >= SplitJoinScoringConstants.stylizedStrongBlendedMinimum {
+                effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedStrongThreshold)
+            } else if similarity.text >= SplitJoinScoringConstants.stylizedModerateTextMinimum,
+                      similarity.blended >= SplitJoinScoringConstants.stylizedModerateBlendedMinimum {
                 // Spoken split forms like "air act's" can still be a clean stylized
                 // match when fallback phonetic shape is strong.
-                effectiveThreshold = min(effectiveThreshold, 0.62)
+                effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedModerateThreshold)
             } else if isAnchoredStylizedSplitJoin(
                 window: window,
                 candidateToken: candidateToken
             ),
-            similarity.text >= 0.40,
-            similarity.phonetic >= 0.60,
-            similarity.blended >= 0.48 {
+            similarity.text >= SplitJoinScoringConstants.stylizedAnchoredTextMinimum,
+            similarity.phonetic >= SplitJoinScoringConstants.stylizedAnchoredPhoneticMinimum,
+            similarity.blended >= SplitJoinScoringConstants.stylizedAnchoredBlendedMinimum {
                 // Additional guarded lane for cases where Whisper splits a stylized
                 // proper name into two spoken words (e.g., "air axe").
-                effectiveThreshold = min(effectiveThreshold, 0.44)
+                effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedAnchoredThreshold)
             }
         }
 
@@ -260,7 +297,8 @@ extension DictionaryMatcher {
             let candidateFallback = encoder.fallbackSignature(for: candidateToken)
             let fallbackPhoneticSimilarity = scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
             let phoneticSimilarity = max(runtimePhoneticSimilarity, fallbackPhoneticSimilarity)
-            let blended = (0.6 * textSimilarity) + (0.4 * phoneticSimilarity)
+            let blended = (SplitJoinScoringConstants.blendedTextWeight * textSimilarity)
+                + (SplitJoinScoringConstants.blendedPhoneticWeight * phoneticSimilarity)
 
             bestText = max(bestText, textSimilarity)
             bestPhonetic = max(bestPhonetic, phoneticSimilarity)

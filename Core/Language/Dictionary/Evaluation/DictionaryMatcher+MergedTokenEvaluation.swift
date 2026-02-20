@@ -1,5 +1,14 @@
 import Foundation
 
+private enum MergedTokenEvaluationConstants {
+    static let headSimilarityMinimum = 0.40
+    static let exactTailBonus = 0.10
+    static let abbreviatedHeadMaximumLength = 3
+    static let abbreviatedHeadTailBonus = 0.14
+    static let standardTailBonus = 0.06
+    static let acceptanceThreshold = 0.72
+}
+
 extension DictionaryMatcher {
     func proposeMergedTokenReplacement(
         start: Int,
@@ -42,17 +51,17 @@ extension DictionaryMatcher {
 
                 // Keep this path conservative: only allow merged-token expansion
                 // when the non-tail prefix is still reasonably similar.
-                guard max(headTextSimilarity, headPhoneticSimilarity) >= 0.40 else { continue }
+                guard max(headTextSimilarity, headPhoneticSimilarity) >= MergedTokenEvaluationConstants.headSimilarityMinimum else { continue }
 
                 let tailExactBonus: Double
                 if observed.normalized == mergedCandidate {
-                    tailExactBonus = 0.10
-                } else if observedHead.count <= 3 {
+                    tailExactBonus = MergedTokenEvaluationConstants.exactTailBonus
+                } else if observedHead.count <= MergedTokenEvaluationConstants.abbreviatedHeadMaximumLength {
                     // Allow abbreviated merged heads like "mr" -> "mister" when
                     // the trailing token anchor matches exactly.
-                    tailExactBonus = 0.14
+                    tailExactBonus = MergedTokenEvaluationConstants.abbreviatedHeadTailBonus
                 } else {
-                    tailExactBonus = 0.06
+                    tailExactBonus = MergedTokenEvaluationConstants.standardTailBonus
                 }
                 let score = ReplacementScore(
                     text: baseScore.text,
@@ -78,7 +87,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        let threshold = 0.72
+        let threshold = MergedTokenEvaluationConstants.acceptanceThreshold
         guard best.score.final >= threshold else {
             stats.rejectedLowScore += 1
             return nil

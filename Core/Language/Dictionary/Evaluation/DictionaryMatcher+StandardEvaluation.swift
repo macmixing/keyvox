@@ -1,5 +1,37 @@
 import Foundation
 
+private enum StandardEvaluationConstants {
+    static let minimumSingleTokenLength = 3
+
+    static let pluralHomophonePhoneticMinimum = 0.95
+    static let pluralHomophoneTextMinimum = 0.35
+    static let pluralHomophoneBonus = 0.14
+
+    static let singleTokenPossessiveMinimumThreshold = 0.82
+    static let singleTokenPossessiveThresholdDelta = 0.08
+    static let singleTokenPluralPhoneticMinimum = 0.92
+    static let singleTokenPluralMinimumThreshold = 0.78
+    static let singleTokenPluralThresholdDelta = 0.12
+    static let twoTokenPossessiveMinimumThreshold = 0.70
+    static let twoTokenPossessiveThresholdDelta = 0.10
+
+    static let peerSupportSimilarityMaximum = 0.70
+    static let stylizedSurfaceSimilarityMinimum = 0.82
+    static let stylizedStrongTextThreshold = 0.50
+    static let stylizedStrongFallbackThreshold = 0.60
+    static let stylizedModerateFallbackThreshold = 0.55
+    static let stylizedStrongSurfaceThreshold = 0.72
+    static let properNounSimilarityMinimum = 0.80
+    static let properNounBlendedSimilarityMinimum = 0.74
+    static let properNounThreshold = 0.78
+
+    static let twoTokenStrongEvidenceThreshold = 0.72
+    static let twoTokenModerateEvidenceThreshold = 0.55
+
+    static let commonWordStylizedBypassMinimum = 0.82
+    static let commonWordFallbackBypassMinimum = 0.58
+}
+
 extension DictionaryMatcher {
     func proposeStandardReplacement(
         start: Int,
@@ -60,11 +92,11 @@ extension DictionaryMatcher {
                    form.replacementSuffix == "s",
                    candidate.tokens.count == 1,
                    !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidate.tokens[0])),
-                   adjustedPhoneticScore >= 0.95,
-                   baseScore.text >= 0.35 {
+                   adjustedPhoneticScore >= StandardEvaluationConstants.pluralHomophonePhoneticMinimum,
+                   baseScore.text >= StandardEvaluationConstants.pluralHomophoneTextMinimum {
                     // Deterministic lane for plural homophone near-misses such as
                     // "queues" -> "cues" when the dictionary term is singular.
-                    pluralHomophoneBonus = 0.14
+                    pluralHomophoneBonus = StandardEvaluationConstants.pluralHomophoneBonus
                 } else {
                     pluralHomophoneBonus = 0
                 }
@@ -101,7 +133,7 @@ extension DictionaryMatcher {
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
 
         if tokenCount == 1,
-           window[0].normalized.count < 3,
+           window[0].normalized.count < StandardEvaluationConstants.minimumSingleTokenLength,
            !exactMatch {
             stats.rejectedShortToken += 1
             return nil
@@ -112,15 +144,26 @@ extension DictionaryMatcher {
         if tokenCount == 1, best.replacementSuffix == "'s" {
             // Possessive tails add noise; allow a slightly lower gate while keeping
             // common-word and ambiguity guards intact.
-            effectiveThreshold = max(0.82, threshold - 0.08)
-        } else if tokenCount == 1, best.replacementSuffix == "s", best.score.phonetic >= 0.92 {
+            effectiveThreshold = max(
+                StandardEvaluationConstants.singleTokenPossessiveMinimumThreshold,
+                threshold - StandardEvaluationConstants.singleTokenPossessiveThresholdDelta
+            )
+        } else if tokenCount == 1,
+                  best.replacementSuffix == "s",
+                  best.score.phonetic >= StandardEvaluationConstants.singleTokenPluralPhoneticMinimum {
             // Spoken plurals can be transcribed as close homophones ("queues" vs "cues");
             // allow a guarded lane when phonetic evidence is very strong.
-            effectiveThreshold = max(0.78, threshold - 0.12)
+            effectiveThreshold = max(
+                StandardEvaluationConstants.singleTokenPluralMinimumThreshold,
+                threshold - StandardEvaluationConstants.singleTokenPluralThresholdDelta
+            )
         } else if tokenCount == 2, best.replacementSuffix == "'s" {
             // Two-token possessive near-misses can lose apostrophes in Whisper output.
             // Keep this tighter than single-token possessives but allow a modest lift.
-            effectiveThreshold = max(0.70, threshold - 0.10)
+            effectiveThreshold = max(
+                StandardEvaluationConstants.twoTokenPossessiveMinimumThreshold,
+                threshold - StandardEvaluationConstants.twoTokenPossessiveThresholdDelta
+            )
         } else {
             effectiveThreshold = threshold
         }
@@ -146,7 +189,7 @@ extension DictionaryMatcher {
             if observedHasRuntimePronunciation,
                !candidateHasRuntimePronunciation,
                !stylizedSingleTokenEntry,
-               textSimilarity < 0.70 {
+               textSimilarity < StandardEvaluationConstants.peerSupportSimilarityMaximum {
                 // Guard risky common-word -> brand hops unless corroborated by another
                 // independent replacement in the same utterance.
                 requiresPeerSupport = true
@@ -154,7 +197,7 @@ extension DictionaryMatcher {
 
             if stylizedSingleTokenEntry,
                !allowStylizedFallbackBySurface,
-               textSimilarity < 0.82 {
+               textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
                 stats.rejectedLowScore += 1
                 return nil
             }
@@ -170,11 +213,11 @@ extension DictionaryMatcher {
                     // Runtime lexicon pronunciations can disagree on letter-level
                     // edits (e.g. one-character brand near-misses). If stylized
                     // text evidence is very strong, avoid over-penalizing phonetics.
-                    effectiveThreshold = min(effectiveThreshold, 0.50)
-                } else if textSimilarity >= 0.82 {
+                    effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.stylizedStrongTextThreshold)
+                } else if textSimilarity >= StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
                     // Runtime lexicon coverage can vary; keep stylized single-token
                     // brand corrections resilient when text evidence is strong.
-                    effectiveThreshold = min(effectiveThreshold, 0.72)
+                    effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.stylizedStrongSurfaceThreshold)
                 } else if hasStrongStylizedFallbackPhoneticEvidence(
                     observed: observedToken.normalized,
                     candidate: candidateToken,
@@ -185,7 +228,7 @@ extension DictionaryMatcher {
                     // Runtime lexicon phonemes for proper nouns can be sparse or absent.
                     // If fallback grapheme-phonetic evidence is very strong, permit a
                     // lower gate for stylized dictionary terms.
-                    effectiveThreshold = min(effectiveThreshold, 0.60)
+                    effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.stylizedStrongFallbackThreshold)
                 } else if hasModerateStylizedFallbackPhoneticEvidence(
                     observed: observedToken.normalized,
                     candidate: candidateToken,
@@ -195,7 +238,7 @@ extension DictionaryMatcher {
                 ), allowStylizedFallbackBySurface {
                     // Allow an additional conservative lane for all-caps/near-miss
                     // stylized tokens that preserve start anchoring and fallback shape.
-                    effectiveThreshold = min(effectiveThreshold, 0.55)
+                    effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.stylizedModerateFallbackThreshold)
                 }
             }
 
@@ -204,9 +247,9 @@ extension DictionaryMatcher {
             if !isCommonWord,
                observedToken.normalized.count >= 5,
                candidateToken.count >= 5,
-               max(textSimilarity, phoneticSimilarity) >= 0.80,
-               ((0.6 * textSimilarity) + (0.4 * phoneticSimilarity)) >= 0.74 {
-                effectiveThreshold = min(effectiveThreshold, 0.78)
+               max(textSimilarity, phoneticSimilarity) >= StandardEvaluationConstants.properNounSimilarityMinimum,
+               ((0.6 * textSimilarity) + (0.4 * phoneticSimilarity)) >= StandardEvaluationConstants.properNounBlendedSimilarityMinimum {
+                effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.properNounThreshold)
             }
         } else if tokenCount == 2,
                   best.entry.tokens.count == 2 {
@@ -214,12 +257,12 @@ extension DictionaryMatcher {
                 // Runtime pronunciations for proper nouns can be sparse. When the first
                 // token anchors exactly and the second token is strongly similar, allow
                 // the match through a slightly lower gate.
-                effectiveThreshold = min(effectiveThreshold, 0.72)
+                effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.twoTokenStrongEvidenceThreshold)
             } else if hasModerateAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
                 // Some near-miss surname variants are close in spelling shape but can
                 // diverge in runtime lexicon phonetics. Keep this fallback conservative
                 // with exact first-token anchoring and non-common long-tail requirements.
-                effectiveThreshold = min(effectiveThreshold, 0.55)
+                effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.twoTokenModerateEvidenceThreshold)
             }
         }
 
@@ -244,7 +287,7 @@ extension DictionaryMatcher {
             var stylizedBrandBypass =
                 isStylizedSingleTokenEntry(best.entry)
                 && allowStylizedBySurface
-                && best.score.final >= 0.82
+                && best.score.final >= StandardEvaluationConstants.commonWordStylizedBypassMinimum
             if !stylizedBrandBypass,
                isStylizedSingleTokenEntry(best.entry),
                allowStylizedBySurface,
@@ -257,7 +300,7 @@ extension DictionaryMatcher {
                     observedPhonetic: window[0].phonetic,
                     candidatePhonetic: candidatePhonetic,
                     textSimilarity: textSimilarity
-                ), best.score.final >= 0.58 {
+                ), best.score.final >= StandardEvaluationConstants.commonWordFallbackBypassMinimum {
                     stylizedBrandBypass = true
                 }
             }
