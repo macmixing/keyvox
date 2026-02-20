@@ -16,8 +16,18 @@ class WhisperService: ObservableObject {
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
-        guard whisper == nil else { return }
-        guard let modelPath = getModelPath() else { return }
+        guard whisper == nil else {
+            #if DEBUG
+            print("WhisperService: Warmup skipped (model already loaded).")
+            #endif
+            return
+        }
+        guard let modelPath = getModelPath() else {
+            #if DEBUG
+            print("WhisperService: Warmup skipped (model files not found).")
+            #endif
+            return
+        }
         
         #if DEBUG
         print("Warming up Whisper model with optimized settings...")
@@ -38,6 +48,16 @@ class WhisperService: ObservableObject {
         // CoreML is automatic if the model files are present
         
         whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
+    }
+
+    /// Unloads the currently cached model instance.
+    /// Used when model files are deleted so re-download can warm from disk again.
+    func unloadModel() {
+        guard whisper != nil else { return }
+        whisper = nil
+        #if DEBUG
+        print("WhisperService: Unloaded model from memory.")
+        #endif
     }
     
     private var transcriptionTask: Task<Void, Never>?
