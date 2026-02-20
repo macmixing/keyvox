@@ -17,6 +17,14 @@ class WhisperService: ObservableObject {
     private let suspiciousShortResultMaxWords = 2
     private let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35
     private let retryRelaxedLogprobThreshold: Float = -2.0
+    private static let leadingInitialismArtifactRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^[A-Z](?:\.[A-Z]){1,4}\.?(?=\s|[A-Z])"#,
+        options: []
+    )
+    private static let leadingRunOnArtifactRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?i)^[A-Z][a-z]{12,},?\s+(?:to|and|with|for|from|in|on|at)\b"#,
+        options: []
+    )
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -371,7 +379,9 @@ class WhisperService: ObservableObject {
 
         let compactText = compactSegmentText(primary)
         let words = wordCount(in: compactText)
-        guard words > 0 && words <= suspiciousShortResultMaxWords else { return false }
+        let hasSuspiciousLeadingArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: compactText)
+        let isSuspiciousShortResult = words > 0 && words <= suspiciousShortResultMaxWords
+        guard hasSuspiciousLeadingArtifact || isSuspiciousShortResult else { return false }
 
         let averageNoSpeechProbability: Float
         if primary.isEmpty {
@@ -379,7 +389,9 @@ class WhisperService: ObservableObject {
         } else {
             averageNoSpeechProbability = primary.reduce(0) { $0 + $1.noSpeechProbability } / Float(primary.count)
         }
-        guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
+        if isSuspiciousShortResult {
+            guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
+        }
 
         return true
     }
@@ -387,6 +399,13 @@ class WhisperService: ObservableObject {
     private func selectPreferredRetry(primary: [Segment], retry: [Segment]) -> [Segment] {
         let primaryText = compactSegmentText(primary)
         let retryText = compactSegmentText(retry)
+        let primaryHasArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: primaryText)
+        let retryHasArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: retryText)
+
+        if primaryHasArtifact != retryHasArtifact {
+            return retryHasArtifact ? primary : retry
+        }
+
         let primaryWords = wordCount(in: primaryText)
         let retryWords = wordCount(in: retryText)
 
@@ -409,6 +428,24 @@ class WhisperService: ObservableObject {
 
     private func wordCount(in text: String) -> Int {
         text.split(whereSeparator: \.isWhitespace).count
+    }
+
+    static func hasSuspiciousLeadingPromptArtifact(in text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        let range = NSRange(location: 0, length: (trimmed as NSString).length)
+
+        if let regex = leadingInitialismArtifactRegex,
+           regex.firstMatch(in: trimmed, options: [], range: range) != nil {
+            return true
+        }
+
+        if let regex = leadingRunOnArtifactRegex,
+           regex.firstMatch(in: trimmed, options: [], range: range) != nil {
+            return true
+        }
+
+        return false
     }
 
     #if DEBUG

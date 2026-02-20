@@ -131,6 +131,15 @@ final class DictionaryMatcher {
             ) {
                 proposed.append(splitReplacement)
             }
+
+            if let mergedTokenReplacement = proposeMergedTokenReplacement(
+                start: start,
+                tokens: tokens,
+                text: emailNormalizedInput,
+                stats: &stats
+            ) {
+                proposed.append(mergedTokenReplacement)
+            }
         }
 
         guard !proposed.isEmpty else {

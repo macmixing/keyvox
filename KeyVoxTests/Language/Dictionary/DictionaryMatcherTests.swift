@@ -70,6 +70,22 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Is that MrD over there?")
     }
 
+    func testMergedTokenReplacesWithTwoTokenDictionaryPhrase() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
+
+        let result = matcher.apply(to: "MrBeast went to McDonald's to get some McNuggets with MrPinupCA.")
+        XCTAssertEqual(result.text, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
+    }
+
+    func testMergedTokenDoesNotReplaceWhenPrefixIsNotSimilar() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
+
+        let result = matcher.apply(to: "MrBeast went to McDonald's to get some McNuggets with MapPinupCA.")
+        XCTAssertEqual(result.text, "MrBeast went to McDonald's to get some McNuggets with MapPinupCA.")
+    }
+
     func testPluralSecondTokenCanJoinForBrand() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])

@@ -4,6 +4,19 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
+    func testRewritesMergedDictionaryTokenToCanonicalTwoTokenPhrase() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
+
+        let output = processor.process(
+            "MrBeast went to McDonald's to get some McNuggets with MrPinupCA.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
+    }
+
     func testPreservesLeadingMrBeastClauseWithDictionaryBrand() {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
@@ -15,6 +28,63 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
+    }
+
+    func testDoesNotLowercaseLeadingInitialismTokenThatIsNotWebsite() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
+
+        let output = processor.process(
+            "B.D.MrBeast went to McDonald's to get some McNuggets with Mr. PinupCA.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "B.D.MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
+    }
+
+    func testStillLowercasesKnownWebsiteDomainsInSentence() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Please visit WWW.KeyVox.APP for updates.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Please visit www.keyvox.app for updates.")
+    }
+
+    func testDetectsLeadingInitialismPromptArtifactWithoutSpace() {
+        XCTAssertTrue(
+            WhisperService.hasSuspiciousLeadingPromptArtifact(
+                in: "B.D.MrBeast went to McDonald's to get some McNuggets with Mister PinupCA."
+            )
+        )
+    }
+
+    func testDetectsLeadingInitialismPromptArtifactWithSpace() {
+        XCTAssertTrue(
+            WhisperService.hasSuspiciousLeadingPromptArtifact(
+                in: "B.I.M. MrBeast went to McDonald's to get some nuggets with Mister PinupCA."
+            )
+        )
+    }
+
+    func testDetectsLeadingRunOnPromptArtifact() {
+        XCTAssertTrue(
+            WhisperService.hasSuspiciousLeadingPromptArtifact(
+                in: "Wendtomickdonalds, to get some McNuggets with Mister PinupCA."
+            )
+        )
+    }
+
+    func testIgnoresNormalSentenceForPromptArtifactDetection() {
+        XCTAssertFalse(
+            WhisperService.hasSuspiciousLeadingPromptArtifact(
+                in: "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA."
+            )
+        )
     }
 
     func testCollapsesSingleCharacterSpamRun() {
