@@ -55,38 +55,6 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please visit www.keyvox.app for updates.")
     }
 
-    func testDetectsLeadingInitialismPromptArtifactWithoutSpace() {
-        XCTAssertTrue(
-            WhisperService.hasSuspiciousLeadingPromptArtifact(
-                in: "B.D.MrBeast went to McDonald's to get some McNuggets with Mister PinupCA."
-            )
-        )
-    }
-
-    func testDetectsLeadingInitialismPromptArtifactWithSpace() {
-        XCTAssertTrue(
-            WhisperService.hasSuspiciousLeadingPromptArtifact(
-                in: "B.I.M. MrBeast went to McDonald's to get some nuggets with Mister PinupCA."
-            )
-        )
-    }
-
-    func testDetectsLeadingRunOnPromptArtifact() {
-        XCTAssertTrue(
-            WhisperService.hasSuspiciousLeadingPromptArtifact(
-                in: "Wendtomickdonalds, to get some McNuggets with Mister PinupCA."
-            )
-        )
-    }
-
-    func testIgnoresNormalSentenceForPromptArtifactDetection() {
-        XCTAssertFalse(
-            WhisperService.hasSuspiciousLeadingPromptArtifact(
-                in: "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA."
-            )
-        )
-    }
-
     func testCollapsesSingleCharacterSpamRun() {
         let processor = TranscriptionPostProcessor()
         let spam = String(repeating: "j", count: 140)

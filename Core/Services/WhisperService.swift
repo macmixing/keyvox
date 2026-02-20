@@ -13,18 +13,11 @@ class WhisperService: ObservableObject {
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
     private let paragraphChunker = WhisperAudioParagraphChunker()
+    private let isPromptHintingEnabled = false
     private let suspiciousShortResultMinChunkSeconds: Double = 1.35
     private let suspiciousShortResultMaxWords = 2
     private let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35
     private let retryRelaxedLogprobThreshold: Float = -2.0
-    private static let leadingInitialismArtifactRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)^[A-Z](?:\.[A-Z]){1,4}\.?(?=\s|[A-Z])"#,
-        options: []
-    )
-    private static let leadingRunOnArtifactRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)^[A-Z][a-z]{12,},?\s+(?:to|and|with|for|from|in|on|at)\b"#,
-        options: []
-    )
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -56,7 +49,7 @@ class WhisperService: ObservableObject {
         params.temperature_inc = 0.0
         params.no_speech_thold = 0.6
         params.logprob_thold = -0.8
-        params.initialPrompt = dictionaryHintPrompt
+        params.initialPrompt = isPromptHintingEnabled ? dictionaryHintPrompt : ""
         // CoreML is automatic if the model files are present
         
         whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
@@ -86,7 +79,7 @@ class WhisperService: ObservableObject {
         let cleanedPrompt = prompt
             .trimmingCharacters(in: .whitespacesAndNewlines)
         dictionaryHintPrompt = cleanedPrompt
-        whisper?.params.initialPrompt = cleanedPrompt
+        whisper?.params.initialPrompt = isPromptHintingEnabled ? cleanedPrompt : ""
     }
     
     func transcribe(
@@ -114,18 +107,20 @@ class WhisperService: ObservableObject {
             warmup()
         }
 
-        if useDictionaryHintPrompt {
+        let shouldUseDictionaryHintPrompt = isPromptHintingEnabled && useDictionaryHintPrompt
+
+        if shouldUseDictionaryHintPrompt {
             whisper?.params.initialPrompt = dictionaryHintPrompt
         } else {
             whisper?.params.initialPrompt = ""
             #if DEBUG
-            print("WhisperService: Suppressing dictionary hint prompt for low-confidence capture.")
+            print("WhisperService: Dictionary hint prompt disabled.")
             #endif
         }
 
         let restoreDictionaryHintPromptIfNeeded = { [weak self] in
-            guard let self, !useDictionaryHintPrompt else { return }
-            self.whisper?.params.initialPrompt = self.dictionaryHintPrompt
+            guard let self, !shouldUseDictionaryHintPrompt else { return }
+            self.whisper?.params.initialPrompt = self.isPromptHintingEnabled ? self.dictionaryHintPrompt : ""
         }
         
         #if DEBUG
@@ -159,7 +154,7 @@ class WhisperService: ObservableObject {
 
                     let segments = try await self.transcribeChunkWithLeadingPhraseRetry(
                         chunkFrames: chunkFrames,
-                        usedDictionaryHintPrompt: useDictionaryHintPrompt
+                        usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
                     )
                     #if DEBUG
                     logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
@@ -379,9 +374,8 @@ class WhisperService: ObservableObject {
 
         let compactText = compactSegmentText(primary)
         let words = wordCount(in: compactText)
-        let hasSuspiciousLeadingArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: compactText)
         let isSuspiciousShortResult = words > 0 && words <= suspiciousShortResultMaxWords
-        guard hasSuspiciousLeadingArtifact || isSuspiciousShortResult else { return false }
+        guard isSuspiciousShortResult else { return false }
 
         let averageNoSpeechProbability: Float
         if primary.isEmpty {
@@ -399,12 +393,6 @@ class WhisperService: ObservableObject {
     private func selectPreferredRetry(primary: [Segment], retry: [Segment]) -> [Segment] {
         let primaryText = compactSegmentText(primary)
         let retryText = compactSegmentText(retry)
-        let primaryHasArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: primaryText)
-        let retryHasArtifact = Self.hasSuspiciousLeadingPromptArtifact(in: retryText)
-
-        if primaryHasArtifact != retryHasArtifact {
-            return retryHasArtifact ? primary : retry
-        }
 
         let primaryWords = wordCount(in: primaryText)
         let retryWords = wordCount(in: retryText)
@@ -428,24 +416,6 @@ class WhisperService: ObservableObject {
 
     private func wordCount(in text: String) -> Int {
         text.split(whereSeparator: \.isWhitespace).count
-    }
-
-    static func hasSuspiciousLeadingPromptArtifact(in text: String) -> Bool {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
-        let range = NSRange(location: 0, length: (trimmed as NSString).length)
-
-        if let regex = leadingInitialismArtifactRegex,
-           regex.firstMatch(in: trimmed, options: [], range: range) != nil {
-            return true
-        }
-
-        if let regex = leadingRunOnArtifactRegex,
-           regex.firstMatch(in: trimmed, options: [], range: range) != nil {
-            return true
-        }
-
-        return false
     }
 
     #if DEBUG
