@@ -94,7 +94,7 @@ final class DictionaryStore: ObservableObject {
         let candidates = entries
             .map(\.phrase)
             .filter { !$0.isEmpty }
-            .prefix(maxEntries)
+            .suffix(maxEntries)
 
         guard !candidates.isEmpty else { return "" }
 
