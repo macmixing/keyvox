@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-02-19**
+**Last Updated: 2026-02-20**
 
 ## Design Philosophy
 
@@ -25,63 +25,17 @@ Convenience must never come at the cost of trust.
 
 KeyVox is organized by responsibility:
 
-- `App/KeyVoxApp.swift`: App entry point, menu bar scene, and window lifecycle.
-- `App/AppSettingsStore.swift`: Central persisted settings owner (`triggerBinding`, `autoParagraphsEnabled`, sound, onboarding, update prompts, weekly words).
-- `Core/Transcription/TranscriptionManager.swift`: Recording/transcription state orchestration plus internal `DictationPipeline` boundary used by smoke/integration tests.
-- `Core/Transcription/DictationPipeline.swift`: Injectable transcribe -> post-process -> paste boundary used by runtime wiring and smoke tests.
-- `Core/Transcription/DictationPromptEchoGuard.swift`: Short-utterance prompt-hint guard to reduce dictionary-prompt echo artifacts.
-- `Core/Audio/AudioRecorder.swift`: Recorder state holder and public start/stop flow.
-- `Core/Audio/AudioRecorder+Session.swift`: Capture session/device lifecycle.
-- `Core/Audio/AudioRecorder+Streaming.swift`: Sample conversion/downsampling and live signal state.
-- `Core/Audio/AudioRecorder+PostProcessing.swift`: Stop-time gap removal/normalization/classification.
-- `Core/Audio/AudioRecorder+Thresholds.swift`: Input-volume-based threshold calibration.
-- `Core/Audio/AudioCaptureClassification.swift`: Capture confidence/silence classification.
-- `Core/Audio/AudioSilencePolicy.swift`: Shared silence-gate policy rules/constants.
-- `Core/Audio/AudioSignalMetrics.swift`: Pure RMS/peak/window-ratio metrics.
-- `Core/KeyboardMonitor.swift`: Global/local modifier and escape monitoring.
-- `Core/AudioDeviceManager.swift`: Microphone discovery/selection and active device resolution.
-- `Core/ModelDownloader/ModelDownloader.swift`: Download orchestration for Whisper model artifacts.
-- `Core/ModelDownloader/ModelDownloader+DownloadLifecycle.swift`: URLSession progress/completion/error handling and download state transitions.
-- `Core/ModelDownloader/ModelDownloader+Validation.swift`: Artifact validation and readiness checks.
-- `Core/Overlay/OverlayManager.swift`: Overlay lifecycle orchestration and visibility state.
-- `Core/Overlay/OverlayMotionController.swift`: Fling/reset motion sequencing.
-- `Core/Overlay/OverlayScreenPersistence.swift`: Per-display origin persistence and clamping.
-- `Core/Overlay/OverlayPanel.swift`: Drag sampling, double-click reset, release velocity capture.
-- `Core/Overlay/OverlayFlingPhysics.swift`: Pure fling impact/reflection/duration calculations.
-- `Core/Services/WhisperService.swift`: Local model loading and transcription.
-- `Core/Services/WhisperAudioParagraphChunker.swift`: Deterministic silence-window chunking for paragraph-aware transcription.
-- `Core/Transcription/TranscriptionPostProcessor.swift`: Post-transcription pipeline orchestration.
-- `Core/Normalization/TimeExpressionNormalizer.swift`: Extracted time-shape/meridiem normalization helper used by post-processing.
-- `Core/Normalization/LaughterNormalizer.swift`: Dedicated laughter normalization helper kept separate from time normalization.
-- `Core/Normalization/CharacterSpamNormalizer.swift`: Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
-- `Core/Normalization/WhitespaceNormalizer.swift`: Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
-- `Core/Normalization/SentenceCapitalizationNormalizer.swift`: Text-start/sentence-boundary/line-break capitalization with email/domain guards.
-- `Core/Normalization/TerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
-- `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
-- `Core/Normalization/EmailAddressNormalizer.swift`: Shared non-dictionary email literal cleanup utility.
-- `Core/Normalization/WebsiteNormalizer.swift`: Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks reused across list and email flows.
-- `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`: Canonical dictionary email representation and sanitization.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`: Domain candidate extraction and fuzzy-domain ranking/disambiguation helpers.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`: Spoken/literal/compact email candidate normalization using dictionary-backed resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`: Local/domain normalization and attached-marker parsing helpers reused by email normalization/resolution.
-- `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`: Spoken/literal/standalone dictionary email resolution with deterministic ambiguity guards.
-- `Core/Lists/*`: Deterministic list detection/rendering (detector + parser/run-selection/trailing-split helpers and renderer).
-- `Core/Services/Paste/PasteService.swift`: AX insertion, menu fallback, clipboard restore orchestration.
-- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`: Menu fallback orchestration and verification coordination.
-- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`: Menu fallback decision flow, warmup suppression bookkeeping, fallback transport normalization, and runtime-PID live AX verification binding.
-- `Core/Services/Paste/PasteMenuScanner.swift`: Menu-bar traversal and Paste/Undo menu item discovery helpers.
-- `Core/Services/Paste/PasteAXLiveSession.swift`: Live AX observer session for value-change verification.
-- `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`: Paste failure-recovery lifecycle.
-- `Core/Services/AppUpdateService.swift`: GitHub Releases polling and update prompt logic.
-- `Core/Services/UpdateFeedConfig.swift`: Tracked update feed config + local override resolution.
-- `Core/Services/AppUpdateLogic.swift`: Pure update parsing/version/host validation helpers.
-- `Views/OnboardingView.swift`: Onboarding UI flow orchestration across setup steps.
-- `Views/OnboardingMicrophoneStepController.swift`: Onboarding Step 1 microphone authorization/gating state and actions.
-- `Views/Components/OnboardingMicrophonePickerView.swift`: Onboarding microphone selection modal UI (presentation-only).
-- `Views/Settings/SettingsView+Dictionary.swift`: Dictionary tab composition and support-note footer.
-- `Views/Settings/SettingsView+DictionarySection.swift`: Dictionary entry management list, sorting controls, and add/edit/delete actions.
-- `Views/Settings/SettingsView+ModelSection.swift`: Reusable model install/remove controls now embedded in More tab.
-- `Views/Warnings/WarningManager.swift`: Warning overlay lifecycle with hover-aware auto-dismiss and animated dismiss transitions.
+- `App/`: App lifecycle and persisted settings ownership (`KeyVoxApp`, `AppSettingsStore`).
+- `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
+- `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
+- `Core/AI/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering.
+- `Core/Normalization/`: Ordered pure normalization passes (email/website, colon, laughter, spam, whitespace, capitalization, terminal punctuation, all-caps override).
+- `Core/Services/`: Whisper inference, paste/injection, and update/checking services.
+- `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
+- `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
+- `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
+
+File-level ownership and locations are intentionally maintained in one place: [`CODEMAP.md`](CODEMAP.md).
 
 ## Platform Compatibility
 
@@ -99,10 +53,12 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
 4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
-5. List formatting applies numeric list rendering when confidence gates pass.
-6. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
-7. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
-8. Final text is inserted via the paste service.
+5. `ColonNormalizer` converts spoken/delimiter colon phrases into deterministic punctuation before list parsing.
+6. List formatting applies numeric list rendering when confidence gates pass.
+7. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
+8. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
+9. `AllCapsOverrideNormalizer` applies a final uppercase override when Caps Lock mode is active.
+10. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 
@@ -181,32 +137,8 @@ These remain integration/manual-test territory by design.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
 
-## Working Tree Delta From `HEAD`
+## Change Tracking
 
-- Dictionary matcher file split renamed to extension-style files:
-  - Removed: `Core/AI/Dictionary/DictionaryMatcherCandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherModels.swift`, `Core/AI/Dictionary/DictionaryMatcherOverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcherSplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherTokenizer.swift`
-  - Added: `Core/AI/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Models.swift`, `Core/AI/Dictionary/DictionaryMatcher+OverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Tokenizer.swift`
-- Dictionary/email normalization boundaries were separated:
-  - Removed: `Core/AI/Dictionary/TextNormalization.swift`
-  - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/Normalization/EmailAddressNormalizer.swift`
-  - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
-- Website/domain helper extraction centralized URL primitives:
-  - Added: `Core/Normalization/WebsiteNormalizer.swift`
-  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/Lists/ListPatternDetector.swift`, `Core/Lists/ListPatternMarkerParser.swift`
-- Dictionary email helper extensions were renamed:
-  - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
-  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
-- Dictionary email resolution helpers were split for maintainability:
-  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
-  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to keep only spoken/literal/standalone resolution logic.
-- Post-processing moved under `Core/Transcription` and time normalization was extracted:
-  - Removed: `Core/TranscriptionPostProcessor.swift`
-  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Normalization/TimeExpressionNormalizer.swift`
-- Post-processing normalization internals were split into focused helpers:
-  - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
-  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules.
-- Character spam hardening was added for post-processing noise suppression:
-  - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
-  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
-- Project wiring:
-  - `KeyVox.xcodeproj/project.pbxproj` updated to align source/build references with the renamed and moved files.
+- `ENGINEERING.md` captures stable contracts and system behavior, not per-commit file churn.
+- Use Git history (commits/PRs/tags) and release notes for detailed change logs.
+- Keep this doc updated only when architecture, invariants, or operational/testing policy changes.

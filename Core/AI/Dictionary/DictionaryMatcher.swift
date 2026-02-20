@@ -57,6 +57,10 @@ final class DictionaryMatcher {
         for entry in entries {
             if let emailEntry = DictionaryEmailEntry.fromPhrase(entry.phrase) {
                 emailGrouped[emailEntry.domain, default: []].append(emailEntry)
+                // Canonical email phrases should participate in email resolution only.
+                // Indexing them as generic dictionary phrases can incorrectly rewrite
+                // domain tokens (e.g. websites) into email addresses.
+                continue
             }
 
             let normalizedPhrase = DictionaryTextNormalization.normalizedPhrase(entry.phrase)

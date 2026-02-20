@@ -154,6 +154,8 @@
 		C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */; };
 		C13000172F92000100AA0001 /* LaughterNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000082F92000100AA0001 /* LaughterNormalizer.swift */; };
 		C13000182F92000100AA0001 /* CharacterSpamNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */; };
+		C13000312FD4000100AA0001 /* ColonNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000302FD4000100AA0001 /* ColonNormalizer.swift */; };
+		C13000412FD5000100AA0001 /* AllCapsOverrideNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13000402FD5000100AA0001 /* AllCapsOverrideNormalizer.swift */; };
 		C14000112F93000100AA0001 /* ListPatternMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000012F93000100AA0001 /* ListPatternMarker.swift */; };
 		C14000122F93000100AA0001 /* ListPatternMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */; };
 		C14000132F93000100AA0001 /* ListPatternRunSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14000032F93000100AA0001 /* ListPatternRunSelector.swift */; };
@@ -322,6 +324,8 @@
 		C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPunctuationNormalizer.swift; sourceTree = "<group>"; };
 		C13000082F92000100AA0001 /* LaughterNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaughterNormalizer.swift; sourceTree = "<group>"; };
 		C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSpamNormalizer.swift; sourceTree = "<group>"; };
+		C13000302FD4000100AA0001 /* ColonNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColonNormalizer.swift; sourceTree = "<group>"; };
+		C13000402FD5000100AA0001 /* AllCapsOverrideNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllCapsOverrideNormalizer.swift; sourceTree = "<group>"; };
 		C14000012F93000100AA0001 /* ListPatternMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarker.swift; sourceTree = "<group>"; };
 		C14000022F93000100AA0001 /* ListPatternMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternMarkerParser.swift; sourceTree = "<group>"; };
 		C14000032F93000100AA0001 /* ListPatternRunSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListPatternRunSelector.swift; sourceTree = "<group>"; };
@@ -792,6 +796,8 @@
 				C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */,
 				C13000082F92000100AA0001 /* LaughterNormalizer.swift */,
 				C13000092F92000100AA0001 /* CharacterSpamNormalizer.swift */,
+				C13000302FD4000100AA0001 /* ColonNormalizer.swift */,
+				C13000402FD5000100AA0001 /* AllCapsOverrideNormalizer.swift */,
 			);
 			path = Normalization;
 			sourceTree = "<group>";
@@ -987,6 +993,8 @@
 				C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */,
 				C13000172F92000100AA0001 /* LaughterNormalizer.swift in Sources */,
 				C13000182F92000100AA0001 /* CharacterSpamNormalizer.swift in Sources */,
+				C13000312FD4000100AA0001 /* ColonNormalizer.swift in Sources */,
+				C13000412FD5000100AA0001 /* AllCapsOverrideNormalizer.swift in Sources */,
 				C13000122F92000100AA0001 /* DictationPipeline.swift in Sources */,
 				C13000132F92000100AA0001 /* DictationPromptEchoGuard.swift in Sources */,
 				8F4402012F46010000DD4401 /* ListFormattingTypes.swift in Sources */,

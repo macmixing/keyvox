@@ -96,7 +96,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Haha that was funny")
+        XCTAssertEqual(output, "Haha that was funny")
     }
     func testKeepsBetweenColonPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -107,7 +107,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Let's pick between colon McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between colon McDonalds or Burger King")
     }
     func testKeepsBetweenColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -118,9 +118,9 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Let's pick between Colin McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between Colin McDonalds or Burger King")
     }
-    func testKeepsCommaDelimitedColonPhraseLiteral() {
+    func testNormalizesCommaDelimitedColonPhraseToPunctuation() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -129,9 +129,31 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I'm going to the store, colon, to buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store: To buy some groceries.")
     }
-    func testKeepsCommaDelimitedColinPhraseLiteral() {
+    func testNormalizesCommaDelimitedLowercaseColinPhraseToPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Example, colin, exhibit A",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Example: Exhibit A")
+    }
+    func testRemovesTerminalPeriodForShortStandaloneColonAssociation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Example, colon, exhibit A.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Example: Exhibit A")
+    }
+    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -140,7 +162,55 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I'm going to the store, Colin, to buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store, Colin, to buy some groceries.")
+    }
+    func testKeepsCommaDelimitedCollinNameLiteral() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met, Collin, yesterday at lunch.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
+    }
+    func testColonNormalizationStaysCompatibleWithWebsiteNormalization() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Please visit www.KeyVox.app, colon, support docs",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Please visit www.keyvox.app: Support docs")
+    }
+    func testColonNormalizationStaysCompatibleWithDictionaryBrandWords() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Brand update, colon, cue board roadmap",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Brand update: Cueboard roadmap")
+    }
+    func testColonNormalizationStaysCompatibleWithListFormatting() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Cueboard")]
+
+        let output = processor.process(
+            "Project notes, colon, one cue board design two website launch",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertTrue(output.hasPrefix("Project notes:"))
+        XCTAssertTrue(output.contains("1. Cueboard design"))
+        XCTAssertTrue(output.contains("2. Website launch"))
     }
     func testKeepsStandaloneColonWordWithoutContext() {
         let processor = TranscriptionPostProcessor()
@@ -151,7 +221,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "The word colon appears here")
+        XCTAssertEqual(output, "The word colon appears here")
     }
     func testKeepsTerminalCommaDelimitedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -162,7 +232,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Next task, Colin.")
+        XCTAssertEqual(output, "Next task, Colin.")
     }
     func testDoesNotRewriteSingleWordGreetingColin() {
         let processor = TranscriptionPostProcessor()
@@ -173,7 +243,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Hi, Colin.")
+        XCTAssertEqual(output, "Hi, Colin.")
     }
     func testNormalizesHoleInOneIdiom() {
         let processor = TranscriptionPostProcessor()
@@ -184,7 +254,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
     }
     func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
         let processor = TranscriptionPostProcessor()
@@ -195,7 +265,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertTrue(output == "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
         XCTAssertFalse(output.contains("\n1. "))
         XCTAssertFalse(output.contains("\n2. "))
     }

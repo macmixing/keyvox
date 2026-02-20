@@ -93,6 +93,7 @@ final class KeyboardMonitor: ObservableObject {
 
     @Published var isTriggerKeyPressed = false
     @Published var isShiftPressed = false
+    @Published var isCapsLockOn = false
 
     /// Current trigger binding snapshot mirrored from `AppSettingsStore`.
     @Published private(set) var triggerBinding: TriggerBinding
@@ -113,6 +114,7 @@ final class KeyboardMonitor: ObservableObject {
 
     private init() {
         self.triggerBinding = appSettings.triggerBinding
+        self.isCapsLockOn = Self.currentCapsLockState()
 
         startMonitoring()
 
@@ -190,12 +192,18 @@ final class KeyboardMonitor: ObservableObject {
 
         let newState = modifierState.isTriggerPressed(binding: triggerBinding)
         let newShiftState = event.modifierFlags.contains(.shift)
+        let newCapsLockState = event.modifierFlags.contains(.capsLock)
 
-        if newState != isTriggerKeyPressed || newShiftState != isShiftPressed {
+        if newState != isTriggerKeyPressed || newShiftState != isShiftPressed || newCapsLockState != isCapsLockOn {
             DispatchQueue.main.async {
                 self.isTriggerKeyPressed = newState
                 self.isShiftPressed = newShiftState
+                self.isCapsLockOn = newCapsLockState
             }
         }
+    }
+
+    private static func currentCapsLockState() -> Bool {
+        CGEventSource.flagsState(.combinedSessionState).contains(.maskAlphaShift)
     }
 }
