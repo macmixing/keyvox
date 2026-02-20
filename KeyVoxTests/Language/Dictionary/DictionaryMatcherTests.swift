@@ -96,6 +96,134 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Dom Esposito.")
     }
 
+    func testCorrectsStylizedSingleTokenNameNearMissWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "My name is Erak.")
+        XCTAssertEqual(result.text, "My name is AirRack.")
+    }
+
+    func testCorrectsStylizedSingleTokenCommonNameNearMissWithRuntimeLexicon() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "My name is Eric.")
+        XCTAssertEqual(result.text, "My name is AirRack.")
+    }
+
+    func testDoesNotReplaceCommonProseWordWithStylizedDictionaryEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "This kind of thing does work pretty good to an extent.")
+        XCTAssertEqual(result.text, "This kind of thing does work pretty good to an extent.")
+    }
+
+    func testCorrectsStylizedSingleTokenNearMissAndInfersPossessiveSuffix() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "ARAX YouTube channel is big.")
+        XCTAssertEqual(result.text, "AirRack's YouTube channel is big.")
+    }
+
+    func testCorrectsStylizedSplitJoinPossessiveNearMiss() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "Have you been to Air Act's apartment in downtown LA?")
+        XCTAssertEqual(result.text, "Have you been to AirRack's apartment in downtown LA?")
+    }
+
+    func testDoesNotCollapseWebsiteDomainIntoStylizedDictionaryEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "www.KeyVox.app")
+        XCTAssertEqual(result.text, "www.KeyVox.app")
+    }
+
+    func testCorrectsTwoTokenNameNearMissWithImplicitPossessiveSuffix() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "Hey, that's Dom Especitos House.")
+        XCTAssertEqual(result.text, "Hey, that's Dom Esposito's House.")
+    }
+
+    func testCorrectsMiddleInitialThreeTokenPossessiveNearMiss() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "That's Dom S. Bacito's house.")
+        XCTAssertEqual(result.text, "That's Dom Esposito's house.")
+    }
+
+    func testCorrectsCompressedTailThreeTokenNearMissForTwoTokenEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
+
+        let result = matcher.apply(to: "He lives right next door to Mr. Pinnup, CA.")
+        XCTAssertEqual(result.text, "He lives right next door to Mister PinupCA.")
+    }
+
+    func testCorrectsBothThreeTokenNamePatternsInSameParagraph() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Mister PinupCA"),
+            DictionaryEntry(phrase: "Dom Esposito"),
+        ])
+
+        let result = matcher.apply(
+            to: "That's Dom S. Bacito's house. He lives right next door to Mr. Pinnup, CA."
+        )
+        XCTAssertEqual(
+            result.text,
+            "That's Dom Esposito's house. He lives right next door to Mister PinupCA."
+        )
+    }
+
     func testCorrectsBrandAndNameNearMissesInSameSentenceWithRuntimeLexicon() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

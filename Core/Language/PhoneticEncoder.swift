@@ -17,7 +17,7 @@ struct PhoneticEncoder {
             .joined(separator: " ")
     }
 
-    private func fallbackSignature(for token: String) -> String {
+    func fallbackSignature(for token: String) -> String {
         guard !token.isEmpty else { return "" }
 
         let lowered = token.lowercased()

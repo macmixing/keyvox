@@ -48,8 +48,12 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
     func testSingleTokenPossessiveObservedFormsIncludeStemVariant() {
         let matcher = makeMatcher()
 
+        let window: [DictionaryMatcher.Token] = [
+            .init(raw: "cueboard's", normalized: "cueboard's", range: NSRange(location: 0, length: 10), phonetic: "KBRDZ"),
+        ]
         let forms = matcher.observedFormsForWindow(
             tokenCount: 1,
+            window: window,
             observedNormalized: "cueboard's",
             observedPhonetic: "KBRDZ"
         )

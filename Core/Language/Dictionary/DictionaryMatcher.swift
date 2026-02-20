@@ -123,6 +123,24 @@ final class DictionaryMatcher {
                 }
             }
 
+            if let middleInitialReplacement = proposeMiddleInitialThreeTokenReplacement(
+                start: start,
+                tokens: tokens,
+                text: emailNormalizedInput,
+                stats: &stats
+            ) {
+                proposed.append(middleInitialReplacement)
+            }
+
+            if let compressedTailReplacement = proposeCompressedTailThreeTokenReplacement(
+                start: start,
+                tokens: tokens,
+                text: emailNormalizedInput,
+                stats: &stats
+            ) {
+                proposed.append(compressedTailReplacement)
+            }
+
             if let splitReplacement = proposeSplitJoinReplacement(
                 start: start,
                 tokens: tokens,
