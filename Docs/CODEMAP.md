@@ -24,6 +24,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - Proprietary visual tuning remains in excluded branded files (`Views/RecordingOverlay.swift`, `Views/Components/KeyVoxLogo.swift`).
 - No shared constants module is required unless a value is truly reused across multiple domains.
 - Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
+- `CODEMAP.md` is the source of truth for file-level ownership and locations; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
 
 ## File Tree
 
@@ -517,38 +518,10 @@ KeyVox/
 - `Views/UpdatePromptOverlay.swift`
   - In-app update prompt UI.
 
-## Working Tree Delta From `HEAD`
+## Change Tracking
 
-- Dictionary matcher file split renamed to extension-style files:
-  - Removed: `Core/AI/Dictionary/DictionaryMatcherCandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherModels.swift`, `Core/AI/Dictionary/DictionaryMatcherOverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcherSplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcherTokenizer.swift`
-  - Added: `Core/AI/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Models.swift`, `Core/AI/Dictionary/DictionaryMatcher+OverlapResolver.swift`, `Core/AI/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`, `Core/AI/Dictionary/DictionaryMatcher+Tokenizer.swift`
-- Dictionary/email normalization boundaries were separated:
-  - Removed: `Core/AI/Dictionary/TextNormalization.swift`
-  - Added: `Core/AI/Dictionary/DictionaryTextNormalization.swift`, `Core/Normalization/EmailAddressNormalizer.swift`
-  - Updated callers: `Core/AI/Dictionary/DictionaryMatcher.swift`, `Core/AI/PronunciationLexicon.swift`, `KeyVoxTests/AI/Dictionary/DictionaryMatcherCoreLogicTests.swift`
-- Website/domain helper extraction centralized cross-domain URL rules:
-  - Added: `Core/Normalization/WebsiteNormalizer.swift`
-  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/Lists/ListPatternDetector.swift`, `Core/Lists/ListPatternMarkerParser.swift`
-- Dictionary email helper extensions were renamed:
-  - Removed: `Core/AI/Dictionary/Email/DictionaryMatcherEmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcherEmailResolution.swift`
-  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
-- Dictionary email resolution helpers were split for maintainability:
-  - Added: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`, `Core/AI/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
-  - Updated: `Core/AI/Dictionary/Email/DictionaryMatcher+EmailResolution.swift` to focus on spoken/literal/standalone resolution paths.
-- Post-processing moved under Transcription and time normalization extracted:
-  - Removed: `Core/TranscriptionPostProcessor.swift`
-  - Added: `Core/Transcription/TranscriptionPostProcessor.swift`, `Core/Normalization/TimeExpressionNormalizer.swift`
-- Post-processing normalization responsibilities were split into focused helpers:
-  - Added: `Core/Normalization/WhitespaceNormalizer.swift`, `Core/Normalization/SentenceCapitalizationNormalizer.swift`, `Core/Normalization/ColonNormalizer.swift`, `Core/Normalization/TerminalPunctuationNormalizer.swift`, `Core/Normalization/LaughterNormalizer.swift`
-  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift` to orchestrate helper modules instead of owning all normalization internals.
-- Character spam guard was added for model-noise hardening:
-  - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
-  - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
-- Caps Lock override layer was added for deterministic all-caps output mode:
-  - Added: `Core/Normalization/AllCapsOverrideNormalizer.swift`
-  - Updated: `Core/KeyboardMonitor.swift`, `Core/Transcription/DictationPipeline.swift`, `Core/Transcription/TranscriptionManager.swift`, `Core/Transcription/TranscriptionPostProcessor.swift`
-- Project source graph update:
-  - `KeyVox.xcodeproj/project.pbxproj` updated for renamed/moved files above.
+- `CODEMAP.md` documents the current structure/ownership map only.
+- Detailed change history should live in Git commits/PRs and release notes, not as hand-maintained per-file delta blocks.
 
 ## Persistence & Defaults
 
