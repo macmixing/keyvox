@@ -10,11 +10,19 @@ struct SentenceCapitalizationNormalizer {
         options: []
     )
     private static let sentenceBoundaryRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?<!\d)([.!?;:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
+        pattern: #"(?<!\d)([.!?:…]["'”’\)\]\}]*)(\s*)([a-z])"#,
         options: []
     )
     private static let lineBreakRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"(\n)([ \t]*["'“”‘’\(\[\{]*)([a-z])"#,
+        options: []
+    )
+    private static let standaloneLowercasePronounRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"(?<![A-Za-z0-9_])i(?![A-Za-z0-9_])"#,
+        options: []
+    )
+    private static let assignmentLikeRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b[A-Za-z_][A-Za-z0-9_]*\s*=\s*"#,
         options: []
     )
     private static let commonTopLevelDomains: Set<String> = [
@@ -28,7 +36,8 @@ struct SentenceCapitalizationNormalizer {
     func normalizeSentenceStarts(in text: String) -> String {
         let textStartNormalized = capitalizeAtTextStart(text)
         let sentenceStartNormalized = capitalizeAfterSentenceBoundary(textStartNormalized)
-        return capitalizeAfterLineBreak(sentenceStartNormalized)
+        let lineBreakNormalized = capitalizeAfterLineBreak(sentenceStartNormalized)
+        return capitalizeStandalonePronounI(in: lineBreakNormalized)
     }
 
     private func capitalizeAtTextStart(_ text: String) -> String {
@@ -45,6 +54,33 @@ struct SentenceCapitalizationNormalizer {
         let mutable = NSMutableString(string: text)
         mutable.replaceCharacters(in: match.range, with: "\(prefix)\(nextLetter)")
         return mutable as String
+    }
+
+    private func capitalizeStandalonePronounI(in text: String) -> String {
+        guard !text.isEmpty else { return text }
+        guard let regex = Self.standaloneLowercasePronounRegex else { return text }
+
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        guard !lines.isEmpty else { return text }
+
+        let normalizedLines = lines.map { line -> String in
+            guard !line.isEmpty else { return line }
+            guard !isLikelyCodeishLine(line) else { return line }
+
+            let nsLine = line as NSString
+            let fullRange = NSRange(location: 0, length: nsLine.length)
+            let matches = regex.matches(in: line, options: [], range: fullRange)
+            guard !matches.isEmpty else { return line }
+
+            let mutable = NSMutableString(string: line)
+            for match in matches.reversed() {
+                guard shouldCapitalizeStandalonePronounI(in: nsLine, matchRange: match.range) else { continue }
+                mutable.replaceCharacters(in: match.range, with: "I")
+            }
+            return mutable as String
+        }
+
+        return normalizedLines.joined(separator: "\n")
     }
 
     private func capitalizeAfterSentenceBoundary(_ text: String) -> String {
@@ -154,6 +190,94 @@ struct SentenceCapitalizationNormalizer {
             .split(whereSeparator: \.isWhitespace)
             .first
             .map(String.init) ?? ""
+    }
+
+    private func shouldCapitalizeStandalonePronounI(in line: NSString, matchRange: NSRange) -> Bool {
+        let start = matchRange.location
+        let endExclusive = matchRange.location + matchRange.length
+        guard start >= 0, endExclusive <= line.length else { return false }
+
+        if start > 0, let previous = UnicodeScalar(line.character(at: start - 1)),
+           "_$/@".unicodeScalars.contains(previous) {
+            return false
+        }
+        if endExclusive < line.length, let next = UnicodeScalar(line.character(at: endExclusive)),
+           "_$/@".unicodeScalars.contains(next) {
+            return false
+        }
+
+        guard let tokenRange = tokenRange(containing: start, in: line) else { return false }
+        let token = line.substring(with: tokenRange)
+        if isAddressOrURLToken(token) {
+            return false
+        }
+        if isLikelyTechnicalToken(token) {
+            return false
+        }
+
+        return true
+    }
+
+    private func tokenRange(containing location: Int, in text: NSString) -> NSRange? {
+        guard location >= 0, location < text.length else { return nil }
+
+        var start = location
+        while start > 0 {
+            guard let scalar = UnicodeScalar(text.character(at: start - 1)),
+                  !CharacterSet.whitespacesAndNewlines.contains(scalar) else {
+                break
+            }
+            start -= 1
+        }
+
+        var end = location + 1
+        while end < text.length {
+            guard let scalar = UnicodeScalar(text.character(at: end)),
+                  !CharacterSet.whitespacesAndNewlines.contains(scalar) else {
+                break
+            }
+            end += 1
+        }
+
+        guard end > start else { return nil }
+        return NSRange(location: start, length: end - start)
+    }
+
+    private func isLikelyTechnicalToken(_ token: String) -> Bool {
+        let stripped = token.trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!?"))
+        guard !stripped.isEmpty else { return false }
+        if stripped.contains("/") { return true }
+        if stripped.contains("::") { return true }
+        if stripped.contains("_") { return true }
+        if stripped.contains("$") { return true }
+        return false
+    }
+
+    private func isLikelyCodeishLine(_ line: String) -> Bool {
+        guard !line.isEmpty else { return false }
+        if line.contains("`") { return true }
+
+        let codeOperators = ["==", "!=", "<=", ">=", "=>", "->", "::", "&&", "||", "++", "--"]
+        if codeOperators.contains(where: line.contains) {
+            return true
+        }
+
+        if let assignmentRegex = Self.assignmentLikeRegex {
+            let nsLine = line as NSString
+            let range = NSRange(location: 0, length: nsLine.length)
+            if assignmentRegex.firstMatch(in: line, options: [], range: range) != nil {
+                return true
+            }
+        }
+
+        if line.contains(";") {
+            let hasBracesOrBrackets = line.contains("{") || line.contains("}") || line.contains("[") || line.contains("]")
+            if hasBracesOrBrackets {
+                return true
+            }
+        }
+
+        return false
     }
 
     private func isLikelyDomainBoundary(_ text: String, dotLocation: Int) -> Bool {
