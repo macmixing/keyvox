@@ -71,6 +71,9 @@ final class DictationPipeline {
             let inferenceDuration = Date().timeIntervalSince(inferenceStart)
             let rawText = result ?? ""
             let wasLikelyNoSpeech = rawText.isEmpty && self.transcriptionProvider.lastResultWasLikelyNoSpeech
+            #if DEBUG
+            self.logPipelineStage("rawText", rawText)
+            #endif
 
             guard !wasLikelyNoSpeech else {
                 completion(
@@ -94,6 +97,9 @@ final class DictationPipeline {
                 listFormattingEnabled: self.listFormattingEnabledProvider(),
                 forceAllCaps: self.capsLockEnabledProvider()
             )
+            #if DEBUG
+            self.logPipelineStage("finalText", finalText)
+            #endif
 
             if DictationPromptEchoGuard.shouldTreatAsNoSpeech(
                 processedText: finalText,
@@ -133,4 +139,34 @@ final class DictationPipeline {
             )
         }
     }
+
+    #if DEBUG
+    private func logPipelineStage(_ stage: String, _ value: String) {
+        let summary = debugTextSummary(value)
+        if rawDebugTextLoggingEnabled {
+            print("[KVXPipeline] \(stage) \(summary) text=\(truncatedDebugEscaped(value, maxCharacters: 500))")
+        } else {
+            print("[KVXPipeline] \(stage) \(summary)")
+        }
+    }
+
+    private var rawDebugTextLoggingEnabled: Bool {
+        ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+    }
+
+    private func debugTextSummary(_ text: String) -> String {
+        let chars = text.count
+        let words = text.split(whereSeparator: \.isWhitespace).count
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).count
+        let firstToken = text.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+        return "chars=\(chars) words=\(words) lines=\(lines) firstToken=\(firstToken)"
+    }
+
+    private func truncatedDebugEscaped(_ text: String, maxCharacters: Int) -> String {
+        let escaped = text.replacingOccurrences(of: "\n", with: "\\n")
+        guard escaped.count > maxCharacters else { return escaped }
+        let end = escaped.index(escaped.startIndex, offsetBy: maxCharacters)
+        return "\(escaped[..<end])..."
+    }
+    #endif
 }

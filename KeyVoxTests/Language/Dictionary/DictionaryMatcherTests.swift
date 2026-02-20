@@ -54,6 +54,22 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "open Cueboard now")
     }
 
+    func testSplitJoinAllowsShortTokenWhenJoinExactlyMatchesDictionaryEntry() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrBeast")])
+
+        let result = matcher.apply(to: "Is that Mr. Beast over there?")
+        XCTAssertEqual(result.text, "Is that MrBeast over there?")
+    }
+
+    func testSplitJoinAllowsShortTokenExactJoinForInitialedBrand() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrD")])
+
+        let result = matcher.apply(to: "Is that Mr. D over there?")
+        XCTAssertEqual(result.text, "Is that MrD over there?")
+    }
+
     func testPluralSecondTokenCanJoinForBrand() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
@@ -210,6 +226,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "www.example.com")
     }
 
+    func testMatcherConsumesTrailingSuffixTokenWhenFinalDictionaryTokenIsSplit() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
+
+        let result = matcher.apply(to: "What happened to Mister Pinup CA? Did he leave early?")
+        XCTAssertEqual(result.text, "What happened to Mister PinupCA? Did he leave early?")
+    }
+
     func testMatcherPreservesTerminalPunctuationForShortProseWithAtDomainPattern() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [])
@@ -227,6 +251,15 @@ final class DictionaryMatcherTests: XCTestCase {
             "platform": "PLTRM",
             "cueboard": "KBRD",
             "keyboard": "KBRD",
+            "mister": "MSTR",
+            "mr": "MR",
+            "beast": "BST",
+            "mrbeast": "MRBST",
+            "d": "D",
+            "mrd": "MRD",
+            "pinup": "PNP",
+            "pinupca": "PNPK",
+            "ca": "K",
         ])
 
         return DictionaryMatcher(lexicon: lexicon, encoder: PhoneticEncoder(), scorer: .balanced)

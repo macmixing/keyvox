@@ -13,6 +13,10 @@ class WhisperService: ObservableObject {
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
     private let paragraphChunker = WhisperAudioParagraphChunker()
+    private let suspiciousShortResultMinChunkSeconds: Double = 1.35
+    private let suspiciousShortResultMaxWords = 2
+    private let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35
+    private let retryRelaxedLogprobThreshold: Float = -2.0
     
     /// Pre-loads the model into memory to eliminate cold-start latency.
     func warmup() {
@@ -133,7 +137,7 @@ class WhisperService: ObservableObject {
 
                 var transcribedSegments: [Segment] = []
                 var chunkTexts: [String] = []
-                for chunk in chunkResult.chunks {
+                for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
                         DispatchQueue.main.async {
                             self.isTranscribing = false
@@ -145,7 +149,13 @@ class WhisperService: ObservableObject {
                     let chunkFrames = Array(audioFrames[chunk.startFrame..<chunk.endFrame])
                     guard !chunkFrames.isEmpty else { continue }
 
-                    let segments = try await whisper?.transcribe(audioFrames: chunkFrames) ?? []
+                    let segments = try await self.transcribeChunkWithLeadingPhraseRetry(
+                        chunkFrames: chunkFrames,
+                        usedDictionaryHintPrompt: useDictionaryHintPrompt
+                    )
+                    #if DEBUG
+                    logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
+                    #endif
                     transcribedSegments.append(contentsOf: segments)
                     let chunkText = segments
                         .map { $0.text }
@@ -299,4 +309,127 @@ class WhisperService: ObservableObject {
 
         return normalizedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    private func transcribeChunkWithLeadingPhraseRetry(
+        chunkFrames: [Float],
+        usedDictionaryHintPrompt: Bool
+    ) async throws -> [Segment] {
+        let primary = try await whisper?.transcribe(audioFrames: chunkFrames) ?? []
+        guard shouldRetryLeadingPhraseDecode(
+            primary,
+            chunkFrames: chunkFrames,
+            usedDictionaryHintPrompt: usedDictionaryHintPrompt
+        ) else {
+            return primary
+        }
+        guard let whisper else { return primary }
+
+        let params = whisper.params
+        let originalPrompt = params.initialPrompt
+        let originalSuppressBlank = params.suppress_blank
+        let originalLogprobThreshold = params.logprob_thold
+
+        params.initialPrompt = ""
+        params.suppress_blank = false
+        params.logprob_thold = retryRelaxedLogprobThreshold
+
+        defer {
+            params.initialPrompt = originalPrompt
+            params.suppress_blank = originalSuppressBlank
+            params.logprob_thold = originalLogprobThreshold
+        }
+
+        #if DEBUG
+        let duration = Double(chunkFrames.count) / 16_000.0
+        print(
+            "WhisperService retry: reason=leading_short_result " +
+            "chunkSeconds=\(String(format: "%.2f", duration)) " +
+            "primaryWords=\(wordCount(in: compactSegmentText(primary)))"
+        )
+        #endif
+
+        let retry = try await whisper.transcribe(audioFrames: chunkFrames)
+        let selected = selectPreferredRetry(primary: primary, retry: retry)
+        #if DEBUG
+        if selected.elementsEqual(retry, by: { $0.text == $1.text && $0.startTime == $1.startTime && $0.endTime == $1.endTime }) {
+            print("WhisperService retry: selected=retry")
+        } else {
+            print("WhisperService retry: selected=primary")
+        }
+        #endif
+        return selected
+    }
+
+    private func shouldRetryLeadingPhraseDecode(
+        _ primary: [Segment],
+        chunkFrames: [Float],
+        usedDictionaryHintPrompt: Bool
+    ) -> Bool {
+        guard usedDictionaryHintPrompt else { return false }
+        let duration = Double(chunkFrames.count) / 16_000.0
+        guard duration >= suspiciousShortResultMinChunkSeconds else { return false }
+
+        let compactText = compactSegmentText(primary)
+        let words = wordCount(in: compactText)
+        guard words > 0 && words <= suspiciousShortResultMaxWords else { return false }
+
+        let averageNoSpeechProbability: Float
+        if primary.isEmpty {
+            averageNoSpeechProbability = 1.0
+        } else {
+            averageNoSpeechProbability = primary.reduce(0) { $0 + $1.noSpeechProbability } / Float(primary.count)
+        }
+        guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
+
+        return true
+    }
+
+    private func selectPreferredRetry(primary: [Segment], retry: [Segment]) -> [Segment] {
+        let primaryText = compactSegmentText(primary)
+        let retryText = compactSegmentText(retry)
+        let primaryWords = wordCount(in: primaryText)
+        let retryWords = wordCount(in: retryText)
+
+        if retryWords >= primaryWords + 2 {
+            return retry
+        }
+        if retryWords == primaryWords && retryText.count >= primaryText.count + 12 {
+            return retry
+        }
+        return primary
+    }
+
+    private func compactSegmentText(_ segments: [Segment]) -> String {
+        segments
+            .map { $0.text }
+            .joined(separator: " ")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func wordCount(in text: String) -> Int {
+        text.split(whereSeparator: \.isWhitespace).count
+    }
+
+    #if DEBUG
+    private func logChunkSegments(_ segments: [Segment], chunkIndex: Int, totalChunks: Int) {
+        guard !segments.isEmpty else {
+            print("WhisperService segments: chunk=\(chunkIndex + 1)/\(totalChunks) count=0")
+            return
+        }
+
+        let segmentSummaries = segments.prefix(3).enumerated().map { index, segment in
+            let compactText = segment.text
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let truncated = compactText.count > 80 ? String(compactText.prefix(80)) + "…" : compactText
+            return
+                "#\(index + 1){start=\(segment.startTime),end=\(segment.endTime),p=\(String(format: "%.3f", segment.noSpeechProbability)),text=\(truncated)}"
+        }.joined(separator: " ")
+
+        print(
+            "WhisperService segments: chunk=\(chunkIndex + 1)/\(totalChunks) count=\(segments.count) \(segmentSummaries)"
+        )
+    }
+    #endif
 }

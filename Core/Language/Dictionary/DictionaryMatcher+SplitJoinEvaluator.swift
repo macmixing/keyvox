@@ -14,16 +14,24 @@ extension DictionaryMatcher {
         stats.attempted += 1
 
         let window = Array(tokens[start..<end])
-        guard window[0].normalized.count >= minimumSplitTokenLength,
-              window[1].normalized.count >= minimumSplitTokenLength else {
-            stats.rejectedShortToken += 1
-            return nil
-        }
-
         let forms = splitJoinForms(from: window)
         guard !forms.isEmpty else {
             stats.rejectedLowScore += 1
             return nil
+        }
+
+        let containsShortToken =
+            window[0].normalized.count < minimumSplitTokenLength
+            || window[1].normalized.count < minimumSplitTokenLength
+        if containsShortToken {
+            let exactJoinedCandidates = Set(oneTokenCandidates.map(\.normalizedPhrase))
+            let hasExactJoinCandidate = forms.contains { form in
+                exactJoinedCandidates.contains(form.normalized)
+            }
+            guard hasExactJoinCandidate else {
+                stats.rejectedShortToken += 1
+                return nil
+            }
         }
 
         var best: Candidate?

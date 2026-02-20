@@ -67,9 +67,9 @@ final class DictionaryStoreTests: XCTestCase {
 
             let prompt = store.whisperHintPrompt(maxEntries: 2, maxChars: 80)
             XCTAssertTrue(prompt.hasPrefix("Domain vocabulary: "))
-            XCTAssertTrue(prompt.contains("Cueboard"))
             XCTAssertTrue(prompt.contains("MiGo Platform"))
-            XCTAssertTrue(!prompt.contains("Dom Esposito"))
+            XCTAssertTrue(prompt.contains("Dom Esposito"))
+            XCTAssertTrue(!prompt.contains("Cueboard"))
         }
     }
 

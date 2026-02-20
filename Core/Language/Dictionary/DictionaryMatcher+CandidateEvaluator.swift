@@ -100,7 +100,13 @@ extension DictionaryMatcher {
             return nil
         }
 
-        let range = combinedRange(from: window)
+        var tokenEndExclusive = end
+        var range = combinedRange(from: window)
+        if shouldConsumeSplitTailToken(window: window, candidate: best.entry, nextToken: end < tokens.count ? tokens[end] : nil) {
+            tokenEndExclusive = end + 1
+            range = combinedRange(from: Array(tokens[start..<tokenEndExclusive]))
+        }
+
         let observedRaw = (text as NSString).substring(with: range)
         let replacementText = best.entry.phrase + best.replacementSuffix
 
@@ -110,11 +116,38 @@ extension DictionaryMatcher {
 
         return ProposedReplacement(
             tokenStart: start,
-            tokenEndExclusive: end,
+            tokenEndExclusive: tokenEndExclusive,
             range: range,
             replacement: replacementText,
             score: best.score.final
         )
+    }
+
+    private func shouldConsumeSplitTailToken(
+        window: [Token],
+        candidate: CompiledEntry,
+        nextToken: Token?
+    ) -> Bool {
+        guard window.count == candidate.tokens.count, window.count > 1 else { return false }
+        guard let nextToken else { return false }
+
+        // Guard a specific false-positive shape where Whisper splits the end of the
+        // final dictionary token into a separate trailing token (e.g. "pinup ca").
+        let sharedPrefixCount = window.count - 1
+        for index in 0..<sharedPrefixCount where window[index].normalized != candidate.tokens[index] {
+            return false
+        }
+
+        guard let observedLast = window.last?.normalized, let candidateLast = candidate.tokens.last else {
+            return false
+        }
+        guard candidateLast.count > observedLast.count, candidateLast.hasPrefix(observedLast) else {
+            return false
+        }
+
+        let trailingSuffix = String(candidateLast.dropFirst(observedLast.count))
+        guard trailingSuffix.count >= 2 else { return false }
+        return nextToken.normalized == trailingSuffix
     }
 
     func observedFormsForWindow(

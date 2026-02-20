@@ -4,6 +4,19 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
+    func testPreservesLeadingMrBeastClauseWithDictionaryBrand() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
+
+        let output = processor.process(
+            "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
+    }
+
     func testCollapsesSingleCharacterSpamRun() {
         let processor = TranscriptionPostProcessor()
         let spam = String(repeating: "j", count: 140)
