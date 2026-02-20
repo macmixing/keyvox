@@ -125,4 +125,66 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon")
     }
+
+    func testForceAllCapsAppliesAfterNormalizationPipeline() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "Cueboard"),
+            DictionaryEntry(phrase: "dom@example.com"),
+            DictionaryEntry(phrase: "www.keyvox.app")
+        ]
+        let input = """
+        project notes one cue board two cue board at 415 pm
+
+        visit www.KeyVox.app and email dom@example.com
+        """
+
+        let output = processor.process(
+            input,
+            dictionaryEntries: entries,
+            renderMode: .multiline,
+            listFormattingEnabled: true,
+            forceAllCaps: true
+        )
+
+        XCTAssertTrue(output.contains("PROJECT NOTES:"))
+        XCTAssertTrue(output.contains("\n1. CUEBOARD"))
+        XCTAssertTrue(output.contains("\n2. CUEBOARD AT 4:15 PM"))
+        XCTAssertTrue(output.contains("VISIT WWW.KEYVOX.APP AND EMAIL DOM@EXAMPLE.COM"))
+        XCTAssertFalse(output.contains("Cueboard"))
+        XCTAssertEqual(output, output.uppercased())
+    }
+
+    func testForceAllCapsKeepsExistingNumericListShapeAndUppercasesContent() {
+        let processor = TranscriptionPostProcessor()
+        let input = "1. dom@example.com\n2. www.example.com"
+
+        let output = processor.process(
+            input,
+            dictionaryEntries: [DictionaryEntry(phrase: "Dom")],
+            renderMode: .multiline,
+            listFormattingEnabled: true,
+            forceAllCaps: true
+        )
+
+        XCTAssertEqual(output, input.uppercased())
+    }
+
+    func testForceAllCapsFormatsUppercaseSpokenNumberMarkers() {
+        let processor = TranscriptionPostProcessor()
+        let input = "THINGS TO DO ONE EMAIL DOM AT EXAMPLE.COM TWO VISIT WWW.EXAMPLE.COM"
+
+        let output = processor.process(
+            input,
+            dictionaryEntries: [DictionaryEntry(phrase: "dom@example.com")],
+            renderMode: .multiline,
+            listFormattingEnabled: true,
+            forceAllCaps: true
+        )
+
+        XCTAssertTrue(output.contains("THINGS TO DO:"))
+        XCTAssertTrue(output.contains("\n1. EMAIL DOM@EXAMPLE.COM"))
+        XCTAssertTrue(output.contains("\n2. VISIT WWW.EXAMPLE.COM"))
+        XCTAssertEqual(output, output.uppercased())
+    }
 }

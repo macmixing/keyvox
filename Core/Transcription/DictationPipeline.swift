@@ -27,6 +27,7 @@ final class DictationPipeline {
     private let dictionaryEntriesProvider: () -> [DictionaryEntry]
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
+    private let capsLockEnabledProvider: () -> Bool
     private let listRenderModeProvider: () -> ListRenderMode
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
@@ -37,6 +38,7 @@ final class DictationPipeline {
         dictionaryEntriesProvider: @escaping () -> [DictionaryEntry],
         autoParagraphsEnabledProvider: @escaping () -> Bool,
         listFormattingEnabledProvider: @escaping () -> Bool,
+        capsLockEnabledProvider: @escaping () -> Bool = { false },
         listRenderModeProvider: @escaping () -> ListRenderMode,
         recordSpokenWords: @escaping (String) -> Void,
         pasteText: @escaping (String) -> Void
@@ -46,6 +48,7 @@ final class DictationPipeline {
         self.dictionaryEntriesProvider = dictionaryEntriesProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
+        self.capsLockEnabledProvider = capsLockEnabledProvider
         self.listRenderModeProvider = listRenderModeProvider
         self.recordSpokenWords = recordSpokenWords
         self.pasteText = pasteText
@@ -88,7 +91,8 @@ final class DictationPipeline {
                 rawText,
                 dictionaryEntries: dictionaryEntries,
                 renderMode: self.listRenderModeProvider(),
-                listFormattingEnabled: self.listFormattingEnabledProvider()
+                listFormattingEnabled: self.listFormattingEnabledProvider(),
+                forceAllCaps: self.capsLockEnabledProvider()
             )
 
             if DictationPromptEchoGuard.shouldTreatAsNoSpeech(

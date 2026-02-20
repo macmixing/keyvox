@@ -32,6 +32,9 @@ class TranscriptionManager: ObservableObject {
         listFormattingEnabledProvider: { [weak self] in
             self?.appSettings.listFormattingEnabled ?? true
         },
+        capsLockEnabledProvider: { [weak self] in
+            self?.keyboardMonitor.isCapsLockOn ?? false
+        },
         listRenderModeProvider: {
             PasteService.shared.preferredListRenderModeForFocusedElement()
         },

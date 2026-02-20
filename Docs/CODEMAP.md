@@ -117,7 +117,8 @@ KeyVox/
 │   │   ├── ColonNormalizer.swift
 │   │   ├── TerminalPunctuationNormalizer.swift
 │   │   ├── LaughterNormalizer.swift
-│   │   └── CharacterSpamNormalizer.swift
+│   │   ├── CharacterSpamNormalizer.swift
+│   │   └── AllCapsOverrideNormalizer.swift
 │   ├── Transcription/
 │   │   ├── DictationPipeline.swift
 │   │   ├── DictationPromptEchoGuard.swift
@@ -227,7 +228,7 @@ KeyVox/
 
 ## Core Runtime Flow
 
-1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape state.
+1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
@@ -286,9 +287,12 @@ KeyVox/
   - Converts spoken/delimiter forms of `colon` into punctuation (`:`) with lightweight homophone tolerance and punctuation cleanup guards.
 - `Core/Normalization/TerminalPunctuationNormalizer.swift`
   - Appends terminal period for sentence-like outputs ending in formatted times when punctuation is absent.
+- `Core/Normalization/AllCapsOverrideNormalizer.swift`
+  - Final independent override that uppercases post-processed output when Caps Lock mode is enabled.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
   - Default trigger binding is `rightOption`.
+  - Publishes live Caps Lock state used to enable forced all-caps output mode.
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
@@ -350,6 +354,8 @@ KeyVox/
   - Shared spoken-colon normalizer used before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Core/Normalization/CharacterSpamNormalizer.swift`
   - Shared model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
+- `Core/Normalization/AllCapsOverrideNormalizer.swift`
+  - Shared final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Core/AI/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
 - `Core/AI/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
@@ -538,6 +544,9 @@ KeyVox/
 - Character spam guard was added for model-noise hardening:
   - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
+- Caps Lock override layer was added for deterministic all-caps output mode:
+  - Added: `Core/Normalization/AllCapsOverrideNormalizer.swift`
+  - Updated: `Core/KeyboardMonitor.swift`, `Core/Transcription/DictationPipeline.swift`, `Core/Transcription/TranscriptionManager.swift`, `Core/Transcription/TranscriptionPostProcessor.swift`
 - Project source graph update:
   - `KeyVox.xcodeproj/project.pbxproj` updated for renamed/moved files above.
 

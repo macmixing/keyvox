@@ -10,6 +10,7 @@ final class TranscriptionPostProcessor {
     private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
     private let colonNormalizer = ColonNormalizer()
+    private let allCapsOverrideNormalizer = AllCapsOverrideNormalizer()
     private let whitespaceNormalizer = WhitespaceNormalizer()
     private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
     private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
@@ -29,7 +30,8 @@ final class TranscriptionPostProcessor {
         _ text: String,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
-        listFormattingEnabled: Bool = true
+        listFormattingEnabled: Bool = true,
+        forceAllCaps: Bool = false
     ) -> String {
         guard !text.isEmpty else { return "" }
 
@@ -111,8 +113,12 @@ final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("sentenceNormalized", sentenceNormalized)
         #endif
-        let output = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
+        let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
+        let output = allCapsOverrideNormalizer.normalize(in: punctuatedOutput, isEnabled: forceAllCaps)
         #if DEBUG
+        if forceAllCaps {
+            logPipelineStage("allCapsOverride", output)
+        }
         logPipelineStage("output", output)
         #endif
         return output

@@ -315,6 +315,47 @@ final class DictationPipelineSmokeTests: XCTestCase {
         }
     }
 
+    func testDictationPipelineSmokeCapsLockForcesAllCapsAndKeepsFormattingPipeline() async {
+        let input = """
+        project notes one cue board two cue board at 415 pm
+
+        visit www.keyvox.app and email dom@example.com
+        """
+        let dictionaryEntries = [DictionaryEntry(phrase: "Cueboard")]
+        let transcription = StubTranscriptionProvider(result: input)
+        var spokenWordRecords: [String] = []
+        var pastedPayloads: [String] = []
+
+        let pipeline = DictationPipeline(
+            transcriptionProvider: transcription,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { dictionaryEntries },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            capsLockEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { spokenWordRecords.append($0) },
+            pasteText: { pastedPayloads.append($0) }
+        )
+
+        let result = await runPipeline(pipeline)
+        let expected = """
+        PROJECT NOTES:
+
+        1. CUEBOARD
+        2. CUEBOARD AT 4:15 PM
+
+        VISIT WWW.KEYVOX.APP AND EMAIL DOM@EXAMPLE.COM
+        """
+
+        XCTAssertFalse(result.wasLikelyNoSpeech)
+        XCTAssertEqual(result.finalText, expected)
+        XCTAssertEqual(spokenWordRecords, [expected])
+        XCTAssertEqual(pastedPayloads, [expected])
+        XCTAssertTrue(result.finalText.contains("\n1. CUEBOARD"))
+        XCTAssertTrue(result.finalText.contains("4:15 PM"))
+    }
+
     private func runPipeline(
         _ pipeline: DictationPipeline,
         frames: [Float] = [0.1, 0.2, 0.3],

@@ -38,7 +38,7 @@ KeyVox is organized by responsibility:
 - `Core/Audio/AudioCaptureClassification.swift`: Capture confidence/silence classification.
 - `Core/Audio/AudioSilencePolicy.swift`: Shared silence-gate policy rules/constants.
 - `Core/Audio/AudioSignalMetrics.swift`: Pure RMS/peak/window-ratio metrics.
-- `Core/KeyboardMonitor.swift`: Global/local modifier and escape monitoring.
+- `Core/KeyboardMonitor.swift`: Global/local modifier, escape, and caps-lock monitoring.
 - `Core/AudioDeviceManager.swift`: Microphone discovery/selection and active device resolution.
 - `Core/ModelDownloader/ModelDownloader.swift`: Download orchestration for Whisper model artifacts.
 - `Core/ModelDownloader/ModelDownloader+DownloadLifecycle.swift`: URLSession progress/completion/error handling and download state transitions.
@@ -58,6 +58,7 @@ KeyVox is organized by responsibility:
 - `Core/Normalization/SentenceCapitalizationNormalizer.swift`: Text-start/sentence-boundary/line-break capitalization with email/domain guards.
 - `Core/Normalization/ColonNormalizer.swift`: Converts spoken/delimiter colon forms into deterministic `:` punctuation with homophone and punctuation guards.
 - `Core/Normalization/TerminalPunctuationNormalizer.swift`: Terminal punctuation completion for sentence-like outputs ending in formatted times.
+- `Core/Normalization/AllCapsOverrideNormalizer.swift`: Final post-processing override that forces uppercase output when Caps Lock mode is enabled.
 - `Core/AI/Dictionary/*`: Dictionary storage and matcher internals.
 - `Core/Normalization/EmailAddressNormalizer.swift`: Shared non-dictionary email literal cleanup utility.
 - `Core/Normalization/WebsiteNormalizer.swift`: Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks reused across list and email flows.
@@ -104,7 +105,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 6. List formatting applies numeric list rendering when confidence gates pass.
 7. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
 8. Normalization helpers apply render-mode whitespace, capitalization guards, and terminal-time punctuation completion.
-9. Final text is inserted via the paste service.
+9. `AllCapsOverrideNormalizer` applies a final uppercase override when Caps Lock mode is active.
+10. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 
@@ -210,5 +212,8 @@ These remain integration/manual-test territory by design.
 - Character spam hardening was added for post-processing noise suppression:
   - Added: `Core/Normalization/CharacterSpamNormalizer.swift`
   - Updated: `Core/Transcription/TranscriptionPostProcessor.swift`, `KeyVoxTests/Core/TranscriptionPostProcessorTests+LanguageHeuristics.swift`
+- Caps Lock all-caps override was added as an independent post-processing layer:
+  - Added: `Core/Normalization/AllCapsOverrideNormalizer.swift`
+  - Updated: `Core/KeyboardMonitor.swift`, `Core/Transcription/DictationPipeline.swift`, `Core/Transcription/TranscriptionManager.swift`, `Core/Transcription/TranscriptionPostProcessor.swift`
 - Project wiring:
   - `KeyVox.xcodeproj/project.pbxproj` updated to align source/build references with the renamed and moved files.
