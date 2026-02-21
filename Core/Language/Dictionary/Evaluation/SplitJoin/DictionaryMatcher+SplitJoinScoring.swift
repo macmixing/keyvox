@@ -230,6 +230,16 @@ extension DictionaryMatcher {
         }
 
         var replacementSuffix = best.replacementSuffix
+        if replacementSuffix == "s",
+           let candidateToken = best.entry.tokens.first,
+           shouldInferSplitJoinPossessiveSuffix(
+               observedCombined: window.map(\.normalized).joined(),
+               observedTail: window[1].normalized,
+               candidate: candidateToken,
+               nextToken: end < tokens.count ? tokens[end] : nil
+           ) {
+            replacementSuffix = "'s"
+        }
         if replacementSuffix.isEmpty,
            isStylizedSingleTokenEntry(best.entry),
            let candidateToken = best.entry.tokens.first,

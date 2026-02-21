@@ -476,7 +476,7 @@ final class DictionaryMatcherTests: XCTestCase {
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
         let result = matcher.apply(to: "this is a test of cue boards abilities")
-        XCTAssertTrue(result.text == "this is a test of Cueboards abilities")
+        XCTAssertTrue(result.text == "this is a test of Cueboard's abilities")
     }
 
     func testSplitJoinPreservesPluralForSingularDictionaryEntry() {

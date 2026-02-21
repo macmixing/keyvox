@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 extension DictionaryMatcher {
     private static let domainLabelTokenRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -20,8 +21,9 @@ extension DictionaryMatcher {
         candidate: String,
         nextToken: Token?
     ) -> Bool {
-        guard nextToken != nil else { return false }
+        guard let nextToken else { return false }
         guard !candidate.hasSuffix("s") else { return false }
+        guard nextToken.lexicalClass == .noun else { return false }
         let hasPossessiveSoundEnding =
             hasPossessiveLikeEnding(observedCombined)
             || hasPossessiveLikeEnding(observedTail)

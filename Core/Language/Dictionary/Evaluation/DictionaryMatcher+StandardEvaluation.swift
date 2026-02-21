@@ -374,6 +374,12 @@ extension DictionaryMatcher {
                 isStylizedSingleTokenEntry(best.entry)
                 && !allowStylizedBySurface
             let hasAttributionPrepositionContext = hasAttributionLikePrepositionContext(tokenStart: start, tokens: tokens)
+            if !isStylizedSingleTokenEntry(best.entry),
+               !hasStructuralContext,
+               !hasAttributionPrepositionContext {
+                stats.rejectedCommonWord += 1
+                return nil
+            }
             let stylizedStructuralBypass =
                 stylizedCommonWordWithoutSurfaceEvidence
                 && hasStructuralContext
