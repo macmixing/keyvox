@@ -11,14 +11,14 @@ struct ListPatternMarkerParser {
         let pattern =
             "(?i)(?:^|(?<=[\\s,;:]))" +
             "(\(markerTokenPattern))" +
-            "(?=(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern)))"
+            "(?=(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=\\p{L}))|\(WebsiteNormalizer.attachedDomainLookaheadPattern)))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let markerAttachedToDomainRegex: NSRegularExpression = {
         let pattern =
             "(?i)(?:[A-Z0-9\\-]+(?:\\.[A-Z0-9\\-]+)*\\.[A-Z]{2,})" +
             "(\(markerTokenPattern))" +
-            "(?=(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))))"
+            "(?=(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=\\p{L}))))"
         return try! NSRegularExpression(pattern: pattern)
     }()
     private static let spokenTwoHomophoneRegex: NSRegularExpression = {
