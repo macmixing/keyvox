@@ -1,6 +1,24 @@
 import Foundation
 
 struct MathExpressionNormalizer {
+    private static let operatorWordToSymbol: [String: String] = [
+        "plus": "+",
+        "minus": "-",
+        "subtract": "-",
+        "subtracted by": "-",
+        "times": "*",
+        "multiplied by": "*",
+        "divided by": "/"
+    ]
+    private static let operatorWordAlternation: String = {
+        operatorWordToSymbol.keys
+            .sorted { $0.count > $1.count }
+            .map { key in
+                NSRegularExpression.escapedPattern(for: key)
+                    .replacingOccurrences(of: #"\\ "#, with: #"\s+"#, options: .regularExpression)
+            }
+            .joined(separator: "|")
+    }()
     private static let standaloneMathAllowedCharsRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"^[\s0-9().+\-*/^=%]+$"#,
         options: []
@@ -47,7 +65,7 @@ struct MathExpressionNormalizer {
         options: []
     )
     private static let mathTriggerRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(?:plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by|equals|percent|squared|cubed|power\s+of|to\s+the\s+power\s+of|to\s+the\s+[A-Z0-9\-]+\s+power|raised\s+to)\b|(?<=\d)\s*-\s*(?=\d)"#,
+        pattern: "(?i)\\b(?:\(operatorWordAlternation)|equals|percent|squared|cubed|power\\s+of|to\\s+the\\s+power\\s+of|to\\s+the\\s+[A-Z0-9\\-]+\\s+power|raised\\s+to)\\b|(?<=\\d)\\s*-\\s*(?=\\d)",
         options: []
     )
     private static let toThePowerOfRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -83,11 +101,11 @@ struct MathExpressionNormalizer {
         options: [.caseInsensitive]
     )
     private static let binaryOperatorRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+(plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by)\s+(\d+(?:\.\d+)?)\b"#,
+        pattern: "(?i)\\b(\\d+(?:\\.\\d+)?)\\s+(\(operatorWordAlternation))\\s+(\\d+(?:\\.\\d+)?)\\b",
         options: []
     )
     private static let expressionOperatorRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b((?:\d|\()[0-9().+\-*/^%\s]*?\d)\s*,?\s*(plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by)\s+(\d+(?:\.\d+)?)\b"#,
+        pattern: "(?i)\\b((?:\\d|\\()[0-9().+\\-*/^%\\s]*?\\d)\\s*,?\\s*(\(operatorWordAlternation))\\s+(\\d+(?:\\.\\d+)?)\\b",
         options: []
     )
     private static let equalsRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -118,28 +136,6 @@ struct MathExpressionNormalizer {
         pattern: #"(?i)^(\d+)(?:st|nd|rd|th)?$"#,
         options: []
     )
-    private static let ordinalWordToExponent: [String: String] = [
-        "first": "1",
-        "second": "2",
-        "third": "3",
-        "fourth": "4",
-        "fifth": "5",
-        "sixth": "6",
-        "seventh": "7",
-        "eighth": "8",
-        "ninth": "9",
-        "tenth": "10",
-        "eleventh": "11",
-        "twelfth": "12",
-        "thirteenth": "13",
-        "fourteenth": "14",
-        "fifteenth": "15",
-        "sixteenth": "16",
-        "seventeenth": "17",
-        "eighteenth": "18",
-        "nineteenth": "19",
-        "twentieth": "20"
-    ]
 
     func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
@@ -199,19 +195,7 @@ struct MathExpressionNormalizer {
             let lhs = nsText.substring(with: match.range(at: 1))
             let operatorWord = nsText.substring(with: match.range(at: 2)).lowercased()
             let rhs = nsText.substring(with: match.range(at: 3))
-            let symbol: String
-            switch operatorWord {
-            case "plus":
-                symbol = "+"
-            case "minus", "subtract", "subtracted by":
-                symbol = "-"
-            case "times", "multiplied by":
-                symbol = "*"
-            case "divided by":
-                symbol = "/"
-            default:
-                return nil
-            }
+            guard let symbol = Self.symbol(forOperatorPhrase: operatorWord) else { return nil }
             return "\(lhs) \(symbol) \(rhs)"
         }
         output = replaceMatches(in: output, using: Self.equalsRegex) { match, nsText in
@@ -232,19 +216,7 @@ struct MathExpressionNormalizer {
                 let lhs = normalizeMathSymbolSpacing(nsText.substring(with: match.range(at: 1)))
                 let operatorWord = nsText.substring(with: match.range(at: 2)).lowercased()
                 let rhs = nsText.substring(with: match.range(at: 3))
-                let symbol: String
-                switch operatorWord {
-                case "plus":
-                    symbol = "+"
-                case "minus", "subtract", "subtracted by":
-                    symbol = "-"
-                case "times", "multiplied by":
-                    symbol = "*"
-                case "divided by":
-                    symbol = "/"
-                default:
-                    return nil
-                }
+                guard let symbol = Self.symbol(forOperatorPhrase: operatorWord) else { return nil }
                 return "\(lhs) \(symbol) \(rhs)"
             }
             if next == current {
@@ -285,6 +257,14 @@ struct MathExpressionNormalizer {
         }
 
         return output.trimmingCharacters(in: .whitespaces)
+    }
+
+    private static func symbol(forOperatorPhrase rawOperatorPhrase: String) -> String? {
+        let normalized = rawOperatorPhrase
+            .lowercased()
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return operatorWordToSymbol[normalized]
     }
 
     private func replaceMatches(
@@ -392,10 +372,6 @@ struct MathExpressionNormalizer {
             .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!?"))
         guard !trimmed.isEmpty else { return nil }
 
-        if let value = Self.ordinalWordToExponent[trimmed] {
-            return value
-        }
-
         if let regex = Self.numericOrdinalExponentRegex {
             let nsToken = trimmed as NSString
             let range = NSRange(location: 0, length: nsToken.length)
@@ -404,6 +380,12 @@ struct MathExpressionNormalizer {
             }
         }
 
-        return nil
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .spellOut
+        guard let parsed = formatter.number(from: trimmed)?.intValue, parsed > 0 else {
+            return nil
+        }
+        return String(parsed)
     }
 }
