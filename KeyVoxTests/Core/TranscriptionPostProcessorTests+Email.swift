@@ -558,6 +558,18 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Use this site:\nwww.example.com")
     }
+    func testPreservesSecondLevelCountryCodeEmailLiteralWithoutSentenceSplit() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "dom@example.co.uk")]
+
+        let output = processor.process(
+            "Dom at Example.co.uk",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "dom@example.co.uk")
+    }
 
     func testNormalizesWebsiteDomainCasingWithDictionaryBrandEntriesKeyVoxAndCueboard() {
         let processor = TranscriptionPostProcessor()

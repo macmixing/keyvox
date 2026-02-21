@@ -74,11 +74,50 @@ enum EmailAddressNormalizer {
         for match in matches.reversed() {
             let email = nsText.substring(with: match.range(at: 1))
             let punctuation = nsText.substring(with: match.range(at: 2))
+            if punctuation == ".",
+               shouldPreserveSecondLevelCountryCodeBoundary(
+                   email: email,
+                   text: nsText,
+                   nextCharacterLocation: match.range(at: 3).location
+               ) {
+                continue
+            }
             let next = nsText.substring(with: match.range(at: 3)).uppercased()
             mutable.replaceCharacters(in: match.range, with: "\(email)\(punctuation) \(next)")
         }
 
         return mutable as String
+    }
+
+    private static func shouldPreserveSecondLevelCountryCodeBoundary(
+        email: String,
+        text: NSString,
+        nextCharacterLocation: Int
+    ) -> Bool {
+        guard let atIndex = email.lastIndex(of: "@") else { return false }
+        let domain = email[email.index(after: atIndex)...]
+        let labels = domain.split(separator: ".", omittingEmptySubsequences: true)
+        guard let trailingLabel = labels.last, trailingLabel.count == 2 else { return false }
+
+        let followingLabel = contiguousDomainLabel(in: text, from: nextCharacterLocation)
+        return followingLabel.count == 2
+    }
+
+    private static func contiguousDomainLabel(in text: NSString, from location: Int) -> String {
+        guard location >= 0, location < text.length else { return "" }
+        var cursor = location
+        var scalars: [UnicodeScalar] = []
+
+        while cursor < text.length {
+            guard let scalar = UnicodeScalar(text.character(at: cursor)),
+                  CharacterSet.alphanumerics.contains(scalar) || scalar == "-" else {
+                break
+            }
+            scalars.append(scalar)
+            cursor += 1
+        }
+
+        return String(String.UnicodeScalarView(scalars))
     }
 
     private static func normalizeSpacedEllipses(in text: String) -> String {
