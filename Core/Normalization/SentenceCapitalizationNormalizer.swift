@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 
 struct SentenceCapitalizationNormalizer {
     private static let domainLikeTokenRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -27,6 +28,9 @@ struct SentenceCapitalizationNormalizer {
     ]
     private static let domainLabelCharacterSet = CharacterSet(
         charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+    )
+    private static let filenameComponentCharacterSet = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
     )
 
     func normalizeSentenceStarts(in text: String) -> String {
@@ -100,6 +104,9 @@ struct SentenceCapitalizationNormalizer {
             let boundaryText = nsText.substring(with: match.range(at: 1))
             if boundaryText.first == "." {
                 if isLikelyDomainBoundary(text, dotLocation: match.range(at: 1).location) {
+                    continue
+                }
+                if isLikelyFilenameExtensionBoundary(text, dotLocation: match.range(at: 1).location) {
                     continue
                 }
 
@@ -310,5 +317,51 @@ struct SentenceCapitalizationNormalizer {
 
         guard let tld = normalized.split(separator: ".").last.map(String.init) else { return false }
         return Self.commonTopLevelDomains.contains(tld)
+    }
+
+    private func isLikelyFilenameExtensionBoundary(_ text: String, dotLocation: Int) -> Bool {
+        let nsText = text as NSString
+        guard dotLocation > 0, dotLocation + 1 < nsText.length else { return false }
+
+        guard let previousScalar = UnicodeScalar(nsText.character(at: dotLocation - 1)),
+              let nextScalar = UnicodeScalar(nsText.character(at: dotLocation + 1)),
+              !CharacterSet.whitespacesAndNewlines.contains(previousScalar),
+              !CharacterSet.whitespacesAndNewlines.contains(nextScalar) else {
+            return false
+        }
+
+        var baseStart = dotLocation
+        while baseStart > 0 {
+            guard let scalar = UnicodeScalar(nsText.character(at: baseStart - 1)),
+                  Self.filenameComponentCharacterSet.contains(scalar) else {
+                break
+            }
+            baseStart -= 1
+        }
+
+        var extensionEnd = dotLocation + 1
+        while extensionEnd < nsText.length {
+            guard let scalar = UnicodeScalar(nsText.character(at: extensionEnd)),
+                  Self.filenameComponentCharacterSet.contains(scalar) else {
+                break
+            }
+            extensionEnd += 1
+        }
+
+        let baseLength = dotLocation - baseStart
+        let extensionLength = extensionEnd - (dotLocation + 1)
+        guard baseLength > 0, extensionLength > 0 else { return false }
+
+        let extRange = NSRange(location: dotLocation + 1, length: extensionLength)
+        let extensionToken = nsText.substring(with: extRange).lowercased()
+        guard extensionToken.range(of: #"^[a-z0-9][a-z0-9_-]*$"#, options: .regularExpression) != nil else {
+            return false
+        }
+
+        guard let type = UTType(filenameExtension: extensionToken) else {
+            return false
+        }
+
+        return !type.identifier.hasPrefix("dyn.")
     }
 }
