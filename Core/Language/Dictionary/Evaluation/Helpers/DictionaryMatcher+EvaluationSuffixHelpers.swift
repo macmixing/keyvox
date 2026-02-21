@@ -37,6 +37,7 @@ extension DictionaryMatcher {
                     }
                 }
             } else if observedNormalized.hasSuffix("s"),
+                      !observedNormalized.hasSuffix("ss"),
                       !observedNormalized.hasSuffix("s'"),
                       observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast())
@@ -85,6 +86,7 @@ extension DictionaryMatcher {
                 }
             }
         } else if second.hasSuffix("s"),
+                  !second.hasSuffix("ss"),
                   !second.hasSuffix("s'"),
                   second.count > minimumSplitTokenLength {
             // Whisper often emits possessive names without apostrophes: "Especitos".

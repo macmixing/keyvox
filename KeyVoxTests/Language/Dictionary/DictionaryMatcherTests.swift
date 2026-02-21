@@ -61,11 +61,7 @@ final class DictionaryMatcherTests: XCTestCase {
     }
 
     func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() {
-        let matcher = DictionaryMatcher(
-            lexicon: PronunciationLexicon.shared,
-            encoder: PhoneticEncoder(),
-            scorer: .balanced
-        )
+        let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
         let result = matcher.apply(to: "My app is called Keybox.")
@@ -73,11 +69,7 @@ final class DictionaryMatcherTests: XCTestCase {
     }
 
     func testCorrectsTwoTokenNameNearMissWithRuntimeLexicon() {
-        let matcher = DictionaryMatcher(
-            lexicon: PronunciationLexicon.shared,
-            encoder: PhoneticEncoder(),
-            scorer: .balanced
-        )
+        let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
         let result = matcher.apply(to: "My name is Dom Espacito.")
@@ -85,11 +77,7 @@ final class DictionaryMatcherTests: XCTestCase {
     }
 
     func testCorrectsTwoTokenNameNearMissVariantWithRuntimeLexicon() {
-        let matcher = DictionaryMatcher(
-            lexicon: PronunciationLexicon.shared,
-            encoder: PhoneticEncoder(),
-            scorer: .balanced
-        )
+        let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
         let result = matcher.apply(to: "Dom Espicido.")
@@ -97,11 +85,7 @@ final class DictionaryMatcherTests: XCTestCase {
     }
 
     func testCorrectsStylizedSingleTokenNameNearMissWithRuntimeLexicon() {
-        let matcher = DictionaryMatcher(
-            lexicon: PronunciationLexicon.shared,
-            encoder: PhoneticEncoder(),
-            scorer: .balanced
-        )
+        let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
 
         let result = matcher.apply(to: "My name is Erak.")
@@ -109,11 +93,7 @@ final class DictionaryMatcherTests: XCTestCase {
     }
 
     func testCorrectsStylizedSingleTokenCommonNameNearMissWithRuntimeLexicon() {
-        let matcher = DictionaryMatcher(
-            lexicon: PronunciationLexicon.shared,
-            encoder: PhoneticEncoder(),
-            scorer: .balanced
-        )
+        let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
 
         let result = matcher.apply(to: "My name is Eric.")
@@ -471,7 +451,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "this is Cueboards")
     }
 
-    func testSplitJoinDoesNotInferPossessive() {
+    func testSplitJoinInfersPossessive() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -687,5 +667,13 @@ final class DictionaryMatcherTests: XCTestCase {
         ])
 
         return DictionaryMatcher(lexicon: lexicon, encoder: PhoneticEncoder(), scorer: .balanced)
+    }
+
+    private func makeRuntimeMatcher() -> DictionaryMatcher {
+        DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
     }
 }

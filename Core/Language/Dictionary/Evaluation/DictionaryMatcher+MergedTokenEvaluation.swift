@@ -84,6 +84,7 @@ extension DictionaryMatcher {
         }
 
         guard let best else {
+            stats.rejectedLowScore += 1
             return nil
         }
 

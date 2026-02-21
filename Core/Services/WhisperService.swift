@@ -13,7 +13,7 @@ class WhisperService: ObservableObject {
     private let noSpeechSegmentProbabilityThreshold: Float = 0.72
     private let noSpeechAverageProbabilityThreshold: Float = 0.80
     private let paragraphChunker = WhisperAudioParagraphChunker()
-    // Intentionally disabled while validating phonetic matching without hint bias.
+    // Enabled by default; temporarily disable locally when validating phonetic matching without hint bias.
     private let isPromptHintingEnabled = true
     private let suspiciousShortResultMinChunkSeconds: Double = 1.35
     private let suspiciousShortResultMaxWords = 2
@@ -194,7 +194,7 @@ class WhisperService: ObservableObject {
                     || allSegmentsHighNoSpeech
                     || averageNoSpeechProbability >= self.noSpeechAverageProbabilityThreshold
 
-                let cleanedText = self.normalizeChunkedOutputWhitespace(text)
+                let cleanedText = self.normalizeWhitespace(text, preservingNewlines: true)
                 let finalText = likelyNoSpeechByDecoder ? "" : cleanedText
                 #if DEBUG
                 print(
@@ -299,20 +299,6 @@ class WhisperService: ObservableObject {
         return nil
     }
 
-    private func normalizeChunkedOutputWhitespace(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-
-        let normalizedLines = text
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .map { line in
-                String(line)
-                    .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespaces)
-            }
-
-        return normalizedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     private func transcribeChunkWithLeadingPhraseRetry(
         chunkFrames: [Float],
         usedDictionaryHintPrompt: Bool
@@ -411,8 +397,19 @@ class WhisperService: ObservableObject {
         return normalizeWhitespace(joinedText)
     }
 
-    private func normalizeWhitespace(_ text: String) -> String {
-        text
+    private func normalizeWhitespace(_ text: String, preservingNewlines: Bool = false) -> String {
+        guard !preservingNewlines else {
+            let normalizedLines = text
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line in
+                    String(line)
+                        .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
+                        .trimmingCharacters(in: .whitespaces)
+                }
+            return normalizedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return text
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }

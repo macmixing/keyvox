@@ -34,7 +34,6 @@ extension DictionaryMatcher {
         token.hasSuffix("s")
             || token.hasSuffix("x")
             || token.hasSuffix("z")
-            || token.hasSuffix("ss")
             || token.hasSuffix("xe")
             || token.hasSuffix("ce")
             || token.hasSuffix("se")

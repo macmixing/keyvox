@@ -399,11 +399,11 @@ KeyVox/
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
   - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
 - `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
-  - Shared stylized-token evidence and fallback-phonetic helpers used by standard/split-join evaluators.
+  - Provides stylized-token evidence and fallback-phonetic helpers used by standard/split-join evaluators.
 - `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationSuffixHelpers.swift`
-  - Shared possessive/plural form generation and suffix inference helpers used by evaluators.
+  - Implements possessive/plural form generation and suffix inference helpers used by evaluators.
 - `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
-  - Shared split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
+  - Contains split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
 - `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
   - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
   - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
