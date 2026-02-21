@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-20**
+**Last Updated: 2026-02-21**
 
 ## Project Overview
 
@@ -64,12 +64,22 @@ KeyVox/
 │   │   │   │   ├── DictionaryMatcher+EmailNormalization.swift
 │   │   │   │   ├── DictionaryMatcher+EmailParsing.swift
 │   │   │   │   └── DictionaryMatcher+EmailResolution.swift
+│   │   │   ├── Evaluation/
+│   │   │   │   ├── DictionaryMatcher+MergedTokenEvaluation.swift
+│   │   │   │   ├── DictionaryMatcher+StandardEvaluation.swift
+│   │   │   │   ├── DictionaryMatcher+ThreeTokenEvaluation.swift
+│   │   │   │   ├── Helpers/
+│   │   │   │   │   ├── DictionaryMatcher+EvaluationEvidenceHelpers.swift
+│   │   │   │   │   ├── DictionaryMatcher+EvaluationStylizedHelpers.swift
+│   │   │   │   │   └── DictionaryMatcher+EvaluationSuffixHelpers.swift
+│   │   │   │   └── SplitJoin/
+│   │   │   │       ├── DictionaryMatcher+SplitJoinForms.swift
+│   │   │   │       ├── DictionaryMatcher+SplitJoinGuards.swift
+│   │   │   │       └── DictionaryMatcher+SplitJoinScoring.swift
 │   │   │   ├── DictionaryEntry.swift
 │   │   │   ├── DictionaryMatcher.swift
-│   │   │   ├── DictionaryMatcher+CandidateEvaluator.swift
 │   │   │   ├── DictionaryMatcher+Models.swift
 │   │   │   ├── DictionaryMatcher+OverlapResolver.swift
-│   │   │   ├── DictionaryMatcher+SplitJoinEvaluator.swift
 │   │   │   ├── DictionaryMatcher+Tokenizer.swift
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
@@ -381,10 +391,27 @@ KeyVox/
   - Resolves spoken/literal/standalone dictionary email candidates and local-part ambiguity via deterministic guards.
 - `Core/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
   - Token extraction and range construction helpers used by matcher runtime.
-- `Core/Language/Dictionary/DictionaryMatcher+CandidateEvaluator.swift`
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
-- `Core/Language/Dictionary/DictionaryMatcher+SplitJoinEvaluator.swift`
-  - Split-token to single-entry matching path with plural/possessive handling.
+  - Applies contextual gating for common-word-like replacements to avoid unsupported prose substitutions.
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
+  - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
+- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
+  - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
+  - Provides stylized-token evidence and fallback-phonetic helpers used by standard/split-join evaluators.
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationSuffixHelpers.swift`
+  - Implements possessive/plural form generation and suffix inference helpers used by evaluators.
+- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
+  - Contains split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
+  - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
+  - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
+  - Split-join observed-form generation and replacement-suffix normalization helpers.
+- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
+  - Split-join guard heuristics (domain-shape suppression, anchoring checks, possessive-sound inference).
+  - Requires noun-following context for possessive split-join inference to limit false positives.
 - `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
 - `Core/Language/Dictionary/DictionaryTextNormalization.swift`
@@ -395,7 +422,7 @@ KeyVox/
 - `Core/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
 - `Core/Language/PronunciationLexicon.swift`
-  - Loads bundled pronunciation signatures and common-word safety list from app resources.
+  - Loads bundled pronunciation signatures and curated common-word safety list from app resources.
 - `Core/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/Language/ReplacementScorer.swift`

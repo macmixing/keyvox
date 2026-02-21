@@ -17,7 +17,19 @@ struct PhoneticEncoder {
             .joined(separator: " ")
     }
 
-    private func fallbackSignature(for token: String) -> String {
+    @MainActor
+    func scoringSignature(for normalizedToken: String, lexicon: PronunciationLexiconProviding) -> String {
+        fallbackSignature(for: signature(for: normalizedToken, lexicon: lexicon))
+    }
+
+    @MainActor
+    func scoringPhraseSignature(for tokens: [String], lexicon: PronunciationLexiconProviding) -> String {
+        tokens
+            .map { scoringSignature(for: $0, lexicon: lexicon) }
+            .joined(separator: " ")
+    }
+
+    func fallbackSignature(for token: String) -> String {
         guard !token.isEmpty else { return "" }
 
         let lowered = token.lowercased()

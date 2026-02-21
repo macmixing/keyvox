@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 extension DictionaryMatcher {
     struct Token {
@@ -6,6 +7,21 @@ extension DictionaryMatcher {
         let normalized: String
         let range: NSRange
         let phonetic: String
+        let lexicalClass: NLTag?
+
+        init(
+            raw: String,
+            normalized: String,
+            range: NSRange,
+            phonetic: String,
+            lexicalClass: NLTag? = nil
+        ) {
+            self.raw = raw
+            self.normalized = normalized
+            self.range = range
+            self.phonetic = phonetic
+            self.lexicalClass = lexicalClass
+        }
     }
 
     struct CompiledEntry {
@@ -27,6 +43,23 @@ extension DictionaryMatcher {
         let range: NSRange
         let replacement: String
         let score: Double
+        let requiresPeerSupport: Bool
+
+        init(
+            tokenStart: Int,
+            tokenEndExclusive: Int,
+            range: NSRange,
+            replacement: String,
+            score: Double,
+            requiresPeerSupport: Bool = false
+        ) {
+            self.tokenStart = tokenStart
+            self.tokenEndExclusive = tokenEndExclusive
+            self.range = range
+            self.replacement = replacement
+            self.score = score
+            self.requiresPeerSupport = requiresPeerSupport
+        }
     }
 
     struct JoinedObservedForm {

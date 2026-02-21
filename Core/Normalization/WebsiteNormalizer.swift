@@ -23,6 +23,10 @@ enum WebsiteNormalizer {
         pattern: #"(?i)(?<![@A-Z0-9._%+\-])((?:https?:\/\/)?(?:www\.)?(?:[A-Z0-9\-]+\.)+[A-Z0-9\-]{2,}(?::\d{2,5})?)(\/[A-Z0-9._~%!$&'()*+,;=:@\/-]*)?"#,
         options: []
     )
+    private static let commonTopLevelDomains: Set<String> = [
+        "com", "net", "org", "io", "app", "co", "dev", "ai", "me", "edu", "gov", "uk",
+        "us", "ca", "biz", "info", "xyz", "site", "online", "tech", "store", "blog"
+    ]
 
     static func isCompactDomainToken(_ text: String) -> Bool {
         guard let regex = compactDomainTokenRegex else { return false }
@@ -71,7 +75,9 @@ enum WebsiteNormalizer {
             let domainRange = match.range(at: 1)
             guard domainRange.location != NSNotFound else { continue }
 
-            let domain = nsText.substring(with: domainRange).lowercased()
+            let rawDomain = nsText.substring(with: domainRange)
+            guard shouldNormalizeDomainCasing(rawDomain) else { continue }
+            let domain = rawDomain.lowercased()
             let suffix: String
             if match.numberOfRanges > 2 {
                 let suffixRange = match.range(at: 2)
@@ -84,5 +90,18 @@ enum WebsiteNormalizer {
         }
 
         return mutable as String
+    }
+
+    private static func shouldNormalizeDomainCasing(_ rawDomain: String) -> Bool {
+        let lowercased = rawDomain.lowercased()
+        if lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://") || lowercased.hasPrefix("www.") {
+            return true
+        }
+
+        let hostWithoutPort = lowercased.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true).first.map(String.init) ?? lowercased
+        guard let tld = hostWithoutPort.split(separator: ".").last.map(String.init), !tld.isEmpty else {
+            return false
+        }
+        return commonTopLevelDomains.contains(tld)
     }
 }

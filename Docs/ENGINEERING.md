@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-02-20**
+**Last Updated: 2026-02-21**
 
 ## Design Philosophy
 
@@ -28,12 +28,13 @@ KeyVox is organized by responsibility:
 - `App/`: App lifecycle and persisted settings ownership (`KeyVoxApp`, `AppSettingsStore`).
 - `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
-- `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering.
+- `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
 - `Core/Normalization/`: Ordered pure normalization passes (email/website, colon, math, laughter, spam, whitespace, capitalization, terminal punctuation, all-caps override) plus shared normalization utilities (for example code-ish line detection guards).
 - `Core/Services/`: Whisper inference, paste/injection, and update/checking services.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
+- `Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
 File-level ownership and locations are intentionally maintained in one place: [`CODEMAP.md`](CODEMAP.md).
 
