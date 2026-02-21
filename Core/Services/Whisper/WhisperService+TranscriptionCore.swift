@@ -257,14 +257,12 @@ extension WhisperService {
         #endif
 
         let retry = try await whisper.transcribeWithMetadata(audioFrames: chunkFrames)
-        let selectedSegments = selectPreferredRetry(primary: primary.segments, retry: retry.segments)
-        let selectedRetrySegments = selectedSegments.count == retry.segments.count
-            && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })
-        let finalSegments = selectedSegments
-        let finalLanguageCode = selectedRetrySegments
+        let selection = selectPreferredRetry(primary: primary.segments, retry: retry.segments)
+        let finalSegments = selection.segments
+        let finalLanguageCode = selection.selectedRetry
             ? (retry.detectedLanguageCode ?? primary.detectedLanguageCode)
             : (primary.detectedLanguageCode ?? retry.detectedLanguageCode)
-        let finalLanguageName = selectedRetrySegments
+        let finalLanguageName = selection.selectedRetry
             ? (retry.detectedLanguageName ?? primary.detectedLanguageName)
             : (primary.detectedLanguageName ?? retry.detectedLanguageName)
 
@@ -300,7 +298,10 @@ extension WhisperService {
         return true
     }
 
-    private func selectPreferredRetry(primary: [Segment], retry: [Segment]) -> [Segment] {
+    private func selectPreferredRetry(
+        primary: [Segment],
+        retry: [Segment]
+    ) -> (segments: [Segment], selectedRetry: Bool) {
         let primaryText = compactSegmentText(primary)
         let retryText = compactSegmentText(retry)
 
@@ -308,12 +309,12 @@ extension WhisperService {
         let retryWords = wordCount(in: retryText)
 
         if retryWords >= primaryWords + 2 {
-            return retry
+            return (retry, true)
         }
         if retryWords == primaryWords && retryText.count >= primaryText.count + 12 {
-            return retry
+            return (retry, true)
         }
-        return primary
+        return (primary, false)
     }
 
     private func compactSegmentText(_ segments: [Segment]) -> String {

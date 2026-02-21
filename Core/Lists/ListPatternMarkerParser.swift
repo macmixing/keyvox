@@ -297,29 +297,29 @@ struct ListPatternMarkerParser {
         var index = tokenRange.location + tokenRange.length
         let length = nsText.length
 
-        var consumedDelimiter = false
+        var consumedSeparator = false
         while index < length {
             let character = nsText.substring(with: NSRange(location: index, length: 1))
             guard character.rangeOfCharacter(from: .whitespacesAndNewlines) != nil else { break }
-            consumedDelimiter = true
+            consumedSeparator = true
             index += 1
         }
 
         if index < length {
             let delimiter = nsText.substring(with: NSRange(location: index, length: 1))
             if ".):-,".contains(delimiter) {
-                consumedDelimiter = true
+                consumedSeparator = true
                 index += 1
                 while index < length {
                     let character = nsText.substring(with: NSRange(location: index, length: 1))
                     guard character.rangeOfCharacter(from: .whitespacesAndNewlines) != nil else { break }
-                    consumedDelimiter = true
+                    consumedSeparator = true
                     index += 1
                 }
             }
         }
 
-        if consumedDelimiter {
+        if consumedSeparator {
             return index
         }
 
