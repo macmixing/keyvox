@@ -112,8 +112,7 @@ struct ListPatternRunSelector {
         let spanLength = max(0, marker.contentStart - marker.markerTokenStart)
         guard spanLength > 0 else { return false }
         let span = nsText.substring(with: NSRange(location: marker.markerTokenStart, length: spanLength))
-        let explicitPattern = #"(?i)^(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*[.\):\-,]"#
-        return span.range(of: explicitPattern, options: .regularExpression) != nil
+        return ListPatternMarkerParser.hasExplicitDelimitedMarkerPrefix(in: span)
     }
 
     private func markerHasBoundaryBefore(_ marker: ListPatternMarker, in nsText: NSString) -> Bool {

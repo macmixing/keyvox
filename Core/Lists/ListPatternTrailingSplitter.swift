@@ -230,14 +230,7 @@ struct ListPatternTrailingSplitter {
     }
 
     private func startsLikeListMarker(_ text: String) -> Bool {
-        let normalized = text
-            .replacingOccurrences(of: "^\\s+", with: "", options: .regularExpression)
-            .lowercased()
-
-        return normalized.range(
-            of: #"^(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\s*[.):\-,])?\s+"#,
-            options: .regularExpression
-        ) != nil
+        ListPatternMarkerParser.hasLeadingListMarkerPrefix(in: text)
     }
 
     private func looksLikeContinuationStart(_ text: String) -> Bool {

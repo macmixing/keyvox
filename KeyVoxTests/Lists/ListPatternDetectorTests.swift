@@ -237,6 +237,16 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertEqual(detected?.items.map(\.content), ["Buy groceries", "Call mom"])
     }
 
+    func testDetectsSpokenMarkersBeyondTwelveWithoutHardCap() {
+        let detector = ListPatternDetector()
+        let text = "For release: twelve fix parser thirteen ship build fourteen tag release"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [12, 13, 14])
+        XCTAssertEqual(detected?.items.map(\.content), ["Fix parser", "Ship build", "Tag release"])
+    }
+
     func testDoesNotTriggerListFromOneForOnePhrase() {
         let detector = ListPatternDetector()
         let text = """
