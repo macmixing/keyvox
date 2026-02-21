@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-02-20**
+**Last Updated: 2026-02-21**
 
 ## Design Philosophy
 
@@ -34,6 +34,7 @@ KeyVox is organized by responsibility:
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
+- `Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
 File-level ownership and locations are intentionally maintained in one place: [`CODEMAP.md`](CODEMAP.md).
 

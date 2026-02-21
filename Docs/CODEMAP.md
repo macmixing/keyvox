@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-20**
+**Last Updated: 2026-02-21**
 
 ## Project Overview
 
@@ -393,6 +393,7 @@ KeyVox/
   - Token extraction and range construction helpers used by matcher runtime.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
+  - Applies contextual gating for common-word-like replacements to avoid unsupported prose substitutions.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
   - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
 - `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
@@ -405,10 +406,12 @@ KeyVox/
   - Shared split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
 - `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
   - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
+  - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
 - `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
   - Split-join observed-form generation and replacement-suffix normalization helpers.
 - `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
   - Split-join guard heuristics (domain-shape suppression, anchoring checks, possessive-sound inference).
+  - Requires noun-following context for possessive split-join inference to limit false positives.
 - `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
 - `Core/Language/Dictionary/DictionaryTextNormalization.swift`
@@ -419,7 +422,7 @@ KeyVox/
 - `Core/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
 - `Core/Language/PronunciationLexicon.swift`
-  - Loads bundled pronunciation signatures and common-word safety list from app resources.
+  - Loads bundled pronunciation signatures and curated common-word safety list from app resources.
 - `Core/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/Language/ReplacementScorer.swift`
