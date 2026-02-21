@@ -7,7 +7,7 @@ struct ListPatternTrailingSplitter {
         let score: Int
     }
 
-    func splitLastItemAndTrailing(_ raw: String) -> (itemText: String, trailingText: String) {
+    func splitLastItemAndTrailing(_ raw: String, languageCode: String?) -> (itemText: String, trailingText: String) {
         let paragraphToken = "__KVX_PARAGRAPH_BREAK__"
         let normalized = raw
             .replacingOccurrences(
@@ -24,25 +24,25 @@ struct ListPatternTrailingSplitter {
 
         var candidates: [SplitCandidate] = []
 
-        if let candidate = emailCommaBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+        if let candidate = emailCommaBoundaryCandidate(in: normalized, paragraphToken: paragraphToken, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = emailBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+        if let candidate = emailBoundaryCandidate(in: normalized, paragraphToken: paragraphToken, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = sentenceBoundaryCandidate(in: normalized) {
+        if let candidate = sentenceBoundaryCandidate(in: normalized, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = paragraphBoundaryCandidate(in: normalized, paragraphToken: paragraphToken) {
+        if let candidate = paragraphBoundaryCandidate(in: normalized, paragraphToken: paragraphToken, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = commaBoundaryCandidate(in: normalized) {
+        if let candidate = commaBoundaryCandidate(in: normalized, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = causalBoundaryCandidate(in: normalized) {
+        if let candidate = causalBoundaryCandidate(in: normalized, languageCode: languageCode) {
             candidates.append(candidate)
         }
-        if let candidate = softBoundaryCandidate(in: normalized) {
+        if let candidate = softBoundaryCandidate(in: normalized, languageCode: languageCode) {
             candidates.append(candidate)
         }
 
@@ -96,20 +96,25 @@ struct ListPatternTrailingSplitter {
         score: Int,
         minItemWords: Int = 2,
         minTrailingWords: Int = 3,
-        requiresContinuationShape: Bool = false
+        requiresContinuationShape: Bool = false,
+        languageCode: String?
     ) -> SplitCandidate? {
         let itemTrimmed = item.trimmingCharacters(in: .whitespacesAndNewlines)
         let trailingTrimmed = trailing.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !itemTrimmed.isEmpty, !trailingTrimmed.isEmpty else { return nil }
         guard wordCount(itemTrimmed) >= minItemWords, wordCount(trailingTrimmed) >= minTrailingWords else { return nil }
-        guard !startsLikeListMarker(trailingTrimmed) else { return nil }
+        guard !startsLikeListMarker(trailingTrimmed, languageCode: languageCode) else { return nil }
         if requiresContinuationShape && !looksLikeContinuationStart(trailingTrimmed) {
             return nil
         }
         return SplitCandidate(itemText: itemTrimmed, trailingText: trailingTrimmed, score: score)
     }
 
-    private func emailCommaBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+    private func emailCommaBoundaryCandidate(
+        in text: String,
+        paragraphToken: String,
+        languageCode: String?
+    ) -> SplitCandidate? {
         guard let split = firstRegexSplit(
             text,
             pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,})\\s*,\\s+(?:" +
@@ -125,11 +130,16 @@ struct ListPatternTrailingSplitter {
             trailing: split.1,
             score: 120,
             minItemWords: 1,
-            requiresContinuationShape: true
+            requiresContinuationShape: true,
+            languageCode: languageCode
         )
     }
 
-    private func emailBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+    private func emailBoundaryCandidate(
+        in text: String,
+        paragraphToken: String,
+        languageCode: String?
+    ) -> SplitCandidate? {
         guard let split = firstRegexSplit(
             text,
             pattern: "(?i)^(.+?[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}[.!?]?)\\s+(?:" +
@@ -145,18 +155,23 @@ struct ListPatternTrailingSplitter {
             trailing: split.1,
             score: 110,
             minItemWords: 1,
-            requiresContinuationShape: true
+            requiresContinuationShape: true,
+            languageCode: languageCode
         )
     }
 
-    private func sentenceBoundaryCandidate(in text: String) -> SplitCandidate? {
+    private func sentenceBoundaryCandidate(in text: String, languageCode: String?) -> SplitCandidate? {
         guard let split = firstRegexSplit(text, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) else {
             return nil
         }
-        return makeCandidate(item: split.0, trailing: split.1, score: 100)
+        return makeCandidate(item: split.0, trailing: split.1, score: 100, languageCode: languageCode)
     }
 
-    private func paragraphBoundaryCandidate(in text: String, paragraphToken: String) -> SplitCandidate? {
+    private func paragraphBoundaryCandidate(
+        in text: String,
+        paragraphToken: String,
+        languageCode: String?
+    ) -> SplitCandidate? {
         guard let paragraphBreakRange = text.range(of: paragraphToken) else { return nil }
 
         let before = String(text[..<paragraphBreakRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -166,10 +181,16 @@ struct ListPatternTrailingSplitter {
         let looksLikeEmailBoundary = endsWithEmail(before) && wordCount(before) <= 4
         let score = looksLikeEmailBoundary ? 95 : 35
         let minItemWords = looksLikeEmailBoundary ? 1 : 2
-        return makeCandidate(item: before, trailing: after, score: score, minItemWords: minItemWords)
+        return makeCandidate(
+            item: before,
+            trailing: after,
+            score: score,
+            minItemWords: minItemWords,
+            languageCode: languageCode
+        )
     }
 
-    private func commaBoundaryCandidate(in text: String) -> SplitCandidate? {
+    private func commaBoundaryCandidate(in text: String, languageCode: String?) -> SplitCandidate? {
         guard let split = firstRegexSplit(text, pattern: #"(?i)^(.{8,}?),\s+(.+)$"#) else {
             return nil
         }
@@ -178,11 +199,12 @@ struct ListPatternTrailingSplitter {
             trailing: split.1,
             score: 60,
             minItemWords: 3,
-            requiresContinuationShape: true
+            requiresContinuationShape: true,
+            languageCode: languageCode
         )
     }
 
-    private func causalBoundaryCandidate(in text: String) -> SplitCandidate? {
+    private func causalBoundaryCandidate(in text: String, languageCode: String?) -> SplitCandidate? {
         guard let split = firstRegexSplit(
             text,
             pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:because|since|as)\b.+)$"#
@@ -194,11 +216,12 @@ struct ListPatternTrailingSplitter {
             item: split.0,
             trailing: split.1,
             score: 55,
-            requiresContinuationShape: true
+            requiresContinuationShape: true,
+            languageCode: languageCode
         )
     }
 
-    private func softBoundaryCandidate(in text: String) -> SplitCandidate? {
+    private func softBoundaryCandidate(in text: String, languageCode: String?) -> SplitCandidate? {
         guard let split = firstRegexSplit(
             text,
             pattern: #"(?i)^(.{8,}?)\s+((?:and\s+)?(?:now|then|so|anyway|also)\b.+)$"#
@@ -210,7 +233,8 @@ struct ListPatternTrailingSplitter {
             item: split.0,
             trailing: split.1,
             score: 105,
-            requiresContinuationShape: true
+            requiresContinuationShape: true,
+            languageCode: languageCode
         )
     }
 
@@ -229,15 +253,8 @@ struct ListPatternTrailingSplitter {
         text.range(of: #"(?i)[.!?]\s+\S"#, options: .regularExpression) != nil
     }
 
-    private func startsLikeListMarker(_ text: String) -> Bool {
-        let normalized = text
-            .replacingOccurrences(of: "^\\s+", with: "", options: .regularExpression)
-            .lowercased()
-
-        return normalized.range(
-            of: #"^(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\s*[.):\-,])?\s+"#,
-            options: .regularExpression
-        ) != nil
+    private func startsLikeListMarker(_ text: String, languageCode: String?) -> Bool {
+        ListPatternMarkerParser.hasLeadingListMarkerPrefix(in: text, languageCode: languageCode)
     }
 
     private func looksLikeContinuationStart(_ text: String) -> Bool {

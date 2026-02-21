@@ -30,7 +30,7 @@ KeyVox is organized by responsibility:
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
 - `Core/Normalization/`: Ordered pure normalization passes (email/website, colon, math, laughter, spam, whitespace, capitalization, terminal punctuation, all-caps override) plus shared normalization utilities (for example code-ish line detection guards).
-- `Core/Services/`: Whisper inference, paste/injection, and update/checking services.
+- `Core/Services/`: Whisper inference (organized under `Core/Services/Whisper/`), paste/injection, and update/checking services.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
@@ -50,10 +50,10 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 ## Post-Processing Order
 
-1. `WhisperAudioParagraphChunker` computes conservative chunk boundaries from silence windows.
-2. Whisper transcribes each chunk and `WhisperService` stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
+1. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
+2. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
-4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
+4. Dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
 5. `ColonNormalizer` converts spoken/delimiter colon phrases into deterministic punctuation before list parsing.
 6. `MathExpressionNormalizer` converts high-confidence spoken math into deterministic symbol form while preserving protected URL/email/code/time/date/version spans.
 7. List formatting applies numeric list rendering when confidence gates pass.

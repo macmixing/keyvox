@@ -54,8 +54,11 @@ KeyVox/
 │   │   │   └── PasteSpacingHeuristics.swift
 │   │   ├── UpdatePromptPresenting.swift
 │   │   ├── UpdateFeedConfig.swift
-│   │   ├── WhisperAudioParagraphChunker.swift
-│   │   └── WhisperService.swift
+│   │   └── Whisper/
+│   │       ├── WhisperAudioParagraphChunker.swift
+│   │       ├── WhisperService.swift
+│   │       ├── WhisperService+ModelLifecycle.swift
+│   │       └── WhisperService+TranscriptionCore.swift
 │   ├── Language/
 │   │   ├── Dictionary/
 │   │   │   ├── Email/
@@ -83,7 +86,6 @@ KeyVox/
 │   │   │   ├── DictionaryMatcher+Tokenizer.swift
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
-│   │   ├── CustomVocabularyNormalizer.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
 │   │   └── ReplacementScorer.swift
@@ -244,8 +246,8 @@ KeyVox/
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
-4. `Core/Services/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
-5. `Core/Services/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
+4. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
+5. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
 6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
@@ -350,13 +352,17 @@ KeyVox/
 
 ### Service Layer (`Core/Services`)
 
-- `Core/Services/WhisperAudioParagraphChunker.swift`
+- `Core/Services/Whisper/WhisperAudioParagraphChunker.swift`
   - Splits long captures into paragraph-sized chunks using deterministic RMS silence windows.
   - Uses configurable chunk-size and silence-run guardrails to avoid over-splitting.
-- `Core/Services/WhisperService.swift`
+- `Core/Services/Whisper/WhisperService.swift`
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
+- `Core/Services/Whisper/WhisperService+ModelLifecycle.swift`
+  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution).
+- `Core/Services/Whisper/WhisperService+TranscriptionCore.swift`
+  - Owns chunk transcription flow, retry selection, whitespace normalization, and debug segment logging.
 
 ### Post-Processing (`Core` + `Core/Normalization` + `Core/Language` + `Core/Lists`)
 
@@ -430,7 +436,7 @@ KeyVox/
 - `Core/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
 - `Core/Lists/ListPatternDetector.swift`
-  - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
+  - Detects monotonic list markers (digits + locale-aware spoken number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
   - Delegates leading domain-token lowercasing to `WebsiteNormalizer`.
 - `Core/Lists/ListPatternMarkerParser.swift`

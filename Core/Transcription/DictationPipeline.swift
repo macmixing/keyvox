@@ -6,8 +6,13 @@ protocol DictationTranscriptionProviding: AnyObject {
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool,
         enableAutoParagraphs: Bool,
-        completion: @escaping (String?) -> Void
+        completion: @escaping (TranscriptionProviderResult?) -> Void
     )
+}
+
+struct TranscriptionProviderResult: Sendable {
+    let text: String
+    let languageCode: String?
 }
 
 extension WhisperService: DictationTranscriptionProviding {}
@@ -69,7 +74,8 @@ final class DictationPipeline {
             guard let self else { return }
 
             let inferenceDuration = Date().timeIntervalSince(inferenceStart)
-            let rawText = result ?? ""
+            let rawText = result?.text ?? ""
+            let languageCode = result?.languageCode
             let wasLikelyNoSpeech = rawText.isEmpty && self.transcriptionProvider.lastResultWasLikelyNoSpeech
             #if DEBUG
             self.logPipelineStage("rawText", rawText)
@@ -95,7 +101,8 @@ final class DictationPipeline {
                 dictionaryEntries: dictionaryEntries,
                 renderMode: self.listRenderModeProvider(),
                 listFormattingEnabled: self.listFormattingEnabledProvider(),
-                forceAllCaps: self.capsLockEnabledProvider()
+                forceAllCaps: self.capsLockEnabledProvider(),
+                languageCode: languageCode
             )
             #if DEBUG
             self.logPipelineStage("finalText", finalText)

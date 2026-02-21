@@ -356,6 +356,30 @@ final class DictationPipelineSmokeTests: XCTestCase {
         XCTAssertTrue(result.finalText.contains("4:15 PM"))
     }
 
+    func testDictationPipelineMultilingualListFormatting() async throws {
+        let input = "Para hoy uno comprar leche dos caminar con el perro"
+        let expected = "Para hoy:\n\n1. Comprar leche\n2. Caminar con el perro"
+        
+        // Mock Whisper returning Spanish language code
+        let transcription = StubTranscriptionProvider(result: input, languageCode: "es")
+        
+        let pipeline = DictationPipeline(
+            transcriptionProvider: transcription,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(pipeline)
+
+        XCTAssertFalse(result.wasLikelyNoSpeech)
+        XCTAssertEqual(result.finalText, expected)
+    }
+
     private func runPipeline(
         _ pipeline: DictationPipeline,
         frames: [Float] = [0.1, 0.2, 0.3],
@@ -400,13 +424,15 @@ final class DictationPipelineSmokeTests: XCTestCase {
 }
 
 private final class StubTranscriptionProvider: DictationTranscriptionProviding {
-    private let result: String?
+    private let text: String?
+    private let languageCode: String?
     var lastResultWasLikelyNoSpeech: Bool
     private(set) var autoParagraphFlags: [Bool] = []
     private(set) var useDictionaryHintPromptFlags: [Bool] = []
 
-    init(result: String?, lastResultWasLikelyNoSpeech: Bool = false) {
-        self.result = result
+    init(result: String?, languageCode: String? = nil, lastResultWasLikelyNoSpeech: Bool = false) {
+        self.text = result
+        self.languageCode = languageCode
         self.lastResultWasLikelyNoSpeech = lastResultWasLikelyNoSpeech
     }
 
@@ -414,12 +440,17 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool,
         enableAutoParagraphs: Bool,
-        completion: @escaping (String?) -> Void
+        completion: @escaping (TranscriptionProviderResult?) -> Void
     ) {
         _ = audioFrames
         useDictionaryHintPromptFlags.append(useDictionaryHintPrompt)
         autoParagraphFlags.append(enableAutoParagraphs)
-        completion(result)
+        
+        if let text = text {
+            completion(TranscriptionProviderResult(text: text, languageCode: languageCode))
+        } else {
+            completion(nil)
+        }
     }
 }
 

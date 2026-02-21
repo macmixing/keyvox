@@ -117,6 +117,38 @@ final class WhisperCoreTests: XCTestCase {
         }
     }
 
+    func testTranscribeWithMetadataReturnsLanguageMetadata() async throws {
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext],
+            segments: [.init(text: "Hello", start: 0, end: 10, noSpeechProbability: 0.1)]
+        )
+        recorder.stubLangId = 42
+        recorder.stubLangCode = "en"
+        recorder.stubLangName = "english"
+
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14)
+        let result = try await whisper.transcribeWithMetadata(audioFrames: [0.1, 0.2])
+
+        XCTAssertEqual(result.segments.count, 1)
+        XCTAssertEqual(result.detectedLanguageCode, "en")
+        XCTAssertEqual(result.detectedLanguageName, "english")
+    }
+
+    func testTranscribeWithMetadataReturnsNilMetadataWhenLangIdInvalid() async throws {
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext],
+            segments: [.init(text: "Hello", start: 0, end: 10, noSpeechProbability: 0.1)]
+        )
+        recorder.stubLangId = -1
+
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14)
+        let result = try await whisper.transcribeWithMetadata(audioFrames: [0.1, 0.2])
+
+        XCTAssertEqual(result.segments.count, 1)
+        XCTAssertNil(result.detectedLanguageCode)
+        XCTAssertNil(result.detectedLanguageName)
+    }
+
     func testVenturaRetriesContextCreationOnceWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
         _ = makeWhisper(recorder: recorder, osMajorVersion: 13)
@@ -240,6 +272,12 @@ private final class WhisperRuntimeRecorder {
     var freedContexts: [OpaquePointer] = []
     var segments: [StubSegment]
 
+    var stubLangId: Int32 = -1
+    var stubLangCode: String?
+    var stubLangName: String?
+    private var langCodePointer: UnsafeMutablePointer<CChar>?
+    private var langNamePointer: UnsafeMutablePointer<CChar>?
+
     init(contextsToReturn: [OpaquePointer?], segments: [StubSegment]) {
         self.contextsToReturn = contextsToReturn
         self.segments = segments
@@ -255,6 +293,8 @@ private final class WhisperRuntimeRecorder {
                 free(pointer)
             }
         }
+        if let langCodePointer { free(langCodePointer) }
+        if let langNamePointer { free(langNamePointer) }
     }
 
     func makeRuntime() -> WhisperRuntime {
@@ -303,6 +343,23 @@ private final class WhisperRuntimeRecorder {
             fullGetSegmentNoSpeechProb: { [self] _, index in
                 guard index >= 0, Int(index) < segments.count else { return 0 }
                 return segments[Int(index)].noSpeechProbability
+            },
+            fullLangId: { [self] _ in
+                stubLangId
+            },
+            langStr: { [self] id in
+                guard id == stubLangId else { return nil }
+                if let stubLangCode, langCodePointer == nil {
+                    langCodePointer = strdup(stubLangCode)
+                }
+                return UnsafePointer(langCodePointer)
+            },
+            langStrFull: { [self] id in
+                guard id == stubLangId else { return nil }
+                if let stubLangName, langNamePointer == nil {
+                    langNamePointer = strdup(stubLangName)
+                }
+                return UnsafePointer(langNamePointer)
             }
         )
     }
