@@ -1,8 +1,12 @@
 import Foundation
 
 struct ListPatternRunSelector {
-    func selectDetection(from markers: [ListPatternMarker], in text: String) -> (run: [ListPatternMarker], renumberSequentially: Bool)? {
-        if let bestRun = bestMonotonicRun(from: markers, in: text), bestRun.count >= 2 {
+    func selectDetection(
+        from markers: [ListPatternMarker],
+        in text: String,
+        languageCode: String?
+    ) -> (run: [ListPatternMarker], renumberSequentially: Bool)? {
+        if let bestRun = bestMonotonicRun(from: markers, in: text, languageCode: languageCode), bestRun.count >= 2 {
             return (bestRun, false)
         }
         if let restartedRun = restartedOneRunAcrossParagraphBreaks(from: markers, in: text),
@@ -12,7 +16,11 @@ struct ListPatternRunSelector {
         return nil
     }
 
-    private func bestMonotonicRun(from markers: [ListPatternMarker], in text: String) -> [ListPatternMarker]? {
+    private func bestMonotonicRun(
+        from markers: [ListPatternMarker],
+        in text: String,
+        languageCode: String?
+    ) -> [ListPatternMarker]? {
         guard !markers.isEmpty else { return nil }
         let nsText = text as NSString
 
@@ -27,7 +35,7 @@ struct ListPatternRunSelector {
                 let previousRun = bestEndingAt[j]
                 guard !previousRun.isEmpty else { continue }
                 let candidate = previousRun + [markers[i]]
-                if shouldPrefer(run: candidate, over: bestForCurrent, in: nsText) {
+                if shouldPrefer(run: candidate, over: bestForCurrent, in: nsText, languageCode: languageCode) {
                     bestForCurrent = candidate
                 }
             }
@@ -35,13 +43,13 @@ struct ListPatternRunSelector {
         }
 
         var best: [ListPatternMarker] = []
-        for run in bestEndingAt where shouldPrefer(run: run, over: best, in: nsText) {
+        for run in bestEndingAt where shouldPrefer(run: run, over: best, in: nsText, languageCode: languageCode) {
             best = run
         }
 
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
-        guard isCredibleTwoItemGap(run: best, in: nsText) else { return nil }
+        guard isCredibleTwoItemGap(run: best, in: nsText, languageCode: languageCode) else { return nil }
         return best
     }
 
@@ -55,17 +63,26 @@ struct ListPatternRunSelector {
 
     // Prevent prose like "one for X and three for Y" from being detected as a
     // two-item list while still allowing explicit skipped numbering ("1. ... 3. ...").
-    private func isCredibleTwoItemGap(run: [ListPatternMarker], in nsText: NSString) -> Bool {
+    private func isCredibleTwoItemGap(
+        run: [ListPatternMarker],
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
         guard run.count == 2 else { return true }
-        if run[0].number > 1 && !run.allSatisfy({ markerHasExplicitDelimiter($0, in: nsText) }) {
+        if run[0].number > 1 && !run.allSatisfy({ markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }) {
             return false
         }
         let delta = run[1].number - run[0].number
         guard delta > 1 else { return true }
-        return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText) }
+        return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }
     }
 
-    private func shouldPrefer(run candidate: [ListPatternMarker], over existing: [ListPatternMarker], in nsText: NSString) -> Bool {
+    private func shouldPrefer(
+        run candidate: [ListPatternMarker],
+        over existing: [ListPatternMarker],
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
         guard !candidate.isEmpty else { return false }
         guard !existing.isEmpty else { return true }
 
@@ -73,8 +90,8 @@ struct ListPatternRunSelector {
             return candidate.count > existing.count
         }
 
-        let candidateStrength = runStrength(candidate, in: nsText)
-        let existingStrength = runStrength(existing, in: nsText)
+        let candidateStrength = runStrength(candidate, in: nsText, languageCode: languageCode)
+        let existingStrength = runStrength(existing, in: nsText, languageCode: languageCode)
         if candidateStrength != existingStrength {
             return candidateStrength > existingStrength
         }
@@ -84,12 +101,12 @@ struct ListPatternRunSelector {
         return candidateStart > existingStart
     }
 
-    private func runStrength(_ run: [ListPatternMarker], in nsText: NSString) -> Int {
+    private func runStrength(_ run: [ListPatternMarker], in nsText: NSString, languageCode: String?) -> Int {
         guard !run.isEmpty else { return 0 }
 
         var score = run.reduce(0) { partial, marker in
             var score = partial
-            if markerHasExplicitDelimiter(marker, in: nsText) { score += 2 }
+            if markerHasExplicitDelimiter(marker, in: nsText, languageCode: languageCode) { score += 2 }
             if markerHasBoundaryBefore(marker, in: nsText) { score += 1 }
             return score
         }
@@ -108,11 +125,15 @@ struct ListPatternRunSelector {
         return score
     }
 
-    private func markerHasExplicitDelimiter(_ marker: ListPatternMarker, in nsText: NSString) -> Bool {
+    private func markerHasExplicitDelimiter(
+        _ marker: ListPatternMarker,
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
         let spanLength = max(0, marker.contentStart - marker.markerTokenStart)
         guard spanLength > 0 else { return false }
         let span = nsText.substring(with: NSRange(location: marker.markerTokenStart, length: spanLength))
-        return ListPatternMarkerParser.hasExplicitDelimitedMarkerPrefix(in: span)
+        return ListPatternMarkerParser.hasExplicitDelimitedMarkerPrefix(in: span, languageCode: languageCode)
     }
 
     private func markerHasBoundaryBefore(_ marker: ListPatternMarker, in nsText: NSString) -> Bool {

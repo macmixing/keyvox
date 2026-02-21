@@ -58,13 +58,14 @@ struct ListPatternMarkerParser {
         }
 
         let locale = Locale(identifier: languageCode)
-        // Verify if this locale can actually spell out numbers. 
-        // Some constructed identifiers might not have a full locale definition.
-        if locale.localizedString(forIdentifier: locale.identifier) != nil {
-            return locale
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .spellOut
+        formatter.locale = locale
+        guard let sample = formatter.string(from: NSNumber(value: 21)),
+              sample.range(of: #"\d"#, options: .regularExpression) == nil else {
+            return .current
         }
-
-        return .current
+        return locale
     }
 
     static func parseMarkerValue(_ rawToken: String, languageCode: String? = nil) -> Int? {
@@ -82,27 +83,17 @@ struct ListPatternMarkerParser {
         let numberFormatter = formatter(for: locale)
 
         formattersLock.lock()
-        let parsed = numberFormatter.number(from: token)
-        formattersLock.unlock()
-        guard let parsed else { return nil }
-
+        defer { formattersLock.unlock() }
+        guard let parsed = numberFormatter.number(from: token) else { return nil }
         let value = parsed.intValue
         guard value > 0 else { return nil }
-
-        formattersLock.lock()
-        let roundTrip = numberFormatter.string(from: NSNumber(value: value))
-        formattersLock.unlock()
-        guard let roundTrip else { return nil }
-
-        guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else {
-            return nil
-        }
-
+        guard let roundTrip = numberFormatter.string(from: NSNumber(value: value)) else { return nil }
+        guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { return nil }
         return value
     }
 
-    static func hasExplicitDelimitedMarkerPrefix(in text: String) -> Bool {
-        guard let marker = leadingMarker(in: text) else { return false }
+    static func hasExplicitDelimitedMarkerPrefix(in text: String, languageCode: String?) -> Bool {
+        guard let marker = leadingMarker(in: text, languageCode: languageCode) else { return false }
         let nsText = text as NSString
         let suffixStart = marker.tokenRange.location + marker.tokenRange.length
         let suffixLength = max(0, nsText.length - suffixStart)
@@ -113,8 +104,8 @@ struct ListPatternMarkerParser {
         return ".):-,".contains(first)
     }
 
-    static func hasLeadingListMarkerPrefix(in text: String) -> Bool {
-        guard let marker = leadingMarker(in: text) else { return false }
+    static func hasLeadingListMarkerPrefix(in text: String, languageCode: String?) -> Bool {
+        guard let marker = leadingMarker(in: text, languageCode: languageCode) else { return false }
         let nsText = text as NSString
         var index = marker.tokenRange.location + marker.tokenRange.length
         let length = nsText.length
@@ -413,14 +404,14 @@ struct ListPatternMarkerParser {
         return preview.range(of: #"(?i)^(?:a\.?m\.?|p\.?m\.?)\b"#, options: .regularExpression) != nil
     }
 
-    private static func leadingMarker(in text: String) -> (value: Int, tokenRange: NSRange)? {
+    private static func leadingMarker(in text: String, languageCode: String?) -> (value: Int, tokenRange: NSRange)? {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
         guard let match = leadingMarkerRegex.firstMatch(in: text, options: [], range: range) else { return nil }
         let tokenRange = match.range(at: 1)
         guard tokenRange.location != NSNotFound else { return nil }
         let token = nsText.substring(with: tokenRange)
-        guard let value = parseMarkerValue(token, languageCode: Locale.current.language.languageCode?.identifier) else { return nil }
+        guard let value = parseMarkerValue(token, languageCode: languageCode) else { return nil }
         return (value, tokenRange)
     }
 }

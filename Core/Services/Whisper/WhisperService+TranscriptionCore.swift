@@ -16,7 +16,9 @@ extension WhisperService {
             #if DEBUG
             print("Skipping transcription: audio buffer is empty or silent.")
             #endif
-            completion(TranscriptionProviderResult(text: "", languageCode: nil))
+            DispatchQueue.main.async {
+                completion(TranscriptionProviderResult(text: "", languageCode: nil))
+            }
             return
         }
 
@@ -166,7 +168,9 @@ extension WhisperService {
                 let audioFrames = try loadAndResample(url: audioURL)
                 transcribe(audioFrames: audioFrames, enableAutoParagraphs: true, completion: completion)
             } catch {
-                completion(nil)
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }
     }
@@ -251,18 +255,15 @@ extension WhisperService {
 
         let retry = try await whisper.transcribeWithMetadata(audioFrames: chunkFrames)
         let selectedSegments = selectPreferredRetry(primary: primary.segments, retry: retry.segments)
-
-        // If we selected the retry segments, we should also take its language metadata as it might be more accurate or at least consistent.
-        // Actually, let's just keep it simple and use the primary languge if available, otherwise retry.
-        // But the primary language is already in 'primary' result.
-        
+        let selectedRetrySegments = selectedSegments.count == retry.segments.count
+            && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })
         let finalSegments = selectedSegments
-        let finalLanguageCode = (selectedSegments.count == retry.segments.count && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })) 
-            ? retry.detectedLanguageCode 
-            : primary.detectedLanguageCode
-        let finalLanguageName = (selectedSegments.count == retry.segments.count && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })) 
-            ? retry.detectedLanguageName 
-            : primary.detectedLanguageName
+        let finalLanguageCode = selectedRetrySegments
+            ? (retry.detectedLanguageCode ?? primary.detectedLanguageCode)
+            : (primary.detectedLanguageCode ?? retry.detectedLanguageCode)
+        let finalLanguageName = selectedRetrySegments
+            ? (retry.detectedLanguageName ?? primary.detectedLanguageName)
+            : (primary.detectedLanguageName ?? retry.detectedLanguageName)
 
         return WhisperTranscriptionResult(
             segments: finalSegments,

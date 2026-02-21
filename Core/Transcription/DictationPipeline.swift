@@ -10,7 +10,7 @@ protocol DictationTranscriptionProviding: AnyObject {
     )
 }
 
-struct TranscriptionProviderResult {
+struct TranscriptionProviderResult: Sendable {
     let text: String
     let languageCode: String?
 }

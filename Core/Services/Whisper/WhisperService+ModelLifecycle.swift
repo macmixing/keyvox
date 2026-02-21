@@ -49,7 +49,9 @@ extension WhisperService {
     }
 
     private func getModelPath() -> String? {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
         let modelsDir = appSupport
             .appendingPathComponent("KeyVox")
             .appendingPathComponent("Models")

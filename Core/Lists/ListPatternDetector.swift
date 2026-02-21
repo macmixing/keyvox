@@ -16,7 +16,7 @@ struct ListPatternDetector {
             #endif
             return nil
         }
-        guard let detection = runSelector.selectDetection(from: markers, in: text) else {
+        guard let detection = runSelector.selectDetection(from: markers, in: text, languageCode: languageCode) else {
             #if DEBUG
             logDetector("reject reason=no_monotonic_run")
             #endif
@@ -42,7 +42,7 @@ struct ListPatternDetector {
             let rawContent = nsText.substring(with: NSRange(location: marker.contentStart, length: end - marker.contentStart))
             let content: String
             if index == bestRun.count - 1 {
-                let split = trailingSplitter.splitLastItemAndTrailing(rawContent)
+                let split = trailingSplitter.splitLastItemAndTrailing(rawContent, languageCode: languageCode)
                 guard let cleanedItem = sanitizeItemContent(split.itemText) else {
                     #if DEBUG
                     logDetector("reject reason=last_item_sanitize_failed item=\(debugTextSummary(split.itemText))")
