@@ -36,10 +36,7 @@ struct ListPatternMarkerParser {
     private static let formattersLock = NSLock()
     private static var formatters: [String: NumberFormatter] = [:]
 
-    private static func formatter(for locale: Locale) -> NumberFormatter {
-        formattersLock.lock()
-        defer { formattersLock.unlock() }
-
+    private static func formatterWithoutLock(for locale: Locale) -> NumberFormatter {
         let identifier = locale.identifier
         if let existing = formatters[identifier] {
             return existing
@@ -50,6 +47,12 @@ struct ListPatternMarkerParser {
         formatter.locale = locale
         formatters[identifier] = formatter
         return formatter
+    }
+
+    private static func formatter(for locale: Locale) -> NumberFormatter {
+        formattersLock.lock()
+        defer { formattersLock.unlock() }
+        return formatterWithoutLock(for: locale)
     }
 
     private static func resolveLocale(from languageCode: String?) -> Locale {
@@ -80,10 +83,10 @@ struct ListPatternMarkerParser {
         }
 
         let locale = resolveLocale(from: languageCode)
-        let numberFormatter = formatter(for: locale)
 
         formattersLock.lock()
         defer { formattersLock.unlock() }
+        let numberFormatter = formatterWithoutLock(for: locale)
         guard let parsed = numberFormatter.number(from: token) else { return nil }
         let value = parsed.intValue
         guard value > 0 else { return nil }

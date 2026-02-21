@@ -17,6 +17,9 @@ extension WhisperService {
             print("Skipping transcription: audio buffer is empty or silent.")
             #endif
             DispatchQueue.main.async {
+                self.isTranscribing = false
+                self.lastResultWasLikelyNoSpeech = true
+                self.transcriptionText = ""
                 completion(TranscriptionProviderResult(text: "", languageCode: nil))
             }
             return
