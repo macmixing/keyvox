@@ -19,7 +19,6 @@
 		8E0367062F482DF100017017 /* DictionaryMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366ED2F482DF100017017 /* DictionaryMatcher.swift */; };
 		8E0367072F482DF100017017 /* DictionaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366EC2F482DF100017017 /* DictionaryEntry.swift */; };
 		8E0367082F482DF100017017 /* DictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366F32F482DF100017017 /* DictionaryStore.swift */; };
-		8E0367092F482DF100017017 /* CustomVocabularyNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366F62F482DF100017017 /* CustomVocabularyNormalizer.swift */; };
 		8E03670A2F482DF100017017 /* DictionaryEmailEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366E62F482DF100017017 /* DictionaryEmailEntry.swift */; };
 		8E03670B2F482DF100017017 /* DictionaryMatcher+EmailDomainResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366E72F482DF100017017 /* DictionaryMatcher+EmailDomainResolution.swift */; };
 		8E03670C2F482DF100017017 /* DictionaryMatcher+Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0366F22F482DF100017017 /* DictionaryMatcher+Tokenizer.swift */; };
@@ -28,7 +27,6 @@
 		8E0367172F482E6400017017 /* ReplacementScorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0367132F482E6400017017 /* ReplacementScorerTests.swift */; };
 		8E0367182F482E6400017017 /* DictionaryMatcherCoreLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03670D2F482E6400017017 /* DictionaryMatcherCoreLogicTests.swift */; };
 		8E0367192F482E6400017017 /* PhoneticEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0367122F482E6400017017 /* PhoneticEncoderTests.swift */; };
-		8E03671A2F482E6400017017 /* CustomVocabularyNormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0367112F482E6400017017 /* CustomVocabularyNormalizerTests.swift */; };
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
@@ -202,14 +200,12 @@
 		8E0366F22F482DF100017017 /* DictionaryMatcher+Tokenizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+Tokenizer.swift"; sourceTree = "<group>"; };
 		8E0366F32F482DF100017017 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
 		8E0366F42F482DF100017017 /* DictionaryTextNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTextNormalization.swift; sourceTree = "<group>"; };
-		8E0366F62F482DF100017017 /* CustomVocabularyNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVocabularyNormalizer.swift; sourceTree = "<group>"; };
 		8E0366F72F482DF100017017 /* PhoneticEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneticEncoder.swift; sourceTree = "<group>"; };
 		8E0366F82F482DF100017017 /* PronunciationLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationLexicon.swift; sourceTree = "<group>"; };
 		8E0366F92F482DF100017017 /* ReplacementScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplacementScorer.swift; sourceTree = "<group>"; };
 		8E03670D2F482E6400017017 /* DictionaryMatcherCoreLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryMatcherCoreLogicTests.swift; sourceTree = "<group>"; };
 		8E03670E2F482E6400017017 /* DictionaryMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryMatcherTests.swift; sourceTree = "<group>"; };
 		8E03670F2F482E6400017017 /* DictionaryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStoreTests.swift; sourceTree = "<group>"; };
-		8E0367112F482E6400017017 /* CustomVocabularyNormalizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVocabularyNormalizerTests.swift; sourceTree = "<group>"; };
 		8E0367122F482E6400017017 /* PhoneticEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneticEncoderTests.swift; sourceTree = "<group>"; };
 		8E0367132F482E6400017017 /* ReplacementScorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplacementScorerTests.swift; sourceTree = "<group>"; };
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
@@ -415,7 +411,6 @@
 			isa = PBXGroup;
 			children = (
 				8E0366F52F482DF100017017 /* Dictionary */,
-				8E0366F62F482DF100017017 /* CustomVocabularyNormalizer.swift */,
 				8E0366F72F482DF100017017 /* PhoneticEncoder.swift */,
 				8E0366F82F482DF100017017 /* PronunciationLexicon.swift */,
 				8E0366F92F482DF100017017 /* ReplacementScorer.swift */,
@@ -437,7 +432,6 @@
 			isa = PBXGroup;
 			children = (
 				8E0367102F482E6400017017 /* Dictionary */,
-				8E0367112F482E6400017017 /* CustomVocabularyNormalizerTests.swift */,
 				8E0367122F482E6400017017 /* PhoneticEncoderTests.swift */,
 				8E0367132F482E6400017017 /* ReplacementScorerTests.swift */,
 			);
@@ -1078,7 +1072,6 @@
 				8E0367062F482DF100017017 /* DictionaryMatcher.swift in Sources */,
 				8E0367072F482DF100017017 /* DictionaryEntry.swift in Sources */,
 				8E0367082F482DF100017017 /* DictionaryStore.swift in Sources */,
-				8E0367092F482DF100017017 /* CustomVocabularyNormalizer.swift in Sources */,
 				8E03670A2F482DF100017017 /* DictionaryEmailEntry.swift in Sources */,
 				8E03670B2F482DF100017017 /* DictionaryMatcher+EmailDomainResolution.swift in Sources */,
 				8E03670C2F482DF100017017 /* DictionaryMatcher+Tokenizer.swift in Sources */,
@@ -1128,7 +1121,6 @@
 				8E0367172F482E6400017017 /* ReplacementScorerTests.swift in Sources */,
 				8E0367182F482E6400017017 /* DictionaryMatcherCoreLogicTests.swift in Sources */,
 				8E0367192F482E6400017017 /* PhoneticEncoderTests.swift in Sources */,
-				8E03671A2F482E6400017017 /* CustomVocabularyNormalizerTests.swift in Sources */,
 				AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */,
 				AB3000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift in Sources */,
 				AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */,

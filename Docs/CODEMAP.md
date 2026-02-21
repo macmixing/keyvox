@@ -86,7 +86,6 @@ KeyVox/
 │   │   │   ├── DictionaryMatcher+Tokenizer.swift
 │   │   │   ├── DictionaryStore.swift
 │   │   │   └── DictionaryTextNormalization.swift
-│   │   ├── CustomVocabularyNormalizer.swift
 │   │   ├── PhoneticEncoder.swift
 │   │   ├── PronunciationLexicon.swift
 │   │   └── ReplacementScorer.swift
@@ -437,7 +436,7 @@ KeyVox/
 - `Core/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
 - `Core/Lists/ListPatternDetector.swift`
-  - Detects monotonic list markers (digits + spoken English number cues) with false-positive guards.
+  - Detects monotonic list markers (digits + locale-aware spoken number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
   - Delegates leading domain-token lowercasing to `WebsiteNormalizer`.
 - `Core/Lists/ListPatternMarkerParser.swift`

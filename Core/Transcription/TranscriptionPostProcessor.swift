@@ -2,8 +2,6 @@ import Foundation
 
 @MainActor
 final class TranscriptionPostProcessor {
-    private let enablePhoneticMatcher = true
-    private let vocabularyNormalizer = CustomVocabularyNormalizer()
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
     private let laughterNormalizer = LaughterNormalizer()
@@ -51,27 +49,19 @@ final class TranscriptionPostProcessor {
         logPipelineStage("emailNormalizedInput", emailNormalizedInput)
         #endif
 
-        let normalized: String
-        if enablePhoneticMatcher {
-            let matchResult = dictionaryMatcher.apply(to: emailNormalizedInput)
-            #if DEBUG
-            if matchResult.stats.attempted > 0 {
-                print(
-                    "[DictionaryMatcher] attempts=\(matchResult.stats.attempted) accepted=\(matchResult.stats.accepted) " +
-                    "lowScore=\(matchResult.stats.rejectedLowScore) ambiguity=\(matchResult.stats.rejectedAmbiguity) " +
-                    "commonWord=\(matchResult.stats.rejectedCommonWord) short=\(matchResult.stats.rejectedShortToken) " +
-                    "overlap=\(matchResult.stats.rejectedOverlap)"
-                )
-            }
-            logPipelineStage("dictionaryNormalized", matchResult.text)
-            #endif
-            normalized = matchResult.text
-        } else {
-            normalized = vocabularyNormalizer.normalize(emailNormalizedInput, with: dictionaryEntries)
-            #if DEBUG
-            logPipelineStage("vocabularyNormalized", normalized)
-            #endif
+        let matchResult = dictionaryMatcher.apply(to: emailNormalizedInput)
+        #if DEBUG
+        if matchResult.stats.attempted > 0 {
+            print(
+                "[DictionaryMatcher] attempts=\(matchResult.stats.attempted) accepted=\(matchResult.stats.accepted) " +
+                "lowScore=\(matchResult.stats.rejectedLowScore) ambiguity=\(matchResult.stats.rejectedAmbiguity) " +
+                "commonWord=\(matchResult.stats.rejectedCommonWord) short=\(matchResult.stats.rejectedShortToken) " +
+                "overlap=\(matchResult.stats.rejectedOverlap)"
+            )
         }
+        logPipelineStage("dictionaryNormalized", matchResult.text)
+        #endif
+        let normalized = matchResult.text
 
         let idiomNormalized = normalizeIdioms(in: normalized)
         #if DEBUG

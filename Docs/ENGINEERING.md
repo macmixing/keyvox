@@ -53,7 +53,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 1. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
 2. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
-4. Dictionary correction applies custom-word adherence, including dictionary-backed spoken/literal email recovery.
+4. Dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
 5. `ColonNormalizer` converts spoken/delimiter colon phrases into deterministic punctuation before list parsing.
 6. `MathExpressionNormalizer` converts high-confidence spoken math into deterministic symbol form while preserving protected URL/email/code/time/date/version spans.
 7. List formatting applies numeric list rendering when confidence gates pass.
