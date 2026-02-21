@@ -59,6 +59,8 @@
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
 		8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */; };
 		8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C92F3C51D6003BD458 /* WhisperService.swift */; };
+		F2A000122FE0000100AA0001 /* WhisperService+ModelLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A000022FE0000100AA0001 /* WhisperService+ModelLifecycle.swift */; };
+		F2A000132FE0000100AA0001 /* WhisperService+TranscriptionCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A000032FE0000100AA0001 /* WhisperService+TranscriptionCore.swift */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
@@ -231,6 +233,8 @@
 		8E57FBA32F3E449000935A26 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
 		8E6D05C92F3C51D6003BD458 /* WhisperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperService.swift; sourceTree = "<group>"; };
+		F2A000022FE0000100AA0001 /* WhisperService+ModelLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WhisperService+ModelLifecycle.swift"; sourceTree = "<group>"; };
+		F2A000032FE0000100AA0001 /* WhisperService+TranscriptionCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WhisperService+TranscriptionCore.swift"; sourceTree = "<group>"; };
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
@@ -507,10 +511,20 @@
 				9A1000012F4B000100AA0001 /* Paste */,
 				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
-				F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */,
-				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
+				F2A000012FE0000100AA0001 /* Whisper */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		F2A000012FE0000100AA0001 /* Whisper */ = {
+			isa = PBXGroup;
+			children = (
+				F0A000012F80000100AA0001 /* WhisperAudioParagraphChunker.swift */,
+				8E6D05C92F3C51D6003BD458 /* WhisperService.swift */,
+				F2A000022FE0000100AA0001 /* WhisperService+ModelLifecycle.swift */,
+				F2A000032FE0000100AA0001 /* WhisperService+TranscriptionCore.swift */,
+			);
+			path = Whisper;
 			sourceTree = "<group>";
 		};
 		8E6D05CF2F3C51D6003BD458 /* Core */ = {
@@ -1075,6 +1089,8 @@
 				8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */,
 				8E6D05E62F3C5251003BD458 /* WhisperService.swift in Sources */,
 				F0A000022F80000100AA0001 /* WhisperAudioParagraphChunker.swift in Sources */,
+				F2A000122FE0000100AA0001 /* WhisperService+ModelLifecycle.swift in Sources */,
+				F2A000132FE0000100AA0001 /* WhisperService+TranscriptionCore.swift in Sources */,
 				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
 				9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
 				9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */,
