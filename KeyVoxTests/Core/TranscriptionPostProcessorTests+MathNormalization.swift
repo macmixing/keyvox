@@ -269,6 +269,30 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Date 2026-02-19 but 12 - 8 is subtraction.")
     }
 
+    func testPreservesCompactHyphenatedPhoneNumber() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Call me at 480-555-5555.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Call me at 480-555-5555.")
+    }
+
+    func testPreservesCompactHyphenatedDateWithShortLeadingSegment() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2-15-2026",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2-15-2026")
+    }
+
     func testMathNormalizationIsIdempotentAcrossPipeline() {
         let processor = TranscriptionPostProcessor()
         let first = processor.process(

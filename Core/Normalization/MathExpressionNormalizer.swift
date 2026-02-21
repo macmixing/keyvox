@@ -42,6 +42,10 @@ struct MathExpressionNormalizer {
         pattern: #"\b\d+(?:\.\d+){2,}\b"#,
         options: []
     )
+    private static let protectedCompactHyphenatedNumericRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b\d{1,4}(?:-\d{1,4}){2,}\b"#,
+        options: []
+    )
     private static let mathTriggerRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"(?i)\b(?:plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by|equals|percent|squared|cubed|power\s+of|to\s+the\s+power\s+of|to\s+the\s+[A-Z0-9\-]+\s+power|raised\s+to)\b|(?<=\d)\s*-\s*(?=\d)"#,
         options: []
@@ -317,7 +321,22 @@ struct MathExpressionNormalizer {
         protected.append(contentsOf: ranges(matching: Self.protectedMalformedTimeWithDaypartRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedDateRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedVersionRegex, in: text))
+        protected.append(contentsOf: compactHyphenatedNumericRanges(in: text))
         return protected
+    }
+
+    private func compactHyphenatedNumericRanges(in text: String) -> [NSRange] {
+        guard let regex = Self.protectedCompactHyphenatedNumericRegex else { return [] }
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+
+        return regex.matches(in: text, options: [], range: fullRange)
+            .map(\.range)
+            .filter { range in
+                let token = nsText.substring(with: range)
+                let segments = token.split(separator: "-", omittingEmptySubsequences: true)
+                return segments.contains { $0.count >= 3 }
+            }
     }
 
     private func ranges(matching regex: NSRegularExpression?, in text: String) -> [NSRange] {
