@@ -78,6 +78,7 @@ struct SettingsView: View {
         }
         .onAppear {
             appSettings.refreshWeeklyWordCounterIfNeeded()
+            appSettings.refreshSelectedMicrophoneFromDefaults()
             if selectedTab == .dictionary {
                 hasVisitedDictionaryTab = true
             }

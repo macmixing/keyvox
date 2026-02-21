@@ -136,6 +136,21 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
     }
 
+    func testRefreshSelectedMicrophoneFromDefaultsHydratesExternalDefaultWrite() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calendar = makeCalendar()
+        let now = makeDate(calendar: calendar, year: 2026, month: 2, day: 17)
+        let store = AppSettingsStore(defaults: defaults, calendar: calendar, now: { now })
+
+        XCTAssertEqual(store.selectedMicrophoneUID, "")
+        defaults.set("builtin-mic", forKey: UserDefaultsKeys.selectedMicrophoneUID)
+        XCTAssertEqual(store.selectedMicrophoneUID, "")
+
+        store.refreshSelectedMicrophoneFromDefaults()
+        XCTAssertEqual(store.selectedMicrophoneUID, "builtin-mic")
+    }
+
     private func makeIsolatedDefaults() -> (UserDefaults, String) {
         let suiteName = "AppSettingsStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

@@ -168,6 +168,12 @@ final class AppSettingsStore: ObservableObject {
         rolloverWordsCounterIfNeeded(referenceDate: evaluatedDate)
     }
 
+    func refreshSelectedMicrophoneFromDefaults() {
+        let persisted = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+        guard persisted != selectedMicrophoneUID else { return }
+        selectedMicrophoneUID = persisted
+    }
+
     private func rolloverWordsCounterIfNeeded(referenceDate: Date) {
         let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
         guard !calendar.isDate(wordsThisWeekStart, inSameDayAs: currentWeekStart) else {
