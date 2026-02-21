@@ -32,7 +32,8 @@ final class TranscriptionPostProcessor {
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         listFormattingEnabled: Bool = true,
-        forceAllCaps: Bool = false
+        forceAllCaps: Bool = false,
+        languageCode: String? = nil
     ) -> String {
         guard !text.isEmpty else { return "" }
 
@@ -85,7 +86,7 @@ final class TranscriptionPostProcessor {
         logPipelineStage("mathNormalized", mathNormalized)
         #endif
         let listFormatted = listFormattingEnabled
-            ? listFormattingEngine.formatIfNeeded(mathNormalized, renderMode: renderMode)
+            ? listFormattingEngine.formatIfNeeded(mathNormalized, renderMode: renderMode, languageCode: languageCode)
             : mathNormalized
         #if DEBUG
         logPipelineStage("listFormatted", listFormatted)

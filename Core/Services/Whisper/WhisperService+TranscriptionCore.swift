@@ -7,7 +7,7 @@ extension WhisperService {
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool = true,
         enableAutoParagraphs: Bool = true,
-        completion: @escaping (String?) -> Void
+        completion: @escaping (TranscriptionProviderResult?) -> Void
     ) {
         // Hardening: ensure only one transcription runs at a time
         transcriptionTask?.cancel()
@@ -16,7 +16,7 @@ extension WhisperService {
             #if DEBUG
             print("Skipping transcription: audio buffer is empty or silent.")
             #endif
-            completion("")
+            completion(TranscriptionProviderResult(text: "", languageCode: nil))
             return
         }
 
@@ -61,6 +61,8 @@ extension WhisperService {
 
                 var transcribedSegments: [Segment] = []
                 var chunkTexts: [String] = []
+                var detectedLanguageCode: String? = nil
+
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
                         DispatchQueue.main.async {
@@ -73,10 +75,14 @@ extension WhisperService {
                     let chunkFrames = Array(audioFrames[chunk.startFrame..<chunk.endFrame])
                     guard !chunkFrames.isEmpty else { continue }
 
-                    let segments = try await self.transcribeChunkWithLeadingPhraseRetry(
+                    let result = try await self.transcribeChunkWithLeadingPhraseRetry(
                         chunkFrames: chunkFrames,
                         usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
                     )
+                    let segments = result.segments
+                    if detectedLanguageCode == nil {
+                        detectedLanguageCode = result.detectedLanguageCode
+                    }
                     #if DEBUG
                     logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
                     #endif
@@ -129,7 +135,7 @@ extension WhisperService {
                     restoreDictionaryHintPromptIfNeeded()
                     self.lastResultWasLikelyNoSpeech = likelyNoSpeechByDecoder
                     self.transcriptionText = finalText
-                    completion(finalText)
+                    completion(TranscriptionProviderResult(text: finalText, languageCode: detectedLanguageCode))
                 }
             } catch {
                 if Task.isCancelled {
@@ -154,7 +160,7 @@ extension WhisperService {
     }
 
     // Legacy support for file-based transcription (can be removed later)
-    func transcribe(audioURL: URL, completion: @escaping (String?) -> Void) {
+    func transcribe(audioURL: URL, completion: @escaping (TranscriptionProviderResult?) -> Void) {
         Task {
             do {
                 let audioFrames = try loadAndResample(url: audioURL)
@@ -208,10 +214,10 @@ extension WhisperService {
     private func transcribeChunkWithLeadingPhraseRetry(
         chunkFrames: [Float],
         usedDictionaryHintPrompt: Bool
-    ) async throws -> [Segment] {
-        let primary = try await whisper?.transcribe(audioFrames: chunkFrames) ?? []
+    ) async throws -> WhisperTranscriptionResult {
+        let primary = try await whisper?.transcribeWithMetadata(audioFrames: chunkFrames) ?? WhisperTranscriptionResult(segments: [], detectedLanguageCode: nil, detectedLanguageName: nil)
         guard shouldRetryLeadingPhraseDecode(
-            primary,
+            primary.segments,
             chunkFrames: chunkFrames,
             usedDictionaryHintPrompt: usedDictionaryHintPrompt
         ) else {
@@ -239,20 +245,30 @@ extension WhisperService {
         print(
             "WhisperService retry: reason=leading_short_result " +
             "chunkSeconds=\(String(format: "%.2f", duration)) " +
-            "primaryWords=\(wordCount(in: compactSegmentText(primary)))"
+            "primaryWords=\(wordCount(in: compactSegmentText(primary.segments)))"
         )
         #endif
 
-        let retry = try await whisper.transcribe(audioFrames: chunkFrames)
-        let selected = selectPreferredRetry(primary: primary, retry: retry)
-        #if DEBUG
-        if selected.elementsEqual(retry, by: { $0.text == $1.text && $0.startTime == $1.startTime && $0.endTime == $1.endTime }) {
-            print("WhisperService retry: selected=retry")
-        } else {
-            print("WhisperService retry: selected=primary")
-        }
-        #endif
-        return selected
+        let retry = try await whisper.transcribeWithMetadata(audioFrames: chunkFrames)
+        let selectedSegments = selectPreferredRetry(primary: primary.segments, retry: retry.segments)
+
+        // If we selected the retry segments, we should also take its language metadata as it might be more accurate or at least consistent.
+        // Actually, let's just keep it simple and use the primary languge if available, otherwise retry.
+        // But the primary language is already in 'primary' result.
+        
+        let finalSegments = selectedSegments
+        let finalLanguageCode = (selectedSegments.count == retry.segments.count && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })) 
+            ? retry.detectedLanguageCode 
+            : primary.detectedLanguageCode
+        let finalLanguageName = (selectedSegments.count == retry.segments.count && selectedSegments.elementsEqual(retry.segments, by: { $0.text == $1.text })) 
+            ? retry.detectedLanguageName 
+            : primary.detectedLanguageName
+
+        return WhisperTranscriptionResult(
+            segments: finalSegments,
+            detectedLanguageCode: finalLanguageCode,
+            detectedLanguageName: finalLanguageName
+        )
     }
 
     private func shouldRetryLeadingPhraseDecode(

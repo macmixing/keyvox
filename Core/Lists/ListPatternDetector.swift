@@ -5,8 +5,8 @@ struct ListPatternDetector {
     private let runSelector = ListPatternRunSelector()
     private let trailingSplitter = ListPatternTrailingSplitter()
 
-    func detectList(in text: String) -> DetectedList? {
-        let markers = markerParser.markers(in: text)
+    func detectList(in text: String, languageCode: String? = nil) -> DetectedList? {
+        let markers = markerParser.markers(in: text, languageCode: languageCode)
         #if DEBUG
         logDetector("markers=\(debugMarkers(markers)) text=\(debugTextSummary(text))")
         #endif

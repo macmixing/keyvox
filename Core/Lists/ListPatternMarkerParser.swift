@@ -1,7 +1,7 @@
 import Foundation
 
 struct ListPatternMarkerParser {
-    private static let markerTokenPattern = #"(?:\d+|[A-Z]+(?:-[A-Z]+)?)"#
+    private static let markerTokenPattern = #"(?:\d+|[\p{L}]+(?:-[\p{L}]+)?)"#
 
     private static let leadingMarkerRegex: NSRegularExpression = {
         let pattern = "(?i)^\\s*(\(markerTokenPattern))"
@@ -33,15 +33,41 @@ struct ListPatternMarkerParser {
         return try! NSRegularExpression(pattern: pattern)
     }()
 
-    private static let spokenNumberFormatterLock = NSLock()
-    private static let spokenNumberFormatter: NumberFormatter = {
+    private static let formattersLock = NSLock()
+    private static var formatters: [String: NumberFormatter] = [:]
+
+    private static func formatter(for locale: Locale) -> NumberFormatter {
+        formattersLock.lock()
+        defer { formattersLock.unlock() }
+
+        let identifier = locale.identifier
+        if let existing = formatters[identifier] {
+            return existing
+        }
+
         let formatter = NumberFormatter()
         formatter.numberStyle = .spellOut
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = locale
+        formatters[identifier] = formatter
         return formatter
-    }()
+    }
 
-    static func parseMarkerValue(_ rawToken: String) -> Int? {
+    private static func resolveLocale(from languageCode: String?) -> Locale {
+        guard let languageCode = languageCode?.replacingOccurrences(of: "_", with: "-") else {
+            return .current
+        }
+
+        let locale = Locale(identifier: languageCode)
+        // Verify if this locale can actually spell out numbers. 
+        // Some constructed identifiers might not have a full locale definition.
+        if locale.localizedString(forIdentifier: locale.identifier) != nil {
+            return locale
+        }
+
+        return .current
+    }
+
+    static func parseMarkerValue(_ rawToken: String, languageCode: String? = nil) -> Int? {
         let token = rawToken
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
@@ -52,17 +78,20 @@ struct ListPatternMarkerParser {
             return value
         }
 
-        spokenNumberFormatterLock.lock()
-        let parsed = spokenNumberFormatter.number(from: token)
-        spokenNumberFormatterLock.unlock()
+        let locale = resolveLocale(from: languageCode)
+        let numberFormatter = formatter(for: locale)
+
+        formattersLock.lock()
+        let parsed = numberFormatter.number(from: token)
+        formattersLock.unlock()
         guard let parsed else { return nil }
 
         let value = parsed.intValue
         guard value > 0 else { return nil }
 
-        spokenNumberFormatterLock.lock()
-        let roundTrip = spokenNumberFormatter.string(from: NSNumber(value: value))
-        spokenNumberFormatterLock.unlock()
+        formattersLock.lock()
+        let roundTrip = numberFormatter.string(from: NSNumber(value: value))
+        formattersLock.unlock()
         guard let roundTrip else { return nil }
 
         guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else {
@@ -114,7 +143,7 @@ struct ListPatternMarkerParser {
         return hadRequiredWhitespace && index < length
     }
 
-    func markers(in text: String) -> [ListPatternMarker] {
+    func markers(in text: String, languageCode: String? = nil) -> [ListPatternMarker] {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
         let primaryMatches = Self.markerRegex.matches(in: text, options: [], range: range)
@@ -127,7 +156,7 @@ struct ListPatternMarkerParser {
             let tokenRange = match.range(at: 1)
             guard tokenRange.location != NSNotFound else { return nil }
 
-            guard let resolved = resolvedMarker(in: nsText, tokenRange: tokenRange) else {
+            guard let resolved = resolvedMarker(in: nsText, tokenRange: tokenRange, languageCode: languageCode) else {
                 return nil
             }
 
@@ -152,7 +181,7 @@ struct ListPatternMarkerParser {
         markers.append(contentsOf: attachedMatches.compactMap { match -> ListPatternMarker? in
             let tokenRange = match.range(at: 1)
             guard tokenRange.location != NSNotFound else { return nil }
-            guard let resolved = resolvedMarker(in: nsText, tokenRange: tokenRange) else {
+            guard let resolved = resolvedMarker(in: nsText, tokenRange: tokenRange, languageCode: languageCode) else {
                 return nil
             }
             if resolved.isDigitToken && isLikelyCompactClockTime(token: resolved.token, contentStart: resolved.contentStart, in: nsText) {
@@ -227,10 +256,11 @@ struct ListPatternMarkerParser {
 
     private func resolvedMarker(
         in nsText: NSString,
-        tokenRange: NSRange
+        tokenRange: NSRange,
+        languageCode: String?
     ) -> (number: Int, markerTokenStart: Int, contentStart: Int, token: String, isDigitToken: Bool)? {
         let token = nsText.substring(with: tokenRange).lowercased()
-        if let number = Self.parseMarkerValue(token),
+        if let number = Self.parseMarkerValue(token, languageCode: languageCode),
            let contentStart = contentStart(afterTokenRange: tokenRange, in: nsText) {
             return (
                 number: number,
@@ -248,7 +278,7 @@ struct ListPatternMarkerParser {
 
         for splitOffset in stride(from: tokenNSString.length - 1, through: 1, by: -1) {
             let prefix = tokenNSString.substring(to: splitOffset)
-            guard let number = Self.parseMarkerValue(prefix) else { continue }
+            guard let number = Self.parseMarkerValue(prefix, languageCode: languageCode) else { continue }
 
             let suffix = tokenNSString.substring(from: splitOffset)
             let combined = suffix + trailingText
@@ -390,7 +420,7 @@ struct ListPatternMarkerParser {
         let tokenRange = match.range(at: 1)
         guard tokenRange.location != NSNotFound else { return nil }
         let token = nsText.substring(with: tokenRange)
-        guard let value = parseMarkerValue(token) else { return nil }
+        guard let value = parseMarkerValue(token, languageCode: Locale.current.language.languageCode?.identifier) else { return nil }
         return (value, tokenRange)
     }
 }

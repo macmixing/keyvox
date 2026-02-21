@@ -1,6 +1,18 @@
 import Foundation
 @preconcurrency import whisper
 
+public struct WhisperTranscriptionResult: Sendable {
+    public let segments: [Segment]
+    public let detectedLanguageCode: String?
+    public let detectedLanguageName: String?
+
+    public init(segments: [Segment], detectedLanguageCode: String?, detectedLanguageName: String?) {
+        self.segments = segments
+        self.detectedLanguageCode = detectedLanguageCode
+        self.detectedLanguageName = detectedLanguageName
+    }
+}
+
 private struct WhisperContextHandle: @unchecked Sendable {
     let raw: OpaquePointer
 }
@@ -24,6 +36,9 @@ struct WhisperRuntime {
     var fullGetSegmentT0: (_ context: OpaquePointer, _ index: Int32) -> Int64
     var fullGetSegmentT1: (_ context: OpaquePointer, _ index: Int32) -> Int64
     var fullGetSegmentNoSpeechProb: (_ context: OpaquePointer, _ index: Int32) -> Float
+    var fullLangId: (_ context: OpaquePointer) -> Int32
+    var langStr: (_ id: Int32) -> UnsafePointer<CChar>?
+    var langStrFull: (_ id: Int32) -> UnsafePointer<CChar>?
 
     static let live = WhisperRuntime(
         contextDefaultParams: { whisper_context_default_params() },
@@ -50,6 +65,15 @@ struct WhisperRuntime {
         },
         fullGetSegmentNoSpeechProb: { context, index in
             whisper_full_get_segment_no_speech_prob(context, index)
+        },
+        fullLangId: { context in
+            whisper_full_lang_id(context)
+        },
+        langStr: { id in
+            whisper_lang_str(id)
+        },
+        langStrFull: { id in
+            whisper_lang_str_full(id)
         }
     )
 }
@@ -98,6 +122,10 @@ public final class Whisper {
     }
 
     public func transcribe(audioFrames: [Float]) async throws -> [Segment] {
+        try await transcribeWithMetadata(audioFrames: audioFrames).segments
+    }
+
+    public func transcribeWithMetadata(audioFrames: [Float]) async throws -> WhisperTranscriptionResult {
         try Task.checkCancellation()
 
         guard !audioFrames.isEmpty else {
@@ -165,7 +193,25 @@ public final class Whisper {
                     }
                 }
 
-                continuation.resume(returning: segments)
+                let langId = runtime.fullLangId(context.raw)
+                let langCode: String?
+                let langName: String?
+
+                if langId >= 0 {
+                    langCode = runtime.langStr(langId).map { String(cString: $0) }
+                    langName = runtime.langStrFull(langId).map { String(cString: $0) }
+                } else {
+                    langCode = nil
+                    langName = nil
+                }
+
+                let result = WhisperTranscriptionResult(
+                    segments: segments,
+                    detectedLanguageCode: langCode,
+                    detectedLanguageName: langName
+                )
+
+                continuation.resume(returning: result)
             }
         }
     }

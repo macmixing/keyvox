@@ -291,4 +291,42 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
         XCTAssertEqual(detected?.items.map(\.content), ["Dom@example.com", "Kathy@example.com"])
     }
+
+    func testDetectsSpanishSpokenMarkers() {
+        let detector = ListPatternDetector()
+        let text = "Para hoy: uno comprar leche dos caminar con el perro tres llamar a mamá"
+        
+        let detected = detector.detectList(in: text, languageCode: "es")
+        XCTAssertNotNil(detected)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Comprar leche", "Caminar con el perro", "Llamar a mamá"])
+    }
+
+    func testDetectsFrenchSpokenMarkers() {
+        let detector = ListPatternDetector()
+        let text = "Liste de courses: un du pain deux du lait trois des oeufs"
+        
+        let detected = detector.detectList(in: text, languageCode: "fr")
+        XCTAssertNotNil(detected)
+        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
+        XCTAssertTrue(detected?.items.map(\.content) == ["Du pain", "Du lait", "Des oeufs"])
+    }
+
+    func testSpokenMarkersNotDetectedForMismatchedLanguage() {
+        let detector = ListPatternDetector()
+        let text = "un buy groceries deux walk dog"
+        
+        // Should not detect if language is set to English but markers are French
+        let detected = detector.detectList(in: text, languageCode: "en")
+        XCTAssertNil(detected)
+    }
+
+    func testNumericMarkersStillWorkWithUnknownLanguage() {
+        let detector = ListPatternDetector()
+        let text = "1. buy groceries 2. walk dog"
+        
+        let detected = detector.detectList(in: text, languageCode: "unknown")
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+    }
 }
