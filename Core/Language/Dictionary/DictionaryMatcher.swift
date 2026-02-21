@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 struct DictionaryMatchResult {
     let text: String
@@ -28,7 +29,7 @@ final class DictionaryMatcher {
 
     var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
     var emailEntriesByDomain: [String: [DictionaryEmailEntry]] = [:]
-
+    
     init(
         lexicon: PronunciationLexiconProviding,
         encoder: PhoneticEncoder,
@@ -100,6 +101,7 @@ final class DictionaryMatcher {
         guard !tokens.isEmpty else {
             return DictionaryMatchResult(text: emailNormalizedInput, stats: .empty)
         }
+        let clauseBoundaryStarts = clauseBoundaryTokenStarts(tokens: tokens)
 
         var stats = DebugStats()
         var proposed: [ProposedReplacement] = []
@@ -166,11 +168,22 @@ final class DictionaryMatcher {
 
         var selected = selectNonOverlapping(proposed: proposed, rejectedOverlapCounter: &stats.rejectedOverlap)
         if selected.contains(where: \.requiresPeerSupport) {
-            let hasIndependentSupport = selected.contains(where: { !$0.requiresPeerSupport })
-            if !hasIndependentSupport {
+            let independent = selected.filter { !$0.requiresPeerSupport }
+            if independent.isEmpty {
                 let rejectedCount = selected.filter(\.requiresPeerSupport).count
                 stats.rejectedCommonWord += rejectedCount
                 selected.removeAll(where: \.requiresPeerSupport)
+            } else {
+                let beforeCount = selected.count
+                selected.removeAll { candidate in
+                    guard candidate.requiresPeerSupport else { return false }
+                    return !hasClauseLocalIndependentSupport(
+                        for: candidate,
+                        independent: independent,
+                        clauseBoundaryStarts: clauseBoundaryStarts
+                    )
+                }
+                stats.rejectedCommonWord += (beforeCount - selected.count)
             }
         }
         guard !selected.isEmpty else {
@@ -186,5 +199,45 @@ final class DictionaryMatcher {
         }
 
         return DictionaryMatchResult(text: output, stats: stats)
+    }
+
+    private func hasClauseLocalIndependentSupport(
+        for candidate: ProposedReplacement,
+        independent: [ProposedReplacement],
+        clauseBoundaryStarts: [Int]
+    ) -> Bool {
+        let clauseIndex = clauseIndexForTokenStart(candidate.tokenStart, clauseBoundaryStarts: clauseBoundaryStarts)
+        let minimumSupportTokenCount = 2
+        return independent.contains { support in
+            clauseIndexForTokenStart(support.tokenStart, clauseBoundaryStarts: clauseBoundaryStarts) == clauseIndex
+                && (support.tokenEndExclusive - support.tokenStart) >= minimumSupportTokenCount
+        }
+    }
+
+    private func clauseBoundaryTokenStarts(tokens: [Token]) -> [Int] {
+        guard !tokens.isEmpty else { return [] }
+
+        var boundaries: [Int] = []
+        boundaries.reserveCapacity(tokens.count / 4)
+
+        for (index, token) in tokens.enumerated() {
+            guard token.lexicalClass == .conjunction else { continue }
+            let boundaryStart = index + 1
+            if boundaryStart < tokens.count {
+                boundaries.append(boundaryStart)
+            }
+        }
+
+        return boundaries
+    }
+
+    private func clauseIndexForTokenStart(_ tokenStart: Int, clauseBoundaryStarts: [Int]) -> Int {
+        guard tokenStart > 0 else { return 0 }
+        var index = 0
+        for boundaryStart in clauseBoundaryStarts {
+            if boundaryStart >= tokenStart { break }
+            index += 1
+        }
+        return index
     }
 }

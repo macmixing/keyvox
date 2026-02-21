@@ -143,12 +143,21 @@ awk '
     if (w == "") next
     if (length(w) < 2 || length(w) > 12) next
     if (seen[w]++) next
-    if (count >= max_rows) next
     print w
-    count++
   }
-' max_rows="$COMMON_MAX_ROWS" "$TMP_DIR/scowl-words.txt" \
-  > "$OUT_DIR/common-words-v1.txt"
+' "$TMP_DIR/scowl-words.txt" > "$TMP_DIR/scowl-common-normalized.txt"
+
+COMMON_CANDIDATE_ROWS="$(wc -l < "$TMP_DIR/scowl-common-normalized.txt" | tr -d ' ')"
+if (( COMMON_CANDIDATE_ROWS <= COMMON_MAX_ROWS )); then
+  cp "$TMP_DIR/scowl-common-normalized.txt" "$OUT_DIR/common-words-v1.txt"
+else
+  # Source list is alphabetical; taking a head slice biases toward early letters.
+  # Sample evenly across the full normalized list to keep coverage deterministic.
+  COMMON_STRIDE=$(( (COMMON_CANDIDATE_ROWS + COMMON_MAX_ROWS - 1) / COMMON_MAX_ROWS ))
+  awk -v stride="$COMMON_STRIDE" '
+    ((NR - 1) % stride) == 0 { print }
+  ' "$TMP_DIR/scowl-common-normalized.txt" > "$OUT_DIR/common-words-v1.txt"
+fi
 
 LEXICON_ROWS="$(wc -l < "$OUT_DIR/lexicon-v1.tsv" | tr -d ' ')"
 COMMON_ROWS="$(wc -l < "$OUT_DIR/common-words-v1.txt" | tr -d ' ')"

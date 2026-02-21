@@ -313,6 +313,30 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I love typing on this keyboard.")
     }
 
+    func testDoesNotReplaceKeyboardPluralInGenericProse() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "These new MacBooks have great keyboards.")
+        XCTAssertEqual(result.text, "These new MacBooks have great keyboards.")
+    }
+
+    func testReplacesCommonWordInOwnershipPredicateContextForStylizedEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "My new iPhone has keyboard installed on it.")
+        XCTAssertEqual(result.text, "My new iPhone has Cueboard installed on it.")
+    }
+
     func testKeepsCommonWordKeyboardInProseWhenBrandMentionAlsoExists() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
@@ -330,6 +354,46 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(
             result.text,
             "Dom Esposito is the creator of Cueboard and I love typing on this keyboard."
+        )
+    }
+
+    func testKeepsCommonWordKeyboardInProseWhenBrandMentionIsSecondClause() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "I love typing on this keyboard and Dom Esposito is the creator of Cueboard."
+        )
+        XCTAssertEqual(
+            result.text,
+            "I love typing on this keyboard and Dom Esposito is the creator of Cueboard."
+        )
+    }
+
+    func testKeepsCommonWordKeyboardTypoInProseWhenBrandMentionIsSecondClause() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Dom Esposito"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "I love typing on this keybaord and Dom Esposito is the creator of Cueboard."
+        )
+        XCTAssertEqual(
+            result.text,
+            "I love typing on this keybaord and Dom Esposito is the creator of Cueboard."
         )
     }
 

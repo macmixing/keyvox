@@ -110,6 +110,13 @@ extension DictionaryMatcher {
             return String(token.dropLast(2))
         }
 
+        if token.hasSuffix("s"), !token.hasSuffix("ss"), !token.hasSuffix("s'"), token.count > 3 {
+            let singularStem = String(token.dropLast(1))
+            if lexicon.isCommonWord(singularStem) {
+                return singularStem
+            }
+        }
+
         return token
     }
 

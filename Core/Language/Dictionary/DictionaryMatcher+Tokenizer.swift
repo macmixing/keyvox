@@ -1,9 +1,12 @@
 import Foundation
+import NaturalLanguage
 
 extension DictionaryMatcher {
     func tokenize(_ text: String) -> [Token] {
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
+        let tagger = NLTagger(tagSchemes: [.lexicalClass])
+        tagger.string = text
 
         guard let regex = try? NSRegularExpression(pattern: "\\b[\\p{L}\\p{N}']+\\b") else {
             return []
@@ -15,12 +18,14 @@ extension DictionaryMatcher {
                 let raw = nsText.substring(with: match.range)
                 let normalized = DictionaryTextNormalization.normalizedToken(raw)
                 guard !normalized.isEmpty else { return nil }
+                guard let range = Range(match.range, in: text) else { return nil }
 
                 return Token(
                     raw: raw,
                     normalized: normalized,
                     range: match.range,
-                    phonetic: encoder.scoringSignature(for: normalized, lexicon: lexicon)
+                    phonetic: encoder.scoringSignature(for: normalized, lexicon: lexicon),
+                    lexicalClass: tagger.tag(at: range.lowerBound, unit: .word, scheme: .lexicalClass).0
                 )
             }
     }

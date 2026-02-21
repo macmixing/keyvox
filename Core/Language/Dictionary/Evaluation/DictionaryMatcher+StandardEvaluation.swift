@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 private enum StandardEvaluationConstants {
     static let minimumSingleTokenLength = 3
@@ -30,9 +31,47 @@ private enum StandardEvaluationConstants {
 
     static let commonWordStylizedBypassMinimum = 0.82
     static let commonWordFallbackBypassMinimum = 0.58
+    static let commonWordStructuralBypassMinimum = 0.60
+    static let commonWordStructuralContextThreshold = 0.60
+    static let commonWordAttributionContextThreshold = 0.62
+    static let structuralLeftContextMaximumLength = 4
+    static let structuralRightContextMinimumLength = 7
+    static let lowercaseAlphabeticTokenRegex = try! NSRegularExpression(pattern: #"^[a-z]+$"#)
 }
 
 extension DictionaryMatcher {
+    private func hasAttributionLikePrepositionContext(tokenStart: Int, tokens: [Token]) -> Bool {
+        guard tokenStart >= 2 else { return false }
+        return tokens[tokenStart - 1].lexicalClass == .preposition
+            && tokens[tokenStart - 2].lexicalClass == .noun
+    }
+
+    private func hasStructuralCommonWordBrandContext(
+        tokenStart: Int,
+        tokenEndExclusive: Int,
+        tokens: [Token]
+    ) -> Bool {
+        guard tokenStart > 0, tokenEndExclusive < tokens.count else { return false }
+        let leftToken = tokens[tokenStart - 1]
+        let rightToken = tokens[tokenEndExclusive]
+        let left = leftToken.normalized
+        let right = rightToken.normalized
+        let rightRange = NSRange(location: 0, length: right.utf16.count)
+        let rightIsLowerAlphabetic = StandardEvaluationConstants.lowercaseAlphabeticTokenRegex.firstMatch(
+            in: right,
+            options: [],
+            range: rightRange
+        ) != nil
+        let leftIsVerb = leftToken.lexicalClass == .verb
+        let rightIsVerbLike = rightToken.lexicalClass == .verb || rightToken.lexicalClass == .adjective
+
+        return left.count <= StandardEvaluationConstants.structuralLeftContextMaximumLength
+            && leftIsVerb
+            && rightIsLowerAlphabetic
+            && right.count >= StandardEvaluationConstants.structuralRightContextMinimumLength
+            && rightIsVerbLike
+    }
+
     func proposeStandardReplacement(
         start: Int,
         tokenCount: Int,
@@ -195,7 +234,15 @@ extension DictionaryMatcher {
             let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
             let stylizedSingleTokenEntry = isStylizedSingleTokenEntry(best.entry)
             let observedHasRuntimePronunciation = lexicon.pronunciation(for: observedToken.normalized) != nil
-            let candidateHasRuntimePronunciation = lexicon.pronunciation(for: candidateToken) != nil
+            let hasStructuralContext = hasStructuralCommonWordBrandContext(
+                tokenStart: start,
+                tokenEndExclusive: end,
+                tokens: tokens
+            )
+            let hasAttributionPrepositionContext = hasAttributionLikePrepositionContext(
+                tokenStart: start,
+                tokens: tokens
+            )
             let allowStylizedFallbackBySurface =
                 allowStylizedFallbackForCommonObservedToken(
                     token: observedToken,
@@ -204,7 +251,7 @@ extension DictionaryMatcher {
                 )
 
             if observedHasRuntimePronunciation,
-               !candidateHasRuntimePronunciation,
+               isCommonWord,
                !stylizedSingleTokenEntry,
                textSimilarity < StandardEvaluationConstants.peerSupportSimilarityMaximum {
                 // Guard risky common-word -> brand hops unless corroborated by another
@@ -214,9 +261,25 @@ extension DictionaryMatcher {
 
             if stylizedSingleTokenEntry,
                !allowStylizedFallbackBySurface,
+               !hasStructuralContext,
                textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
                 stats.rejectedLowScore += 1
                 return nil
+            }
+
+            if isCommonWord {
+                if hasStructuralContext {
+                    effectiveThreshold = min(
+                        effectiveThreshold,
+                        StandardEvaluationConstants.commonWordStructuralContextThreshold
+                    )
+                }
+                if hasAttributionPrepositionContext {
+                    effectiveThreshold = min(
+                        effectiveThreshold,
+                        StandardEvaluationConstants.commonWordAttributionContextThreshold
+                    )
+                }
             }
 
             if stylizedSingleTokenEntry,
@@ -268,6 +331,7 @@ extension DictionaryMatcher {
                ((0.6 * textSimilarity) + (0.4 * phoneticSimilarity)) >= StandardEvaluationConstants.properNounBlendedSimilarityMinimum {
                 effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.properNounThreshold)
             }
+
         } else if tokenCount == 2,
                   best.entry.tokens.count == 2 {
             if hasStrongAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
@@ -301,10 +365,29 @@ extension DictionaryMatcher {
                 tokenIndex: start,
                 totalTokens: tokens.count
             )
+            let hasStructuralContext = hasStructuralCommonWordBrandContext(
+                tokenStart: start,
+                tokenEndExclusive: end,
+                tokens: tokens
+            )
+            let stylizedCommonWordWithoutSurfaceEvidence =
+                isStylizedSingleTokenEntry(best.entry)
+                && !allowStylizedBySurface
+            let hasAttributionPrepositionContext = hasAttributionLikePrepositionContext(tokenStart: start, tokens: tokens)
+            let stylizedStructuralBypass =
+                stylizedCommonWordWithoutSurfaceEvidence
+                && hasStructuralContext
+                && best.score.final >= StandardEvaluationConstants.commonWordStructuralBypassMinimum
+            if stylizedCommonWordWithoutSurfaceEvidence {
+                // Common prose tokens that only match via fallback phonetics should
+                // need independent clause-local evidence before replacing.
+                requiresPeerSupport = !stylizedStructuralBypass
+            }
             var stylizedBrandBypass =
                 isStylizedSingleTokenEntry(best.entry)
                 && allowStylizedBySurface
                 && best.score.final >= StandardEvaluationConstants.commonWordStylizedBypassMinimum
+            stylizedBrandBypass = stylizedBrandBypass || stylizedStructuralBypass
             if !stylizedBrandBypass,
                isStylizedSingleTokenEntry(best.entry),
                allowStylizedBySurface,
@@ -323,8 +406,14 @@ extension DictionaryMatcher {
             }
             if !stylizedBrandBypass,
                best.score.final < scorer.commonWordOverrideThreshold {
-                stats.rejectedCommonWord += 1
-                return nil
+                if hasStructuralContext {
+                    requiresPeerSupport = false
+                } else if stylizedCommonWordWithoutSurfaceEvidence || hasAttributionPrepositionContext {
+                    requiresPeerSupport = true
+                } else if !requiresPeerSupport {
+                    stats.rejectedCommonWord += 1
+                    return nil
+                }
             }
         }
 

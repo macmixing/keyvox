@@ -99,7 +99,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        if lexicon.isCommonWord(best.entry.tokens[0]),
+        if lexicon.isCommonWord(baseTokenForCommonWordGuard(observed.normalized)),
            best.score.final < scorer.commonWordOverrideThreshold {
             stats.rejectedCommonWord += 1
             return nil
