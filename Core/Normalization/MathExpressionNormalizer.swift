@@ -15,9 +15,15 @@ struct MathExpressionNormalizer {
             .sorted { $0.count > $1.count }
             .map { key in
                 NSRegularExpression.escapedPattern(for: key)
-                    .replacingOccurrences(of: #"\\ "#, with: #"\s+"#, options: .regularExpression)
+                    .replacingOccurrences(of: " ", with: #"\s+"#)
             }
             .joined(separator: "|")
+    }()
+    private static let spellOutNumberParser: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .spellOut
+        return formatter
     }()
     private static let standaloneMathAllowedCharsRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"^[\s0-9().+\-*/^=%]+$"#,
@@ -65,7 +71,7 @@ struct MathExpressionNormalizer {
         options: []
     )
     private static let mathTriggerRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: "(?i)\\b(?:\(operatorWordAlternation)|equals|percent|squared|cubed|power\\s+of|to\\s+the\\s+power\\s+of|to\\s+the\\s+[A-Z0-9\\-]+\\s+power|raised\\s+to)\\b|(?<=\\d)\\s*-\\s*(?=\\d)",
+        pattern: "(?i)\\b(?:\(operatorWordAlternation)|equals|percent|squared|cubed|power\\s+of|to\\s+the\\s+power\\s+of|to\\s+the\\s+[A-Z0-9\\-.]+(?:\\s+[A-Z0-9\\-.]+)*\\s+power|raised\\s+to)\\b|(?<=\\d)\\s*-\\s*(?=\\d)",
         options: []
     )
     private static let toThePowerOfRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -73,11 +79,11 @@ struct MathExpressionNormalizer {
         options: []
     )
     private static let toTheOrdinalPowerRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+to\s+the\s+([A-Z0-9.\-]+)\s+power\b"#,
+        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+to\s+the\s+([A-Z0-9.\-]+(?:\s+[A-Z0-9.\-]+)*)\s+power\b"#,
         options: []
     )
     private static let raisedToRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+raised\s+to\s+(?:the\s+)?([A-Z0-9.\-]+)(?:\s+power)?\b"#,
+        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+raised\s+to\s+(?:the\s+)?([A-Z0-9.\-]+(?:\s+[A-Z0-9.\-]+)*)(?:\s+power)?\b"#,
         options: []
     )
     private static let powerRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -371,21 +377,52 @@ struct MathExpressionNormalizer {
             .lowercased()
             .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!?"))
         guard !trimmed.isEmpty else { return nil }
+        let exponentToken = trimmed.replacingOccurrences(
+            of: #"\s+power$"#,
+            with: "",
+            options: .regularExpression
+        )
+        guard !exponentToken.isEmpty else { return nil }
 
         if let regex = Self.numericOrdinalExponentRegex {
-            let nsToken = trimmed as NSString
+            let nsToken = exponentToken as NSString
             let range = NSRange(location: 0, length: nsToken.length)
-            if let match = regex.firstMatch(in: trimmed, options: [], range: range) {
+            if let match = regex.firstMatch(in: exponentToken, options: [], range: range) {
                 return nsToken.substring(with: match.range(at: 1))
             }
         }
 
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .spellOut
-        guard let parsed = formatter.number(from: trimmed)?.intValue, parsed > 0 else {
+        return Self.parseOrdinalWordExponent(exponentToken)
+    }
+
+    private static func parseOrdinalWordExponent(_ text: String) -> String? {
+        let normalized = normalizedOrdinalLookupKey(text)
+        guard !normalized.isEmpty else { return nil }
+
+        if let direct = spellOutNumberParser.number(from: normalized)?.intValue, direct > 0 {
+            return String(direct)
+        }
+
+        let parts = normalized.split(separator: " ").map(String.init)
+        guard parts.count >= 2 else { return nil }
+
+        let prefix = parts.dropLast().joined(separator: " ")
+        let suffix = parts.last ?? ""
+        guard let prefixValue = spellOutNumberParser.number(from: prefix)?.intValue,
+              prefixValue > 0,
+              let suffixValue = spellOutNumberParser.number(from: suffix)?.intValue,
+              suffixValue > 0 else {
             return nil
         }
-        return String(parsed)
+
+        return String(prefixValue + suffixValue)
+    }
+
+    private static func normalizedOrdinalLookupKey(_ text: String) -> String {
+        text
+            .lowercased()
+            .replacingOccurrences(of: "-", with: " ")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!? ").union(.whitespacesAndNewlines))
     }
 }

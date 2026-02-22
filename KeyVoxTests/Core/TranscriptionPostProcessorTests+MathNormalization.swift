@@ -88,6 +88,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "9^3")
     }
 
+    func testNormalizesCompoundOrdinalPowerPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2 to the twenty first power",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2^21")
+    }
+
     func testNormalizesXMultiplicationThenPlusForStandaloneMath() {
         let processor = TranscriptionPostProcessor()
 
