@@ -227,6 +227,35 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectListWhenSecondMarkerArrivesAfterLongProseSpan() {
+        let detector = ListPatternDetector()
+        let text = """
+        1. Was that LMS couldn't do it. This is a long explanation about model scores and benchmarks and how numbers online can be misleading if you don't understand the context. We keep talking through a lot of details, examples, comparisons, and side notes because the point is not to make a numbered list at all. It's just a long paragraph where a spoken number happened at the start and then another number appears much later in regular prose after a lot of sentences and commentary and transitions.
+        2. on your computer, right
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDetectsListWhenCadenceRecoversAtThirdMarkerAfterLongFirstItem() {
+        let detector = ListPatternDetector()
+        let text = """
+        1. This first item is intentionally long. It has multiple sentences because someone is explaining context before they continue the list. They keep talking for a while to set things up and it goes on longer than a normal list item would.
+        2. Cueboard
+        3. KeyVox
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), [
+            "This first item is intentionally long. It has multiple sentences because someone is explaining context before they continue the list. They keep talking for a while to set things up and it goes on longer than a normal list item would",
+            "Cueboard",
+            "KeyVox",
+        ])
+    }
+
     func testDetectsExplicitTwoItemNonConsecutiveListMarkers() {
         let detector = ListPatternDetector()
         let text = "1. buy groceries 3. call mom"

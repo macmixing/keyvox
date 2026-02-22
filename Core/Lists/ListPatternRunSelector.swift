@@ -1,6 +1,13 @@
 import Foundation
 
 struct ListPatternRunSelector {
+    private enum CadenceGuard {
+        static let maximumWordsBetweenAdjacentMarkers = 70
+        static let maximumCharactersBetweenAdjacentMarkers = 500
+        static let maximumSentenceBoundariesBetweenAdjacentMarkers = 2
+        static let sentenceBoundaryCharacterSet = CharacterSet(charactersIn: ".!?")
+    }
+
     func selectDetection(
         from markers: [ListPatternMarker],
         in text: String,
@@ -50,6 +57,7 @@ struct ListPatternRunSelector {
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
         guard isCredibleTwoItemGap(run: best, in: nsText, languageCode: languageCode) else { return nil }
+        guard hasCredibleRunCadence(run: best, in: nsText) else { return nil }
         return best
     }
 
@@ -75,6 +83,63 @@ struct ListPatternRunSelector {
         let delta = run[1].number - run[0].number
         guard delta > 1 else { return true }
         return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }
+    }
+
+    // Prevent list detection from stretching across long prose spans between
+    // markers. For 3+ item runs, allow the cadence to recover after one long
+    // first item if later adjacent markers confirm the list flow.
+    private func hasCredibleRunCadence(run: [ListPatternMarker], in nsText: NSString) -> Bool {
+        guard run.count >= 2 else { return true }
+
+        let pairCadence = zip(run, run.dropFirst()).map { previous, next in
+            isCredibleAdjacentMarkerCadence(from: previous, to: next, in: nsText)
+        }
+
+        if pairCadence.allSatisfy({ $0 }) {
+            return true
+        }
+
+        guard run.count >= 3 else {
+            return false
+        }
+
+        // Allow a single overlong first item if the remaining adjacent pairs
+        // continue with normal list cadence (e.g. "1. <long item> 2. short 3. short").
+        guard pairCadence.indices.contains(0), pairCadence[0] == false else {
+            return false
+        }
+        return pairCadence.dropFirst().allSatisfy { $0 }
+    }
+
+    private func isCredibleAdjacentMarkerCadence(
+        from previous: ListPatternMarker,
+        to next: ListPatternMarker,
+        in nsText: NSString
+    ) -> Bool {
+        guard next.markerTokenStart > previous.contentStart else { return false }
+
+        let gapRange = NSRange(location: previous.contentStart, length: next.markerTokenStart - previous.contentStart)
+        let gapText = nsText.substring(with: gapRange).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !gapText.isEmpty else { return true }
+
+        let wordCount = gapText.split { $0.isWhitespace || $0.isNewline }.count
+        let characterCount = gapText.count
+        let sentenceBoundaryCount = gapText.unicodeScalars.reduce(into: 0) { count, scalar in
+            if CadenceGuard.sentenceBoundaryCharacterSet.contains(scalar) {
+                count += 1
+            }
+        }
+
+        if sentenceBoundaryCount > CadenceGuard.maximumSentenceBoundariesBetweenAdjacentMarkers {
+            return false
+        }
+        if wordCount > CadenceGuard.maximumWordsBetweenAdjacentMarkers {
+            return false
+        }
+        if characterCount > CadenceGuard.maximumCharactersBetweenAdjacentMarkers {
+            return false
+        }
+        return true
     }
 
     private func shouldPrefer(
