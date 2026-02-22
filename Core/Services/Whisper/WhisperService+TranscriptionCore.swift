@@ -58,15 +58,22 @@ extension WhisperService {
                 let chunkResult = self.paragraphChunker.split(audioFrames)
                 #if DEBUG
                 let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }
+                let chunkDurationsMs = chunkResult.chunkFrameLengths.map { Int((Double($0) / 16_000.0) * 1_000.0) }
                 print(
                     "WhisperService chunking: chunks=\(chunkResult.chunks.count) " +
-                    "boundariesMs=\(boundaryMs) silenceThreshold=\(String(format: "%.5f", chunkResult.silenceThreshold))"
+                    "boundariesMs=\(boundaryMs) " +
+                    "silenceBoundaryCount=\(chunkResult.silenceBoundaryFrames.count) " +
+                    "fallbackBoundaryCount=\(chunkResult.fallbackBoundaryFrames.count) " +
+                    "chunkDurationsMs=\(chunkDurationsMs) " +
+                    "maxChunkMs=\(Int((Double(chunkResult.maxChunkFrames) / 16_000.0) * 1_000.0)) " +
+                    "silenceThreshold=\(String(format: "%.5f", chunkResult.silenceThreshold))"
                 )
                 #endif
 
                 var transcribedSegments: [Segment] = []
                 var chunkTexts: [String] = []
                 var detectedLanguageCode: String? = nil
+                var nonEmptyChunkTextCount = 0
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
@@ -98,7 +105,21 @@ extension WhisperService {
                     let normalizedChunkText = normalizeWhitespace(chunkText)
                     if !normalizedChunkText.isEmpty {
                         chunkTexts.append(normalizedChunkText)
+                        nonEmptyChunkTextCount += 1
                     }
+                    #if DEBUG
+                    let chunkDurationSeconds = Double(chunk.endFrame - chunk.startFrame) / 16_000.0
+                    let averageChunkNoSpeechProbability: Float = segments.isEmpty
+                        ? 1.0
+                        : (segments.reduce(0) { $0 + $1.noSpeechProbability } / Float(segments.count))
+                    print(
+                        "WhisperService chunk result: chunk=\(chunkIndex + 1)/\(chunkResult.chunks.count) " +
+                        "seconds=\(String(format: "%.2f", chunkDurationSeconds)) " +
+                        "segments=\(segments.count) " +
+                        "avgNoSpeech=\(String(format: "%.3f", averageChunkNoSpeechProbability)) " +
+                        "emptyText=\(normalizedChunkText.isEmpty)"
+                    )
+                    #endif
                 }
 
                 // Check if task was cancelled before proceeding
@@ -132,6 +153,13 @@ extension WhisperService {
                     "WhisperService paragraphing: segments=\(transcribedSegments.count) " +
                     "enabled=\(enableAutoParagraphs) " +
                     "hasParagraphBreaks=\(finalText.contains("\n\n"))"
+                )
+                print(
+                    "WhisperService final decode: totalChunks=\(chunkResult.chunks.count) " +
+                    "nonEmptyChunks=\(nonEmptyChunkTextCount) " +
+                    "segments=\(transcribedSegments.count) " +
+                    "likelyNoSpeech=\(likelyNoSpeechByDecoder) " +
+                    "finalChars=\(finalText.count)"
                 )
                 #endif
 
