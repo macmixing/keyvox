@@ -92,6 +92,28 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
+    func testPreservesReadmeFilenameExtensionWithoutSentenceSplit() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "can you open the readme.md file?",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Can you open the readme.md file?")
+    }
+    func testPreservesExecutableFilenameExtensionAcrossSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "can you open up that application? i think it's called junk.exe.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Can you open up that application? I think it's called junk.exe.")
+    }
     func testCapitalizesStandaloneLowercasePronounIInProse() {
         let processor = TranscriptionPostProcessor()
 

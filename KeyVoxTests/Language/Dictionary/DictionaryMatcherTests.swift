@@ -219,6 +219,28 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox and my name is Dom Esposito.")
     }
 
+    func testDoesNotConsumeConjunctionAfterExactSingleTokenBrandInSplitJoinPath() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Cueboard"),
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "MrBeast"),
+        ])
+
+        let result = matcher.apply(
+            to: "I love the app cueboard. I also really love KeyVox, and I think MrBeast is awesome."
+        )
+
+        XCTAssertEqual(
+            result.text,
+            "I love the app Cueboard. I also really love KeyVox, and I think MrBeast is awesome."
+        )
+    }
+
     func testDisambiguatesCommonWordBrandTailToCorrectDictionaryEntryWithRuntimeLexicon() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

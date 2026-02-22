@@ -88,6 +88,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "9^3")
     }
 
+    func testNormalizesCompoundOrdinalPowerPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2 to the twenty first power",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2^21")
+    }
+
     func testNormalizesXMultiplicationThenPlusForStandaloneMath() {
         let processor = TranscriptionPostProcessor()
 
@@ -122,6 +134,37 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "2 * 2 + 6 / 3")
+    }
+
+    func testPreservesCompactHyphenatedNumericSequences() {
+        let processor = TranscriptionPostProcessor()
+
+        XCTAssertEqual(
+            processor.process(
+                "2-15-62",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "2-15-62"
+        )
+
+        XCTAssertEqual(
+            processor.process(
+                "7-15-03",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "7-15-03"
+        )
+
+        XCTAssertEqual(
+            processor.process(
+                "12-20-89",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "12-20-89"
+        )
     }
 
     func testPreservesTerminalPunctuationForSentenceContainingCombinedMathPhrase() {
@@ -267,6 +310,30 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "Date 2026-02-19 but 12 - 8 is subtraction.")
+    }
+
+    func testPreservesCompactHyphenatedPhoneNumber() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Call me at 480-555-5555.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Call me at 480-555-5555.")
+    }
+
+    func testPreservesCompactHyphenatedDateWithShortLeadingSegment() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2-15-2026",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2-15-2026")
     }
 
     func testMathNormalizationIsIdempotentAcrossPipeline() {

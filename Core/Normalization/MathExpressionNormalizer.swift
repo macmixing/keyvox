@@ -1,6 +1,30 @@
 import Foundation
 
 struct MathExpressionNormalizer {
+    private static let operatorWordToSymbol: [String: String] = [
+        "plus": "+",
+        "minus": "-",
+        "subtract": "-",
+        "subtracted by": "-",
+        "times": "*",
+        "multiplied by": "*",
+        "divided by": "/"
+    ]
+    private static let operatorWordAlternation: String = {
+        operatorWordToSymbol.keys
+            .sorted { $0.count > $1.count }
+            .map { key in
+                NSRegularExpression.escapedPattern(for: key)
+                    .replacingOccurrences(of: " ", with: #"\s+"#)
+            }
+            .joined(separator: "|")
+    }()
+    private static let spellOutNumberParser: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .spellOut
+        return formatter
+    }()
     private static let standaloneMathAllowedCharsRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"^[\s0-9().+\-*/^=%]+$"#,
         options: []
@@ -42,8 +66,12 @@ struct MathExpressionNormalizer {
         pattern: #"\b\d+(?:\.\d+){2,}\b"#,
         options: []
     )
+    private static let protectedCompactHyphenatedNumericRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b\d{1,4}(?:-\d{1,4}){2,}\b"#,
+        options: []
+    )
     private static let mathTriggerRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(?:plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by|equals|percent|squared|cubed|power\s+of|to\s+the\s+power\s+of|to\s+the\s+[A-Z0-9\-]+\s+power|raised\s+to)\b|(?<=\d)\s*-\s*(?=\d)"#,
+        pattern: "(?i)\\b(?:\(operatorWordAlternation)|equals|percent|squared|cubed|power\\s+of|to\\s+the\\s+power\\s+of|to\\s+the\\s+[A-Z0-9\\-.]+(?:\\s+[A-Z0-9\\-.]+)*\\s+power|raised\\s+to)\\b|(?<=\\d)\\s*-\\s*(?=\\d)",
         options: []
     )
     private static let toThePowerOfRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -51,11 +79,11 @@ struct MathExpressionNormalizer {
         options: []
     )
     private static let toTheOrdinalPowerRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+to\s+the\s+([A-Z0-9.\-]+)\s+power\b"#,
+        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+to\s+the\s+([A-Z0-9.\-]+(?:\s+[A-Z0-9.\-]+)*)\s+power\b"#,
         options: []
     )
     private static let raisedToRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+raised\s+to\s+(?:the\s+)?([A-Z0-9.\-]+)(?:\s+power)?\b"#,
+        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+raised\s+to\s+(?:the\s+)?([A-Z0-9.\-]+(?:\s+[A-Z0-9.\-]+)*)(?:\s+power)?\b"#,
         options: []
     )
     private static let powerRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -79,11 +107,11 @@ struct MathExpressionNormalizer {
         options: [.caseInsensitive]
     )
     private static let binaryOperatorRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(\d+(?:\.\d+)?)\s+(plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by)\s+(\d+(?:\.\d+)?)\b"#,
+        pattern: "(?i)\\b(\\d+(?:\\.\\d+)?)\\s+(\(operatorWordAlternation))\\s+(\\d+(?:\\.\\d+)?)\\b",
         options: []
     )
     private static let expressionOperatorRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b((?:\d|\()[0-9().+\-*/^%\s]*?\d)\s*,?\s*(plus|minus|subtract|subtracted\s+by|times|multiplied\s+by|divided\s+by)\s+(\d+(?:\.\d+)?)\b"#,
+        pattern: "(?i)\\b((?:\\d|\\()[0-9().+\\-*/^%\\s]*?\\d)\\s*,?\\s*(\(operatorWordAlternation))\\s+(\\d+(?:\\.\\d+)?)\\b",
         options: []
     )
     private static let equalsRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -114,28 +142,6 @@ struct MathExpressionNormalizer {
         pattern: #"(?i)^(\d+)(?:st|nd|rd|th)?$"#,
         options: []
     )
-    private static let ordinalWordToExponent: [String: String] = [
-        "first": "1",
-        "second": "2",
-        "third": "3",
-        "fourth": "4",
-        "fifth": "5",
-        "sixth": "6",
-        "seventh": "7",
-        "eighth": "8",
-        "ninth": "9",
-        "tenth": "10",
-        "eleventh": "11",
-        "twelfth": "12",
-        "thirteenth": "13",
-        "fourteenth": "14",
-        "fifteenth": "15",
-        "sixteenth": "16",
-        "seventeenth": "17",
-        "eighteenth": "18",
-        "nineteenth": "19",
-        "twentieth": "20"
-    ]
 
     func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
@@ -195,19 +201,7 @@ struct MathExpressionNormalizer {
             let lhs = nsText.substring(with: match.range(at: 1))
             let operatorWord = nsText.substring(with: match.range(at: 2)).lowercased()
             let rhs = nsText.substring(with: match.range(at: 3))
-            let symbol: String
-            switch operatorWord {
-            case "plus":
-                symbol = "+"
-            case "minus", "subtract", "subtracted by":
-                symbol = "-"
-            case "times", "multiplied by":
-                symbol = "*"
-            case "divided by":
-                symbol = "/"
-            default:
-                return nil
-            }
+            guard let symbol = Self.symbol(forOperatorPhrase: operatorWord) else { return nil }
             return "\(lhs) \(symbol) \(rhs)"
         }
         output = replaceMatches(in: output, using: Self.equalsRegex) { match, nsText in
@@ -228,19 +222,7 @@ struct MathExpressionNormalizer {
                 let lhs = normalizeMathSymbolSpacing(nsText.substring(with: match.range(at: 1)))
                 let operatorWord = nsText.substring(with: match.range(at: 2)).lowercased()
                 let rhs = nsText.substring(with: match.range(at: 3))
-                let symbol: String
-                switch operatorWord {
-                case "plus":
-                    symbol = "+"
-                case "minus", "subtract", "subtracted by":
-                    symbol = "-"
-                case "times", "multiplied by":
-                    symbol = "*"
-                case "divided by":
-                    symbol = "/"
-                default:
-                    return nil
-                }
+                guard let symbol = Self.symbol(forOperatorPhrase: operatorWord) else { return nil }
                 return "\(lhs) \(symbol) \(rhs)"
             }
             if next == current {
@@ -283,6 +265,14 @@ struct MathExpressionNormalizer {
         return output.trimmingCharacters(in: .whitespaces)
     }
 
+    private static func symbol(forOperatorPhrase rawOperatorPhrase: String) -> String? {
+        let normalized = rawOperatorPhrase
+            .lowercased()
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return operatorWordToSymbol[normalized]
+    }
+
     private func replaceMatches(
         in text: String,
         using regex: NSRegularExpression?,
@@ -317,7 +307,16 @@ struct MathExpressionNormalizer {
         protected.append(contentsOf: ranges(matching: Self.protectedMalformedTimeWithDaypartRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedDateRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedVersionRegex, in: text))
+        protected.append(contentsOf: compactHyphenatedNumericRanges(in: text))
         return protected
+    }
+
+    private func compactHyphenatedNumericRanges(in text: String) -> [NSRange] {
+        guard let regex = Self.protectedCompactHyphenatedNumericRegex else { return [] }
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+
+        return regex.matches(in: text, options: [], range: fullRange).map(\.range)
     }
 
     private func ranges(matching regex: NSRegularExpression?, in text: String) -> [NSRange] {
@@ -372,19 +371,52 @@ struct MathExpressionNormalizer {
             .lowercased()
             .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!?"))
         guard !trimmed.isEmpty else { return nil }
-
-        if let value = Self.ordinalWordToExponent[trimmed] {
-            return value
-        }
+        let exponentToken = trimmed.replacingOccurrences(
+            of: #"\s+power$"#,
+            with: "",
+            options: .regularExpression
+        )
+        guard !exponentToken.isEmpty else { return nil }
 
         if let regex = Self.numericOrdinalExponentRegex {
-            let nsToken = trimmed as NSString
+            let nsToken = exponentToken as NSString
             let range = NSRange(location: 0, length: nsToken.length)
-            if let match = regex.firstMatch(in: trimmed, options: [], range: range) {
+            if let match = regex.firstMatch(in: exponentToken, options: [], range: range) {
                 return nsToken.substring(with: match.range(at: 1))
             }
         }
 
-        return nil
+        return Self.parseOrdinalWordExponent(exponentToken)
+    }
+
+    private static func parseOrdinalWordExponent(_ text: String) -> String? {
+        let normalized = normalizedOrdinalLookupKey(text)
+        guard !normalized.isEmpty else { return nil }
+
+        if let direct = spellOutNumberParser.number(from: normalized)?.intValue, direct > 0 {
+            return String(direct)
+        }
+
+        let parts = normalized.split(separator: " ").map(String.init)
+        guard parts.count >= 2 else { return nil }
+
+        let prefix = parts.dropLast().joined(separator: " ")
+        let suffix = parts.last ?? ""
+        guard let prefixValue = spellOutNumberParser.number(from: prefix)?.intValue,
+              prefixValue > 0,
+              let suffixValue = spellOutNumberParser.number(from: suffix)?.intValue,
+              suffixValue > 0 else {
+            return nil
+        }
+
+        return String(prefixValue + suffixValue)
+    }
+
+    private static func normalizedOrdinalLookupKey(_ text: String) -> String {
+        text
+            .lowercased()
+            .replacingOccurrences(of: "-", with: " ")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}.,;:!? ").union(.whitespacesAndNewlines))
     }
 }

@@ -42,7 +42,6 @@ struct AnimatedWaveHeader: View {
 // MARK: - Settings Card
 struct SettingsCard<Content: View>: View {
     let content: Content
-    @State private var isHovered = false
     
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
@@ -53,14 +52,12 @@ struct SettingsCard<Content: View>: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(isHovered ? 0.08 : 0.05))
+                    .fill(Color.white.opacity(0.05))
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(isHovered ? 0.2 : 0.1), lineWidth: 1)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
                     )
             )
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
-            .onHover { isHovered = $0 }
     }
 }
 

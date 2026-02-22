@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 private enum SplitJoinScoringConstants {
     static let hyphenLaneMinimumFirstTokenLength = 1
@@ -79,6 +80,14 @@ extension DictionaryMatcher {
         for candidate in oneTokenCandidates {
             let candidateToken = candidate.tokens[0]
             let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
+
+            // If the first token already matches the single-token candidate
+            // exactly, do not allow split-join to consume a following
+            // conjunction (e.g. "KeyVox, and" -> "KeyVox").
+            if window[0].normalized == candidateToken,
+               window[1].lexicalClass == .conjunction {
+                continue
+            }
 
             for form in forms {
                 // Only non-common dictionary entries can use plural-tail singularization.

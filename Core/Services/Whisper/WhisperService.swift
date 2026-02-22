@@ -16,6 +16,9 @@ class WhisperService: ObservableObject {
     let isPromptHintingEnabled = true
     let suspiciousShortResultMinChunkSeconds: Double = 1.35
     let suspiciousShortResultMaxWords = 2
+    let suspiciousShortResultDensityMinChunkSeconds: Double = 8.0
+    let suspiciousShortResultMaxWordsPerSecond: Double = 0.20
+    let emptyResultRetryMinChunkSeconds: Double = 6.0
     let suspiciousShortResultMaxNoSpeechProbability: Float = 0.35
     let retryRelaxedLogprobThreshold: Float = -2.0
 
