@@ -9,6 +9,8 @@ struct OnboardingView: View {
     @State private var accessibilityAuthorized: Bool = false
     @State private var accessibilityPollTimer: Timer?
     
+    private let accessibilityPollInterval: TimeInterval = 0.3
+    
     var onComplete: () -> Void
     var openSettings: () -> Void
     var beginMicrophoneAuthorization: () -> Void = {}
@@ -125,6 +127,7 @@ struct OnboardingView: View {
             checkCurrentStatus()
             microphoneStepController.handleOnboardingAppear()
         }
+
         .onDisappear {
             accessibilityPollTimer?.invalidate()
             accessibilityPollTimer = nil
@@ -172,7 +175,7 @@ struct OnboardingView: View {
         // Prevent stacking multiple timers
         accessibilityPollTimer?.invalidate()
 
-        accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+        accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: accessibilityPollInterval, repeats: true) { timer in
             if AXIsProcessTrusted() {
                 DispatchQueue.main.async {
                     self.accessibilityAuthorized = true
