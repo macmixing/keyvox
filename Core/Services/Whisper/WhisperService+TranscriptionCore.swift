@@ -40,7 +40,8 @@ extension WhisperService {
         } else {
             whisper?.params.initialPrompt = ""
             #if DEBUG
-            print("WhisperService: Dictionary hint prompt disabled.")
+            let hintReason = isPromptHintingEnabled ? "capture_gated_off" : "globally_disabled"
+            print("WhisperService: Dictionary hint prompt not used (\(hintReason)).")
             #endif
         }
 
@@ -251,11 +252,13 @@ extension WhisperService {
         usedDictionaryHintPrompt: Bool
     ) async throws -> WhisperTranscriptionResult {
         let primary = try await whisper?.transcribeWithMetadata(audioFrames: chunkFrames) ?? WhisperTranscriptionResult(segments: [], detectedLanguageCode: nil, detectedLanguageName: nil)
-        guard shouldRetryLeadingPhraseDecode(
+        let shouldRetryEmptyResult = shouldRetryEmptyChunkDecode(primary.segments, chunkFrames: chunkFrames)
+        let shouldRetryLeadingShort = shouldRetryLeadingPhraseDecode(
             primary.segments,
             chunkFrames: chunkFrames,
             usedDictionaryHintPrompt: usedDictionaryHintPrompt
-        ) else {
+        )
+        guard shouldRetryEmptyResult || shouldRetryLeadingShort else {
             return primary
         }
         guard let whisper else { return primary }
@@ -277,8 +280,17 @@ extension WhisperService {
 
         #if DEBUG
         let duration = Double(chunkFrames.count) / 16_000.0
+        let retryReason: String = {
+            if shouldRetryEmptyResult && shouldRetryLeadingShort {
+                return "empty_and_leading_short_result"
+            }
+            if shouldRetryEmptyResult {
+                return "empty_chunk_result"
+            }
+            return "leading_short_result"
+        }()
         print(
-            "WhisperService retry: reason=leading_short_result " +
+            "WhisperService retry: reason=\(retryReason) " +
             "chunkSeconds=\(String(format: "%.2f", duration)) " +
             "primaryWords=\(wordCount(in: compactSegmentText(primary.segments)))"
         )
@@ -312,7 +324,7 @@ extension WhisperService {
 
         let compactText = compactSegmentText(primary)
         let words = wordCount(in: compactText)
-        let isSuspiciousShortResult = words > 0 && words <= suspiciousShortResultMaxWords
+        let isSuspiciousShortResult = isSuspiciouslyShortResult(words: words, chunkSeconds: duration)
         guard isSuspiciousShortResult else { return false }
 
         let averageNoSpeechProbability: Float
@@ -324,6 +336,29 @@ extension WhisperService {
         guard averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability else { return false }
 
         return true
+    }
+
+    private func shouldRetryEmptyChunkDecode(
+        _ primary: [Segment],
+        chunkFrames: [Float]
+    ) -> Bool {
+        let duration = Double(chunkFrames.count) / 16_000.0
+        return shouldRetryEmptyChunkResult(segmentCount: primary.count, chunkSeconds: duration)
+    }
+
+    func isSuspiciouslyShortResult(words: Int, chunkSeconds: Double) -> Bool {
+        guard words > 0 else { return false }
+        if words <= suspiciousShortResultMaxWords {
+            return true
+        }
+        guard chunkSeconds >= suspiciousShortResultDensityMinChunkSeconds else { return false }
+        let wordsPerSecond = Double(words) / chunkSeconds
+        return wordsPerSecond <= suspiciousShortResultMaxWordsPerSecond
+    }
+
+    func shouldRetryEmptyChunkResult(segmentCount: Int, chunkSeconds: Double) -> Bool {
+        guard segmentCount == 0 else { return false }
+        return chunkSeconds >= emptyResultRetryMinChunkSeconds
     }
 
     private func selectPreferredRetry(

@@ -277,20 +277,27 @@ struct WhisperAudioParagraphChunker {
 
     #if DEBUG
     private func logSplitSummary(_ result: Result, totalFrames: Int) {
-        let silenceMs = result.silenceBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
-        let fallbackMs = result.fallbackBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
-        let chunkSeconds = result.chunkFrameLengths.map { String(format: "%.2f", Double($0) / Self.sampleRate) }
-        let totalSeconds = Double(totalFrames) / Self.sampleRate
-        print(
-            "WhisperChunker: frames=\(totalFrames) " +
-            "secs=\(String(format: "%.2f", totalSeconds)) " +
-            "windows=\(result.windowCount) " +
-            "threshold=\(String(format: "%.5f", result.silenceThreshold)) " +
-            "silenceBoundariesMs=\(silenceMs) " +
-            "fallbackBoundariesMs=\(fallbackMs) " +
-            "chunks=\(result.chunks.count) " +
-            "chunkSeconds=\(chunkSeconds)"
-        )
+        let rawDebugTextLoggingEnabled = ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+        let loggedText: String
+        if rawDebugTextLoggingEnabled {
+            let silenceMs = result.silenceBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
+            let fallbackMs = result.fallbackBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
+            let chunkSeconds = result.chunkFrameLengths.map { String(format: "%.2f", Double($0) / Self.sampleRate) }
+            let totalSeconds = Double(totalFrames) / Self.sampleRate
+            loggedText =
+                "frames=\(totalFrames) " +
+                "secs=\(String(format: "%.2f", totalSeconds)) " +
+                "windows=\(result.windowCount) " +
+                "threshold=\(String(format: "%.5f", result.silenceThreshold)) " +
+                "silenceBoundariesMs=\(silenceMs) " +
+                "fallbackBoundariesMs=\(fallbackMs) " +
+                "chunks=\(result.chunks.count) " +
+                "chunkSeconds=\(chunkSeconds)"
+        } else {
+            loggedText = "<redacted>"
+        }
+
+        print("WhisperChunker: \(loggedText)")
     }
     #endif
 }
