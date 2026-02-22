@@ -6,6 +6,8 @@ struct ListPatternRunSelector {
         static let maximumCharactersBetweenAdjacentMarkers = 500
         static let maximumSentenceBoundariesBetweenAdjacentMarkers = 2
         static let sentenceBoundaryCharacterSet = CharacterSet(charactersIn: ".!?")
+        static let maximumWordsForAmbiguousTwoItemFirstContent = 10
+        static let maximumCharactersForAmbiguousTwoItemFirstContent = 80
     }
 
     func selectDetection(
@@ -57,6 +59,7 @@ struct ListPatternRunSelector {
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
         guard isCredibleTwoItemGap(run: best, in: nsText, languageCode: languageCode) else { return nil }
+        guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
         guard hasCredibleRunCadence(run: best, in: nsText) else { return nil }
         return best
     }
@@ -83,6 +86,36 @@ struct ListPatternRunSelector {
         let delta = run[1].number - run[0].number
         guard delta > 1 else { return true }
         return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }
+    }
+
+    private func hasCredibleAmbiguousTwoItemSpokenContent(
+        run: [ListPatternMarker],
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
+        guard run.count == 2 else { return true }
+
+        let explicitDelimiters = run.map { markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }
+        guard !explicitDelimiters.allSatisfy({ $0 }) else { return true }
+
+        guard run[1].markerTokenStart > run[0].contentStart else { return false }
+        let firstItemRange = NSRange(
+            location: run[0].contentStart,
+            length: run[1].markerTokenStart - run[0].contentStart
+        )
+        let firstItemText = nsText.substring(with: firstItemRange).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !firstItemText.isEmpty else { return false }
+
+        let wordCount = firstItemText.split { $0.isWhitespace || $0.isNewline }.count
+        if wordCount > CadenceGuard.maximumWordsForAmbiguousTwoItemFirstContent {
+            return false
+        }
+
+        if firstItemText.count > CadenceGuard.maximumCharactersForAmbiguousTwoItemFirstContent {
+            return false
+        }
+
+        return true
     }
 
     // Prevent list detection from stretching across long prose spans between

@@ -238,6 +238,28 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectTwoItemSpokenNumbersInsideLongProseSentence() {
+        let detector = ListPatternDetector()
+        let text = "I was testing dictation with a long form YouTube video where the user said the number one initially and then later on after long prose they said the number two and they just kept going"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDetectsExplicitTwoItemListAfterColonEvenWhenItemOneIsLong() {
+        let detector = ListPatternDetector()
+        let text = """
+        I was testing dictation with a long form YouTube video where the user said the number:
+
+        1. Initially and then later on after long prose they said the number
+        2. They just kept going
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+    }
+
     func testDetectsListWhenCadenceRecoversAtThirdMarkerAfterLongFirstItem() {
         let detector = ListPatternDetector()
         let text = """
