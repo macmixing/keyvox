@@ -136,6 +136,37 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2 * 2 + 6 / 3")
     }
 
+    func testPreservesCompactHyphenatedNumericSequences() {
+        let processor = TranscriptionPostProcessor()
+
+        XCTAssertEqual(
+            processor.process(
+                "2-15-62",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "2-15-62"
+        )
+
+        XCTAssertEqual(
+            processor.process(
+                "7-15-03",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "7-15-03"
+        )
+
+        XCTAssertEqual(
+            processor.process(
+                "12-20-89",
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            ),
+            "12-20-89"
+        )
+    }
+
     func testPreservesTerminalPunctuationForSentenceContainingCombinedMathPhrase() {
         let processor = TranscriptionPostProcessor()
 

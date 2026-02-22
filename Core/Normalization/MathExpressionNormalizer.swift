@@ -316,13 +316,7 @@ struct MathExpressionNormalizer {
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
 
-        return regex.matches(in: text, options: [], range: fullRange)
-            .map(\.range)
-            .filter { range in
-                let token = nsText.substring(with: range)
-                let segments = token.split(separator: "-", omittingEmptySubsequences: true)
-                return segments.contains { $0.count >= 3 }
-            }
+        return regex.matches(in: text, options: [], range: fullRange).map(\.range)
     }
 
     private func ranges(matching regex: NSRegularExpression?, in text: String) -> [NSRange] {
