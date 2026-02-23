@@ -1,5 +1,4 @@
 import Foundation
-import NaturalLanguage
 
 private enum SplitJoinScoringConstants {
     static let hyphenLaneMinimumFirstTokenLength = 1
@@ -82,10 +81,9 @@ extension DictionaryMatcher {
             let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
 
             // If the first token already matches the single-token candidate
-            // exactly, do not allow split-join to consume a following
-            // conjunction (e.g. "KeyVox, and" -> "KeyVox").
-            if window[0].normalized == candidateToken,
-               window[1].lexicalClass == .conjunction {
+            // exactly, split-join must not consume the following token
+            // (e.g. "KeyVox, and" -> "KeyVox" or "KeyVox bug" -> "KeyVox").
+            if window[0].normalized == candidateToken {
                 continue
             }
 
