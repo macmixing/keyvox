@@ -126,7 +126,6 @@ KeyVox/
 │   │   ├── WebsiteNormalizer.swift
 │   │   ├── TimeExpressionNormalizer.swift
 │   │   ├── MathExpressionNormalizer.swift
-│   │   ├── CodeishLineDetector.swift
 │   │   ├── WhitespaceNormalizer.swift
 │   │   ├── SentenceCapitalizationNormalizer.swift
 │   │   ├── ColonNormalizer.swift
@@ -293,8 +292,6 @@ KeyVox/
 - `Core/Normalization/MathExpressionNormalizer.swift`
   - Deterministic math phrase/operator normalization (`plus/minus/times/divided by`, exponents, percent, chained expressions) with protected URL/email/code/time/date/version spans.
   - Strips terminal punctuation only for standalone math utterances while preserving sentence punctuation.
-- `Core/Normalization/CodeishLineDetector.swift`
-  - Shared code-like line detector used by normalization passes that must avoid mutating code-ish text.
 - `Core/Normalization/LaughterNormalizer.swift`
   - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
 - `Core/Normalization/CharacterSpamNormalizer.swift`
@@ -377,8 +374,6 @@ KeyVox/
 - `Core/Normalization/MathExpressionNormalizer.swift`
   - Shared deterministic math normalizer pass used by post-processing before list parsing.
   - Converts high-confidence spoken math into symbol form while preserving non-math structures and protected spans.
-- `Core/Normalization/CodeishLineDetector.swift`
-  - Shared utility for code-ish text guards consumed by capitalization/math normalization paths.
 - `Core/Normalization/ColonNormalizer.swift`
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Core/Normalization/CharacterSpamNormalizer.swift`

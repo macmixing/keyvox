@@ -276,17 +276,6 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Visit www.example.com and email dom@example.com then compute 12 + 8.")
     }
 
-    func testSkipsCodeishLinesEntirely() {
-        let processor = TranscriptionPostProcessor()
-
-        let output = processor.process(
-            "`for (i = 0; i < n; i++) { total += 12 plus 8; }`",
-            dictionaryEntries: [],
-            renderMode: .singleLineInline
-        )
-
-        XCTAssertEqual(output, "`for (i = 0; i < n; i++) { total += 12 plus 8; }`")
-    }
 
     func testSkipsTimeDateAndVersionShapes() {
         let processor = TranscriptionPostProcessor()
