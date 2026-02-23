@@ -241,6 +241,21 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
+    func testDoesNotConsumeNounAfterExactSingleTokenBrandInSplitJoinPath() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+        ])
+
+        let result = matcher.apply(to: "I'm going to catch a KeyVox bug here or there.")
+
+        XCTAssertEqual(result.text, "I'm going to catch a KeyVox bug here or there.")
+    }
+
     func testDisambiguatesCommonWordBrandTailToCorrectDictionaryEntryWithRuntimeLexicon() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
