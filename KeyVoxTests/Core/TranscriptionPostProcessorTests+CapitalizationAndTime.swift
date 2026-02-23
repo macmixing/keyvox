@@ -169,28 +169,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Visit https://i.example.com and I can explain")
     }
-    func testDoesNotCapitalizeVariableIInCodeishLine() {
-        let processor = TranscriptionPostProcessor()
 
-        let output = processor.process(
-            "for (i = 0; i < n; i++) { total += i; }",
-            dictionaryEntries: [],
-            renderMode: .singleLineInline
-        )
-
-        XCTAssertEqual(output, "For (i = 0; i < n; i++) { total += i; }")
-    }
-    func testDoesNotCapitalizeVariableIInAssignmentLikeLine() {
-        let processor = TranscriptionPostProcessor()
-
-        let output = processor.process(
-            "let i = value",
-            dictionaryEntries: [],
-            renderMode: .singleLineInline
-        )
-
-        XCTAssertEqual(output, "Let i = value")
-    }
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 

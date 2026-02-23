@@ -65,7 +65,6 @@ struct SentenceCapitalizationNormalizer {
 
         let normalizedLines = lines.map { line -> String in
             guard !line.isEmpty else { return line }
-            guard !isLikelyCodeishLine(line) else { return line }
 
             let nsLine = line as NSString
             let fullRange = NSRange(location: 0, length: nsLine.length)
@@ -254,10 +253,6 @@ struct SentenceCapitalizationNormalizer {
         if stripped.contains("_") { return true }
         if stripped.contains("$") { return true }
         return false
-    }
-
-    private func isLikelyCodeishLine(_ line: String) -> Bool {
-        CodeishLineDetector.isLikelyCodeishLine(line)
     }
 
     private func isLikelyDomainBoundary(_ text: String, dotLocation: Int) -> Bool {

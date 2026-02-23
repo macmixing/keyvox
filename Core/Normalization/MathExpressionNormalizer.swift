@@ -156,7 +156,6 @@ struct MathExpressionNormalizer {
     private func normalizeLine(_ line: String) -> String {
         guard !line.isEmpty else { return line }
         guard containsMathTrigger(line) else { return line }
-        guard !isLikelyCodeishLine(line) else { return line }
 
         var output = line
         output = replaceMatches(in: output, using: Self.toThePowerOfRegex) { match, nsText in
@@ -238,10 +237,6 @@ struct MathExpressionNormalizer {
         let nsLine = line as NSString
         let range = NSRange(location: 0, length: nsLine.length)
         return triggerRegex.firstMatch(in: line, options: [], range: range) != nil
-    }
-
-    private func isLikelyCodeishLine(_ line: String) -> Bool {
-        CodeishLineDetector.isLikelyCodeishLine(line)
     }
 
     private func normalizeMathSymbolSpacing(_ text: String) -> String {
