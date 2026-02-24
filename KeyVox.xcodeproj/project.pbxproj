@@ -140,7 +140,6 @@
 		AB3000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */; };
 		AB3000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift */; };
 		B21000112F61000100AA0001 /* MathExpressionNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */; };
-
 		B34000112F64000100AA0001 /* DictionaryMatcher+StandardEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34000012F64000100AA0001 /* DictionaryMatcher+StandardEvaluation.swift */; };
 		B34000122F64000100AA0001 /* DictionaryMatcher+MergedTokenEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34000022F64000100AA0001 /* DictionaryMatcher+MergedTokenEvaluation.swift */; };
 		B34000132F64000100AA0001 /* DictionaryMatcher+ThreeTokenEvaluation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34000032F64000100AA0001 /* DictionaryMatcher+ThreeTokenEvaluation.swift */; };
@@ -323,7 +322,6 @@
 		AB2000422F60000100AA0001 /* TranscriptionPostProcessorTests+LanguageHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+LanguageHeuristics.swift"; sourceTree = "<group>"; };
 		AB2000432F60000100AA0001 /* TranscriptionPostProcessorTests+MathNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionPostProcessorTests+MathNormalization.swift"; sourceTree = "<group>"; };
 		B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExpressionNormalizer.swift; sourceTree = "<group>"; };
-
 		B34000012F64000100AA0001 /* DictionaryMatcher+StandardEvaluation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+StandardEvaluation.swift"; sourceTree = "<group>"; };
 		B34000022F64000100AA0001 /* DictionaryMatcher+MergedTokenEvaluation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+MergedTokenEvaluation.swift"; sourceTree = "<group>"; };
 		B34000032F64000100AA0001 /* DictionaryMatcher+ThreeTokenEvaluation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictionaryMatcher+ThreeTokenEvaluation.swift"; sourceTree = "<group>"; };
@@ -844,7 +842,6 @@
 				F1B100012FC2000100AA0001 /* WebsiteNormalizer.swift */,
 				E71000012FB2000100AA0001 /* TimeExpressionNormalizer.swift */,
 				B21000012F61000100AA0001 /* MathExpressionNormalizer.swift */,
-
 				C13000052F92000100AA0001 /* WhitespaceNormalizer.swift */,
 				C13000062F92000100AA0001 /* SentenceCapitalizationNormalizer.swift */,
 				C13000072F92000100AA0001 /* TerminalPunctuationNormalizer.swift */,
@@ -1045,7 +1042,6 @@
 				8EE602832F4117470094EC16 /* TranscriptionPostProcessor.swift in Sources */,
 				E71000112FB2000100AA0001 /* TimeExpressionNormalizer.swift in Sources */,
 				B21000112F61000100AA0001 /* MathExpressionNormalizer.swift in Sources */,
-
 				C13000142F92000100AA0001 /* WhitespaceNormalizer.swift in Sources */,
 				C13000152F92000100AA0001 /* SentenceCapitalizationNormalizer.swift in Sources */,
 				C13000162F92000100AA0001 /* TerminalPunctuationNormalizer.swift in Sources */,
@@ -1291,7 +1287,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1341,7 +1337,7 @@
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
