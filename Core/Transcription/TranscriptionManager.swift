@@ -88,6 +88,13 @@ class TranscriptionManager: ObservableObject {
                 self?.handleTriggerKey(isPressed: isPressed)
             }
             .store(in: &cancellables)
+
+        keyboardMonitor.$isShiftPressed
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateOverlayHandsFreeVisualState()
+            }
+            .store(in: &cancellables)
             
         keyboardMonitor.$escapePressedSignal
             .dropFirst()
@@ -140,6 +147,7 @@ class TranscriptionManager: ObservableObject {
         audioRecorder.stopRecording { _ in }
         whisperService.cancelTranscription()
         isLocked = false
+        updateOverlayHandsFreeVisualState()
         OverlayManager.shared.hide()
         state = .idle
     }
@@ -153,6 +161,7 @@ class TranscriptionManager: ObservableObject {
             } else if state == .recording && isLocked {
                 // If we are locked and press the key again, stop recording
                 isLocked = false
+                OverlayManager.shared.setHandsFreeLocked(false)
                 stopRecordingAndTranscribe()
             }
         } else {
@@ -160,6 +169,7 @@ class TranscriptionManager: ObservableObject {
             if state == .recording {
                 if keyboardMonitor.isShiftPressed {
                     isLocked = true
+                    OverlayManager.shared.setHandsFreeLocked(true)
                     #if DEBUG
                     print("Hands-free mode LOCKED")
                     #endif
@@ -168,6 +178,8 @@ class TranscriptionManager: ObservableObject {
                 }
             }
         }
+
+        updateOverlayHandsFreeVisualState()
     }
     
     private func startRecording() {
@@ -188,6 +200,7 @@ class TranscriptionManager: ObservableObject {
 
         state = .recording
         WarningManager.shared.hide()
+        updateOverlayHandsFreeVisualState()
         OverlayManager.shared.show(recorder: audioRecorder)
         audioRecorder.startRecording()
     }
@@ -205,6 +218,7 @@ class TranscriptionManager: ObservableObject {
         
         isLocked = false
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
+        updateOverlayHandsFreeVisualState()
 
         audioRecorder.stopRecording { [weak self] frames in
             guard let self = self else { return }
@@ -310,6 +324,15 @@ class TranscriptionManager: ObservableObject {
                 }
             }
         }
+    }
+
+    private func updateOverlayHandsFreeVisualState() {
+        let isPreviewActive = state == .recording &&
+            !isLocked &&
+            keyboardMonitor.isTriggerKeyPressed &&
+            keyboardMonitor.isShiftPressed
+        OverlayManager.shared.setHandsFreeLocked(isLocked)
+        OverlayManager.shared.setHandsFreeModifierPreviewActive(isPreviewActive)
     }
     
     private func playSound(named name: String) {
