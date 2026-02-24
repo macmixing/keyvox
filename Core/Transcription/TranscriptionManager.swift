@@ -161,7 +161,6 @@ class TranscriptionManager: ObservableObject {
             } else if state == .recording && isLocked {
                 // If we are locked and press the key again, stop recording
                 isLocked = false
-                OverlayManager.shared.setHandsFreeLocked(false)
                 stopRecordingAndTranscribe()
             }
         } else {
@@ -169,7 +168,6 @@ class TranscriptionManager: ObservableObject {
             if state == .recording {
                 if keyboardMonitor.isShiftPressed {
                     isLocked = true
-                    OverlayManager.shared.setHandsFreeLocked(true)
                     #if DEBUG
                     print("Hands-free mode LOCKED")
                     #endif
