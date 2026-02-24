@@ -15,6 +15,17 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "3:15 AM 3:17 AM 4:19 PM")
     }
+    func testNormalizesHourOnlyMeridiemVariantsToFullTime() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "10am 10 a.m. 10AM 10pm 10 p.m. 10PM",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "10:00 AM 10:00 AM 10:00 AM 10:00 PM 10:00 PM 10:00 PM")
+    }
     func testPreservesDaypartPhrasingWhileFixingTimeShape() {
         let processor = TranscriptionPostProcessor()
 

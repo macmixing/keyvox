@@ -43,6 +43,15 @@ struct TimeExpressionNormalizer {
             return "\(formatted) \(normalizedMeridiem(meridiem))"
         }
 
+        output = replacingMatches(
+            pattern: #"\b([1-9]|1[0-2])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
+            in: output
+        ) { match, nsText in
+            let hour = nsText.substring(with: match.range(at: 1))
+            let meridiem = nsText.substring(with: match.range(at: 2))
+            return "\(hour):00 \(normalizedMeridiem(meridiem))"
+        }
+
         // Balanced fuzzy-AM pass: map "AND" only when it behaves like a terminal meridiem token.
         output = replacingMatches(
             pattern: #"\b([1-9]|1[0-2])[:\.-]([0-5][0-9])[\s-]*and\.?(?=$|[,;:!?\)\.])"#,
