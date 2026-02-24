@@ -34,7 +34,7 @@ struct RecordingOverlay: View {
                 .fill(Color.black.opacity(0.8))
                 .overlay(
                     Circle()
-                        .stroke(Color.yellow.opacity(0.6), lineWidth: 2)
+                        .stroke(overlayRingColor.opacity(0.6), lineWidth: 2)
                 )
                 .shadow(radius: 10)
                 .frame(width: isDevModeOversized ? 300 : 50, height: isDevModeOversized ? 300 : 50)
@@ -138,6 +138,10 @@ struct RecordingOverlay: View {
     private func stopRippleAnimation() {
         rippleTimer?.invalidate()
         rippleTimer = nil
+    }
+
+    private var overlayRingColor: Color {
+        (visibilityManager.isHandsFreeLocked || visibilityManager.isHandsFreeModifierPreviewActive) ? .indigo : .yellow
     }
 }
 

@@ -88,6 +88,13 @@ class TranscriptionManager: ObservableObject {
                 self?.handleTriggerKey(isPressed: isPressed)
             }
             .store(in: &cancellables)
+
+        keyboardMonitor.$isShiftPressed
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateOverlayHandsFreeVisualState()
+            }
+            .store(in: &cancellables)
             
         keyboardMonitor.$escapePressedSignal
             .dropFirst()
@@ -140,6 +147,7 @@ class TranscriptionManager: ObservableObject {
         audioRecorder.stopRecording { _ in }
         whisperService.cancelTranscription()
         isLocked = false
+        updateOverlayHandsFreeVisualState()
         OverlayManager.shared.hide()
         state = .idle
     }
@@ -168,6 +176,8 @@ class TranscriptionManager: ObservableObject {
                 }
             }
         }
+
+        updateOverlayHandsFreeVisualState()
     }
     
     private func startRecording() {
@@ -188,6 +198,7 @@ class TranscriptionManager: ObservableObject {
 
         state = .recording
         WarningManager.shared.hide()
+        updateOverlayHandsFreeVisualState()
         OverlayManager.shared.show(recorder: audioRecorder)
         audioRecorder.startRecording()
     }
@@ -205,6 +216,7 @@ class TranscriptionManager: ObservableObject {
         
         isLocked = false
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
+        updateOverlayHandsFreeVisualState()
 
         audioRecorder.stopRecording { [weak self] frames in
             guard let self = self else { return }
@@ -310,6 +322,15 @@ class TranscriptionManager: ObservableObject {
                 }
             }
         }
+    }
+
+    private func updateOverlayHandsFreeVisualState() {
+        let isPreviewActive = state == .recording &&
+            !isLocked &&
+            keyboardMonitor.isTriggerKeyPressed &&
+            keyboardMonitor.isShiftPressed
+        OverlayManager.shared.setHandsFreeLocked(isLocked)
+        OverlayManager.shared.setHandsFreeModifierPreviewActive(isPreviewActive)
     }
     
     private func playSound(named name: String) {

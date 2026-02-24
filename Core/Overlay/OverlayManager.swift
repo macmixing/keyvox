@@ -6,6 +6,8 @@ import SwiftUI
 class OverlayVisibilityManager: ObservableObject {
     @Published var isVisible: Bool = false
     @Published var shouldDismiss: Bool = false
+    @Published var isHandsFreeLocked: Bool = false
+    @Published var isHandsFreeModifierPreviewActive: Bool = false
 }
 
 class OverlayManager {
@@ -81,10 +83,20 @@ class OverlayManager {
         }
     }
 
+    func setHandsFreeLocked(_ isLocked: Bool) {
+        visibilityManager.isHandsFreeLocked = isLocked
+    }
+
+    func setHandsFreeModifierPreviewActive(_ isActive: Bool) {
+        visibilityManager.isHandsFreeModifierPreviewActive = isActive
+    }
+
     func hide() {
         pendingHideWorkItem?.cancel()
         motionController.cancelPendingMotionAnimations(panel: window)
 
+        visibilityManager.isHandsFreeLocked = false
+        visibilityManager.isHandsFreeModifierPreviewActive = false
         visibilityManager.isVisible = false
         visibilityManager.shouldDismiss = true
 
