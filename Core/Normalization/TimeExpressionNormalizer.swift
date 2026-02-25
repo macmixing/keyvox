@@ -137,7 +137,7 @@ struct TimeExpressionNormalizer {
             .lowercased()
             .replacingOccurrences(of: ".", with: "")
             .replacingOccurrences(of: "-", with: "")
-            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: #"\s"#, with: "", options: .regularExpression)
         if lettersOnly == "am" || lettersOnly == "an" { return "AM" }
         if lettersOnly == "pm" { return "PM" }
         return value
