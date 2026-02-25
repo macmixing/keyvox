@@ -51,7 +51,7 @@ struct MathExpressionNormalizer {
         options: []
     )
     private static let protectedMalformedTimeWithMeridiemRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"(?i)\b(?:[1-9]|1[0-2])[.-][0-5][0-9](?:\s*(?:a\.?m\.?|am|a\.?n\.?|an|p\.?m\.?|pm))\b"#,
+        pattern: #"(?i)\b(?:[1-9]|1[0-2])\s*[.-]\s*[0-5][0-9](?:[\s-]*(?:a[\s.-]*m\.?|a[\s.-]*n\.?|p[\s.-]*m\.?))\b"#,
         options: []
     )
     private static let protectedMalformedTimeWithDaypartRegex: NSRegularExpression? = try? NSRegularExpression(
