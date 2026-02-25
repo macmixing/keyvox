@@ -6,8 +6,8 @@ struct TimeExpressionNormalizer {
 
         let daypartPattern =
             "(?:in the morning|this morning|in the afternoon|this afternoon|in the evening|this evening|at night|tonight)"
-        let amMeridiemPattern = "(?:a[\\s\\.-]*m\\.?|a[\\s\\.-]*n\\.?)"
-        let pmMeridiemPattern = "(?:p[\\s\\.-]*m\\.?)"
+        let amMeridiemPattern = "a[\\s\\.-]{0,3}(?:m\\.?|n\\.?)"
+        let pmMeridiemPattern = "p[\\s\\.-]{0,3}m\\.?"
         let meridiemPattern = "(?:\(amMeridiemPattern)|\(pmMeridiemPattern))"
 
         var output = text
