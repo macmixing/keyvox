@@ -6,8 +6,8 @@ struct TimeExpressionNormalizer {
 
         let daypartPattern =
             "(?:in the morning|this morning|in the afternoon|this afternoon|in the evening|this evening|at night|tonight)"
-        let amMeridiemPattern = "(?:a\\.?m\\.?|am|a\\.?n\\.?|an)"
-        let pmMeridiemPattern = "(?:p\\.?m\\.?|pm)"
+        let amMeridiemPattern = "(?:a[\\s\\.-]*m\\.?|a[\\s\\.-]*n\\.?)"
+        let pmMeridiemPattern = "(?:p[\\s\\.-]*m\\.?)"
         let meridiemPattern = "(?:\(amMeridiemPattern)|\(pmMeridiemPattern))"
 
         var output = text
@@ -24,7 +24,7 @@ struct TimeExpressionNormalizer {
         }
 
         output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
+            pattern: #"\b([1-9]|1[0-2])\s*[\.-]\s*([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
@@ -73,7 +73,7 @@ struct TimeExpressionNormalizer {
 
         // Preserve spoken daypart phrases and only normalize malformed numeric time shape.
         output = replacingMatches(
-            pattern: #"\b([1-9]|1[0-2])[\.-]([0-5][0-9])(?=\s+\#(daypartPattern)\b)"#,
+            pattern: #"\b([1-9]|1[0-2])\s*[\.-]\s*([0-5][0-9])(?=\s+\#(daypartPattern)\b)"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
@@ -136,6 +136,8 @@ struct TimeExpressionNormalizer {
         let lettersOnly = value
             .lowercased()
             .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: " ", with: "")
         if lettersOnly == "am" || lettersOnly == "an" { return "AM" }
         if lettersOnly == "pm" { return "PM" }
         return value

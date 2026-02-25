@@ -26,6 +26,17 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "10:00 AM 10:00 AM 10:00 AM 10:00 PM 10:00 PM 10:00 PM")
     }
+    func testNormalizesHyphenSeparatedTimesWithSplitMeridiemAndMathSpacedVariant() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "10-01-A-M 10 - 03-AM 10 - 04-A-M 10-05-P-M",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "10:01 AM 10:03 AM 10:04 AM 10:05 PM")
+    }
     func testPreservesDaypartPhrasingWhileFixingTimeShape() {
         let processor = TranscriptionPostProcessor()
 
