@@ -287,6 +287,7 @@ final class AudioDeviceManager: ObservableObject {
                 #if DEBUG
                 print("CMHeadphoneActivityManager status update error: \(error)")
                 #endif
+                return
             }
             guard let self else { return }
             let isConnected = status == .connected
