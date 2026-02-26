@@ -7,37 +7,92 @@ import CoreAudio
 final class AudioDeviceManagerTests: XCTestCase {
     private var cancellables = Set<AnyCancellable>()
 
-    func testClassificationMatrixCoversTransportAndNameHeuristics() {
+    func testClassificationMatrixUsesTransportTypeOnly() {
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
-                AudioDeviceClassificationInput(name: "Built-in Microphone", transportType: kAudioDeviceTransportTypeBuiltIn)
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeBuiltIn)
             ),
             .builtIn
         )
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
-                AudioDeviceClassificationInput(name: "USB Bluetooth Adapter", transportType: kAudioDeviceTransportTypeBluetooth)
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeBluetooth)
             ),
             .bluetooth
         )
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
-                AudioDeviceClassificationInput(name: "Desk Headset", transportType: kAudioDeviceTransportTypeUSB)
-            ),
-            .bluetooth
-        )
-        XCTAssertEqual(
-            AudioDeviceManager.classifyDeviceKind(
-                AudioDeviceClassificationInput(name: "AirPods Pro", transportType: kAudioDeviceTransportTypeUSB)
-            ),
-            .airPods
-        )
-        XCTAssertEqual(
-            AudioDeviceManager.classifyDeviceKind(
-                AudioDeviceClassificationInput(name: "Studio USB Mic", transportType: kAudioDeviceTransportTypeUSB)
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeUSB)
             ),
             .wiredOrOther
         )
+        XCTAssertEqual(
+            AudioDeviceManager.classifyDeviceKind(
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeUSB)
+            ),
+            .wiredOrOther
+        )
+        XCTAssertEqual(
+            AudioDeviceManager.classifyDeviceKind(
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeUSB)
+            ),
+            .wiredOrOther
+        )
+        XCTAssertEqual(
+            AudioDeviceManager.classifyDeviceKind(
+                AudioDeviceClassificationInput(transportType: kAudioDeviceTransportTypeUSB)
+            ),
+            .wiredOrOther
+        )
+    }
+
+    func testCompatibleHeadphoneOverrideRelabelsSingleBluetoothMicrophoneAsAirPods() {
+        let microphones: [MicrophoneOption] = [
+            .init(id: "usb", name: "USB Mic", kind: .wiredOrOther, isAvailable: true),
+            .init(id: "bt", name: "Bluetooth Headset", kind: .bluetooth, isAvailable: true)
+        ]
+
+        let overridden = AudioDeviceManager.applyCompatibleHeadphoneOverrides(
+            to: microphones,
+            compatibleHeadphonesConnected: true,
+            selectedMicrophoneUID: ""
+        )
+
+        XCTAssertEqual(overridden.first(where: { $0.id == "bt" })?.kind, .airPods)
+        XCTAssertEqual(overridden.first(where: { $0.id == "usb" })?.kind, .wiredOrOther)
+    }
+
+    func testCompatibleHeadphoneOverridePrefersSelectedBluetoothMicrophoneWhenMultipleExist() {
+        let microphones: [MicrophoneOption] = [
+            .init(id: "bt-1", name: "Bluetooth Mic A", kind: .bluetooth, isAvailable: true),
+            .init(id: "bt-2", name: "Bluetooth Mic B", kind: .bluetooth, isAvailable: true),
+            .init(id: "builtin", name: "Built-in Mic", kind: .builtIn, isAvailable: true)
+        ]
+
+        let overridden = AudioDeviceManager.applyCompatibleHeadphoneOverrides(
+            to: microphones,
+            compatibleHeadphonesConnected: true,
+            selectedMicrophoneUID: "bt-2"
+        )
+
+        XCTAssertEqual(overridden.first(where: { $0.id == "bt-2" })?.kind, .airPods)
+        XCTAssertEqual(overridden.first(where: { $0.id == "bt-1" })?.kind, .bluetooth)
+        XCTAssertEqual(overridden.first(where: { $0.id == "builtin" })?.kind, .builtIn)
+    }
+
+    func testCompatibleHeadphoneOverrideLeavesDevicesUnchangedWhenDisconnected() {
+        let microphones: [MicrophoneOption] = [
+            .init(id: "bt", name: "Bluetooth Headset", kind: .bluetooth, isAvailable: true),
+            .init(id: "builtin", name: "Built-in Mic", kind: .builtIn, isAvailable: true)
+        ]
+
+        let overridden = AudioDeviceManager.applyCompatibleHeadphoneOverrides(
+            to: microphones,
+            compatibleHeadphonesConnected: false,
+            selectedMicrophoneUID: "bt"
+        )
+
+        XCTAssertEqual(overridden, microphones)
     }
 
     func testSortedMicrophonesPrioritizeBuiltInThenWiredThenAirPodsThenBluetooth() {

@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import AVFoundation
 import CoreAudio
+import CoreMotion
 
 enum MicrophoneKind {
     case builtIn
@@ -18,7 +19,6 @@ struct MicrophoneOption: Identifiable, Equatable {
 }
 
 struct AudioDeviceClassificationInput {
-    let name: String
     let transportType: UInt32
 }
 
@@ -96,8 +96,12 @@ final class AudioDeviceManager: ObservableObject {
 
     private var deviceObservers: [NSObjectProtocol] = []
     private var cancellables = Set<AnyCancellable>()
+    private var compatibleHeadphonesConnected = false
+    private var headphoneActivityManager: AnyObject?
+    private var headphoneStatusQueue: OperationQueue?
 
     var selectedMicrophoneUID: String { settingsStore.selectedMicrophoneUID }
+    var hasConnectedCompatibleHeadphones: Bool { compatibleHeadphonesConnected }
     var hasRecommendedBuiltInMicrophone: Bool {
         Self.containsRecommendedBuiltInMicrophone(availableMicrophones)
     }
@@ -117,24 +121,34 @@ final class AudioDeviceManager: ObservableObject {
         self.notificationCenter = notificationCenter
         self.startMonitoringOnInit = startMonitoringOnInit
 
-        availableMicrophones = discoverInputMicrophonesProvider()
+        availableMicrophones = applyCompatibleHeadphoneOverrides(to: discoverInputMicrophonesProvider())
         applyInitialSelectionPolicy()
         syncSelectedMicrophone()
         settingsStore.selectedMicrophoneUIDPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.syncSelectedMicrophone()
+                guard let self else { return }
+                self.syncSelectedMicrophone()
+                if self.compatibleHeadphonesConnected {
+                    self.recomputeAvailableMicrophoneOverrides()
+                    self.syncSelectedMicrophone()
+                }
             }
             .store(in: &cancellables)
 
         if startMonitoringOnInit {
             startMonitoringCaptureDevices()
+            startMonitoringCompatibleHeadphones()
         }
     }
 
     deinit {
         for observer in deviceObservers {
             notificationCenter.removeObserver(observer)
+        }
+        if #available(macOS 15.0, *),
+           let headphoneActivityManager = headphoneActivityManager as? CMHeadphoneActivityManager {
+            headphoneActivityManager.stopStatusUpdates()
         }
     }
 
@@ -185,7 +199,7 @@ final class AudioDeviceManager: ObservableObject {
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.availableMicrophones = discovered
+            self.availableMicrophones = self.applyCompatibleHeadphoneOverrides(to: discovered)
             self.syncSelectedMicrophone()
         }
     }
@@ -240,6 +254,19 @@ final class AudioDeviceManager: ObservableObject {
         selectedMicrophone = availableMicrophones.first(where: { $0.id == settingsStore.selectedMicrophoneUID })
     }
 
+    private func recomputeAvailableMicrophoneOverrides() {
+        let normalized = availableMicrophones.map { microphone in
+            guard microphone.kind == .airPods else { return microphone }
+            return MicrophoneOption(
+                id: microphone.id,
+                name: microphone.name,
+                kind: .bluetooth,
+                isAvailable: microphone.isAvailable
+            )
+        }
+        availableMicrophones = applyCompatibleHeadphoneOverrides(to: normalized)
+    }
+
     private func startMonitoringCaptureDevices() {
         let connectedObserver = notificationCenter.addObserver(
             forName: Self.captureDeviceConnectedNotification,
@@ -258,6 +285,65 @@ final class AudioDeviceManager: ObservableObject {
         }
 
         deviceObservers = [connectedObserver, disconnectedObserver]
+    }
+
+    private func startMonitoringCompatibleHeadphones() {
+        guard #available(macOS 15.0, *) else { return }
+
+        let manager = CMHeadphoneActivityManager()
+        guard manager.isStatusAvailable else { return }
+
+        let queue = OperationQueue()
+        queue.qualityOfService = .utility
+        queue.maxConcurrentOperationCount = 1
+
+        headphoneActivityManager = manager
+        headphoneStatusQueue = queue
+
+        manager.startStatusUpdates(to: queue) { [weak self] status, error in
+            if let error {
+                #if DEBUG
+                print("CMHeadphoneActivityManager status update error: \(error)")
+                #endif
+                return
+            }
+            guard let self else { return }
+            let isConnected = status == .connected
+            DispatchQueue.main.async {
+                guard self.compatibleHeadphonesConnected != isConnected else { return }
+                self.compatibleHeadphonesConnected = isConnected
+                self.refreshAvailableMicrophones()
+            }
+        }
+    }
+
+    private func applyCompatibleHeadphoneOverrides(to microphones: [MicrophoneOption]) -> [MicrophoneOption] {
+        Self.applyCompatibleHeadphoneOverrides(
+            to: microphones,
+            compatibleHeadphonesConnected: compatibleHeadphonesConnected,
+            selectedMicrophoneUID: settingsStore.selectedMicrophoneUID
+        )
+    }
+
+    static func applyCompatibleHeadphoneOverrides(
+        to microphones: [MicrophoneOption],
+        compatibleHeadphonesConnected: Bool,
+        selectedMicrophoneUID: String
+    ) -> [MicrophoneOption] {
+        guard compatibleHeadphonesConnected else { return microphones }
+
+        let selectedBluetoothIndex = microphones.firstIndex {
+            $0.id == selectedMicrophoneUID && $0.kind == .bluetooth
+        }
+
+        let bluetoothIndices = microphones.indices.filter { microphones[$0].kind == .bluetooth }
+        let targetIndex = selectedBluetoothIndex ?? (bluetoothIndices.count == 1 ? bluetoothIndices.first : nil)
+        guard let targetIndex else { return microphones }
+
+        var updated = microphones
+        let mic = updated[targetIndex]
+        updated[targetIndex] = MicrophoneOption(id: mic.id, name: mic.name, kind: .airPods, isAvailable: mic.isAvailable)
+        return sortedMicrophones(updated)
     }
 
     private func deviceForID(_ uniqueID: String) -> AVCaptureDevice? {
@@ -309,7 +395,7 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     nonisolated private static func sortRank(for kind: MicrophoneKind) -> Int {
-        // Picker policy: built-in first (recommended), then wired/other, then Bluetooth classes.
+        // Picker policy: built-in first (recommended), then wired/other, then AirPods, then Bluetooth.
         switch kind {
         case .builtIn:
             return 0
@@ -323,12 +409,6 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     nonisolated static func classifyDeviceKind(_ input: AudioDeviceClassificationInput) -> MicrophoneKind {
-        let lowered = input.name.lowercased()
-
-        if lowered.contains("airpods") {
-            return .airPods
-        }
-
         if input.transportType == kAudioDeviceTransportTypeBluetooth ||
             input.transportType == kAudioDeviceTransportTypeBluetoothLE {
             return .bluetooth
@@ -338,28 +418,12 @@ final class AudioDeviceManager: ObservableObject {
             return .builtIn
         }
 
-        // Name heuristics are a fallback for devices that do not report a reliable CoreAudio transport type.
-        if lowered.contains("bluetooth") ||
-            lowered.contains("hands-free") ||
-            lowered.contains("headset") ||
-            lowered.contains("earbuds") ||
-            lowered.contains("buds") {
-            return .bluetooth
-        }
-
-        if lowered.contains("built-in") ||
-            lowered.contains("built in") ||
-            lowered.contains("internal") {
-            return .builtIn
-        }
-
         return .wiredOrOther
     }
 
     nonisolated private static func classifyDeviceKind(for device: AVCaptureDevice) -> MicrophoneKind {
         classifyDeviceKind(
             AudioDeviceClassificationInput(
-                name: device.localizedName,
                 transportType: UInt32(bitPattern: device.transportType)
             )
         )
