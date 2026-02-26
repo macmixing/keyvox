@@ -19,7 +19,6 @@ struct MicrophoneOption: Identifiable, Equatable {
 }
 
 struct AudioDeviceClassificationInput {
-    let name: String
     let transportType: UInt32
 }
 
@@ -283,7 +282,12 @@ final class AudioDeviceManager: ObservableObject {
         headphoneActivityManager = manager
         headphoneStatusQueue = queue
 
-        manager.startStatusUpdates(to: queue) { [weak self] status, _ in
+        manager.startStatusUpdates(to: queue) { [weak self] status, error in
+            if let error {
+                #if DEBUG
+                print("CMHeadphoneActivityManager status update error: \(error)")
+                #endif
+            }
             guard let self else { return }
             let isConnected = status == .connected
             DispatchQueue.main.async {
@@ -295,11 +299,22 @@ final class AudioDeviceManager: ObservableObject {
     }
 
     private func applyCompatibleHeadphoneOverrides(to microphones: [MicrophoneOption]) -> [MicrophoneOption] {
+        Self.applyCompatibleHeadphoneOverrides(
+            to: microphones,
+            compatibleHeadphonesConnected: compatibleHeadphonesConnected,
+            selectedMicrophoneUID: settingsStore.selectedMicrophoneUID
+        )
+    }
+
+    static func applyCompatibleHeadphoneOverrides(
+        to microphones: [MicrophoneOption],
+        compatibleHeadphonesConnected: Bool,
+        selectedMicrophoneUID: String
+    ) -> [MicrophoneOption] {
         guard compatibleHeadphonesConnected else { return microphones }
 
-        let selectedUID = settingsStore.selectedMicrophoneUID
         let selectedBluetoothIndex = microphones.firstIndex {
-            $0.id == selectedUID && $0.kind == .bluetooth
+            $0.id == selectedMicrophoneUID && $0.kind == .bluetooth
         }
 
         let bluetoothIndices = microphones.indices.filter { microphones[$0].kind == .bluetooth }
@@ -309,7 +324,7 @@ final class AudioDeviceManager: ObservableObject {
         var updated = microphones
         let mic = updated[targetIndex]
         updated[targetIndex] = MicrophoneOption(id: mic.id, name: mic.name, kind: .airPods, isAvailable: mic.isAvailable)
-        return Self.sortedMicrophones(updated)
+        return sortedMicrophones(updated)
     }
 
     private func deviceForID(_ uniqueID: String) -> AVCaptureDevice? {
@@ -390,7 +405,6 @@ final class AudioDeviceManager: ObservableObject {
     nonisolated private static func classifyDeviceKind(for device: AVCaptureDevice) -> MicrophoneKind {
         classifyDeviceKind(
             AudioDeviceClassificationInput(
-                name: device.localizedName,
                 transportType: UInt32(bitPattern: device.transportType)
             )
         )
