@@ -7,7 +7,7 @@ import CoreAudio
 final class AudioDeviceManagerTests: XCTestCase {
     private var cancellables = Set<AnyCancellable>()
 
-    func testClassificationMatrixCoversTransportAndNameHeuristics() {
+    func testClassificationMatrixUsesTransportTypeOnly() {
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
                 AudioDeviceClassificationInput(name: "Built-in Microphone", transportType: kAudioDeviceTransportTypeBuiltIn)
@@ -24,17 +24,23 @@ final class AudioDeviceManagerTests: XCTestCase {
             AudioDeviceManager.classifyDeviceKind(
                 AudioDeviceClassificationInput(name: "Desk Headset", transportType: kAudioDeviceTransportTypeUSB)
             ),
-            .bluetooth
+            .wiredOrOther
         )
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
                 AudioDeviceClassificationInput(name: "AirPods Pro", transportType: kAudioDeviceTransportTypeUSB)
             ),
-            .airPods
+            .wiredOrOther
         )
         XCTAssertEqual(
             AudioDeviceManager.classifyDeviceKind(
                 AudioDeviceClassificationInput(name: "Studio USB Mic", transportType: kAudioDeviceTransportTypeUSB)
+            ),
+            .wiredOrOther
+        )
+        XCTAssertEqual(
+            AudioDeviceManager.classifyDeviceKind(
+                AudioDeviceClassificationInput(name: "Built In Mic", transportType: kAudioDeviceTransportTypeUSB)
             ),
             .wiredOrOther
         )

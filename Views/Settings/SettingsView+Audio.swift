@@ -127,9 +127,9 @@ extension SettingsView {
             }
             return "\(selected.name) selected."
         case .airPods:
-            return "\(selected.name) selected. Bluetooth mics may start slower and reduce dictation accuracy."
+            return "\(selected.name) selected. This microphone may start slower and reduce dictation accuracy."
         case .bluetooth:
-            return "\(selected.name) selected. Startup can be slower before dictation begins."
+            return "\(selected.name) selected. Bluetooth devices may start slower and reduce dictation accuracy."
         case .wiredOrOther:
             return "\(selected.name) selected. Built-in Microphone is still recommended for best speed."
         }
