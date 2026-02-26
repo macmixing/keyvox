@@ -127,7 +127,12 @@ final class AudioDeviceManager: ObservableObject {
         settingsStore.selectedMicrophoneUIDPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.syncSelectedMicrophone()
+                guard let self else { return }
+                self.syncSelectedMicrophone()
+                if self.compatibleHeadphonesConnected {
+                    self.recomputeAvailableMicrophoneOverrides()
+                    self.syncSelectedMicrophone()
+                }
             }
             .store(in: &cancellables)
 
@@ -247,6 +252,19 @@ final class AudioDeviceManager: ObservableObject {
 
     private func syncSelectedMicrophone() {
         selectedMicrophone = availableMicrophones.first(where: { $0.id == settingsStore.selectedMicrophoneUID })
+    }
+
+    private func recomputeAvailableMicrophoneOverrides() {
+        let normalized = availableMicrophones.map { microphone in
+            guard microphone.kind == .airPods else { return microphone }
+            return MicrophoneOption(
+                id: microphone.id,
+                name: microphone.name,
+                kind: .bluetooth,
+                isAvailable: microphone.isAvailable
+            )
+        }
+        availableMicrophones = applyCompatibleHeadphoneOverrides(to: normalized)
     }
 
     private func startMonitoringCaptureDevices() {
