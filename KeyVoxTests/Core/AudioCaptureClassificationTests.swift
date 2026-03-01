@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVox
 
 final class AudioCaptureClassificationTests: XCTestCase {
-    func testClassifyMarksAbsoluteSilenceAndLikelySilenceForLongQuietCapture() {
+    func testClassifyMarksAbsoluteSilenceLikelySilenceAndLongTrueSilenceAtThreshold() {
         let snapshot = Array(repeating: Float(0), count: 16_000 * 3)
         let speechOnly = snapshot
 
@@ -17,10 +17,10 @@ final class AudioCaptureClassificationTests: XCTestCase {
         XCTAssertTrue(result.isAbsoluteSilence)
         XCTAssertTrue(!result.hadActiveSignal)
         XCTAssertTrue(result.shouldRejectLikelySilence)
-        XCTAssertTrue(!result.isLongTrueSilence)
+        XCTAssertTrue(result.isLongTrueSilence)
     }
 
-    func testClassifyMarksLongTrueSilenceAfterFiveSeconds() {
+    func testClassifyMarksLongTrueSilenceAfterThreeSeconds() {
         let snapshot = Array(repeating: Float(0), count: 16_000 * 6)
         let speechOnly = snapshot
 
