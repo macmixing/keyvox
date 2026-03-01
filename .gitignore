@@ -18,3 +18,6 @@ KeyVox.dmg
 
 # Local release helper script copy
 release_dmg_notarize.sh
+
+# Marketing artifacts
+Tools/Marketing/
