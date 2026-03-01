@@ -6,7 +6,7 @@ struct AudioSilenceGatePolicy {
     static let longCaptureMinimumDuration: TimeInterval = 2.0
     static let lowConfidenceRMSCutoff: Float = 0.0032
     static let minimumActiveSignalRunDuration: TimeInterval = 0.22
-    static let longTrueSilenceMinimumDuration: TimeInterval = 5.0
+    static let longTrueSilenceMinimumDuration: TimeInterval = 3.0
     static let trueSilenceWindowSize = 1600
     static let trueSilenceWindowRMSThreshold: Float = 0.0018
     static let trueSilenceMinimumWindowRatio: Float = 0.93
