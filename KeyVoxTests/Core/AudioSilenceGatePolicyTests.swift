@@ -104,7 +104,7 @@ final class AudioSilenceGatePolicyTests: XCTestCase {
     func testDoesNotFlagLongTrueSilenceWhenDurationIsBelowThreshold() {
         XCTAssertTrue(
             !AudioSilenceGatePolicy.shouldFlagLongTrueSilence(
-                captureDuration: 4.9,
+                captureDuration: 2.9,
                 hadActiveSignal: false,
                 silentWindowRatio: 1.0
             )

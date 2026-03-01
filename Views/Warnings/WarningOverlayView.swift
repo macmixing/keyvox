@@ -4,15 +4,16 @@ struct WarningOverlayView: View {
     let kind: WarningKind
     let openSystemSettings: () -> Void
     let openKeyVoxSettings: () -> Void
+    private let contentRailWidth: CGFloat = 214
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: kind.iconName)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.yellow)
                 Text(kind.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.primary)
             }
 
@@ -22,35 +23,24 @@ struct WarningOverlayView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
 
-            if kind.systemSettingsURL != nil && kind.showsKeyVoxSettingsButton {
-                HStack(spacing: 8) {
+            HStack(spacing: 8) {
+                if kind.systemSettingsURL != nil {
                     Button("System Settings", action: openSystemSettings)
                         .buttonStyle(.bordered)
                         .controlSize(.small)
+                }
 
+                if kind.showsKeyVoxSettingsButton {
                     Button("KeyVox Settings", action: openKeyVoxSettings)
                         .buttonStyle(.borderedProminent)
                         .tint(.indigo)
                         .controlSize(.small)
                 }
-                .frame(maxWidth: .infinity, alignment: .center)
-            } else {
-                HStack {
-                    Spacer(minLength: 0)
-                    if kind.showsKeyVoxSettingsButton {
-                        Button("KeyVox Settings", action: openKeyVoxSettings)
-                            .buttonStyle(.borderedProminent)
-                            .tint(.indigo)
-                            .controlSize(.small)
-                    } else {
-                        Button("System Settings", action: openSystemSettings)
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                    }
-                    Spacer(minLength: 0)
-                }
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
+        .frame(width: contentRailWidth, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(14)
         .frame(width: 260)
         .background(

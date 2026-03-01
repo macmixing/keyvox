@@ -17,6 +17,7 @@ final class WarningManager {
     private let dismissSlideDistance: CGFloat = 64
     private var recoveryWindow: NSPanel?
     private var recoveryModel: PasteFailureRecoveryOverlayModel?
+    private var recoveryPresentationID: UInt = 0
 
     func show(_ kind: WarningKind) {
         playCancelSound()
@@ -78,6 +79,7 @@ final class WarningManager {
     @MainActor
     func showPasteFailureRecovery(progress: Double, onDismiss: @escaping () -> Void) {
         playCancelSound()
+        recoveryPresentationID &+= 1
 
         if recoveryWindow == nil {
             let panel = NSPanel(
@@ -108,6 +110,7 @@ final class WarningManager {
             recoveryWindow?.setFrameOrigin(NSPoint(x: rect.midX - 160, y: rect.minY + 50))
         }
 
+        recoveryWindow?.alphaValue = 1
         recoveryWindow?.orderFrontRegardless()
     }
 
@@ -118,8 +121,7 @@ final class WarningManager {
 
     @MainActor
     func hidePasteFailureRecovery() {
-        recoveryWindow?.orderOut(nil)
-        recoveryModel = nil
+        hidePasteFailureRecoveryWithDismissTransition(expectedPresentationID: nil)
     }
 
     private func playCancelSound() {
@@ -217,33 +219,93 @@ final class WarningManager {
     }
 
     private func hideWithDismissTransition(expectedPresentationID: UInt?) {
-        if let expectedPresentationID, expectedPresentationID != warningPresentationID {
+        dismissPanelWithTransition(
+            panel: window,
+            expectedPresentationID: expectedPresentationID,
+            currentPresentationID: warningPresentationID,
+            isCurrentPresentation: { [weak self] presentationID in
+                presentationID == self?.warningPresentationID
+            },
+            prepareForDismiss: { [weak self] in
+                self?.cancelDismissSchedules()
+                self?.isWarningHovered = false
+            },
+            handleMissingPanel: { [weak self] in
+                self?.removeWarningDismissMonitors()
+            },
+            handlePanelNotVisible: { [weak self] in
+                self?.removeWarningDismissMonitors()
+            },
+            completeDismiss: { [weak self] in
+                self?.removeWarningDismissMonitors()
+            }
+        )
+    }
+
+    private func hidePasteFailureRecoveryWithDismissTransition(expectedPresentationID: UInt?) {
+        dismissPanelWithTransition(
+            panel: recoveryWindow,
+            expectedPresentationID: expectedPresentationID,
+            currentPresentationID: recoveryPresentationID,
+            isCurrentPresentation: { [weak self] presentationID in
+                presentationID == self?.recoveryPresentationID
+            },
+            handleMissingPanel: { [weak self] in
+                self?.recoveryModel = nil
+            },
+            handlePanelNotVisible: { [weak self] in
+                self?.recoveryModel = nil
+            },
+            completeDismiss: { [weak self] in
+                self?.recoveryModel = nil
+            }
+        )
+    }
+
+    private func dismissPanelWithTransition(
+        panel: NSPanel?,
+        expectedPresentationID: UInt?,
+        currentPresentationID: UInt,
+        isCurrentPresentation: @escaping (UInt) -> Bool,
+        prepareForDismiss: () -> Void = {},
+        handleMissingPanel: () -> Void = {},
+        handlePanelNotVisible: () -> Void = {},
+        completeDismiss: @escaping () -> Void
+    ) {
+        if let expectedPresentationID, !isCurrentPresentation(expectedPresentationID) {
             return
         }
-        cancelDismissSchedules()
-        isWarningHovered = false
-        guard let window, window.isVisible else {
-            removeWarningDismissMonitors()
+
+        prepareForDismiss()
+
+        guard let panel else {
+            handleMissingPanel()
             return
         }
-        let startFrame = window.frame
+
+        guard panel.isVisible else {
+            panel.alphaValue = 1
+            handlePanelNotVisible()
+            return
+        }
+
+        let startFrame = panel.frame
         var endFrame = startFrame
         endFrame.origin.y -= dismissSlideDistance
-        let dismissingPresentationID = warningPresentationID
+        let dismissingPresentationID = currentPresentationID
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = dismissAnimationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            window.animator().setFrame(endFrame, display: false)
-            window.animator().alphaValue = 0
-        } completionHandler: { [weak self] in
-            guard let self else { return }
-            // If a newer warning started while this one was animating out, do not mutate it.
-            guard dismissingPresentationID == self.warningPresentationID else { return }
-            window.orderOut(nil)
-            window.setFrame(startFrame, display: false)
-            window.alphaValue = 1
-            self.removeWarningDismissMonitors()
+            panel.animator().setFrame(endFrame, display: false)
+            panel.animator().alphaValue = 0
+        } completionHandler: {
+            // If a newer overlay started while this one was animating out, do not mutate it.
+            guard isCurrentPresentation(dismissingPresentationID) else { return }
+            panel.orderOut(nil)
+            panel.setFrame(startFrame, display: false)
+            panel.alphaValue = 1
+            completeDismiss()
         }
     }
 }
