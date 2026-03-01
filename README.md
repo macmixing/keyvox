@@ -49,7 +49,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 2. Hold trigger, speak, release to transcribe and insert.
 3. Hold **Shift** while releasing to continue recording hands-free.
 4. Press **Esc** to cancel an active recording/transcription session.
-5. Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by detault)
+5. Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
 
 ## Troubleshooting
 
