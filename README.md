@@ -35,6 +35,14 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 
 ### Install and Run
 
+### Recommended (Release DMG)
+
+1. Download the `.dmg` from the latest release’s **Assets**.
+2. Open the DMG and drag `KeyVox.app` to `Applications`.
+3. Launch KeyVox and complete onboarding (Microphone, Accessibility, model setup).
+
+### Build From Source (Optional)
+
 1. Clone the repo:
    `git clone https://github.com/macmixing/keyvox.git`
 2. Open:
