@@ -10,7 +10,7 @@ extension SettingsView {
         VStack(alignment: .leading, spacing: 10) {
             Spacer().frame(height: 4)
             
-            Text("CUSTOMIZE")
+            Text("MICROPHONE")
                 .font(.custom("Kanit Medium", size: 10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
@@ -49,6 +49,11 @@ extension SettingsView {
                     }
                 }
             }
+
+            Text("SOUNDS")
+                .font(.custom("Kanit Medium", size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
+                .padding(.leading, 4)
             
             SettingsCard {
                 HStack(alignment: .top, spacing: 16) {
@@ -108,7 +113,6 @@ extension SettingsView {
                     }
                 }
             }
-            .padding(.top, 12)
         }
     }
     
