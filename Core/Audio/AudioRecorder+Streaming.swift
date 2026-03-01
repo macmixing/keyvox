@@ -78,6 +78,7 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
         let now = Date()
         if peak > deadSignalPeakThreshold {
             lastNonDeadSignalTime = now
+            lastCaptureHadNonDeadSignal = true
         }
         if rms > sessionActiveSignalRMSThreshold {
             currentActiveSignalRunDuration += frameDuration

@@ -55,6 +55,7 @@ class AudioRecorder: NSObject, ObservableObject {
     var lastVisualActiveSignalTime: Date = Date.distantPast
     var currentActiveSignalRunDuration: TimeInterval = 0
     var maxActiveSignalRunDuration: TimeInterval = 0
+    var lastCaptureHadNonDeadSignal: Bool = false
     var captureStartedAt = Date.distantPast
 
     func startRecording() {

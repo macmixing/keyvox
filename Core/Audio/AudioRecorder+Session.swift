@@ -68,6 +68,7 @@ extension AudioRecorder {
         lastVisualActiveSignalTime = Date.distantPast
         currentActiveSignalRunDuration = 0
         maxActiveSignalRunDuration = 0
+        lastCaptureHadNonDeadSignal = false
         captureStartedAt = Date()
         DispatchQueue.main.async {
             self.audioLevel = 0

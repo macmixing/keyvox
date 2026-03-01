@@ -235,6 +235,16 @@ class TranscriptionManager: ObservableObject {
             #if DEBUG
             print("1. Audio stop & buffer retrieve: \(String(format: "%.3f", stopDuration))s")
             #endif
+
+            if !self.audioRecorder.lastCaptureHadNonDeadSignal {
+                OverlayManager.shared.hide()
+                WarningManager.shared.show(.microphoneSilence(
+                    reason: .muted,
+                    microphoneName: self.audioRecorder.currentCaptureDeviceName
+                ))
+                self.state = .idle
+                return
+            }
             
             guard !frames.isEmpty else {
                 OverlayManager.shared.hide()
@@ -248,11 +258,6 @@ class TranscriptionManager: ObservableObject {
                 if self.audioRecorder.lastCaptureWasLongTrueSilence {
                     showMicrophoneSilenceWarning(.microphoneSilence(
                         reason: .noSpeechDetected,
-                        microphoneName: microphoneName
-                    ))
-                } else if self.audioRecorder.lastCaptureWasAbsoluteSilence {
-                    showMicrophoneSilenceWarning(.microphoneSilence(
-                        reason: .muted,
                         microphoneName: microphoneName
                     ))
                 } else if self.audioRecorder.lastCaptureWasLikelySilence && shouldShowNoSpeechWarning {
