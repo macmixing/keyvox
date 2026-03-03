@@ -9,6 +9,8 @@ struct RecordingOverlay: View {
     private static let phaseStep: Double = 0.1
     private static let quietPhaseStep: Double = 0.06 // Slower than processing, but still visibly alive in quiet rooms.
     private static let phaseWrapPeriod: Double = .pi * 2
+    private static let contentPadding: CGFloat = 8
+    private static let shadowBleedPadding: CGFloat = 10
 
     @ObservedObject var recorder: AudioRecorder
     var isTranscribing: Bool
@@ -22,12 +24,15 @@ struct RecordingOverlay: View {
     @State private var settleWorkItem: DispatchWorkItem?
 
     static var panelSize: CGSize {
-        CGSize(
-            width: isDevModeOversized ? 316 : 66,
-            height: isDevModeOversized ? 316 : 66
+        let circleSize: CGFloat = isDevModeOversized ? 300 : 50
+        let renderedSize = circleSize + (contentPadding * 2)
+        let paddedSize = renderedSize + (shadowBleedPadding * 2)
+        return CGSize(
+            width: paddedSize,
+            height: paddedSize
         )
     }
-    
+
     var body: some View {
         ZStack {
             Circle()
@@ -52,7 +57,8 @@ struct RecordingOverlay: View {
                 }
             }
         }
-        .padding(8)
+        .padding(Self.contentPadding)
+        .padding(Self.shadowBleedPadding)
         .scaleEffect(overlayScale)
         .opacity(overlayOpacity)
         .onChange(of: visibilityManager.isVisible) { isVisible in
