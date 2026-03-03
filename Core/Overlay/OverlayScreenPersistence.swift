@@ -3,6 +3,7 @@ import Foundation
 
 final class OverlayScreenPersistence {
     private let defaultVerticalOffset: CGFloat
+    private let panelEdgeInset: CGFloat
     private var isUsingFallbackDisplay = false
     private var hasLoadedPreferredDisplayKey = false
     private var preferredDisplayKeyCache: String?
@@ -10,8 +11,9 @@ final class OverlayScreenPersistence {
     // Lazy cache avoids repeated UserDefaults decoding on hot show/hide/move paths.
     private var originsByDisplayCache: [String: NSPoint] = [:]
 
-    init(defaultVerticalOffset: CGFloat = 50) {
+    init(defaultVerticalOffset: CGFloat = 50, panelEdgeInset: CGFloat = 0) {
         self.defaultVerticalOffset = defaultVerticalOffset
+        self.panelEdgeInset = max(0, panelEdgeInset)
     }
 
     func resolvedOriginForShow(panel: NSPanel) -> NSPoint {
@@ -119,7 +121,8 @@ final class OverlayScreenPersistence {
         OverlayScreenPersistenceLogic.clampedOrigin(
             origin: origin,
             panelSize: panel.frame.size,
-            visibleFrame: screen.visibleFrame
+            visibleFrame: screen.visibleFrame,
+            edgeInset: panelEdgeInset
         )
     }
 
@@ -213,12 +216,18 @@ final class OverlayScreenPersistence {
 }
 
 enum OverlayScreenPersistenceLogic {
-    static func clampedOrigin(origin: NSPoint, panelSize: CGSize, visibleFrame: CGRect) -> NSPoint {
-        let maxX = max(visibleFrame.minX, visibleFrame.maxX - panelSize.width)
-        let maxY = max(visibleFrame.minY, visibleFrame.maxY - panelSize.height)
+    static func clampedOrigin(
+        origin: NSPoint,
+        panelSize: CGSize,
+        visibleFrame: CGRect,
+        edgeInset: CGFloat = 0
+    ) -> NSPoint {
+        let expandedFrame = visibleFrame.insetBy(dx: -max(0, edgeInset), dy: -max(0, edgeInset))
+        let maxX = max(expandedFrame.minX, expandedFrame.maxX - panelSize.width)
+        let maxY = max(expandedFrame.minY, expandedFrame.maxY - panelSize.height)
         return NSPoint(
-            x: min(max(origin.x, visibleFrame.minX), maxX),
-            y: min(max(origin.y, visibleFrame.minY), maxY)
+            x: min(max(origin.x, expandedFrame.minX), maxX),
+            y: min(max(origin.y, expandedFrame.minY), maxY)
         )
     }
 

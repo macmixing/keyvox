@@ -33,6 +33,10 @@ struct RecordingOverlay: View {
         )
     }
 
+    static var panelEdgeInset: CGFloat {
+        shadowBleedPadding
+    }
+
     var body: some View {
         ZStack {
             Circle()

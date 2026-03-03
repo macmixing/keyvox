@@ -22,8 +22,8 @@ class OverlayManager {
     private let hideAnimationCompletionDelay: TimeInterval = 0.5
     private let clampOriginThreshold: CGFloat = 0.5
 
-    private let motionController = OverlayMotionController()
-    private let screenPersistence = OverlayScreenPersistence()
+    private let motionController = OverlayMotionController(panelEdgeInset: RecordingOverlay.panelEdgeInset)
+    private let screenPersistence = OverlayScreenPersistence(panelEdgeInset: RecordingOverlay.panelEdgeInset)
 
     func show(recorder: AudioRecorder, isTranscribing: Bool = false) {
         pendingHideWorkItem?.cancel()

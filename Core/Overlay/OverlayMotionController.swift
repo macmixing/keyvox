@@ -19,9 +19,14 @@ final class OverlayMotionController {
 
     private var flingFlightTimer: Timer?
     private var pendingResetWorkItem: DispatchWorkItem?
+    private let panelEdgeInset: CGFloat
 
     private(set) var isProgrammaticMotionInFlight = false
     let flingVelocitySamplingWindow: TimeInterval = 0.12
+
+    init(panelEdgeInset: CGFloat = 0) {
+        self.panelEdgeInset = max(0, panelEdgeInset)
+    }
 
     func handleFlingRelease(
         panel: NSPanel?,
@@ -34,7 +39,7 @@ final class OverlayMotionController {
         guard speed >= flingMinimumSpeed else { return }
 
         let currentOrigin = panel.frame.origin
-        let visible = screen.visibleFrame
+        let visible = screen.visibleFrame.insetBy(dx: -panelEdgeInset, dy: -panelEdgeInset)
         let bounds = CGRect(
             x: visible.minX,
             y: visible.minY,
