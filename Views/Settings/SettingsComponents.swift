@@ -26,14 +26,14 @@ struct AnimatedWaveHeader: View {
         HStack(spacing: 16) {
             KeyVoxLogo()
             
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("KeyVox")
                     .font(.custom("Kanit Medium", size: 24))
                     .foregroundColor(.indigo)
-                Text("Local.  Private. Fast.")
+                Text("Free Your Voice")
                     .font(.custom("Kanit Medium", size: 10))
                     .foregroundColor(.secondary)
-                    .tracking(0.5)
+                    .tracking(0.8)
             }
         }
     }
