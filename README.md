@@ -32,12 +32,13 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 
 - macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
+- ~190 MB disk space for the base model
 
 ### Install and Run
 
 ### Recommended (Release DMG)
 
-1. Download the `.dmg` from the latest release’s **Assets**.
+1. Download the `.dmg` from the [latest release](https://github.com/macmixing/keyvox/releases/latest).
 2. Open the DMG and drag `KeyVox.app` to `Applications`.
 3. Launch KeyVox and complete onboarding (Microphone, Accessibility, model setup).
 
