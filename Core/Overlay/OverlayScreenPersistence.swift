@@ -222,12 +222,15 @@ enum OverlayScreenPersistenceLogic {
         visibleFrame: CGRect,
         edgeInset: CGFloat = 0
     ) -> NSPoint {
-        let expandedFrame = visibleFrame.insetBy(dx: -max(0, edgeInset), dy: -max(0, edgeInset))
-        let maxX = max(expandedFrame.minX, expandedFrame.maxX - panelSize.width)
-        let maxY = max(expandedFrame.minY, expandedFrame.maxY - panelSize.height)
+        let inset = max(0, edgeInset)
+        let minX = visibleFrame.minX - inset
+        let maxX = max(minX, (visibleFrame.maxX - panelSize.width) + inset)
+        let minY = visibleFrame.minY - inset
+        // Keep top bound unexpanded to match AppKit's effective top-origin constraint.
+        let maxY = max(minY, visibleFrame.maxY - panelSize.height)
         return NSPoint(
-            x: min(max(origin.x, expandedFrame.minX), maxX),
-            y: min(max(origin.y, expandedFrame.minY), maxY)
+            x: min(max(origin.x, minX), maxX),
+            y: min(max(origin.y, minY), maxY)
         )
     }
 

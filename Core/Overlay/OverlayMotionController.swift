@@ -39,12 +39,17 @@ final class OverlayMotionController {
         guard speed >= flingMinimumSpeed else { return }
 
         let currentOrigin = panel.frame.origin
-        let visible = screen.visibleFrame.insetBy(dx: -panelEdgeInset, dy: -panelEdgeInset)
+        let visible = screen.visibleFrame
+        let minX = visible.minX - panelEdgeInset
+        let maxX = visible.maxX - panel.frame.width + panelEdgeInset
+        let minY = visible.minY - panelEdgeInset
+        // Keep top bound unexpanded because AppKit constrains panel origin near the menu bar.
+        let maxY = visible.maxY - panel.frame.height
         let bounds = CGRect(
-            x: visible.minX,
-            y: visible.minY,
-            width: max(0, visible.width - panel.frame.width),
-            height: max(0, visible.height - panel.frame.height)
+            x: minX,
+            y: minY,
+            width: max(0, maxX - minX),
+            height: max(0, maxY - minY)
         )
 
         guard let impact = OverlayFlingPhysics.firstImpactResult(from: currentOrigin, velocity: velocity, bounds: bounds) else {

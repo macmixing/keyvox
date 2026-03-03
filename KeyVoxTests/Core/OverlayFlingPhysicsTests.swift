@@ -19,6 +19,51 @@ final class OverlayFlingPhysicsTests: XCTestCase {
         XCTAssertTrue(abs((impact?.originAtImpact.x ?? 0) - bounds.maxX) < 0.001)
     }
 
+    func testLeftwardVelocityHitsLeftEdgeFirst() {
+        let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let origin = NSPoint(x: 80, y: 25)
+        let velocity = CGVector(dx: -200, dy: 10)
+
+        let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
+
+        guard let edge = impact?.edge else {
+            XCTFail("Expected impact edge")
+            return
+        }
+        assertEdge(edge, equals: .left)
+        XCTAssertTrue(abs((impact?.originAtImpact.x ?? 0) - bounds.minX) < 0.001)
+    }
+
+    func testUpwardVelocityHitsTopEdgeFirst() {
+        let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let origin = NSPoint(x: 40, y: 20)
+        let velocity = CGVector(dx: 8, dy: 220)
+
+        let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
+
+        guard let edge = impact?.edge else {
+            XCTFail("Expected impact edge")
+            return
+        }
+        assertEdge(edge, equals: .top)
+        XCTAssertTrue(abs((impact?.originAtImpact.y ?? 0) - bounds.maxY) < 0.001)
+    }
+
+    func testDownwardVelocityHitsBottomEdgeFirst() {
+        let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let origin = NSPoint(x: 40, y: 80)
+        let velocity = CGVector(dx: 8, dy: -220)
+
+        let impact = OverlayFlingPhysics.firstImpactResult(from: origin, velocity: velocity, bounds: bounds)
+
+        guard let edge = impact?.edge else {
+            XCTFail("Expected impact edge")
+            return
+        }
+        assertEdge(edge, equals: .bottom)
+        XCTAssertTrue(abs((impact?.originAtImpact.y ?? 0) - bounds.minY) < 0.001)
+    }
+
     func testDiagonalVelocityUsesSmallestPositiveImpactTime() {
         let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
         let origin = NSPoint(x: 50, y: 50)
