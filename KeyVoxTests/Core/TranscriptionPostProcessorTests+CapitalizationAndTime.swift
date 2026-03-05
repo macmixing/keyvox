@@ -192,6 +192,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Visit https://i.example.com and I can explain")
     }
 
+    func testDoesNotSplitLongTopLevelDomainIntoSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "please visit keyvox.photography and share it",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Please visit keyvox.photography and share it")
+    }
+
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
         let processor = TranscriptionPostProcessor()
 

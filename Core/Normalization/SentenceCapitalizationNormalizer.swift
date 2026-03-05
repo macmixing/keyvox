@@ -22,10 +22,6 @@ struct SentenceCapitalizationNormalizer {
         pattern: #"(?<![A-Za-z0-9_])i(?![A-Za-z0-9_])"#,
         options: []
     )
-    private static let commonTopLevelDomains: Set<String> = [
-        "com", "net", "org", "io", "app", "dev", "ai", "co", "me", "edu", "gov",
-        "us", "uk", "ca", "au", "de", "fr", "jp"
-    ]
     private static let domainLabelCharacterSet = CharacterSet(
         charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
     )
@@ -310,8 +306,17 @@ struct SentenceCapitalizationNormalizer {
             return true
         }
 
+        if dotCount == 1,
+           WebsiteNormalizer.isLikelySentenceGlueJoin(
+               token: normalized,
+               in: nsText,
+               tokenEnd: end
+           ) {
+            return false
+        }
+
         guard let tld = normalized.split(separator: ".").last.map(String.init) else { return false }
-        return Self.commonTopLevelDomains.contains(tld)
+        return WebsiteNormalizer.isLikelyTopLevelDomain(tld)
     }
 
     private func isLikelyFilenameExtensionBoundary(_ text: String, dotLocation: Int) -> Bool {
