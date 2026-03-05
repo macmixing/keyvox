@@ -2,6 +2,7 @@ import AppKit
 import QuartzCore
 import SwiftUI
 
+@MainActor
 final class WarningManager {
     static let shared = WarningManager()
     private var window: NSPanel?
