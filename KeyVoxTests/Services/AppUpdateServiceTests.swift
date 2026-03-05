@@ -132,6 +132,62 @@ final class AppUpdateServiceTests: XCTestCase {
         XCTAssertTrue(promptPresenter.prompts[0].message == "KeyVox v1.0.0 - Initial Public Release\nRelease date: March 1, 2026")
     }
 
+    func testUpdatePromptFallsBackWhenSummarySanitizesToEmpty() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let body = """
+            ## Summary
+            **
+            __
+            `
+
+            ## Details
+            Stable improvements shipped
+            """
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: body,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertTrue(promptPresenter.prompts[0].message == "Summary\nDetails\nStable improvements shipped")
+    }
+
+    func testUpdatePromptRespects240CharLimitWithEllipsis() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let longLine = String(repeating: "A", count: 300)
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: longLine,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        let message = promptPresenter.prompts[0].message
+        XCTAssertTrue(message.count <= 240)
+        XCTAssertTrue(message.hasSuffix("…"))
+    }
+
     func testManualCheckShowsUnavailablePromptWhenFetchFails() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))

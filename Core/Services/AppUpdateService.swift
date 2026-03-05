@@ -272,7 +272,9 @@ final class AppUpdateService: ObservableObject {
         let normalized = body.replacingOccurrences(of: "\r\n", with: "\n")
 
         if let summarySection = extractSummarySection(from: normalized) {
-            return truncateReleasePreview(summarySection)
+            if let summaryPreview = truncateReleasePreview(summarySection) {
+                return summaryPreview
+            }
         }
 
         return truncateReleasePreview(normalized)
@@ -328,6 +330,11 @@ final class AppUpdateService: ObservableObject {
         }
 
         if wasTrimmed, !preview.hasSuffix("…") {
+            let maxCharsBeforeEllipsis = max(ReleaseNotesPreview.maxCharacters - 1, 0)
+            if preview.count > maxCharsBeforeEllipsis {
+                let cutoff = preview.index(preview.startIndex, offsetBy: maxCharsBeforeEllipsis)
+                preview = String(preview[..<cutoff]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
             preview += "…"
         }
 
