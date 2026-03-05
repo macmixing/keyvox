@@ -49,6 +49,11 @@ final class AppUpdateService: ObservableObject {
 
     @Published private(set) var latestRemoteInfo: LatestReleaseInfo?
 
+    private enum ReleaseNotesPreview {
+        static let maxLines = 4
+        static let maxCharacters = 240
+    }
+
     private let feedConfig: UpdateFeedConfig
     private let bundle: Bundle
     private let urlSession: URLSession
@@ -158,7 +163,7 @@ final class AppUpdateService: ObservableObject {
         let fallbackMessage = "A new version of KeyVox is available. Please update for the best experience."
         let promptMessage: String
         if let body = remoteInfo.message, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            promptMessage = body
+            promptMessage = summarizedReleaseBody(body) ?? fallbackMessage
         } else {
             promptMessage = fallbackMessage
         }
@@ -261,6 +266,93 @@ final class AppUpdateService: ObservableObject {
 
         let normalizedLocalVersion = AppUpdateLogic.normalizeVersionTag(localVersion)
         return AppUpdateLogic.compareVersionStrings(remoteInfo.version, normalizedLocalVersion) > 0
+    }
+
+    private func summarizedReleaseBody(_ body: String) -> String? {
+        let normalized = body.replacingOccurrences(of: "\r\n", with: "\n")
+
+        if let summarySection = extractSummarySection(from: normalized) {
+            if let summaryPreview = truncateReleasePreview(summarySection) {
+                return summaryPreview
+            }
+        }
+
+        return truncateReleasePreview(normalized)
+    }
+
+    private func extractSummarySection(from body: String) -> String? {
+        let lines = body.components(separatedBy: .newlines)
+        guard let summaryHeadingIndex = lines.firstIndex(where: { line in
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix("##") else { return false }
+            let headingText = trimmed
+                .drop(while: { $0 == "#" })
+                .trimmingCharacters(in: .whitespaces)
+                .trimmingCharacters(in: CharacterSet(charactersIn: ":"))
+                .lowercased()
+            return headingText == "summary"
+        }) else {
+            return nil
+        }
+
+        var summaryLines: [String] = []
+        for line in lines.dropFirst(summaryHeadingIndex + 1) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("#") {
+                break
+            }
+            summaryLines.append(line)
+        }
+
+        let summary = summaryLines
+            .joined(separator: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return summary.isEmpty ? nil : summary
+    }
+
+    private func truncateReleasePreview(_ text: String) -> String? {
+        let lines = text
+            .components(separatedBy: .newlines)
+            .map(sanitizeReleaseLine)
+            .filter { !$0.isEmpty }
+
+        guard !lines.isEmpty else { return nil }
+
+        let hadMoreLines = lines.count > ReleaseNotesPreview.maxLines
+        let visible = Array(lines.prefix(ReleaseNotesPreview.maxLines))
+        var preview = visible.joined(separator: "\n")
+        var wasTrimmed = hadMoreLines
+
+        if preview.count > ReleaseNotesPreview.maxCharacters {
+            let cutoff = preview.index(preview.startIndex, offsetBy: ReleaseNotesPreview.maxCharacters)
+            preview = String(preview[..<cutoff]).trimmingCharacters(in: .whitespacesAndNewlines)
+            wasTrimmed = true
+        }
+
+        if wasTrimmed, !preview.hasSuffix("…") {
+            let maxCharsBeforeEllipsis = max(ReleaseNotesPreview.maxCharacters - 1, 0)
+            if preview.count > maxCharsBeforeEllipsis {
+                let cutoff = preview.index(preview.startIndex, offsetBy: maxCharsBeforeEllipsis)
+                preview = String(preview[..<cutoff]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            preview += "…"
+        }
+
+        return preview.isEmpty ? nil : preview
+    }
+
+    private func sanitizeReleaseLine(_ line: String) -> String {
+        var cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        while cleaned.hasPrefix("#") {
+            cleaned.removeFirst()
+            cleaned = cleaned.trimmingCharacters(in: .whitespaces)
+        }
+        cleaned = cleaned
+            .replacingOccurrences(of: "**", with: "")
+            .replacingOccurrences(of: "__", with: "")
+            .replacingOccurrences(of: "`", with: "")
+            .replacingOccurrences(of: #"^\s*([-*+]|\d+\.)\s+"#, with: "", options: .regularExpression)
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// For testing: clears the update prompt cooldown.

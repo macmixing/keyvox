@@ -21,7 +21,17 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
 
 // MARK: - Animated Wave Header
-struct AnimatedWaveHeader: View {
+struct AnimatedWaveHeader<Trailing: View>: View {
+    private let trailing: Trailing
+
+    init() where Trailing == EmptyView {
+        self.trailing = EmptyView()
+    }
+
+    init(@ViewBuilder trailing: () -> Trailing) {
+        self.trailing = trailing()
+    }
+
     var body: some View {
         HStack(spacing: 16) {
             KeyVoxLogo()
@@ -35,6 +45,9 @@ struct AnimatedWaveHeader: View {
                     .foregroundColor(.secondary)
                     .tracking(0.8)
             }
+
+            Spacer(minLength: 8)
+            trailing
         }
     }
 }
