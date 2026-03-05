@@ -82,6 +82,7 @@ struct KeyboardModifierStateMachine {
     }
 }
 
+@MainActor
 final class KeyboardMonitor: ObservableObject {
 
     static let shared = KeyboardMonitor()
@@ -139,25 +140,33 @@ final class KeyboardMonitor: ObservableObject {
     func startMonitoring() {
         // Global monitor for when the app is in the background
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleModifierChange(event: event)
+            Task { @MainActor [weak self] in
+                self?.handleModifierChange(event: event)
+            }
         }
 
         // Add global keyboard monitor for Escape key
         globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == KeyboardModifierStateMachine.KeyCode.escape {
-                self?.handleEscapeKey()
+                Task { @MainActor [weak self] in
+                    self?.handleEscapeKey()
+                }
             }
         }
 
         // Local monitor for when the app is focused
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleModifierChange(event: event)
+            Task { @MainActor [weak self] in
+                self?.handleModifierChange(event: event)
+            }
             return event
         }
 
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == KeyboardModifierStateMachine.KeyCode.escape {
-                self?.handleEscapeKey()
+                Task { @MainActor [weak self] in
+                    self?.handleEscapeKey()
+                }
             }
             return event
         }
@@ -166,9 +175,7 @@ final class KeyboardMonitor: ObservableObject {
     @Published var escapePressedSignal = false
 
     private func handleEscapeKey() {
-        DispatchQueue.main.async {
-            self.escapePressedSignal.toggle()
-        }
+        escapePressedSignal.toggle()
     }
 
     deinit {
@@ -195,11 +202,9 @@ final class KeyboardMonitor: ObservableObject {
         let newCapsLockState = event.modifierFlags.contains(.capsLock)
 
         if newState != isTriggerKeyPressed || newShiftState != isShiftPressed || newCapsLockState != isCapsLockOn {
-            DispatchQueue.main.async {
-                self.isTriggerKeyPressed = newState
-                self.isShiftPressed = newShiftState
-                self.isCapsLockOn = newCapsLockState
-            }
+            isTriggerKeyPressed = newState
+            isShiftPressed = newShiftState
+            isCapsLockOn = newCapsLockState
         }
     }
 
