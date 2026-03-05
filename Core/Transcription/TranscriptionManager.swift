@@ -79,9 +79,9 @@ class TranscriptionManager: ObservableObject {
         return true
     }
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
-    
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
+
     private func setupBindings() {
         keyboardMonitor.$isTriggerKeyPressed
             .sink { [weak self] isPressed in

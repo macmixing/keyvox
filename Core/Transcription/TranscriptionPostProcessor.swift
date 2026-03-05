@@ -15,8 +15,8 @@ final class TranscriptionPostProcessor {
     private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
     private var dictionaryFingerprint = ""
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
         let fingerprint = fingerprint(for: entries)

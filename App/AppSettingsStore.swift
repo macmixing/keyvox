@@ -100,8 +100,8 @@ final class AppSettingsStore: ObservableObject {
     private let defaultSoundVolume: Double = 0.1
     private var wordsThisWeekStart: Date
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     init(
         defaults: UserDefaults = .standard,

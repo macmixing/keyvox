@@ -88,8 +88,8 @@ class ModelDownloader: ObservableObject {
         }
     }
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     func refreshModelStatus() {
         modelReady = validateModelFiles()

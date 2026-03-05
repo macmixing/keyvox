@@ -18,8 +18,8 @@ final class PronunciationLexicon: PronunciationLexiconProviding {
         loadCommonWords(from: bundle)
     }
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     func pronunciation(for normalizedWord: String) -> String? {
         pronunciationsByWord[normalizedWord]

@@ -48,8 +48,8 @@ final class DictionaryMatcher {
         )
     }
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     func rebuildIndex(entries: [DictionaryEntry]) {
         var grouped: [Int: [CompiledEntry]] = [:]

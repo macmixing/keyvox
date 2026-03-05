@@ -80,8 +80,8 @@ final class AppUpdateService: ObservableObject {
         self.defaultCheckInterval = max(checkInterval, 1)
     }
 
-    // Keep teardown executor-agnostic to avoid runtime deinit crashes in test host.
-    nonisolated deinit {}
+    // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
+    deinit {}
 
     /// Starts the automatic update polling timer.
     func startUpdateTimer() {
