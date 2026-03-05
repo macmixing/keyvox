@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-02-21**
+**Last Updated: 2026-03-04**
 
 ## Project Overview
 
@@ -24,221 +24,59 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - Proprietary visual tuning remains in excluded branded files (`Views/RecordingOverlay.swift`, `Views/Components/KeyVoxLogo.swift`).
 - No shared constants module is required unless a value is truly reused across multiple domains.
 - Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
-- `CODEMAP.md` is the source of truth for file-level ownership and locations; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
+- `CODEMAP.md` is the source of truth for high-level file ownership and where major systems live; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
 
-## File Tree
+## Directory Index
+
+This is a curated map of the repo layout (intentionally not an exhaustive inventory).
 
 ```text
 KeyVox/
 ├── App/
-│   ├── AppSettingsStore.swift
 │   ├── KeyVoxApp.swift
+│   ├── AppSettingsStore.swift
 │   ├── LoginItemController.swift
 │   └── UserDefaultsKeys.swift
 ├── Core/
+│   ├── KeyboardMonitor.swift
+│   ├── Audio/
+│   │   └── AudioRecorder.swift
+│   ├── Transcription/
+│   │   ├── TranscriptionManager.swift
+│   │   ├── DictationPipeline.swift
+│   │   └── TranscriptionPostProcessor.swift
 │   ├── Services/
-│   │   ├── AppUpdateLogic.swift
-│   │   ├── AppUpdateService.swift
+│   │   ├── Whisper/
+│   │   │   └── WhisperService.swift
 │   │   ├── Paste/
-│   │   │   ├── PasteAXInspector.swift
-│   │   │   ├── PasteAccessibilityInjector.swift
-│   │   │   ├── PasteAXLiveSession.swift
-│   │   │   ├── PasteClipboardSnapshot.swift
-│   │   │   ├── PasteFailureRecoveryCoordinator.swift
-│   │   │   ├── PasteMenuFallbackExecutor.swift
-│   │   │   ├── PasteMenuFallbackCoordinator.swift
-│   │   │   ├── PasteMenuScanner.swift
-│   │   │   ├── PasteModels.swift
-│   │   │   ├── PastePolicies.swift
-│   │   │   ├── PasteService.swift
-│   │   │   └── PasteSpacingHeuristics.swift
-│   │   ├── UpdatePromptPresenting.swift
-│   │   ├── UpdateFeedConfig.swift
-│   │   └── Whisper/
-│   │       ├── WhisperAudioParagraphChunker.swift
-│   │       ├── WhisperService.swift
-│   │       ├── WhisperService+ModelLifecycle.swift
-│   │       └── WhisperService+TranscriptionCore.swift
+│   │   │   └── PasteService.swift
+│   │   └── AppUpdateService.swift
 │   ├── Language/
 │   │   ├── Dictionary/
-│   │   │   ├── Email/
-│   │   │   │   ├── DictionaryEmailEntry.swift
-│   │   │   │   ├── DictionaryMatcher+EmailDomainResolution.swift
-│   │   │   │   ├── DictionaryMatcher+EmailNormalization.swift
-│   │   │   │   ├── DictionaryMatcher+EmailParsing.swift
-│   │   │   │   └── DictionaryMatcher+EmailResolution.swift
-│   │   │   ├── Evaluation/
-│   │   │   │   ├── DictionaryMatcher+MergedTokenEvaluation.swift
-│   │   │   │   ├── DictionaryMatcher+StandardEvaluation.swift
-│   │   │   │   ├── DictionaryMatcher+ThreeTokenEvaluation.swift
-│   │   │   │   ├── Helpers/
-│   │   │   │   │   ├── DictionaryMatcher+EvaluationEvidenceHelpers.swift
-│   │   │   │   │   ├── DictionaryMatcher+EvaluationStylizedHelpers.swift
-│   │   │   │   │   └── DictionaryMatcher+EvaluationSuffixHelpers.swift
-│   │   │   │   └── SplitJoin/
-│   │   │   │       ├── DictionaryMatcher+SplitJoinForms.swift
-│   │   │   │       ├── DictionaryMatcher+SplitJoinGuards.swift
-│   │   │   │       └── DictionaryMatcher+SplitJoinScoring.swift
-│   │   │   ├── DictionaryEntry.swift
 │   │   │   ├── DictionaryMatcher.swift
-│   │   │   ├── DictionaryMatcher+Models.swift
-│   │   │   ├── DictionaryMatcher+OverlapResolver.swift
-│   │   │   ├── DictionaryMatcher+Tokenizer.swift
-│   │   │   ├── DictionaryStore.swift
-│   │   │   └── DictionaryTextNormalization.swift
-│   │   ├── PhoneticEncoder.swift
+│   │   │   └── DictionaryStore.swift
 │   │   ├── PronunciationLexicon.swift
-│   │   └── ReplacementScorer.swift
+│   │   └── PhoneticEncoder.swift
 │   ├── Lists/
-│   │   ├── ListFormattingEngine.swift
-│   │   ├── ListFormattingTypes.swift
-│   │   ├── ListPatternDetector.swift
-│   │   ├── ListPatternMarker.swift
-│   │   ├── ListPatternMarkerParser.swift
-│   │   ├── ListPatternRunSelector.swift
-│   │   ├── ListPatternTrailingSplitter.swift
-│   │   └── ListRenderer.swift
-│   ├── Audio/
-│   │   ├── AudioCaptureClassification.swift
-│   │   ├── AudioRecorder+PostProcessing.swift
-│   │   ├── AudioRecorder+Session.swift
-│   │   ├── AudioRecorder+Streaming.swift
-│   │   ├── AudioRecorder+Thresholds.swift
-│   │   ├── AudioRecorder.swift
-│   │   ├── AudioSignalMetrics.swift
-│   │   └── AudioSilencePolicy.swift
-│   ├── AudioDeviceManager.swift
-│   ├── KeyboardMonitor.swift
-│   ├── ModelDownloader/
-│   │   ├── ModelDownloadTransport.swift
-│   │   ├── ModelDownloader+DownloadLifecycle.swift
-│   │   ├── ModelDownloader+Validation.swift
-│   │   └── ModelDownloader.swift
-│   ├── Overlay/
-│   │   ├── OverlayFlingPhysics.swift
-│   │   ├── OverlayManager.swift
-│   │   ├── OverlayMotionController.swift
-│   │   ├── OverlayPanel.swift
-│   │   ├── OverlayScreenPersistence.swift
-│   │   └── OverlayTypes.swift
-│   ├── Normalization/
-│   │   ├── EmailAddressNormalizer.swift
-│   │   ├── WebsiteNormalizer.swift
-│   │   ├── TimeExpressionNormalizer.swift
-│   │   ├── MathExpressionNormalizer.swift
-│   │   ├── WhitespaceNormalizer.swift
-│   │   ├── SentenceCapitalizationNormalizer.swift
-│   │   ├── ColonNormalizer.swift
-│   │   ├── TerminalPunctuationNormalizer.swift
-│   │   ├── LaughterNormalizer.swift
-│   │   ├── CharacterSpamNormalizer.swift
-│   │   └── AllCapsOverrideNormalizer.swift
-│   ├── Transcription/
-│   │   ├── DictationPipeline.swift
-│   │   ├── DictationPromptEchoGuard.swift
-│   │   ├── TranscriptionManager.swift
-│   │   └── TranscriptionPostProcessor.swift
+│   │   └── ListFormattingEngine.swift
+│   └── Overlay/
+│       └── OverlayManager.swift
 ├── Views/
-│   ├── Components/
-│   │   ├── ConfirmDeletePromptView.swift
-│   │   ├── KeyVoxLogo.swift
-│   │   ├── OnboardingMicrophonePickerView.swift
-│   │   └── UIComponents.swift
-│   ├── Settings/
-│   │   ├── DictionaryWordEditorView.swift
-│   │   ├── SettingsComponents.swift
-│   │   ├── SettingsView+Audio.swift
-│   │   ├── SettingsView+Dictionary.swift
-│   │   ├── SettingsView+DictionarySection.swift
-│   │   ├── SettingsView+General.swift
-│   │   ├── SettingsView+Legal.swift
-│   │   ├── SettingsView+ModelSection.swift
-│   │   ├── SettingsView+More.swift
-│   │   ├── SettingsView+Sidebar.swift
-│   │   └── SettingsView.swift
-│   ├── Warnings/
-│   │   ├── PasteFailureRecoveryOverlayView.swift
-│   │   ├── WarningKind.swift
-│   │   ├── WarningManager.swift
-│   │   └── WarningOverlayView.swift
-│   ├── OnboardingMicrophoneStepController.swift
+│   ├── StatusMenuView.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
-│   ├── StatusMenuView.swift
-│   └── UpdatePromptOverlay.swift
-├── Packages/
-│   └── KeyVoxWhisper/
-│       ├── Package.swift
-│       ├── README.md
-│       ├── Sources/KeyVoxWhisper/
-│           ├── Segment.swift
-│           ├── Whisper.swift
-│           ├── WhisperError.swift
-│           ├── WhisperLanguage.swift
-│           └── WhisperParams.swift
-│       └── Tests/KeyVoxWhisperTests/
-│           ├── WhisperCoreTests.swift
-│           └── WhisperParamsTests.swift
-├── KeyVoxTests/
-│   ├── Language/
-│   │   └── Dictionary/
-│   ├── App/
-│   ├── Core/
-│   ├── Fixtures/Updates/
-│   ├── Services/
-│   ├── TestSupport/
-│   ├── Lists/
-│   └── Views/
+│   ├── UpdatePromptOverlay.swift
+│   ├── Settings/
+│   └── Warnings/
 ├── Resources/
-│   ├── Assets.xcassets/
-│   ├── Pronunciation/
-│   │   ├── LICENSES.md
-│   │   ├── common-words-v1.txt
-│   │   ├── lexicon-v1.tsv
-│   │   └── sources.lock.json
-│   ├── KeyVox.entitlements
-│   ├── Kanit-Medium.ttf
-│   ├── Credits.rtf
-│   ├── logo.png
-│   └── keyvox.icon/
+├── Packages/KeyVoxWhisper/
 ├── Tools/
-│   ├── README.md
-│   ├── ExploreAX.swift
-│   ├── ExploreAXApps.swift
-│   ├── ExplorePasteSignal.sh
-│   ├── ObservePasteAXNotifications.swift
-│   ├── Quality/
-│   │   ├── check_core_coverage.sh
-│   │   └── coverage_summary.sh
-│   ├── UpdateFeed/
-│   │   ├── configure_local_feed.sh
-│   │   └── update-feed.override.example.json
-│   └── Pronunciation/
-│       ├── benchmarks/
-│       │   ├── coverage-corpus.txt
-│       │   ├── dictionary-entries.txt
-│       │   ├── evaluate/
-│       │   │   ├── EvaluateBenchmarkIO.swift
-│       │   │   ├── EvaluateBenchmarkRunner.swift
-│       │   │   └── EvaluateMatcherCore.swift
-│       │   ├── evaluate_matcher.swift
-│       │   ├── positive-cases.tsv
-│       │   ├── run_quality_gates.sh
-│       │   └── safety-cases.txt
-│       ├── build_lexicon.sh
-│       ├── train_g2p.sh
-│       └── verify_licenses.sh
-├── .github/workflows/
-│   └── tests.yml
-├── Docs/
-│   ├── CODEMAP.md
-│   └── ENGINEERING.md
-├── KeyVox.xcodeproj/
-├── LICENSE.md
-├── THIRD_PARTY_NOTICES.md
-├── README.md
-└── release_dmg_notarize.sh
+├── KeyVoxTests/
+└── Docs/
+    ├── CODEMAP.md
+    └── ENGINEERING.md
 ```
+
 
 ## Core Runtime Flow
 
@@ -284,9 +122,9 @@ KeyVox/
 - `Core/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
 - `Core/Transcription/DictationPromptEchoGuard.swift`
-  - Gates dictionary-hint prompt use for short/low-confidence captures to reduce prompt-echo hallucination behavior.
+  - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Core/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (dictionary, colon cleanup, list, laughter, spam/time/email/website cleanup, then delegated normalization passes).
+  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
 - `Core/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
 - `Core/Normalization/MathExpressionNormalizer.swift`
@@ -479,31 +317,31 @@ KeyVox/
 - `Core/Services/Paste/PasteService.swift`
   - Orchestrates paste pipeline (AX injection, menu fallback, recovery, clipboard restore).
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
-- `Core/Services/Paste/PasteFailureRecoveryCoordinator.swift`
+- `Core/Services/Paste/Clipboard/PasteFailureRecoveryCoordinator.swift`
   - Manages active paste-failure recovery session lifecycle, timers, and Command-V detection.
-- `Core/Services/Paste/PasteAXInspector.swift`
+- `Core/Services/Paste/Accessibility/PasteAXInspector.swift`
   - Shared AX inspection helpers used by spacing, injector, and fallback verification.
-- `Core/Services/Paste/PasteAccessibilityInjector.swift`
+- `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
-- `Core/Services/Paste/PasteMenuFallbackExecutor.swift`
+- `Core/Services/Paste/MenuFallback/PasteMenuFallbackExecutor.swift`
   - Orchestrates menu fallback execution and verification decisions.
   - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
-- `Core/Services/Paste/PasteMenuFallbackCoordinator.swift`
+- `Core/Services/Paste/MenuFallback/PasteMenuFallbackCoordinator.swift`
   - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
   - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
   - Binds live AX value-change verification to runtime frontmost PID (with captured target fallback).
-- `Core/Services/Paste/PasteMenuScanner.swift`
+- `Core/Services/Paste/MenuFallback/PasteMenuScanner.swift`
   - Encapsulates menu traversal/discovery for Paste and Undo menu items.
   - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.
-- `Core/Services/Paste/PasteAXLiveSession.swift`
+- `Core/Services/Paste/Accessibility/PasteAXLiveSession.swift`
   - Encapsulates AXObserver lifecycle used for live value-change verification during menu fallback.
-- `Core/Services/Paste/PasteClipboardSnapshot.swift`
+- `Core/Services/Paste/Clipboard/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
-- `Core/Services/Paste/PasteSpacingHeuristics.swift`
+- `Core/Services/Paste/Heuristics/PasteSpacingHeuristics.swift`
   - Smart leading separator logic and cross-dictation spacing heuristics.
-- `Core/Services/Paste/PastePolicies.swift`
+- `Core/Services/Paste/Pipeline/PastePolicies.swift`
   - Static policy helpers for list render mode and failure-recovery decisions.
-- `Core/Services/Paste/PasteModels.swift`
+- `Core/Services/Paste/Pipeline/PasteModels.swift`
   - Shared internal model/enums for paste pipeline collaborators.
 - `Core/Services/UpdateFeedConfig.swift`
   - Centralized update feed owner/repo defaults.
@@ -513,10 +351,10 @@ KeyVox/
 - `Core/Services/AppUpdateService.swift`
   - Fetches latest release metadata from GitHub Releases API.
   - Endpoint is composed from resolved update feed config.
-  - Maps `tag_name` to app version comparison and `body` to prompt message content.
+  - Maps `tag_name` to app version comparison and builds a summarized release-notes preview from the release body.
   - Prefers `.dmg` `browser_download_url`, then falls back to release `html_url`.
   - Supports timer-based checks and manual checks.
-  - Fails silently on network/decoding errors.
+  - Treats network/decoding failures as no-update for auto checks; manual checks surface an "Updates Temporarily Unavailable" prompt.
   - Triggers `UpdatePromptOverlay` through an injected prompt-presenting seam.
 - `Core/Services/UpdatePromptPresenting.swift`
   - Main-actor protocol seam used to test update prompt flow without UI window dependencies.
@@ -533,28 +371,28 @@ KeyVox/
 
 - `Views/StatusMenuView.swift`
   - Menu bar UI, status rendering, warning actions.
-  - Routes model-missing actions into the More tab where model controls now live.
+  - Routes model-missing actions to the More settings tab and triggers model download.
 - `Views/OnboardingView.swift`
   - First-run setup for permissions and model download.
-  - Accessibility step lowers onboarding z-order during system prompt flow and restores floating state on grant.
+  - Accessibility and microphone authorization hooks are delegated to `WindowManager` callbacks.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
 - `Views/Settings/SettingsView+Dictionary.swift`
   - Dictionary tab container and English-only support footer text.
 - `Views/Settings/SettingsView+DictionarySection.swift`
   - Dictionary management UI plus A-Z/Recently Added list sort toggle (hidden when no entries exist).
-  - Updated copy explicitly calls out email-address support.
+  - Dictionary description includes custom words, email addresses, and short phrases.
 - `Views/Settings/SettingsView+ModelSection.swift`
-  - Model install/remove row extracted for reuse in More tab.
+  - Model install/remove row UI (`ModelSettingsRow`).
 - `Views/Settings/SettingsView+More.swift`
-  - More tab now hosts both startup toggle and model installer controls.
+  - More tab includes Launch at Login and model installer controls.
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`
   - Owns warning panel lifecycle and paste-failure recovery panel presentation/update/dismiss.
   - Adds hover-aware auto-dismiss scheduling and animated slide/fade exit transitions.
 - `Views/Warnings/PasteFailureRecoveryOverlayView.swift`
-  - Lightweight interactive paste-failure recovery view with explicit `⌘ Cmd + V` guidance and indigo progress bar.
+  - Paste-failure recovery view with `⌘ Cmd + V` guidance and progress bar.
 - `Views/UpdatePromptOverlay.swift`
   - In-app update prompt UI.
 
