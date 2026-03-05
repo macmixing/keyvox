@@ -62,12 +62,17 @@ struct UpdatePromptOverlay: View {
                     .controlSize(.regular)
 
                 if let primaryButtonTitle = prompt.primaryButtonTitle {
-                    Button(primaryButtonTitle, action: onPrimaryAction)
-                        .buttonStyle(.borderedProminent)
-                        .tint(.indigo)
-                        .controlSize(.regular)
+                    Button(action: onPrimaryAction) {
+                        Text(primaryButtonTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.indigo)
+                    .controlSize(.regular)
                 }
             }
+            .environment(\.controlActiveState, .active)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .center)
         }
