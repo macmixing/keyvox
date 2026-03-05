@@ -55,6 +55,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please visit www.keyvox.app for updates.")
     }
 
+    func testLowercasesBareWebsiteWithLongTopLevelDomain() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Please visit KEYVOX.PHOTOGRAPHY for updates.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Please visit keyvox.photography for updates.")
+    }
+
     func testCollapsesSingleCharacterSpamRun() {
         let processor = TranscriptionPostProcessor()
         let spam = String(repeating: "j", count: 140)
