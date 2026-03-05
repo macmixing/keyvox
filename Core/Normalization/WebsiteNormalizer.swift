@@ -176,21 +176,29 @@ enum WebsiteNormalizer {
         guard location >= 0, location <= text.length else { return nil }
         var index = location
         while index < text.length {
-            guard let scalar = UnicodeScalar(text.character(at: index)) else { break }
-            if !CharacterSet.whitespacesAndNewlines.contains(scalar) {
+            let composedRange = text.rangeOfComposedCharacterSequence(at: index)
+            let cluster = text.substring(with: composedRange)
+            let isWhitespace = cluster.unicodeScalars.allSatisfy {
+                CharacterSet.whitespacesAndNewlines.contains($0)
+            }
+            if !isWhitespace {
                 break
             }
-            index += 1
+            index = composedRange.location + composedRange.length
         }
 
         guard index < text.length else { return nil }
         let start = index
         while index < text.length {
-            guard let scalar = UnicodeScalar(text.character(at: index)),
-                  !CharacterSet.whitespacesAndNewlines.contains(scalar) else {
+            let composedRange = text.rangeOfComposedCharacterSequence(at: index)
+            let cluster = text.substring(with: composedRange)
+            let isWhitespace = cluster.unicodeScalars.allSatisfy {
+                CharacterSet.whitespacesAndNewlines.contains($0)
+            }
+            if isWhitespace {
                 break
             }
-            index += 1
+            index = composedRange.location + composedRange.length
         }
 
         guard index > start else { return nil }
