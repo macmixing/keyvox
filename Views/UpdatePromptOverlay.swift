@@ -4,6 +4,8 @@ import AppKit
 private enum UpdatePromptLayout {
     static let width: CGFloat = 430
     static let height: CGFloat = 250
+    static let messageMinHeight: CGFloat = 42
+    static let messageMaxHeight: CGFloat = 84
 }
 
 struct UpdatePromptOverlay: View {
@@ -20,24 +22,39 @@ struct UpdatePromptOverlay: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            AnimatedWaveHeader()
+        VStack(alignment: .leading, spacing: 14) {
+            AnimatedWaveHeader {
+                if let versionBadgeTitle {
+                    StatusBadge(title: versionBadgeTitle, color: .indigo)
+                }
+            }
+            .padding(.horizontal, 8)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 Text(prompt.title)
                     .font(.custom("Kanit Medium", size: 19))
                     .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
                 Text(prompt.message)
                     .font(.custom("Kanit Medium", size: 12))
                     .foregroundColor(.secondary)
-                    .lineSpacing(2)
+                    .lineSpacing(0.5)
+                    .multilineTextAlignment(.center)
+                    .truncationMode(.tail)
+                    .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity)
+                .frame(
+                    minHeight: UpdatePromptLayout.messageMinHeight,
+                    maxHeight: UpdatePromptLayout.messageMaxHeight,
+                    alignment: .center
+                )
             }
+            .padding(.horizontal, 8)
 
-            if let versionBadgeTitle {
-                StatusBadge(title: versionBadgeTitle, color: .indigo)
-            }
+            Spacer(minLength: 0)
 
             HStack(spacing: 10) {
                 Button(prompt.dismissButtonTitle, action: onDismiss)
@@ -51,6 +68,8 @@ struct UpdatePromptOverlay: View {
                         .controlSize(.regular)
                 }
             }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(20)
         .frame(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)

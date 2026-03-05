@@ -45,6 +45,93 @@ final class AppUpdateServiceTests: XCTestCase {
         XCTAssertTrue(service.latestRemoteInfo?.version == "999.0.0")
     }
 
+    func testUpdatePromptUsesSummarySectionWhenPresent() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let body = """
+            Intro text that should not appear.
+
+            ## Summary
+            Faster startup time
+            Better paste reliability
+
+            ## Details
+            Full details follow here.
+            """
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: body,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertTrue(promptPresenter.prompts[0].message == "Faster startup time\nBetter paste reliability")
+    }
+
+    func testUpdatePromptFallsBackToShortPreviewWithoutSummary() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let body = """
+            Line 1
+            Line 2
+            Line 3
+            Line 4
+            Line 5 should be trimmed
+            """
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: body,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertTrue(promptPresenter.prompts[0].message == "Line 1\nLine 2\nLine 3\nLine 4…")
+    }
+
+    func testUpdatePromptStripsBasicMarkdownFormatting() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+
+        MockURLProtocol.handler = { _ in
+            let body = """
+            ## **KeyVox v1.0.0** - Initial Public Release
+            **Release date:** March 1, 2026
+            """
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: body,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertTrue(promptPresenter.prompts[0].message == "KeyVox v1.0.0 - Initial Public Release\nRelease date: March 1, 2026")
+    }
+
     func testManualCheckShowsUnavailablePromptWhenFetchFails() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
@@ -144,21 +231,19 @@ final class AppUpdateServiceTests: XCTestCase {
     }
 
     private func releaseData(tag: String, htmlURL: String, body: String, dmgURL: String? = nil) -> Data {
-        let assetsJSON: String
+        let assets: [[String: String]]
         if let dmgURL {
-            assetsJSON = "[{\"name\":\"KeyVox.dmg\",\"browser_download_url\":\"\(dmgURL)\"}]"
+            assets = [["name": "KeyVox.dmg", "browser_download_url": dmgURL]]
         } else {
-            assetsJSON = "[]"
+            assets = []
         }
 
-        let json = """
-        {
-          "tag_name": "\(tag)",
-          "body": "\(body)",
-          "html_url": "\(htmlURL)",
-          "assets": \(assetsJSON)
-        }
-        """
-        return Data(json.utf8)
+        let payload: [String: Any] = [
+            "tag_name": tag,
+            "body": body,
+            "html_url": htmlURL,
+            "assets": assets
+        ]
+        return try! JSONSerialization.data(withJSONObject: payload, options: [])
     }
 }
