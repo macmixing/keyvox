@@ -182,9 +182,17 @@ extension DictionaryMatcher {
             let candidateFirst = candidate.tokens[0]
             let candidateSecond = candidate.tokens[1]
             guard candidateSecond.count >= observedTail.count else { continue }
-            guard observedFirst == candidateFirst
-                || (observedFirst.count <= ThreeTokenEvaluationConstants.shortObservedFirstMaximumLength
-                    && !lexicon.isCommonWord(baseTokenForCommonWordGuard(observedFirst))) else { continue }
+            let hasShortAnchorMatch =
+                observedFirst.count >= 2
+                && candidateFirst.count >= 4
+                && observedFirst.first == candidateFirst.first
+                && observedFirst.last == candidateFirst.last
+            let allowsShortObservedFirstFallback =
+                observedFirst.count <= ThreeTokenEvaluationConstants.shortObservedFirstMaximumLength
+                && !lexicon.isCommonWord(baseTokenForCommonWordGuard(observedFirst))
+                && (candidateFirst.hasPrefix(observedFirst)
+                    || hasShortAnchorMatch)
+            guard observedFirst == candidateFirst || allowsShortObservedFirstFallback else { continue }
 
             let firstTextSimilarity = scorer.similarity(lhs: observedFirst, rhs: candidateFirst)
             let firstPhoneticSimilarity = scorer.similarity(
