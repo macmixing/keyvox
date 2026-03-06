@@ -84,6 +84,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Dom Esposito.")
     }
 
+    func testCompressedTailFallbackDoesNotRewriteUnrelatedThreeTokenSpan() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        let result = matcher.apply(to: "Do not respond to me.")
+        XCTAssertEqual(result.text, "Do not respond to me.")
+    }
+
     func testCorrectsStylizedSingleTokenNameNearMissWithRuntimeLexicon() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
