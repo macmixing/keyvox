@@ -6,7 +6,21 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
-## [1.0.0] - 2026-03-05
+## [1.0.1] - 2026-03-05
+
+### Changed
+
+- Replaced static TLD checks with shared domain heuristics in `WebsiteNormalizer`.
+- Delegated ambiguous domain/prose-dot disambiguation from `SentenceCapitalizationNormalizer` to `WebsiteNormalizer`.
+
+### Fixed
+
+- Preserved sentence-boundary capitalization when prose periods are not domain separators.
+- Made `WebsiteNormalizer.nextWord` composed-character safe to avoid surrogate-pair splitting.
+- Prevented compressed-tail 3-token dictionary fallback false positives that could rewrite unrelated prose spans (#24).
+- Added regression tests for long-TLD domain handling, sentence-boundary behavior, and compressed-tail dictionary matching.
+
+## [1.0.0] - 2026-03-04
 
 Initial public release of KeyVox.
 
