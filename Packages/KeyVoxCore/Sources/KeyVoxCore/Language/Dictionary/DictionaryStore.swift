@@ -238,7 +238,6 @@ public final class DictionaryStore: ObservableObject {
     }
 
     private func dedupeKey(for phrase: String) -> String {
-        normalizeInput(phrase)
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+        DictionaryTextNormalization.normalizedPhrase(normalizeInput(phrase))
     }
 }
