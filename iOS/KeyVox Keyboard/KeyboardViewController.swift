@@ -158,7 +158,11 @@ final class KeyboardViewController: UIInputViewController {
             return
         }
 
-        textDocumentProxy.insertText(cleanedText)
+        let insertionText = KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
+            to: cleanedText,
+            documentContextBeforeInput: textDocumentProxy.documentContextBeforeInput
+        )
+        textDocumentProxy.insertText(insertionText)
         keyboardState = .idle
     }
 

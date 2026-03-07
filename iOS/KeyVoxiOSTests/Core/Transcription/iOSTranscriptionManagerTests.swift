@@ -193,12 +193,14 @@ struct iOSTranscriptionManagerTests {
         }
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: dictionaryBase)
         let postProcessor = TranscriptionPostProcessor()
+        let keyboardBridge = KeyVoxKeyboardBridge()
         let manager = iOSTranscriptionManager(
             recorder: recorder,
             artifactWriter: writer,
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
+            keyboardBridge: keyboardBridge,
             modelPathProvider: { resolvedModelPath }
         )
 
@@ -287,6 +289,7 @@ private struct ManagerHarness {
 @MainActor
 private final class StubAudioRecorder: iOSAudioRecording {
     var isRecording = false
+    var isMonitoring = true
     var currentCaptureDeviceName = "iPhone Microphone"
     var lastCaptureWasAbsoluteSilence = false
     var lastCaptureHadActiveSignal = true
@@ -326,6 +329,10 @@ private final class StubAudioRecorder: iOSAudioRecording {
         lastCaptureDuration = stoppedCapture.captureDuration
         maxActiveSignalRunDuration = stoppedCapture.maxActiveSignalRunDuration
         return stoppedCapture
+    }
+
+    func ensureEngineRunning() throws {
+        isMonitoring = true
     }
 }
 
