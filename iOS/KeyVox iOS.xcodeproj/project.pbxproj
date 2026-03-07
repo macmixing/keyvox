@@ -1,0 +1,647 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
+		8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */; };
+		8E9E38912F5BF41900EAFA72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* ContentView.swift */; };
+		8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
+		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		8E9E38982F5BF57100EAFA72 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38972F5BF57100EAFA72 /* keyvox.icon */; };
+		8E9E38992F5BF57100EAFA72 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38972F5BF57100EAFA72 /* keyvox.icon */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8E9E38602F5BF1F200EAFA72 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E9E384A2F5BF1F000EAFA72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E9E38512F5BF1F000EAFA72;
+			remoteInfo = KeyVox;
+		};
+		8E9E386A2F5BF1F200EAFA72 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E9E384A2F5BF1F000EAFA72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E9E38512F5BF1F000EAFA72;
+			remoteInfo = KeyVox;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeyVox iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E9E38692F5BF1F200EAFA72 /* KeyVox iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E9E38862F5BF41900EAFA72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8E9E38872F5BF41900EAFA72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8E9E38882F5BF41900EAFA72 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVoxiOS.entitlements; sourceTree = "<group>"; };
+		8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiOSApp.swift; sourceTree = "<group>"; };
+		8E9E38972F5BF57100EAFA72 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8E9E38622F5BF1F200EAFA72 /* KeyVoxiOSTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyVoxiOSTests;
+			sourceTree = "<group>";
+		};
+		8E9E386C2F5BF1F200EAFA72 /* KeyVoxUIiOSTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KeyVoxUIiOSTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8E9E384F2F5BF1F000EAFA72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E385C2F5BF1F200EAFA72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E38662F5BF1F200EAFA72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8E9E38492F5BF1F000EAFA72 = {
+			isa = PBXGroup;
+			children = (
+				8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */,
+				8E9E38622F5BF1F200EAFA72 /* KeyVoxiOSTests */,
+				8E9E386C2F5BF1F200EAFA72 /* KeyVoxUIiOSTests */,
+				8E9E38532F5BF1F000EAFA72 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8E9E38532F5BF1F000EAFA72 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */,
+				8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */,
+				8E9E38692F5BF1F200EAFA72 /* KeyVox iOSUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38862F5BF41900EAFA72 /* Assets.xcassets */,
+				8E9E38872F5BF41900EAFA72 /* ContentView.swift */,
+				8E9E38882F5BF41900EAFA72 /* Info.plist */,
+				8E9E38972F5BF57100EAFA72 /* keyvox.icon */,
+				8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */,
+				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
+			);
+			path = "KeyVox iOS";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E9E38732F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOS" */;
+			buildPhases = (
+				8E9E384E2F5BF1F000EAFA72 /* Sources */,
+				8E9E384F2F5BF1F000EAFA72 /* Frameworks */,
+				8E9E38502F5BF1F000EAFA72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "KeyVox iOS";
+			packageProductDependencies = (
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
+			);
+			productName = KeyVox;
+			productReference = 8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E9E38762F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOSTests" */;
+			buildPhases = (
+				8E9E385B2F5BF1F200EAFA72 /* Sources */,
+				8E9E385C2F5BF1F200EAFA72 /* Frameworks */,
+				8E9E385D2F5BF1F200EAFA72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8E9E38612F5BF1F200EAFA72 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8E9E38622F5BF1F200EAFA72 /* KeyVoxiOSTests */,
+			);
+			name = "KeyVox iOSTests";
+			packageProductDependencies = (
+			);
+			productName = KeyVoxTests;
+			productReference = 8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		8E9E38682F5BF1F200EAFA72 /* KeyVox iOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E9E38792F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOSUITests" */;
+			buildPhases = (
+				8E9E38652F5BF1F200EAFA72 /* Sources */,
+				8E9E38662F5BF1F200EAFA72 /* Frameworks */,
+				8E9E38672F5BF1F200EAFA72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8E9E386B2F5BF1F200EAFA72 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8E9E386C2F5BF1F200EAFA72 /* KeyVoxUIiOSTests */,
+			);
+			name = "KeyVox iOSUITests";
+			packageProductDependencies = (
+			);
+			productName = KeyVoxUITests;
+			productReference = 8E9E38692F5BF1F200EAFA72 /* KeyVox iOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8E9E384A2F5BF1F000EAFA72 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					8E9E38512F5BF1F000EAFA72 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					8E9E385E2F5BF1F200EAFA72 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 8E9E38512F5BF1F000EAFA72;
+					};
+					8E9E38682F5BF1F200EAFA72 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 8E9E38512F5BF1F000EAFA72;
+					};
+				};
+			};
+			buildConfigurationList = 8E9E384D2F5BF1F000EAFA72 /* Build configuration list for PBXProject "KeyVox iOS" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8E9E38492F5BF1F000EAFA72;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8E9E38532F5BF1F000EAFA72 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */,
+				8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */,
+				8E9E38682F5BF1F200EAFA72 /* KeyVox iOSUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8E9E38502F5BF1F000EAFA72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */,
+				8E9E38992F5BF57100EAFA72 /* keyvox.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E385D2F5BF1F200EAFA72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */,
+				8E9E38982F5BF57100EAFA72 /* keyvox.icon in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E38672F5BF1F200EAFA72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8E9E384E2F5BF1F000EAFA72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
+				8E9E38912F5BF41900EAFA72 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E385B2F5BF1F200EAFA72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E9E38652F5BF1F200EAFA72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8E9E38612F5BF1F200EAFA72 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */;
+			targetProxy = 8E9E38602F5BF1F200EAFA72 /* PBXContainerItemProxy */;
+		};
+		8E9E386B2F5BF1F200EAFA72 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */;
+			targetProxy = 8E9E386A2F5BF1F200EAFA72 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		8E9E38712F5BF1F200EAFA72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8E9E38722F5BF1F200EAFA72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8E9E38742F5BF1F200EAFA72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = keyvox;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		8E9E38752F5BF1F200EAFA72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = keyvox;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		8E9E38772F5BF1F200EAFA72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyVox iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyVox iOS";
+			};
+			name = Debug;
+		};
+		8E9E38782F5BF1F200EAFA72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyVox iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyVox iOS";
+			};
+			name = Release;
+		};
+		8E9E387A2F5BF1F200EAFA72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "KeyVox iOS";
+			};
+			name = Debug;
+		};
+		8E9E387B2F5BF1F200EAFA72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "KeyVox iOS";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8E9E384D2F5BF1F000EAFA72 /* Build configuration list for PBXProject "KeyVox iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E9E38712F5BF1F200EAFA72 /* Debug */,
+				8E9E38722F5BF1F200EAFA72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E9E38732F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E9E38742F5BF1F200EAFA72 /* Debug */,
+				8E9E38752F5BF1F200EAFA72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E9E38762F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E9E38772F5BF1F200EAFA72 /* Debug */,
+				8E9E38782F5BF1F200EAFA72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E9E38792F5BF1F200EAFA72 /* Build configuration list for PBXNativeTarget "KeyVox iOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E9E387A2F5BF1F200EAFA72 /* Debug */,
+				8E9E387B2F5BF1F200EAFA72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8E9E38952F5BF56600EAFA72 /* KeyVoxCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KeyVoxCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8E9E384A2F5BF1F000EAFA72 /* Project object */;
+}

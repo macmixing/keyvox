@@ -5,6 +5,7 @@ let package = Package(
     name: "KeyVoxWhisper",
     platforms: [
         .macOS(.v13),
+        .iOS("18.0"),
     ],
     products: [
         .library(
