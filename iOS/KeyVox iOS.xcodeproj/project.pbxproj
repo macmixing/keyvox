@@ -38,6 +38,9 @@
 		9A7000132FA6000100AA0001 /* iOSModelDownloadURLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */; };
 		9A7000142FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */; };
 		9A7000152FA6000100AA0001 /* iOSModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */; };
+		9A7000162FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */; };
+		9A7000172FA6000100AA0001 /* iOSModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */; };
+		9A7000182FA6000100AA0001 /* iOSModelManager+Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +105,9 @@
 		9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadURLs.swift; sourceTree = "<group>"; };
 		9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadBackgroundTasks.swift; sourceTree = "<group>"; };
 		9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallManifest.swift; sourceTree = "<group>"; };
+		9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
+		9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Validation.swift"; sourceTree = "<group>"; };
+		9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Support.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -195,11 +201,7 @@
 			isa = PBXGroup;
 			children = (
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
-				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
-				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
-				9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */,
-				9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */,
-				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
+				9A7001092FA6000100AA0001 /* ModelDownloader */,
 				8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */,
 				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
 				8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */,
@@ -208,6 +210,21 @@
 				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		9A7001092FA6000100AA0001 /* ModelDownloader */ = {
+			isa = PBXGroup;
+			children = (
+				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
+				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
+				9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */,
+				9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */,
+				9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */,
+				9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */,
+				9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */,
+				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
+			);
+			path = ModelDownloader;
 			sourceTree = "<group>";
 		};
 		8E9E389B2F5C000000EAFA72 /* Core */ = {
@@ -415,6 +432,9 @@
 				9A7000132FA6000100AA0001 /* iOSModelDownloadURLs.swift in Sources */,
 				9A7000142FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift in Sources */,
 				9A7000152FA6000100AA0001 /* iOSModelInstallManifest.swift in Sources */,
+				9A7000162FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift in Sources */,
+				9A7000172FA6000100AA0001 /* iOSModelManager+Validation.swift in Sources */,
+				9A7000182FA6000100AA0001 /* iOSModelManager+Support.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
