@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */; };
-		8E9E38912F5BF41900EAFA72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* ContentView.swift */; };
+		8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* AppRootView.swift */; };
 		8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		8E9E38982F5BF57100EAFA72 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38972F5BF57100EAFA72 /* keyvox.icon */; };
@@ -38,7 +38,7 @@
 		8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E38692F5BF1F200EAFA72 /* KeyVox iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E38862F5BF41900EAFA72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		8E9E38872F5BF41900EAFA72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8E9E38872F5BF41900EAFA72 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		8E9E38882F5BF41900EAFA72 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVoxiOS.entitlements; sourceTree = "<group>"; };
 		8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiOSApp.swift; sourceTree = "<group>"; };
@@ -104,15 +104,39 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		8E9E389A2F5C000000EAFA72 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		8E9E389B2F5C000000EAFA72 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		8E9E389C2F5C000000EAFA72 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */ = {
 			isa = PBXGroup;
 			children = (
+				8E9E389A2F5C000000EAFA72 /* App */,
+				8E9E389B2F5C000000EAFA72 /* Core */,
+				8E9E389C2F5C000000EAFA72 /* Views */,
 				8E9E38862F5BF41900EAFA72 /* Assets.xcassets */,
-				8E9E38872F5BF41900EAFA72 /* ContentView.swift */,
 				8E9E38882F5BF41900EAFA72 /* Info.plist */,
 				8E9E38972F5BF57100EAFA72 /* keyvox.icon */,
 				8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */,
-				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
 			);
 			path = "KeyVox iOS";
 			sourceTree = "<group>";
@@ -267,7 +291,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
-				8E9E38912F5BF41900EAFA72 /* ContentView.swift in Sources */,
+				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
