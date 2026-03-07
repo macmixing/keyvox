@@ -130,4 +130,31 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("1. First item"))
         XCTAssertTrue(output.contains("2. Second item"))
     }
+
+    func testDoesNotFormatQuantifiedChoiceSentenceAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "It's only one of those two choices and you're not allowed to have it.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "It's only one of those two choices and you're not allowed to have it.")
+    }
+
+    func testSplitsShortNominalListItemFromTrailingCommentary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "It's either going to be one a dresser two a chair, and honestly I don't think you're going to pick wrong",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "It's either going to be:\n\n1. A dresser\n2. A chair\n\nAnd honestly I don't think you're going to pick wrong"
+        )
+    }
 }
