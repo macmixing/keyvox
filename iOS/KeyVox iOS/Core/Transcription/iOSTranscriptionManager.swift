@@ -108,6 +108,11 @@ final class iOSTranscriptionManager: ObservableObject {
     func performStopRecordingCommand() async {
         guard state == .recording else { return }
         state = .processingCapture
+        let startTime = Date()
+
+        #if DEBUG
+        print("--- Speed Profile Start ---")
+        #endif
 
         let stoppedCapture = await recorder.stopRecording()
         let request = Phase2CaptureWriteRequest(
@@ -168,6 +173,9 @@ final class iOSTranscriptionManager: ObservableObject {
                 guard let self else { return }
 
                 let finalText = self.pendingPipelineOutputText ?? result.finalText
+                #if DEBUG
+                print("2. Whisper inference: \(String(format: "%.3f", result.inferenceDuration))s")
+                #endif
                 self.lastTranscriptionSnapshot = iOSTranscriptionDebugSnapshot(
                     rawText: result.rawText,
                     finalText: finalText,
@@ -183,8 +191,20 @@ final class iOSTranscriptionManager: ObservableObject {
                 self.state = .idle
 
                 if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    #if DEBUG
+                    print("3. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+                    let totalTime = Date().timeIntervalSince(startTime)
+                    print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
+                    print("--- Speed Profile End ---")
+                    #endif
                     self.keyboardBridge.publishNoSpeech()
                 } else {
+                    #if DEBUG
+                    print("3. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+                    let totalTime = Date().timeIntervalSince(startTime)
+                    print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
+                    print("--- Speed Profile End ---")
+                    #endif
                     self.keyboardBridge.publishTranscriptionReady(finalText)
                 }
             }

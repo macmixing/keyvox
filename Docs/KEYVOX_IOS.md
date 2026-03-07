@@ -755,235 +755,246 @@ Phase 4 begins from a working containing-app transcription path rather than a re
 
 ## Phase 4 — Keyboard Extension
 
-### 4.1 Create `KeyboardViewController`
+Phase 4 is complete.
 
-```swift
-// KeyVoxKeyboard/KeyboardViewController.swift
-import UIKit
-import KeyVoxCore
+This phase implemented the permanent keyboard extension shell and the lasting minimal keyboard UI needed to drive the dictation workflow without introducing throwaway extension scaffolding.
 
-class KeyboardViewController: UIInputViewController {
-    private let ipcManager = AppExtensionIPCManager()
-    private var micButton: UIButton!
-    private var isRecording = false
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        setupIPCListeners()
-    }
-    
-    private func setupUI() {
-        // Create mic button with KeyVox 5-bar identity
-        micButton = UIButton(type: .system)
-        micButton.setImage(UIImage(systemName: "mic"), for: .normal)
-        micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
-        
-        // Layout with Auto Layout
-        view.addSubview(micButton)
-        micButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            micButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            micButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            micButton.widthAnchor.constraint(equalToConstant: 60),
-            micButton.heightAnchor.constraint(equalToConstant: 60)
-        ])
-    }
-    
-    @objc private func micTapped() {
-        if isRecording {
-            ipcManager.sendStopCommand()
-            isRecording = false
-            updateUI(recording: false)
-        } else {
-            // Open containing app or signal it
-            ipcManager.sendStartCommand()
-            isRecording = true
-            updateUI(recording: true)
-        }
-    }
-    
-    private func setupIPCListeners() {
-        ipcManager.onTranscriptionReady = { [weak self] text in
-            guard let self else { return }
-            // Insert text at cursor via UITextDocumentProxy
-            self.textDocumentProxy.insertText(text)
-            self.isRecording = false
-            self.updateUI(recording: false)
-        }
-        
-        ipcManager.onNoSpeech = { [weak self] in
-            self?.isRecording = false
-            self?.updateUI(recording: false)
-        }
-    }
-    
-    private func updateUI(recording: Bool) {
-        let imageName = recording ? "mic.fill" : "mic"
-        micButton.setImage(UIImage(systemName: imageName), for: .normal)
-        micButton.tintColor = recording ? .systemRed : .systemBlue
-    }
-}
-```
+### 4.1 Permanent extension files now in the repo
 
-> [!IMPORTANT]
-> `textDocumentProxy.insertText(text)` is the iOS equivalent of the entire macOS `PasteService`. One method call. No AX injection, no menu fallback, no clipboard snapshot/restore. This is a massive simplification.
+The extension target now has the real permanent file layout:
 
-### 4.2 Configure Info.plist for Keyboard Extension
+- `iOS/KeyVox Keyboard/KeyboardViewController.swift`
+- `iOS/KeyVox Keyboard/KeyboardIPCManager.swift`
+- `iOS/KeyVox Keyboard/KeyboardState.swift`
+- `iOS/KeyVox Keyboard/KeyboardRootView.swift`
+- `iOS/KeyVox Keyboard/KeyboardStyle.swift`
+- `iOS/KeyVox Keyboard/KeyboardInsertionSpacingHeuristics.swift`
+- `iOS/KeyVox Keyboard/Info.plist`
+- `iOS/KeyVox Keyboard/KeyVoxKeyboard.entitlements`
 
-```xml
-<key>NSExtension</key>
-<dict>
-    <key>NSExtensionAttributes</key>
-    <dict>
-        <key>IsASCIICapable</key>
-        <false/>
-        <key>PrefersRightToLeft</key>
-        <false/>
-        <key>PrimaryLanguage</key>
-        <string>en-US</string>
-        <key>RequestsOpenAccess</key>
-        <true/>  <!-- Required for App Group access -->
-    </dict>
-    <key>NSExtensionPointIdentifier</key>
-    <string>com.apple.keyboard-service</string>
-    <key>NSExtensionPrincipalClass</key>
-    <string>$(PRODUCT_MODULE_NAME).KeyboardViewController</string>
-</dict>
-```
+### 4.2 What the extension now does
 
-> [!WARNING]
-> `RequestsOpenAccess` must be `true` for the extension to read from the App Group container. The user must enable "Allow Full Access" in Settings → Keyboards. The onboarding flow must guide them through this step.
+The Xcode starter keyboard scaffold was replaced with a real `KeyboardViewController`.
+
+The extension now owns:
+
+- a real extension state machine:
+  - `.idle`
+  - `.waitingForApp`
+  - `.recording`
+  - `.transcribing`
+- a permanent minimal shell:
+  - globe button
+  - status label
+  - mic / stop button
+- insertion through `textDocumentProxy.insertText(...)`
+- keyboard-side spacing heuristics before insertion, so consecutive dictation segments do not run together on iOS
+
+The keyboard UI remains intentionally minimal and durable:
+
+- it is real production plumbing
+- it is not final keyboard design
+- it is not throwaway debug scaffolding
+
+### 4.3 Open Access and extension configuration status
+
+The extension target now has:
+
+- `RequestsOpenAccess = true`
+- App Group entitlements configured for:
+  - `group.com.cueit.keyvox`
+- the permanent keyboard extension entry point wired through `KeyboardViewController`
+
+This means the extension can now:
+
+- read and write shared App Group state
+- receive Darwin notifications
+- participate in the app-owned recording / transcription pipeline
+
+### 4.4 Keyboard start / stop behavior now implemented
+
+The extension now behaves like this:
+
+#### Cold session
+
+- user taps the mic from `.idle`
+- keyboard enters `.waitingForApp`
+- keyboard opens the containing app with:
+  - `keyvoxios://record/start`
+- containing app starts the session and publishes `recordingStarted`
+- keyboard transitions to `.recording`
+
+#### Warm session
+
+- user taps the mic from `.idle`
+- keyboard first sends the start command through shared IPC
+- if the app acknowledges quickly, the keyboard stays in the host app
+- if the app does not acknowledge quickly enough, the keyboard falls back to foregrounding the containing app
+
+#### Stop
+
+- user taps the mic while `.recording`
+- keyboard enters `.transcribing`
+- keyboard sends the stop command without foregrounding the containing app again
+- the containing app transcribes and publishes either:
+  - `transcriptionReady`
+  - `noSpeech`
+- the keyboard then returns to `.idle`
+
+### 4.5 Text insertion path now implemented
+
+Returned transcription is now inserted through `textDocumentProxy.insertText(...)` in the keyboard extension.
+
+That insertion path is now responsible for:
+
+- trimming accidental trailing newlines
+- adding a smart leading separator when the host field context indicates the next dictation would otherwise run into the previous insertion
+
+This keeps iOS insertion behavior separate from `KeyVoxCore` post-processing, which is the correct layering.
+
+### 4.6 Phase 4 acceptance status
+
+Phase 4 is considered done because all of the following are now true:
+
+1. The `KeyVox Keyboard` target uses a real permanent controller instead of the Xcode starter scaffold.
+2. The extension has a lasting minimal shell:
+   - mic button
+   - globe button
+   - status label
+3. Open Access is enabled.
+4. The extension can start and stop dictation through the shared app-owned plumbing.
+5. The extension can receive:
+   - `recordingStarted`
+   - `transcriptionReady`
+   - `noSpeech`
+6. Returned text is inserted with `textDocumentProxy.insertText(...)`.
+7. The extension state machine works as a real part of the product architecture.
+8. No full keyboard design/polish work was mixed into this phase.
 
 ---
 
 ## Phase 5 — App ↔ Extension IPC
 
-### 5.1 Create `AppExtensionIPCManager`
+Phase 5 is complete.
 
-This handles bidirectional communication between the keyboard extension and the containing app.
+This phase is no longer theoretical. The codebase now has a working, app-owned IPC layer between the containing app and the keyboard extension.
 
-```swift
-// KeyVoxCore/IPC/AppExtensionIPCManager.swift
-import Foundation
+### 5.1 Permanent IPC files now in the repo
 
-class AppExtensionIPCManager {
-    private let appGroupID = "group.com.keyvox.shared"
-    
-    // Darwin notification names
-    private let startRecordingNotification = "com.keyvox.startRecording"
-    private let stopRecordingNotification = "com.keyvox.stopRecording"
-    private let recordingStartedNotification = "com.keyvox.recordingStarted"
-    private let transcriptionReadyNotification = "com.keyvox.transcriptionReady"
-    private let noSpeechNotification = "com.keyvox.noSpeech"
-    
-    // Shared UserDefaults keys
-    private let transcriptionKey = "latestTranscription"
-    private let stateKey = "recordingState"
-    
-    // Callbacks
-    var onStartRecording: (() -> Void)?
-    var onStopRecording: (() -> Void)?
-    var onTranscriptionReady: ((String) -> Void)?
-    var onNoSpeech: (() -> Void)?
-    
-    private var sharedDefaults: UserDefaults? {
-        UserDefaults(suiteName: appGroupID)
-    }
-    
-    init() {
-        registerDarwinObservers()
-    }
-    
-    // MARK: - Extension → App signals
-    func sendStartCommand() {
-        postDarwinNotification(startRecordingNotification)
-    }
-    
-    func sendStopCommand() {
-        postDarwinNotification(stopRecordingNotification)
-    }
-    
-    // MARK: - App → Extension signals
-    func notifyExtensionRecordingStarted() {
-        sharedDefaults?.set("recording", forKey: stateKey)
-        postDarwinNotification(recordingStartedNotification)
-    }
-    
-    func writeTranscription(_ text: String) {
-        sharedDefaults?.set(text, forKey: transcriptionKey)
-        sharedDefaults?.set("ready", forKey: stateKey)
-        postDarwinNotification(transcriptionReadyNotification)
-    }
-    
-    func notifyExtensionTranscriptionComplete() {
-        postDarwinNotification(transcriptionReadyNotification)
-    }
-    
-    func notifyExtensionNoSpeech() {
-        sharedDefaults?.set("idle", forKey: stateKey)
-        postDarwinNotification(noSpeechNotification)
-    }
-    
-    func readLatestTranscription() -> String? {
-        let text = sharedDefaults?.string(forKey: transcriptionKey)
-        // Clear after reading to prevent stale reuse
-        sharedDefaults?.removeObject(forKey: transcriptionKey)
-        return text
-    }
-    
-    // MARK: - Darwin Notification Helpers
-    private func postDarwinNotification(_ name: String) {
-        let center = CFNotificationCenterGetDarwinNotifyCenter()
-        CFNotificationCenterPostNotification(center, CFNotificationName(name as CFString), nil, nil, true)
-    }
-    
-    private func registerDarwinObservers() {
-        registerDarwinObserver(startRecordingNotification) { [weak self] in
-            self?.onStartRecording?()
-        }
-        registerDarwinObserver(stopRecordingNotification) { [weak self] in
-            self?.onStopRecording?()
-        }
-        registerDarwinObserver(transcriptionReadyNotification) { [weak self] in
-            guard let text = self?.readLatestTranscription(), !text.isEmpty else { return }
-            self?.onTranscriptionReady?(text)
-        }
-        registerDarwinObserver(noSpeechNotification) { [weak self] in
-            self?.onNoSpeech?()
-        }
-    }
-    
-    private func registerDarwinObserver(_ name: String, callback: @escaping () -> Void) {
-        // Use CFNotificationCenter with a callback bridge
-        // Implementation requires Objective-C bridging or a static callback with context
-    }
-}
-```
+The app / extension IPC implementation now lives in:
 
-### 5.2 Alternative: Shared File-Based IPC
+- `iOS/KeyVox iOS/App/KeyVoxIPCBridge.swift`
+- `iOS/KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
+- `iOS/KeyVox Keyboard/KeyboardIPCManager.swift`
 
-If Darwin notifications prove unreliable for your use case, use a shared file in the App Group container with polling:
+This IPC layer is iOS-local and intentionally does **not** live in `KeyVoxCore`.
 
-```swift
-// Write (app side)
-let data = text.data(using: .utf8)
-try data?.write(to: sharedContainerURL.appendingPathComponent("transcription.txt"))
+### 5.2 Shared contract now implemented
 
-// Read (extension side, poll every 100ms when waiting)
-let text = try String(contentsOf: sharedContainerURL.appendingPathComponent("transcription.txt"))
-textDocumentProxy.insertText(text)
-try FileManager.default.removeItem(at: sharedContainerURL.appendingPathComponent("transcription.txt"))
-```
+The App Group is now:
 
-> [!NOTE]
-> Darwin notifications are fire-and-forget with no payload. That's why the transcription text is written to shared `UserDefaults` and the notification just signals "go read it."
+- `group.com.cueit.keyvox`
+
+The shared keys currently include:
+
+- `recordingState`
+- `latestTranscription`
+- `session_timestamp`
+
+The Darwin notifications now in use are:
+
+- `com.cueit.keyvox.startRecording`
+- `com.cueit.keyvox.stopRecording`
+- `com.cueit.keyvox.recordingStarted`
+- `com.cueit.keyvox.transcriptionReady`
+- `com.cueit.keyvox.noSpeech`
+
+### 5.3 Current responsibilities by side
+
+#### Keyboard extension side
+
+`KeyboardIPCManager` now:
+
+- posts start / stop notifications
+- reads shared recording state
+- reads shared transcription payloads
+- receives app-side recording / transcription events
+- determines whether the session appears warm from the shared heartbeat timestamp
+
+#### Containing app side
+
+`KeyVoxKeyboardBridge` now:
+
+- listens for start / stop commands from the extension
+- forwards those commands into `iOSTranscriptionManager`
+- publishes:
+  - `recordingStarted`
+  - `transcribing`
+  - `transcriptionReady`
+  - `noSpeech`
+- updates the shared session heartbeat and recording state
+
+### 5.4 Current round-trip behavior
+
+The current Phase 5 round trip is now:
+
+1. Keyboard posts `startRecording`
+2. App receives the command and begins recording
+3. App publishes `recordingStarted`
+4. Keyboard enters `.recording`
+5. Keyboard posts `stopRecording`
+6. App transcribes in the containing app
+7. App writes `latestTranscription` and posts `transcriptionReady`
+8. Keyboard reads the text and inserts it
+
+If the app determines there was no usable speech:
+
+1. App clears the transcription payload
+2. App posts `noSpeech`
+3. Keyboard returns to `.idle` without insertion
+
+### 5.5 What was learned during implementation
+
+The original plan treated Phase 4 and Phase 5 as separate milestones, but in practice they were implemented together:
+
+- the keyboard shell needed the IPC layer to be usable
+- the IPC layer needed the keyboard shell to validate the round trip
+
+So for the current codebase, both phases should be treated as complete.
+
+### 5.6 Phase 5 acceptance status
+
+Phase 5 is considered done because all of the following are now true:
+
+1. The extension and containing app have a real shared App Group contract.
+2. Start / stop commands are signaled through Darwin notifications.
+3. Recording / transcription completion is signaled back to the extension.
+4. Transcription payloads are exchanged through shared App Group state.
+5. The keyboard can insert real transcription text returned from the app.
+6. Silence / no-speech paths return the keyboard to idle without insertion.
+7. The IPC layer is implemented as permanent iOS-local infrastructure, not as temporary glue.
 
 ---
 
 ## Phase 6 — Model Management
 
 ### 6.1 Adapt `ModelDownloader` for iOS
+
+Phase 6 is the next active milestone.
+
+The codebase already has:
+
+- a working App Group model path seam
+- manual real-device validation with a real `ggml-base.bin`
+- confirmed end-to-end transcription through the keyboard extension round trip
+
+What is **not** done yet is the real productized model-management flow:
+
+- download
+- install
+- repair / delete
+- CoreML companion asset install
+- background task handling
 
 The existing `ModelDownloader` is **90% reusable**. Changes needed:
 
