@@ -23,6 +23,7 @@ public final class DictionaryStore: ObservableObject {
     @Published public private(set) var entries: [DictionaryEntry] = []
     @Published public private(set) var loadWarningMessage: String?
     @Published public private(set) var saveErrorMessage: String?
+    @Published public private(set) var degradedDurability: Bool = false
 
     private struct DictionaryPayload: Codable {
         let version: Int
@@ -128,8 +129,13 @@ public final class DictionaryStore: ObservableObject {
         dictionaryDirectoryURL.appendingPathComponent("dictionary.backup.json")
     }
 
+    private var degradedDurabilityMarkerURL: URL {
+        dictionaryDirectoryURL.appendingPathComponent("dictionary.backup.degraded")
+    }
+
     private func loadFromDisk() {
         saveErrorMessage = nil
+        degradedDurability = fileManager.fileExists(atPath: degradedDurabilityMarkerURL.path)
 
         let hasPrimary = fileManager.fileExists(atPath: dictionaryFileURL.path)
         let hasBackup = fileManager.fileExists(atPath: backupFileURL.path)
@@ -137,6 +143,7 @@ public final class DictionaryStore: ObservableObject {
         guard hasPrimary || hasBackup else {
             entries = []
             loadWarningMessage = nil
+            clearDegradedDurabilityMarker()
             return
         }
 
@@ -185,14 +192,38 @@ public final class DictionaryStore: ObservableObject {
         try data.write(to: dictionaryFileURL, options: .atomic)
         do {
             try data.write(to: backupFileURL, options: .atomic)
+            clearDegradedDurabilityMarker()
         } catch {
-            #if DEBUG
-            print("[DictionaryStore] Failed to update backup dictionary file: \(error)")
-            #endif
+            markDegradedDurability()
         }
 
         saveErrorMessage = nil
         loadWarningMessage = nil
+    }
+
+    private func markDegradedDurability() {
+        degradedDurability = true
+        let marker = Data("backup-write-failed".utf8)
+        do {
+            try marker.write(to: degradedDurabilityMarkerURL, options: .atomic)
+        } catch {
+            #if DEBUG
+            print("[DictionaryStore] Failed to persist degraded durability marker: \(error)")
+            #endif
+        }
+    }
+
+    private func clearDegradedDurabilityMarker() {
+        degradedDurability = false
+
+        guard fileManager.fileExists(atPath: degradedDurabilityMarkerURL.path) else { return }
+        do {
+            try fileManager.removeItem(at: degradedDurabilityMarkerURL)
+        } catch {
+            #if DEBUG
+            print("[DictionaryStore] Failed to clear degraded durability marker: \(error)")
+            #endif
+        }
     }
 
     private func readPayload(from fileURL: URL) throws -> DictionaryPayload {

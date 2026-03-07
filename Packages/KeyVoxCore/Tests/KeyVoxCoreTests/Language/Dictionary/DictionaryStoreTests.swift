@@ -147,11 +147,26 @@ final class DictionaryStoreTests: XCTestCase {
 
             XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard"])
             XCTAssertNil(store.saveErrorMessage)
+            XCTAssertTrue(store.degradedDurability)
 
             let primary = dictionaryDir.appendingPathComponent("dictionary.json")
             let persisted = try String(contentsOf: primary, encoding: .utf8)
             XCTAssertTrue(persisted.contains("Cueboard"))
             XCTAssertTrue(FileManager.default.fileExists(atPath: backupPath.path))
+
+            let reloadedAfterBackupFailure = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            XCTAssertEqual(reloadedAfterBackupFailure.entries.map(\.phrase), ["Cueboard"])
+            XCTAssertTrue(reloadedAfterBackupFailure.degradedDurability)
+
+            try FileManager.default.removeItem(at: backupPath)
+            try store.add(phrase: "MiGo Platform")
+
+            XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
+            XCTAssertFalse(store.degradedDurability)
+
+            let reloadedAfterRepair = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            XCTAssertEqual(reloadedAfterRepair.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
+            XCTAssertFalse(reloadedAfterRepair.degradedDurability)
         }
     }
 
