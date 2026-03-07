@@ -1,7 +1,9 @@
 import Foundation
 
 public struct WhitespaceNormalizer {
-    func normalize(_ text: String, renderMode: ListRenderMode) -> String {
+    public init() {}
+
+    public func normalize(_ text: String, renderMode: ListRenderMode) -> String {
         switch renderMode {
         case .singleLineInline:
             return text

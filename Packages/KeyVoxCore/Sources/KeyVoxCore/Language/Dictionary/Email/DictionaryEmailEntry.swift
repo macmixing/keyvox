@@ -1,16 +1,16 @@
 import Foundation
 
 public struct DictionaryEmailEntry {
-    let canonical: String
-    let local: String
-    let domain: String
+    public let canonical: String
+    public let local: String
+    public let domain: String
 
     private static let literalRegex = try? NSRegularExpression(
         pattern: "^([A-Z0-9._%+\\-]+)@([A-Z0-9.\\-]+\\.[A-Z]{2,})$",
         options: [.caseInsensitive]
     )
 
-    static func fromPhrase(_ phrase: String) -> DictionaryEmailEntry? {
+    public static func fromPhrase(_ phrase: String) -> DictionaryEmailEntry? {
         let cleaned = sanitizeEmailCandidate(phrase)
         guard !cleaned.isEmpty, let regex = literalRegex else { return nil }
 

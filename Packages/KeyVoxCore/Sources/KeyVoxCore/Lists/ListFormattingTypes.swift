@@ -6,12 +6,23 @@ public enum ListRenderMode: Equatable {
 }
 
 public struct DetectedListItem {
-    let spokenIndex: Int
-    let content: String
+    public let spokenIndex: Int
+    public let content: String
+
+    public init(spokenIndex: Int, content: String) {
+        self.spokenIndex = spokenIndex
+        self.content = content
+    }
 }
 
 public struct DetectedList {
-    let leadingText: String
-    let items: [DetectedListItem]
-    let trailingText: String
+    public let leadingText: String
+    public let items: [DetectedListItem]
+    public let trailingText: String
+
+    public init(leadingText: String, items: [DetectedListItem], trailingText: String) {
+        self.leadingText = leadingText
+        self.items = items
+        self.trailingText = trailingText
+    }
 }

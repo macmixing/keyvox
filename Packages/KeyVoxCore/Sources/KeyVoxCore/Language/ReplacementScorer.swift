@@ -1,14 +1,14 @@
 import Foundation
 
 public struct ReplacementScore {
-    let text: Double
-    let phonetic: Double
-    let context: Double
-    let final: Double
+    public let text: Double
+    public let phonetic: Double
+    public let context: Double
+    public let final: Double
 }
 
 public struct ReplacementScorer {
-    static let balanced = ReplacementScorer(
+    public static let balanced = ReplacementScorer(
         textWeight: 0.50,
         phoneticWeight: 0.40,
         contextWeight: 0.10,
@@ -16,13 +16,27 @@ public struct ReplacementScorer {
         commonWordOverrideThreshold: 0.94
     )
 
-    let textWeight: Double
-    let phoneticWeight: Double
-    let contextWeight: Double
-    let ambiguityMargin: Double
-    let commonWordOverrideThreshold: Double
+    public let textWeight: Double
+    public let phoneticWeight: Double
+    public let contextWeight: Double
+    public let ambiguityMargin: Double
+    public let commonWordOverrideThreshold: Double
 
-    func threshold(for tokenCount: Int) -> Double {
+    public init(
+        textWeight: Double,
+        phoneticWeight: Double,
+        contextWeight: Double,
+        ambiguityMargin: Double,
+        commonWordOverrideThreshold: Double
+    ) {
+        self.textWeight = textWeight
+        self.phoneticWeight = phoneticWeight
+        self.contextWeight = contextWeight
+        self.ambiguityMargin = ambiguityMargin
+        self.commonWordOverrideThreshold = commonWordOverrideThreshold
+    }
+
+    public func threshold(for tokenCount: Int) -> Double {
         switch tokenCount {
         case 1:
             return 0.90
@@ -33,7 +47,7 @@ public struct ReplacementScorer {
         }
     }
 
-    func score(
+    public func score(
         observedText: String,
         observedPhonetic: String,
         candidateText: String,
@@ -71,7 +85,7 @@ public struct ReplacementScorer {
         return min(score, 1.0)
     }
 
-    func similarity(lhs: String, rhs: String) -> Double {
+    public func similarity(lhs: String, rhs: String) -> Double {
         guard !lhs.isEmpty && !rhs.isEmpty else { return 0 }
         if lhs == rhs { return 1 }
 

@@ -18,17 +18,6 @@ ALLOWLIST=(
   "/Core/Services/AppUpdateLogic.swift"
   "/Core/Services/UpdateFeedConfig.swift"
   "/Core/Services/AppUpdateService.swift"
-  "/Core/Language/Dictionary/DictionaryStore.swift"
-  "/Core/Language/Dictionary/DictionaryMatcher.swift"
-  "/Core/Language/ReplacementScorer.swift"
-  "/Core/Language/PhoneticEncoder.swift"
-  "/Core/Lists/ListPatternDetector.swift"
-  "/Core/Lists/ListPatternMarkerParser.swift"
-  "/Core/Lists/ListPatternRunSelector.swift"
-  "/Core/Lists/ListPatternTrailingSplitter.swift"
-  "/Core/Lists/ListRenderer.swift"
-  "/Core/Lists/ListFormattingEngine.swift"
-  "/Core/Transcription/TranscriptionPostProcessor.swift"
 )
 
 REPORT_FILE="$(mktemp)"
@@ -71,9 +60,9 @@ fi
 
 coverage="$(awk -v c="$total_covered" -v e="$total_executable" 'BEGIN { printf "%.2f", (c / e) * 100 }')"
 
-echo "Core coverage: ${coverage}% (threshold: ${THRESHOLD}%)"
+echo "App-owned core coverage: ${coverage}% (threshold: ${THRESHOLD}%)"
 
 if awk -v cov="$coverage" -v thr="$THRESHOLD" 'BEGIN { exit (cov + 0 < thr + 0 ? 0 : 1) }'; then
-  echo "error: core coverage ${coverage}% is below threshold ${THRESHOLD}%" >&2
+  echo "error: app-owned core coverage ${coverage}% is below threshold ${THRESHOLD}%" >&2
   exit 1
 fi

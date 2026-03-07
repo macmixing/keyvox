@@ -18,7 +18,7 @@ public enum EmailAddressNormalizer {
         options: []
     )
 
-    static func normalize(in input: String) -> String {
+    public static func normalize(in input: String) -> String {
         guard !input.isEmpty else { return input }
 
         var output = input

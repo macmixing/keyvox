@@ -40,7 +40,7 @@ public enum AudioPostProcessing {
         let minAvgSpeechRMSMultiplier: Float = 1.15
         let shortUtterancePeakBypass: Float = 0.02
 
-        let totalWindows = samples.count / windowSize
+        let totalWindows = (samples.count + windowSize - 1) / windowSize
         guard totalWindows > 0 else { return samples }
 
         var keepWindows = [Bool](repeating: false, count: totalWindows)
@@ -50,7 +50,9 @@ public enum AudioPostProcessing {
 
         for windowIndex in 0..<totalWindows {
             let start = windowIndex * windowSize
-            let end = start + windowSize
+            let end = min(start + windowSize, samples.count)
+            let frameCount = end - start
+            guard frameCount > 0 else { continue }
             let window = samples[start..<end]
 
             var sumSquares: Float = 0
@@ -61,7 +63,7 @@ public enum AudioPostProcessing {
                     peak = magnitude
                 }
             }
-            let rms = sqrt(sumSquares / Float(windowSize))
+            let rms = sqrt(sumSquares / Float(frameCount))
             if rms > threshold {
                 speechWindowCount += 1
                 speechRMSSum += rms
@@ -98,7 +100,7 @@ public enum AudioPostProcessing {
         for windowIndex in 0..<totalWindows {
             if keepWindows[windowIndex] {
                 let start = windowIndex * windowSize
-                let end = start + windowSize
+                let end = min(start + windowSize, samples.count)
                 processedSamples.append(contentsOf: samples[start..<end])
             }
         }

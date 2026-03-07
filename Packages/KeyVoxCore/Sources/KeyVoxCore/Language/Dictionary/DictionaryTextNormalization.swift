@@ -1,7 +1,7 @@
 import Foundation
 
 public enum DictionaryTextNormalization {
-    static func normalizedPhrase(_ input: String) -> String {
+    public static func normalizedPhrase(_ input: String) -> String {
         let folded = input
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
 
@@ -12,7 +12,7 @@ public enum DictionaryTextNormalization {
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
     }
 
-    static func normalizedToken(_ input: String) -> String {
+    public static func normalizedToken(_ input: String) -> String {
         let phrase = normalizedPhrase(input)
         return phrase.replacingOccurrences(of: " ", with: "")
     }

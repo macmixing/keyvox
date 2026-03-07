@@ -7,7 +7,9 @@ public struct ListPatternTrailingSplitter {
         let score: Int
     }
 
-    func splitLastItemAndTrailing(_ raw: String, languageCode: String?) -> (itemText: String, trailingText: String) {
+    public init() {}
+
+    public func splitLastItemAndTrailing(_ raw: String, languageCode: String?) -> (itemText: String, trailingText: String) {
         let paragraphToken = "__KVX_PARAGRAPH_BREAK__"
         let normalized = raw
             .replacingOccurrences(

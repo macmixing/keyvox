@@ -89,6 +89,23 @@ final class DictionaryStoreTests: XCTestCase {
             } catch let error as DictionaryStoreError {
                 XCTAssertTrue(error == .saveFailed)
             }
+            XCTAssertEqual(failingStore.entries.map(\.phrase), ["Dom Esposito"])
+
+            guard let existingID = failingStore.entries.first?.id else {
+                XCTFail("Expected persisted entry to remain loaded after failed save")
+                return
+            }
+
+            do {
+                try failingStore.update(id: existingID, phrase: "Cueboard")
+                XCTFail("Expected update save failure")
+            } catch let error as DictionaryStoreError {
+                XCTAssertTrue(error == .saveFailed)
+            }
+            XCTAssertEqual(failingStore.entries.map(\.phrase), ["Dom Esposito"])
+
+            failingStore.delete(id: existingID)
+            XCTAssertEqual(failingStore.entries.map(\.phrase), ["Dom Esposito"])
 
             let dictionaryFile = base
                 .appendingPathComponent("Dictionary", isDirectory: true)

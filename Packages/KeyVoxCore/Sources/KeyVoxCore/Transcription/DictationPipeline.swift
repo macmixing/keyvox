@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public protocol DictationTranscriptionProviding: AnyObject {
     var lastResultWasLikelyNoSpeech: Bool { get }
     func transcribe(

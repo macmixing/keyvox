@@ -143,7 +143,9 @@ public struct MathExpressionNormalizer {
         options: []
     )
 
-    func normalize(in text: String) -> String {
+    public init() {}
+
+    public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
         guard text.rangeOfCharacter(from: .decimalDigits) != nil else { return text }
 

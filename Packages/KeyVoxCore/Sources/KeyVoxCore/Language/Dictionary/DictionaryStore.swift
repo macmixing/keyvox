@@ -52,8 +52,10 @@ public final class DictionaryStore: ObservableObject {
             throw DictionaryStoreError.duplicatePhrase
         }
 
-        entries.append(DictionaryEntry(phrase: cleanedPhrase))
-        try persistAfterMutation()
+        var candidateEntries = entries
+        candidateEntries.append(DictionaryEntry(phrase: cleanedPhrase))
+        try persistAfterMutation(candidateEntries)
+        entries = candidateEntries
     }
 
     public func update(id: UUID, phrase: String) throws {
@@ -67,16 +69,20 @@ public final class DictionaryStore: ObservableObject {
             throw DictionaryStoreError.duplicatePhrase
         }
 
-        entries[index].phrase = cleanedPhrase
-        try persistAfterMutation()
+        var candidateEntries = entries
+        candidateEntries[index].phrase = cleanedPhrase
+        try persistAfterMutation(candidateEntries)
+        entries = candidateEntries
     }
 
     public func delete(id: UUID) {
         guard let index = entries.firstIndex(where: { $0.id == id }) else { return }
-        entries.remove(at: index)
+        var candidateEntries = entries
+        candidateEntries.remove(at: index)
 
         do {
-            try persistCurrentEntries()
+            try persist(entries: candidateEntries)
+            entries = candidateEntries
         } catch {
             saveErrorMessage = DictionaryStoreError.saveFailed.localizedDescription
         }
@@ -145,7 +151,7 @@ public final class DictionaryStore: ObservableObject {
             loadWarningMessage = "Dictionary was recovered from backup after a file issue."
 
             do {
-                try persistCurrentEntries()
+                try persist(entries: backupPayload.entries)
                 // Keep this warning visible until the user performs the next save action.
                 loadWarningMessage = "Dictionary was recovered from backup after a file issue."
             } catch {
@@ -161,19 +167,19 @@ public final class DictionaryStore: ObservableObject {
         loadWarningMessage = "Dictionary data was corrupted and reset."
     }
 
-    private func persistAfterMutation() throws {
+    private func persistAfterMutation(_ candidateEntries: [DictionaryEntry]) throws {
         do {
-            try persistCurrentEntries()
+            try persist(entries: candidateEntries)
         } catch {
             saveErrorMessage = DictionaryStoreError.saveFailed.localizedDescription
             throw DictionaryStoreError.saveFailed
         }
     }
 
-    private func persistCurrentEntries() throws {
+    private func persist(entries candidateEntries: [DictionaryEntry]) throws {
         try fileManager.createDirectory(at: dictionaryDirectoryURL, withIntermediateDirectories: true)
 
-        let payload = DictionaryPayload(version: 1, entries: entries)
+        let payload = DictionaryPayload(version: 1, entries: candidateEntries)
         let data = try encoder.encode(payload)
 
         try data.write(to: dictionaryFileURL, options: .atomic)

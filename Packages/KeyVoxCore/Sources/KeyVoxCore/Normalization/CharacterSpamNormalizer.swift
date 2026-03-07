@@ -6,7 +6,9 @@ public struct CharacterSpamNormalizer {
         options: []
     )
 
-    func normalize(in text: String) -> String {
+    public init() {}
+
+    public func normalize(in text: String) -> String {
         guard let regex = Self.repeatedCharacterSpamRegex, !text.isEmpty else { return text }
 
         let nsText = text as NSString

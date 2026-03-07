@@ -4,10 +4,12 @@ import XCTest
 @MainActor
 final class DictationPipelineTests: XCTestCase {
     func testPipelineProcessesAndPastesFormattedText() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
         let pipeline = DictationPipeline(
-            transcriptionProvider: StubTranscriptionProvider(
-                result: .init(text: "project notes one cue board two cue board", languageCode: "en")
-            ),
+            transcriptionProvider: provider,
             postProcessor: TranscriptionPostProcessor(),
             dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
             autoParagraphsEnabledProvider: { true },
@@ -19,13 +21,16 @@ final class DictationPipelineTests: XCTestCase {
 
         let result = await runPipeline(
             pipeline,
-            audioFrames: Array(repeating: 0.1, count: 128),
+            audioFrames: audioFrames,
             useDictionaryHintPrompt: true
         )
 
         XCTAssertEqual(result.rawText, "project notes one cue board two cue board")
         XCTAssertEqual(result.finalText, "Project notes:\n\n1. Cueboard\n2. Cueboard")
         XCTAssertFalse(result.wasLikelyNoSpeech)
+        XCTAssertEqual(provider.receivedAudioFrames, audioFrames)
+        XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, true)
+        XCTAssertEqual(provider.receivedEnableAutoParagraphs, true)
         XCTAssertEqual(recorded, ["Project notes:\n\n1. Cueboard\n2. Cueboard"])
         XCTAssertEqual(pasted, ["Project notes:\n\n1. Cueboard\n2. Cueboard"])
     }
@@ -35,6 +40,7 @@ final class DictationPipelineTests: XCTestCase {
             result: nil,
             lastResultWasLikelyNoSpeech: true
         )
+        let audioFrames = Array(repeating: Float(0.0), count: 32)
         let pipeline = DictationPipeline(
             transcriptionProvider: provider,
             postProcessor: TranscriptionPostProcessor(),
@@ -48,13 +54,16 @@ final class DictationPipelineTests: XCTestCase {
 
         let result = await runPipeline(
             pipeline,
-            audioFrames: Array(repeating: 0.0, count: 32),
+            audioFrames: audioFrames,
             useDictionaryHintPrompt: false
         )
 
         XCTAssertEqual(result.rawText, "")
         XCTAssertEqual(result.finalText, "")
         XCTAssertTrue(result.wasLikelyNoSpeech)
+        XCTAssertEqual(provider.receivedAudioFrames, audioFrames)
+        XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, false)
+        XCTAssertEqual(provider.receivedEnableAutoParagraphs, true)
     }
 
     private var recorded: [String] = []
@@ -79,9 +88,13 @@ final class DictationPipelineTests: XCTestCase {
     }
 }
 
+@MainActor
 private final class StubTranscriptionProvider: DictationTranscriptionProviding {
     let result: TranscriptionProviderResult?
     let lastResultWasLikelyNoSpeech: Bool
+    private(set) var receivedAudioFrames: [Float]?
+    private(set) var receivedUseDictionaryHintPrompt: Bool?
+    private(set) var receivedEnableAutoParagraphs: Bool?
 
     init(
         result: TranscriptionProviderResult?,
@@ -97,6 +110,9 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         enableAutoParagraphs: Bool,
         completion: @escaping (TranscriptionProviderResult?) -> Void
     ) {
+        receivedAudioFrames = audioFrames
+        receivedUseDictionaryHintPrompt = useDictionaryHintPrompt
+        receivedEnableAutoParagraphs = enableAutoParagraphs
         completion(result)
     }
 }

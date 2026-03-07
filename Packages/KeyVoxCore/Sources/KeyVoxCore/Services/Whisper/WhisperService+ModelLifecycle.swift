@@ -49,6 +49,10 @@ extension WhisperService {
     }
 
     private func getModelPath() -> String? {
-        resolvedModelPath()
+        guard let modelPath = resolvedModelPath(),
+              FileManager.default.fileExists(atPath: modelPath) else {
+            return nil
+        }
+        return modelPath
     }
 }

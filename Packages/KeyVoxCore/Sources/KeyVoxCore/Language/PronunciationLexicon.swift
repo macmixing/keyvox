@@ -8,7 +8,7 @@ public protocol PronunciationLexiconProviding: AnyObject {
 
 @MainActor
 public final class PronunciationLexicon: PronunciationLexiconProviding {
-    static let shared = PronunciationLexicon()
+    public static let shared = PronunciationLexicon()
 
     private(set) var pronunciationsByWord: [String: String] = [:]
     private(set) var commonWords: Set<String> = []

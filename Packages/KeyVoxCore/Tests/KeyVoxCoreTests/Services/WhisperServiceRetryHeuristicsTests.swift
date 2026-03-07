@@ -1,6 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
+@MainActor
 final class WhisperServiceRetryHeuristicsTests: XCTestCase {
     func testTreatsThreeWordResultAsSuspiciousForLongChunk() {
         let service = WhisperService()

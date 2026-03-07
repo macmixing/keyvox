@@ -1,7 +1,7 @@
 import Foundation
 
 public enum AudioSignalMetrics {
-    static func peak(of samples: [Float]) -> Float {
+    public static func peak(of samples: [Float]) -> Float {
         guard !samples.isEmpty else { return 0 }
 
         var peak: Float = 0
@@ -14,7 +14,7 @@ public enum AudioSignalMetrics {
         return peak
     }
 
-    static func rms(of samples: [Float]) -> Float {
+    public static func rms(of samples: [Float]) -> Float {
         guard !samples.isEmpty else { return 0 }
 
         var sumSquares: Float = 0
@@ -24,7 +24,7 @@ public enum AudioSignalMetrics {
         return sqrt(sumSquares / Float(samples.count))
     }
 
-    static func trueSilenceWindowRatio(
+    public static func trueSilenceWindowRatio(
         for samples: [Float],
         windowSize: Int,
         silenceThreshold: Float
@@ -50,7 +50,7 @@ public enum AudioSignalMetrics {
         return Float(silentWindows) / Float(totalWindows)
     }
 
-    static func windowRMSValues(
+    public static func windowRMSValues(
         for samples: [Float],
         windowSize: Int
     ) -> [Float] {
@@ -74,7 +74,7 @@ public enum AudioSignalMetrics {
         return values
     }
 
-    static func percentile(
+    public static func percentile(
         _ percentile: Float,
         of values: [Float]
     ) -> Float {
@@ -86,7 +86,7 @@ public enum AudioSignalMetrics {
         return sorted[min(max(index, 0), sorted.count - 1)]
     }
 
-    static func ambientFloorRMS(
+    public static func ambientFloorRMS(
         of samples: [Float],
         windowSize: Int,
         percentile floorPercentile: Float

@@ -43,9 +43,6 @@ public enum KeyVoxCoreResourceText {
                 forResource: fileName,
                 withExtension: fileExtension,
                 subdirectory: subdirectory
-            ) ?? Bundle.module.url(
-                forResource: fileName,
-                withExtension: fileExtension
             )
         }
 

@@ -89,7 +89,7 @@ Maintainers can override the update feed locally without changing tracked defaul
 - App tests:
   `xcodebuild -project KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO -resultBundlePath /tmp/keyvox-tests.xcresult test`
 - Package tests:
-  `swift test --package-path Packages/KeyVoxWhisper`
+  `swift test --package-path Packages/KeyVoxCore`
 - Core coverage gate:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 - Coverage markdown summary:

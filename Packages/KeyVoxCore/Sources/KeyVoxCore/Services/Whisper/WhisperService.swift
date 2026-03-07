@@ -2,12 +2,14 @@ import Foundation
 import KeyVoxWhisper
 import Combine
 
+@MainActor
 public class WhisperService: ObservableObject {
     @Published public internal(set) var isTranscribing = false
     @Published public internal(set) var transcriptionText = ""
     @Published public internal(set) var lastResultWasLikelyNoSpeech = false
 
     private let modelPathResolver: () -> String?
+    private var activeTranscriptionRequestID = UUID()
 
     var whisper: Whisper?
     var dictionaryHintPrompt = ""
@@ -33,6 +35,9 @@ public class WhisperService: ObservableObject {
     public func cancelTranscription() {
         transcriptionTask?.cancel()
         transcriptionTask = nil
+        activeTranscriptionRequestID = UUID()
+        isTranscribing = false
+        whisper?.params.initialPrompt = isPromptHintingEnabled ? dictionaryHintPrompt : ""
         #if DEBUG
         print("WhisperService: Transcription cancelled.")
         #endif
@@ -47,5 +52,84 @@ public class WhisperService: ObservableObject {
 
     func resolvedModelPath() -> String? {
         modelPathResolver()
+    }
+
+    func beginTranscriptionRequest() -> UUID {
+        let requestID = UUID()
+        activeTranscriptionRequestID = requestID
+        return requestID
+    }
+
+    func isCurrentRequest(_ requestID: UUID) -> Bool {
+        activeTranscriptionRequestID == requestID
+    }
+
+    func restoreDictionaryHintPromptIfNeeded(
+        requestID: UUID,
+        usedDictionaryHintPrompt: Bool
+    ) {
+        guard isCurrentRequest(requestID), !usedDictionaryHintPrompt else { return }
+        whisper?.params.initialPrompt = isPromptHintingEnabled ? dictionaryHintPrompt : ""
+    }
+
+    func finishCancelledRequest(
+        _ requestID: UUID,
+        usedDictionaryHintPrompt: Bool
+    ) {
+        guard isCurrentRequest(requestID) else { return }
+        transcriptionTask = nil
+        isTranscribing = false
+        restoreDictionaryHintPromptIfNeeded(
+            requestID: requestID,
+            usedDictionaryHintPrompt: usedDictionaryHintPrompt
+        )
+    }
+
+    func finishEmptyRequest(
+        _ requestID: UUID,
+        completion: @escaping (TranscriptionProviderResult?) -> Void
+    ) {
+        guard isCurrentRequest(requestID) else { return }
+        transcriptionTask = nil
+        isTranscribing = false
+        lastResultWasLikelyNoSpeech = true
+        transcriptionText = ""
+        completion(TranscriptionProviderResult(text: "", languageCode: nil))
+    }
+
+    func finishSuccessfulRequest(
+        _ requestID: UUID,
+        usedDictionaryHintPrompt: Bool,
+        finalText: String,
+        likelyNoSpeech: Bool,
+        detectedLanguageCode: String?,
+        completion: @escaping (TranscriptionProviderResult?) -> Void
+    ) {
+        guard isCurrentRequest(requestID) else { return }
+        transcriptionTask = nil
+        isTranscribing = false
+        restoreDictionaryHintPromptIfNeeded(
+            requestID: requestID,
+            usedDictionaryHintPrompt: usedDictionaryHintPrompt
+        )
+        lastResultWasLikelyNoSpeech = likelyNoSpeech
+        transcriptionText = finalText
+        completion(TranscriptionProviderResult(text: finalText, languageCode: detectedLanguageCode))
+    }
+
+    func finishFailedRequest(
+        _ requestID: UUID,
+        usedDictionaryHintPrompt: Bool,
+        completion: @escaping (TranscriptionProviderResult?) -> Void
+    ) {
+        guard isCurrentRequest(requestID) else { return }
+        transcriptionTask = nil
+        isTranscribing = false
+        restoreDictionaryHintPromptIfNeeded(
+            requestID: requestID,
+            usedDictionaryHintPrompt: usedDictionaryHintPrompt
+        )
+        lastResultWasLikelyNoSpeech = false
+        completion(nil)
     }
 }

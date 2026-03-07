@@ -1,7 +1,7 @@
 import Foundation
 
 public enum DictationPromptEchoGuard {
-    nonisolated static func shouldTreatAsNoSpeech(
+    public nonisolated static func shouldTreatAsNoSpeech(
         processedText: String,
         dictionaryEntries: [DictionaryEntry],
         usedDictionaryHintPrompt: Bool

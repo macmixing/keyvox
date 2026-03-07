@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ListPatternMarkerParser {
+struct ListPatternMarkerParser {
     private static let markerTokenPattern = #"(?:\d+|[\p{L}]+(?:-[\p{L}]+)?)"#
 
     private static let leadingMarkerRegex: NSRegularExpression = {

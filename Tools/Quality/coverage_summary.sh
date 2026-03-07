@@ -54,9 +54,9 @@ core_exec="$(echo "$core_stats" | awk '{print $3}')"
 echo "## Coverage Summary"
 echo
 echo "- Overall (\`KeyVox.app\`): **${overall_display}**"
-echo "- Core (\`/Core/*\` aggregate): **${core_pct}% (${core_cov}/${core_exec})**"
+echo "- App-owned core (\`/Core/*\` aggregate): **${core_pct}% (${core_cov}/${core_exec})**"
 echo
-echo "### Lowest-Coverage Core Files (>= 40 executable lines)"
+echo "### Lowest-Coverage App-Owned Core Files (>= 40 executable lines)"
 echo
 echo "| Coverage | Lines | File |"
 echo "|---:|---:|---|"

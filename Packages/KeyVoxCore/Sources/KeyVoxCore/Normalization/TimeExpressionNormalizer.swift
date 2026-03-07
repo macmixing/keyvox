@@ -1,7 +1,9 @@
 import Foundation
 
 public struct TimeExpressionNormalizer {
-    func normalize(in text: String) -> String {
+    public init() {}
+
+    public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
 
         let daypartPattern =

@@ -69,7 +69,9 @@ KeyVox/
 │   ├── Settings/
 │   └── Warnings/
 ├── Resources/
-├── Packages/KeyVoxWhisper/
+├── Packages/
+│   ├── KeyVoxCore/
+│   └── KeyVoxWhisper/
 ├── Tools/
 ├── KeyVoxTests/
 └── Docs/
@@ -261,7 +263,7 @@ KeyVox/
 - `Core/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
 - `Core/Language/PronunciationLexicon.swift`
-  - Loads bundled pronunciation signatures and curated common-word safety list from app resources.
+  - Loads bundled pronunciation signatures and curated common-word safety list from `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`.
 - `Core/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Core/Language/ReplacementScorer.swift`
@@ -289,9 +291,9 @@ KeyVox/
   - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
-  - Enforces row targets and writes `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/sources.lock.json`.
+  - Enforces row targets and writes package-owned outputs under `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`, including `sources.lock.json`.
 - `Tools/Pronunciation/train_g2p.sh`
-  - Build-time Phonetisaurus/OpenFst G2P generation for OOV pronunciation candidates.
+  - Build-time Phonetisaurus/OpenFst G2P generation for OOV pronunciation candidates used when regenerating package-owned pronunciation resources.
 - `Tools/Pronunciation/verify_licenses.sh`
   - Enforces allowed-source and attribution policy before distribution.
 - `Tools/Pronunciation/benchmarks/run_quality_gates.sh`
@@ -421,4 +423,6 @@ KeyVox/
 - Compatibility target: **macOS Ventura (13.5) and newer**
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
-- Package dependency: local `Packages/KeyVoxWhisper` wrapper over `whisper.cpp`
+- Local packages:
+  - `Packages/KeyVoxCore`: extracted shared engine, resources, and reusable tests
+  - `Packages/KeyVoxWhisper`: local `whisper.cpp` wrapper package

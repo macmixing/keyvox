@@ -29,7 +29,9 @@ public struct SentenceCapitalizationNormalizer {
         charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
     )
 
-    func normalizeSentenceStarts(in text: String) -> String {
+    public init() {}
+
+    public func normalizeSentenceStarts(in text: String) -> String {
         let textStartNormalized = capitalizeAtTextStart(text)
         let sentenceStartNormalized = capitalizeAfterSentenceBoundary(textStartNormalized)
         let lineBreakNormalized = capitalizeAfterLineBreak(sentenceStartNormalized)

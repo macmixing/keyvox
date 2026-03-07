@@ -9,24 +9,20 @@ extension WhisperService {
         enableAutoParagraphs: Bool = true,
         completion: @escaping (TranscriptionProviderResult?) -> Void
     ) {
-        // Hardening: ensure only one transcription runs at a time
+        let requestID = beginTranscriptionRequest()
         transcriptionTask?.cancel()
         transcriptionTask = nil
+
         guard !audioFrames.isEmpty else {
             #if DEBUG
             print("Skipping transcription: audio buffer is empty or silent.")
             #endif
-            DispatchQueue.main.async {
-                self.isTranscribing = false
-                self.lastResultWasLikelyNoSpeech = true
-                self.transcriptionText = ""
-                completion(TranscriptionProviderResult(text: "", languageCode: nil))
-            }
+            finishEmptyRequest(requestID, completion: completion)
             return
         }
 
-        self.isTranscribing = true
-        self.lastResultWasLikelyNoSpeech = false
+        isTranscribing = true
+        lastResultWasLikelyNoSpeech = false
 
         // Ensure model is loaded (if warmup wasn't called/finished)
         if whisper == nil {
@@ -45,18 +41,18 @@ extension WhisperService {
             #endif
         }
 
-        let restoreDictionaryHintPromptIfNeeded = { [weak self] in
-            guard let self, !shouldUseDictionaryHintPrompt else { return }
-            self.whisper?.params.initialPrompt = self.isPromptHintingEnabled ? self.dictionaryHintPrompt : ""
-        }
-
         #if DEBUG
         print("Transcribing \(audioFrames.count) raw frames...")
         #endif
 
-        transcriptionTask = Task {
+        let paragraphChunker = self.paragraphChunker
+        let noSpeechSegmentProbabilityThreshold = self.noSpeechSegmentProbabilityThreshold
+        let noSpeechAverageProbabilityThreshold = self.noSpeechAverageProbabilityThreshold
+
+        transcriptionTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                let chunkResult = self.paragraphChunker.split(audioFrames)
+                let chunkResult = paragraphChunker.split(audioFrames)
                 #if DEBUG
                 let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }
                 let chunkDurationsMs = chunkResult.chunkFrameLengths.map { Int((Double($0) / 16_000.0) * 1_000.0) }
@@ -78,10 +74,10 @@ extension WhisperService {
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
-                        DispatchQueue.main.async {
-                            self.isTranscribing = false
-                            restoreDictionaryHintPromptIfNeeded()
-                        }
+                        self.finishCancelledRequest(
+                            requestID,
+                            usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
+                        )
                         return
                     }
 
@@ -97,13 +93,13 @@ extension WhisperService {
                         detectedLanguageCode = result.detectedLanguageCode
                     }
                     #if DEBUG
-                    logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
+                    self.logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
                     #endif
                     transcribedSegments.append(contentsOf: segments)
                     let chunkText = segments
                         .map { $0.text }
                         .joined(separator: " ")
-                    let normalizedChunkText = normalizeWhitespace(chunkText)
+                    let normalizedChunkText = self.normalizeWhitespace(chunkText)
                     if !normalizedChunkText.isEmpty {
                         chunkTexts.append(normalizedChunkText)
                         nonEmptyChunkTextCount += 1
@@ -125,10 +121,10 @@ extension WhisperService {
 
                 // Check if task was cancelled before proceeding
                 if Task.isCancelled {
-                    DispatchQueue.main.async {
-                        self.isTranscribing = false
-                        restoreDictionaryHintPromptIfNeeded()
-                    }
+                    self.finishCancelledRequest(
+                        requestID,
+                        usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
+                    )
                     return
                 }
 
@@ -138,14 +134,14 @@ extension WhisperService {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 let hasSegments = !transcribedSegments.isEmpty
                 let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
-                    $0.noSpeechProbability >= self.noSpeechSegmentProbabilityThreshold
+                    $0.noSpeechProbability >= noSpeechSegmentProbabilityThreshold
                 }
                 let averageNoSpeechProbability: Float = hasSegments
                     ? transcribedSegments.reduce(0) { $0 + $1.noSpeechProbability } / Float(transcribedSegments.count)
                     : 1.0
                 let likelyNoSpeechByDecoder = !hasSegments
                     || allSegmentsHighNoSpeech
-                    || averageNoSpeechProbability >= self.noSpeechAverageProbabilityThreshold
+                    || averageNoSpeechProbability >= noSpeechAverageProbabilityThreshold
 
                 let cleanedText = self.normalizeWhitespace(text, preservingNewlines: true)
                 let finalText = likelyNoSpeechByDecoder ? "" : cleanedText
@@ -164,45 +160,44 @@ extension WhisperService {
                 )
                 #endif
 
-                DispatchQueue.main.async {
-                    self.isTranscribing = false
-                    restoreDictionaryHintPromptIfNeeded()
-                    self.lastResultWasLikelyNoSpeech = likelyNoSpeechByDecoder
-                    self.transcriptionText = finalText
-                    completion(TranscriptionProviderResult(text: finalText, languageCode: detectedLanguageCode))
-                }
+                self.finishSuccessfulRequest(
+                    requestID,
+                    usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
+                    finalText: finalText,
+                    likelyNoSpeech: likelyNoSpeechByDecoder,
+                    detectedLanguageCode: detectedLanguageCode,
+                    completion: completion
+                )
             } catch {
                 if Task.isCancelled {
-                    DispatchQueue.main.async {
-                        self.isTranscribing = false
-                        restoreDictionaryHintPromptIfNeeded()
-                    }
+                    self.finishCancelledRequest(
+                        requestID,
+                        usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
+                    )
                     return
                 }
 
                 #if DEBUG
                 print("Transcription error: \(error)")
                 #endif
-                DispatchQueue.main.async {
-                    self.isTranscribing = false
-                    restoreDictionaryHintPromptIfNeeded()
-                    self.lastResultWasLikelyNoSpeech = false
-                    completion(nil)
-                }
+                self.finishFailedRequest(
+                    requestID,
+                    usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
+                    completion: completion
+                )
             }
         }
     }
 
     // Legacy support for file-based transcription (can be removed later)
     public func transcribe(audioURL: URL, completion: @escaping (TranscriptionProviderResult?) -> Void) {
-        Task {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             do {
-                let audioFrames = try loadAndResample(url: audioURL)
-                transcribe(audioFrames: audioFrames, enableAutoParagraphs: true, completion: completion)
+                let audioFrames = try self.loadAndResample(url: audioURL)
+                self.transcribe(audioFrames: audioFrames, enableAutoParagraphs: true, completion: completion)
             } catch {
-                DispatchQueue.main.async {
-                    completion(nil)
-                }
+                completion(nil)
             }
         }
     }

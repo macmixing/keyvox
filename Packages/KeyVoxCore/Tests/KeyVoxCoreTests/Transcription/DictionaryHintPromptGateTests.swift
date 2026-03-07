@@ -36,6 +36,30 @@ final class DictionaryHintPromptGateTests: XCTestCase {
         )
     }
 
+    func testAllowsExactActiveSignalRunThreshold() {
+        XCTAssertTrue(
+            DictionaryHintPromptGate.shouldUseHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: false,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.65,
+                maxActiveSignalRunDuration: 0.35
+            )
+        )
+    }
+
+    func testAllowsExactCaptureDurationThreshold() {
+        XCTAssertTrue(
+            DictionaryHintPromptGate.shouldUseHintPrompt(
+                lastCaptureHadActiveSignal: true,
+                lastCaptureWasLikelySilence: false,
+                lastCaptureWasLongTrueSilence: false,
+                lastCaptureDuration: 0.45,
+                maxActiveSignalRunDuration: 0.44
+            )
+        )
+    }
+
     func testRejectsLikelySilence() {
         XCTAssertFalse(
             DictionaryHintPromptGate.shouldUseHintPrompt(

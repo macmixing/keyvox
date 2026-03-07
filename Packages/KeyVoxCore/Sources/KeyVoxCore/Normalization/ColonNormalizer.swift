@@ -10,7 +10,9 @@ public struct ColonNormalizer {
         options: []
     )
 
-    func normalize(in text: String) -> String {
+    public init() {}
+
+    public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
         guard let regex = Self.delimiterWrappedTokenRegex else { return text }
 

@@ -5,7 +5,9 @@ public struct TerminalPunctuationNormalizer {
         pattern: #"(?i)\b(?:[1-9]|1[0-2]):[0-5][0-9]\s(?:AM|PM)\s*$"#
     )
 
-    func appendTerminalPeriodIfEndingInFormattedTime(_ text: String) -> String {
+    public init() {}
+
+    public func appendTerminalPeriodIfEndingInFormattedTime(_ text: String) -> String {
         guard !text.isEmpty else { return text }
 
         // Respect existing terminal punctuation, including punctuation before closing quotes/brackets.

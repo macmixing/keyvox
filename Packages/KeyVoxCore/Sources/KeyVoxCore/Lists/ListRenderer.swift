@@ -1,7 +1,9 @@
 import Foundation
 
 public struct ListRenderer {
-    func render(_ list: DetectedList, mode: ListRenderMode) -> String {
+    public init() {}
+
+    public func render(_ list: DetectedList, mode: ListRenderMode) -> String {
         let lines = list.items.map { "\($0.spokenIndex). \($0.content)" }
         let listText: String
 

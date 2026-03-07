@@ -10,7 +10,9 @@ public struct ListPatternRunSelector {
         static let maximumCharactersForAmbiguousTwoItemFirstContent = 80
     }
 
-    func selectDetection(
+    public init() {}
+
+    public func selectDetection(
         from markers: [ListPatternMarker],
         in text: String,
         languageCode: String?

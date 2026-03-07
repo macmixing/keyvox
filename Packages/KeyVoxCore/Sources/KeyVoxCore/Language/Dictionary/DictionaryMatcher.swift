@@ -2,22 +2,45 @@ import Foundation
 import NaturalLanguage
 
 public struct DictionaryMatchResult {
-    let text: String
-    let stats: DictionaryMatcher.DebugStats
+    public let text: String
+    public let stats: DictionaryMatcher.DebugStats
+
+    public init(text: String, stats: DictionaryMatcher.DebugStats) {
+        self.text = text
+        self.stats = stats
+    }
 }
 
 @MainActor
 public final class DictionaryMatcher {
-    struct DebugStats {
-        var attempted: Int = 0
-        var accepted: Int = 0
-        var rejectedLowScore: Int = 0
-        var rejectedAmbiguity: Int = 0
-        var rejectedCommonWord: Int = 0
-        var rejectedShortToken: Int = 0
-        var rejectedOverlap: Int = 0
+    public struct DebugStats {
+        public var attempted: Int = 0
+        public var accepted: Int = 0
+        public var rejectedLowScore: Int = 0
+        public var rejectedAmbiguity: Int = 0
+        public var rejectedCommonWord: Int = 0
+        public var rejectedShortToken: Int = 0
+        public var rejectedOverlap: Int = 0
 
-        static let empty = DebugStats()
+        public static let empty = DebugStats()
+
+        public init(
+            attempted: Int = 0,
+            accepted: Int = 0,
+            rejectedLowScore: Int = 0,
+            rejectedAmbiguity: Int = 0,
+            rejectedCommonWord: Int = 0,
+            rejectedShortToken: Int = 0,
+            rejectedOverlap: Int = 0
+        ) {
+            self.attempted = attempted
+            self.accepted = accepted
+            self.rejectedLowScore = rejectedLowScore
+            self.rejectedAmbiguity = rejectedAmbiguity
+            self.rejectedCommonWord = rejectedCommonWord
+            self.rejectedShortToken = rejectedShortToken
+            self.rejectedOverlap = rejectedOverlap
+        }
     }
 
     let lexicon: PronunciationLexiconProviding
@@ -30,7 +53,7 @@ public final class DictionaryMatcher {
     var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
     var emailEntriesByDomain: [String: [DictionaryEmailEntry]] = [:]
     
-    init(
+    public init(
         lexicon: PronunciationLexiconProviding,
         encoder: PhoneticEncoder,
         scorer: ReplacementScorer
@@ -40,7 +63,7 @@ public final class DictionaryMatcher {
         self.scorer = scorer
     }
 
-    convenience init() {
+    public convenience init() {
         self.init(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -51,7 +74,7 @@ public final class DictionaryMatcher {
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
     deinit {}
 
-    func rebuildIndex(entries: [DictionaryEntry]) {
+    public func rebuildIndex(entries: [DictionaryEntry]) {
         var grouped: [Int: [CompiledEntry]] = [:]
         var emailGrouped: [String: [DictionaryEmailEntry]] = [:]
 
@@ -85,7 +108,7 @@ public final class DictionaryMatcher {
         emailEntriesByDomain = emailGrouped
     }
 
-    func apply(to text: String) -> DictionaryMatchResult {
+    public func apply(to text: String) -> DictionaryMatchResult {
         guard !text.isEmpty else {
             return DictionaryMatchResult(text: "", stats: .empty)
         }

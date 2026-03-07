@@ -30,7 +30,7 @@ jobs:
         run: |
           Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Enforce core coverage
+      - name: Enforce app-owned core coverage
         run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
 
   pronunciation-quality:
@@ -50,3 +50,21 @@ jobs:
 
       - name: Run KeyVoxWhisper package tests
         run: swift test --package-path Packages/KeyVoxWhisper
+
+      - name: Run KeyVoxCore package tests with coverage
+        id: keyvoxcore-tests
+        run: |
+          swift test --package-path Packages/KeyVoxCore --enable-code-coverage
+          coverage_path="$(find Packages/KeyVoxCore/.build -path '*/codecov/KeyVoxCore.json' -print -quit)"
+          if [[ -z "$coverage_path" ]]; then
+            echo "error: unable to locate KeyVoxCore coverage json" >&2
+            exit 1
+          fi
+          echo "coverage_path=$coverage_path" >> "$GITHUB_OUTPUT"
+
+      - name: Publish KeyVoxCore coverage summary
+        run: |
+          Tools/Quality/keyvoxcore_coverage_summary.sh "${{ steps.keyvoxcore-tests.outputs.coverage_path }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce KeyVoxCore coverage
+        run: Tools/Quality/check_keyvoxcore_coverage.sh "${{ steps.keyvoxcore-tests.outputs.coverage_path }}"

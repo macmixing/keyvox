@@ -15,7 +15,9 @@ public struct LaughterNormalizer {
     )
     private static let normalizedLaughterRun = "haha haha haha haha"
 
-    func normalize(in text: String) -> String {
+    public init() {}
+
+    public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
 
         let pairNormalized = normalizeLaughterPairs(in: text)
