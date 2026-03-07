@@ -18,6 +18,7 @@ public struct ListPatternRunSelector {
         static let sentenceBoundaryCharacterSet = CharacterSet(charactersIn: ".!?")
         static let maximumWordsForAmbiguousTwoItemFirstContent = 10
         static let maximumCharactersForAmbiguousTwoItemFirstContent = 80
+        static let ambiguousOpeningTokenCheckLimit = 2
     }
 
     public init() {}
@@ -127,7 +128,53 @@ public struct ListPatternRunSelector {
             return false
         }
 
+        guard hasCredibleAmbiguousItemOpening(firstItemText) else {
+            return false
+        }
+
         return true
+    }
+
+    private func hasCredibleAmbiguousItemOpening(_ text: String) -> Bool {
+        let nsText = text as NSString
+        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        tagger.string = text
+
+        var inspectedTokenCount = 0
+        var sawContentToken = false
+        let fullRange = NSRange(location: 0, length: nsText.length)
+
+        tagger.enumerateTags(
+            in: fullRange,
+            unit: .word,
+            scheme: .lexicalClass,
+            options: [.omitWhitespace, .omitPunctuation, .joinNames]
+        ) { tag, tokenRange, stop in
+            let token = nsText.substring(with: tokenRange)
+            guard token.rangeOfCharacter(from: .letters) != nil else { return }
+
+            inspectedTokenCount += 1
+            if lexicalClassCountsAsContent(tag) {
+                sawContentToken = true
+                stop.pointee = true
+                return
+            }
+
+            if inspectedTokenCount >= CadenceGuard.ambiguousOpeningTokenCheckLimit {
+                stop.pointee = true
+            }
+        }
+
+        return sawContentToken
+    }
+
+    private func lexicalClassCountsAsContent(_ tag: NSLinguisticTag?) -> Bool {
+        switch tag {
+        case .noun, .verb, .adjective, .adverb, .otherWord, .classifier, .idiom:
+            return true
+        default:
+            return false
+        }
     }
 
     // Prevent list detection from stretching across long prose spans between

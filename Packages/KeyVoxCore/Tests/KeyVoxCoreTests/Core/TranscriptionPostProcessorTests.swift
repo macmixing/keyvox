@@ -130,4 +130,16 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("1. First item"))
         XCTAssertTrue(output.contains("2. Second item"))
     }
+
+    func testDoesNotFormatQuantifiedChoiceSentenceAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "It's only one of those two choices and you're not allowed to have it.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "It's only one of those two choices and you're not allowed to have it.")
+    }
 }

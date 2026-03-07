@@ -308,6 +308,15 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectListFromQuantifiedChoiceSentence() {
+        let detector = ListPatternDetector()
+        let text = "It's only one of those two choices and you're not allowed to have it."
+
+        let detected = detector.detectList(in: text)
+
+        XCTAssertNil(detected)
+    }
+
     func testDetectsSecondMarkerWhenAttachedAfterEmailDomain() {
         let detector = ListPatternDetector()
         let text = "I have a couple of email addresses. Let me give them to you: 1. Dom at example.com2. Kathy at example.com"
