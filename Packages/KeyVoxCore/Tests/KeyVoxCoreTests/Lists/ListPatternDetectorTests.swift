@@ -47,6 +47,18 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.trailingText == "and everything's done")
     }
 
+    func testSplitsShortNominalLastItemFromSentenceStyleCommentary() {
+        let detector = ListPatternDetector()
+        let text = "It's either going to be: one a dresser two a chair, and honestly I don't think you're going to pick wrong"
+
+        let detected = detector.detectList(in: text)
+
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(detected?.items.map(\.content), ["A dresser", "A chair"])
+        XCTAssertEqual(detected?.trailingText, "and honestly I don't think you're going to pick wrong")
+    }
+
     func testPreservesCausalTransitionWhenSplittingLastItem() {
         let detector = ListPatternDetector()
         let text = "Today one get dog food two charge phone three call mom because we leave early"

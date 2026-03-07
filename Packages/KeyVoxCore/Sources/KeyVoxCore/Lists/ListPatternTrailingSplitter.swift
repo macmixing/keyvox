@@ -193,14 +193,20 @@ public struct ListPatternTrailingSplitter {
     }
 
     private func commaBoundaryCandidate(in text: String, languageCode: String?) -> SplitCandidate? {
-        guard let split = firstRegexSplit(text, pattern: #"(?i)^(.{8,}?),\s+(.+)$"#) else {
+        guard let split = firstRegexSplit(text, pattern: #"(?i)^(.+?),\s+(.+)$"#) else {
+            return nil
+        }
+        let shortNominalItem = looksLikeShortNominalItem(split.0)
+        let sentenceLikeTrailing = looksLikeSentenceStyleCommentary(split.1)
+        let supportsShortNominalSplit = shortNominalItem && (sentenceLikeTrailing || looksLikeContinuationStart(split.1))
+        guard split.0.count >= 8 || supportsShortNominalSplit else {
             return nil
         }
         return makeCandidate(
             item: split.0,
             trailing: split.1,
             score: 60,
-            minItemWords: 3,
+            minItemWords: supportsShortNominalSplit ? 2 : 3,
             requiresContinuationShape: true,
             languageCode: languageCode
         )
@@ -259,6 +265,66 @@ public struct ListPatternTrailingSplitter {
         ListPatternMarkerParser.hasLeadingListMarkerPrefix(in: text, languageCode: languageCode)
     }
 
+    private func looksLikeShortNominalItem(_ text: String) -> Bool {
+        let tokens = lexicalWordTags(in: text)
+        guard !tokens.isEmpty, tokens.count <= 3 else { return false }
+
+        var sawNominalContent = false
+        for (_, tag) in tokens {
+            switch tag {
+            case .noun, .adjective, .otherWord, .classifier, .idiom:
+                sawNominalContent = true
+            case .verb:
+                return false
+            default:
+                continue
+            }
+        }
+
+        return sawNominalContent
+    }
+
+    private func looksLikeSentenceStyleCommentary(_ text: String) -> Bool {
+        let tokens = lexicalWordTags(in: text)
+        guard tokens.count >= 4 else { return false }
+
+        let leadingWindow = tokens.prefix(6)
+        let hasVerb = leadingWindow.contains { _, tag in
+            tag == .verb
+        }
+        let hasClauseAnchor = leadingWindow.contains { _, tag in
+            switch tag {
+            case .pronoun, .noun, .otherWord:
+                return true
+            default:
+                return false
+            }
+        }
+
+        return hasVerb && hasClauseAnchor
+    }
+
+    private func lexicalWordTags(in text: String) -> [(String, NSLinguisticTag?)] {
+        let nsText = text as NSString
+        let range = NSRange(location: 0, length: nsText.length)
+        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        tagger.string = text
+
+        var result: [(String, NSLinguisticTag?)] = []
+        tagger.enumerateTags(
+            in: range,
+            unit: .word,
+            scheme: .lexicalClass,
+            options: [.omitWhitespace, .omitPunctuation, .joinNames]
+        ) { tag, tokenRange, _ in
+            let token = nsText.substring(with: tokenRange)
+            guard token.rangeOfCharacter(from: .letters) != nil else { return }
+            result.append((token, tag))
+        }
+
+        return result
+    }
+
     private func looksLikeContinuationStart(_ text: String) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
@@ -267,6 +333,10 @@ public struct ListPatternTrailingSplitter {
             of: #"^[\"'“”‘’\(\[\{]*[A-Z]"#,
             options: .regularExpression
         ) != nil {
+            return true
+        }
+
+        if looksLikeSentenceStyleCommentary(trimmed) {
             return true
         }
 

@@ -142,4 +142,19 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "It's only one of those two choices and you're not allowed to have it.")
     }
+
+    func testSplitsShortNominalListItemFromTrailingCommentary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "It's either going to be one a dresser two a chair, and honestly I don't think you're going to pick wrong",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "It's either going to be:\n\n1. A dresser\n2. A chair\n\nAnd honestly I don't think you're going to pick wrong"
+        )
+    }
 }
