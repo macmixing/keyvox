@@ -14,6 +14,25 @@
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		8E9E38982F5BF57100EAFA72 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38972F5BF57100EAFA72 /* keyvox.icon */; };
 		8E9E38992F5BF57100EAFA72 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38972F5BF57100EAFA72 /* keyvox.icon */; };
+		8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */; };
+		8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */; };
+		8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */; };
+		8E9E38CE2F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C42F5C004200EAFA72 /* iOSAudioRecorder.swift */; };
+		8E9E38CF2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */; };
+		8E9E38D02F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */; };
+		8E9E38D12F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */; };
+		8E9E38D22F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */; };
+		8E9E38D32F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */; };
+		8E9E38D42F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C52F5C004200EAFA72 /* iOSAudioRecorder+Session.swift */; };
+		8E9E38D52F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */; };
+		8E9E38D62F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C42F5C004200EAFA72 /* iOSAudioRecorder.swift */; };
+		8E9E38D72F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */; };
+		8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */; };
+		8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */; };
+		8E9E38DA2F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */; };
+		8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */; };
+		8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C52F5C004200EAFA72 /* iOSAudioRecorder+Session.swift */; };
+		8E9E38DD2F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +62,17 @@
 		8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVoxiOS.entitlements; sourceTree = "<group>"; };
 		8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiOSApp.swift; sourceTree = "<group>"; };
 		8E9E38972F5BF57100EAFA72 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
+		8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppServiceRegistry.swift; sourceTree = "<group>"; };
+		8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxURLRoute.swift; sourceTree = "<group>"; };
+		8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxURLRouter.swift; sourceTree = "<group>"; };
+		8E9E38C42F5C004200EAFA72 /* iOSAudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAudioRecorder.swift; sourceTree = "<group>"; };
+		8E9E38C52F5C004200EAFA72 /* iOSAudioRecorder+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSAudioRecorder+Session.swift"; sourceTree = "<group>"; };
+		8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSAudioRecorder+StopPipeline.swift"; sourceTree = "<group>"; };
+		8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSAudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
+		8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveInputSignalState.swift; sourceTree = "<group>"; };
+		8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase2CaptureArtifact.swift; sourceTree = "<group>"; };
+		8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase2CaptureArtifactWriter.swift; sourceTree = "<group>"; };
+		8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -104,29 +134,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8E9E389A2F5C000000EAFA72 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		8E9E389B2F5C000000EAFA72 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		8E9E389C2F5C000000EAFA72 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -139,6 +146,56 @@
 				8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */,
 			);
 			path = "KeyVox iOS";
+			sourceTree = "<group>";
+		};
+		8E9E389A2F5C000000EAFA72 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
+				8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */,
+				8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */,
+				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		8E9E389B2F5C000000EAFA72 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38CB2F5C004200EAFA72 /* Audio */,
+				8E9E38CD2F5C004200EAFA72 /* Transcription */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		8E9E389C2F5C000000EAFA72 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8E9E38CB2F5C004200EAFA72 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38C42F5C004200EAFA72 /* iOSAudioRecorder.swift */,
+				8E9E38C52F5C004200EAFA72 /* iOSAudioRecorder+Session.swift */,
+				8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */,
+				8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */,
+				8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */,
+				8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */,
+				8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		8E9E38CD2F5C004200EAFA72 /* Transcription */ = {
+			isa = PBXGroup;
+			children = (
+				8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */,
+			);
+			path = Transcription;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -290,6 +347,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
+				8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */,
+				8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */,
+				8E9E38D62F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */,
+				8E9E38D72F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift in Sources */,
+				8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */,
+				8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */,
+				8E9E38DA2F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */,
+				8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */,
+				8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */,
+				8E9E38DD2F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */,
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
 			);
@@ -378,7 +446,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -436,7 +504,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -536,7 +604,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -558,7 +626,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

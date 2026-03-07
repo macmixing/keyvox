@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "5ECFA400-70D0-4702-87B9-D316C58F45E0",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:KeyVox iOS.xcodeproj",
+      "identifier" : "8E9E38512F5BF1F000EAFA72",
+      "name" : "KeyVox iOS"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:KeyVox iOS.xcodeproj",
+        "identifier" : "8E9E385E2F5BF1F200EAFA72",
+        "name" : "KeyVox iOSTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:KeyVox iOS.xcodeproj",
+        "identifier" : "8E9E38682F5BF1F200EAFA72",
+        "name" : "KeyVox iOSUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,0 +1,30 @@
+import Foundation
+
+@MainActor
+final class KeyVoxURLRouter {
+    private let transcriptionManager: iOSTranscriptionManager
+
+    init(transcriptionManager: iOSTranscriptionManager) {
+        self.transcriptionManager = transcriptionManager
+    }
+
+    func route(for url: URL) -> KeyVoxURLRoute? {
+        KeyVoxURLRoute(url: url)
+    }
+
+    func handle(url: URL) {
+        guard let route = route(for: url) else {
+            #if DEBUG
+            print("Ignoring unsupported KeyVox URL: \(url.absoluteString)")
+            #endif
+            return
+        }
+
+        switch route {
+        case .startRecording:
+            transcriptionManager.handleStartRecordingCommand()
+        case .stopRecording:
+            transcriptionManager.handleStopRecordingCommand()
+        }
+    }
+}
