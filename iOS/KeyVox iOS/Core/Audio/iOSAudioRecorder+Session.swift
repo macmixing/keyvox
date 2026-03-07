@@ -3,22 +3,20 @@ import Foundation
 import KeyVoxCore
 
 extension iOSAudioRecorder {
-    func startRecording() async throws {
-        guard !isRecording else { return }
+    func ensureEngineRunning() throws {
+        guard !isMonitoring || audioEngine == nil || !audioEngine!.isRunning else { return }
 
-        let permissionGranted = await requestRecordPermission()
-        guard permissionGranted else {
-            throw iOSAudioRecorderError.microphonePermissionDenied
-        }
-
-        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+        // Set up audio session for background persistence
+        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
         try audioSession.setPreferredSampleRate(outputFormat.sampleRate)
         try audioSession.setActive(true)
 
-        let engine = AVAudioEngine()
+        let engine = audioEngine ?? AVAudioEngine()
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
         let bufferSize: AVAudioFrameCount = 1024
+        
+        // Capture properties for closure
         let streamingState = self.streamingState
         let outputFormat = self.outputFormat
         let deadSignalPeakThreshold = self.deadSignalPeakThreshold
@@ -27,6 +25,56 @@ extension iOSAudioRecorder {
         let deadStateHoldDuration = self.deadStateHoldDuration
         let visualActiveStateHoldDuration = self.visualActiveStateHoldDuration
 
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self, streamingState, outputFormat, deadSignalPeakThreshold, sessionActiveSignalRMSThreshold, visualActiveSignalThresholdMultiplier, deadStateHoldDuration, visualActiveStateHoldDuration] buffer, _ in
+            guard let self else { return }
+            
+            // Heartbeat for IPC bridge
+            self.heartbeatCallback?()
+            
+            // Only process audio for transcription if we are actually recording
+            guard self.isRecording else { return }
+
+            let update = streamingState.process(
+                inputBuffer: buffer,
+                outputFormat: outputFormat,
+                deadSignalPeakThreshold: deadSignalPeakThreshold,
+                activeSignalRMSThreshold: sessionActiveSignalRMSThreshold,
+                visualActiveSignalThresholdMultiplier: visualActiveSignalThresholdMultiplier,
+                deadStateHoldDuration: deadStateHoldDuration,
+                visualActiveStateHoldDuration: visualActiveStateHoldDuration
+            )
+            guard let update else { return }
+            Task { @MainActor in
+                self.audioLevel = update.level
+                self.liveInputSignalState = update.signalState
+            }
+        }
+
+        if !engine.isRunning {
+            engine.prepare()
+            try engine.start()
+        }
+        
+        audioEngine = engine
+        isMonitoring = true
+        
+        // Mark session as warm now that engine is running
+        KeyVoxIPCBridge.setSessionActive()
+    }
+
+    func startRecording() async throws {
+        guard !isRecording else { return }
+
+        let permissionGranted = await requestRecordPermission()
+        guard permissionGranted else {
+            throw iOSAudioRecorderError.microphonePermissionDenied
+        }
+
+        // Ensure engine is running (in monitor mode)
+        try ensureEngineRunning()
+
+        // Reset state for new capture
         streamingState.reset()
         captureStartedAt = Date()
         currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName("iPhone Microphone")
@@ -39,37 +87,8 @@ extension iOSAudioRecorder {
         maxActiveSignalRunDuration = 0
         audioLevel = 0
         liveInputSignalState = .dead
-
-        inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self, streamingState, outputFormat, deadSignalPeakThreshold, sessionActiveSignalRMSThreshold, visualActiveSignalThresholdMultiplier, deadStateHoldDuration, visualActiveStateHoldDuration] buffer, _ in
-            let update = streamingState.process(
-                inputBuffer: buffer,
-                outputFormat: outputFormat,
-                deadSignalPeakThreshold: deadSignalPeakThreshold,
-                activeSignalRMSThreshold: sessionActiveSignalRMSThreshold,
-                visualActiveSignalThresholdMultiplier: visualActiveSignalThresholdMultiplier,
-                deadStateHoldDuration: deadStateHoldDuration,
-                visualActiveStateHoldDuration: visualActiveStateHoldDuration
-            )
-
-            guard let update else { return }
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.audioLevel = update.level
-                self.liveInputSignalState = update.signalState
-            }
-        }
-
-        do {
-            engine.prepare()
-            try engine.start()
-            audioEngine = engine
-            isRecording = true
-        } catch {
-            inputNode.removeTap(onBus: 0)
-            try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
-            throw iOSAudioRecorderError.engineStartFailed(underlying: error)
-        }
+        
+        isRecording = true
     }
 
     func stopRecording() async -> iOSStoppedCapture {
@@ -88,10 +107,6 @@ extension iOSAudioRecorder {
             return idleCapture
         }
 
-        let engine = audioEngine
-        engine?.inputNode.removeTap(onBus: 0)
-        engine?.stop()
-        audioEngine = nil
         isRecording = false
 
         let snapshot = streamingState.snapshot()
@@ -108,13 +123,8 @@ extension iOSAudioRecorder {
         )
         apply(stopResult: stoppedCapture, hadNonDeadSignal: snapshot.hadNonDeadSignal)
 
-        do {
-            try audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
-        } catch {
-            #if DEBUG
-            print("Failed to deactivate AVAudioSession: \(error)")
-            #endif
-        }
+        // NOTE: We keep the engine running (isMonitoring remains true)
+        // to maintain background persistence.
 
         return stoppedCapture
     }

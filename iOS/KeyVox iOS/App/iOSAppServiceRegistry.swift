@@ -8,6 +8,7 @@ final class iOSAppServiceRegistry {
     let dictionaryStore: DictionaryStore
     let whisperService: WhisperService
     let postProcessor: TranscriptionPostProcessor
+    let keyboardBridge: KeyVoxKeyboardBridge
     let artifactWriter: Phase2CaptureArtifactWriter
     let transcriptionManager: iOSTranscriptionManager
     let urlRouter: KeyVoxURLRouter
@@ -25,19 +26,35 @@ final class iOSAppServiceRegistry {
         )
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let postProcessor = TranscriptionPostProcessor()
+        let keyboardBridge = KeyVoxKeyboardBridge()
+        let recorder = iOSAudioRecorder()
+        
+        recorder.heartbeatCallback = { [weak keyboardBridge] in
+            keyboardBridge?.touchHeartbeat()
+        }
+
         let artifactWriter = Phase2CaptureArtifactWriter()
         let transcriptionManager = iOSTranscriptionManager(
-            recorder: iOSAudioRecorder(),
+            recorder: recorder,
             artifactWriter: artifactWriter,
             transcriptionService: whisperService,
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
+            keyboardBridge: keyboardBridge,
             modelPathProvider: modelPathProvider
         )
+        keyboardBridge.onStartRecordingCommand = {
+            transcriptionManager.handleStartRecordingCommand()
+        }
+        keyboardBridge.onStopRecordingCommand = {
+            transcriptionManager.handleStopRecordingCommand()
+        }
+        keyboardBridge.registerObservers()
 
         self.dictionaryStore = dictionaryStore
         self.whisperService = whisperService
         self.postProcessor = postProcessor
+        self.keyboardBridge = keyboardBridge
         self.artifactWriter = artifactWriter
         self.transcriptionManager = transcriptionManager
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)

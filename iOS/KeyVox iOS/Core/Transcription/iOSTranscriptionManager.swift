@@ -22,6 +22,7 @@ final class iOSTranscriptionManager: ObservableObject {
     private let transcriptionService: any iOSDictationService
     private let dictionaryStore: DictionaryStore
     private let postProcessor: TranscriptionPostProcessor
+    private let keyboardBridge: KeyVoxKeyboardBridge
     private let modelPathProvider: () -> String?
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
@@ -55,6 +56,7 @@ final class iOSTranscriptionManager: ObservableObject {
         transcriptionService: any iOSDictationService,
         dictionaryStore: DictionaryStore,
         postProcessor: TranscriptionPostProcessor,
+        keyboardBridge: KeyVoxKeyboardBridge,
         modelPathProvider: @escaping () -> String?,
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true }
@@ -64,12 +66,14 @@ final class iOSTranscriptionManager: ObservableObject {
         self.transcriptionService = transcriptionService
         self.dictionaryStore = dictionaryStore
         self.postProcessor = postProcessor
+        self.keyboardBridge = keyboardBridge
         self.modelPathProvider = modelPathProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
 
         bindDictionaryState()
         refreshModelAvailability()
+        
         if isModelAvailable {
             transcriptionService.warmup()
         }
@@ -93,9 +97,11 @@ final class iOSTranscriptionManager: ObservableObject {
 
         do {
             try await recorder.startRecording()
+            keyboardBridge.publishRecordingStarted()
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
+            keyboardBridge.publishNoSpeech()
         }
     }
 
@@ -127,6 +133,7 @@ final class iOSTranscriptionManager: ObservableObject {
         guard !stoppedCapture.outputFrames.isEmpty else {
             lastTranscriptionSnapshot = nil
             state = .idle
+            keyboardBridge.publishNoSpeech()
             return
         }
 
@@ -135,6 +142,7 @@ final class iOSTranscriptionManager: ObservableObject {
             lastTranscriptionSnapshot = nil
             lastErrorMessage = "Whisper model not found in App Group container."
             state = .idle
+            keyboardBridge.publishNoSpeech()
             return
         }
 
@@ -150,6 +158,7 @@ final class iOSTranscriptionManager: ObservableObject {
 
         pendingPipelineOutputText = nil
         state = .transcribing
+        keyboardBridge.publishTranscribing()
 
         dictationPipeline.run(
             audioFrames: stoppedCapture.outputFrames,
@@ -172,6 +181,12 @@ final class iOSTranscriptionManager: ObservableObject {
                 self.pendingPipelineOutputText = nil
                 self.lastErrorMessage = nil
                 self.state = .idle
+
+                if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    self.keyboardBridge.publishNoSpeech()
+                } else {
+                    self.keyboardBridge.publishTranscriptionReady(finalText)
+                }
             }
         }
     }

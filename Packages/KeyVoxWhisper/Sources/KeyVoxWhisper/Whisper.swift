@@ -223,10 +223,16 @@ public final class Whisper {
     ) -> OpaquePointer? {
         let osVersion = osVersionProvider()
         let isVentura = osVersion.majorVersion == venturaMajorVersion
+        #if os(iOS)
+        let shouldDisableGPU = true
+        #else
+        let shouldDisableGPU = isVentura
+        #endif
 
         var contextParams = runtime.contextDefaultParams()
-        if isVentura {
-            // Ventura-specific stability guard: avoid Metal init crash path in upstream binary.
+        if shouldDisableGPU {
+            // iOS background transcription cannot submit Metal work reliably, and Ventura has
+            // a known upstream crash path during Metal init, so both paths force CPU for now.
             contextParams.use_gpu = false
             contextParams.flash_attn = false
         }
@@ -235,7 +241,7 @@ public final class Whisper {
             runtime.initFromFileWithParams(path, contextParams)
         }
 
-        if context != nil || !isVentura {
+        if context != nil || shouldDisableGPU == true {
             return context
         }
 

@@ -5,6 +5,7 @@ import KeyVoxCore
 
 protocol iOSAudioRecording: AnyObject {
     var isRecording: Bool { get }
+    var isMonitoring: Bool { get }
     var currentCaptureDeviceName: String { get }
     var lastCaptureWasAbsoluteSilence: Bool { get }
     var lastCaptureHadActiveSignal: Bool { get }
@@ -15,6 +16,7 @@ protocol iOSAudioRecording: AnyObject {
 
     func startRecording() async throws
     func stopRecording() async -> iOSStoppedCapture
+    func ensureEngineRunning() throws
 }
 
 @MainActor
@@ -35,6 +37,7 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     let visualActiveSignalThresholdMultiplier: Float = 1.85
 
     @Published var isRecording = false
+    @Published var isMonitoring = false
     @Published var audioLevel: Float = 0
     @Published var liveInputSignalState: LiveInputSignalState = .dead
     @Published var currentCaptureDeviceName: String = "iPhone Microphone"
@@ -56,6 +59,7 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     let audioSession: AVAudioSession
     var audioEngine: AVAudioEngine?
     let streamingState = iOSAudioCaptureAccumulator()
+    var heartbeatCallback: (() -> Void)?
 
     init(audioSession: AVAudioSession = .sharedInstance()) {
         self.audioSession = audioSession

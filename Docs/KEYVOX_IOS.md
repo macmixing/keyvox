@@ -987,15 +987,18 @@ try FileManager.default.removeItem(at: sharedContainerURL.appendingPathComponent
 
 The existing `ModelDownloader` is **90% reusable**. Changes needed:
 
-1. **Storage path**: Use App Group container instead of `~/Library/Application Support/KeyVox/`
-2. **CoreML unzip**: `Process()` is not available on iOS. Use `ZIPFoundation` SPM package or custom `zlib` wrapper.
-3. **Background download**: Use `BGProcessingTask` for downloads that may take a while.
+1. **Storage path**: Use the App Group container instead of `~/Library/Application Support/KeyVox/`
+2. **Model payload**: Install **both**:
+   - `ggml-base.bin`
+   - `ggml-base-encoder.mlmodelc`
+3. **CoreML unzip**: `Process()` is not available on iOS. Use `ZIPFoundation` SPM package or custom `zlib` wrapper.
+4. **Background download**: Use `BGProcessingTask` for downloads that may take a while.
 
 ```swift
 // Override model URL provider for iOS
 let modelURLProvider: () -> URL = {
     guard let container = FileManager.default.containerURL(
-        forSecurityApplicationGroupIdentifier: "group.com.keyvox.shared"
+        forSecurityApplicationGroupIdentifier: "group.com.cueit.keyvox"
     ) else {
         return FileManager.default.temporaryDirectory
             .appendingPathComponent("Models/ggml-base.bin")
@@ -1005,6 +1008,15 @@ let modelURLProvider: () -> URL = {
         .appendingPathComponent("ggml-base.bin")
 }
 ```
+
+Verified real-device behavior:
+
+- `WhisperService` successfully loaded `ggml-base.bin` from the App Group container on-device
+- whisper.cpp then attempted to load the CoreML encoder from:
+  - `<App Group Container>/Models/ggml-base-encoder.mlmodelc`
+- if that bundle is missing, transcription still works, but whisper.cpp logs a CoreML load failure and falls back without the CoreML encoder path
+
+So the Phase 6 implementation must treat the CoreML encoder bundle as part of the real model install, not as an optional afterthought.
 
 ### 6.2 Remove CoreML Zip Extraction via Process()
 
@@ -1021,7 +1033,10 @@ private func unzipCoreML(at url: URL) throws {
 ```
 
 > [!IMPORTANT]
-> CoreML on iOS might not provide the same acceleration as on macOS for Whisper. Test whether including the CoreML model actually improves performance on-device. If not, skip the CoreML download entirely on iOS and run GGML-only — the model is smaller and inference still runs well on Apple Silicon iPhones.
+> CoreML on iOS might not provide the same acceleration as on macOS for Whisper. However, real-device validation already confirmed that whisper.cpp **does** look for `ggml-base-encoder.mlmodelc` in the App Group `Models/` directory when `ggml-base.bin` is present. If the bundle is missing, the pipeline still functions, but the app logs a CoreML load failure and falls back. Phase 6 should therefore:
+> 1. install both the GGML file and the CoreML encoder bundle correctly,
+> 2. verify the expected bundle path on-device, and
+> 3. only consider dropping the CoreML asset if benchmarking shows no meaningful benefit.
 
 ---
 
