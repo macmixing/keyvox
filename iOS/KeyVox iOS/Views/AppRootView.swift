@@ -59,12 +59,11 @@ struct AppRootView: View {
                     Button("Download Model") {
                         modelManager.downloadModel()
                     }
-                case .downloading:
-                    Text("Downloading...")
-                        .font(.footnote.monospaced())
-                case .installing:
-                    Text("Installing...")
-                        .font(.footnote.monospaced())
+                case .downloading, .installing:
+                    if let actionText = modelManager.installState.actionText {
+                        Text(actionText)
+                            .font(.footnote.monospaced())
+                    }
                 case .ready:
                     Button("Delete Model") {
                         modelManager.deleteModel()
@@ -82,18 +81,7 @@ struct AppRootView: View {
     }
 
     private var modelStatusText: String {
-        switch modelManager.installState {
-        case .notInstalled:
-            return "Model: not installed"
-        case .downloading(let progress):
-            return "Model: downloading \(Int(progress * 100))%"
-        case .installing:
-            return "Model: installing"
-        case .ready:
-            return "Model: ready"
-        case .failed(let message):
-            return "Model: failed (\(message))"
-        }
+        modelManager.installState.statusText
     }
 }
 

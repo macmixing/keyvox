@@ -124,17 +124,20 @@ struct iOSModelManagerTests {
             expectedGGMLSHA256: Self.sha256Hex(forFileAt: ggmlFixtureURL),
             expectedCoreMLZipSHA256: Self.sha256Hex(forFileAt: coreMLZipFixtureURL),
             freeSpaceProvider: { _ in freeSpace },
-            download: { url in
+            download: { url, progress in
+                progress(.complete)
                 if url == iOSModelDownloadURLs.ggmlBase {
                     return ggmlFixtureURL
                 }
                 return coreMLZipFixtureURL
             },
-            unzip: { _, _, fileManager in
+            unzip: { _, _, fileManager, progress in
+                progress(0, 1)
                 if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
                     try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
                 }
                 try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
+                progress(1, 1)
             }
         )
 

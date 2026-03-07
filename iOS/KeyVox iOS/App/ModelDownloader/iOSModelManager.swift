@@ -12,8 +12,8 @@ extension WhisperService: iOSWhisperModelLifecycle {}
 
 @MainActor
 final class iOSModelManager: ObservableObject {
-    typealias DownloadClosure = @Sendable (URL) async throws -> URL
-    typealias UnzipClosure = @Sendable (URL, URL, FileManager) async throws -> Void
+    typealias DownloadClosure = @Sendable (URL, @escaping @Sendable (iOSModelDownloadProgressSnapshot) -> Void) async throws -> URL
+    typealias UnzipClosure = @Sendable (URL, URL, FileManager, @escaping @Sendable (Int64, Int64) -> Void) async throws -> Void
     typealias FreeSpaceProvider = @Sendable (URL) -> Int64?
 
     @Published var installState: iOSModelInstallState = .notInstalled
@@ -65,8 +65,8 @@ final class iOSModelManager: ObservableObject {
         self.expectedGGMLSHA256 = expectedGGMLSHA256
         self.expectedCoreMLZipSHA256 = expectedCoreMLZipSHA256
         self.freeSpaceProvider = freeSpaceProvider
-        self.download = download ?? Self.defaultDownload(from:)
-        self.unzip = unzip ?? Self.defaultUnzip(zipURL:destinationDirectory:fileManager:)
+        self.download = download ?? Self.defaultDownload(from:progress:)
+        self.unzip = unzip ?? Self.defaultUnzip(zipURL:destinationDirectory:fileManager:progress:)
 
         Self.debugLog("Initialized model manager.")
         refreshStatus()

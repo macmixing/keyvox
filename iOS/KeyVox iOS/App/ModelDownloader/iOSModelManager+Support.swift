@@ -29,13 +29,41 @@ extension iOSModelManager {
         return try JSONDecoder().decode(iOSModelInstallManifest.self, from: data)
     }
 
-    nonisolated static func defaultDownload(from url: URL) async throws -> URL {
-        let (downloadURL, _) = try await URLSession.shared.download(from: url)
-        return downloadURL
+    nonisolated static func defaultDownload(
+        from url: URL,
+        progress: @escaping @Sendable (iOSModelDownloadProgressSnapshot) -> Void
+    ) async throws -> URL {
+        progress(.zero)
+        return try await withCheckedThrowingContinuation { continuation in
+            let delegate = iOSModelDownloadDelegate(
+                sourceURL: url,
+                progress: progress
+            ) { result in
+                continuation.resume(with: result)
+            }
+            let session = URLSession(
+                configuration: .default,
+                delegate: delegate,
+                delegateQueue: nil
+            )
+            delegate.session = session
+            let task = session.downloadTask(with: url)
+            task.resume()
+        }
     }
 
-    nonisolated static func defaultUnzip(zipURL: URL, destinationDirectory: URL, fileManager: FileManager) async throws {
+    nonisolated static func defaultUnzip(
+        zipURL: URL,
+        destinationDirectory: URL,
+        fileManager: FileManager,
+        progress: @escaping @Sendable (Int64, Int64) -> Void
+    ) async throws {
         let archive = try Archive(url: zipURL, accessMode: .read)
+        let totalBytes = archive.reduce(into: Int64(0)) { partialResult, entry in
+            partialResult += Int64(entry.uncompressedSize)
+        }
+        var completedBytes: Int64 = 0
+        progress(0, totalBytes)
 
         for entry in archive {
             let destinationURL = destinationDirectory.appendingPathComponent(entry.path)
@@ -44,6 +72,8 @@ extension iOSModelManager {
                 try fileManager.createDirectory(at: parentDirectory, withIntermediateDirectories: true)
             }
             _ = try archive.extract(entry, to: destinationURL)
+            completedBytes += Int64(entry.uncompressedSize)
+            progress(completedBytes, totalBytes)
         }
     }
 
@@ -75,10 +105,16 @@ extension iOSModelManager {
         return "Model download failed. Check your network/storage and retry."
     }
 
-    nonisolated static func sha256Hex(forFileAt url: URL) throws -> String {
+    nonisolated static func sha256Hex(
+        forFileAt url: URL,
+        progress: ((Int64, Int64) -> Void)? = nil
+    ) throws -> String {
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
 
+        let totalBytes = Int64((try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value ?? 0)
+        var completedBytes: Int64 = 0
+        progress?(0, totalBytes)
         var hasher = SHA256()
         while autoreleasepool(invoking: {
             let data = handle.readData(ofLength: 1_048_576)
@@ -86,6 +122,8 @@ extension iOSModelManager {
                 return false
             }
             hasher.update(data: data)
+            completedBytes += Int64(data.count)
+            progress?(completedBytes, totalBytes)
             return true
         }) {}
 
@@ -119,7 +157,11 @@ extension iOSModelManager {
         return nil
     }
 
-    nonisolated static func directoryDigestHex(at rootURL: URL, fileManager: FileManager) throws -> String {
+    nonisolated static func directoryDigestHex(
+        at rootURL: URL,
+        fileManager: FileManager,
+        progress: ((Int64, Int64) -> Void)? = nil
+    ) throws -> String {
         guard fileManager.fileExists(atPath: rootURL.path) else {
             throw ModelInstallError.integrityCheckFailed("Missing extracted Core ML bundle for integrity verification.")
         }
@@ -139,15 +181,26 @@ extension iOSModelManager {
 
         fileURLs.sort { $0.path < $1.path }
         debugLog("directoryDigestHex: hashing \(fileURLs.count) files under \(rootURL.path)")
+        let totalBytes = fileURLs.reduce(into: Int64(0)) { partialResult, fileURL in
+            let fileSize = (try? fileManager.attributesOfItem(atPath: fileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+            partialResult += fileSize
+        }
+        var completedBytes: Int64 = 0
+        progress?(0, totalBytes)
         var hasher = SHA256()
         for fileURL in fileURLs {
             let relativePath = fileURL.path.replacingOccurrences(of: rootURL.path + "/", with: "")
             hasher.update(data: Data(relativePath.utf8))
             hasher.update(data: Data([0]))
-            let fileHash = try sha256Hex(forFileAt: fileURL)
+            let fileHash = try sha256Hex(forFileAt: fileURL) { fileCompleted, _ in
+                progress?(completedBytes + fileCompleted, totalBytes)
+            }
             debugLog("directoryDigestHex: \(relativePath) -> \(fileHash)")
             hasher.update(data: Data(fileHash.utf8))
             hasher.update(data: Data([0]))
+            let fileSize = (try? fileManager.attributesOfItem(atPath: fileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+            completedBytes += fileSize
+            progress?(completedBytes, totalBytes)
         }
 
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
@@ -157,6 +210,49 @@ extension iOSModelManager {
 #if DEBUG
         print("[iOSModelManager] \(message)")
 #endif
+    }
+}
+
+struct iOSModelDownloadProgressSnapshot: Sendable {
+    let fractionCompleted: Double
+    let completedBytes: Int64
+    let expectedBytes: Int64?
+
+    nonisolated static let zero = iOSModelDownloadProgressSnapshot(
+        fractionCompleted: 0,
+        completedBytes: 0,
+        expectedBytes: nil
+    )
+
+    nonisolated static let complete = iOSModelDownloadProgressSnapshot(
+        fractionCompleted: 1,
+        completedBytes: 1,
+        expectedBytes: 1
+    )
+}
+
+actor iOSModelDownloadAggregateProgress {
+    private var ggml = iOSModelDownloadProgressSnapshot.zero
+    private var coreML = iOSModelDownloadProgressSnapshot.zero
+
+    func updateGGML(_ snapshot: iOSModelDownloadProgressSnapshot) {
+        ggml = snapshot
+    }
+
+    func updateCoreML(_ snapshot: iOSModelDownloadProgressSnapshot) {
+        coreML = snapshot
+    }
+
+    func overallFraction() -> Double {
+        if let ggmlExpected = ggml.expectedBytes, ggmlExpected > 0,
+           let coreExpected = coreML.expectedBytes, coreExpected > 0 {
+            let completed = min(ggml.completedBytes, ggmlExpected) + min(coreML.completedBytes, coreExpected)
+            let expected = ggmlExpected + coreExpected
+            guard expected > 0 else { return 0 }
+            return min(max(Double(completed) / Double(expected), 0), 1)
+        }
+
+        return min(max((ggml.fractionCompleted + coreML.fractionCompleted) / 2, 0), 1)
     }
 }
 
@@ -201,5 +297,89 @@ enum ModelInstallError: LocalizedError {
         case let .integrityCheckFailed(message):
             return message
         }
+    }
+}
+
+final class iOSModelDownloadDelegate: NSObject, URLSessionDownloadDelegate {
+    private let sourceURL: URL
+    private let progressHandler: @Sendable (iOSModelDownloadProgressSnapshot) -> Void
+    private let completion: @Sendable (Result<URL, Error>) -> Void
+    private let lock = NSLock()
+    private var hasCompleted = false
+    weak var session: URLSession?
+
+    init(
+        sourceURL: URL,
+        progress: @escaping @Sendable (iOSModelDownloadProgressSnapshot) -> Void,
+        completion: @escaping @Sendable (Result<URL, Error>) -> Void
+    ) {
+        self.sourceURL = sourceURL
+        self.progressHandler = progress
+        self.completion = completion
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        let expectedBytes = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : nil
+        let fractionCompleted: Double
+        if let expectedBytes, expectedBytes > 0 {
+            fractionCompleted = min(max(Double(totalBytesWritten) / Double(expectedBytes), 0), 1)
+        } else {
+            fractionCompleted = 0
+        }
+
+        progressHandler(
+            iOSModelDownloadProgressSnapshot(
+                fractionCompleted: fractionCompleted,
+                completedBytes: max(totalBytesWritten, 0),
+                expectedBytes: expectedBytes
+            )
+        )
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didFinishDownloadingTo location: URL
+    ) {
+        do {
+            let stableURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathComponent(sourceURL.lastPathComponent)
+            let parentDirectory = stableURL.deletingLastPathComponent()
+            if !FileManager.default.fileExists(atPath: parentDirectory.path) {
+                try FileManager.default.createDirectory(at: parentDirectory, withIntermediateDirectories: true)
+            }
+            if FileManager.default.fileExists(atPath: stableURL.path) {
+                try FileManager.default.removeItem(at: stableURL)
+            }
+            try FileManager.default.moveItem(at: location, to: stableURL)
+            progressHandler(.complete)
+            finish(.success(stableURL))
+        } catch {
+            finish(.failure(error))
+        }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error {
+            finish(.failure(error))
+        }
+    }
+
+    private func finish(_ result: Result<URL, Error>) {
+        lock.lock()
+        let shouldComplete = !hasCompleted
+        hasCompleted = true
+        lock.unlock()
+
+        guard shouldComplete else { return }
+        session?.finishTasksAndInvalidate()
+        completion(result)
     }
 }
