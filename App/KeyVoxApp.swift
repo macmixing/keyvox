@@ -162,6 +162,7 @@ class WindowManager: ObservableObject {
     }
 }
 
+@MainActor
 @main
 struct KeyVoxApp: App {
     @NSApplicationDelegateAdaptor(KeyVoxAppDelegate.self) private var appDelegate
@@ -171,7 +172,7 @@ struct KeyVoxApp: App {
     @ObservedObject private var downloader = ModelDownloader.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
-    static func shouldUseAccessoryActivationPolicy(
+    nonisolated static func shouldUseAccessoryActivationPolicy(
         osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
     ) -> Bool {
         if osVersion.majorVersion < 15 {

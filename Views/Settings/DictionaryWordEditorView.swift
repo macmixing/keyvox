@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyVoxCore
 
 enum DictionaryWordEditorMode: Identifiable {
     case add

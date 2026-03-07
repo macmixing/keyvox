@@ -1,6 +1,8 @@
 import SwiftUI
+import KeyVoxCore
 
 // MARK: - Main Settings View
+@MainActor
 struct SettingsView: View {
     static let preferredWindowSize = CGSize(width: 800, height: 600)
     @Environment(\.dismiss) var dismiss
@@ -8,7 +10,7 @@ struct SettingsView: View {
     @StateObject internal var appSettings = AppSettingsStore.shared
     @ObservedObject internal var downloader = ModelDownloader.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
-    @ObservedObject internal var dictionaryStore = DictionaryStore.shared
+    @ObservedObject internal var dictionaryStore = AppServiceRegistry.shared.dictionaryStore
     @StateObject internal var loginItemController = LoginItemController()
     @State internal var selectedTab: SettingsTab
     @State internal var showLegal = false

@@ -1,16 +1,13 @@
 import SwiftUI
+import KeyVoxCore
 
 extension SettingsView {
     struct LegalView: View {
         @Environment(\.dismiss) var dismiss
 
         private var pronunciationLicensesText: String {
-            bundledText(
-                fileName: "LICENSES",
-                fileExtension: "md",
-                subdirectory: "Pronunciation",
-                fallback: "Pronunciation third-party attributions are bundled in Resources/Pronunciation/LICENSES.md."
-            )
+            KeyVoxCoreResourceText.pronunciationLicensesText
+                ?? "Pronunciation third-party attributions are bundled in the KeyVoxCore package resources."
         }
 
         private var projectLicenseText: String {

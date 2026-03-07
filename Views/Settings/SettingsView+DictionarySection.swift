@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyVoxCore
 
 enum DictionarySortMode: String, CaseIterable, Identifiable {
     case alphabetical = "A-Z"

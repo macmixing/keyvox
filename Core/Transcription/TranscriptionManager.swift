@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import ApplicationServices
+import KeyVoxCore
 
 @MainActor
 class TranscriptionManager: ObservableObject {
@@ -15,12 +16,12 @@ class TranscriptionManager: ObservableObject {
     }
     
     let keyboardMonitor = KeyboardMonitor.shared
-    private let appSettings = AppSettingsStore.shared
-    private let modelDownloader = ModelDownloader.shared
-    private let audioRecorder = AudioRecorder()
-    private let whisperService = WhisperService()
-    private let dictionaryStore = DictionaryStore.shared
-    private let postProcessor = TranscriptionPostProcessor()
+    private let appSettings: AppSettingsStore
+    private let modelDownloader: ModelDownloader
+    private let audioRecorder: AudioRecorder
+    private let whisperService: WhisperService
+    private let dictionaryStore: DictionaryStore
+    private let postProcessor: TranscriptionPostProcessor
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: whisperService,
         postProcessor: postProcessor,
@@ -56,27 +57,32 @@ class TranscriptionManager: ObservableObject {
     private let dictionaryHintPromptMinimumCaptureDuration: TimeInterval = 0.45
     private let dictionaryHintPromptMinimumActiveSignalRunDuration: TimeInterval = 0.35
     
-    init() {
+    convenience init() {
+        self.init(
+            appSettings: .shared,
+            modelDownloader: .shared,
+            audioRecorder: AudioRecorder(),
+            serviceRegistry: .shared,
+            postProcessor: TranscriptionPostProcessor()
+        )
+    }
+
+    init(
+        appSettings: AppSettingsStore,
+        modelDownloader: ModelDownloader,
+        audioRecorder: AudioRecorder,
+        serviceRegistry: AppServiceRegistry,
+        postProcessor: TranscriptionPostProcessor
+    ) {
+        self.appSettings = appSettings
+        self.modelDownloader = modelDownloader
+        self.audioRecorder = audioRecorder
+        self.whisperService = serviceRegistry.whisperService
+        self.dictionaryStore = serviceRegistry.dictionaryStore
+        self.postProcessor = postProcessor
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()
         whisperService.warmup()
-    }
-
-    nonisolated static func shouldUseDictionaryHintPrompt(
-        lastCaptureHadActiveSignal: Bool,
-        lastCaptureWasLikelySilence: Bool,
-        lastCaptureWasLongTrueSilence: Bool,
-        lastCaptureDuration: TimeInterval,
-        maxActiveSignalRunDuration: TimeInterval,
-        minimumCaptureDuration: TimeInterval = 0.45,
-        minimumActiveSignalRunDuration: TimeInterval = 0.35
-    ) -> Bool {
-        guard lastCaptureHadActiveSignal else { return false }
-        guard !lastCaptureWasLikelySilence else { return false }
-        guard !lastCaptureWasLongTrueSilence else { return false }
-        guard lastCaptureDuration >= minimumCaptureDuration else { return false }
-        guard maxActiveSignalRunDuration >= minimumActiveSignalRunDuration else { return false }
-        return true
     }
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
@@ -275,7 +281,7 @@ class TranscriptionManager: ObservableObject {
             // Transition overlay to transcription ripples only when we have frames to process.
             OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
             
-            let useDictionaryHintPrompt = Self.shouldUseDictionaryHintPrompt(
+            let useDictionaryHintPrompt = DictionaryHintPromptGate.shouldUseHintPrompt(
                 lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
                 lastCaptureWasLikelySilence: self.audioRecorder.lastCaptureWasLikelySilence,
                 lastCaptureWasLongTrueSilence: self.audioRecorder.lastCaptureWasLongTrueSilence,

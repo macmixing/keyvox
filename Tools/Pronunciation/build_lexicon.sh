@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-OUT_DIR="$REPO_ROOT/Resources/Pronunciation"
+OUT_DIR="$REPO_ROOT/Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation"
 LOCK_FILE="$OUT_DIR/sources.lock.json"
 TMP_DIR="$(mktemp -d)"
 
@@ -217,12 +217,12 @@ cat > "$LOCK_FILE" <<EOF
   ],
   "artifacts": [
     {
-      "path": "Resources/Pronunciation/lexicon-v1.tsv",
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/lexicon-v1.tsv",
       "rows": $LEXICON_ROWS,
       "sha256": "$LEXICON_SHA"
     },
     {
-      "path": "Resources/Pronunciation/common-words-v1.txt",
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt",
       "rows": $COMMON_ROWS,
       "sha256": "$COMMON_SHA"
     }

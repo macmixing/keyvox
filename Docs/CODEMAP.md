@@ -289,7 +289,7 @@ KeyVox/
   - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
-  - Enforces row targets and writes `Resources/Pronunciation/sources.lock.json`.
+  - Enforces row targets and writes `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/sources.lock.json`.
 - `Tools/Pronunciation/train_g2p.sh`
   - Build-time Phonetisaurus/OpenFst G2P generation for OOV pronunciation candidates.
 - `Tools/Pronunciation/verify_licenses.sh`

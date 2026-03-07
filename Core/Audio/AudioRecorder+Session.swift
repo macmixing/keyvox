@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import KeyVoxCore
 
 extension AudioRecorder {
     func startRecordingSession() {
