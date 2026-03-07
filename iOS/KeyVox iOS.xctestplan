@@ -24,14 +24,6 @@
         "identifier" : "8E9E385E2F5BF1F200EAFA72",
         "name" : "KeyVox iOSTests"
       }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:KeyVox iOS.xcodeproj",
-        "identifier" : "8E9E38682F5BF1F200EAFA72",
-        "name" : "KeyVox iOSUITests"
-      }
     }
   ],
   "version" : 1

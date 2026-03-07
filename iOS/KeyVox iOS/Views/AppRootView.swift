@@ -33,11 +33,13 @@ struct AppRootView: View {
             return "State: recording"
         case .processingCapture:
             return "State: processingCapture"
+        case .transcribing:
+            return "State: transcribing"
         }
     }
 }
 
 #Preview {
     AppRootView()
-        .environmentObject(iOSTranscriptionManager(artifactWriter: Phase2CaptureArtifactWriter(baseDirectoryURL: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("Phase2Preview", isDirectory: true))))
+        .environmentObject(iOSAppServiceRegistry.shared.transcriptionManager)
 }

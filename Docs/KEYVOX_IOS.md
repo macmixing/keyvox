@@ -630,115 +630,126 @@ Phase 3 now begins from a proven recording lifecycle rather than a scaffold.
 
 ## Phase 3 — Transcription Pipeline Integration
 
-### 3.1 Create `iOSTranscriptionManager`
+Phase 3 is complete.
 
-This replaces the macOS `TranscriptionManager`. It drops all macOS-specific dependencies (`KeyboardMonitor`, `OverlayManager`, `PasteService`, `NSSound`, `AXIsProcessTrusted`).
+This phase extended the working Phase 2 recording path into a real containing-app transcription pipeline without adding keyboard-extension IPC, output insertion, settings UI, or product UI work.
 
-```swift
-// KeyVoxiOS/Transcription/iOSTranscriptionManager.swift
-import SwiftUI
-import Combine
-import KeyVoxCore
+### 3.1 Implemented shared-path and service seams
 
-@MainActor
-class iOSTranscriptionManager: ObservableObject {
-    enum AppState: Equatable {
-        case idle
-        case recording
-        case transcribing
-    }
-    
-    @Published var state: AppState = .idle
-    @Published var lastTranscription: String = ""
-    
-    private let audioRecorder = iOSAudioRecorder()
-    private let whisperService = WhisperService()
-    private let dictionaryStore = DictionaryStore.shared
-    private let postProcessor = TranscriptionPostProcessor()
-    private let ipcManager = AppExtensionIPCManager()
-    
-    private lazy var dictationPipeline = DictationPipeline(
-        transcriptionProvider: whisperService,
-        postProcessor: postProcessor,
-        dictionaryEntriesProvider: { [weak self] in
-            self?.dictionaryStore.entries ?? []
-        },
-        autoParagraphsEnabledProvider: { true },
-        listFormattingEnabledProvider: { true },
-        capsLockEnabledProvider: { false },
-        listRenderModeProvider: { .multiline }, // iOS always multiline
-        recordSpokenWords: { _ in },
-        pasteText: { [weak self] text in
-            // Write to shared container for keyboard extension pickup
-            self?.ipcManager.writeTranscription(text)
-        }
-    )
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    init() {
-        setupIPCListeners()
-        whisperService.warmup()
-    }
-    
-    private func setupIPCListeners() {
-        // Listen for start/stop commands from keyboard extension
-        ipcManager.onStartRecording = { [weak self] in
-            self?.startRecording()
-        }
-        ipcManager.onStopRecording = { [weak self] in
-            self?.stopRecordingAndTranscribe()
-        }
-    }
-    
-    func startRecording() {
-        guard state == .idle else { return }
-        state = .recording
-        audioRecorder.startRecording()
-        ipcManager.notifyExtensionRecordingStarted()
-    }
-    
-    func stopRecordingAndTranscribe() {
-        guard state == .recording else { return }
-        
-        audioRecorder.stopRecording { [weak self] frames in
-            guard let self else { return }
-            
-            guard !frames.isEmpty else {
-                self.state = .idle
-                self.ipcManager.notifyExtensionNoSpeech()
-                return
-            }
-            
-            self.state = .transcribing
-            
-            let useDictionaryHintPrompt = TranscriptionManager.shouldUseDictionaryHintPrompt(
-                lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
-                lastCaptureWasLikelySilence: self.audioRecorder.lastCaptureWasLikelySilence,
-                lastCaptureWasLongTrueSilence: self.audioRecorder.lastCaptureWasLongTrueSilence,
-                lastCaptureDuration: self.audioRecorder.lastCaptureDuration,
-                maxActiveSignalRunDuration: self.audioRecorder.maxActiveSignalRunDuration
-            )
-            
-            self.dictationPipeline.run(
-                audioFrames: frames,
-                useDictionaryHintPrompt: useDictionaryHintPrompt
-            ) { pipelineResult in
-                DispatchQueue.main.async {
-                    if !pipelineResult.wasLikelyNoSpeech {
-                        self.lastTranscription = pipelineResult.finalText
-                    }
-                    self.state = .idle
-                    self.ipcManager.notifyExtensionTranscriptionComplete()
-                }
-            }
-        }
-    }
-}
-```
+Completed files:
 
-> [!NOTE]
-> The `DictationPipeline` is used **exactly** as-is from macOS. The same chunking, retry, no-speech detection, normalization pipeline runs identically. The only difference is that `pasteText` writes to the shared container instead of calling `PasteService`.
+- `iOS/KeyVox iOS/App/iOSSharedPaths.swift`
+- `iOS/KeyVox iOS/App/iOSAppServiceRegistry.swift`
+- `iOS/KeyVox iOS/Core/Transcription/iOSDictationService.swift`
+- `iOS/KeyVox iOS/Core/Transcription/iOSTranscriptionDebugSnapshot.swift`
+
+Implemented behavior:
+
+- the App Group path seam is now centralized in `iOSSharedPaths`
+- the containing app resolves:
+  - App Group container URL
+  - model path
+  - dictionary base directory
+- `iOSAppServiceRegistry` now owns iOS-side construction of:
+  - `DictionaryStore`
+  - `WhisperService`
+  - `TranscriptionPostProcessor`
+  - `Phase2CaptureArtifactWriter`
+  - `iOSTranscriptionManager`
+  - `KeyVoxURLRouter`
+- the app stays bootable even if the App Group container or model is unavailable
+
+### 3.2 Implemented `iOSTranscriptionManager`
+
+Completed file:
+
+- `iOS/KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift`
+
+Implemented behavior:
+
+- `iOSTranscriptionManager` now owns the full Phase 3 containing-app pipeline
+- state model now includes:
+  - `.idle`
+  - `.recording`
+  - `.processingCapture`
+  - `.transcribing`
+- accepted capture output now flows through:
+  - `WhisperService`
+  - `DictationPipeline`
+  - `TranscriptionPostProcessor`
+- the manager publishes:
+  - `lastCaptureArtifact`
+  - `lastTranscriptionSnapshot`
+  - `lastErrorMessage`
+  - `isModelAvailable`
+- repeated start/stop commands during recording, processing, or transcription remain safe no-ops
+
+### 3.3 Implemented dictionary and hint-prompt wiring
+
+Implemented behavior:
+
+- the iOS app now instantiates a real `DictionaryStore`
+- `TranscriptionPostProcessor` stays synchronized with current dictionary entries
+- `WhisperService` stays synchronized with the current dictionary hint prompt
+- `DictionaryHintPromptGate` is used before transcription to decide whether hint prompting should be enabled for the capture
+
+This matches the macOS architectural seam while keeping the iOS implementation app-local.
+
+### 3.4 Preserved the Phase 2 artifact pipeline
+
+Phase 3 keeps the Phase 2 verification outputs intact:
+
+- snapshot WAV
+- transcription-input WAV when accepted
+- metadata JSON
+
+These artifacts are still written before transcription completion is considered done, so recording proof remains available even when:
+
+- capture is rejected
+- the model is unavailable
+- transcription produces a likely-no-speech result
+
+### 3.5 Implemented debug-state verification instead of UI work
+
+Phase 3 intentionally does **not** add real transcription UI.
+
+Verification for this phase happens through manager debug state:
+
+- `lastTranscriptionSnapshot.rawText`
+- `lastTranscriptionSnapshot.finalText`
+- `lastTranscriptionSnapshot.wasLikelyNoSpeech`
+- `lastTranscriptionSnapshot.inferenceDuration`
+- `lastTranscriptionSnapshot.pasteDuration`
+- `lastTranscriptionSnapshot.usedDictionaryHintPrompt`
+- `lastTranscriptionSnapshot.captureDuration`
+- `lastTranscriptionSnapshot.outputFrameCount`
+
+`AppRootView` remains minimal and is not treated as a Phase 3 UI surface.
+
+### 3.6 Phase 3 acceptance status
+
+Phase 3 is considered done because all of the following are now true:
+
+1. The Phase 2 recording flow still works.
+2. `iOSTranscriptionManager` owns a real transcription path instead of stopping at capture verification.
+3. `WhisperService` is injected through `iOSAppServiceRegistry`.
+4. `DictionaryStore` is instantiated in the iOS app and wired into `TranscriptionPostProcessor` and `WhisperService`.
+5. Accepted capture output flows into `DictationPipeline`.
+6. Successful or suppressed transcription results publish `lastTranscriptionSnapshot`.
+7. Missing-model behavior returns to `.idle` cleanly with an explicit error.
+8. Silence and likely-no-speech paths do not crash and do not pretend success.
+9. No keyboard extension implementation or IPC handoff was mixed into this phase.
+10. No real UI/polish work was mixed into this phase.
+
+### 3.7 Known note before Phase 4
+
+During manual validation, the log message below was observed when the app was backgrounded and foregrounded:
+
+`Potential Structural Swift Concurrency Issue: unsafeForcedSync called from Swift Concurrent context.`
+
+This is **not** currently being treated as a Phase 3 blocker. The current evidence points to this being an OS/accessibility-subsystem warning rather than a proven app-specific pipeline bug, and the containing-app record → stop → transcribe flow still completed successfully.
+
+Phase 4 begins from a working containing-app transcription path rather than a recording-only scaffold.
 
 ---
 

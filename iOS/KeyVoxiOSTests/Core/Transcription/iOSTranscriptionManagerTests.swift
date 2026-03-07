@@ -5,83 +5,210 @@ import Testing
 
 @MainActor
 struct iOSTranscriptionManagerTests {
-    @Test func startFromIdleTransitionsToRecording() async {
-        let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter()
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
+    @Test func startFromIdleTransitionsToRecording() async throws {
+        let harness = try makeHarness()
 
-        await manager.performStartRecordingCommand()
+        await harness.manager.performStartRecordingCommand()
 
-        #expect(manager.state == .recording)
-        #expect(recorder.startCallCount == 1)
+        #expect(harness.manager.state == .recording)
+        #expect(harness.recorder.startCallCount == 1)
     }
 
-    @Test func repeatedStartWhileRecordingIsIgnored() async {
-        let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter()
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
+    @Test func repeatedStartWhileRecordingIsIgnored() async throws {
+        let harness = try makeHarness()
 
-        await manager.performStartRecordingCommand()
-        await manager.performStartRecordingCommand()
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStartRecordingCommand()
 
-        #expect(manager.state == .recording)
-        #expect(recorder.startCallCount == 1)
+        #expect(harness.manager.state == .recording)
+        #expect(harness.recorder.startCallCount == 1)
     }
 
-    @Test func stopWhileIdleIsNoOp() async {
-        let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter()
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
+    @Test func stopWhileIdleIsNoOp() async throws {
+        let harness = try makeHarness()
 
-        await manager.performStopRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
 
-        #expect(manager.state == .idle)
-        #expect(recorder.stopCallCount == 0)
+        #expect(harness.manager.state == .idle)
+        #expect(harness.recorder.stopCallCount == 0)
     }
 
-    @Test func stopFromRecordingWritesArtifactAndReturnsToIdle() async throws {
-        let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter()
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
-        recorder.stoppedCapture = acceptedCapture()
+    @Test func stopFromRecordingPublishesTranscriptionSnapshotAndReturnsToIdle() async throws {
+        let harness = try makeHarness()
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
 
-        await manager.performStartRecordingCommand()
-        await manager.performStopRecordingCommand()
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
 
-        #expect(manager.state == .idle)
-        #expect(recorder.stopCallCount == 1)
-        #expect(manager.lastCaptureArtifact?.outputFrameCount == recorder.stoppedCapture.outputFrames.count)
-        #expect(writer.lastRequest?.hadActiveSignal == true)
+        #expect(harness.manager.state == .idle)
+        #expect(harness.recorder.stopCallCount == 1)
+        #expect(harness.manager.lastCaptureArtifact?.outputFrameCount == harness.recorder.stoppedCapture.outputFrames.count)
+        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "Hello world")
+        #expect(harness.manager.lastTranscriptionSnapshot?.usedDictionaryHintPrompt == false)
+        #expect(harness.manager.lastErrorMessage == nil)
     }
 
     @Test func stopSetsProcessingCaptureWhileWriterIsInFlight() async throws {
-        let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter(shouldSuspend: true)
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
-        recorder.stoppedCapture = acceptedCapture()
+        let harness = try makeHarness(writerShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test", languageCode: "en")
 
-        await manager.performStartRecordingCommand()
+        await harness.manager.performStartRecordingCommand()
 
-        let task = Task { await manager.performStopRecordingCommand() }
+        let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
 
-        #expect(manager.state == .processingCapture)
-        writer.resumeSuccess()
+        #expect(harness.manager.state == .processingCapture)
+        harness.writer.resumeSuccess()
         await task.value
-        #expect(manager.state == .idle)
+        #expect(harness.manager.state == .idle)
     }
 
-    @Test func artifactWriterFailureSurfacesErrorAndReturnsToIdle() async {
+    @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+
+        let task = Task { await harness.manager.performStopRecordingCommand() }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        harness.transcriptionService.resumeSuccess()
+        await task.value
+        await waitForManagerState(harness.manager, toBe: .idle)
+        #expect(harness.manager.state == .idle)
+    }
+
+    @Test func acceptedCaptureWithMissingModelSurfacesErrorAndSkipsTranscription() async throws {
+        let harness = try makeHarness(modelPath: "")
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.isModelAvailable == false)
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+        #expect(harness.manager.lastTranscriptionSnapshot == nil)
+        #expect(harness.manager.lastErrorMessage == "Whisper model not found in App Group container.")
+    }
+
+    @Test func likelyNoSpeechResultPublishesSuppressedSnapshot() async throws {
+        let harness = try makeHarness()
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "", languageCode: "en")
+        harness.transcriptionService.lastResultWasLikelyNoSpeech = true
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.lastTranscriptionSnapshot?.wasLikelyNoSpeech == true)
+        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "")
+    }
+
+    @Test func repeatedStartWhileTranscribingIsIgnored() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        let task = Task { await harness.manager.performStopRecordingCommand() }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        await harness.manager.performStartRecordingCommand()
+        #expect(harness.recorder.startCallCount == 1)
+
+        harness.transcriptionService.resumeSuccess()
+        await task.value
+    }
+
+    @Test func repeatedStopWhileTranscribingIsIgnored() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        let task = Task { await harness.manager.performStopRecordingCommand() }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        await harness.manager.performStopRecordingCommand()
+        #expect(harness.recorder.stopCallCount == 1)
+
+        harness.transcriptionService.resumeSuccess()
+        await task.value
+    }
+
+    @Test func emptyOutputFramesReturnToIdleWithoutTranscribing() async throws {
+        let harness = try makeHarness()
+        harness.recorder.stoppedCapture = emptyOutputCapture()
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+        #expect(harness.manager.lastTranscriptionSnapshot == nil)
+    }
+
+    @Test func dictionaryUpdatesRefreshHintPrompt() async throws {
+        let harness = try makeHarness()
+
+        try harness.dictionaryStore.add(phrase: "cueit")
+        await settleAsyncManagerWork()
+
+        #expect(harness.transcriptionService.lastUpdatedPrompt?.lowercased().contains("cueit") == true)
+    }
+
+    private func makeHarness(
+        modelPath: String? = nil,
+        writerShouldSuspend: Bool = false,
+        serviceShouldSuspend: Bool = false
+    ) throws -> ManagerHarness {
         let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter(error: TestError.writeFailed)
-        let manager = iOSTranscriptionManager(recorder: recorder, artifactWriter: writer)
-        recorder.stoppedCapture = acceptedCapture()
+        let writer = StubArtifactWriter(shouldSuspend: writerShouldSuspend)
+        let transcriptionService = StubDictationService(shouldSuspend: serviceShouldSuspend)
+        let dictionaryBase = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let resolvedModelPath: String?
+        if let modelPath {
+            resolvedModelPath = modelPath.isEmpty ? nil : modelPath
+        } else {
+            let modelURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("bin")
+            try Data("stub-model".utf8).write(to: modelURL)
+            resolvedModelPath = modelURL.path
+        }
+        let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: dictionaryBase)
+        let postProcessor = TranscriptionPostProcessor()
+        let manager = iOSTranscriptionManager(
+            recorder: recorder,
+            artifactWriter: writer,
+            transcriptionService: transcriptionService,
+            dictionaryStore: dictionaryStore,
+            postProcessor: postProcessor,
+            modelPathProvider: { resolvedModelPath }
+        )
 
-        await manager.performStartRecordingCommand()
-        await manager.performStopRecordingCommand()
-
-        #expect(manager.state == .idle)
-        #expect(manager.lastErrorMessage == TestError.writeFailed.localizedDescription)
+        return ManagerHarness(
+            manager: manager,
+            recorder: recorder,
+            writer: writer,
+            transcriptionService: transcriptionService,
+            dictionaryStore: dictionaryStore
+        )
     }
 
     private func acceptedCapture() -> iOSStoppedCapture {
@@ -96,6 +223,65 @@ struct iOSTranscriptionManagerTests {
             normalizationMaxGain: 3.0
         )
     }
+
+    private func rejectedCapture() -> iOSStoppedCapture {
+        iOSStoppedCaptureProcessor.process(
+            snapshot: Array(repeating: Float(0.00001), count: 4_000),
+            captureDuration: 1.0,
+            maxActiveSignalRunDuration: 0.1,
+            gapRemovalRMSThreshold: 0.0023,
+            lowConfidenceRMSCutoff: 0.0032,
+            trueSilenceWindowRMSThreshold: 0.0018,
+            normalizationTargetPeak: 0.9,
+            normalizationMaxGain: 3.0
+        )
+    }
+
+    private func emptyOutputCapture() -> iOSStoppedCapture {
+        let classification = AudioCaptureClassifier.classify(
+            snapshot: Array(repeating: Float(0.2), count: 4_000),
+            speechOnly: [],
+            captureDuration: 1.0,
+            maxActiveSignalRunDuration: 0.1,
+            lowConfidenceRMSCutoff: 0.0032,
+            trueSilenceWindowRMSThreshold: 0.0018
+        )
+
+        return iOSStoppedCapture(
+            snapshot: Array(repeating: Float(0.2), count: 4_000),
+            outputFrames: [],
+            classification: classification,
+            captureDuration: 1.0,
+            maxActiveSignalRunDuration: 0.1
+        )
+    }
+
+    private func settleAsyncManagerWork() async {
+        for _ in 0..<5 {
+            await Task.yield()
+        }
+    }
+
+    private func waitForManagerState(
+        _ manager: iOSTranscriptionManager,
+        toBe expectedState: iOSTranscriptionManager.State
+    ) async {
+        for _ in 0..<20 {
+            if manager.state == expectedState {
+                return
+            }
+            await Task.yield()
+        }
+    }
+}
+
+@MainActor
+private struct ManagerHarness {
+    let manager: iOSTranscriptionManager
+    let recorder: StubAudioRecorder
+    let writer: StubArtifactWriter
+    let transcriptionService: StubDictationService
+    let dictionaryStore: DictionaryStore
 }
 
 @MainActor
@@ -194,13 +380,83 @@ private final class StubArtifactWriter: Phase2CaptureArtifactWriting {
     }
 }
 
-private enum TestError: LocalizedError {
-    case writeFailed
+@MainActor
+private final class StubDictationService: iOSDictationService {
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var pendingResume = false
+    private let shouldSuspend: Bool
 
-    var errorDescription: String? {
-        switch self {
-        case .writeFailed:
-            return "write failed"
+    var isTranscribing = false
+    var lastResultWasLikelyNoSpeech = false
+    var warmupCallCount = 0
+    var cancelCallCount = 0
+    var transcribeCallCount = 0
+    var nextResult: TranscriptionProviderResult?
+    var lastUpdatedPrompt: String?
+    var lastUseDictionaryHintPrompt: Bool?
+    var lastEnableAutoParagraphs: Bool?
+    var lastAudioFrames: [Float] = []
+
+    init(shouldSuspend: Bool = false) {
+        self.shouldSuspend = shouldSuspend
+    }
+
+    func warmup() {
+        warmupCallCount += 1
+    }
+
+    func cancelTranscription() {
+        cancelCallCount += 1
+    }
+
+    func updateDictionaryHintPrompt(_ prompt: String) {
+        lastUpdatedPrompt = prompt
+    }
+
+    func transcribe(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool,
+        enableAutoParagraphs: Bool,
+        completion: @escaping (TranscriptionProviderResult?) -> Void
+    ) {
+        transcribeCallCount += 1
+        lastAudioFrames = audioFrames
+        lastUseDictionaryHintPrompt = useDictionaryHintPrompt
+        lastEnableAutoParagraphs = enableAutoParagraphs
+
+        let finish = {
+            completion(self.nextResult)
+        }
+
+        if shouldSuspend {
+            Task { @MainActor in
+                await self.waitForResume()
+                finish()
+            }
+        } else {
+            finish()
+        }
+    }
+
+    func resumeSuccess() {
+        guard let continuation else {
+            pendingResume = true
+            return
+        }
+
+        self.continuation = nil
+        pendingResume = false
+        continuation.resume()
+    }
+
+    private func waitForResume() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            if pendingResume {
+                pendingResume = false
+                continuation.resume()
+                return
+            }
+            self.continuation = continuation
         }
     }
 }
