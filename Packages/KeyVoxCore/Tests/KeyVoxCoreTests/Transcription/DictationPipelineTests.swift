@@ -66,6 +66,36 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(provider.receivedEnableAutoParagraphs, true)
     }
 
+    func testPipelineCompletesAfterExternalPipelineReferenceIsReleased() async throws {
+        let provider = DeferredTranscriptionProvider()
+        let audioFrames = Array(repeating: Float(0.1), count: 64)
+        var pipeline: DictationPipeline? = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { false },
+            listFormattingEnabledProvider: { false },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+        let expectation = expectation(description: "Pipeline completion")
+        var result: DictationPipelineResult?
+
+        pipeline?.run(audioFrames: audioFrames, useDictionaryHintPrompt: false) {
+            result = $0
+            expectation.fulfill()
+        }
+
+        pipeline = nil
+        provider.complete(with: .init(text: "hello world", languageCode: "en"))
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        XCTAssertEqual(result?.rawText, "hello world")
+        XCTAssertEqual(result?.finalText, "Hello world")
+        XCTAssertEqual(result?.wasLikelyNoSpeech, false)
+    }
+
     private var recorded: [String] = []
     private var pasted: [String] = []
 
@@ -114,5 +144,25 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         receivedUseDictionaryHintPrompt = useDictionaryHintPrompt
         receivedEnableAutoParagraphs = enableAutoParagraphs
         completion(result)
+    }
+}
+
+@MainActor
+private final class DeferredTranscriptionProvider: DictationTranscriptionProviding {
+    let lastResultWasLikelyNoSpeech = false
+    private var completion: ((TranscriptionProviderResult?) -> Void)?
+
+    func transcribe(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool,
+        enableAutoParagraphs: Bool,
+        completion: @escaping (TranscriptionProviderResult?) -> Void
+    ) {
+        self.completion = completion
+    }
+
+    func complete(with result: TranscriptionProviderResult?) {
+        completion?(result)
+        completion = nil
     }
 }

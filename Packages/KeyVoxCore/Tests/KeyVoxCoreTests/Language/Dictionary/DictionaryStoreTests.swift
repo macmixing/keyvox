@@ -134,6 +134,27 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
+    func testBackupWriteFailureDoesNotFailPrimaryPersistence() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
+            let backupPath = dictionaryDir.appendingPathComponent("dictionary.backup.json", isDirectory: true)
+
+            let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            try FileManager.default.createDirectory(at: dictionaryDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: backupPath, withIntermediateDirectories: true)
+            try store.add(phrase: "Cueboard")
+
+            XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard"])
+            XCTAssertNil(store.saveErrorMessage)
+
+            let primary = dictionaryDir.appendingPathComponent("dictionary.json")
+            let persisted = try String(contentsOf: primary, encoding: .utf8)
+            XCTAssertTrue(persisted.contains("Cueboard"))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: backupPath.path))
+        }
+    }
+
     func testCorruptBothFilesTriggersQuarantineAndReset() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)

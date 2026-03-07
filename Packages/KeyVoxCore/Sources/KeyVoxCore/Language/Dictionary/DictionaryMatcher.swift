@@ -43,15 +43,15 @@ public final class DictionaryMatcher {
         }
     }
 
-    let lexicon: PronunciationLexiconProviding
-    let encoder: PhoneticEncoder
-    let scorer: ReplacementScorer
-    let splitJoinMinimumScore = 0.92
-    let minimumSplitTokenLength = 3
-    let possessiveStemScoreBoost = 0.06
+    internal let lexicon: PronunciationLexiconProviding
+    internal let encoder: PhoneticEncoder
+    internal let scorer: ReplacementScorer
+    internal let splitJoinMinimumScore = 0.92
+    internal let minimumSplitTokenLength = 3
+    internal let possessiveStemScoreBoost = 0.06
 
-    var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
-    var emailEntriesByDomain: [String: [DictionaryEmailEntry]] = [:]
+    internal private(set) var entriesByTokenCount: [Int: [CompiledEntry]] = [:]
+    internal private(set) var emailEntriesByDomain: [String: [DictionaryEmailEntry]] = [:]
     
     public init(
         lexicon: PronunciationLexiconProviding,

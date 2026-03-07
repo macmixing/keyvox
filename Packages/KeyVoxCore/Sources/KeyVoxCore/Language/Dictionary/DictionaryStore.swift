@@ -183,7 +183,13 @@ public final class DictionaryStore: ObservableObject {
         let data = try encoder.encode(payload)
 
         try data.write(to: dictionaryFileURL, options: .atomic)
-        try data.write(to: backupFileURL, options: .atomic)
+        do {
+            try data.write(to: backupFileURL, options: .atomic)
+        } catch {
+            #if DEBUG
+            print("[DictionaryStore] Failed to update backup dictionary file: \(error)")
+            #endif
+        }
 
         saveErrorMessage = nil
         loadWarningMessage = nil

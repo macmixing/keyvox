@@ -1,5 +1,15 @@
 import Foundation
 
+public struct ListPatternDetection {
+    public let run: [ListPatternMarker]
+    public let renumberSequentially: Bool
+
+    public init(run: [ListPatternMarker], renumberSequentially: Bool) {
+        self.run = run
+        self.renumberSequentially = renumberSequentially
+    }
+}
+
 public struct ListPatternRunSelector {
     private enum CadenceGuard {
         static let maximumWordsBetweenAdjacentMarkers = 70
@@ -16,13 +26,13 @@ public struct ListPatternRunSelector {
         from markers: [ListPatternMarker],
         in text: String,
         languageCode: String?
-    ) -> (run: [ListPatternMarker], renumberSequentially: Bool)? {
+    ) -> ListPatternDetection? {
         if let bestRun = bestMonotonicRun(from: markers, in: text, languageCode: languageCode), bestRun.count >= 2 {
-            return (bestRun, false)
+            return ListPatternDetection(run: bestRun, renumberSequentially: false)
         }
         if let restartedRun = restartedOneRunAcrossParagraphBreaks(from: markers, in: text),
            restartedRun.count >= 2 {
-            return (restartedRun, true)
+            return ListPatternDetection(run: restartedRun, renumberSequentially: true)
         }
         return nil
     }

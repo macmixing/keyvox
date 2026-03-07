@@ -3,7 +3,8 @@ import Foundation
 public enum DictionaryTextNormalization {
     public static func normalizedPhrase(_ input: String) -> String {
         let folded = input
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+            .precomposedStringWithCompatibilityMapping
+            .folding(options: [.diacriticInsensitive], locale: nil)
 
         let lower = folded.lowercased()
         let spaced = lower.replacingOccurrences(of: "[^a-z0-9']+", with: " ", options: .regularExpression)

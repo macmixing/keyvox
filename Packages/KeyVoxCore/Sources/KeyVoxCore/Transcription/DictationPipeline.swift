@@ -76,9 +76,7 @@ public final class DictationPipeline {
             audioFrames: audioFrames,
             useDictionaryHintPrompt: useDictionaryHintPrompt,
             enableAutoParagraphs: autoParagraphsEnabled
-        ) { [weak self] result in
-            guard let self else { return }
-
+        ) { [self] result in
             let inferenceDuration = Date().timeIntervalSince(inferenceStart)
             let rawText = result?.text ?? ""
             let languageCode = result?.languageCode
