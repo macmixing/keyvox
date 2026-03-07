@@ -978,76 +978,127 @@ Phase 5 is considered done because all of the following are now true:
 
 ## Phase 6 — Model Management
 
-### 6.1 Adapt `ModelDownloader` for iOS
+Phase 6 is complete.
 
-Phase 6 is the next active milestone.
+### 6.1 What Phase 6 Implemented
 
-The codebase already has:
+The containing app now owns a real iOS-local model lifecycle instead of relying on manual App Group file placement.
 
-- a working App Group model path seam
-- manual real-device validation with a real `ggml-base.bin`
-- confirmed end-to-end transcription through the keyboard extension round trip
+Implemented pieces:
 
-What is **not** done yet is the real productized model-management flow:
+- `iOSModelManager`
+  - real download / install / delete / repair flow
+  - app-owned model state publishing
+  - `WhisperService` unload / warmup coordination
+- `iOSModelInstallState`
+  - `notInstalled`
+  - `downloading(progress:)`
+  - `installing`
+  - `ready`
+  - `failed(message:)`
+- `iOSModelDownloadURLs`
+  - fixed download sources for the validated payloads
+- `iOSModelDownloadBackgroundTasks`
+  - background-task seam and identifier registration
+- `iOSSharedPaths`
+  - explicit App Group `Models/` paths for:
+    - `ggml-base.bin`
+    - `ggml-base-encoder.mlmodelc.zip`
+    - `ggml-base-encoder.mlmodelc`
+    - install manifest
+- `iOSAppServiceRegistry`
+  - now owns `modelManager`
+- `AppRootView`
+  - now exposes a minimal permanent model section with:
+    - status
+    - download
+    - delete
+    - repair
+    - failure messaging
 
-- download
-- install
-- repair / delete
-- CoreML companion asset install
-- background task handling
+### 6.2 Final iOS Model Contract
 
-The existing `ModelDownloader` is **90% reusable**. Changes needed:
+Phase 6 intentionally kept model management out of `KeyVoxCore`.
 
-1. **Storage path**: Use the App Group container instead of `~/Library/Application Support/KeyVox/`
-2. **Model payload**: Install **both**:
-   - `ggml-base.bin`
-   - `ggml-base-encoder.mlmodelc`
-3. **CoreML unzip**: `Process()` is not available on iOS. Use `ZIPFoundation` SPM package or custom `zlib` wrapper.
-4. **Background download**: Use `BGProcessingTask` for downloads that may take a while.
+`KeyVoxCore` remains the dictation engine boundary:
+- model path is injected into `WhisperService`
+- model acquisition / install / delete remains app-owned
 
-```swift
-// Override model URL provider for iOS
-let modelURLProvider: () -> URL = {
-    guard let container = FileManager.default.containerURL(
-        forSecurityApplicationGroupIdentifier: "group.com.cueit.keyvox"
-    ) else {
-        return FileManager.default.temporaryDirectory
-            .appendingPathComponent("Models/ggml-base.bin")
-    }
-    return container
-        .appendingPathComponent("Models")
-        .appendingPathComponent("ggml-base.bin")
-}
-```
+The real install target is the App Group container:
+
+- `<App Group Container>/Models/ggml-base.bin`
+- `<App Group Container>/Models/ggml-base-encoder.mlmodelc`
+
+The app-managed payload for this phase is the same validated model set already proven on device:
+
+- `ggml-base.bin`
+- `ggml-base-encoder.mlmodelc`
+
+### 6.3 Core ML Handling
+
+The Core ML companion asset is now part of the real install story, not an optional afterthought.
+
+What was implemented:
+
+- the app downloads:
+  - `ggml-base.bin`
+  - `ggml-base-encoder.mlmodelc.zip`
+- the app extracts the Core ML archive with `ZIPFoundation`
+- the archive is installed into:
+  - `<App Group Container>/Models/ggml-base-encoder.mlmodelc`
+- the zip is removed after successful extraction
 
 Verified real-device behavior:
 
-- `WhisperService` successfully loaded `ggml-base.bin` from the App Group container on-device
-- whisper.cpp then attempted to load the CoreML encoder from:
+- `WhisperService` successfully loads `ggml-base.bin` from the App Group container
+- whisper.cpp looks for the Core ML encoder at:
   - `<App Group Container>/Models/ggml-base-encoder.mlmodelc`
-- if that bundle is missing, transcription still works, but whisper.cpp logs a CoreML load failure and falls back without the CoreML encoder path
+- when the Core ML bundle is present, iOS can use the faster Core ML inference path
+- when the Core ML bundle is missing, transcription still functions through fallback behavior
 
-So the Phase 6 implementation must treat the CoreML encoder bundle as part of the real model install, not as an optional afterthought.
+Real-device validation in this phase confirmed that the Core ML path is materially faster and worth preserving as part of the install contract.
 
-### 6.2 Remove CoreML Zip Extraction via Process()
+### 6.4 Validation and Integrity
 
-The macOS version uses `/usr/bin/unzip` via `Process()`. On iOS, replace with:
+The iOS model manager now validates installs at two levels:
 
-```swift
-import ZIPFoundation  // SPM: https://github.com/weichsel/ZIPFoundation
+1. Cryptographic verification of the downloaded artifacts:
+   - pinned SHA-256 for `ggml-base.bin`
+   - pinned SHA-256 for `ggml-base-encoder.mlmodelc.zip`
+2. Structural verification of the extracted Core ML bundle:
+   - extracted directory exists
+   - extracted bundle contains real files
+   - stale zip does not remain after extraction
 
-private func unzipCoreML(at url: URL) throws {
-    let destinationURL = url.deletingLastPathComponent()
-    try FileManager.default.unzipItem(at: url, to: destinationURL)
-    try FileManager.default.removeItem(at: url)
-}
-```
+The app also writes an install manifest after successful verification so refresh/repair/delete flows can reason about the installed state cleanly.
 
-> [!IMPORTANT]
-> CoreML on iOS might not provide the same acceleration as on macOS for Whisper. However, real-device validation already confirmed that whisper.cpp **does** look for `ggml-base-encoder.mlmodelc` in the App Group `Models/` directory when `ggml-base.bin` is present. If the bundle is missing, the pipeline still functions, but the app logs a CoreML load failure and falls back. Phase 6 should therefore:
-> 1. install both the GGML file and the CoreML encoder bundle correctly,
-> 2. verify the expected bundle path on-device, and
-> 3. only consider dropping the CoreML asset if benchmarking shows no meaningful benefit.
+### 6.5 Delete and Repair
+
+Phase 6 now supports:
+
+- delete full installed model set
+- repair partial / corrupt installs
+- runtime unload / warmup synchronization with `WhisperService`
+
+That replaces the earlier manual “delete the App Group files yourself and try again” workflow.
+
+### 6.6 Phase 6 Acceptance Status
+
+Phase 6 is considered done because all of the following are now true:
+
+- the iOS app owns a real model-management service outside `KeyVoxCore`
+- the validated model set downloads into the App Group container
+- both required artifacts are installed:
+  - `ggml-base.bin`
+  - `ggml-base-encoder.mlmodelc`
+- the install is only marked ready after validation
+- the app can delete and repair installs
+- `WhisperService` runtime state is coordinated with install/delete
+- the containing app exposes a minimal permanent model-management UI
+- the keyboard round trip still works with the app-managed install
+- real-device validation confirmed the Core ML path works and materially improves inference speed
+
+Phase 7 is now the next active milestone.
 
 ---
 

@@ -17,5 +17,9 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.cueit.keyvox.model-download</string>
+	</array>
 </dict>
 </plist>

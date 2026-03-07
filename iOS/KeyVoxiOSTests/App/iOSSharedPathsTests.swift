@@ -7,8 +7,16 @@ struct iOSSharedPathsTests {
         let fileManager = StubContainerFileManager(containerURL: URL(fileURLWithPath: "/tmp/KeyVoxGroup", isDirectory: true))
 
         let modelURL = iOSSharedPaths.modelFileURL(fileManager: fileManager)
+        let modelsDirectoryURL = iOSSharedPaths.modelsDirectoryURL(fileManager: fileManager)
+        let coreMLZipURL = iOSSharedPaths.coreMLEncoderZipURL(fileManager: fileManager)
+        let coreMLDirectoryURL = iOSSharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager)
+        let manifestURL = iOSSharedPaths.modelInstallManifestURL(fileManager: fileManager)
 
         #expect(modelURL?.path == "/tmp/KeyVoxGroup/Models/ggml-base.bin")
+        #expect(modelsDirectoryURL?.path == "/tmp/KeyVoxGroup/Models")
+        #expect(coreMLZipURL?.path == "/tmp/KeyVoxGroup/Models/ggml-base-encoder.mlmodelc.zip")
+        #expect(coreMLDirectoryURL?.path == "/tmp/KeyVoxGroup/Models/ggml-base-encoder.mlmodelc")
+        #expect(manifestURL?.path == "/tmp/KeyVoxGroup/Models/model-install-manifest.json")
     }
 
     @Test func dictionaryBaseDirectoryAppendsExpectedPath() {

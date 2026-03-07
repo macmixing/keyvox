@@ -7,6 +7,7 @@ final class iOSAppServiceRegistry {
 
     let dictionaryStore: DictionaryStore
     let whisperService: WhisperService
+    let modelManager: iOSModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
     let artifactWriter: Phase2CaptureArtifactWriter
@@ -25,6 +26,14 @@ final class iOSAppServiceRegistry {
             baseDirectoryURL: dictionaryBaseDirectory
         )
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
+        let modelManager = iOSModelManager(
+            fileManager: fileManager,
+            whisperService: whisperService,
+            modelsDirectoryProvider: { iOSSharedPaths.modelsDirectoryURL(fileManager: fileManager) },
+            ggmlModelURLProvider: { iOSSharedPaths.modelFileURL(fileManager: fileManager) },
+            coreMLZipURLProvider: { iOSSharedPaths.coreMLEncoderZipURL(fileManager: fileManager) },
+            coreMLDirectoryURLProvider: { iOSSharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager) }
+        )
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
         let recorder = iOSAudioRecorder()
@@ -53,6 +62,7 @@ final class iOSAppServiceRegistry {
 
         self.dictionaryStore = dictionaryStore
         self.whisperService = whisperService
+        self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
         self.artifactWriter = artifactWriter

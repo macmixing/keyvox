@@ -32,6 +32,12 @@
 		8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */; };
 		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
+		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
+		9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */; };
+		9A7000122FA6000100AA0001 /* iOSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001022FA6000100AA0001 /* iOSModelManager.swift */; };
+		9A7000132FA6000100AA0001 /* iOSModelDownloadURLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */; };
+		9A7000142FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */; };
+		9A7000152FA6000100AA0001 /* iOSModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +97,11 @@
 		8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDictationService.swift; sourceTree = "<group>"; };
 		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
+		9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallState.swift; sourceTree = "<group>"; };
+		9A7001022FA6000100AA0001 /* iOSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelManager.swift; sourceTree = "<group>"; };
+		9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadURLs.swift; sourceTree = "<group>"; };
+		9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadBackgroundTasks.swift; sourceTree = "<group>"; };
+		9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallManifest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -131,6 +142,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */,
 				8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,6 +195,11 @@
 			isa = PBXGroup;
 			children = (
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
+				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
+				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
+				9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */,
+				9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */,
+				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
 				8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */,
 				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
 				8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */,
@@ -276,6 +293,7 @@
 			name = "KeyVox iOS";
 			packageProductDependencies = (
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
+				9A7000022FA6000100AA0001 /* ZIPFoundation */,
 			);
 			productName = KeyVox;
 			productReference = 8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */;
@@ -337,6 +355,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
+				9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8E9E38532F5BF1F000EAFA72 /* Products */;
@@ -391,6 +410,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */,
+				9A7000122FA6000100AA0001 /* iOSModelManager.swift in Sources */,
+				9A7000132FA6000100AA0001 /* iOSModelDownloadURLs.swift in Sources */,
+				9A7000142FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift in Sources */,
+				9A7000152FA6000100AA0001 /* iOSModelInstallManifest.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
@@ -790,10 +814,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		8E9E38952F5BF56600EAFA72 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
+		};
+		9A7000022FA6000100AA0001 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "https://github.com/weichsel/ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

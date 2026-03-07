@@ -8,9 +8,28 @@ nonisolated enum iOSSharedPaths {
     }
 
     static func modelFileURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("ggml-base.bin")
+    }
+
+    static func modelsDirectoryURL(fileManager: FileManager = .default) -> URL? {
         containerURL(fileManager: fileManager)?
             .appendingPathComponent("Models", isDirectory: true)
-            .appendingPathComponent("ggml-base.bin")
+    }
+
+    static func coreMLEncoderZipURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip")
+    }
+
+    static func coreMLEncoderDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
+    }
+
+    static func modelInstallManifestURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("model-install-manifest.json")
     }
 
     static func dictionaryBaseDirectoryURL(fileManager: FileManager = .default) -> URL? {
