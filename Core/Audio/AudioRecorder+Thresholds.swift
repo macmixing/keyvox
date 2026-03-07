@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import CoreAudio
+import KeyVoxCore
 
 extension AudioRecorder {
     static func captureAudioDevices() -> [AVCaptureDevice] {

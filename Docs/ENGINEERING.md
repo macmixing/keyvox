@@ -34,7 +34,7 @@ KeyVox is organized by responsibility:
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
-- `Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
 File-level ownership and locations are intentionally maintained in one place: [`CODEMAP.md`](CODEMAP.md).
 
@@ -89,7 +89,7 @@ Maintainers can override the update feed locally without changing tracked defaul
 - App tests:
   `xcodebuild -project KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO -resultBundlePath /tmp/keyvox-tests.xcresult test`
 - Package tests:
-  `swift test --package-path Packages/KeyVoxWhisper`
+  `swift test --package-path Packages/KeyVoxCore`
 - Core coverage gate:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 - Coverage markdown summary:
@@ -123,11 +123,11 @@ These remain integration/manual-test territory by design.
 ## Pronunciation Pipeline
 
 - Runtime pronunciation resources:
-  `Resources/Pronunciation/`
+  `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`
 - Lexicon build script:
   `Tools/Pronunciation/build_lexicon.sh`
 - Source/checksum lock:
-  `Resources/Pronunciation/sources.lock.json`
+  `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/sources.lock.json`
 - Source/license verification:
   `Tools/Pronunciation/verify_licenses.sh`
 - Quality gates:

@@ -17,8 +17,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-LEXICON_FILE="$REPO_ROOT/Resources/Pronunciation/lexicon-v1.tsv"
-COMMON_FILE="$REPO_ROOT/Resources/Pronunciation/common-words-v1.txt"
+LEXICON_FILE="$REPO_ROOT/Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/lexicon-v1.tsv"
+COMMON_FILE="$REPO_ROOT/Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt"
 HIT_RATE_MIN="${HIT_RATE_MIN:-90}"
 
 if [[ ! -f "$LEXICON_FILE" || ! -f "$COMMON_FILE" ]]; then

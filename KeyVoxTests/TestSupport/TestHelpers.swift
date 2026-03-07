@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 @testable import KeyVox
+import KeyVoxCore
 
 @MainActor
 final class RecordingPromptPresenter: UpdatePromptPresenting {

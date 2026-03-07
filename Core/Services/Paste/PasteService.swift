@@ -1,4 +1,5 @@
 import Cocoa
+import KeyVoxCore
 
 class PasteService {
     static let shared = PasteService()

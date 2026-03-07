@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 
 enum MicrophoneSilenceReason {
     case muted

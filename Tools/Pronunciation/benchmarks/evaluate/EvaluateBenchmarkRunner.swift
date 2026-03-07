@@ -1,7 +1,7 @@
 import Foundation
 
 func evaluate(repoRoot: String, debugCases: Bool) throws -> QualityMetrics {
-    let pronunciationDir = "\(repoRoot)/Resources/Pronunciation"
+    let pronunciationDir = "\(repoRoot)/Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation"
     let benchmarkDir = "\(repoRoot)/Tools/Pronunciation/benchmarks"
 
     let lexicon = try loadLexicon(at: "\(pronunciationDir)/lexicon-v1.tsv")

@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 
 enum PastePolicies {
     static let multilineListOverrideBundleIDs: Set<String> = [

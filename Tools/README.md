@@ -67,9 +67,9 @@ Tools/ExplorePasteSignal.sh --app "Slack" --mode menu --delays "0.05 0.10 0.20 0
 
 Regenerates pinned pronunciation resources:
 
-- `Resources/Pronunciation/lexicon-v1.tsv`
-- `Resources/Pronunciation/common-words-v1.txt`
-- `Resources/Pronunciation/sources.lock.json`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/lexicon-v1.tsv`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/sources.lock.json`
 
 Runs source pinning checks and benchmark quality gates as part of the workflow.
 
@@ -85,8 +85,8 @@ Tools/Pronunciation/train_g2p.sh --cmudict /path/to/cmudict.dict --word-list /pa
 
 Verifies pronunciation source/license policy against:
 
-- `Resources/Pronunciation/sources.lock.json`
-- `Resources/Pronunciation/LICENSES.md`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/sources.lock.json`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`
 - `THIRD_PARTY_NOTICES.md`
 
 ### `Pronunciation/benchmarks/run_quality_gates.sh`
