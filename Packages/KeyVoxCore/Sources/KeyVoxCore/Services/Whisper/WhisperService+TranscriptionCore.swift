@@ -3,6 +3,11 @@ import AVFoundation
 import KeyVoxWhisper
 
 extension WhisperService {
+    struct TranscribedChunk {
+        let text: String
+        let trailingBoundaryFrame: Int?
+    }
+
     public func transcribe(
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool = true,
@@ -68,7 +73,7 @@ extension WhisperService {
                 #endif
 
                 var transcribedSegments: [Segment] = []
-                var chunkTexts: [String] = []
+                var transcribedChunks: [TranscribedChunk] = []
                 var detectedLanguageCode: String? = nil
                 var nonEmptyChunkTextCount = 0
 
@@ -100,8 +105,16 @@ extension WhisperService {
                         .map { $0.text }
                         .joined(separator: " ")
                     let normalizedChunkText = self.normalizeWhitespace(chunkText)
+                    let trailingBoundaryFrame = chunkIndex < (chunkResult.chunks.count - 1)
+                        ? chunk.endFrame
+                        : nil
+                    transcribedChunks.append(
+                        TranscribedChunk(
+                            text: normalizedChunkText,
+                            trailingBoundaryFrame: trailingBoundaryFrame
+                        )
+                    )
                     if !normalizedChunkText.isEmpty {
-                        chunkTexts.append(normalizedChunkText)
                         nonEmptyChunkTextCount += 1
                     }
                     #if DEBUG
@@ -128,10 +141,11 @@ extension WhisperService {
                     return
                 }
 
-                let paragraphSeparator = enableAutoParagraphs ? "\n\n" : " "
-                let text = chunkTexts
-                    .joined(separator: paragraphSeparator)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                let text = self.assembleTranscription(
+                    from: transcribedChunks,
+                    silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
+                    enableAutoParagraphs: enableAutoParagraphs
+                )
                 let hasSegments = !transcribedSegments.isEmpty
                 let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
                     $0.noSpeechProbability >= noSpeechSegmentProbabilityThreshold
@@ -380,6 +394,39 @@ extension WhisperService {
             .map { $0.text }
             .joined(separator: " ")
         return normalizeWhitespace(joinedText)
+    }
+
+    func assembleTranscription(
+        from chunks: [TranscribedChunk],
+        silenceBoundaryFrames: Set<Int>,
+        enableAutoParagraphs: Bool
+    ) -> String {
+        guard !chunks.isEmpty else { return "" }
+
+        let punctuationNormalizer = TerminalPunctuationNormalizer()
+        var assembled = ""
+        var lastNonEmptyChunkIndex: Int?
+
+        for (index, chunk) in chunks.enumerated() {
+            guard !chunk.text.isEmpty else { continue }
+
+            if let previousIndex = lastNonEmptyChunkIndex, !assembled.isEmpty {
+                let sawSilenceBoundary = enableAutoParagraphs && chunks[previousIndex..<index].contains {
+                    guard let boundaryFrame = $0.trailingBoundaryFrame else { return false }
+                    return silenceBoundaryFrames.contains(boundaryFrame)
+                }
+                let separator = sawSilenceBoundary &&
+                    punctuationNormalizer.hasTerminalSentencePunctuation(chunks[previousIndex].text)
+                    ? "\n\n"
+                    : " "
+                assembled += separator
+            }
+
+            assembled += chunk.text
+            lastNonEmptyChunkIndex = index
+        }
+
+        return assembled.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func normalizeWhitespace(_ text: String, preservingNewlines: Bool = false) -> String {
