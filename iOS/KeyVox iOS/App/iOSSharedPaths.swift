@@ -3,6 +3,10 @@ import Foundation
 nonisolated enum iOSSharedPaths {
     static let appGroupID = "group.com.cueit.keyvox"
 
+    static func appGroupUserDefaults() -> UserDefaults? {
+        UserDefaults(suiteName: appGroupID)
+    }
+
     static func containerURL(fileManager: FileManager = .default) -> URL? {
         fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
     }

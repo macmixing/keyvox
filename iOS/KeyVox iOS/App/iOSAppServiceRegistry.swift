@@ -6,17 +6,20 @@ final class iOSAppServiceRegistry {
     static let shared = iOSAppServiceRegistry()
 
     let dictionaryStore: DictionaryStore
+    let settingsStore: iOSAppSettingsStore
     let whisperService: WhisperService
     let modelManager: iOSModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
     let artifactWriter: Phase2CaptureArtifactWriter
     let transcriptionManager: iOSTranscriptionManager
+    let iCloudSyncCoordinator: iOSiCloudSyncCoordinator
     let urlRouter: KeyVoxURLRouter
 
     private init(fileManager: FileManager = .default) {
         let dictionaryBaseDirectory = iOSSharedPaths.dictionaryBaseDirectoryURL(fileManager: fileManager)
             ?? iOSSharedPaths.fallbackBaseDirectoryURL(fileManager: fileManager)
+        let settingsDefaults = iOSSharedPaths.appGroupUserDefaults() ?? .standard
         let modelPathProvider = {
             iOSSharedPaths.modelFileURL(fileManager: fileManager)?.path
         }
@@ -25,6 +28,7 @@ final class iOSAppServiceRegistry {
             fileManager: fileManager,
             baseDirectoryURL: dictionaryBaseDirectory
         )
+        let settingsStore = iOSAppSettingsStore(defaults: settingsDefaults)
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let modelManager = iOSModelManager(
             fileManager: fileManager,
@@ -50,7 +54,18 @@ final class iOSAppServiceRegistry {
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
-            modelPathProvider: modelPathProvider
+            modelPathProvider: modelPathProvider,
+            autoParagraphsEnabledProvider: { [weak settingsStore] in
+                settingsStore?.autoParagraphsEnabled ?? true
+            },
+            listFormattingEnabledProvider: { [weak settingsStore] in
+                settingsStore?.listFormattingEnabled ?? true
+            }
+        )
+        let iCloudSyncCoordinator = iOSiCloudSyncCoordinator(
+            settingsStore: settingsStore,
+            dictionaryStore: dictionaryStore,
+            defaults: settingsDefaults
         )
         keyboardBridge.onStartRecordingCommand = {
             transcriptionManager.handleStartRecordingCommand()
@@ -61,12 +76,14 @@ final class iOSAppServiceRegistry {
         keyboardBridge.registerObservers()
 
         self.dictionaryStore = dictionaryStore
+        self.settingsStore = settingsStore
         self.whisperService = whisperService
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
         self.artifactWriter = artifactWriter
         self.transcriptionManager = transcriptionManager
+        self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
     }
 }

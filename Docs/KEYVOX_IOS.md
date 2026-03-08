@@ -16,8 +16,8 @@
 8. [Phase 5 — App ↔ Extension IPC](#phase-5--app--extension-ipc)
 9. [Phase 6 — Model Management](#phase-6--model-management)
 10. [Phase 7 — Dictionary & Settings](#phase-7--dictionary--settings)
-11. [Phase 8 — UI/UX (Containing App)](#phase-8--uiux-containing-app)
-12. [Phase 9 — UI/UX (Keyboard Extension)](#phase-9--uiux-keyboard-extension)
+11. [Phase 8 — UI/UX (Keyboard Extension)](#phase-8--uiux-keyboard-extension)
+12. [Phase 9 — UI/UX (Containing App)](#phase-9--uiux-containing-app)
 13. [Phase 10 — Testing](#phase-10--testing)
 14. [Phase 11 — Polish & Ship](#phase-11--polish--ship)
 15. [Platform Constraints & Gotchas](#platform-constraints--gotchas)
@@ -1098,147 +1098,264 @@ Phase 6 is considered done because all of the following are now true:
 - the keyboard round trip still works with the app-managed install
 - real-device validation confirmed the Core ML path works and materially improves inference speed
 
-Phase 7 is now the next active milestone.
+Phase 7 is now complete:
+
+- **Phase 7A (macOS iCloud sync)**: complete and verified across two Macs
+- **Phase 7B (iOS iCloud sync + settings/dictionary surfacing)**: complete and verified across Mac + iPhone
 
 ---
 
 ## Phase 7 — Dictionary & Settings
 
-### 7.1 Dictionary Store
+### 7.1 Current Status
 
-`DictionaryStore.swift` is **fully reusable**. Only change: inject the App Group base directory:
+#### Phase 7A — macOS side
 
-```swift
-```swift
-let store = DictionaryStore(
-    baseDirectoryURL: FileManager.default.containerURL(
-        forSecurityApplicationGroupIdentifier: "group.com.keyvox.shared"
-    )!
-)
-```
+Completed and verified across two Macs:
 
-This ensures dictionary entries are accessible to both the containing app (for editing) and could be read by the extension if needed.
+- `NSUbiquitousKeyValueStore` sync is live on macOS
+- synced surface is now:
+  - dictionary entries
+  - `triggerBinding`
+  - `autoParagraphsEnabled`
+  - `listFormattingEnabled`
+- cloud contract is versioned and app-owned under `App/iCloud/`
+- `DictionaryStore.replaceAll(entries:)` is the canonical snapshot-import path
+- newest-wins timestamp behavior is implemented
+- malformed or lossy remote dictionary payloads are rejected instead of silently normalized
+- sync stays active while the Mac app is running; no restart is required
 
-### 7.2 Settings Store
+#### Phase 7B — iOS side
 
-Create a minimal `iOSAppSettingsStore` backed by shared `UserDefaults`:
+Completed and verified on the current iOS app:
 
-```swift
-class iOSAppSettingsStore: ObservableObject {
-    private let defaults: UserDefaults
-    
-    init(suiteName: String = "group.com.keyvox.shared") {
-        self.defaults = UserDefaults(suiteName: suiteName) ?? .standard
-    }
-    
-    @Published var autoParagraphsEnabled: Bool {
-        didSet { defaults.set(autoParagraphsEnabled, forKey: "autoParagraphsEnabled") }
-    }
-    
-    // ... other settings
-}
-```
+- App Group capability enabled
+- iCloud Key-Value Storage capability enabled
+- a real iOS-side iCloud sync coordinator
+- a real iOS-local settings store backed by App Group `UserDefaults`
+- newest-wins bootstrap and while-running cloud updates
+- safe rejection of malformed or missing remote setting values
+- safe rejection of malformed or lossy remote dictionary snapshots
+- read-only dictionary surfacing in the containing app
+- real iPhone controls for:
+  - `autoParagraphsEnabled`
+  - `listFormattingEnabled`
 
-### 7.3 iCloud Syncing (`NSUbiquitousKeyValueStore`)
+The synced surface on iOS now matches macOS exactly:
 
-To create a seamless cross-platform experience between Mac and iPhone, sync the Dictionary and Settings via iCloud.
+- dictionary entries
+- `triggerBinding`
+- `autoParagraphsEnabled`
+- `listFormattingEnabled`
 
-#### Enable iCloud Key-Value Storage
-1. In both the macOS and iOS Xcode projects, add the **iCloud** capability.
-2. Check **Key-value storage**.
+Important nuance:
 
-#### The Sync Coordinator
+- `triggerBinding` now syncs on iOS as plumbing only
+- it is intentionally **not** surfaced in the iPhone UI yet
+- that UI is being deferred for future iPad / hardware-keyboard work
 
-Create a sync manager that observes the ubiquitous store and pushes/pulls changes:
+### 7.2 Final Synced Surface
 
-```swift
-// SharedCore/Settings/iCloudSyncCoordinator.swift
-import Foundation
-import Combine
+Phase 7 now syncs **exactly four things** and nothing else:
 
-class iCloudSyncCoordinator {
-    private let ubiquitousStore = NSUbiquitousKeyValueStore.default
-    private let localDefaults: UserDefaults
-    private let dictionaryStore: DictionaryStore
-    private var cancellables = Set<AnyCancellable>()
-    
-    init(localDefaults: UserDefaults, dictionaryStore: DictionaryStore) {
-        self.localDefaults = localDefaults
-        self.dictionaryStore = dictionaryStore
-        
-        // Listen for remote changes from iCloud
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(iCloudDataDidChange(_:)),
-            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
-            object: ubiquitousStore
-        )
-        
-        // Push local dict changes to iCloud
-        dictionaryStore.$entries
-            .dropFirst() // Skip initial load
-            .sink { [weak self] entries in
-                self?.pushDictionaryToiCloud(entries)
-            }
-            .store(in: &cancellables)
-            
-        ubiquitousStore.synchronize()
-    }
-    
-    @objc private func iCloudDataDidChange(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int,
-              let changedKeys = userInfo[NSUbiquitousKeyValueStoreChangedKeysKey] as? [String] else {
-            return
-        }
-        
-        // If the dictionary changed remotely
-        if changedKeys.contains("keyvox_dictionary_v1") {
-            pullDictionaryFromiCloud()
-        }
-        
-        // Sync generic settings (auto-paragraphs, list formatting, etc)
-        for key in changedKeys where key.starts(with: "kv_setting_") {
-            let localKey = String(key.dropFirst("kv_setting_".count))
-            if let value = ubiquitousStore.object(forKey: key) {
-                localDefaults.set(value, forKey: localKey)
-            }
-        }
-    }
-    
-    private func pushDictionaryToiCloud(_ entries: [DictionaryEntry]) {
-        // Encode entries and save to ubiquitous store
-        if let data = try? JSONEncoder().encode(entries) {
-            ubiquitousStore.set(data, forKey: "keyvox_dictionary_v1")
-            ubiquitousStore.synchronize() // Force push
-        }
-    }
-    
-    private func pullDictionaryFromiCloud() {
-        guard let data = ubiquitousStore.data(forKey: "keyvox_dictionary_v1"),
-              let remoteEntries = try? JSONDecoder().decode([DictionaryEntry].self, from: data) else {
-            return
-        }
-        
-        // Simple merge strategy (or replace entirely if assuming last-writer-wins)
-        // You could get fancy here with timestamps, but last-writer-wins is usually fine
-        // for personal dictionary apps.
-        DispatchQueue.main.async {
-            // Write to disk using DictionaryStore
-            try? self.dictionaryStore.saveAll(entries: remoteEntries)
-        }
-    }
-}
-```
+- dictionary entries
+- `triggerBinding`
+- `autoParagraphsEnabled`
+- `listFormattingEnabled`
+
+Do **not** sync:
+
+- model install state
+- model download progress
+- active recording / transcribing state
+- keyboard IPC state
+- latest transcription text
+- capture artifacts
+- warm-session heartbeats
+- any other runtime or debug state
+
+### 7.3 iOS Dictionary Store
+
+`DictionaryStore.swift` is now the correct local owner for the iOS personal dictionary.
+
+On iOS, it now uses the App Group shared container base directory so:
+
+- the containing app can read and eventually edit entries
+- the keyboard extension can remain ignorant of dictionary persistence details
+- cloud-applied snapshots use the same `replaceAll(entries:)` import path as macOS
+
+The important part for Phase 7 was not editing UI yet. It was:
+
+- loading the same dictionary data on iOS
+- syncing it through iCloud
+- surfacing it read-only in the containing app so we can verify the plumbing
+
+### 7.4 iOS Settings Sync
+
+The iOS app now mirrors the macOS cloud contract exactly for:
+
+- `triggerBinding`
+- `autoParagraphsEnabled`
+- `listFormattingEnabled`
+
+Behavior should match macOS:
+
+- bootstrap from either side
+- newest-wins timestamps
+- no sync loops
+- malformed/missing remote values fail safe
+
+### 7.5 iCloud Contract
+
+The cloud contract established by the completed macOS implementation is now also live on iOS.
+
+#### Dictionary
+
+- key: `kvx.dictionary.payload.v1`
+- companion timestamp: `kvx.dictionary.modifiedAt.v1`
+
+#### Settings
+
+- `kvx.settings.triggerBinding.v1`
+- `kvx.settings.triggerBindingModifiedAt.v1`
+- `kvx.settings.autoParagraphsEnabled.v1`
+- `kvx.settings.autoParagraphsModifiedAt.v1`
+- `kvx.settings.listFormattingEnabled.v1`
+- `kvx.settings.listFormattingModifiedAt.v1`
+
+#### Local freshness tracking
+
+The iOS app now mirrors the same local timestamp bookkeeping pattern used on macOS for:
+
+- dictionary
+- trigger binding
+- auto paragraphs
+- list formatting
+
+### 7.6 iOS Sync Coordinator
+
+Phase 7B added an iOS-local sync coordinator that mirrors the macOS implementation pattern while remaining app-owned on iOS.
+
+Primary file:
+
+- `iOS/KeyVox iOS/App/iCloud/iOSiCloudSyncCoordinator.swift`
+
+Responsibilities now implemented:
+
+- load local iOS settings and dictionary state first
+- call `NSUbiquitousKeyValueStore.default.synchronize()`
+- compare local-vs-cloud freshness
+- seed cloud when local is newer and cloud is empty/stale
+- hydrate local iOS state when cloud is newer
+- observe local dictionary/settings changes and push them to iCloud
+- observe `NSUbiquitousKeyValueStore.didChangeExternallyNotification`
+- suppress loopback during remote apply
+
+This stays **outside** `KeyVoxCore`.
+
+### 7.7 Read-Only Dictionary Surfacing
+
+This requirement is now complete.
+
+Before full add/edit/delete UI lands on iOS, the containing app now surfaces the current dictionary entries in a read-only way so we can verify:
+
+- local load works
+- cloud pull works
+- Mac-originated entries appear on iPhone
+- iPhone-originated entries will have a place to show up later
+
+Minimal accepted Phase 7 UI surface:
+
+- a read-only list of dictionary phrases
+- real toggles for:
+  - `autoParagraphsEnabled`
+  - `listFormattingEnabled`
+
+And intentionally **not** surfaced in the current iPhone UI:
+
+- `triggerBinding`
+
+The trigger binding still syncs and persists on iOS so it can be consumed later by iPad / hardware-keyboard UX without another settings-storage migration.
+
+### 7.8 Bootstrap Rules
+
+These now work symmetrically on iOS just like macOS:
+
+#### Case A — local has data, cloud empty
+- local seeds cloud
+
+#### Case B — cloud has data, local empty
+- cloud seeds local
+
+#### Case C — both have data
+- newer timestamp wins
+
+#### Case D — both empty
+- no-op
+
+#### Case E — cloud payload malformed
+- ignore cloud payload
+- preserve local data
+
+### 7.9 Acceptance Criteria For Phase 7
+
+Phase 7 is now complete because all of the following are true:
+
+1. macOS sync remains intact after the iOS work lands
+2. iOS syncs the same four pieces of state as macOS:
+   - dictionary entries
+   - `triggerBinding`
+   - `autoParagraphsEnabled`
+   - `listFormattingEnabled`
+3. iOS can bootstrap from either side without restart-based assumptions
+4. iOS uses the same newest-wins conflict strategy
+5. iOS rejects malformed or lossy cloud dictionary payloads
+6. iOS suppresses sync loops
+7. the containing app surfaces dictionary entries read-only for testing
+8. the containing app exposes real toggles for auto paragraphs and list formatting
+9. trigger binding sync exists on iOS without being forced into the iPhone UI yet
+10. no full dictionary editing UI is required yet
+11. no runtime/model/session state is added to cloud sync
 
 > [!TIP]
-> `NSUbiquitousKeyValueStore` has a total storage limit of 1 MB per user. Since your dictionary entries are just small JSON structs containing custom vocabulary phrases (the `DictionaryEntry` model), you can easily fit thousands of custom vocabulary entries in this limit. This is completely free for you as the developer—it uses the user's iCloud storage implicitly.
+> `NSUbiquitousKeyValueStore` remains the right fit here. The synced dataset is still very small: a dictionary snapshot plus three small settings. Phase 7 ended exactly where it should: production-grade parity without introducing a more complicated per-entry sync protocol.
 
 ---
 
-## Phase 8 — UI/UX (Containing App)
+## Phase 8 — UI/UX (Keyboard Extension)
 
-### 8.1 Screens Required
+This is now the next active milestone.
+
+### 8.1 Overview: Two-State Keyboard
+
+The keyboard shell and plumbing are already in place. The next step is to turn that durable shell into the real polished keyboard experience before spending time on containing-app UI polish.
+
+### 8.2 Goals
+
+Phase 8 should now focus on:
+
+- the real keyboard visual design
+- keyboard state transitions
+- mic / stop affordances
+- insertion-ready feedback
+- extension UX polish
+
+### 8.3 Existing Foundation
+
+The following are already done and should be refined rather than replaced:
+
+- `KeyboardViewController`
+- `KeyboardRootView`
+- `KeyboardState`
+- `KeyboardIPCManager`
+- `KeyboardInsertionSpacingHeuristics`
+- the working app/extension start-stop-transcribe-return flow
+
+---
+
+## Phase 9 — UI/UX (Containing App)
+
+### 9.1 Screens Required
 
 | Screen | Purpose | Complexity |
 |---|---|---|
@@ -1248,7 +1365,7 @@ class iCloudSyncCoordinator {
 | **Settings** | Auto-paragraphs, list formatting, model management | Low |
 | **Model Download** | Progress bar, error handling (reuse `ModelDownloader` state) | Low |
 
-### 8.2 Five-Bar Waveform (Brand Identity)
+### 9.2 Five-Bar Waveform (Brand Identity)
 
 Port the RecordingOverlay's five-bar visualization from macOS. The SwiftUI animation code from `RecordingOverlay.swift` is already SwiftUI — it ports directly:
 
@@ -1263,7 +1380,7 @@ ForEach(0..<5) { index in
 }
 ```
 
-### 8.3 Onboarding Flow
+### 9.3 Onboarding Flow
 
 iOS onboarding is more complex than macOS because enabling a custom keyboard requires manual user steps:
 
@@ -1293,9 +1410,9 @@ Step 4: Download Model
 
 ---
 
-## Phase 9 — UI/UX (Keyboard Extension)
+## Appendix — Keyboard UI Notes
 
-### 9.1 Overview: Two-State Keyboard
+### A.1 Overview: Two-State Keyboard
 
 The keyboard extension has **two distinct states** that the entire view transitions between:
 
@@ -1308,7 +1425,7 @@ The transition between states is an animated swap, **not** a navigation push. Th
 
 ---
 
-### 9.2 Keyboard State Layout (Numbers & Symbols)
+### A.2 Keyboard State Layout (Numbers & Symbols)
 
 At rest, the keyboard extension renders a full **numbers and special characters layout** — mirroring exactly what the user would see pressing `123` on the standard iOS keyboard. This gives the extension a complete, usable keyboard while staying out of the way of the system ABC keyboard.
 
@@ -1337,7 +1454,7 @@ At rest, the keyboard extension renders a full **numbers and special characters 
 
 ---
 
-### 9.3 Recording State Layout (`KeyVoxRecordingView` Full-Bleed)
+### A.3 Recording State Layout (`KeyVoxRecordingView` Full-Bleed)
 
 When the user taps the mic button, the keyboard layout **transitions out** and the entire extension view becomes a full-bleed `KeyVoxRecordingView` that fills the keyboard height.
 
@@ -1372,7 +1489,7 @@ When the user taps the mic button, the keyboard layout **transitions out** and t
 
 ---
 
-### 9.4 `KeyVoxRecordingView` — Port of `RecordingOverlay.swift`
+### A.4 `KeyVoxRecordingView` — Port of `RecordingOverlay.swift`
 
 This SwiftUI view lives in `SharedCore/Views/` — it uses no AppKit, no NSPanel, no platform-specific code. It is a **size-adapted port** of `RecordingOverlay.swift` without the circular clip. The macOS `RecordingOverlay` imports `BarView` from SharedCore; `KeyVoxRecordingView` does the same.
 
@@ -1494,7 +1611,7 @@ struct KeyVoxRecordingView: View {
 
 ---
 
-### 9.5 State Machine in `KeyboardViewController`
+### A.5 State Machine in `KeyboardViewController`
 
 ```swift
 enum KeyboardDisplayState {
@@ -1517,7 +1634,7 @@ Use a single `UIHostingController` with a SwiftUI root view that conditionally r
 
 ---
 
-### 9.6 The ABC Button — `advanceToNextInputMode()`
+### A.6 The ABC Button — `advanceToNextInputMode()`
 
 Zero custom logic needed. Apple provides this for all keyboard extensions:
 
@@ -1531,7 +1648,7 @@ This cycles through the user's enabled keyboards — straight back to the system
 
 ---
 
-### 9.7 Extension Height
+### A.7 Extension Height
 
 The keyboard extension view height stays **constant across both states** — this is critical to avoid layout reflow in the host app:
 

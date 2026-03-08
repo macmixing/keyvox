@@ -41,6 +41,11 @@
 		9A7000162FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */; };
 		9A7000172FA6000100AA0001 /* iOSModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */; };
 		9A7000182FA6000100AA0001 /* iOSModelManager+Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */; };
+		9B7000112FB1000100BB0001 /* iOSAppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */; };
+		9B7000122FB1000100BB0001 /* iOSUserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */; };
+		9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */; };
+		9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */; };
+		9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +113,11 @@
 		9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
 		9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Validation.swift"; sourceTree = "<group>"; };
 		9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Support.swift"; sourceTree = "<group>"; };
+		9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppSettingsStore.swift; sourceTree = "<group>"; };
+		9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSUserDefaultsKeys.swift; sourceTree = "<group>"; };
+		9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
+		9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
+		9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -201,6 +211,7 @@
 			isa = PBXGroup;
 			children = (
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
+				9B7001092FB1000100BB0001 /* iCloud */,
 				9A7001092FA6000100AA0001 /* ModelDownloader */,
 				8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */,
 				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
@@ -212,19 +223,16 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		9A7001092FA6000100AA0001 /* ModelDownloader */ = {
+		9B7001092FB1000100BB0001 /* iCloud */ = {
 			isa = PBXGroup;
 			children = (
-				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
-				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
-				9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */,
-				9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */,
-				9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */,
-				9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */,
-				9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */,
-				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
+				9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */,
+				9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */,
+				9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */,
+				9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */,
+				9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */,
 			);
-			path = ModelDownloader;
+			path = iCloud;
 			sourceTree = "<group>";
 		};
 		8E9E389B2F5C000000EAFA72 /* Core */ = {
@@ -266,6 +274,21 @@
 				8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		9A7001092FA6000100AA0001 /* ModelDownloader */ = {
+			isa = PBXGroup;
+			children = (
+				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
+				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
+				9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */,
+				9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */,
+				9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */,
+				9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */,
+				9A7001042FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift */,
+				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
+			);
+			path = ModelDownloader;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -435,6 +458,11 @@
 				9A7000162FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift in Sources */,
 				9A7000172FA6000100AA0001 /* iOSModelManager+Validation.swift in Sources */,
 				9A7000182FA6000100AA0001 /* iOSModelManager+Support.swift in Sources */,
+				9B7000112FB1000100BB0001 /* iOSAppSettingsStore.swift in Sources */,
+				9B7000122FB1000100BB0001 /* iOSUserDefaultsKeys.swift in Sources */,
+				9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */,
+				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
+				9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
@@ -852,7 +880,7 @@
 		};
 		9A7000022FA6000100AA0001 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "https://github.com/weichsel/ZIPFoundation" */;
+			package = 9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */

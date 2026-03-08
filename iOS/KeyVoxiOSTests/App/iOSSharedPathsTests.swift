@@ -36,7 +36,7 @@ struct iOSSharedPathsTests {
     }
 }
 
-private final class StubContainerFileManager: FileManager, @unchecked Sendable {
+private final class StubContainerFileManager: FileManager {
     private let stubContainerURL: URL?
 
     init(containerURL: URL?) {
