@@ -4,6 +4,7 @@ import Combine
 public enum DictionaryStoreError: LocalizedError, Equatable {
     case emptyPhrase
     case duplicatePhrase
+    case invalidSnapshotImport
     case saveFailed
 
     public var errorDescription: String? {
@@ -12,6 +13,8 @@ public enum DictionaryStoreError: LocalizedError, Equatable {
             return "Please enter a word or phrase."
         case .duplicatePhrase:
             return "That word is already in your dictionary."
+        case .invalidSnapshotImport:
+            return "The synced dictionary data was invalid and could not be applied."
         case .saveFailed:
             return "Couldn't save dictionary to disk. Please try again."
         }
@@ -87,6 +90,12 @@ public final class DictionaryStore: ObservableObject {
         } catch {
             saveErrorMessage = DictionaryStoreError.saveFailed.localizedDescription
         }
+    }
+
+    public func replaceAll(entries newEntries: [DictionaryEntry]) throws {
+        let candidateEntries = try validatedSnapshotEntries(newEntries)
+        try persistAfterMutation(candidateEntries)
+        entries = candidateEntries
     }
 
     public func whisperHintPrompt(maxEntries: Int = 200, maxChars: Int = 1200) -> String {
@@ -270,5 +279,37 @@ public final class DictionaryStore: ObservableObject {
 
     private func dedupeKey(for phrase: String) -> String {
         DictionaryTextNormalization.normalizedPhrase(normalizeInput(phrase))
+    }
+
+    private func validatedSnapshotEntries(_ sourceEntries: [DictionaryEntry]) throws -> [DictionaryEntry] {
+        let sanitized = sanitizedEntries(sourceEntries)
+        guard sanitized.count == sourceEntries.count else {
+            throw DictionaryStoreError.invalidSnapshotImport
+        }
+
+        for (original, cleaned) in zip(sourceEntries, sanitized) {
+            guard original.id == cleaned.id, original.phrase == cleaned.phrase else {
+                throw DictionaryStoreError.invalidSnapshotImport
+            }
+        }
+
+        return sanitized
+    }
+
+    private func sanitizedEntries(_ sourceEntries: [DictionaryEntry]) -> [DictionaryEntry] {
+        var seenKeys = Set<String>()
+        var result: [DictionaryEntry] = []
+
+        for entry in sourceEntries {
+            let cleanedPhrase = normalizeInput(entry.phrase)
+            guard !cleanedPhrase.isEmpty else { continue }
+
+            let key = dedupeKey(for: cleanedPhrase)
+            guard seenKeys.insert(key).inserted else { continue }
+
+            result.append(DictionaryEntry(id: entry.id, phrase: cleanedPhrase))
+        }
+
+        return result
     }
 }

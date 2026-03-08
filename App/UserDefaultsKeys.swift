@@ -21,4 +21,11 @@ enum UserDefaultsKeys {
         static let wordsThisWeekCount = "KeyVox.App.WordsThisWeekCount"
         static let wordsThisWeekWeekStart = "KeyVox.App.WordsThisWeekWeekStart"
     }
+
+    enum iCloud {
+        static let dictionaryLastModifiedAt = "KeyVox.iCloud.DictionaryLastModifiedAt"
+        static let triggerBindingLastModifiedAt = "KeyVox.iCloud.TriggerBindingLastModifiedAt"
+        static let autoParagraphsLastModifiedAt = "KeyVox.iCloud.AutoParagraphsLastModifiedAt"
+        static let listFormattingLastModifiedAt = "KeyVox.iCloud.ListFormattingLastModifiedAt"
+    }
 }
