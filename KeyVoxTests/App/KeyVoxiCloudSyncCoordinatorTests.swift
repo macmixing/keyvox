@@ -9,9 +9,16 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let harness = try makeHarness(now: makeDate(year: 2026, month: 3, day: 7, hour: 12))
         try harness.dictionaryStore.add(phrase: "Cueboard")
 
+        let dictionaryPushed = expectation(description: "Dictionary pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
         let coordinator = makeCoordinator(harness: harness)
         _ = coordinator
-        await Task.yield()
+        await fulfillment(of: [dictionaryPushed], timeout: 1.0)
 
         let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
         XCTAssertEqual(payload.entries.map(\.phrase), ["Cueboard"])
@@ -73,6 +80,27 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(harness.dictionaryStore.entries.map(\.phrase), ["Local Phrase"])
     }
 
+    func testLossyCloudDictionarySnapshotIsIgnored() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 10, hour: 8)
+        let remoteDate = makeDate(year: 2026, month: 3, day: 11, hour: 8)
+        let harness = try makeHarness(now: remoteDate)
+        try harness.dictionaryStore.add(phrase: "Local Phrase")
+        harness.defaults.set(localDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
+        harness.cloudStore.seedDictionary(entries: [
+            DictionaryEntry(phrase: " Cueboard "),
+            DictionaryEntry(phrase: "cueboard"),
+        ], modifiedAt: remoteDate)
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        XCTAssertEqual(harness.dictionaryStore.entries.map(\.phrase), ["Local Phrase"])
+        XCTAssertEqual(
+            harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date,
+            localDate
+        )
+    }
+
     func testLocalDictionaryChangePushesCloud() async throws {
         let now = makeDate(year: 2026, month: 3, day: 7, hour: 15)
         let harness = try makeHarness(now: now)
@@ -100,9 +128,9 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(harness.cloudStore.setCount(forKey: KeyVoxiCloudKeys.dictionaryPayload), 0)
     }
 
-    func testNewerCloudAutoParagraphsAppliesLocally() {
+    func testNewerCloudAutoParagraphsAppliesLocally() throws {
         let remoteDate = makeDate(year: 2026, month: 3, day: 12, hour: 9)
-        let harness = try! makeHarness(now: remoteDate)
+        let harness = try makeHarness(now: remoteDate)
         harness.cloudStore.seedValue(false, forKey: KeyVoxiCloudKeys.autoParagraphsEnabled)
         harness.cloudStore.seedValue(remoteDate, forKey: KeyVoxiCloudKeys.autoParagraphsModifiedAt)
 
@@ -149,14 +177,23 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let appSettings = AppSettingsStore(defaults: defaults, now: { now })
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
-        return Harness(
+        let harness = Harness(
             defaults: defaults,
             appSettings: appSettings,
             dictionaryStore: dictionaryStore,
             cloudStore: InMemoryUbiquitousKeyValueStore(),
             notificationCenter: NotificationCenter(),
-            now: { now }
+            now: { now },
+            baseDirectoryURL: base,
+            defaultsSuiteName: suiteName
         )
+
+        addTeardownBlock { [harness] in
+            try? harness.removeTemporaryDirectory()
+            harness.defaults.removePersistentDomain(forName: harness.defaultsSuiteName)
+        }
+
+        return harness
     }
 
     private func makeDate(year: Int, month: Int, day: Int, hour: Int) -> Date {
@@ -180,6 +217,14 @@ private struct Harness {
     let cloudStore: InMemoryUbiquitousKeyValueStore
     let notificationCenter: NotificationCenter
     let now: () -> Date
+    let baseDirectoryURL: URL
+    let defaultsSuiteName: String
+
+    func removeTemporaryDirectory() throws {
+        if FileManager.default.fileExists(atPath: baseDirectoryURL.path) {
+            try FileManager.default.removeItem(at: baseDirectoryURL)
+        }
+    }
 }
 
 private final class InMemoryUbiquitousKeyValueStore: KeyVoxiCloudKeyValueStoring {
@@ -187,6 +232,7 @@ private final class InMemoryUbiquitousKeyValueStore: KeyVoxiCloudKeyValueStoring
 
     private var storage: [String: Any] = [:]
     private var setCounts: [String: Int] = [:]
+    var onSet: ((String) -> Void)?
 
     func object(forKey key: String) -> Any? {
         storage[key]
@@ -203,6 +249,7 @@ private final class InMemoryUbiquitousKeyValueStore: KeyVoxiCloudKeyValueStoring
     func set(_ value: Any?, forKey key: String) {
         storage[key] = value
         setCounts[key, default: 0] += 1
+        onSet?(key)
     }
 
     func synchronize() -> Bool {

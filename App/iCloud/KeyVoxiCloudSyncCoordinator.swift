@@ -111,17 +111,17 @@ final class KeyVoxiCloudSyncCoordinator {
         externalChangeObserver = notificationCenter.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: notificationObject,
-            queue: nil
+            queue: .main
         ) { [weak self] notification in
             guard
-                let self,
                 let userInfo = notification.userInfo,
                 let changedKeys = userInfo[NSUbiquitousKeyValueStoreChangedKeysKey] as? [String]
             else {
                 return
             }
 
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 self.processExternalChanges(for: changedKeys)
             }
         }
@@ -204,7 +204,7 @@ final class KeyVoxiCloudSyncCoordinator {
         }
 
         let remoteValue = ubiquitousStore.bool(forKey: valueKey)
-        if localModifiedAt == nil {
+        guard let resolvedLocalModifiedAt = localModifiedAt else {
             if localValue == defaultValue {
                 applyRemote(remoteValue, remoteModifiedAt)
             } else {
@@ -215,7 +215,6 @@ final class KeyVoxiCloudSyncCoordinator {
             return
         }
 
-        let resolvedLocalModifiedAt = localModifiedAt!
         updateLocalSettingTimestamp(for: modifiedAtKey, value: resolvedLocalModifiedAt)
 
         if remoteModifiedAt > resolvedLocalModifiedAt {
