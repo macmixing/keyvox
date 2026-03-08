@@ -89,6 +89,12 @@ public final class DictionaryStore: ObservableObject {
         }
     }
 
+    public func replaceAll(entries newEntries: [DictionaryEntry]) throws {
+        let candidateEntries = sanitizedEntries(newEntries)
+        try persistAfterMutation(candidateEntries)
+        entries = candidateEntries
+    }
+
     public func whisperHintPrompt(maxEntries: Int = 200, maxChars: Int = 1200) -> String {
         let candidates = entries
             .map(\.phrase)
@@ -270,5 +276,22 @@ public final class DictionaryStore: ObservableObject {
 
     private func dedupeKey(for phrase: String) -> String {
         DictionaryTextNormalization.normalizedPhrase(normalizeInput(phrase))
+    }
+
+    private func sanitizedEntries(_ sourceEntries: [DictionaryEntry]) -> [DictionaryEntry] {
+        var seenKeys = Set<String>()
+        var result: [DictionaryEntry] = []
+
+        for entry in sourceEntries {
+            let cleanedPhrase = normalizeInput(entry.phrase)
+            guard !cleanedPhrase.isEmpty else { continue }
+
+            let key = dedupeKey(for: cleanedPhrase)
+            guard seenKeys.insert(key).inserted else { continue }
+
+            result.append(DictionaryEntry(id: entry.id, phrase: cleanedPhrase))
+        }
+
+        return result
     }
 }
