@@ -108,6 +108,10 @@
 		D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
 		D17000212FA3000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = D17000312FA3000100AA0001 /* KeyVoxCore */; };
+		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
+		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
+		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
+		E18000142FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,6 +226,10 @@
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelSection.swift"; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
+		E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
+		E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
+		E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
+		E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -266,6 +274,7 @@
 		8E6D05C52F3C51C9003BD458 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				E18000042FA4000100AA0001 /* iCloud */,
 				9E5000012F4F000100AA0001 /* AppSettingsStore.swift */,
 				D17000012FA3000100AA0001 /* AppServiceRegistry.swift */,
 				D15000012FA1000100AA0001 /* LoginItemController.swift */,
@@ -499,6 +508,7 @@
 			children = (
 				AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */,
 				AB2000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift */,
+				E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -566,6 +576,16 @@
 				8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		E18000042FA4000100AA0001 /* iCloud */ = {
+			isa = PBXGroup;
+			children = (
+				E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */,
+				E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */,
+				E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */,
+			);
+			path = iCloud;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -710,6 +730,9 @@
 				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
 				8EC700032F42000100C70001 /* WarningManager.swift in Sources */,
 				9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */,
+				E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */,
+				E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */,
+				E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */,
 				D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */,
 				D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */,
 				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
@@ -763,6 +786,7 @@
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */,
 				AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */,
+				E18000142FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift in Sources */,
 				AB3000132F60000100AA0001 /* AppUpdateLogicTests.swift in Sources */,
 				AB3000142F60000100AA0001 /* PasteServiceListRenderModeTests.swift in Sources */,
 				AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */,
@@ -973,8 +997,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Resources/KeyVox.entitlements;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;

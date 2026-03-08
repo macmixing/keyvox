@@ -170,6 +170,56 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
+    func testReplaceAllPersistsSanitizedSnapshot() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+
+            try store.replaceAll(entries: [
+                DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: " Cueboard "),
+                DictionaryEntry(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, phrase: "cueboard"),
+                DictionaryEntry(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, phrase: "  "),
+                DictionaryEntry(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, phrase: "MiGo    Platform"),
+            ])
+
+            XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
+            XCTAssertEqual(
+                store.entries.map(\.id.uuidString),
+                [
+                    "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+                    "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD",
+                ]
+            )
+
+            let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            XCTAssertEqual(reloaded.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
+        }
+    }
+
+    func testReplaceAllFailedSaveLeavesExistingEntriesUntouched() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let writer = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            try writer.add(phrase: "Dom Esposito")
+
+            let failingManager = FailingDirectoryFileManager()
+            let failingStore = DictionaryStore(fileManager: failingManager, baseDirectoryURL: base)
+            failingManager.shouldFailCreateDirectory = true
+
+            do {
+                try failingStore.replaceAll(entries: [
+                    DictionaryEntry(phrase: "Cueboard"),
+                    DictionaryEntry(phrase: "MiGo Platform"),
+                ])
+                XCTFail("Expected replaceAll save failure")
+            } catch let error as DictionaryStoreError {
+                XCTAssertEqual(error, .saveFailed)
+            }
+
+            XCTAssertEqual(failingStore.entries.map(\.phrase), ["Dom Esposito"])
+        }
+    }
+
     func testCorruptBothFilesTriggersQuarantineAndReset() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)

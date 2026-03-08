@@ -7,10 +7,16 @@ final class AppServiceRegistry {
 
     let dictionaryStore: DictionaryStore
     let whisperService: WhisperService
+    let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
 
-    init(dictionaryStore: DictionaryStore, whisperService: WhisperService) {
+    init(
+        dictionaryStore: DictionaryStore,
+        whisperService: WhisperService,
+        iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
+    ) {
         self.dictionaryStore = dictionaryStore
         self.whisperService = whisperService
+        self.iCloudSyncCoordinator = iCloudSyncCoordinator
     }
 
     private init(fileManager: FileManager = .default) {
@@ -31,6 +37,10 @@ final class AppServiceRegistry {
                     .path
                 return fileManager.fileExists(atPath: modelPath) ? modelPath : nil
             }
+        )
+        iCloudSyncCoordinator = KeyVoxiCloudSyncCoordinator(
+            appSettings: .shared,
+            dictionaryStore: dictionaryStore
         )
     }
 }

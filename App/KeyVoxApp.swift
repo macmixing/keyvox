@@ -170,6 +170,7 @@ struct KeyVoxApp: App {
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
+    private let appServiceRegistry = AppServiceRegistry.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
     nonisolated static func shouldUseAccessoryActivationPolicy(
@@ -202,6 +203,8 @@ struct KeyVoxApp: App {
         Task { @MainActor in
             AppUpdateService.shared.startUpdateTimer()
         }
+
+        _ = appServiceRegistry.iCloudSyncCoordinator
     }
     
     private var menuBarImage: Image {

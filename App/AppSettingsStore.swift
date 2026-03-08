@@ -174,6 +174,16 @@ final class AppSettingsStore: ObservableObject {
         selectedMicrophoneUID = persisted
     }
 
+    func applyCloudAutoParagraphsEnabled(_ value: Bool) {
+        guard autoParagraphsEnabled != value else { return }
+        autoParagraphsEnabled = value
+    }
+
+    func applyCloudListFormattingEnabled(_ value: Bool) {
+        guard listFormattingEnabled != value else { return }
+        listFormattingEnabled = value
+    }
+
     private func rolloverWordsCounterIfNeeded(referenceDate: Date) {
         let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
         guard !calendar.isDate(wordsThisWeekStart, inSameDayAs: currentWeekStart) else {
