@@ -3,32 +3,52 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     private let ipcManager = KeyboardIPCManager()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
+    private var primaryHeightConstraint: NSLayoutConstraint?
     private var keyboardState: KeyboardState = .idle {
+        didSet {
+            updateUI()
+        }
+    }
+    private var symbolPage: KeyboardSymbolPage = .primary {
         didSet {
             updateUI()
         }
     }
 
     private var rootContainerView: KeyboardRootView!
+    private let popupOverlayView = UIView()
     private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
     private var gracePeriodWorkItem: DispatchWorkItem?
+#if DEBUG
+    private var lastDebugLayoutSignature: String?
+#endif
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .clear
+        view.clipsToBounds = true
         configureRootView()
         configureIPC()
         syncKeyboardStateFromSharedState()
         updateUI()
+        debugLogLayout("viewDidLoad")
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        configurePrimaryViewHeight()
         syncKeyboardStateFromSharedState()
+        debugLogLayout("viewWillAppear")
     }
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        updateUI()
+        debugLogLayout("viewWillLayoutSubviews")
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        debugLogLayout("viewDidLayoutSubviews")
     }
 
     deinit {
@@ -38,22 +58,92 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func configureRootView() {
-        let rootView = KeyboardRootView()
-        view.backgroundColor = .clear
-        view.addSubview(rootView)
-        NSLayoutConstraint.activate([
-            rootView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            rootView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            rootView.topAnchor.constraint(equalTo: view.topAnchor),
-            rootView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
+        if rootContainerView == nil {
+            view.backgroundColor = .clear
+            view.clipsToBounds = true
 
-        rootView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
-        rootView.micButton.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
-        rootView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
+            let rootView = KeyboardRootView()
+            rootView.translatesAutoresizingMaskIntoConstraints = false
+            rootContainerView = rootView
 
-        rootContainerView = rootView
+            popupOverlayView.translatesAutoresizingMaskIntoConstraints = false
+            popupOverlayView.backgroundColor = .clear
+            popupOverlayView.isUserInteractionEnabled = false
+            popupOverlayView.clipsToBounds = false
+
+            view.addSubview(rootView)
+            view.addSubview(popupOverlayView)
+
+            NSLayoutConstraint.activate([
+                rootView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                rootView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                rootView.topAnchor.constraint(equalTo: view.topAnchor),
+                rootView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+                popupOverlayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                popupOverlayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                popupOverlayView.topAnchor.constraint(equalTo: view.topAnchor),
+                popupOverlayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            ])
+        }
+
+        rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
+        rootContainerView.micButton.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
+        rootContainerView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
+        rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
+            self?.handleKeyActivation(kind)
+        }
+        rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
     }
+
+    private func configurePrimaryViewHeight() {
+        primaryHeightConstraint?.isActive = false
+        primaryHeightConstraint = nil
+
+        for constraint in view.constraints where constraint.firstAttribute == .height {
+            view.removeConstraint(constraint)
+        }
+
+        let heightConstraint = view.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyboardHeight)
+        heightConstraint.priority = .required
+        heightConstraint.isActive = true
+        primaryHeightConstraint = heightConstraint
+    }
+
+#if DEBUG
+    private func debugLogLayout(_ event: String) {
+        guard let rootContainerView else { return }
+
+        func describe(_ view: UIView?) -> String {
+            guard let view else { return "nil" }
+            return "frame=\(NSCoder.string(for: view.frame)) bounds=\(NSCoder.string(for: view.bounds)) opaque=\(view.isOpaque) hidden=\(view.isHidden) alpha=\(String(format: "%.2f", view.alpha)) bg=\(String(describing: view.backgroundColor))"
+        }
+
+        let hostView = inputView ?? view
+        let signature = [
+            event,
+            describe(view),
+            describe(inputView),
+            describe(hostView),
+            describe(popupOverlayView),
+            rootContainerView.debugLayoutSnapshot(),
+        ].joined(separator: "\n")
+
+        guard signature != lastDebugLayoutSignature else { return }
+        lastDebugLayoutSignature = signature
+
+        print(
+            """
+            [KeyboardLayout] \(event)
+            controller.view: \(describe(view))
+            controller.inputView: \(describe(inputView))
+            resolvedHostView: \(describe(hostView))
+            popupOverlayView: \(describe(popupOverlayView))
+            \(rootContainerView.debugLayoutSnapshot())
+            """
+        )
+    }
+#endif
 
     private func configureIPC() {
         ipcManager.onRecordingStarted = { [weak self] in
@@ -89,7 +179,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func updateUI() {
-        rootContainerView?.apply(state: keyboardState, showsNextKeyboard: needsInputModeSwitchKey)
+        rootContainerView?.apply(state: keyboardState, showsNextKeyboard: needsInputModeSwitchKey, symbolPage: symbolPage)
     }
 
     @objc
@@ -107,13 +197,12 @@ final class KeyboardViewController: UIInputViewController {
         case .idle:
             keyboardState = .waitingForApp
             scheduleWaitingTimeout()
-            
+
             let isWarm = ipcManager.isSessionWarm()
-            
+
             if isWarm {
-                // 1. If warm, send command and wait 500ms
                 ipcManager.sendStartCommand()
-                
+
                 cancelGracePeriod()
                 let workItem = DispatchWorkItem { [weak self] in
                     guard let self, self.keyboardState == .waitingForApp else { return }
@@ -124,8 +213,6 @@ final class KeyboardViewController: UIInputViewController {
                 gracePeriodWorkItem = workItem
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
             } else {
-                // 2. If cold, launch IMMEDIATELY to preserve touch context.
-                // The URL scheme handles the "Start" command on the app side.
                 openContainingAppIfPossible(startRecordingURL)
             }
         case .recording:
@@ -133,6 +220,23 @@ final class KeyboardViewController: UIInputViewController {
             ipcManager.sendStopCommand()
         case .waitingForApp, .transcribing:
             break
+        }
+    }
+
+    private func handleKeyActivation(_ kind: KeyboardKeyKind) {
+        switch kind {
+        case let .character(value):
+            textDocumentProxy.insertText(value)
+        case .delete:
+            textDocumentProxy.deleteBackward()
+        case .space:
+            textDocumentProxy.insertText(" ")
+        case .returnKey:
+            textDocumentProxy.insertText("\n")
+        case .abc:
+            advanceToNextInputMode()
+        case .alternateSymbols, .numberSymbols:
+            symbolPage.toggle()
         }
     }
 

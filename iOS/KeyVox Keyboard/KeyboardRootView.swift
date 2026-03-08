@@ -5,9 +5,11 @@ final class KeyboardRootView: UIView {
     let nextKeyboardButton = UIButton(type: .system)
     let micButton = UIButton(type: .system)
     let statusLabel = UILabel()
+    let keyGridView = KeyboardKeyGridView()
 
     private let leadingControlsStack = UIStackView()
     private let contentStack = UIStackView()
+    private let mainStack = UIStackView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -21,7 +23,7 @@ final class KeyboardRootView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func apply(state: KeyboardState, showsNextKeyboard: Bool) {
+    func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
         statusLabel.text = state.statusText
         cancelButton.isHidden = !state.showsCancelButton
         cancelButton.isEnabled = state.showsCancelButton
@@ -35,12 +37,14 @@ final class KeyboardRootView: UIView {
             UIImage(systemName: state.micSymbolName, withConfiguration: KeyboardStyle.buttonSymbolConfiguration),
             for: .normal
         )
+
+        keyGridView.setSymbolPage(symbolPage)
+        keyGridView.setKeyboardEnabled(true)
     }
 
     private func configureView() {
-        backgroundColor = KeyboardStyle.backgroundColor
-        layer.borderColor = KeyboardStyle.borderColor.cgColor
-        layer.borderWidth = 1
+        backgroundColor = .clear
+        clipsToBounds = true
         translatesAutoresizingMaskIntoConstraints = false
     }
 
@@ -90,19 +94,29 @@ final class KeyboardRootView: UIView {
         contentStack.distribution = .fill
         contentStack.spacing = KeyboardStyle.stackSpacing
 
-        addSubview(contentStack)
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.axis = .vertical
+        mainStack.alignment = .fill
+        mainStack.distribution = .fill
+        mainStack.spacing = KeyboardStyle.sectionSpacing
+        mainStack.clipsToBounds = true
+
+        addSubview(mainStack)
         leadingControlsStack.addArrangedSubview(cancelButton)
         leadingControlsStack.addArrangedSubview(nextKeyboardButton)
 
         contentStack.addArrangedSubview(leadingControlsStack)
         contentStack.addArrangedSubview(statusLabel)
         contentStack.addArrangedSubview(micButton)
+
+        mainStack.addArrangedSubview(contentStack)
+        mainStack.addArrangedSubview(keyGridView)
+
+        keyGridView.clipsToBounds = false
     }
 
     private func configureLayout() {
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(greaterThanOrEqualToConstant: KeyboardStyle.minHeight),
-
             cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
@@ -112,10 +126,28 @@ final class KeyboardRootView: UIView {
             micButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.micButtonSize),
             micButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.micButtonSize),
 
-            contentStack.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: KeyboardStyle.horizontalPadding),
-            contentStack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
-            contentStack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
-            contentStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            keyGridView.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight * 4 + KeyboardStyle.keyboardRowSpacing * 3),
+
+            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
+            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
+            mainStack.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding),
+            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.bottomPadding),
         ])
     }
+
+#if DEBUG
+    func debugLayoutSnapshot() -> String {
+        func describe(_ view: UIView?) -> String {
+            guard let view else { return "nil" }
+            return "frame=\(NSCoder.string(for: view.frame)) bounds=\(NSCoder.string(for: view.bounds)) opaque=\(view.isOpaque) hidden=\(view.isHidden) alpha=\(String(format: "%.2f", view.alpha)) bg=\(String(describing: view.backgroundColor))"
+        }
+
+        return """
+        root: \(describe(self))
+        mainStack: \(describe(mainStack))
+        contentStack: \(describe(contentStack))
+        keyGridView: \(describe(keyGridView))
+        """
+    }
+#endif
 }
