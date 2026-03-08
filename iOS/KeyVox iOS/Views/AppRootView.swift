@@ -17,10 +17,6 @@ struct AppRootView: View {
                 #if DEBUG
                 Text(statusText)
                     .font(.footnote.monospaced())
-                if let artifact = transcriptionManager.lastCaptureArtifact {
-                    Text("Last capture: \(artifact.outputFrameCount) output frames")
-                        .font(.footnote.monospaced())
-                }
                 if let error = transcriptionManager.lastErrorMessage {
                     Text(error)
                         .font(.footnote.monospaced())

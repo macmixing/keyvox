@@ -11,7 +11,6 @@ final class iOSAppServiceRegistry {
     let modelManager: iOSModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
-    let artifactWriter: Phase2CaptureArtifactWriter
     let transcriptionManager: iOSTranscriptionManager
     let iCloudSyncCoordinator: iOSiCloudSyncCoordinator
     let urlRouter: KeyVoxURLRouter
@@ -46,10 +45,8 @@ final class iOSAppServiceRegistry {
             keyboardBridge?.touchHeartbeat()
         }
 
-        let artifactWriter = Phase2CaptureArtifactWriter()
         let transcriptionManager = iOSTranscriptionManager(
             recorder: recorder,
-            artifactWriter: artifactWriter,
             transcriptionService: whisperService,
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
@@ -85,7 +82,6 @@ final class iOSAppServiceRegistry {
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
-        self.artifactWriter = artifactWriter
         self.transcriptionManager = transcriptionManager
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)

@@ -21,10 +21,8 @@
 		8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */; };
 		8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */; };
 		8E9E38D62F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C42F5C004200EAFA72 /* iOSAudioRecorder.swift */; };
-		8E9E38D72F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */; };
 		8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */; };
 		8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */; };
-		8E9E38DA2F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */; };
 		8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */; };
 		8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C52F5C004200EAFA72 /* iOSAudioRecorder+Session.swift */; };
 		8E9E38DD2F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */; };
@@ -32,8 +30,6 @@
 		8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */; };
 		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
-		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
-		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */; };
 		9A7000122FA6000100AA0001 /* iOSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001022FA6000100AA0001 /* iOSModelManager.swift */; };
@@ -48,6 +44,8 @@
 		9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */; };
 		9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */; };
 		9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */; };
+		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
+		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,15 +98,11 @@
 		8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSAudioRecorder+StopPipeline.swift"; sourceTree = "<group>"; };
 		8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSAudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
 		8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveInputSignalState.swift; sourceTree = "<group>"; };
-		8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase2CaptureArtifact.swift; sourceTree = "<group>"; };
-		8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase2CaptureArtifactWriter.swift; sourceTree = "<group>"; };
 		8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionManager.swift; sourceTree = "<group>"; };
 		8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSharedPaths.swift; sourceTree = "<group>"; };
 		8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDictationService.swift; sourceTree = "<group>"; };
 		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
-		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
-		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 		9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallState.swift; sourceTree = "<group>"; };
 		9A7001022FA6000100AA0001 /* iOSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelManager.swift; sourceTree = "<group>"; };
 		9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadURLs.swift; sourceTree = "<group>"; };
@@ -122,6 +116,8 @@
 		9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
+		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
+		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -227,18 +223,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		9B7001092FB1000100BB0001 /* iCloud */ = {
-			isa = PBXGroup;
-			children = (
-				9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */,
-				9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */,
-				9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */,
-				9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */,
-				9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */,
-			);
-			path = iCloud;
-			sourceTree = "<group>";
-		};
 		8E9E389B2F5C000000EAFA72 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -264,8 +248,6 @@
 				8E9E38C62F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift */,
 				8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */,
 				8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */,
-				8E9E38C92F5C004200EAFA72 /* Phase2CaptureArtifact.swift */,
-				8E9E38CA2F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -295,6 +277,18 @@
 				9A7001052FA6000100AA0001 /* iOSModelInstallManifest.swift */,
 			);
 			path = ModelDownloader;
+			sourceTree = "<group>";
+		};
+		9B7001092FB1000100BB0001 /* iCloud */ = {
+			isa = PBXGroup;
+			children = (
+				9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */,
+				9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */,
+				9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */,
+				9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */,
+				9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */,
+			);
+			path = iCloud;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -475,14 +469,12 @@
 				8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */,
 				8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */,
 				8E9E38D62F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */,
-				8E9E38D72F5C004200EAFA72 /* Phase2CaptureArtifactWriter.swift in Sources */,
 				8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */,
 				8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */,
 				8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */,
 				9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */,
 				8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */,
 				9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */,
-				8E9E38DA2F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */,
 				8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */,
 				8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */,
 				8E9E38DD2F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */,

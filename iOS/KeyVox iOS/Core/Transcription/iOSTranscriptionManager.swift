@@ -15,13 +15,11 @@ final class iOSTranscriptionManager: ObservableObject {
     @Published var isSessionActive = false
     @Published var sessionDisablePending = false
     @Published var sessionExpirationDate: Date?
-    @Published private(set) var lastCaptureArtifact: Phase2CaptureArtifact?
     @Published var lastErrorMessage: String?
     @Published var lastTranscriptionSnapshot: iOSTranscriptionDebugSnapshot?
     @Published private(set) var isModelAvailable = false
 
     let recorder: any iOSAudioRecording
-    private let artifactWriter: any Phase2CaptureArtifactWriting
     let transcriptionService: any iOSDictationService
     private let dictionaryStore: DictionaryStore
     private let postProcessor: TranscriptionPostProcessor
@@ -59,7 +57,6 @@ final class iOSTranscriptionManager: ObservableObject {
 
     init(
         recorder: any iOSAudioRecording,
-        artifactWriter: any Phase2CaptureArtifactWriting,
         transcriptionService: any iOSDictationService,
         dictionaryStore: DictionaryStore,
         postProcessor: TranscriptionPostProcessor,
@@ -70,7 +67,6 @@ final class iOSTranscriptionManager: ObservableObject {
         sessionPolicy: iOSSessionPolicy = .default
     ) {
         self.recorder = recorder
-        self.artifactWriter = artifactWriter
         self.transcriptionService = transcriptionService
         self.dictionaryStore = dictionaryStore
         self.postProcessor = postProcessor
@@ -188,25 +184,6 @@ final class iOSTranscriptionManager: ObservableObject {
         #endif
 
         let stoppedCapture = await recorder.stopRecording()
-        let request = Phase2CaptureWriteRequest(
-            capturedAt: Date(),
-            sampleRate: 16000,
-            snapshotFrames: stoppedCapture.snapshot,
-            outputFrames: stoppedCapture.outputFrames,
-            captureDuration: stoppedCapture.captureDuration,
-            hadActiveSignal: recorder.lastCaptureHadActiveSignal,
-            wasAbsoluteSilence: recorder.lastCaptureWasAbsoluteSilence,
-            wasLikelySilence: recorder.lastCaptureWasLikelySilence,
-            wasLongTrueSilence: recorder.lastCaptureWasLongTrueSilence,
-            maxActiveSignalRunDuration: recorder.maxActiveSignalRunDuration,
-            currentCaptureDeviceName: recorder.currentCaptureDeviceName
-        )
-
-        do {
-            lastCaptureArtifact = try await artifactWriter.writeLatestCapture(request)
-        } catch {
-            lastErrorMessage = error.localizedDescription
-        }
 
         guard utteranceID == activeUtteranceID else {
             await finishAndDisableSessionIfNeeded()

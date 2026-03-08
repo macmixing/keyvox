@@ -25,7 +25,7 @@ Convenience matters, but not more than predictable behavior.
 KeyVox iOS is organized by responsibility:
 
 - `KeyVox iOS/App/`: app lifecycle, dependency composition, App Group paths, keyboard/app IPC contract, URL routing, and model management.
-- `KeyVox iOS/Core/Audio/`: `AVAudioSession` setup, engine lifecycle, streaming conversion, stop-time classification, and capture artifact emission.
+- `KeyVox iOS/Core/Audio/`: `AVAudioSession` setup, engine lifecycle, streaming conversion, and stop-time classification.
 - `KeyVox iOS/Core/Transcription/`: iOS runtime state machine and the boundary between capture, shared-package dictation, and keyboard notifications.
 - `KeyVox iOS/Views/`: minimal containing-app UI for model controls and debug/runtime status.
 - `KeyVox Keyboard/`: custom keyboard controller, keyboard-local UI, warm/cold start coordination, and final text insertion.
@@ -107,7 +107,7 @@ The model install path does not use the fallback; missing App Group access is tr
 5. `KeyVoxURLRouter` or `KeyVoxKeyboardBridge` forwards the start command to `iOSTranscriptionManager`.
 6. `iOSTranscriptionManager` transitions `idle -> recording`, clears stale UI/debug state, refreshes model availability, and starts the recorder.
 7. `iOSAudioRecorder` ensures the `AVAudioEngine` is warm, requests microphone permission, and records live 16kHz mono float samples.
-8. On stop, the manager transitions `recording -> processingCapture`, asks the recorder for a processed capture, and writes the latest verification artifacts.
+8. On stop, the manager transitions `recording -> processingCapture`, asks the recorder for a processed capture, and uses the resulting output frames directly for model gating and transcription.
 9. Empty or rejected output frames short-circuit back to `idle` with a `noSpeech` publish.
 10. If output frames are present and the model exists, the manager transitions to `transcribing`, warms Whisper, and runs `DictationPipeline`.
 11. `DictationPipeline` transcribes audio, runs shared post-processing, and returns final text.
@@ -151,23 +151,7 @@ When recording stops:
 4. If the capture is true silence or likely silence, output frames are cleared.
 5. Otherwise, the raw snapshot is normalized for transcription and returned as output frames.
 
-The containing app always records the verification artifact, even when the capture is rejected before inference.
-
-## Capture Artifact Contract
-
-`Phase2CaptureArtifactWriter` writes the latest processed capture to Application Support under:
-
-- `Phase2Verification/latest-snapshot.wav`
-- `Phase2Verification/latest-transcription-input.wav` when output frames exist
-- `Phase2Verification/latest-metadata.json`
-
-Artifact guarantees:
-
-- WAV output is mono 16-bit PCM at the request sample rate.
-- Metadata is JSON with sorted keys and ISO-8601 dates.
-- A previously written transcription-input WAV is deleted when the latest accepted output is empty.
-
-These artifacts exist for deterministic debugging of the iOS capture pipeline and should remain safe to inspect offline.
+The containing app does not persist stop-time capture artifacts. Once the recorder returns an `iOSStoppedCapture`, the manager either rejects it as silence/no-speech or passes its output frames directly into transcription.
 
 ## Inference Model
 
@@ -295,7 +279,7 @@ The extension is a transport and insertion surface, not the transcription owner.
 `AppRootView` is intentionally small and operational:
 
 - It exposes model status and install actions.
-- In `DEBUG`, it surfaces transcription state, last capture artifact summary, and the latest runtime error.
+- In `DEBUG`, it surfaces transcription state and the latest runtime error.
 - It is not the source of truth for recorder/model/transcription logic.
 
 If the iOS app grows a fuller user-facing settings surface later, the runtime ownership should stay in the managers rather than drifting into the view layer.
@@ -312,7 +296,6 @@ If the iOS app grows a fuller user-facing settings surface later, the runtime ow
 - URL route parsing
 - App Group path construction
 - model install validation and repair flows
-- capture artifact writing
 - stop-time silence classification
 - transcription-manager state transitions and model gating
 

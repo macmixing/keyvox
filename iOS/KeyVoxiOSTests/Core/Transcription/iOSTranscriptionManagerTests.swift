@@ -240,26 +240,9 @@ struct iOSTranscriptionManagerTests {
 
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 1)
-        #expect(harness.manager.lastCaptureArtifact?.outputFrameCount == harness.recorder.stoppedCapture.outputFrames.count)
         #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "Hello world")
         #expect(harness.manager.lastTranscriptionSnapshot?.usedDictionaryHintPrompt == false)
         #expect(harness.manager.lastErrorMessage == nil)
-    }
-
-    @Test func stopSetsProcessingCaptureWhileWriterIsInFlight() async throws {
-        let harness = try makeHarness(writerShouldSuspend: true)
-        harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test", languageCode: "en")
-
-        await harness.manager.performStartRecordingCommand()
-
-        let task = Task { await harness.manager.performStopRecordingCommand() }
-        await Task.yield()
-
-        #expect(harness.manager.state == .processingCapture)
-        harness.writer.resumeSuccess()
-        await task.value
-        #expect(harness.manager.state == .idle)
     }
 
     @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
@@ -369,12 +352,10 @@ struct iOSTranscriptionManagerTests {
 
     private func makeHarness(
         modelPath: String? = nil,
-        writerShouldSuspend: Bool = false,
         serviceShouldSuspend: Bool = false,
         sessionPolicy: iOSSessionPolicy = .default
     ) throws -> ManagerHarness {
         let recorder = StubAudioRecorder()
-        let writer = StubArtifactWriter(shouldSuspend: writerShouldSuspend)
         let transcriptionService = StubDictationService(shouldSuspend: serviceShouldSuspend)
         let dictionaryBase = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -393,7 +374,6 @@ struct iOSTranscriptionManagerTests {
         let keyboardBridge = KeyVoxKeyboardBridge()
         let manager = iOSTranscriptionManager(
             recorder: recorder,
-            artifactWriter: writer,
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
@@ -405,7 +385,6 @@ struct iOSTranscriptionManagerTests {
         return ManagerHarness(
             manager: manager,
             recorder: recorder,
-            writer: writer,
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore
         )
@@ -479,7 +458,6 @@ struct iOSTranscriptionManagerTests {
 private struct ManagerHarness {
     let manager: iOSTranscriptionManager
     let recorder: StubAudioRecorder
-    let writer: StubArtifactWriter
     let transcriptionService: StubDictationService
     let dictionaryStore: DictionaryStore
 }
@@ -565,57 +543,6 @@ private final class StubAudioRecorder: iOSAudioRecording {
         currentCaptureDuration = 0
         hasMeaningfulSpeechInCurrentCapture = false
         timeSinceLastMeaningfulSpeech = nil
-    }
-}
-
-@MainActor
-private final class StubArtifactWriter: Phase2CaptureArtifactWriting {
-    private var continuation: CheckedContinuation<Void, Never>?
-    private let error: Error?
-    private let shouldSuspend: Bool
-
-    var lastRequest: Phase2CaptureWriteRequest?
-
-    init(error: Error? = nil, shouldSuspend: Bool = false) {
-        self.error = error
-        self.shouldSuspend = shouldSuspend
-    }
-
-    func writeLatestCapture(_ request: Phase2CaptureWriteRequest) async throws -> Phase2CaptureArtifact {
-        lastRequest = request
-        if shouldSuspend {
-            await waitForResume()
-        }
-        if let error {
-            throw error
-        }
-        return Phase2CaptureArtifact(
-            capturedAt: request.capturedAt,
-            sampleRate: request.sampleRate,
-            snapshotFrameCount: request.snapshotFrames.count,
-            outputFrameCount: request.outputFrames.count,
-            captureDuration: request.captureDuration,
-            hadActiveSignal: request.hadActiveSignal,
-            wasAbsoluteSilence: request.wasAbsoluteSilence,
-            wasLikelySilence: request.wasLikelySilence,
-            wasLongTrueSilence: request.wasLongTrueSilence,
-            maxActiveSignalRunDuration: request.maxActiveSignalRunDuration,
-            currentCaptureDeviceName: request.currentCaptureDeviceName,
-            snapshotWAVURL: URL(fileURLWithPath: "/tmp/latest-snapshot.wav"),
-            transcriptionInputWAVURL: request.outputFrames.isEmpty ? nil : URL(fileURLWithPath: "/tmp/latest-transcription-input.wav"),
-            metadataURL: URL(fileURLWithPath: "/tmp/latest-metadata.json")
-        )
-    }
-
-    func resumeSuccess() {
-        continuation?.resume()
-        continuation = nil
-    }
-
-    private func waitForResume() async {
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            self.continuation = continuation
-        }
     }
 }
 

@@ -22,7 +22,7 @@ The default iOS interaction is:
 - **`KeyVox iOS/`**: containing-app entry point, dependency registry, App Group/IPC bridge, model downloader, audio recorder, transcription manager, and minimal app UI.
 - **`KeyVox Keyboard/`**: keyboard extension UI, keyboard state machine, IPC client, and text insertion heuristics.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, post-processing, Whisper service, audio silence policy, and dictionary persistence logic reused from the Mac app.
-- **`KeyVoxiOSTests/`**: deterministic tests covering routing, shared paths, model lifecycle, capture processing, artifact writing, and transcription state transitions.
+- **`KeyVoxiOSTests/`**: deterministic tests covering routing, shared paths, model lifecycle, capture processing, and transcription state transitions.
 - **`docs/`**: iOS-local source of truth for architecture and file ownership. `CODEMAP.md` owns structure; `ENGINEERING.md` owns invariants and operational policy.
 
 ## Contributor Notes
@@ -30,7 +30,7 @@ The default iOS interaction is:
 - Keep iOS-specific platform behavior in the `iOS/` targets; keep reusable speech/text logic in `KeyVoxCore`.
 - The keyboard extension should remain thin. If new behavior can live in shared state, IPC, or `KeyVoxCore`, prefer that over expanding extension-only business logic.
 - The containing app is intentionally minimal in UI today. Most complexity belongs in the runtime managers, not in `AppRootView`.
-- Unit tests focus on deterministic seams: URL parsing, state transitions, install validation, capture classification, and artifact emission. Device routing, extension launch timing, and actual text injection remain integration scope.
+- Unit tests focus on deterministic seams: URL parsing, state transitions, install validation, and capture classification. Device routing, extension launch timing, and actual text injection remain integration scope.
 - This file is the curated ownership map for the iOS app. Runtime rules, IPC contracts, and operational workflows belong in [`ENGINEERING.md`](ENGINEERING.md).
 
 ## Directory Index
@@ -66,8 +66,6 @@ iOS/
 │   │   │   ├── iOSAudioRecorder+Streaming.swift
 │   │   │   ├── iOSAudioRecorder+StopPipeline.swift
 │   │   │   ├── LiveInputSignalState.swift
-│   │   │   ├── Phase2CaptureArtifact.swift
-│   │   │   └── Phase2CaptureArtifactWriter.swift
 │   │   └── Transcription/
 │   │       ├── iOSTranscriptionManager.swift
 │   │       ├── iOSDictationService.swift
@@ -106,9 +104,8 @@ Packages/
 3. `KeyVox iOS/App/KeyVoxKeyboardBridge.swift` receives start/stop commands, updates shared heartbeat/state, and publishes app-to-extension events.
 4. `KeyVox iOS/Core/Audio/iOSAudioRecorder.swift` and its extensions keep an `AVAudioEngine` warm, record at 16kHz mono float PCM, and collect live signal metrics.
 5. `KeyVox iOS/Core/Audio/iOSAudioRecorder+StopPipeline.swift` removes internal gaps, classifies silence/no-speech using `KeyVoxCore`, and emits output frames for inference.
-6. `KeyVox iOS/Core/Audio/Phase2CaptureArtifactWriter.swift` writes the latest snapshot WAV, transcription-input WAV, and JSON metadata for debugging and verification.
-7. `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift` runs `KeyVoxCore.DictationPipeline`, which delegates transcription to `WhisperService` and post-processing to `TranscriptionPostProcessor`.
-8. `KeyVoxKeyboardBridge` publishes either `transcriptionReady` or `noSpeech`, and `KeyboardViewController` inserts the cleaned text with `KeyboardInsertionSpacingHeuristics`.
+6. `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift` takes the processed capture, gates on model availability, and runs `KeyVoxCore.DictationPipeline`, which delegates transcription to `WhisperService` and post-processing to `TranscriptionPostProcessor`.
+7. `KeyVoxKeyboardBridge` publishes either `transcriptionReady` or `noSpeech`, and `KeyboardViewController` inserts the cleaned text with `KeyboardInsertionSpacingHeuristics`.
 
 ## Key Components
 
@@ -120,7 +117,7 @@ Packages/
   - Registers model background tasks and routes incoming `keyvoxios://` URLs.
 - `KeyVox iOS/App/iOSAppServiceRegistry.swift`
   - Composition root for the containing app.
-  - Wires `DictionaryStore`, `WhisperService`, `iOSModelManager`, `TranscriptionPostProcessor`, `iOSAudioRecorder`, `Phase2CaptureArtifactWriter`, `iOSTranscriptionManager`, and `KeyVoxURLRouter`.
+  - Wires `DictionaryStore`, `WhisperService`, `iOSModelManager`, `TranscriptionPostProcessor`, `iOSAudioRecorder`, `iOSTranscriptionManager`, and `KeyVoxURLRouter`.
   - Connects keyboard-bridge start/stop callbacks to the transcription manager.
 - `KeyVox iOS/App/iOSSharedPaths.swift`
   - Central source of truth for App Group paths.
@@ -181,17 +178,12 @@ Packages/
   - Uses `KeyVoxCore` post-processing and `AudioCaptureClassifier` to reject likely silence before inference.
 - `KeyVox iOS/Core/Audio/LiveInputSignalState.swift`
   - UI-facing enum describing live signal states (`dead`, `quiet`, `active`).
-- `KeyVox iOS/Core/Audio/Phase2CaptureArtifact.swift`
-  - Serializable metadata model for the latest saved capture.
-- `KeyVox iOS/Core/Audio/Phase2CaptureArtifactWriter.swift`
-  - Writes `latest-snapshot.wav`, optional `latest-transcription-input.wav`, and `latest-metadata.json`.
-  - Used for deterministic verification of the stop-time capture pipeline.
 
 ### Transcription and Post-Processing
 
 - `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift`
   - Main iOS state machine: `idle -> recording -> processingCapture -> transcribing -> idle`.
-  - Coordinates recorder start/stop, capture artifact writing, model availability checks, dictionary prompt updates, `DictationPipeline` execution, and keyboard notifications.
+  - Coordinates recorder start/stop, model availability checks, dictionary prompt updates, `DictationPipeline` execution, and keyboard notifications.
   - Stores the latest debug snapshot and surfaced error for the app UI.
 - `KeyVox iOS/Core/Transcription/iOSDictationService.swift`
   - Minimal protocol seam over `WhisperService` for warmup, cancellation, hint-prompt updates, and transcription.
@@ -232,8 +224,6 @@ Packages/
   - Covers install validation, download lifecycle, delete/repair behavior, and low-disk-space handling.
 - `KeyVoxiOSTests/Core/Audio/iOSStoppedCaptureProcessorTests.swift`
   - Verifies speech acceptance and silence rejection rules for stop-time capture processing.
-- `KeyVoxiOSTests/Core/Audio/Phase2CaptureArtifactWriterTests.swift`
-  - Verifies WAV/header output, metadata round-tripping, and optional transcription-input cleanup.
 - `KeyVoxiOSTests/Core/Transcription/iOSTranscriptionManagerTests.swift`
   - Exercises state transitions, model gating, no-speech handling, and dictionary-prompt propagation.
 - `../Packages/KeyVoxCore/Tests/KeyVoxCoreTests/`
