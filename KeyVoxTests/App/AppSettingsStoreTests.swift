@@ -151,6 +151,32 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedMicrophoneUID, "builtin-mic")
     }
 
+    func testApplyCloudAutoParagraphsEnabledPersistsValue() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calendar = makeCalendar()
+        let now = makeDate(calendar: calendar, year: 2026, month: 2, day: 17)
+        let store = AppSettingsStore(defaults: defaults, calendar: calendar, now: { now })
+
+        store.applyCloudAutoParagraphsEnabled(false)
+
+        XCTAssertFalse(store.autoParagraphsEnabled)
+        XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool, false)
+    }
+
+    func testApplyCloudListFormattingEnabledPersistsValue() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calendar = makeCalendar()
+        let now = makeDate(calendar: calendar, year: 2026, month: 2, day: 17)
+        let store = AppSettingsStore(defaults: defaults, calendar: calendar, now: { now })
+
+        store.applyCloudListFormattingEnabled(false)
+
+        XCTAssertFalse(store.listFormattingEnabled)
+        XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool, false)
+    }
+
     private func makeIsolatedDefaults() -> (UserDefaults, String) {
         let suiteName = "AppSettingsStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
