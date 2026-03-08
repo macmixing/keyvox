@@ -147,6 +147,18 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertFalse(harness.appSettings.autoParagraphsEnabled)
     }
 
+    func testNewerCloudTriggerBindingAppliesLocally() throws {
+        let remoteDate = makeDate(year: 2026, month: 3, day: 12, hour: 10)
+        let harness = try makeHarness(now: remoteDate)
+        harness.cloudStore.seedValue(AppSettingsStore.TriggerBinding.leftCommand.rawValue, forKey: KeyVoxiCloudKeys.triggerBinding)
+        harness.cloudStore.seedValue(remoteDate, forKey: KeyVoxiCloudKeys.triggerBindingModifiedAt)
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        XCTAssertEqual(harness.appSettings.triggerBinding, .leftCommand)
+    }
+
     func testLocalListFormattingChangePushesCloud() async throws {
         let now = makeDate(year: 2026, month: 3, day: 12, hour: 12)
         let harness = try makeHarness(now: now)
@@ -165,6 +177,29 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.listFormattingEnabled) as? Bool, false)
         XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.listFormattingModifiedAt) as? Date, now)
+    }
+
+    func testLocalTriggerBindingChangePushesCloud() async throws {
+        let now = makeDate(year: 2026, month: 3, day: 12, hour: 13)
+        let harness = try makeHarness(now: now)
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        let triggerBindingPushed = expectation(description: "Trigger binding pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.triggerBindingModifiedAt {
+                triggerBindingPushed.fulfill()
+            }
+        }
+
+        harness.appSettings.triggerBinding = .leftControl
+        await fulfillment(of: [triggerBindingPushed], timeout: 1.0)
+
+        XCTAssertEqual(
+            harness.cloudStore.object(forKey: KeyVoxiCloudKeys.triggerBinding) as? String,
+            AppSettingsStore.TriggerBinding.leftControl.rawValue
+        )
+        XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.triggerBindingModifiedAt) as? Date, now)
     }
 
     private func makeCoordinator(harness: Harness) -> KeyVoxiCloudSyncCoordinator {

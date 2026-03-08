@@ -27,6 +27,7 @@ final class KeyVoxiCloudSyncCoordinator {
     private var cancellables = Set<AnyCancellable>()
     private var externalChangeObserver: NSObjectProtocol?
     private var isApplyingRemoteDictionary = false
+    private var isApplyingRemoteTriggerBinding = false
     private var isApplyingRemoteAutoParagraphs = false
     private var isApplyingRemoteListFormatting = false
 
@@ -63,6 +64,11 @@ final class KeyVoxiCloudSyncCoordinator {
             applyRemoteDictionaryIfNewer()
         }
 
+        if changedKeys.contains(KeyVoxiCloudKeys.triggerBinding)
+            || changedKeys.contains(KeyVoxiCloudKeys.triggerBindingModifiedAt) {
+            applyRemoteTriggerBindingIfNewer()
+        }
+
         if changedKeys.contains(KeyVoxiCloudKeys.autoParagraphsEnabled)
             || changedKeys.contains(KeyVoxiCloudKeys.autoParagraphsModifiedAt) {
             applyRemoteAutoParagraphsIfNewer()
@@ -82,6 +88,16 @@ final class KeyVoxiCloudSyncCoordinator {
                 let modifiedAt = self.now()
                 self.setLocalDictionaryModifiedAt(modifiedAt)
                 self.pushDictionary(entries: entries, modifiedAt: modifiedAt)
+            }
+            .store(in: &cancellables)
+
+        appSettings.$triggerBinding
+            .dropFirst()
+            .sink { [weak self] value in
+                guard let self, !self.isApplyingRemoteTriggerBinding else { return }
+                let modifiedAt = self.now()
+                self.setLocalTriggerBindingModifiedAt(modifiedAt)
+                self.pushTriggerBinding(value, modifiedAt: modifiedAt)
             }
             .store(in: &cancellables)
 
@@ -129,6 +145,7 @@ final class KeyVoxiCloudSyncCoordinator {
 
     private func bootstrap() {
         bootstrapDictionary()
+        bootstrapTriggerBinding()
         bootstrapAutoParagraphs()
         bootstrapListFormatting()
     }
@@ -168,6 +185,19 @@ final class KeyVoxiCloudSyncCoordinator {
                 self?.applyRemoteAutoParagraphs(value: value, modifiedAt: modifiedAt)
             },
             defaultValue: true
+        )
+    }
+
+    private func bootstrapTriggerBinding() {
+        bootstrapSetting(
+            localValue: appSettings.triggerBinding.rawValue,
+            localModifiedAt: inferredLocalTriggerBindingModifiedAt(defaultValue: AppSettingsStore.TriggerBinding.rightOption.rawValue),
+            valueKey: KeyVoxiCloudKeys.triggerBinding,
+            modifiedAtKey: KeyVoxiCloudKeys.triggerBindingModifiedAt,
+            applyRemote: { [weak self] value, modifiedAt in
+                self?.applyRemoteTriggerBinding(rawValue: value, modifiedAt: modifiedAt)
+            },
+            defaultValue: AppSettingsStore.TriggerBinding.rightOption.rawValue
         )
     }
 
@@ -224,6 +254,49 @@ final class KeyVoxiCloudSyncCoordinator {
         }
     }
 
+    private func bootstrapSetting(
+        localValue: String,
+        localModifiedAt: Date?,
+        valueKey: String,
+        modifiedAtKey: String,
+        applyRemote: (String, Date) -> Void,
+        defaultValue: String
+    ) {
+        guard let remoteModifiedAt = ubiquitousStore.object(forKey: modifiedAtKey) as? Date else {
+            if let localModifiedAt {
+                pushSetting(localValue, valueKey: valueKey, modifiedAtKey: modifiedAtKey, modifiedAt: localModifiedAt)
+            } else if localValue != defaultValue {
+                let modifiedAt = now()
+                updateLocalSettingTimestamp(for: modifiedAtKey, value: modifiedAt)
+                pushSetting(localValue, valueKey: valueKey, modifiedAtKey: modifiedAtKey, modifiedAt: modifiedAt)
+            }
+            return
+        }
+
+        guard let remoteValue = ubiquitousStore.object(forKey: valueKey) as? String else {
+            return
+        }
+
+        guard let resolvedLocalModifiedAt = localModifiedAt else {
+            if localValue == defaultValue {
+                applyRemote(remoteValue, remoteModifiedAt)
+            } else {
+                let modifiedAt = now()
+                updateLocalSettingTimestamp(for: modifiedAtKey, value: modifiedAt)
+                pushSetting(localValue, valueKey: valueKey, modifiedAtKey: modifiedAtKey, modifiedAt: modifiedAt)
+            }
+            return
+        }
+
+        updateLocalSettingTimestamp(for: modifiedAtKey, value: resolvedLocalModifiedAt)
+
+        if remoteModifiedAt > resolvedLocalModifiedAt {
+            applyRemote(remoteValue, remoteModifiedAt)
+        } else if remoteModifiedAt < resolvedLocalModifiedAt {
+            pushSetting(localValue, valueKey: valueKey, modifiedAtKey: modifiedAtKey, modifiedAt: resolvedLocalModifiedAt)
+        }
+    }
+
     private func applyRemoteDictionaryIfNewer() {
         guard let payload = loadRemoteDictionaryPayload() else { return }
         let localModifiedAt = localDictionaryModifiedAt() ?? .distantPast
@@ -245,6 +318,34 @@ final class KeyVoxiCloudSyncCoordinator {
             print("[iCloudSync] Failed to apply remote dictionary payload: \(error)")
             #endif
         }
+    }
+
+    private func applyRemoteTriggerBindingIfNewer() {
+        guard
+            let remoteModifiedAt = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.triggerBindingModifiedAt) as? Date,
+            let remoteValue = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.triggerBinding) as? String
+        else {
+            return
+        }
+
+        let localModifiedAt = triggerBindingModifiedAt() ?? .distantPast
+        guard remoteModifiedAt > localModifiedAt else { return }
+        applyRemoteTriggerBinding(rawValue: remoteValue, modifiedAt: remoteModifiedAt)
+    }
+
+    private func applyRemoteTriggerBinding(rawValue: String, modifiedAt: Date) {
+        guard let binding = AppSettingsStore.TriggerBinding(rawValue: rawValue) else {
+            #if DEBUG
+            print("[iCloudSync] Ignoring invalid remote trigger binding: \(rawValue)")
+            #endif
+            return
+        }
+
+        isApplyingRemoteTriggerBinding = true
+        defer { isApplyingRemoteTriggerBinding = false }
+
+        appSettings.applyCloudTriggerBinding(binding)
+        setLocalTriggerBindingModifiedAt(modifiedAt)
     }
 
     private func applyRemoteAutoParagraphsIfNewer() {
@@ -314,6 +415,21 @@ final class KeyVoxiCloudSyncCoordinator {
         _ = ubiquitousStore.synchronize()
     }
 
+    private func pushSetting(_ value: String, valueKey: String, modifiedAtKey: String, modifiedAt: Date) {
+        ubiquitousStore.set(value, forKey: valueKey)
+        ubiquitousStore.set(modifiedAt, forKey: modifiedAtKey)
+        _ = ubiquitousStore.synchronize()
+    }
+
+    private func pushTriggerBinding(_ value: AppSettingsStore.TriggerBinding, modifiedAt: Date) {
+        pushSetting(
+            value.rawValue,
+            valueKey: KeyVoxiCloudKeys.triggerBinding,
+            modifiedAtKey: KeyVoxiCloudKeys.triggerBindingModifiedAt,
+            modifiedAt: modifiedAt
+        )
+    }
+
     private func loadRemoteDictionaryPayload() -> KeyVoxDictionaryCloudPayload? {
         guard let data = ubiquitousStore.data(forKey: KeyVoxiCloudKeys.dictionaryPayload) else {
             return nil
@@ -341,6 +457,14 @@ final class KeyVoxiCloudSyncCoordinator {
         defaults.object(forKey: UserDefaultsKeys.iCloud.autoParagraphsLastModifiedAt) as? Date
     }
 
+    private func triggerBindingModifiedAt() -> Date? {
+        defaults.object(forKey: UserDefaultsKeys.iCloud.triggerBindingLastModifiedAt) as? Date
+    }
+
+    private func setLocalTriggerBindingModifiedAt(_ value: Date) {
+        defaults.set(value, forKey: UserDefaultsKeys.iCloud.triggerBindingLastModifiedAt)
+    }
+
     private func setLocalAutoParagraphsModifiedAt(_ value: Date) {
         defaults.set(value, forKey: UserDefaultsKeys.iCloud.autoParagraphsLastModifiedAt)
     }
@@ -355,6 +479,8 @@ final class KeyVoxiCloudSyncCoordinator {
 
     private func updateLocalSettingTimestamp(for cloudModifiedAtKey: String, value: Date) {
         switch cloudModifiedAtKey {
+        case KeyVoxiCloudKeys.triggerBindingModifiedAt:
+            setLocalTriggerBindingModifiedAt(value)
         case KeyVoxiCloudKeys.autoParagraphsModifiedAt:
             setLocalAutoParagraphsModifiedAt(value)
         case KeyVoxiCloudKeys.listFormattingModifiedAt:
@@ -370,6 +496,10 @@ final class KeyVoxiCloudSyncCoordinator {
 
     private func inferredLocalAutoParagraphsModifiedAt(defaultValue: Bool) -> Date? {
         autoParagraphsModifiedAt() ?? (appSettings.autoParagraphsEnabled == defaultValue ? nil : now())
+    }
+
+    private func inferredLocalTriggerBindingModifiedAt(defaultValue: String) -> Date? {
+        triggerBindingModifiedAt() ?? (appSettings.triggerBinding.rawValue == defaultValue ? nil : now())
     }
 
     private func inferredLocalListFormattingModifiedAt(defaultValue: Bool) -> Date? {
