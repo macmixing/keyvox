@@ -179,6 +179,11 @@ final class AppSettingsStore: ObservableObject {
         autoParagraphsEnabled = value
     }
 
+    func applyCloudTriggerBinding(_ value: TriggerBinding) {
+        guard triggerBinding != value else { return }
+        triggerBinding = value
+    }
+
     func applyCloudListFormattingEnabled(_ value: Bool) {
         guard listFormattingEnabled != value else { return }
         listFormattingEnabled = value

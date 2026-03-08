@@ -170,16 +170,14 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testReplaceAllPersistsSanitizedSnapshot() throws {
+    func testReplaceAllPersistsCleanSnapshot() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
             try store.replaceAll(entries: [
-                DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: " Cueboard "),
-                DictionaryEntry(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, phrase: "cueboard"),
-                DictionaryEntry(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, phrase: "  "),
-                DictionaryEntry(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, phrase: "MiGo    Platform"),
+                DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: "Cueboard"),
+                DictionaryEntry(id: UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!, phrase: "MiGo Platform"),
             ])
 
             XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
@@ -193,6 +191,26 @@ final class DictionaryStoreTests: XCTestCase {
 
             let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
             XCTAssertEqual(reloaded.entries.map(\.phrase), ["Cueboard", "MiGo Platform"])
+        }
+    }
+
+    func testReplaceAllRejectsLossySnapshot() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+
+            do {
+                try store.replaceAll(entries: [
+                    DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: " Cueboard "),
+                    DictionaryEntry(id: UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!, phrase: "cueboard"),
+                    DictionaryEntry(id: UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!, phrase: "  "),
+                ])
+                XCTFail("Expected lossy snapshot import failure")
+            } catch let error as DictionaryStoreError {
+                XCTAssertEqual(error, .invalidSnapshotImport)
+            }
+
+            XCTAssertTrue(store.entries.isEmpty)
         }
     }
 
