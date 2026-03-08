@@ -60,7 +60,8 @@ final class iOSAppServiceRegistry {
             },
             listFormattingEnabledProvider: { [weak settingsStore] in
                 settingsStore?.listFormattingEnabled ?? true
-            }
+            },
+            sessionPolicy: .default
         )
         let iCloudSyncCoordinator = iOSiCloudSyncCoordinator(
             settingsStore: settingsStore,

@@ -11,6 +11,7 @@ struct AppRootView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 modelSection
+                sessionSection
                 settingsSection
                 dictionarySection
                 #if DEBUG
@@ -104,6 +105,40 @@ struct AppRootView: View {
     }
 
     @ViewBuilder
+    private var sessionSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Session")
+                .font(.headline)
+
+            Toggle(
+                "Keep Session Active",
+                isOn: Binding(
+                    get: { transcriptionManager.isSessionActive && !transcriptionManager.sessionDisablePending },
+                    set: { isEnabled in
+                        if isEnabled {
+                            transcriptionManager.handleEnableSessionCommand()
+                        } else {
+                            transcriptionManager.handleDisableSessionCommand()
+                        }
+                    }
+                )
+            )
+
+            Text(sessionStatusText)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+            if let expirationDate = transcriptionManager.sessionExpirationDate,
+               transcriptionManager.isSessionActive,
+               !transcriptionManager.sessionDisablePending {
+                Text("Turns off after 5 minutes of idle time (until \(expirationDate.formatted(date: .omitted, time: .shortened))).")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
     private var dictionarySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Dictionary")
@@ -123,6 +158,16 @@ struct AppRootView: View {
                 }
             }
         }
+    }
+
+    private var sessionStatusText: String {
+        if transcriptionManager.sessionDisablePending {
+            return "Session: Will turn off after current dictation"
+        }
+        if transcriptionManager.isSessionActive {
+            return "Session: Active"
+        }
+        return "Session: Inactive"
     }
 }
 

@@ -12,12 +12,15 @@ final class iOSTranscriptionManager: ObservableObject {
     }
 
     @Published private(set) var state: State = .idle
+    @Published var isSessionActive = false
+    @Published var sessionDisablePending = false
+    @Published var sessionExpirationDate: Date?
     @Published private(set) var lastCaptureArtifact: Phase2CaptureArtifact?
-    @Published private(set) var lastErrorMessage: String?
+    @Published var lastErrorMessage: String?
     @Published private(set) var lastTranscriptionSnapshot: iOSTranscriptionDebugSnapshot?
     @Published private(set) var isModelAvailable = false
 
-    private let recorder: any iOSAudioRecording
+    let recorder: any iOSAudioRecording
     private let artifactWriter: any Phase2CaptureArtifactWriting
     private let transcriptionService: any iOSDictationService
     private let dictionaryStore: DictionaryStore
@@ -26,9 +29,11 @@ final class iOSTranscriptionManager: ObservableObject {
     private let modelPathProvider: () -> String?
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
+    let sessionPolicy: iOSSessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
     private var pendingPipelineOutputText: String?
+    var idleTimeoutTask: Task<Void, Never>?
 
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
@@ -59,7 +64,8 @@ final class iOSTranscriptionManager: ObservableObject {
         keyboardBridge: KeyVoxKeyboardBridge,
         modelPathProvider: @escaping () -> String?,
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
-        listFormattingEnabledProvider: @escaping () -> Bool = { true }
+        listFormattingEnabledProvider: @escaping () -> Bool = { true },
+        sessionPolicy: iOSSessionPolicy = .default
     ) {
         self.recorder = recorder
         self.artifactWriter = artifactWriter
@@ -70,12 +76,36 @@ final class iOSTranscriptionManager: ObservableObject {
         self.modelPathProvider = modelPathProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
+        self.sessionPolicy = sessionPolicy
 
         bindDictionaryState()
         refreshModelAvailability()
+        isSessionActive = recorder.isMonitoring
         
         if isModelAvailable {
             transcriptionService.warmup()
+        }
+
+        if isSessionActive {
+            armIdleTimeout()
+        }
+    }
+
+    func handleEnableSessionCommand() {
+        Task { await performEnableSessionCommand() }
+    }
+
+    func handleDisableSessionCommand() {
+        Task { await performDisableSessionCommand() }
+    }
+
+    func handleToggleSessionCommand() {
+        Task {
+            if isSessionActive && !sessionDisablePending {
+                await performDisableSessionCommand()
+            } else {
+                await performEnableSessionCommand()
+            }
         }
     }
 
@@ -87,6 +117,35 @@ final class iOSTranscriptionManager: ObservableObject {
         Task { await performStopRecordingCommand() }
     }
 
+    func performEnableSessionCommand() async {
+        guard !isSessionActive else { return }
+        lastErrorMessage = nil
+
+        do {
+            try await recorder.enableMonitoring()
+            isSessionActive = true
+            sessionDisablePending = false
+            armIdleTimeout()
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            isSessionActive = false
+            sessionDisablePending = false
+            cancelIdleTimeout()
+        }
+    }
+
+    func performDisableSessionCommand() async {
+        guard isSessionActive else { return }
+
+        if state == .idle {
+            await completeSessionShutdown()
+            return
+        }
+
+        sessionDisablePending = true
+        cancelIdleTimeout()
+    }
+
     func performStartRecordingCommand() async {
         guard state == .idle else { return }
         state = .recording
@@ -94,14 +153,18 @@ final class iOSTranscriptionManager: ObservableObject {
         lastTranscriptionSnapshot = nil
         pendingPipelineOutputText = nil
         refreshModelAvailability()
+        cancelIdleTimeout()
 
         do {
             try await recorder.startRecording()
+            isSessionActive = true
+            sessionDisablePending = false
             keyboardBridge.publishRecordingStarted()
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
             keyboardBridge.publishNoSpeech()
+            await finishAndDisableSessionIfNeeded()
         }
     }
 
@@ -139,6 +202,7 @@ final class iOSTranscriptionManager: ObservableObject {
             lastTranscriptionSnapshot = nil
             state = .idle
             keyboardBridge.publishNoSpeech()
+            await finishAndDisableSessionIfNeeded()
             return
         }
 
@@ -148,6 +212,7 @@ final class iOSTranscriptionManager: ObservableObject {
             lastErrorMessage = "Whisper model not found in App Group container."
             state = .idle
             keyboardBridge.publishNoSpeech()
+            await finishAndDisableSessionIfNeeded()
             return
         }
 
@@ -207,6 +272,8 @@ final class iOSTranscriptionManager: ObservableObject {
                     #endif
                     self.keyboardBridge.publishTranscriptionReady(finalText)
                 }
+
+                Task { await self.finishAndDisableSessionIfNeeded() }
             }
         }
     }

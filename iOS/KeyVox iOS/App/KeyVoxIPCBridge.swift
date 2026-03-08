@@ -19,7 +19,7 @@ enum KeyVoxIPCBridge {
         static let noSpeech = "com.cueit.keyvox.noSpeech"
     }
     
-    static let sessionTimeout: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
+    static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
     
     private static var defaults: UserDefaults? {
         let d = UserDefaults(suiteName: appGroupID)
@@ -31,6 +31,11 @@ enum KeyVoxIPCBridge {
     static func setSessionActive() {
         let d = defaults
         d?.set(Date().timeIntervalSince1970, forKey: Key.sessionTimestamp)
+    }
+
+    static func clearSessionActive() {
+        let d = defaults
+        d?.removeObject(forKey: Key.sessionTimestamp)
     }
     
     static func setRecordingState(_ state: String) {
@@ -71,7 +76,7 @@ enum KeyVoxIPCBridge {
         let ts = d.double(forKey: Key.sessionTimestamp)
         guard ts > 0 else { return false }
         
-        return Date().timeIntervalSince1970 - ts < sessionTimeout
+        return Date().timeIntervalSince1970 - ts < heartbeatFreshnessWindow
     }
     
     static func currentRecordingState() -> String? {

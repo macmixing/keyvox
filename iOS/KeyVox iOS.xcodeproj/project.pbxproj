@@ -32,6 +32,8 @@
 		8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */; };
 		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
+		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
+		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */; };
 		9A7000122FA6000100AA0001 /* iOSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001022FA6000100AA0001 /* iOSModelManager.swift */; };
@@ -105,6 +107,8 @@
 		8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDictationService.swift; sourceTree = "<group>"; };
 		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
+		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
+		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 		9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallState.swift; sourceTree = "<group>"; };
 		9A7001022FA6000100AA0001 /* iOSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelManager.swift; sourceTree = "<group>"; };
 		9A7001032FA6000100AA0001 /* iOSModelDownloadURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelDownloadURLs.swift; sourceTree = "<group>"; };
@@ -271,7 +275,9 @@
 			children = (
 				8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */,
 				8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */,
+				9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */,
 				8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */,
+				9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -473,7 +479,9 @@
 				8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */,
 				8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */,
 				8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */,
+				9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */,
 				8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */,
+				9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */,
 				8E9E38DA2F5C004200EAFA72 /* Phase2CaptureArtifact.swift in Sources */,
 				8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */,
 				8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */,

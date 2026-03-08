@@ -3,6 +3,15 @@ import Foundation
 import KeyVoxCore
 
 extension iOSAudioRecorder {
+    func enableMonitoring() async throws {
+        let permissionGranted = await requestRecordPermission()
+        guard permissionGranted else {
+            throw iOSAudioRecorderError.microphonePermissionDenied
+        }
+
+        try ensureEngineRunning()
+    }
+
     func ensureEngineRunning() throws {
         guard !isMonitoring || audioEngine == nil || !audioEngine!.isRunning else { return }
 
@@ -61,6 +70,28 @@ extension iOSAudioRecorder {
         
         // Mark session as warm now that engine is running
         KeyVoxIPCBridge.setSessionActive()
+    }
+
+    func stopMonitoring() throws {
+        guard isMonitoring else { return }
+        guard !isRecording else {
+            throw iOSAudioRecorderError.monitoringShutdownWhileRecording
+        }
+
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine?.stop()
+        audioEngine = nil
+
+        do {
+            try audioSession.setActive(false)
+        } catch {
+            throw iOSAudioRecorderError.engineStopFailed(underlying: error)
+        }
+
+        isMonitoring = false
+        audioLevel = 0
+        liveInputSignalState = .dead
+        KeyVoxIPCBridge.clearSessionActive()
     }
 
     func startRecording() async throws {
@@ -153,6 +184,8 @@ extension iOSAudioRecorder {
 enum iOSAudioRecorderError: LocalizedError {
     case microphonePermissionDenied
     case engineStartFailed(underlying: Error)
+    case engineStopFailed(underlying: Error)
+    case monitoringShutdownWhileRecording
 
     var errorDescription: String? {
         switch self {
@@ -160,6 +193,10 @@ enum iOSAudioRecorderError: LocalizedError {
             return "Microphone access is required to start recording."
         case let .engineStartFailed(underlying):
             return "Couldn't start audio capture: \(underlying.localizedDescription)"
+        case let .engineStopFailed(underlying):
+            return "Couldn't stop audio capture: \(underlying.localizedDescription)"
+        case .monitoringShutdownWhileRecording:
+            return "Can't disable the session while audio is actively recording."
         }
     }
 }

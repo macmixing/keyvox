@@ -5,6 +5,122 @@ import Testing
 
 @MainActor
 struct iOSTranscriptionManagerTests {
+    @Test func enableSessionFromInactiveStartsMonitoringAndArmsTimeout() async throws {
+        let harness = try makeHarness()
+
+        await harness.manager.performEnableSessionCommand()
+
+        #expect(harness.manager.isSessionActive == true)
+        #expect(harness.manager.state == .idle)
+        #expect(harness.recorder.enableMonitoringCallCount == 1)
+        #expect(harness.manager.sessionExpirationDate != nil)
+    }
+
+    @Test func repeatedEnableSessionWhileActiveIsIgnored() async throws {
+        let harness = try makeHarness()
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performEnableSessionCommand()
+
+        #expect(harness.recorder.enableMonitoringCallCount == 1)
+    }
+
+    @Test func disableSessionWhileIdleStopsMonitoringImmediately() async throws {
+        let harness = try makeHarness()
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performDisableSessionCommand()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.manager.sessionDisablePending == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.manager.sessionExpirationDate == nil)
+    }
+
+    @Test func disableSessionWhileRecordingFinishesThenDisables() async throws {
+        let harness = try makeHarness()
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performDisableSessionCommand()
+
+        #expect(harness.manager.sessionDisablePending == true)
+        #expect(harness.manager.isSessionActive == true)
+
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func disableSessionWhileTranscribingFinishesThenDisables() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        let task = Task { await harness.manager.performStopRecordingCommand() }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        await harness.manager.performDisableSessionCommand()
+        #expect(harness.manager.sessionDisablePending == true)
+
+        harness.transcriptionService.resumeSuccess()
+        await task.value
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func idleTimeoutDisablesActiveIdleSession() async throws {
+        let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(idleTimeout: 0.02))
+
+        await harness.manager.performEnableSessionCommand()
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func idleTimeoutIsCancelledWhileRecordingAndRearmsAfterCompletion() async throws {
+        let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(idleTimeout: 0.03))
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello", languageCode: "en")
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(harness.manager.isSessionActive == true)
+        #expect(harness.manager.state == .recording)
+
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func enableSessionWithPermissionDeniedSurfacesError() async throws {
+        let harness = try makeHarness()
+        harness.recorder.enableMonitoringError = iOSAudioRecorderError.microphonePermissionDenied
+
+        await harness.manager.performEnableSessionCommand()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.manager.lastErrorMessage == "Microphone access is required to start recording.")
+    }
+
     @Test func startFromIdleTransitionsToRecording() async throws {
         let harness = try makeHarness()
 
@@ -174,7 +290,8 @@ struct iOSTranscriptionManagerTests {
     private func makeHarness(
         modelPath: String? = nil,
         writerShouldSuspend: Bool = false,
-        serviceShouldSuspend: Bool = false
+        serviceShouldSuspend: Bool = false,
+        sessionPolicy: iOSSessionPolicy = .default
     ) throws -> ManagerHarness {
         let recorder = StubAudioRecorder()
         let writer = StubArtifactWriter(shouldSuspend: writerShouldSuspend)
@@ -201,7 +318,8 @@ struct iOSTranscriptionManagerTests {
             dictionaryStore: dictionaryStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
-            modelPathProvider: { resolvedModelPath }
+            modelPathProvider: { resolvedModelPath },
+            sessionPolicy: sessionPolicy
         )
 
         return ManagerHarness(
@@ -289,7 +407,7 @@ private struct ManagerHarness {
 @MainActor
 private final class StubAudioRecorder: iOSAudioRecording {
     var isRecording = false
-    var isMonitoring = true
+    var isMonitoring = false
     var currentCaptureDeviceName = "iPhone Microphone"
     var lastCaptureWasAbsoluteSilence = false
     var lastCaptureHadActiveSignal = true
@@ -299,7 +417,11 @@ private final class StubAudioRecorder: iOSAudioRecording {
     var maxActiveSignalRunDuration: TimeInterval = 0.5
     var startCallCount = 0
     var stopCallCount = 0
+    var enableMonitoringCallCount = 0
+    var ensureEngineRunningCallCount = 0
+    var stopMonitoringCallCount = 0
     var startError: Error?
+    var enableMonitoringError: Error?
     var stoppedCapture = iOSStoppedCaptureProcessor.process(
         snapshot: Array(repeating: Float(0.2), count: 4_000),
         captureDuration: 1.0,
@@ -311,11 +433,20 @@ private final class StubAudioRecorder: iOSAudioRecording {
         normalizationMaxGain: 3.0
     )
 
+    func enableMonitoring() async throws {
+        enableMonitoringCallCount += 1
+        if let enableMonitoringError {
+            throw enableMonitoringError
+        }
+        isMonitoring = true
+    }
+
     func startRecording() async throws {
         startCallCount += 1
         if let startError {
             throw startError
         }
+        isMonitoring = true
         isRecording = true
     }
 
@@ -332,7 +463,13 @@ private final class StubAudioRecorder: iOSAudioRecording {
     }
 
     func ensureEngineRunning() throws {
+        ensureEngineRunningCallCount += 1
         isMonitoring = true
+    }
+
+    func stopMonitoring() throws {
+        stopMonitoringCallCount += 1
+        isMonitoring = false
     }
 }
 

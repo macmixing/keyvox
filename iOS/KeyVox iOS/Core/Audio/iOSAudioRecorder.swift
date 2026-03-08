@@ -14,9 +14,11 @@ protocol iOSAudioRecording: AnyObject {
     var lastCaptureDuration: TimeInterval { get }
     var maxActiveSignalRunDuration: TimeInterval { get }
 
+    func enableMonitoring() async throws
     func startRecording() async throws
     func stopRecording() async -> iOSStoppedCapture
     func ensureEngineRunning() throws
+    func stopMonitoring() throws
 }
 
 @MainActor
