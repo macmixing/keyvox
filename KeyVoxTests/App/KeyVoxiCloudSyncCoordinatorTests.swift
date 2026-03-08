@@ -28,7 +28,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
     func testCloudDictionarySeedsEmptyLocal() throws {
         let remoteDate = makeDate(year: 2026, month: 3, day: 8, hour: 10)
         let harness = try makeHarness(now: remoteDate)
-        harness.cloudStore.seedDictionary(entries: [
+        try harness.cloudStore.seedDictionary(entries: [
             DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: "Dom Esposito"),
         ], modifiedAt: remoteDate)
 
@@ -45,7 +45,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let harness = try makeHarness(now: remoteDate)
         try harness.dictionaryStore.add(phrase: "Old Local Phrase")
         harness.defaults.set(localDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
-        harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "New Remote Phrase")], modifiedAt: remoteDate)
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "New Remote Phrase")], modifiedAt: remoteDate)
 
         let coordinator = makeCoordinator(harness: harness)
         _ = coordinator
@@ -59,7 +59,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let harness = try makeHarness(now: localDate)
         try harness.dictionaryStore.add(phrase: "Latest Local Phrase")
         harness.defaults.set(localDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
-        harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Older Remote Phrase")], modifiedAt: remoteDate)
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Older Remote Phrase")], modifiedAt: remoteDate)
 
         let coordinator = makeCoordinator(harness: harness)
         _ = coordinator
@@ -86,7 +86,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let harness = try makeHarness(now: remoteDate)
         try harness.dictionaryStore.add(phrase: "Local Phrase")
         harness.defaults.set(localDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
-        harness.cloudStore.seedDictionary(entries: [
+        try harness.cloudStore.seedDictionary(entries: [
             DictionaryEntry(phrase: " Cueboard "),
             DictionaryEntry(phrase: "cueboard"),
         ], modifiedAt: remoteDate)
@@ -107,8 +107,15 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let coordinator = makeCoordinator(harness: harness)
         _ = coordinator
 
+        let dictionaryPushed = expectation(description: "Dictionary change pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
         try harness.dictionaryStore.add(phrase: "MiGo Platform")
-        await Task.yield()
+        await fulfillment(of: [dictionaryPushed], timeout: 1.0)
 
         let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
         XCTAssertEqual(payload.entries.map(\.phrase), ["MiGo Platform"])
@@ -118,7 +125,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
     func testRemoteDictionaryApplyDoesNotLoopPush() throws {
         let remoteDate = makeDate(year: 2026, month: 3, day: 11, hour: 9)
         let harness = try makeHarness(now: remoteDate)
-        harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Remote Only")], modifiedAt: remoteDate)
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Remote Only")], modifiedAt: remoteDate)
         harness.cloudStore.resetSetCounts()
 
         let coordinator = makeCoordinator(harness: harness)
@@ -146,8 +153,15 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         let coordinator = makeCoordinator(harness: harness)
         _ = coordinator
 
+        let listFormattingPushed = expectation(description: "List formatting pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.listFormattingModifiedAt {
+                listFormattingPushed.fulfill()
+            }
+        }
+
         harness.appSettings.listFormattingEnabled = false
-        await Task.yield()
+        await fulfillment(of: [listFormattingPushed], timeout: 1.0)
 
         XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.listFormattingEnabled) as? Bool, false)
         XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.listFormattingModifiedAt) as? Date, now)
@@ -257,9 +271,9 @@ private final class InMemoryUbiquitousKeyValueStore: KeyVoxiCloudKeyValueStoring
     }
 
     @MainActor
-    func seedDictionary(entries: [DictionaryEntry], modifiedAt: Date) {
+    func seedDictionary(entries: [DictionaryEntry], modifiedAt: Date) throws {
         let payload = KeyVoxDictionaryCloudPayload(modifiedAt: modifiedAt, entries: entries)
-        storage[KeyVoxiCloudKeys.dictionaryPayload] = try! JSONEncoder().encode(payload)
+        storage[KeyVoxiCloudKeys.dictionaryPayload] = try JSONEncoder().encode(payload)
         storage[KeyVoxiCloudKeys.dictionaryModifiedAt] = modifiedAt
     }
 
