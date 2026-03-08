@@ -23,7 +23,9 @@ extension iOSAudioRecorder {
         let engine = audioEngine ?? AVAudioEngine()
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
-        let bufferSize: AVAudioFrameCount = 1024
+        // Smaller buffers give the keyboard logo a denser stream of level updates
+        // so the shared waveform feels closer to the Mac overlay.
+        let bufferSize: AVAudioFrameCount = 512
         
         // Capture properties for closure
         let streamingState = self.streamingState
@@ -57,6 +59,7 @@ extension iOSAudioRecorder {
             Task { @MainActor in
                 self.audioLevel = update.level
                 self.liveInputSignalState = update.signalState
+                self.liveMeterUpdateHandler?(update.level, update.signalState)
             }
         }
 
@@ -91,6 +94,7 @@ extension iOSAudioRecorder {
         isMonitoring = false
         audioLevel = 0
         liveInputSignalState = .dead
+        liveMeterUpdateHandler?(0, .dead)
         KeyVoxIPCBridge.clearSessionActive()
     }
 
@@ -159,6 +163,7 @@ extension iOSAudioRecorder {
         maxActiveSignalRunDuration = stopResult.maxActiveSignalRunDuration
         audioLevel = 0
         liveInputSignalState = .dead
+        liveMeterUpdateHandler?(0, .dead)
     }
 
     func cancelCurrentUtterance() {
@@ -180,6 +185,7 @@ extension iOSAudioRecorder {
         maxActiveSignalRunDuration = 0
         audioLevel = 0
         liveInputSignalState = .dead
+        liveMeterUpdateHandler?(0, .dead)
     }
 
     private func requestRecordPermission() async -> Bool {

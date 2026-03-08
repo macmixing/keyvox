@@ -44,6 +44,9 @@ final class iOSAppServiceRegistry {
         recorder.heartbeatCallback = { [weak keyboardBridge] in
             keyboardBridge?.touchHeartbeat()
         }
+        recorder.liveMeterUpdateHandler = { [weak keyboardBridge] level, signalState in
+            keyboardBridge?.publishLiveMeter(level: level, signalState: signalState)
+        }
 
         let transcriptionManager = iOSTranscriptionManager(
             recorder: recorder,

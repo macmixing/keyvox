@@ -18,10 +18,10 @@ final class KeyboardKeyPopupView: UIView {
         addSubview(titleLabel)
 
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 8),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
         ])
     }
 
@@ -33,14 +33,15 @@ final class KeyboardKeyPopupView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         shapeLayer.frame = bounds
-        shapeLayer.path = popupPath(in: bounds).cgPath
+        shapeLayer.path = UIBezierPath(roundedRect: bounds, cornerRadius: 12).cgPath
         shapeLayer.fillColor = KeyboardStyle.popupFillColor.cgColor
-        shapeLayer.strokeColor = KeyboardStyle.popupBorderColor.cgColor
+        shapeLayer.strokeColor = UIColor.separator.withAlphaComponent(0.15).cgColor
         shapeLayer.lineWidth = 0.5
-        layer.shadowColor = KeyboardStyle.popupShadow.color.cgColor
-        layer.shadowOpacity = KeyboardStyle.popupShadow.opacity
-        layer.shadowRadius = KeyboardStyle.popupShadow.radius
-        layer.shadowOffset = KeyboardStyle.popupShadow.offset
+        
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.25
+        layer.shadowRadius = 8
+        layer.shadowOffset = CGSize(width: 0, height: 3)
     }
 
     func present(text: String, from keyView: KeyboardKeyView, in container: UIView) {
@@ -48,8 +49,8 @@ final class KeyboardKeyPopupView: UIView {
         titleLabel.text = text
 
         let keyFrame = keyView.convert(keyView.bounds, to: container)
-        let popupSize = CGSize(width: max(54, keyFrame.width * 1.28), height: 84)
-        let popupY = max(4, keyFrame.minY - popupSize.height + 20)
+        let popupSize = CGSize(width: keyFrame.width * 1.25, height: keyFrame.height * 1.35)
+        let popupY = max(0, keyFrame.minY - popupSize.height - 2)
         frame = CGRect(
             x: keyFrame.midX - popupSize.width / 2,
             y: popupY,
@@ -65,39 +66,13 @@ final class KeyboardKeyPopupView: UIView {
         setNeedsLayout()
         layoutIfNeeded()
 
-        transform = CGAffineTransform(scaleX: 0.84, y: 0.84).translatedBy(x: 0, y: 6)
-        alpha = 0
-        UIView.animate(withDuration: 0.08, delay: 0, options: [.beginFromCurrentState, .curveEaseOut]) {
-            self.alpha = 1
-            self.transform = .identity
-        }
+        alpha = 1
+        transform = .identity
     }
 
     func dismiss() {
         guard superview != nil else { return }
-        UIView.animate(withDuration: 0.06, delay: 0, options: [.beginFromCurrentState, .curveEaseIn]) {
-            self.alpha = 0
-            self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9).translatedBy(x: 0, y: 4)
-        } completion: { _ in
-            self.removeFromSuperview()
-            self.transform = .identity
-        }
+        removeFromSuperview()
     }
 
-    private func popupPath(in rect: CGRect) -> UIBezierPath {
-        let bubbleHeight = rect.height - 24
-        let bubbleRect = CGRect(x: 0, y: 0, width: rect.width, height: bubbleHeight)
-        let stemWidth = min(KeyboardStyle.popupStemWidth, rect.width - 20)
-        let stemHeight = KeyboardStyle.popupStemHeight
-        let stemRect = CGRect(
-            x: (rect.width - stemWidth) / 2,
-            y: bubbleHeight - 10,
-            width: stemWidth,
-            height: stemHeight + 10
-        )
-
-        let path = UIBezierPath(roundedRect: bubbleRect, cornerRadius: KeyboardStyle.popupCornerRadius)
-        path.append(UIBezierPath(roundedRect: stemRect, cornerRadius: KeyboardStyle.popupStemCornerRadius))
-        return path
-    }
 }

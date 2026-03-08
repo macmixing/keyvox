@@ -32,18 +32,21 @@ final class KeyVoxKeyboardBridge {
 
     func publishRecordingStarted() {
         KeyVoxIPCBridge.setRecordingState("recording")
+        KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.recordingStarted)
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
     func publishTranscribing() {
         KeyVoxIPCBridge.setRecordingState("transcribing")
+        KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
     func publishTranscriptionReady(_ text: String) {
         KeyVoxIPCBridge.setTranscription(text)
         KeyVoxIPCBridge.setRecordingState("idle")
+        KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.transcriptionReady)
         KeyVoxIPCBridge.touchHeartbeat()
     }
@@ -51,6 +54,7 @@ final class KeyVoxKeyboardBridge {
     func publishNoSpeech() {
         KeyVoxIPCBridge.clearTransientOperationState()
         KeyVoxIPCBridge.setRecordingState("idle")
+        KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
         KeyVoxIPCBridge.touchHeartbeat()
     }
@@ -58,8 +62,13 @@ final class KeyVoxKeyboardBridge {
     func publishCancelled() {
         KeyVoxIPCBridge.clearTransientOperationState()
         KeyVoxIPCBridge.setRecordingState("idle")
+        KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
         KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishLiveMeter(level: Float, signalState: LiveInputSignalState) {
+        KeyVoxIPCBridge.writeLiveMeter(level: level, signalState: signalState.ipcSignalState)
     }
 
     func touchHeartbeat() {
@@ -108,5 +117,18 @@ final class KeyVoxKeyboardBridge {
         guard let observer, let rawName = name?.rawValue as String? else { return }
         let bridge = Unmanaged<KeyVoxKeyboardBridge>.fromOpaque(observer).takeUnretainedValue()
         bridge.handleNotification(named: rawName)
+    }
+}
+
+private extension LiveInputSignalState {
+    var ipcSignalState: KeyVoxIPCLiveMeterSignalState {
+        switch self {
+        case .dead:
+            return .dead
+        case .quiet:
+            return .quiet
+        case .active:
+            return .active
+        }
     }
 }

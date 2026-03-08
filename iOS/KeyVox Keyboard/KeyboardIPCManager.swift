@@ -49,6 +49,12 @@ final class KeyboardIPCManager {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.cancelRecording)
     }
 
+    func currentLiveMeterSnapshot(maxAge: TimeInterval = 0.35) -> KeyVoxIPCLiveMeterSnapshot? {
+        guard let snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot() else { return nil }
+        guard Date().timeIntervalSince1970 - snapshot.timestamp <= maxAge else { return nil }
+        return snapshot
+    }
+
     func currentSharedRecordingState() -> SharedRecordingState {
         guard let rawValue = KeyVoxIPCBridge.currentRecordingState(),
               let state = SharedRecordingState(rawValue: rawValue) else {

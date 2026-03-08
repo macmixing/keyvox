@@ -3,11 +3,12 @@ import UIKit
 final class KeyboardRootView: UIView {
     let cancelButton = UIButton(type: .system)
     let nextKeyboardButton = UIButton(type: .system)
-    let micButton = UIButton(type: .system)
-    let statusLabel = UILabel()
+    let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
 
     private let leadingControlsStack = UIStackView()
+    private let centerContainerView = UIView()
+    private let trailingSpacerView = UIView()
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
 
@@ -24,19 +25,13 @@ final class KeyboardRootView: UIView {
     }
 
     func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
-        statusLabel.text = state.statusText
         cancelButton.isHidden = !state.showsCancelButton
         cancelButton.isEnabled = state.showsCancelButton
         nextKeyboardButton.isHidden = !showsNextKeyboard
         nextKeyboardButton.isEnabled = showsNextKeyboard
 
-        micButton.isEnabled = state.isMicEnabled
-        micButton.backgroundColor = state.micBackgroundColor
-        micButton.alpha = state.isMicEnabled ? 1.0 : 0.8
-        micButton.setImage(
-            UIImage(systemName: state.micSymbolName, withConfiguration: KeyboardStyle.buttonSymbolConfiguration),
-            for: .normal
-        )
+        logoBarView.visualState = state.logoVisualState
+        logoBarView.isEnabled = state.isLogoBarEnabled
 
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
@@ -69,24 +64,18 @@ final class KeyboardRootView: UIView {
         )
         nextKeyboardButton.accessibilityLabel = "Next Keyboard"
 
-        micButton.translatesAutoresizingMaskIntoConstraints = false
-        micButton.tintColor = .white
-        micButton.layer.cornerRadius = KeyboardStyle.micButtonCornerRadius
-        micButton.accessibilityLabel = "Record"
+        logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
-        statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        statusLabel.font = KeyboardStyle.statusFont
-        statusLabel.textColor = KeyboardStyle.labelColor
-        statusLabel.textAlignment = .center
-        statusLabel.numberOfLines = 1
-        statusLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        statusLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        centerContainerView.translatesAutoresizingMaskIntoConstraints = false
+        trailingSpacerView.translatesAutoresizingMaskIntoConstraints = false
 
         leadingControlsStack.translatesAutoresizingMaskIntoConstraints = false
         leadingControlsStack.axis = .horizontal
         leadingControlsStack.alignment = .center
         leadingControlsStack.distribution = .fill
         leadingControlsStack.spacing = KeyboardStyle.stackSpacing
+        leadingControlsStack.setContentCompressionResistancePriority(.required, for: .horizontal)
+        leadingControlsStack.setContentHuggingPriority(.required, for: .horizontal)
 
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         contentStack.axis = .horizontal
@@ -104,10 +93,11 @@ final class KeyboardRootView: UIView {
         addSubview(mainStack)
         leadingControlsStack.addArrangedSubview(cancelButton)
         leadingControlsStack.addArrangedSubview(nextKeyboardButton)
+        centerContainerView.addSubview(logoBarView)
 
         contentStack.addArrangedSubview(leadingControlsStack)
-        contentStack.addArrangedSubview(statusLabel)
-        contentStack.addArrangedSubview(micButton)
+        contentStack.addArrangedSubview(centerContainerView)
+        contentStack.addArrangedSubview(trailingSpacerView)
 
         mainStack.addArrangedSubview(contentStack)
         mainStack.addArrangedSubview(keyGridView)
@@ -123,8 +113,14 @@ final class KeyboardRootView: UIView {
             nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
-            micButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.micButtonSize),
-            micButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.micButtonSize),
+            logoBarView.widthAnchor.constraint(equalToConstant: KeyboardStyle.logoBarSize),
+            logoBarView.heightAnchor.constraint(equalToConstant: KeyboardStyle.logoBarSize),
+            logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
+            logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
+            centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
+
+            trailingSpacerView.widthAnchor.constraint(equalTo: leadingControlsStack.widthAnchor),
+            trailingSpacerView.heightAnchor.constraint(equalTo: leadingControlsStack.heightAnchor),
 
             keyGridView.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight * 4 + KeyboardStyle.keyboardRowSpacing * 3),
 

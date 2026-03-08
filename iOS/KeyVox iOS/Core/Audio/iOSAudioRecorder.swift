@@ -66,6 +66,7 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     var audioEngine: AVAudioEngine?
     let streamingState = iOSAudioCaptureAccumulator()
     var heartbeatCallback: (() -> Void)?
+    var liveMeterUpdateHandler: ((Float, LiveInputSignalState) -> Void)?
 
     init(audioSession: AVAudioSession = .sharedInstance()) {
         self.audioSession = audioSession

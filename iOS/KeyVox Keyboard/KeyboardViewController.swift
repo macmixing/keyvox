@@ -88,7 +88,10 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
-        rootContainerView.micButton.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
+        rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
+        rootContainerView.logoBarView.liveMeterProvider = { [weak self] in
+            self?.ipcManager.currentLiveMeterSnapshot()
+        }
         rootContainerView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind)

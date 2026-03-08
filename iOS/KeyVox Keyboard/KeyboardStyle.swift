@@ -18,9 +18,8 @@ enum KeyboardStyle {
     static let keyboardRowSpacing: CGFloat = 8
     static let keySpacing: CGFloat = 6
     static let buttonSize: CGFloat = 44
-    static let micButtonSize: CGFloat = 52
+    static let logoBarSize: CGFloat = 52
     static let buttonCornerRadius: CGFloat = 14
-    static let micButtonCornerRadius: CGFloat = 18
 
     static let keyHeight: CGFloat = 48
     static let keyUnitWidth: CGFloat = 34
@@ -34,22 +33,19 @@ enum KeyboardStyle {
     static let borderColor = UIColor.clear
     static let labelColor = UIColor.label
     static let secondaryLabelColor = UIColor.secondaryLabel
-    static let idleMicColor = UIColor.systemBlue
-    static let recordingMicColor = UIColor.systemRed
-    static let pendingMicColor = UIColor.systemGray2
     static let buttonFillColor = UIColor.secondarySystemBackground
 
     static let keyFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.34, green: 0.35, blue: 0.38, alpha: 1) : .white
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
     }
     static let keyPressedFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.46, green: 0.47, blue: 0.5, alpha: 1) : UIColor(red: 0.84, green: 0.86, blue: 0.9, alpha: 1)
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1) : UIColor(red: 0.88, green: 0.90, blue: 0.94, alpha: 1)
     }
     static let specialKeyFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.28, green: 0.29, blue: 0.32, alpha: 1) : UIColor(red: 0.80, green: 0.82, blue: 0.86, alpha: 1)
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1) : UIColor(red: 0.65, green: 0.67, blue: 0.71, alpha: 1)
     }
     static let specialKeyPressedFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.4, green: 0.41, blue: 0.45, alpha: 1) : UIColor(red: 0.72, green: 0.75, blue: 0.8, alpha: 1)
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1) : UIColor(red: 0.70, green: 0.73, blue: 0.78, alpha: 1)
     }
     static let keyDisabledFillColor = UIColor.tertiarySystemFill
     static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
@@ -60,12 +56,11 @@ enum KeyboardStyle {
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
     static let popupFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.96, green: 0.97, blue: 0.99, alpha: 1) : .white
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
     }
     static let popupBorderColor = UIColor.separator.withAlphaComponent(0.16)
     static let popupLabelColor = UIColor.black
 
-    static let statusFont = UIFont.monospacedSystemFont(ofSize: 16, weight: .medium)
     static let keyFont = UIFont.systemFont(ofSize: 22, weight: .regular)
     static let specialKeyFont = UIFont.systemFont(ofSize: 17, weight: .semibold)
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)

@@ -8,6 +8,8 @@ final class KeyboardKeyView: UIView {
     }
 
     private let backgroundView = UIView()
+    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+    private let tintOverlay = UIView()
     private let titleLabel = UILabel()
     private let imageView = UIImageView()
 
@@ -40,7 +42,8 @@ final class KeyboardKeyView: UIView {
         invalidateIntrinsicContentSize()
 
         let colors = colorsForCurrentState(model: model, state: state)
-        backgroundView.backgroundColor = colors.fill
+        backgroundView.backgroundColor = .clear
+        tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
         backgroundView.layer.borderColor = colors.border.cgColor
         titleLabel.textColor = colors.foreground
         imageView.tintColor = colors.foreground
@@ -82,6 +85,16 @@ final class KeyboardKeyView: UIView {
         backgroundView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         backgroundView.layer.borderWidth = 0.5
         backgroundView.layer.masksToBounds = false
+        
+        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
+        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
+        blurEffectView.clipsToBounds = true
+        blurEffectView.isUserInteractionEnabled = false
+        
+        tintOverlay.translatesAutoresizingMaskIntoConstraints = false
+        tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
+        tintOverlay.clipsToBounds = true
+        tintOverlay.isUserInteractionEnabled = false
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
@@ -94,6 +107,8 @@ final class KeyboardKeyView: UIView {
         imageView.isUserInteractionEnabled = false
 
         addSubview(backgroundView)
+        backgroundView.addSubview(blurEffectView)
+        backgroundView.addSubview(tintOverlay)
         addSubview(titleLabel)
         addSubview(imageView)
 
@@ -102,6 +117,16 @@ final class KeyboardKeyView: UIView {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
+            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
+            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
+            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
+
+            tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
+            tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
+            tintOverlay.topAnchor.constraint(equalTo: backgroundView.topAnchor),
+            tintOverlay.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),

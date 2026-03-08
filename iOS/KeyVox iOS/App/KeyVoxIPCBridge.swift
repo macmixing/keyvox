@@ -1,5 +1,18 @@
 import Foundation
 
+enum KeyVoxIPCLiveMeterSignalState: UInt8, Equatable {
+    case dead = 0
+    case quiet = 1
+    case active = 2
+}
+
+struct KeyVoxIPCLiveMeterSnapshot: Equatable {
+    let level: Float
+    let signalState: KeyVoxIPCLiveMeterSignalState
+    let sequence: UInt32
+    let timestamp: TimeInterval
+}
+
 enum KeyVoxIPCBridge {
     static let appGroupID = "group.com.cueit.keyvox"
     
@@ -9,6 +22,12 @@ enum KeyVoxIPCBridge {
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
+    }
+
+    private enum LiveMeterPacket {
+        static let version: UInt8 = 1
+        static let byteCount = 20
+        static let fileName = "live-meter-state.bin"
     }
     
     // MARK: - Notifications
@@ -27,6 +46,9 @@ enum KeyVoxIPCBridge {
         let d = UserDefaults(suiteName: appGroupID)
         return d
     }
+
+    private static let liveMeterLock = NSLock()
+    private static var liveMeterSequence: UInt32 = 0
     
     // MARK: - Write (Main App)
     
@@ -64,6 +86,31 @@ enum KeyVoxIPCBridge {
         d?.removeObject(forKey: Key.recordingState)
         d?.removeObject(forKey: Key.recordingStateTimestamp)
         d?.removeObject(forKey: Key.transcription)
+        clearLiveMeter()
+    }
+
+    static func writeLiveMeter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState) {
+        guard let url = liveMeterFileURL() else { return }
+
+        liveMeterLock.lock()
+        liveMeterSequence &+= 1
+        let sequence = liveMeterSequence
+        liveMeterLock.unlock()
+
+        var data = Data(capacity: LiveMeterPacket.byteCount)
+        data.append(LiveMeterPacket.version)
+        data.append(signalState.rawValue)
+        append(UInt16.zero, to: &data)
+        append(level.bitPattern, to: &data)
+        append(sequence, to: &data)
+        append(Date().timeIntervalSince1970.bitPattern, to: &data)
+
+        try? data.write(to: url, options: .atomic)
+    }
+
+    static func clearLiveMeter() {
+        guard let url = liveMeterFileURL() else { return }
+        try? FileManager.default.removeItem(at: url)
     }
     
     private static var lastHeartbeatUpdateTime: TimeInterval = 0
@@ -106,5 +153,61 @@ enum KeyVoxIPCBridge {
         let d = defaults
         
         return d?.string(forKey: Key.transcription)
+    }
+
+    static func currentLiveMeterSnapshot() -> KeyVoxIPCLiveMeterSnapshot? {
+        guard let url = liveMeterFileURL(),
+              let data = try? Data(contentsOf: url),
+              data.count == LiveMeterPacket.byteCount else {
+            return nil
+        }
+
+        var offset = 0
+        guard let version = read(UInt8.self, from: data, at: &offset),
+              version == LiveMeterPacket.version,
+              let rawSignalState = read(UInt8.self, from: data, at: &offset),
+              let signalState = KeyVoxIPCLiveMeterSignalState(rawValue: rawSignalState) else {
+            return nil
+        }
+
+        offset += MemoryLayout<UInt16>.size
+
+        guard let levelBits = read(UInt32.self, from: data, at: &offset),
+              let sequence = read(UInt32.self, from: data, at: &offset),
+              let timestampBits = read(UInt64.self, from: data, at: &offset) else {
+            return nil
+        }
+
+        return KeyVoxIPCLiveMeterSnapshot(
+            level: Float(bitPattern: levelBits),
+            signalState: signalState,
+            sequence: sequence,
+            timestamp: Double(bitPattern: timestampBits)
+        )
+    }
+
+    private static func liveMeterFileURL(fileManager: FileManager = .default) -> URL? {
+        fileManager
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID)?
+            .appendingPathComponent(LiveMeterPacket.fileName, isDirectory: false)
+    }
+
+    private static func append<T: FixedWidthInteger>(_ value: T, to data: inout Data) {
+        var littleEndian = value.littleEndian
+        withUnsafeBytes(of: &littleEndian) { bytes in
+            data.append(contentsOf: bytes)
+        }
+    }
+
+    private static func read<T: FixedWidthInteger>(_ type: T.Type, from data: Data, at offset: inout Int) -> T? {
+        let endOffset = offset + MemoryLayout<T>.size
+        guard endOffset <= data.count else { return nil }
+
+        var value: T = 0
+        _ = withUnsafeMutableBytes(of: &value) { buffer in
+            data.copyBytes(to: buffer, from: offset..<endOffset)
+        }
+        offset = endOffset
+        return T(littleEndian: value)
     }
 }
