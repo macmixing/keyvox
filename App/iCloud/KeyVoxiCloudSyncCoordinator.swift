@@ -233,7 +233,9 @@ final class KeyVoxiCloudSyncCoordinator {
             return
         }
 
-        let remoteValue = ubiquitousStore.bool(forKey: valueKey)
+        guard let remoteValue = ubiquitousStore.object(forKey: valueKey) as? Bool else {
+            return
+        }
         guard let resolvedLocalModifiedAt = localModifiedAt else {
             if localValue == defaultValue {
                 applyRemote(remoteValue, remoteModifiedAt)
@@ -350,7 +352,8 @@ final class KeyVoxiCloudSyncCoordinator {
 
     private func applyRemoteAutoParagraphsIfNewer() {
         guard
-            let remoteModifiedAt = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.autoParagraphsModifiedAt) as? Date
+            let remoteModifiedAt = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.autoParagraphsModifiedAt) as? Date,
+            let remoteValue = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.autoParagraphsEnabled) as? Bool
         else {
             return
         }
@@ -358,7 +361,7 @@ final class KeyVoxiCloudSyncCoordinator {
         let localModifiedAt = autoParagraphsModifiedAt() ?? .distantPast
         guard remoteModifiedAt > localModifiedAt else { return }
         applyRemoteAutoParagraphs(
-            value: ubiquitousStore.bool(forKey: KeyVoxiCloudKeys.autoParagraphsEnabled),
+            value: remoteValue,
             modifiedAt: remoteModifiedAt
         )
     }
@@ -373,7 +376,8 @@ final class KeyVoxiCloudSyncCoordinator {
 
     private func applyRemoteListFormattingIfNewer() {
         guard
-            let remoteModifiedAt = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.listFormattingModifiedAt) as? Date
+            let remoteModifiedAt = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.listFormattingModifiedAt) as? Date,
+            let remoteValue = ubiquitousStore.object(forKey: KeyVoxiCloudKeys.listFormattingEnabled) as? Bool
         else {
             return
         }
@@ -381,7 +385,7 @@ final class KeyVoxiCloudSyncCoordinator {
         let localModifiedAt = listFormattingModifiedAt() ?? .distantPast
         guard remoteModifiedAt > localModifiedAt else { return }
         applyRemoteListFormatting(
-            value: ubiquitousStore.bool(forKey: KeyVoxiCloudKeys.listFormattingEnabled),
+            value: remoteValue,
             modifiedAt: remoteModifiedAt
         )
     }
