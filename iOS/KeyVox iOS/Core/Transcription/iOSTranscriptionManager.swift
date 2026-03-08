@@ -11,29 +11,31 @@ final class iOSTranscriptionManager: ObservableObject {
         case transcribing
     }
 
-    @Published private(set) var state: State = .idle
+    @Published var state: State = .idle
     @Published var isSessionActive = false
     @Published var sessionDisablePending = false
     @Published var sessionExpirationDate: Date?
     @Published private(set) var lastCaptureArtifact: Phase2CaptureArtifact?
     @Published var lastErrorMessage: String?
-    @Published private(set) var lastTranscriptionSnapshot: iOSTranscriptionDebugSnapshot?
+    @Published var lastTranscriptionSnapshot: iOSTranscriptionDebugSnapshot?
     @Published private(set) var isModelAvailable = false
 
     let recorder: any iOSAudioRecording
     private let artifactWriter: any Phase2CaptureArtifactWriting
-    private let transcriptionService: any iOSDictationService
+    let transcriptionService: any iOSDictationService
     private let dictionaryStore: DictionaryStore
     private let postProcessor: TranscriptionPostProcessor
-    private let keyboardBridge: KeyVoxKeyboardBridge
+    let keyboardBridge: KeyVoxKeyboardBridge
     private let modelPathProvider: () -> String?
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
     let sessionPolicy: iOSSessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
-    private var pendingPipelineOutputText: String?
+    var pendingPipelineOutputText: String?
     var idleTimeoutTask: Task<Void, Never>?
+    var utteranceSafetyTask: Task<Void, Never>?
+    var activeUtteranceID = UUID()
 
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
@@ -109,6 +111,10 @@ final class iOSTranscriptionManager: ObservableObject {
         }
     }
 
+    func cancelCurrentUtterance() {
+        Task { await performCancelCurrentUtterance() }
+    }
+
     func handleStartRecordingCommand() {
         Task { await performStartRecordingCommand() }
     }
@@ -152,6 +158,7 @@ final class iOSTranscriptionManager: ObservableObject {
         lastErrorMessage = nil
         lastTranscriptionSnapshot = nil
         pendingPipelineOutputText = nil
+        activeUtteranceID = UUID()
         refreshModelAvailability()
         cancelIdleTimeout()
 
@@ -160,6 +167,7 @@ final class iOSTranscriptionManager: ObservableObject {
             isSessionActive = true
             sessionDisablePending = false
             keyboardBridge.publishRecordingStarted()
+            armUtteranceSafetyWatchdog(for: activeUtteranceID)
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
@@ -170,6 +178,8 @@ final class iOSTranscriptionManager: ObservableObject {
 
     func performStopRecordingCommand() async {
         guard state == .recording else { return }
+        let utteranceID = activeUtteranceID
+        cancelUtteranceSafetyWatchdog()
         state = .processingCapture
         let startTime = Date()
 
@@ -196,6 +206,11 @@ final class iOSTranscriptionManager: ObservableObject {
             lastCaptureArtifact = try await artifactWriter.writeLatestCapture(request)
         } catch {
             lastErrorMessage = error.localizedDescription
+        }
+
+        guard utteranceID == activeUtteranceID else {
+            await finishAndDisableSessionIfNeeded()
+            return
         }
 
         guard !stoppedCapture.outputFrames.isEmpty else {
@@ -236,6 +251,7 @@ final class iOSTranscriptionManager: ObservableObject {
         ) { [weak self] result in
             Task { @MainActor [weak self] in
                 guard let self else { return }
+                guard utteranceID == self.activeUtteranceID else { return }
 
                 let finalText = self.pendingPipelineOutputText ?? result.finalText
                 #if DEBUG

@@ -121,6 +121,86 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.lastErrorMessage == "Microphone access is required to start recording.")
     }
 
+    @Test func cancelCurrentUtteranceWhileRecordingDiscardsWithoutTranscribing() async throws {
+        let harness = try makeHarness()
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.currentCaptureDuration = 12
+        harness.recorder.hasMeaningfulSpeechInCurrentCapture = true
+
+        await harness.manager.performCancelCurrentUtterance()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.recorder.cancelCurrentUtteranceCallCount == 1)
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+        #expect(harness.manager.isSessionActive == true)
+    }
+
+    @Test func cancelCurrentUtteranceWhileTranscribingCancelsAndReturnsToIdle() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        let task = Task { await harness.manager.performStopRecordingCommand() }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        await harness.manager.performCancelCurrentUtterance()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.transcriptionService.cancelCallCount == 1)
+        harness.transcriptionService.resumeSuccess()
+        await task.value
+    }
+
+    @Test func abandonedRecordingCancellationKeepsSessionAlive() async throws {
+        let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(
+            idleTimeout: 300,
+            noSpeechAbandonmentTimeout: 0.02,
+            postSpeechInactivityTimeout: 180,
+            emergencyUtteranceCap: 900
+        ))
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.currentCaptureDuration = 0.03
+        harness.recorder.hasMeaningfulSpeechInCurrentCapture = false
+
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.isSessionActive == true)
+        #expect(harness.recorder.cancelCurrentUtteranceCallCount == 1)
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+    }
+
+    @Test func emergencyUtteranceCapCancelsUtteranceAndKeepsSessionAlive() async throws {
+        let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(
+            idleTimeout: 300,
+            noSpeechAbandonmentTimeout: 45,
+            postSpeechInactivityTimeout: 180,
+            emergencyUtteranceCap: 0.02
+        ))
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.currentCaptureDuration = 0.03
+        harness.recorder.hasMeaningfulSpeechInCurrentCapture = true
+        harness.recorder.timeSinceLastMeaningfulSpeech = 0.01
+
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.isSessionActive == true)
+        #expect(harness.recorder.cancelCurrentUtteranceCallCount == 1)
+    }
+
     @Test func startFromIdleTransitionsToRecording() async throws {
         let harness = try makeHarness()
 
@@ -409,6 +489,9 @@ private final class StubAudioRecorder: iOSAudioRecording {
     var isRecording = false
     var isMonitoring = false
     var currentCaptureDeviceName = "iPhone Microphone"
+    var currentCaptureDuration: TimeInterval = 0
+    var hasMeaningfulSpeechInCurrentCapture = false
+    var timeSinceLastMeaningfulSpeech: TimeInterval?
     var lastCaptureWasAbsoluteSilence = false
     var lastCaptureHadActiveSignal = true
     var lastCaptureWasLikelySilence = false
@@ -420,6 +503,7 @@ private final class StubAudioRecorder: iOSAudioRecording {
     var enableMonitoringCallCount = 0
     var ensureEngineRunningCallCount = 0
     var stopMonitoringCallCount = 0
+    var cancelCurrentUtteranceCallCount = 0
     var startError: Error?
     var enableMonitoringError: Error?
     var stoppedCapture = iOSStoppedCaptureProcessor.process(
@@ -448,6 +532,9 @@ private final class StubAudioRecorder: iOSAudioRecording {
         }
         isMonitoring = true
         isRecording = true
+        currentCaptureDuration = 0
+        hasMeaningfulSpeechInCurrentCapture = false
+        timeSinceLastMeaningfulSpeech = nil
     }
 
     func stopRecording() async -> iOSStoppedCapture {
@@ -470,6 +557,14 @@ private final class StubAudioRecorder: iOSAudioRecording {
     func stopMonitoring() throws {
         stopMonitoringCallCount += 1
         isMonitoring = false
+    }
+
+    func cancelCurrentUtterance() {
+        cancelCurrentUtteranceCallCount += 1
+        isRecording = false
+        currentCaptureDuration = 0
+        hasMeaningfulSpeechInCurrentCapture = false
+        timeSinceLastMeaningfulSpeech = nil
     }
 }
 

@@ -48,6 +48,7 @@ final class KeyboardViewController: UIInputViewController {
             rootView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
 
+        rootView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootView.micButton.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
 
@@ -74,7 +75,7 @@ final class KeyboardViewController: UIInputViewController {
     private func syncKeyboardStateFromSharedState() {
         cancelWaitingTimeout()
 
-        switch ipcManager.currentSharedRecordingState() {
+        switch ipcManager.reconcileStaleSharedStateIfNeeded() {
         case .idle:
             keyboardState = .idle
         case .waitingForApp:
@@ -92,7 +93,16 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @objc
+    private func handleCancelTap() {
+        cancelWaitingTimeout()
+        ipcManager.sendCancelCommand()
+        keyboardState = .idle
+    }
+
+    @objc
     private func handleMicTap() {
+        syncKeyboardStateFromSharedState()
+
         switch keyboardState {
         case .idle:
             keyboardState = .waitingForApp

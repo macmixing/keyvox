@@ -7,6 +7,9 @@ protocol iOSAudioRecording: AnyObject {
     var isRecording: Bool { get }
     var isMonitoring: Bool { get }
     var currentCaptureDeviceName: String { get }
+    var currentCaptureDuration: TimeInterval { get }
+    var hasMeaningfulSpeechInCurrentCapture: Bool { get }
+    var timeSinceLastMeaningfulSpeech: TimeInterval? { get }
     var lastCaptureWasAbsoluteSilence: Bool { get }
     var lastCaptureHadActiveSignal: Bool { get }
     var lastCaptureWasLikelySilence: Bool { get }
@@ -19,6 +22,7 @@ protocol iOSAudioRecording: AnyObject {
     func stopRecording() async -> iOSStoppedCapture
     func ensureEngineRunning() throws
     func stopMonitoring() throws
+    func cancelCurrentUtterance()
 }
 
 @MainActor
@@ -67,5 +71,17 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
         self.audioSession = audioSession
         self.sessionActiveSignalRMSThreshold = baseActiveSignalRMSThreshold
         self.sessionGapRemovalRMSThreshold = baseGapRemovalRMSThreshold
+    }
+
+    var currentCaptureDuration: TimeInterval {
+        streamingState.liveMetrics(sampleRate: outputFormat.sampleRate).duration
+    }
+
+    var hasMeaningfulSpeechInCurrentCapture: Bool {
+        streamingState.liveMetrics(sampleRate: outputFormat.sampleRate).hadMeaningfulSpeech
+    }
+
+    var timeSinceLastMeaningfulSpeech: TimeInterval? {
+        streamingState.liveMetrics(sampleRate: outputFormat.sampleRate).timeSinceLastMeaningfulSpeech
     }
 }

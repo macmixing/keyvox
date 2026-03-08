@@ -12,12 +12,19 @@ struct iOSAudioStreamSnapshot {
     let hadNonDeadSignal: Bool
 }
 
+struct iOSLiveCaptureMetrics {
+    let duration: TimeInterval
+    let hadMeaningfulSpeech: Bool
+    let timeSinceLastMeaningfulSpeech: TimeInterval?
+}
+
 final class iOSAudioCaptureAccumulator {
     private let queue = DispatchQueue(label: "iOSAudioRecorder.captureAccumulator")
     private var converter: AVAudioConverter?
     private var audioData: [Float] = []
     private var lastNonDeadSignalTime: Date = .distantPast
     private var lastVisualActiveSignalTime: Date = .distantPast
+    private var lastMeaningfulSpeechTime: Date = .distantPast
     private var currentActiveSignalRunDuration: TimeInterval = 0
     private var maxActiveSignalRunDuration: TimeInterval = 0
     private var hadNonDeadSignal = false
@@ -28,6 +35,7 @@ final class iOSAudioCaptureAccumulator {
             audioData.removeAll(keepingCapacity: true)
             lastNonDeadSignalTime = .distantPast
             lastVisualActiveSignalTime = .distantPast
+            lastMeaningfulSpeechTime = .distantPast
             currentActiveSignalRunDuration = 0
             maxActiveSignalRunDuration = 0
             hadNonDeadSignal = false
@@ -40,6 +48,21 @@ final class iOSAudioCaptureAccumulator {
                 samples: audioData,
                 maxActiveSignalRunDuration: maxActiveSignalRunDuration,
                 hadNonDeadSignal: hadNonDeadSignal
+            )
+        }
+    }
+
+    func liveMetrics(sampleRate: Double) -> iOSLiveCaptureMetrics {
+        queue.sync {
+            let duration = sampleRate > 0 ? TimeInterval(Double(audioData.count) / sampleRate) : 0
+            let hadMeaningfulSpeech = lastMeaningfulSpeechTime != .distantPast
+            let timeSinceLastMeaningfulSpeech = hadMeaningfulSpeech
+                ? Date().timeIntervalSince(lastMeaningfulSpeechTime)
+                : nil
+            return iOSLiveCaptureMetrics(
+                duration: duration,
+                hadMeaningfulSpeech: hadMeaningfulSpeech,
+                timeSinceLastMeaningfulSpeech: timeSinceLastMeaningfulSpeech
             )
         }
     }
@@ -110,6 +133,7 @@ final class iOSAudioCaptureAccumulator {
                 hadNonDeadSignal = true
             }
             if rms > activeSignalRMSThreshold {
+                lastMeaningfulSpeechTime = now
                 currentActiveSignalRunDuration += frameDuration
                 if currentActiveSignalRunDuration > maxActiveSignalRunDuration {
                     maxActiveSignalRunDuration = currentActiveSignalRunDuration

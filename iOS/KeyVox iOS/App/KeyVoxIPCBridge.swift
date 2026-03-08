@@ -6,6 +6,7 @@ enum KeyVoxIPCBridge {
     // MARK: - Keys
     enum Key {
         static let recordingState = "recordingState"
+        static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
     }
@@ -14,6 +15,7 @@ enum KeyVoxIPCBridge {
     enum Notification {
         static let startRecording = "com.cueit.keyvox.startRecording"
         static let stopRecording = "com.cueit.keyvox.stopRecording"
+        static let cancelRecording = "com.cueit.keyvox.cancelRecording"
         static let recordingStarted = "com.cueit.keyvox.recordingStarted"
         static let transcriptionReady = "com.cueit.keyvox.transcriptionReady"
         static let noSpeech = "com.cueit.keyvox.noSpeech"
@@ -41,6 +43,7 @@ enum KeyVoxIPCBridge {
     static func setRecordingState(_ state: String) {
         let d = defaults
         d?.set(state, forKey: Key.recordingState)
+        d?.set(Date().timeIntervalSince1970, forKey: Key.recordingStateTimestamp)
         
     }
     
@@ -54,6 +57,13 @@ enum KeyVoxIPCBridge {
         let d = defaults
         d?.removeObject(forKey: Key.transcription)
         
+    }
+
+    static func clearTransientOperationState() {
+        let d = defaults
+        d?.removeObject(forKey: Key.recordingState)
+        d?.removeObject(forKey: Key.recordingStateTimestamp)
+        d?.removeObject(forKey: Key.transcription)
     }
     
     private static var lastHeartbeatUpdateTime: TimeInterval = 0
@@ -83,6 +93,13 @@ enum KeyVoxIPCBridge {
         let d = defaults
         
         return d?.string(forKey: Key.recordingState)
+    }
+
+    static func currentRecordingStateAge() -> TimeInterval? {
+        guard let d = defaults else { return nil }
+        let ts = d.double(forKey: Key.recordingStateTimestamp)
+        guard ts > 0 else { return nil }
+        return Date().timeIntervalSince1970 - ts
     }
     
     static func latestTranscription() -> String? {

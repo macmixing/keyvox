@@ -1,10 +1,12 @@
 import UIKit
 
 final class KeyboardRootView: UIView {
+    let cancelButton = UIButton(type: .system)
     let nextKeyboardButton = UIButton(type: .system)
     let micButton = UIButton(type: .system)
     let statusLabel = UILabel()
 
+    private let leadingControlsStack = UIStackView()
     private let contentStack = UIStackView()
 
     override init(frame: CGRect) {
@@ -21,6 +23,8 @@ final class KeyboardRootView: UIView {
 
     func apply(state: KeyboardState, showsNextKeyboard: Bool) {
         statusLabel.text = state.statusText
+        cancelButton.isHidden = !state.showsCancelButton
+        cancelButton.isEnabled = state.showsCancelButton
         nextKeyboardButton.isHidden = !showsNextKeyboard
         nextKeyboardButton.isEnabled = showsNextKeyboard
 
@@ -41,6 +45,16 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureSubviews() {
+        cancelButton.translatesAutoresizingMaskIntoConstraints = false
+        cancelButton.tintColor = KeyboardStyle.labelColor
+        cancelButton.backgroundColor = KeyboardStyle.buttonFillColor
+        cancelButton.layer.cornerRadius = KeyboardStyle.buttonCornerRadius
+        cancelButton.setImage(
+            UIImage(systemName: "xmark", withConfiguration: KeyboardStyle.buttonSymbolConfiguration),
+            for: .normal
+        )
+        cancelButton.accessibilityLabel = "Cancel"
+
         nextKeyboardButton.translatesAutoresizingMaskIntoConstraints = false
         nextKeyboardButton.tintColor = KeyboardStyle.labelColor
         nextKeyboardButton.backgroundColor = KeyboardStyle.buttonFillColor
@@ -64,6 +78,12 @@ final class KeyboardRootView: UIView {
         statusLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         statusLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
 
+        leadingControlsStack.translatesAutoresizingMaskIntoConstraints = false
+        leadingControlsStack.axis = .horizontal
+        leadingControlsStack.alignment = .center
+        leadingControlsStack.distribution = .fill
+        leadingControlsStack.spacing = KeyboardStyle.stackSpacing
+
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         contentStack.axis = .horizontal
         contentStack.alignment = .center
@@ -71,7 +91,10 @@ final class KeyboardRootView: UIView {
         contentStack.spacing = KeyboardStyle.stackSpacing
 
         addSubview(contentStack)
-        contentStack.addArrangedSubview(nextKeyboardButton)
+        leadingControlsStack.addArrangedSubview(cancelButton)
+        leadingControlsStack.addArrangedSubview(nextKeyboardButton)
+
+        contentStack.addArrangedSubview(leadingControlsStack)
         contentStack.addArrangedSubview(statusLabel)
         contentStack.addArrangedSubview(micButton)
     }
@@ -79,6 +102,9 @@ final class KeyboardRootView: UIView {
     private func configureLayout() {
         NSLayoutConstraint.activate([
             heightAnchor.constraint(greaterThanOrEqualToConstant: KeyboardStyle.minHeight),
+
+            cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
             nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),

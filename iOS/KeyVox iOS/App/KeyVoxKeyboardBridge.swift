@@ -6,6 +6,7 @@ final class KeyVoxKeyboardBridge {
  
     var onStartRecordingCommand: (() -> Void)?
     var onStopRecordingCommand: (() -> Void)?
+    var onCancelRecordingCommand: (() -> Void)?
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
@@ -16,6 +17,7 @@ final class KeyVoxKeyboardBridge {
 
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.startRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopRecording)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.cancelRecording)
         
         touchHeartbeat()
     }
@@ -47,7 +49,14 @@ final class KeyVoxKeyboardBridge {
     }
 
     func publishNoSpeech() {
-        KeyVoxIPCBridge.removeTranscription()
+        KeyVoxIPCBridge.clearTransientOperationState()
+        KeyVoxIPCBridge.setRecordingState("idle")
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishCancelled() {
+        KeyVoxIPCBridge.clearTransientOperationState()
         KeyVoxIPCBridge.setRecordingState("idle")
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
         KeyVoxIPCBridge.touchHeartbeat()
@@ -82,6 +91,8 @@ final class KeyVoxKeyboardBridge {
                 self.onStartRecordingCommand?()
             case KeyVoxIPCBridge.Notification.stopRecording:
                 self.onStopRecordingCommand?()
+            case KeyVoxIPCBridge.Notification.cancelRecording:
+                self.onCancelRecordingCommand?()
             default:
                 break
             }

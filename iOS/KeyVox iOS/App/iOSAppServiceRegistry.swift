@@ -74,6 +74,9 @@ final class iOSAppServiceRegistry {
         keyboardBridge.onStopRecordingCommand = {
             transcriptionManager.handleStopRecordingCommand()
         }
+        keyboardBridge.onCancelRecordingCommand = {
+            transcriptionManager.cancelCurrentUtterance()
+        }
         keyboardBridge.registerObservers()
 
         self.dictionaryStore = dictionaryStore

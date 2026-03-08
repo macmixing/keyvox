@@ -106,19 +106,8 @@ extension iOSAudioRecorder {
         try ensureEngineRunning()
 
         // Reset state for new capture
-        streamingState.reset()
+        resetCurrentCaptureState()
         captureStartedAt = Date()
-        currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName("iPhone Microphone")
-        lastCaptureWasAbsoluteSilence = false
-        lastCaptureHadActiveSignal = false
-        lastCaptureWasLikelySilence = false
-        lastCaptureWasLongTrueSilence = false
-        lastCaptureDuration = 0
-        lastCaptureHadNonDeadSignal = false
-        maxActiveSignalRunDuration = 0
-        audioLevel = 0
-        liveInputSignalState = .dead
-        
         isRecording = true
     }
 
@@ -168,6 +157,27 @@ extension iOSAudioRecorder {
         lastCaptureDuration = stopResult.captureDuration
         lastCaptureHadNonDeadSignal = hadNonDeadSignal
         maxActiveSignalRunDuration = stopResult.maxActiveSignalRunDuration
+        audioLevel = 0
+        liveInputSignalState = .dead
+    }
+
+    func cancelCurrentUtterance() {
+        guard isRecording else { return }
+        isRecording = false
+        resetCurrentCaptureState()
+        captureStartedAt = .distantPast
+    }
+
+    private func resetCurrentCaptureState() {
+        streamingState.reset()
+        currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName("iPhone Microphone")
+        lastCaptureWasAbsoluteSilence = false
+        lastCaptureHadActiveSignal = false
+        lastCaptureWasLikelySilence = false
+        lastCaptureWasLongTrueSilence = false
+        lastCaptureDuration = 0
+        lastCaptureHadNonDeadSignal = false
+        maxActiveSignalRunDuration = 0
         audioLevel = 0
         liveInputSignalState = .dead
     }

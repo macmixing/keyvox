@@ -43,12 +43,37 @@ final class KeyboardIPCManager {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.stopRecording)
     }
 
+    func sendCancelCommand() {
+        KeyVoxIPCBridge.clearTransientOperationState()
+        KeyVoxIPCBridge.setRecordingState("idle")
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.cancelRecording)
+    }
+
     func currentSharedRecordingState() -> SharedRecordingState {
         guard let rawValue = KeyVoxIPCBridge.currentRecordingState(),
               let state = SharedRecordingState(rawValue: rawValue) else {
             return .idle
         }
         return state
+    }
+
+    func reconcileStaleSharedStateIfNeeded() -> SharedRecordingState {
+        let state = currentSharedRecordingState()
+
+        switch state {
+        case .idle:
+            return .idle
+        case .waitingForApp:
+            if let age = KeyVoxIPCBridge.currentRecordingStateAge(), age > 5 {
+                KeyVoxIPCBridge.clearTransientOperationState()
+                return .idle
+            }
+            return .waitingForApp
+        case .recording, .transcribing:
+            guard !isSessionWarm() else { return state }
+            KeyVoxIPCBridge.clearTransientOperationState()
+            return .idle
+        }
     }
 
     func isSessionWarm() -> Bool {

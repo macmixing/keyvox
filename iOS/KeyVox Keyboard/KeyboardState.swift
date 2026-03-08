@@ -49,4 +49,13 @@ enum KeyboardState: Equatable {
             return KeyboardStyle.pendingMicColor
         }
     }
+
+    var showsCancelButton: Bool {
+        switch self {
+        case .idle:
+            return false
+        case .waitingForApp, .recording, .transcribing:
+            return true
+        }
+    }
 }
