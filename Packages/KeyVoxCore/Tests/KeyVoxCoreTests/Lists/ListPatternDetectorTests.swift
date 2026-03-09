@@ -258,6 +258,16 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectListFromUncertainNumericRangeInProse() {
+        let detector = ListPatternDetector()
+        let text = """
+        One thing real quickly, and that is just to adjust the size of the individual keys. Maybe like, I don't know two or three points taller. Something like that.
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
     func testDetectsExplicitTwoItemListAfterColonEvenWhenItemOneIsLong() {
         let detector = ListPatternDetector()
         let text = """

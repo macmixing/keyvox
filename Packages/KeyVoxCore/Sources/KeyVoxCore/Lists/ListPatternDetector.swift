@@ -42,6 +42,15 @@ public struct ListPatternDetector {
             }
 
             let rawContent = nsText.substring(with: NSRange(location: marker.contentStart, length: end - marker.contentStart))
+            if index + 1 < bestRun.count,
+               !markerHasExplicitDelimiter(marker, in: nsText, languageCode: languageCode),
+               !markerHasExplicitDelimiter(bestRun[index + 1], in: nsText, languageCode: languageCode),
+               !hasCredibleUndelimitedIntermediateItemContent(rawContent) {
+                #if DEBUG
+                logDetector("reject reason=intermediate_item_too_short item=\(debugTextSummary(rawContent))")
+                #endif
+                return nil
+            }
             let content: String
             if index == bestRun.count - 1 {
                 let split = trailingSplitter.splitLastItemAndTrailing(rawContent, languageCode: languageCode)
@@ -128,6 +137,30 @@ public struct ListPatternDetector {
         var capitalized = text
         capitalized.replaceSubrange(firstLetter...firstLetter, with: String(text[firstLetter]).uppercased())
         return capitalized
+    }
+
+    private func hasCredibleUndelimitedIntermediateItemContent(_ raw: String) -> Bool {
+        let cleaned = raw
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let wordCount = cleaned.split(whereSeparator: \.isWhitespace).count
+        if wordCount >= 2 {
+            return true
+        }
+
+        let letterCount = cleaned.unicodeScalars.reduce(into: 0) { count, scalar in
+            if CharacterSet.letters.contains(scalar) {
+                count += 1
+            }
+        }
+        return letterCount >= 3
+    }
+
+    private func markerHasExplicitDelimiter(_ marker: ListPatternMarker, in nsText: NSString, languageCode: String?) -> Bool {
+        let spanLength = max(0, marker.contentStart - marker.markerTokenStart)
+        guard spanLength > 0 else { return false }
+        let span = nsText.substring(with: NSRange(location: marker.markerTokenStart, length: spanLength))
+        return ListPatternMarkerParser.hasExplicitDelimitedMarkerPrefix(in: span, languageCode: languageCode)
     }
 
     #if DEBUG

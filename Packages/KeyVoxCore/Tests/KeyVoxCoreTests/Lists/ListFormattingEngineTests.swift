@@ -27,4 +27,14 @@ final class ListFormattingEngineTests: XCTestCase {
         let output = engine.formatIfNeeded(text, renderMode: .multiline)
         XCTAssertTrue(output == "Need to do this:\n\n1. Buy groceries\n2. Walk dog\n4. Call mom")
     }
+
+    func testLeavesUncertainNumericRangeInProseUnchanged() {
+        let engine = ListFormattingEngine()
+        let text = """
+        One thing real quickly, and that is just to adjust the size of the individual keys. Maybe like, I don't know two or three points taller. Something like that.
+        """
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(output, text)
+    }
 }
