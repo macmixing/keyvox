@@ -34,7 +34,7 @@ struct AnimatedWaveHeader<Trailing: View>: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            KeyVoxLogo()
+            LogoBarView()
             
             VStack(alignment: .leading, spacing: 2) {
                 Text("KeyVox")

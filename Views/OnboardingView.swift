@@ -22,7 +22,7 @@ struct OnboardingView: View {
             VStack(spacing: 20) {
                 // Header
                 VStack(spacing: 8) {
-                    KeyVoxLogo(size: 80)
+                    LogoBarView(size: 80)
 
                     VStack(spacing: 4) {
                         Text("Welcome to KeyVox")

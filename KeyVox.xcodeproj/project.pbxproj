@@ -27,7 +27,6 @@
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
-		8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
@@ -112,6 +111,9 @@
 		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
 		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
 		E18000142FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */; };
+		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
+		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
+		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -144,7 +146,6 @@
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D22F3C51D6003BD458 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
-		8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxLogo.swift; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
@@ -230,6 +231,9 @@
 		E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
 		E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinatorTests.swift; sourceTree = "<group>"; };
+		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
+		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
+		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -329,7 +333,7 @@
 			isa = PBXGroup;
 			children = (
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
-				8E6D05D42F3C51D6003BD458 /* KeyVoxLogo.swift */,
+				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
@@ -412,6 +416,7 @@
 		9B2000012F4C000100AA0001 /* Overlay */ = {
 			isa = PBXGroup;
 			children = (
+				F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */,
 				9B2000052F4C000100AA0001 /* OverlayFlingPhysics.swift */,
 				8F1100012F43000100AA0001 /* OverlayManager.swift */,
 				9B2000032F4C000100AA0001 /* OverlayMotionController.swift */,
@@ -437,6 +442,7 @@
 		AB1000032F60000100AA0001 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */,
 				8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */,
 				AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */,
 				AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */,
@@ -724,7 +730,6 @@
 				8E57FBA12F3E444B00935A26 /* SettingsView+Audio.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
 				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,
-				8E6D05E52F3C524B003BD458 /* KeyVoxLogo.swift in Sources */,
 				8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */,
 				8EC700012F42000100C70001 /* WarningKind.swift in Sources */,
 				8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */,
@@ -736,6 +741,7 @@
 				D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */,
 				D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */,
 				8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */,
+				F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */,
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */,
 				C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */,
@@ -756,6 +762,7 @@
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
+				F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
@@ -798,6 +805,7 @@
 				AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */,
 				AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */,
 				AB3000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift in Sources */,
+				F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */,
 				8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */,
 				AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */,
 				AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */,
