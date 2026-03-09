@@ -49,12 +49,13 @@ public struct ThousandsGroupingNormalizer {
         guard !text.isEmpty else { return text }
         guard text.rangeOfCharacter(from: .decimalDigits) != nil else { return text }
 
+        let groupingFormatter = Self.makeGroupingFormatter()
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        let normalizedLines = lines.map(normalizeLine(_:))
+        let normalizedLines = lines.map { normalizeLine($0, groupingFormatter: groupingFormatter) }
         return normalizedLines.joined(separator: "\n")
     }
 
-    private func normalizeLine(_ line: String) -> String {
+    private func normalizeLine(_ line: String, groupingFormatter: NumberFormatter) -> String {
         guard let candidateRegex = Self.candidateRegex else { return line }
 
         let nsLine = line as NSString
@@ -64,7 +65,6 @@ public struct ThousandsGroupingNormalizer {
 
         let protectedRanges = protectedRanges(in: line, fullRange: fullRange)
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
-        let groupingFormatter = Self.makeGroupingFormatter()
         let mutable = NSMutableString(string: line)
 
         for match in matches.reversed() {
@@ -119,8 +119,8 @@ public struct ThousandsGroupingNormalizer {
             return true
         }
 
-        guard let tokenIndex = tokens.firstIndex(where: { NSEqualRanges($0.range, range) }) else {
-            return true
+        guard let tokenIndex = resolvedTokenIndex(for: range, in: tokens) else {
+            return false
         }
 
         let previous = tokenIndex > 0 ? tokens[tokenIndex - 1] : nil
@@ -137,6 +137,18 @@ public struct ThousandsGroupingNormalizer {
         }
 
         return true
+    }
+
+    private func resolvedTokenIndex(for range: NSRange, in tokens: [LexicalToken]) -> Int? {
+        if let exactMatch = tokens.firstIndex(where: { NSEqualRanges($0.range, range) }) {
+            return exactMatch
+        }
+
+        return tokens.firstIndex { token in
+            NSIntersectionRange(token.range, range).length > 0 ||
+            NSLocationInRange(range.location, token.range) ||
+            NSLocationInRange(token.range.location, range)
+        }
     }
 
     private func isLikelyYearReference(
