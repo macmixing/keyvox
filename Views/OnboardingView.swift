@@ -3,6 +3,16 @@ import AppKit
 import AVFoundation
 
 struct OnboardingView: View {
+    static let preferredWindowSize = CGSize(width: 500, height: 560)
+
+    private struct HeightPreferenceKey: PreferenceKey {
+        static var defaultValue: CGFloat = OnboardingView.preferredWindowSize.height
+
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
+
     @ObservedObject var downloader = ModelDownloader.shared
     @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
     @StateObject private var microphoneStepController = OnboardingMicrophoneStepController()
@@ -16,6 +26,7 @@ struct OnboardingView: View {
     var beginMicrophoneAuthorization: () -> Void = {}
     var beginAccessibilityAuthorization: () -> Void = {}
     var endAccessibilityAuthorization: () -> Void = {}
+    var onPreferredHeightChange: (CGFloat) -> Void = { _ in }
     
     var body: some View {
         ZStack {
@@ -117,12 +128,25 @@ struct OnboardingView: View {
                 .padding(.horizontal, 20)
             }
         }
-        .frame(width: 500, height: 520)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(
+            GeometryReader { geometry in
+                Color.clear.preference(
+                    key: HeightPreferenceKey.self,
+                    value: geometry.size.height
+                )
+            }
+        )
+        .frame(width: Self.preferredWindowSize.width)
+        .frame(minHeight: Self.preferredWindowSize.height)
         .background(
             Color.indigo.opacity(0.15)
                 .background(Color(white: 0.01))
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .onPreferenceChange(HeightPreferenceKey.self) { height in
+            onPreferredHeightChange(max(Self.preferredWindowSize.height, height))
+        }
         .onAppear {
             checkCurrentStatus()
             microphoneStepController.handleOnboardingAppear()
