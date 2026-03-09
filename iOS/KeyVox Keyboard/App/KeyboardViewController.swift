@@ -24,6 +24,16 @@ final class KeyboardViewController: UIInputViewController {
     private var lastDebugLayoutSignature: String?
 #endif
 
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        configureDictationBehavior()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        configureDictationBehavior()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
@@ -38,6 +48,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        configureDictationBehavior()
         indicatorDriver.start()
         configurePrimaryViewHeight()
         syncKeyboardStateFromSharedState()
@@ -64,6 +75,10 @@ final class KeyboardViewController: UIInputViewController {
         waitingForAppTimeoutWorkItem?.cancel()
         gracePeriodWorkItem?.cancel()
         ipcManager.unregisterObservers()
+    }
+
+    private func configureDictationBehavior() {
+        hasDictationKey = true
     }
 
     private func configureRootView() {
