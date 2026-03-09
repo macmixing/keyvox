@@ -123,13 +123,21 @@ public struct ListPatternDetector {
     }
 
     private func normalizeTerminalPunctuation(in text: String) -> String {
-        guard wordCount(in: text) <= 2 else {
-            return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let withoutStructuralDelimiter = text
+            .replacingOccurrences(
+                of: #"[\"'”’\)\]\}]*[,;:]+[\"'”’\)\]\}]*$"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard wordCount(in: withoutStructuralDelimiter) <= 2 else {
+            return withoutStructuralDelimiter
         }
 
-        return text
+        return withoutStructuralDelimiter
             .replacingOccurrences(
-                of: #"[\"'”’\)\]\}]*[.,;:!?…]+[\"'”’\)\]\}]*$"#,
+                of: #"[\"'”’\)\]\}]*[.!?…]+[\"'”’\)\]\}]*$"#,
                 with: "",
                 options: .regularExpression
             )

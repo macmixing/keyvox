@@ -87,4 +87,16 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I can't remember when that was. I think it was maybe 1993.")
     }
+
+    func testDoesNotGroupLocalPhoneNumberTailAfterHyphenSpacing() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "555-1234",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "555-1234")
+    }
 }

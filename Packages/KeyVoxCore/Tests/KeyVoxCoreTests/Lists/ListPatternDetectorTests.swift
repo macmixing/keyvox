@@ -267,6 +267,19 @@ final class ListPatternDetectorTests: XCTestCase {
         ])
     }
 
+    func testStripsStructuralCommaFromLongerSpokenListItem() {
+        let detector = ListPatternDetector()
+        let text = "Need two things one write the full summary, two walk dog"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(detected?.items.map(\.content), [
+            "Write the full summary",
+            "Walk dog",
+        ])
+    }
+
     func testKeepsFormattingWhenSpokenNumberSkipsAhead() {
         let detector = ListPatternDetector()
         let text = "Today one buy groceries two walk dog four call mom five charge phone"

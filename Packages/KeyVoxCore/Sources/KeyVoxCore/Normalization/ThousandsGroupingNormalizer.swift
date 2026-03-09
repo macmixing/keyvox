@@ -25,7 +25,7 @@ public struct ThousandsGroupingNormalizer {
         options: []
     )
     private static let phoneRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\b\d{3}-\d{3}-\d{4}\b"#,
+        pattern: #"\b(?:\d{3}\s*-\s*)?\d{3}\s*-\s*\d{4}\b"#,
         options: []
     )
     private static let compactHyphenatedNumericRegex: NSRegularExpression? = try? NSRegularExpression(

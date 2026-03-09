@@ -80,4 +80,12 @@ final class ListFormattingEngineTests: XCTestCase {
             "1. Write the full summary.\n2. Walk dog\n3. Double-check the release notes!"
         )
     }
+
+    func testStripsStructuralCommaFromLongerSpokenListItem() {
+        let engine = ListFormattingEngine()
+        let text = "Need two things one write the full summary, two walk dog"
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(output, "Need two things:\n\n1. Write the full summary\n2. Walk dog")
+    }
 }
