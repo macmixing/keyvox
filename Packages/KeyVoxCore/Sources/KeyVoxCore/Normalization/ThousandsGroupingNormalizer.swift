@@ -33,7 +33,7 @@ public struct ThousandsGroupingNormalizer {
         options: []
     )
     private static let plausibleYearRange = 1000...2999
-    private static let groupingFormatter: NumberFormatter = {
+    private static func makeGroupingFormatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.numberStyle = .decimal
@@ -41,7 +41,7 @@ public struct ThousandsGroupingNormalizer {
         formatter.usesGroupingSeparator = true
         formatter.maximumFractionDigits = 0
         return formatter
-    }()
+    }
 
     public init() {}
 
@@ -64,6 +64,7 @@ public struct ThousandsGroupingNormalizer {
 
         let protectedRanges = protectedRanges(in: line, fullRange: fullRange)
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
+        let groupingFormatter = Self.makeGroupingFormatter()
         let mutable = NSMutableString(string: line)
 
         for match in matches.reversed() {
@@ -73,7 +74,7 @@ public struct ThousandsGroupingNormalizer {
             let digits = nsLine.substring(with: range)
             guard let value = Int(digits) else { continue }
             guard shouldGroup(value: value, range: range, tokens: lexicalTokens) else { continue }
-            guard let replacement = Self.groupingFormatter.string(from: NSNumber(value: value)) else { continue }
+            guard let replacement = groupingFormatter.string(from: NSNumber(value: value)) else { continue }
             mutable.replaceCharacters(in: range, with: replacement)
         }
 
