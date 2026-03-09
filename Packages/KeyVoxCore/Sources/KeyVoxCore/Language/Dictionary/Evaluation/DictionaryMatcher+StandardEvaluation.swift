@@ -94,10 +94,12 @@ extension DictionaryMatcher {
         )
 
         var best: Candidate?
+        var bestObservedNormalized: String?
         var secondBestScore = 0.0
 
         for candidate in candidates {
             var bestForCandidate: Candidate?
+            var bestObservedNormalizedForCandidate: String?
             for form in observedForms {
                 let baseScore = scorer.score(
                     observedText: form.normalized,
@@ -163,9 +165,11 @@ extension DictionaryMatcher {
                 if let currentBestForCandidate = bestForCandidate {
                     if candidateScore.score.final > currentBestForCandidate.score.final {
                         bestForCandidate = candidateScore
+                        bestObservedNormalizedForCandidate = form.normalized
                     }
                 } else {
                     bestForCandidate = candidateScore
+                    bestObservedNormalizedForCandidate = form.normalized
                 }
             }
 
@@ -174,15 +178,17 @@ extension DictionaryMatcher {
                 if bestForCandidate.score.final > currentBest.score.final {
                     secondBestScore = currentBest.score.final
                     best = bestForCandidate
+                    bestObservedNormalized = bestObservedNormalizedForCandidate
                 } else if bestForCandidate.score.final > secondBestScore {
                     secondBestScore = bestForCandidate.score.final
                 }
             } else {
                 best = bestForCandidate
+                bestObservedNormalized = bestObservedNormalizedForCandidate
             }
         }
 
-        guard let best else { return nil }
+        guard let best, let bestObservedNormalized else { return nil }
 
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
 
@@ -263,6 +269,15 @@ extension DictionaryMatcher {
                !allowStylizedFallbackBySurface,
                !hasStructuralContext,
                textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
+                stats.rejectedLowScore += 1
+                return nil
+            }
+
+            if stylizedSingleTokenEntry,
+               !hasStylizedLongPrefixTailGuardEvidence(
+                    observed: bestObservedNormalized,
+                    candidate: candidateToken
+               ) {
                 stats.rejectedLowScore += 1
                 return nil
             }

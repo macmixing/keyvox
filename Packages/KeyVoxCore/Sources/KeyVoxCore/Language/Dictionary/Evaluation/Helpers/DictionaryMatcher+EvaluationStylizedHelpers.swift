@@ -9,6 +9,8 @@ private enum EvaluationStylizedConstants {
     static let strongFallbackSimilarityMinimum = 0.88
     static let moderateFallbackTextMinimum = 0.42
     static let moderateFallbackSimilarityMinimum = 0.66
+    static let longPrefixTailGuardMinimumSharedPrefixLength = 4
+    static let longPrefixTailGuardMinimumSimilarity = 0.55
 }
 
 extension DictionaryMatcher {
@@ -104,5 +106,33 @@ extension DictionaryMatcher {
         }
 
         return true
+    }
+
+    func hasStylizedLongPrefixTailGuardEvidence(
+        observed: String,
+        candidate: String
+    ) -> Bool {
+        guard observed.count > candidate.count else { return true }
+
+        let sharedPrefixLength = sharedPrefixLength(lhs: observed, rhs: candidate)
+        guard sharedPrefixLength >= EvaluationStylizedConstants.longPrefixTailGuardMinimumSharedPrefixLength else {
+            return true
+        }
+
+        let observedTail = String(observed.dropFirst(sharedPrefixLength))
+        let candidateTail = String(candidate.dropFirst(sharedPrefixLength))
+        guard !candidateTail.isEmpty else { return false }
+
+        let observedTailPhonetic = encoder.scoringSignature(for: observedTail, lexicon: lexicon)
+        let candidateTailPhonetic = encoder.scoringSignature(for: candidateTail, lexicon: lexicon)
+        let textSimilarity = scorer.similarity(lhs: observedTail, rhs: candidateTail)
+        let phoneticSimilarity = scorer.similarity(lhs: observedTailPhonetic, rhs: candidateTailPhonetic)
+
+        return max(textSimilarity, phoneticSimilarity)
+            >= EvaluationStylizedConstants.longPrefixTailGuardMinimumSimilarity
+    }
+
+    private func sharedPrefixLength(lhs: String, rhs: String) -> Int {
+        zip(lhs, rhs).prefix { $0 == $1 }.count
     }
 }
