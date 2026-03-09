@@ -176,6 +176,8 @@ final class KeyboardViewController: UIInputViewController {
             """
         )
     }
+#else
+    private func debugLogLayout(_ event: String) {}
 #endif
 
     private func configureIPC() {
