@@ -29,7 +29,7 @@ KeyVox is organized by responsibility:
 - `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
-- `Core/Normalization/`: Ordered pure normalization passes used by post-processing (email literal cleanup, colon/math, laughter/spam/time, website/domain casing, whitespace, capitalization, terminal punctuation, all-caps override) plus shared normalization utilities (for example URL/domain/email-safe capitalization guards).
+- `Core/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Core/Services/`: Whisper inference (organized under `Core/Services/Whisper/`), paste/injection, and update/checking services.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, and generic audio-indicator timing/state driving.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
@@ -52,16 +52,12 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 1. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
 2. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
-3. `EmailAddressNormalizer` runs first (email literal case + punctuation/sentence-boundary cleanup).
-4. Dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
-5. Lightweight idiom normalization runs (`hole in one` -> `hole-in-one`), then `ColonNormalizer` converts spoken/delimiter colon phrases before list parsing.
-6. `MathExpressionNormalizer` converts high-confidence spoken math into deterministic symbol form while preserving protected URL/email/code/time/date/version spans.
-7. List formatting applies numeric list rendering when confidence gates pass.
-8. Dedicated laughter normalization (`LaughterNormalizer`) and repeated-character spam cleanup (`CharacterSpamNormalizer`) run, then time normalization (`TimeExpressionNormalizer`) and final email boundary repair.
-9. `WebsiteNormalizer` applies domain casing normalization after email/time cleanup.
-10. Normalization helpers apply render-mode whitespace, capitalization guards (including URL/domain/email and technical-token safety checks), and terminal-time punctuation completion.
-11. `AllCapsOverrideNormalizer` applies a final uppercase override when Caps Lock mode is active.
-12. Final text is inserted via the paste service.
+3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
+4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
+5. List formatting applies numeric list rendering when confidence gates pass.
+6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
+7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
+8. Final text is inserted via the paste service.
 
 ## Update Feed and Release Checks
 

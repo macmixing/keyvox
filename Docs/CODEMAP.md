@@ -90,7 +90,7 @@ KeyVox/
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
-6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`.
+6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`, including four-digit quantity grouping.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 9. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
@@ -139,7 +139,7 @@ KeyVox/
 - `Core/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Core/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
+  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
 - `Core/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
 - `Core/Normalization/MathExpressionNormalizer.swift`
@@ -235,6 +235,8 @@ KeyVox/
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Core/Normalization/CharacterSpamNormalizer.swift`
   - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
+- `Core/Normalization/ThousandsGroupingNormalizer.swift`
+  - Adds grouping separators to quantity-style four-digit numerals while preserving year-like references and protected date/version/phone shapes.
 - `Core/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Core/Language/Dictionary/Email/DictionaryEmailEntry.swift`
