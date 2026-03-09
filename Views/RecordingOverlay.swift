@@ -39,15 +39,18 @@ struct RecordingOverlay: View {
         }
         .onAppear {
             applyInitialOverlayVisibility()
-            configureIndicatorDriver()
+            if visibilityManager.isVisible {
+                configureIndicatorDriver()
+            } else {
+                stopIndicatorDriver()
+            }
         }
         .onDisappear {
             popWorkItem?.cancel()
             popWorkItem = nil
             settleWorkItem?.cancel()
             settleWorkItem = nil
-            indicatorDriver.stop()
-            indicatorDriver.setPhase(.idle)
+            stopIndicatorDriver()
         }
     }
 
@@ -68,6 +71,11 @@ struct RecordingOverlay: View {
         indicatorDriver.start()
     }
 
+    private func stopIndicatorDriver() {
+        indicatorDriver.stop()
+        indicatorDriver.setPhase(.idle)
+    }
+
     private func animateOverlayVisibility(_ isVisible: Bool) {
         popWorkItem?.cancel()
         popWorkItem = nil
@@ -75,6 +83,7 @@ struct RecordingOverlay: View {
         settleWorkItem = nil
 
         if isVisible {
+            configureIndicatorDriver()
             overlayOpacity = 1.0
             withAnimation(.easeOut(duration: 0.1)) {
                 overlayScale = 0.92
@@ -98,6 +107,7 @@ struct RecordingOverlay: View {
             return
         }
 
+        stopIndicatorDriver()
         withAnimation(.timingCurve(0.58, 0.0, 0.95, 0.32, duration: 0.18)) {
             overlayScale = 0.12
             overlayOpacity = 0.0
