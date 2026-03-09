@@ -110,7 +110,7 @@ public struct ListPatternDetector {
             .replacingOccurrences(of: "(?i)[\\s,:-]*(and|then|next)$", with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        cleaned = stripTerminalPunctuation(in: cleaned)
+        cleaned = normalizeTerminalPunctuation(in: cleaned)
 
         guard cleaned.count >= 2 else { return nil }
         guard cleaned.rangeOfCharacter(from: .letters) != nil else { return nil }
@@ -122,14 +122,22 @@ public struct ListPatternDetector {
         return capitalizeFirstLetter(in: cleaned)
     }
 
-    private func stripTerminalPunctuation(in text: String) -> String {
-        text
+    private func normalizeTerminalPunctuation(in text: String) -> String {
+        guard wordCount(in: text) <= 2 else {
+            return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return text
             .replacingOccurrences(
                 of: #"[\"'”’\)\]\}]*[.,;:!?…]+[\"'”’\)\]\}]*$"#,
                 with: "",
                 options: .regularExpression
             )
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func wordCount(in text: String) -> Int {
+        text.split(whereSeparator: \.isWhitespace).count
     }
 
     private func capitalizeFirstLetter(in text: String) -> String {
