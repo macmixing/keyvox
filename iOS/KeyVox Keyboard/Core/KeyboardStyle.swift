@@ -34,18 +34,10 @@ enum KeyboardStyle {
     static let secondaryLabelColor = UIColor.secondaryLabel
     static let buttonFillColor = UIColor.secondarySystemBackground
 
-    static let keyFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
-    }
-    static let keyPressedFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1) : UIColor(red: 0.88, green: 0.90, blue: 0.94, alpha: 1)
-    }
-    static let specialKeyFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1) : UIColor(red: 0.65, green: 0.67, blue: 0.71, alpha: 1)
-    }
-    static let specialKeyPressedFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1) : UIColor(red: 0.70, green: 0.73, blue: 0.78, alpha: 1)
-    }
+    static let keyFillColor = UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1)
+    static let keyPressedFillColor = UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1)
+    static let specialKeyFillColor = UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1)
+    static let specialKeyPressedFillColor = UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1)
     static let keyDisabledFillColor = UIColor.tertiarySystemFill
     static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
     static let keyBorderColor = UIColor.separator.withAlphaComponent(0.18)
