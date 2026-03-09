@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-05**
+**Last Updated: 2026-03-08**
 
 ## Design Philosophy
 
@@ -31,8 +31,8 @@ KeyVox is organized by responsibility:
 - `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
 - `Core/Normalization/`: Ordered pure normalization passes used by post-processing (email literal cleanup, colon/math, laughter/spam/time, website/domain casing, whitespace, capitalization, terminal punctuation, all-caps override) plus shared normalization utilities (for example URL/domain/email-safe capitalization guards).
 - `Core/Services/`: Whisper inference (organized under `Core/Services/Whisper/`), paste/injection, and update/checking services.
-- `Core/Overlay/`: Floating overlay lifecycle, persistence, and motion.
-- `Views/`: Onboarding/settings/warnings and presentation-only UI composition.
+- `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, and generic audio-indicator timing/state driving.
+- `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
@@ -137,6 +137,9 @@ These remain integration/manual-test territory by design.
 
 - Keep behavior/motion constants close to owning logic.
 - Keep branded visual tuning inside branded view files.
+- `Views/Components/LogoBarView.swift` is the only branded Mac logo file on this branch.
+- `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
+- Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
 
