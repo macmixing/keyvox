@@ -313,6 +313,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Call me at 480-555-5555.")
     }
 
+    func testPreservesLocalHyphenatedPhoneNumber() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "555-1234",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "555-1234")
+    }
+
     func testPreservesCompactHyphenatedDateWithShortLeadingSegment() {
         let processor = TranscriptionPostProcessor()
 

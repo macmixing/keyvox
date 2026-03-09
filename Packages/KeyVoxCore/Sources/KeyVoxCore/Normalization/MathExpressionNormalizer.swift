@@ -66,6 +66,10 @@ public struct MathExpressionNormalizer {
         pattern: #"\b\d+(?:\.\d+){2,}\b"#,
         options: []
     )
+    private static let protectedPhoneRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b(?:\d{3}\s*-\s*)?\d{3}\s*-\s*\d{4}\b"#,
+        options: []
+    )
     private static let protectedCompactHyphenatedNumericRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\d{1,4}(?:-\d{1,4}){2,}\b"#,
         options: []
@@ -304,6 +308,7 @@ public struct MathExpressionNormalizer {
         protected.append(contentsOf: ranges(matching: Self.protectedMalformedTimeWithDaypartRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedDateRegex, in: text))
         protected.append(contentsOf: ranges(matching: Self.protectedVersionRegex, in: text))
+        protected.append(contentsOf: ranges(matching: Self.protectedPhoneRegex, in: text))
         protected.append(contentsOf: compactHyphenatedNumericRanges(in: text))
         return protected
     }

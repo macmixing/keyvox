@@ -60,6 +60,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testDoesNotCollapseOrdinaryTwoWordPhraseIntoAnchoredStylizedSplitJoinMatch() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "I added key value storage.")
+        XCTAssertEqual(result.text, "I added key value storage.")
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])

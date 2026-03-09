@@ -8,6 +8,7 @@ public final class TranscriptionPostProcessor {
     private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
     private let mathExpressionNormalizer = MathExpressionNormalizer()
+    private let thousandsGroupingNormalizer = ThousandsGroupingNormalizer()
     private let colonNormalizer = ColonNormalizer()
     private let allCapsOverrideNormalizer = AllCapsOverrideNormalizer()
     private let whitespaceNormalizer = WhitespaceNormalizer()
@@ -103,7 +104,11 @@ public final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("websiteNormalizedOutput", websiteNormalizedOutput)
         #endif
-        let whitespaceNormalized = whitespaceNormalizer.normalize(websiteNormalizedOutput, renderMode: renderMode)
+        let groupedNumericOutput = thousandsGroupingNormalizer.normalize(in: websiteNormalizedOutput)
+        #if DEBUG
+        logPipelineStage("groupedNumericOutput", groupedNumericOutput)
+        #endif
+        let whitespaceNormalized = whitespaceNormalizer.normalize(groupedNumericOutput, renderMode: renderMode)
         #if DEBUG
         logPipelineStage("whitespaceNormalized", whitespaceNormalized)
         #endif

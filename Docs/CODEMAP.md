@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-04**
+**Last Updated: 2026-03-08**
 
 ## Project Overview
 
@@ -21,7 +21,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 ## Contributor Notes
 
 - Behavior and motion constants are kept file-local near their owning runtime logic to reduce maintenance confusion.
-- Proprietary visual tuning remains in excluded branded files (`Views/RecordingOverlay.swift`, `Views/Components/KeyVoxLogo.swift`).
+- Proprietary visual tuning remains in the excluded branded file `Views/Components/LogoBarView.swift`.
 - No shared constants module is required unless a value is truly reused across multiple domains.
 - Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
 - `CODEMAP.md` is the source of truth for high-level file ownership and where major systems live; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
@@ -51,6 +51,9 @@ KeyVox/
 │   │   ├── Paste/
 │   │   │   └── PasteService.swift
 │   │   └── AppUpdateService.swift
+│   ├── Overlay/
+│   │   ├── OverlayManager.swift
+│   │   └── AudioIndicatorDriver.swift
 │   ├── Language/
 │   │   ├── Dictionary/
 │   │   │   ├── DictionaryMatcher.swift
@@ -59,9 +62,9 @@ KeyVox/
 │   │   └── PhoneticEncoder.swift
 │   ├── Lists/
 │   │   └── ListFormattingEngine.swift
-│   └── Overlay/
-│       └── OverlayManager.swift
 ├── Views/
+│   ├── Components/
+│   │   └── LogoBarView.swift
 │   ├── StatusMenuView.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
@@ -87,10 +90,12 @@ KeyVox/
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
-6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`.
+6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`, including four-digit quantity grouping.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
-9. `Views/RecordingOverlay.swift` and `Views/Components/KeyVoxLogo.swift` provide branded visual identity rendering only.
+9. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
+10. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
+11. `Views/Components/LogoBarView.swift` is the single branded Mac logo renderer for both standalone logo presentation and overlay-reactive modes.
 
 ## Key Components
 
@@ -108,11 +113,19 @@ KeyVox/
 - `Views/OnboardingView.swift`
   - Onboarding step orchestration UI.
   - Delegates microphone Step 1 flow logic to `OnboardingMicrophoneStepController`.
+  - Uses `LogoBarView(size:)` for the standalone branded logo presentation.
 - `Views/OnboardingMicrophoneStepController.swift`
   - Owns onboarding microphone authorization and no-built-in gating behavior.
   - Drives microphone-step completion state and prompt visibility.
 - `Views/Components/OnboardingMicrophonePickerView.swift`
   - Presentation-only onboarding modal for required microphone selection confirmation.
+- `Views/Components/LogoBarView.swift`
+  - Single branded Mac logo file.
+  - Provides both standalone logo presentation (`LogoBarView(size:)`) and recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`).
+  - Contains the proprietary ring/glow/bar/ripple visual language and visual tuning.
+- `Views/RecordingOverlay.swift`
+  - Thin overlay shell for visibility animation, panel sizing, and ring-color selection.
+  - Feeds recorder-derived indicator samples into `AudioIndicatorDriver` and renders `LogoBarView`.
 
 ### Core Managers
 
@@ -126,7 +139,7 @@ KeyVox/
 - `Core/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Core/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
+  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
 - `Core/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
 - `Core/Normalization/MathExpressionNormalizer.swift`
@@ -153,6 +166,10 @@ KeyVox/
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
+- `Core/Overlay/AudioIndicatorDriver.swift`
+  - Generic audio-indicator driver for overlay/logo timing.
+  - Owns smoothing, stale-sample handling, phase progression, and published timeline state.
+  - Keeps reusable indicator types neutral (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) and non-branded.
 - `Core/Overlay/OverlayMotionController.swift`
   - Fling/reset motion sequencing, timers/work items, and programmatic motion guards.
 - `Core/Overlay/OverlayScreenPersistence.swift`
@@ -218,6 +235,8 @@ KeyVox/
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Core/Normalization/CharacterSpamNormalizer.swift`
   - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
+- `Core/Normalization/ThousandsGroupingNormalizer.swift`
+  - Adds grouping separators to quantity-style four-digit numerals while preserving year-like references and protected date/version/phone shapes.
 - `Core/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Core/Language/Dictionary/Email/DictionaryEmailEntry.swift`

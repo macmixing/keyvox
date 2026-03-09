@@ -147,7 +147,7 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
-        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here")
+        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here.")
         XCTAssertTrue(
             detected?.trailingText
                 == "After all that, I'm going to have to do something with my brain\n\nBecause now it's raining outside and I can't take my dog to go to the bathroom."
@@ -185,11 +185,39 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [2, 3])
-        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here")
+        XCTAssertTrue(detected?.items.last?.content == "There's no way out of here.")
         XCTAssertTrue(
             detected?.trailingText
                 == "After all that, I'm going to have to do something with my brain\n\nBecause now it's raining outside and I can't take my dog to go to the bathroom."
         )
+    }
+
+    func testSplitsShortNominalLastItemFromCommaThenContinuation() {
+        let detector = ListPatternDetector()
+        let text = """
+        I need to go to the store today to pick up some things:
+
+        1. Apples
+        2. Oranges
+        3. Bananas, and then I need to go to Target to buy some clothes
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Apples", "Oranges", "Bananas"])
+        XCTAssertEqual(detected?.trailingText, "and then I need to go to Target to buy some clothes")
+    }
+
+    func testSplitsSpokenMarkerLastItemFromCommaThenContinuation() {
+        let detector = ListPatternDetector()
+        let text = "I need to go to the store today to pick up some things. One, apples, two, oranges, three, bananas, and then I need to go to Target to buy some clothes."
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Apples", "Oranges", "Bananas"])
+        XCTAssertEqual(detected?.trailingText, "and then I need to go to Target to buy some clothes.")
     }
 
     func testDoesNotLetBecauseSplitHideEarlierSentenceBoundary() {
@@ -204,14 +232,14 @@ final class ListPatternDetectorTests: XCTestCase {
         let detected = detector.detectList(in: text)
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
-        XCTAssertTrue(detected?.items.last?.content == "Get some groceries")
+        XCTAssertTrue(detected?.items.last?.content == "Get some groceries.")
         XCTAssertTrue(
             detected?.trailingText
                 == "There's really nothing else to do, but just talk a little bit more and hope this splits things out right\n\nBecause I'm just trying to make it work."
         )
     }
 
-    func testCapitalizesItemsAndStripsTerminalPunctuation() {
+    func testStripsTerminalPunctuationFromShortListItems() {
         let detector = ListPatternDetector()
         let text = "one buy groceries, two walk dog."
 
@@ -219,6 +247,37 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected != nil)
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2])
         XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog"])
+    }
+
+    func testPreservesTerminalPunctuationForLongerListItems() {
+        let detector = ListPatternDetector()
+        let text = """
+        1. Write the full summary.
+        2. Walk dog.
+        3. Double-check the release notes!
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), [
+            "Write the full summary.",
+            "Walk dog",
+            "Double-check the release notes!",
+        ])
+    }
+
+    func testStripsStructuralCommaFromLongerSpokenListItem() {
+        let detector = ListPatternDetector()
+        let text = "Need two things one write the full summary, two walk dog"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(detected?.items.map(\.content), [
+            "Write the full summary",
+            "Walk dog",
+        ])
     }
 
     func testKeepsFormattingWhenSpokenNumberSkipsAhead() {
@@ -258,6 +317,16 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectListFromUncertainNumericRangeInProse() {
+        let detector = ListPatternDetector()
+        let text = """
+        One thing real quickly, and that is just to adjust the size of the individual keys. Maybe like, I don't know two or three points taller. Something like that.
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
     func testDetectsExplicitTwoItemListAfterColonEvenWhenItemOneIsLong() {
         let detector = ListPatternDetector()
         let text = """
@@ -284,7 +353,7 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNotNil(detected)
         XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
         XCTAssertEqual(detected?.items.map(\.content), [
-            "This first item is intentionally long. It has multiple sentences because someone is explaining context before they continue the list. They keep talking for a while to set things up and it goes on longer than a normal list item would",
+            "This first item is intentionally long. It has multiple sentences because someone is explaining context before they continue the list. They keep talking for a while to set things up and it goes on longer than a normal list item would.",
             "Cueboard",
             "KeyVox",
         ])

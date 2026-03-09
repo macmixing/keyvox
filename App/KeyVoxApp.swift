@@ -51,9 +51,11 @@ class WindowManager: ObservableObject {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
+
+        let onboardingSize = OnboardingView.preferredWindowSize
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: onboardingSize.width, height: onboardingSize.height),
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -87,8 +89,15 @@ class WindowManager: ObservableObject {
             self.lowerOnboardingWindowForAccessibilityPrompt()
         }, endAccessibilityAuthorization: {
             self.restoreOnboardingWindowAfterAccessibilityGranted()
+        }, onPreferredHeightChange: { [weak window] height in
+            guard let window else { return }
+            let targetSize = CGSize(width: OnboardingView.preferredWindowSize.width, height: height)
+            if window.contentLayoutRect.size != targetSize {
+                window.setContentSize(targetSize)
+            }
         }))
-        
+
+        window.setContentSize(onboardingSize)
         self.onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

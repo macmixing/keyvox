@@ -26,6 +26,8 @@ private enum SplitJoinScoringConstants {
     static let stylizedAnchoredPhoneticMinimum = 0.60
     static let stylizedAnchoredBlendedMinimum = 0.48
     static let stylizedAnchoredThreshold = 0.44
+    static let stylizedAnchoredTailGuardMinimumSecondTokenLength = 4
+    static let stylizedAnchoredTailGuardMinimumSimilarity = 0.55
 
     static let blendedTextWeight = 0.6
     static let blendedPhoneticWeight = 0.4
@@ -210,11 +212,16 @@ extension DictionaryMatcher {
                 window: window,
                 candidateToken: candidateToken
             ),
+            hasAnchoredStylizedTailGuardEvidence(
+                window: window,
+                candidateToken: candidateToken
+            ),
             similarity.text >= SplitJoinScoringConstants.stylizedAnchoredTextMinimum,
             similarity.phonetic >= SplitJoinScoringConstants.stylizedAnchoredPhoneticMinimum,
             similarity.blended >= SplitJoinScoringConstants.stylizedAnchoredBlendedMinimum {
                 // Additional guarded lane for cases where Whisper splits a stylized
-                // proper name into two spoken words (e.g., "air axe").
+                // proper name into two spoken words while the remaining tail still
+                // resembles the stylized ending.
                 effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedAnchoredThreshold)
             }
         }
@@ -323,5 +330,30 @@ extension DictionaryMatcher {
         }
 
         return (bestText, bestPhonetic, bestBlended)
+    }
+
+    private func hasAnchoredStylizedTailGuardEvidence(window: [Token], candidateToken: String) -> Bool {
+        guard window.count == 2 else { return false }
+
+        let observedPrefix = window[0].normalized
+        guard candidateToken.hasPrefix(observedPrefix) else { return false }
+
+        let observedTail = window[1].normalized
+        guard observedTail.count >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSecondTokenLength else {
+            return true
+        }
+
+        // Long ordinary words are the riskiest anchored split-join false positives,
+        // so require the unmatched tail to still resemble the brand tail.
+        let candidateTail = String(candidateToken.dropFirst(observedPrefix.count))
+        guard !candidateTail.isEmpty else { return false }
+
+        let observedTailPhonetic = encoder.scoringSignature(for: observedTail, lexicon: lexicon)
+        let candidateTailPhonetic = encoder.scoringSignature(for: candidateTail, lexicon: lexicon)
+        let textSimilarity = scorer.similarity(lhs: observedTail, rhs: candidateTail)
+        let phoneticSimilarity = scorer.similarity(lhs: observedTailPhonetic, rhs: candidateTailPhonetic)
+
+        return max(textSimilarity, phoneticSimilarity)
+            >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSimilarity
     }
 }
