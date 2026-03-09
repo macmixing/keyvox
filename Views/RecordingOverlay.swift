@@ -30,6 +30,7 @@ struct RecordingOverlay: View {
             animateOverlayVisibility(isVisible)
         }
         .onChange(of: isTranscribing) { _ in
+            guard visibilityManager.isVisible || indicatorDriver.phase != .idle else { return }
             indicatorDriver.setPhase(indicatorPhase)
         }
         .onChange(of: visibilityManager.shouldDismiss) { newValue in
