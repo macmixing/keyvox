@@ -267,6 +267,15 @@ extension DictionaryMatcher {
                 return nil
             }
 
+            if stylizedSingleTokenEntry,
+               !hasStylizedLongPrefixTailGuardEvidence(
+                    observed: observedToken.normalized,
+                    candidate: candidateToken
+               ) {
+                stats.rejectedLowScore += 1
+                return nil
+            }
+
             if isCommonWord {
                 if hasStructuralContext {
                     effectiveThreshold = min(
