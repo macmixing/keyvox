@@ -37,4 +37,32 @@ final class ListFormattingEngineTests: XCTestCase {
         let output = engine.formatIfNeeded(text, renderMode: .multiline)
         XCTAssertEqual(output, text)
     }
+
+    func testSplitsSingleWordLastItemFromCommaThenContinuation() {
+        let engine = ListFormattingEngine()
+        let text = """
+        I need to go to the store today to pick up some things:
+
+        1. Apples
+        2. Oranges
+        3. Bananas, and then I need to go to Target to buy some clothes
+        """
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(
+            output,
+            "I need to go to the store today to pick up some things:\n\n1. Apples\n2. Oranges\n3. Bananas\n\nAnd then I need to go to Target to buy some clothes"
+        )
+    }
+
+    func testSplitsSpokenMarkerLastItemFromCommaThenContinuation() {
+        let engine = ListFormattingEngine()
+        let text = "I need to go to the store today to pick up some things. One, apples, two, oranges, three, bananas, and then I need to go to Target to buy some clothes."
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(
+            output,
+            "I need to go to the store today to pick up some things:\n\n1. Apples\n2. Oranges\n3. Bananas\n\nAnd then I need to go to Target to buy some clothes."
+        )
+    }
 }

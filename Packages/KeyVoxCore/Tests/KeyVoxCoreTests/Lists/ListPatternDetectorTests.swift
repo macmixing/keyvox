@@ -192,6 +192,34 @@ final class ListPatternDetectorTests: XCTestCase {
         )
     }
 
+    func testSplitsShortNominalLastItemFromCommaThenContinuation() {
+        let detector = ListPatternDetector()
+        let text = """
+        I need to go to the store today to pick up some things:
+
+        1. Apples
+        2. Oranges
+        3. Bananas, and then I need to go to Target to buy some clothes
+        """
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Apples", "Oranges", "Bananas"])
+        XCTAssertEqual(detected?.trailingText, "and then I need to go to Target to buy some clothes")
+    }
+
+    func testSplitsSpokenMarkerLastItemFromCommaThenContinuation() {
+        let detector = ListPatternDetector()
+        let text = "I need to go to the store today to pick up some things. One, apples, two, oranges, three, bananas, and then I need to go to Target to buy some clothes."
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Apples", "Oranges", "Bananas"])
+        XCTAssertEqual(detected?.trailingText, "and then I need to go to Target to buy some clothes.")
+    }
+
     func testDoesNotLetBecauseSplitHideEarlierSentenceBoundary() {
         let detector = ListPatternDetector()
         let text = """

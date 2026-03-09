@@ -206,7 +206,7 @@ public struct ListPatternTrailingSplitter {
             item: split.0,
             trailing: split.1,
             score: 60,
-            minItemWords: supportsShortNominalSplit ? 2 : 3,
+            minItemWords: supportsShortNominalSplit ? 1 : 3,
             requiresContinuationShape: true,
             languageCode: languageCode
         )
@@ -268,6 +268,13 @@ public struct ListPatternTrailingSplitter {
     private func looksLikeShortNominalItem(_ text: String) -> Bool {
         let tokens = lexicalWordTags(in: text)
         guard !tokens.isEmpty, tokens.count <= 3 else { return false }
+
+        if tokens.count == 1,
+           let (token, _) = tokens.first,
+           token.rangeOfCharacter(from: .letters) != nil,
+           token.count >= 3 {
+            return true
+        }
 
         var sawNominalContent = false
         for (_, tag) in tokens {
