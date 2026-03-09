@@ -6,6 +6,7 @@ public struct ThousandsGroupingNormalizer {
         let text: String
         let range: NSRange
         let tag: NLTag?
+        let lemma: String?
     }
 
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -17,7 +18,7 @@ public struct ThousandsGroupingNormalizer {
         options: []
     )
     private static let slashedOrHyphenatedDateRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b"#,
+        pattern: #"\b(?:\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b"#,
         options: []
     )
     private static let versionRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -96,7 +97,7 @@ public struct ThousandsGroupingNormalizer {
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
         guard let stringRange = Range(range, in: line) else { return [] }
 
-        let tagger = NLTagger(tagSchemes: [.lexicalClass])
+        let tagger = NLTagger(tagSchemes: [.lexicalClass, .lemma])
         tagger.string = line
 
         var tokens: [LexicalToken] = []
@@ -108,7 +109,8 @@ public struct ThousandsGroupingNormalizer {
         ) { tag, tokenRange in
             let token = String(line[tokenRange])
             let nsTokenRange = NSRange(tokenRange, in: line)
-            tokens.append(LexicalToken(text: token, range: nsTokenRange, tag: tag))
+            let lemma = tagger.tag(at: tokenRange.lowerBound, unit: .word, scheme: .lemma).0?.rawValue
+            tokens.append(LexicalToken(text: token, range: nsTokenRange, tag: tag, lemma: lemma))
             return true
         }
         return tokens
@@ -187,17 +189,25 @@ public struct ThousandsGroupingNormalizer {
             }
         }
 
-        if previous == nil, next?.tag == .noun {
-            return true
-        }
-
         if next == nil,
            let previousTag = previous?.tag,
            [.noun, .determiner, .preposition].contains(previousTag) {
             return true
         }
 
+        if previous == nil, next?.tag == .noun {
+            if isPluralInflectedNoun(next), secondNext?.tag == .verb {
+                return false
+            }
+
+            return true
+        }
+
         if previous?.tag == .determiner, next?.tag == .noun {
+            if isPluralInflectedNoun(next), secondNext?.tag == .verb {
+                return false
+            }
+
             return true
         }
 
@@ -206,5 +216,10 @@ public struct ThousandsGroupingNormalizer {
         }
 
         return false
+    }
+
+    private func isPluralInflectedNoun(_ token: LexicalToken?) -> Bool {
+        guard let token, token.tag == .noun, let lemma = token.lemma else { return false }
+        return token.text.compare(lemma, options: [.caseInsensitive, .diacriticInsensitive]) != .orderedSame
     }
 }

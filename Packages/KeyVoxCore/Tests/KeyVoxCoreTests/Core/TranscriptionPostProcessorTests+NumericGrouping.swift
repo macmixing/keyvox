@@ -88,6 +88,33 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I can't remember when that was. I think it was maybe 1993.")
     }
 
+    func testPreservesYearFirstSlashedDatesWhileFormattingQuantities() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The deadline is 2026/02/19 and we shipped 5600 units.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The deadline is 2026/02/19 and we shipped 5,600 units.")
+    }
+
+    func testFormatsQuantityLikePluralNounPhrasesAtSentenceStartAndAfterDeterminer() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2000 units shipped yesterday. The 2000 units were backordered.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "2,000 units shipped yesterday. The 2,000 units were backordered."
+        )
+    }
+
     func testDoesNotGroupLocalPhoneNumberTailAfterHyphenSpacing() {
         let processor = TranscriptionPostProcessor()
 
