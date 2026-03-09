@@ -1,10 +1,11 @@
 import Foundation
+import NaturalLanguage
 
 public struct ThousandsGroupingNormalizer {
     private struct LexicalToken {
         let text: String
         let range: NSRange
-        let tag: NSLinguisticTag?
+        let tag: NLTag?
     }
 
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -92,18 +93,22 @@ public struct ThousandsGroupingNormalizer {
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
-        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        guard let stringRange = Range(range, in: line) else { return [] }
+
+        let tagger = NLTagger(tagSchemes: [.lexicalClass])
         tagger.string = line
 
         var tokens: [LexicalToken] = []
         tagger.enumerateTags(
-            in: range,
+            in: stringRange,
             unit: .word,
             scheme: .lexicalClass,
             options: [.omitWhitespace, .omitPunctuation]
-        ) { tag, tokenRange, _ in
-            let token = (line as NSString).substring(with: tokenRange)
-            tokens.append(LexicalToken(text: token, range: tokenRange, tag: tag))
+        ) { tag, tokenRange in
+            let token = String(line[tokenRange])
+            let nsTokenRange = NSRange(tokenRange, in: line)
+            tokens.append(LexicalToken(text: token, range: nsTokenRange, tag: tag))
+            return true
         }
         return tokens
     }
