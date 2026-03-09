@@ -18,7 +18,6 @@ enum KeyboardStyle {
     static let keyboardRowSpacing: CGFloat = 8
     static let keySpacing: CGFloat = 6
     static let buttonSize: CGFloat = 44
-    static let logoBarSize: CGFloat = 52
     static let buttonCornerRadius: CGFloat = 14
 
     static let keyHeight: CGFloat = 48

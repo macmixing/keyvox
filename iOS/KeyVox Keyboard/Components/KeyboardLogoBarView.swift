@@ -1,6 +1,9 @@
 import UIKit
 
 final class KeyboardLogoBarView: UIControl {
+    // Change this to resize the entire toolbar logo control.
+    static let toolbarDiameter: CGFloat = 53
+
     enum VisualState: Equatable {
         case idle
         case waitingForApp
@@ -9,7 +12,6 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     private enum Metrics {
-        static let baseSize: CGFloat = 52
         static let barWidth: CGFloat = 4
         static let barSpacing: CGFloat = 4
         static let micSymbolSizeRatio: CGFloat = 0.60
@@ -17,7 +19,7 @@ final class KeyboardLogoBarView: UIControl {
         static let ripplePhaseStep: Double = 0.1
         static let quietPhaseStep: Double = 0.06
         static let phaseWrapPeriod: Double = .pi * 2
-        static let shadowRadius: CGFloat = 10
+        static let shadowRadius: CGFloat = 6
         static let meterPollInterval: CFTimeInterval = 1.0 / 30.0
         static let barGlowRadius: CGFloat = 2.2
     }
@@ -32,11 +34,12 @@ final class KeyboardLogoBarView: UIControl {
                 targetSignalState = .dead
             }
             updateAccessibility()
+            handleVisualStateTransition(from: oldValue, to: visualState)
         }
     }
 
     override var intrinsicContentSize: CGSize {
-        CGSize(width: KeyboardStyle.logoBarSize, height: KeyboardStyle.logoBarSize)
+        CGSize(width: Self.toolbarDiameter, height: Self.toolbarDiameter)
     }
 
     private let glowLayer = CAShapeLayer()
@@ -53,12 +56,16 @@ final class KeyboardLogoBarView: UIControl {
     private var displayedLevel: CGFloat = 0
     private var targetLevel: CGFloat = 0
     private var targetSignalState: KeyVoxIPCLiveMeterSignalState = .dead
+    private var barsAreVisible = false
+    private var isAnimatingActivationTransition = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureView()
+        configureSizeConstraints()
         configureLayers()
         bringSubviewToFront(microphoneImageView)
+        configureInitialPresentation()
         updateAccessibility()
     }
 
@@ -117,6 +124,13 @@ final class KeyboardLogoBarView: UIControl {
         addSubview(microphoneImageView)
     }
 
+    private func configureSizeConstraints() {
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: Self.toolbarDiameter),
+            heightAnchor.constraint(equalToConstant: Self.toolbarDiameter),
+        ])
+    }
+
     private func configureLayers() {
         layer.addSublayer(glowLayer)
         layer.addSublayer(backgroundLayer)
@@ -134,6 +148,15 @@ final class KeyboardLogoBarView: UIControl {
             barLayer.shadowOffset = .zero
             layer.addSublayer(barLayer)
         }
+    }
+
+    private func configureInitialPresentation() {
+        microphoneImageView.isHidden = false
+        microphoneImageView.alpha = 1
+        microphoneImageView.transform = .identity
+        barsAreVisible = false
+        setBarsHidden(true)
+        setBarOpacity(0)
     }
 
     private func startDisplayLinkIfNeeded() {
@@ -182,6 +205,107 @@ final class KeyboardLogoBarView: UIControl {
         return wrapped
     }
 
+    private func handleVisualStateTransition(from oldState: VisualState, to newState: VisualState) {
+        if newState == .idle {
+            isAnimatingActivationTransition = false
+            microphoneImageView.isHidden = false
+            microphoneImageView.alpha = 0
+            microphoneImageView.transform = CGAffineTransform(scaleX: 0.22, y: 0.22)
+
+            UIView.animate(
+                withDuration: 0.18,
+                delay: 0,
+                options: [.beginFromCurrentState, .allowUserInteraction, .curveEaseOut],
+                animations: {
+                    self.microphoneImageView.alpha = 1
+                    self.microphoneImageView.transform = .identity
+                }
+            )
+
+            animateBars(visible: false, duration: 0.12)
+            return
+        }
+
+        if oldState == .idle {
+            animateActivationTransitionIfNeeded()
+            return
+        }
+
+        barsAreVisible = true
+        setBarsHidden(false)
+        setBarOpacity(1)
+
+        guard !isAnimatingActivationTransition else { return }
+
+        microphoneImageView.alpha = 0
+        microphoneImageView.isHidden = true
+        microphoneImageView.transform = .identity
+    }
+
+    private func animateActivationTransitionIfNeeded() {
+        guard !isAnimatingActivationTransition else { return }
+        isAnimatingActivationTransition = true
+
+        barsAreVisible = true
+        setBarsHidden(false)
+        setBarOpacity(0.2)
+
+        microphoneImageView.isHidden = false
+        microphoneImageView.alpha = 1
+        microphoneImageView.transform = .identity
+
+        animateBarOpacity(to: 1, duration: 0.16)
+
+        UIView.animate(
+            withDuration: 0.18,
+            delay: 0,
+            options: [.beginFromCurrentState, .allowUserInteraction, .curveEaseInOut],
+            animations: {
+                self.microphoneImageView.alpha = 0
+                self.microphoneImageView.transform = CGAffineTransform(scaleX: 0.18, y: 0.18)
+            },
+            completion: { _ in
+                self.isAnimatingActivationTransition = false
+                guard self.visualState != .idle else { return }
+                self.microphoneImageView.isHidden = true
+                self.microphoneImageView.alpha = 0
+                self.microphoneImageView.transform = .identity
+            }
+        )
+    }
+
+    private func animateBars(visible: Bool, duration: CFTimeInterval) {
+        barsAreVisible = visible
+        setBarsHidden(false)
+        animateBarOpacity(to: visible ? 1 : 0, duration: duration)
+
+        guard !visible else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+            guard let self, self.visualState == .idle else { return }
+            self.setBarsHidden(true)
+        }
+    }
+
+    private func setBarsHidden(_ hidden: Bool) {
+        for barLayer in barLayers {
+            barLayer.isHidden = hidden
+        }
+    }
+
+    private func setBarOpacity(_ opacity: Float) {
+        for barLayer in barLayers {
+            barLayer.opacity = opacity
+        }
+    }
+
+    private func animateBarOpacity(to opacity: Float, duration: CFTimeInterval) {
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(duration)
+        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
+        setBarOpacity(opacity)
+        CATransaction.commit()
+    }
+
     private func updateLayerFrames() {
         guard bounds.width > 0, bounds.height > 0 else { return }
 
@@ -190,7 +314,8 @@ final class KeyboardLogoBarView: UIControl {
         defer { CATransaction.commit() }
 
         let diameter = min(bounds.width, bounds.height)
-        let scale = diameter / Metrics.baseSize
+        // 52 is the design-size baseline for the logo proportions.
+        let scale = diameter / 52
         let circleInset = (Metrics.ringLineWidth * scale) / 2
         let circleRect = CGRect(
             x: bounds.midX - diameter / 2,
@@ -210,10 +335,16 @@ final class KeyboardLogoBarView: UIControl {
         glowLayer.shadowOffset = .zero
         glowLayer.shadowPath = circlePath
 
+        let logoBackgroundColor = UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? UIColor.black.withAlphaComponent(0.82)
+                : UIColor.white.withAlphaComponent(0.96)
+        }.resolvedColor(with: traitCollection)
+
         backgroundLayer.path = circlePath
-        backgroundLayer.fillColor = UIColor.black.withAlphaComponent(0.82).cgColor
+        backgroundLayer.fillColor = logoBackgroundColor.cgColor
         backgroundLayer.shadowColor = UIColor.black.cgColor
-        backgroundLayer.shadowOpacity = 0.3
+        backgroundLayer.shadowOpacity = traitCollection.userInterfaceStyle == .dark ? 0.3 : 0.15
         backgroundLayer.shadowRadius = Metrics.shadowRadius * scale
         backgroundLayer.shadowOffset = .zero
         backgroundLayer.shadowPath = circlePath
@@ -223,17 +354,13 @@ final class KeyboardLogoBarView: UIControl {
         ringLayer.strokeColor = UIColor.systemYellow.withAlphaComponent(0.6).cgColor
         ringLayer.lineWidth = Metrics.ringLineWidth * scale
 
-        let showsMicrophoneSymbol = visualState == .idle || visualState == .waitingForApp
-        microphoneImageView.isHidden = !showsMicrophoneSymbol
-        microphoneImageView.alpha = visualState == .waitingForApp ? 0.72 : 1.0
-
         let barWidth = Metrics.barWidth * scale
         let barSpacing = Metrics.barSpacing * scale
         let totalBarWidth = (barWidth * CGFloat(barLayers.count)) + (barSpacing * CGFloat(barLayers.count - 1))
         let startX = bounds.midX - totalBarWidth / 2
 
         for (index, barLayer) in barLayers.enumerated() {
-            barLayer.isHidden = showsMicrophoneSymbol
+            barLayer.isHidden = !barsAreVisible
             let height = barHeight(for: index, scale: scale)
             let frame = pixelAligned(
                 CGRect(

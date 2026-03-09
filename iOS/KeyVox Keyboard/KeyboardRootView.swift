@@ -1,6 +1,7 @@
 import UIKit
 
 final class KeyboardRootView: UIView {
+
     let cancelButton = UIButton(type: .system)
     let nextKeyboardButton = UIButton(type: .system)
     let logoBarView = KeyboardLogoBarView()
@@ -88,7 +89,7 @@ final class KeyboardRootView: UIView {
         mainStack.alignment = .fill
         mainStack.distribution = .fill
         mainStack.spacing = KeyboardStyle.sectionSpacing
-        mainStack.clipsToBounds = true
+        mainStack.clipsToBounds = false
 
         addSubview(mainStack)
         leadingControlsStack.addArrangedSubview(cancelButton)
@@ -113,10 +114,9 @@ final class KeyboardRootView: UIView {
             nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
-            logoBarView.widthAnchor.constraint(equalToConstant: KeyboardStyle.logoBarSize),
-            logoBarView.heightAnchor.constraint(equalToConstant: KeyboardStyle.logoBarSize),
             logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
             logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
+            centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
 
             trailingSpacerView.widthAnchor.constraint(equalTo: leadingControlsStack.widthAnchor),
