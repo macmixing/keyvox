@@ -31,8 +31,8 @@ final class KeyboardRootView: UIView {
         nextKeyboardButton.isHidden = !showsNextKeyboard
         nextKeyboardButton.isEnabled = showsNextKeyboard
 
-        logoBarView.visualState = state.logoVisualState
-        logoBarView.isEnabled = state.isLogoBarEnabled
+        logoBarView.applyIndicatorPhase(state.indicatorPhase)
+        logoBarView.isEnabled = state.isIndicatorEnabled
 
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)

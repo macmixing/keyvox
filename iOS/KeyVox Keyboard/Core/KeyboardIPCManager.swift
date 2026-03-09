@@ -49,10 +49,14 @@ final class KeyboardIPCManager {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.cancelRecording)
     }
 
-    func currentLiveMeterSnapshot(maxAge: TimeInterval = 0.35) -> KeyVoxIPCLiveMeterSnapshot? {
+    func currentAudioIndicatorSample() -> AudioIndicatorSample? {
         guard let snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot() else { return nil }
-        guard Date().timeIntervalSince1970 - snapshot.timestamp <= maxAge else { return nil }
-        return snapshot
+
+        return AudioIndicatorSample(
+            level: snapshot.level,
+            signalState: mapSignalState(snapshot.signalState),
+            timestamp: snapshot.timestamp
+        )
     }
 
     func currentSharedRecordingState() -> SharedRecordingState {
@@ -109,6 +113,17 @@ final class KeyboardIPCManager {
 
     private func latestTranscription() -> String? {
         KeyVoxIPCBridge.latestTranscription()
+    }
+
+    private func mapSignalState(_ signalState: KeyVoxIPCLiveMeterSignalState) -> AudioIndicatorSignalState {
+        switch signalState {
+        case .dead:
+            return .inactive
+        case .quiet:
+            return .lowActivity
+        case .active:
+            return .active
+        }
     }
 
     private func handleNotification(named name: String) {

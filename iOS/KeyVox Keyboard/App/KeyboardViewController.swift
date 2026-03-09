@@ -2,6 +2,7 @@ import UIKit
 
 final class KeyboardViewController: UIInputViewController {
     private let ipcManager = KeyboardIPCManager()
+    private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private var primaryHeightConstraint: NSLayoutConstraint?
     private var keyboardState: KeyboardState = .idle {
@@ -28,6 +29,7 @@ final class KeyboardViewController: UIInputViewController {
         view.backgroundColor = .clear
         view.clipsToBounds = true
         configureRootView()
+        configureIndicatorDriver()
         configureIPC()
         syncKeyboardStateFromSharedState()
         updateUI()
@@ -36,9 +38,15 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        indicatorDriver.start()
         configurePrimaryViewHeight()
         syncKeyboardStateFromSharedState()
         debugLogLayout("viewWillAppear")
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        indicatorDriver.stop()
     }
 
     override func viewWillLayoutSubviews() {
@@ -52,6 +60,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     deinit {
+        indicatorDriver.stop()
         waitingForAppTimeoutWorkItem?.cancel()
         gracePeriodWorkItem?.cancel()
         ipcManager.unregisterObservers()
@@ -89,14 +98,20 @@ final class KeyboardViewController: UIInputViewController {
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
-        rootContainerView.logoBarView.liveMeterProvider = { [weak self] in
-            self?.ipcManager.currentLiveMeterSnapshot()
-        }
         rootContainerView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind)
         }
         rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
+    }
+
+    private func configureIndicatorDriver() {
+        indicatorDriver.sampleProvider = { [weak self] in
+            self?.ipcManager.currentAudioIndicatorSample()
+        }
+        indicatorDriver.onUpdate = { [weak self] timelineState in
+            self?.rootContainerView?.logoBarView.applyTimelineState(timelineState)
+        }
     }
 
     private func configurePrimaryViewHeight() {
@@ -183,6 +198,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func updateUI() {
         rootContainerView?.apply(state: keyboardState, showsNextKeyboard: needsInputModeSwitchKey, symbolPage: symbolPage)
+        indicatorDriver.phase = keyboardState.indicatorPhase
     }
 
     @objc

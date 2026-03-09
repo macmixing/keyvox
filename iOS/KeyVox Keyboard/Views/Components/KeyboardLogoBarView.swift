@@ -4,38 +4,13 @@ final class KeyboardLogoBarView: UIControl {
     // Change this to resize the entire toolbar logo control.
     static let toolbarDiameter: CGFloat = 53
 
-    enum VisualState: Equatable {
-        case idle
-        case waitingForApp
-        case recording
-        case transcribing
-    }
-
     private enum Metrics {
         static let barWidth: CGFloat = 4
         static let barSpacing: CGFloat = 4
         static let micSymbolSizeRatio: CGFloat = 0.60
         static let ringLineWidth: CGFloat = 2
-        static let ripplePhaseStep: Double = 0.1
-        static let quietPhaseStep: Double = 0.06
-        static let phaseWrapPeriod: Double = .pi * 2
         static let shadowRadius: CGFloat = 6
-        static let meterPollInterval: CFTimeInterval = 1.0 / 30.0
         static let barGlowRadius: CGFloat = 2.2
-    }
-
-    var liveMeterProvider: (() -> KeyVoxIPCLiveMeterSnapshot?)?
-
-    var visualState: VisualState = .idle {
-        didSet {
-            guard oldValue != visualState else { return }
-            if visualState != .recording {
-                targetLevel = 0
-                targetSignalState = .dead
-            }
-            updateAccessibility()
-            handleVisualStateTransition(from: oldValue, to: visualState)
-        }
     }
 
     override var intrinsicContentSize: CGSize {
@@ -48,14 +23,8 @@ final class KeyboardLogoBarView: UIControl {
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
 
-    private var displayLink: CADisplayLink?
-    private var lastFrameTimestamp: CFTimeInterval?
-    private var lastMeterPollTimestamp: CFTimeInterval?
-    private var ripplePhase: Double = 0
-    private var quietPhase: Double = 0
-    private var displayedLevel: CGFloat = 0
-    private var targetLevel: CGFloat = 0
-    private var targetSignalState: KeyVoxIPCLiveMeterSignalState = .dead
+    private var indicatorPhase: AudioIndicatorPhase = .idle
+    private var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
     private var isAnimatingActivationTransition = false
 
@@ -72,19 +41,6 @@ final class KeyboardLogoBarView: UIControl {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        stopDisplayLink()
-    }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        if window == nil {
-            stopDisplayLink()
-        } else {
-            startDisplayLinkIfNeeded()
-        }
     }
 
     override func layoutSubviews() {
@@ -159,54 +115,22 @@ final class KeyboardLogoBarView: UIControl {
         setBarOpacity(0)
     }
 
-    private func startDisplayLinkIfNeeded() {
-        guard displayLink == nil else { return }
-
-        let displayLink = CADisplayLink(target: self, selector: #selector(handleDisplayLinkTick))
-        displayLink.add(to: .main, forMode: .common)
-        self.displayLink = displayLink
-    }
-
-    private func stopDisplayLink() {
-        displayLink?.invalidate()
-        displayLink = nil
-        lastFrameTimestamp = nil
-        lastMeterPollTimestamp = nil
-    }
-
-    @objc
-    private func handleDisplayLinkTick(_ displayLink: CADisplayLink) {
-        let previousTimestamp = lastFrameTimestamp ?? displayLink.timestamp
-        let delta = min(max(displayLink.timestamp - previousTimestamp, 1.0 / 120.0), 1.0 / 20.0)
-        lastFrameTimestamp = displayLink.timestamp
-
-        ripplePhase = wrappedPhase(ripplePhase + Metrics.ripplePhaseStep * delta * 60)
-        quietPhase = wrappedPhase(quietPhase + Metrics.quietPhaseStep * delta * 60)
-
-        if visualState == .recording,
-           lastMeterPollTimestamp == nil || displayLink.timestamp - (lastMeterPollTimestamp ?? 0) >= Metrics.meterPollInterval {
-            lastMeterPollTimestamp = displayLink.timestamp
-            let snapshot = liveMeterProvider?()
-            targetLevel = CGFloat(snapshot?.level ?? 0)
-            targetSignalState = snapshot?.signalState ?? .dead
-        }
-
-        let smoothing = CGFloat(min(delta * 16, 1))
-        displayedLevel += (targetLevel - displayedLevel) * smoothing
-
+    func applyIndicatorPhase(_ phase: AudioIndicatorPhase) {
+        guard indicatorPhase != phase else { return }
+        let oldPhase = indicatorPhase
+        indicatorPhase = phase
+        updateAccessibility()
+        handleIndicatorPhaseTransition(from: oldPhase, to: phase)
         updateLayerFrames()
     }
 
-    private func wrappedPhase(_ value: Double) -> Double {
-        var wrapped = value
-        while wrapped >= Metrics.phaseWrapPeriod {
-            wrapped -= Metrics.phaseWrapPeriod
-        }
-        return wrapped
+    func applyTimelineState(_ state: AudioIndicatorTimelineState) {
+        timelineState = state
+        updateLayerFrames()
     }
 
-    private func handleVisualStateTransition(from oldState: VisualState, to newState: VisualState) {
-        if newState == .idle {
+    private func handleIndicatorPhaseTransition(from oldPhase: AudioIndicatorPhase, to newPhase: AudioIndicatorPhase) {
+        if newPhase == .idle {
             isAnimatingActivationTransition = false
             microphoneImageView.isHidden = false
             microphoneImageView.alpha = 0
@@ -226,7 +150,7 @@ final class KeyboardLogoBarView: UIControl {
             return
         }
 
-        if oldState == .idle {
+        if oldPhase == .idle {
             animateActivationTransitionIfNeeded()
             return
         }
@@ -266,7 +190,7 @@ final class KeyboardLogoBarView: UIControl {
             },
             completion: { _ in
                 self.isAnimatingActivationTransition = false
-                guard self.visualState != .idle else { return }
+                guard self.indicatorPhase != .idle else { return }
                 self.microphoneImageView.isHidden = true
                 self.microphoneImageView.alpha = 0
                 self.microphoneImageView.transform = .identity
@@ -281,7 +205,7 @@ final class KeyboardLogoBarView: UIControl {
 
         guard !visible else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-            guard let self, self.visualState == .idle else { return }
+            guard let self, self.indicatorPhase == .idle else { return }
             self.setBarsHidden(true)
         }
     }
@@ -384,26 +308,26 @@ final class KeyboardLogoBarView: UIControl {
         let flatHeight: CGFloat = 3 * scale
         let maxHeight: CGFloat = 30 * scale
 
-        if visualState == .transcribing {
-            let waveOffset = ripplePhase + Double(index) * 0.8
+        if indicatorPhase == .processing {
+            let waveOffset = timelineState.processingPhase + Double(index) * 0.8
             let rippleHeight = sin(waveOffset) * 0.5 + 0.5
             return flatHeight + (CGFloat(rippleHeight) * (9 * scale))
         }
 
-        guard visualState == .recording else {
+        guard indicatorPhase == .listening else {
             return flatHeight
         }
 
-        if targetSignalState == .dead {
+        if timelineState.signalState == .inactive {
             return flatHeight
         }
 
-        if targetSignalState == .quiet {
-            let quietWaveOffset = quietPhase + Double(index) * 0.8
+        if timelineState.signalState == .lowActivity {
+            let quietWaveOffset = timelineState.lowActivityPhase + Double(index) * 0.8
             let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
-            let wiggleOffset = (quietPhase * 0.9) + Double(index) * 1.35
+            let wiggleOffset = (timelineState.lowActivityPhase * 0.9) + Double(index) * 1.35
             let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
-            let quietLevel = min(max(displayedLevel / 0.14, 0), 1)
+            let quietLevel = min(max(timelineState.displayedLevel / 0.14, 0), 1)
             return flatHeight
                 + (1.2 * scale)
                 + (CGFloat(quietLevel) * (0.8 * scale))
@@ -412,7 +336,7 @@ final class KeyboardLogoBarView: UIControl {
         }
 
         let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
-        let dynamicHeight = displayedLevel * multipliers[index] * maxHeight
+        let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
         return max(minHeight, dynamicHeight)
     }
 
@@ -433,20 +357,20 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     private func updateAccessibility() {
-        switch visualState {
+        switch indicatorPhase {
         case .idle:
             accessibilityLabel = "Start recording"
             accessibilityValue = "Ready"
             isEnabled = true
-        case .waitingForApp:
+        case .waiting:
             accessibilityLabel = "Opening app"
             accessibilityValue = "Waiting"
             isEnabled = false
-        case .recording:
+        case .listening:
             accessibilityLabel = "Stop recording and transcribe"
             accessibilityValue = "Recording"
             isEnabled = true
-        case .transcribing:
+        case .processing:
             accessibilityLabel = "Transcribing"
             accessibilityValue = "Transcribing"
             isEnabled = false

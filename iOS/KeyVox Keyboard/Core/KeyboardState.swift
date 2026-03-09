@@ -6,20 +6,20 @@ enum KeyboardState: Equatable {
     case recording
     case transcribing
 
-    var logoVisualState: KeyboardLogoBarView.VisualState {
+    var indicatorPhase: AudioIndicatorPhase {
         switch self {
         case .idle:
             return .idle
         case .waitingForApp:
-            return .waitingForApp
+            return .waiting
         case .recording:
-            return .recording
+            return .listening
         case .transcribing:
-            return .transcribing
+            return .processing
         }
     }
 
-    var isLogoBarEnabled: Bool {
+    var isIndicatorEnabled: Bool {
         switch self {
         case .idle, .recording:
             return true
