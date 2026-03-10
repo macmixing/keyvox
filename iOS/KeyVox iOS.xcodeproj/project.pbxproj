@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
+		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
+		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
+		8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464E2F6013ED007E720D /* DictionaryTabView.swift */; };
+		8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546512F6013ED007E720D /* SettingsTabView.swift */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -82,6 +87,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
+		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
+		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
 		8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Keyboard.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeyVox iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -241,6 +251,11 @@
 		8E9E389C2F5C000000EAFA72 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8E25464E2F6013ED007E720D /* DictionaryTabView.swift */,
+				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
+				8E2546502F6013ED007E720D /* MainTabView.swift */,
+				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
+				8E2546522F6013ED007E720D /* StyleTabView.swift */,
 				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
 			);
 			path = Views;
@@ -489,6 +504,11 @@
 				8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */,
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
+				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
+				8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */,
+				8E2546552F6013ED007E720D /* MainTabView.swift in Sources */,
+				8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */,
+				8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
