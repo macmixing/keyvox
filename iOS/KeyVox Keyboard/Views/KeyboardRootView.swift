@@ -12,6 +12,7 @@ final class KeyboardRootView: UIView {
     private let centerContainerView = UIView()
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
+    private var cancelButtonWidthConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -23,6 +24,21 @@ final class KeyboardRootView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let referenceWidth = keyGridView.topRowReferenceKeyView?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        guard referenceWidth > 0 else { return }
+        guard let cancelButtonWidthConstraint else { return }
+        if abs(cancelButtonWidthConstraint.constant - referenceWidth) > 0.5 {
+            cancelButtonWidthConstraint.constant = referenceWidth
+            trailingControlsStack.setNeedsLayout()
+            trailingControlsStack.layoutIfNeeded()
+            cancelButton.setNeedsLayout()
+            cancelButton.layoutIfNeeded()
+        }
     }
 
     func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
@@ -117,6 +133,8 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureLayout() {
+        cancelButtonWidthConstraint = cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+
         NSLayoutConstraint.activate([
             // Fixed width for both control containers ensures the logo stays perfectly centered
             // regardless of button visibility or individual button sizes.
@@ -132,8 +150,8 @@ final class KeyboardRootView: UIView {
             nextKeyboardButton.centerYAnchor.constraint(equalTo: leadingControlsStack.centerYAnchor),
 
             // Cancel button flush with the right edge of its container
-            cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize),
-            cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize),
+            cancelButtonWidthConstraint!,
+            cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor),
             cancelButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor),
             cancelButton.centerYAnchor.constraint(equalTo: trailingControlsStack.centerYAnchor),
 
@@ -151,19 +169,4 @@ final class KeyboardRootView: UIView {
         ])
     }
 
-#if DEBUG
-    func debugLayoutSnapshot() -> String {
-        func describe(_ view: UIView?) -> String {
-            guard let view else { return "nil" }
-            return "frame=\(NSCoder.string(for: view.frame)) bounds=\(NSCoder.string(for: view.bounds)) opaque=\(view.isOpaque) hidden=\(view.isHidden) alpha=\(String(format: "%.2f", view.alpha)) bg=\(String(describing: view.backgroundColor))"
-        }
-
-        return """
-        root: \(describe(self))
-        mainStack: \(describe(mainStack))
-        contentStack: \(describe(contentStack))
-        keyGridView: \(describe(keyGridView))
-        """
-    }
-#endif
 }

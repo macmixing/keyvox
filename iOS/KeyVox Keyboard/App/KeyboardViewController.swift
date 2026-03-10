@@ -21,9 +21,6 @@ final class KeyboardViewController: UIInputViewController {
     private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
     private var gracePeriodWorkItem: DispatchWorkItem?
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
-#if DEBUG
-    private var lastDebugLayoutSignature: String?
-#endif
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -44,7 +41,6 @@ final class KeyboardViewController: UIInputViewController {
         configureIPC()
         syncKeyboardStateFromSharedState()
         updateUI()
-        debugLogLayout("viewDidLoad")
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -54,23 +50,12 @@ final class KeyboardViewController: UIInputViewController {
         indicatorDriver.start()
         configurePrimaryViewHeight()
         syncKeyboardStateFromSharedState()
-        debugLogLayout("viewWillAppear")
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.stop()
-    }
-
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        debugLogLayout("viewWillLayoutSubviews")
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        debugLogLayout("viewDidLayoutSubviews")
     }
 
     deinit {
@@ -148,43 +133,6 @@ final class KeyboardViewController: UIInputViewController {
         heightConstraint.isActive = true
         primaryHeightConstraint = heightConstraint
     }
-
-#if DEBUG
-    private func debugLogLayout(_ event: String) {
-        guard let rootContainerView else { return }
-
-        func describe(_ view: UIView?) -> String {
-            guard let view else { return "nil" }
-            return "frame=\(NSCoder.string(for: view.frame)) bounds=\(NSCoder.string(for: view.bounds)) opaque=\(view.isOpaque) hidden=\(view.isHidden) alpha=\(String(format: "%.2f", view.alpha)) bg=\(String(describing: view.backgroundColor))"
-        }
-
-        let hostView = inputView ?? view
-        let signature = [
-            event,
-            describe(view),
-            describe(inputView),
-            describe(hostView),
-            describe(popupOverlayView),
-            rootContainerView.debugLayoutSnapshot(),
-        ].joined(separator: "\n")
-
-        guard signature != lastDebugLayoutSignature else { return }
-        lastDebugLayoutSignature = signature
-
-        print(
-            """
-            [KeyboardLayout] \(event)
-            controller.view: \(describe(view))
-            controller.inputView: \(describe(inputView))
-            resolvedHostView: \(describe(hostView))
-            popupOverlayView: \(describe(popupOverlayView))
-            \(rootContainerView.debugLayoutSnapshot())
-            """
-        )
-    }
-#else
-    private func debugLogLayout(_ event: String) {}
-#endif
 
     private func configureIPC() {
         ipcManager.onRecordingStarted = { [weak self] in

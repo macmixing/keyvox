@@ -62,6 +62,16 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
+    var topRowReferenceKeyView: UIView? {
+        guard
+            let firstRow = rowsStack.arrangedSubviews.first as? UIStackView,
+            let trailingKeyView = firstRow.arrangedSubviews.last
+        else {
+            return nil
+        }
+        return trailingKeyView
+    }
+
     private func configureView() {
         translatesAutoresizingMaskIntoConstraints = false
         clipsToBounds = false
