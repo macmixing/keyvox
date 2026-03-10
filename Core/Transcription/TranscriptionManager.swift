@@ -21,6 +21,7 @@ class TranscriptionManager: ObservableObject {
     private let audioRecorder: AudioRecorder
     private let whisperService: WhisperService
     private let dictionaryStore: DictionaryStore
+    private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: whisperService,
@@ -41,7 +42,7 @@ class TranscriptionManager: ObservableObject {
             PasteService.shared.preferredListRenderModeForFocusedElement()
         },
         recordSpokenWords: { [weak self] text in
-            self?.appSettings.recordSpokenWords(from: text)
+            self?.weeklyWordStatsStore.recordSpokenWords(from: text)
         },
         pasteText: { text in
             PasteService.shared.pasteText(text)
@@ -79,6 +80,7 @@ class TranscriptionManager: ObservableObject {
         self.audioRecorder = audioRecorder
         self.whisperService = serviceRegistry.whisperService
         self.dictionaryStore = serviceRegistry.dictionaryStore
+        self.weeklyWordStatsStore = serviceRegistry.weeklyWordStatsStore
         self.postProcessor = postProcessor
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()

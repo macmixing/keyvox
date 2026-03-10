@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-08**
+**Last Updated: 2026-03-10**
 
 ## Design Philosophy
 
@@ -25,7 +25,8 @@ Convenience must never come at the cost of trust.
 
 KeyVox is organized by responsibility:
 
-- `App/`: App lifecycle and persisted settings ownership (`KeyVoxApp`, `AppSettingsStore`).
+- `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `WeeklyWordStatsStore`).
+- `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` remains focused on dictionary/settings sync, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
 - `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).

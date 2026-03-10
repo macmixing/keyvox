@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-08**
+**Last Updated: 2026-03-10**
 
 ## Project Overview
 
@@ -35,7 +35,9 @@ KeyVox/
 ├── App/
 │   ├── KeyVoxApp.swift
 │   ├── AppSettingsStore.swift
+│   ├── AppServiceRegistry.swift
 │   ├── LoginItemController.swift
+│   ├── WeeklyWordStatsStore.swift
 │   └── UserDefaultsKeys.swift
 ├── Core/
 │   ├── KeyboardMonitor.swift
@@ -106,8 +108,17 @@ KeyVox/
   - Owns onboarding/settings windows via `WindowManager`.
   - Cancels app termination once to close Settings first when the Settings window is visible.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, weekly word count).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps).
   - Single in-memory observable source consumed by settings UI and runtime managers.
+- `App/AppServiceRegistry.swift`
+  - Retains shared runtime services and app-owned sync helpers.
+  - Owns the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator.
+- `App/WeeklyWordStatsStore.swift`
+  - Dedicated local weekly-usage store for combined weekly word count plus hidden per-installation contribution totals.
+  - Persists a stable installation identifier, current-week snapshot, and rollover behavior outside `AppSettingsStore`.
+- `App/iCloud/WeeklyWordStatsCloudSync.swift`
+  - Dedicated iCloud KVS sync helper for weekly word stats only.
+  - Merges same-week per-device totals deterministically and keeps `KeyVoxiCloudSyncCoordinator` focused on dictionary/settings sync.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
 - `Views/OnboardingView.swift`
@@ -134,6 +145,7 @@ KeyVox/
   - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
+  - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
 - `Core/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
 - `Core/Transcription/DictationPromptEchoGuard.swift`
@@ -425,13 +437,19 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, weekly word counters
+  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps
+- Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
+  - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
 - Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
-- Weekly word-counter keys:
-  - `KeyVox.App.WordsThisWeekCount`
-  - `KeyVox.App.WordsThisWeekWeekStart`
+- Weekly word stats owner: `App/WeeklyWordStatsStore.swift`
+  - persists a stable installation identifier plus the current-week usage snapshot and local rollover behavior
+- Weekly word stats iCloud sync: `App/iCloud/WeeklyWordStatsCloudSync.swift`
+  - syncs the weekly stats payload through iCloud KVS and merges same-week per-device totals deterministically
+- Weekly word stats local keys:
+  - `KeyVox.App.WeeklyWordStatsPayload`
+  - `KeyVox.App.WeeklyWordStatsInstallationID`
 - Overlay placement:
   - preferred display key: `KeyVox.RecordingOverlayPreferredDisplayKey`
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`

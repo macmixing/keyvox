@@ -223,7 +223,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
 
-        let appSettings = AppSettingsStore(defaults: defaults, now: { now })
+        let appSettings = AppSettingsStore(defaults: defaults)
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
         let harness = Harness(
