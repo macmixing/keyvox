@@ -5,6 +5,11 @@ nonisolated enum iOSUserDefaultsKeys {
     static let autoParagraphsEnabled = "KeyVox.AutoParagraphsEnabled"
     static let listFormattingEnabled = "KeyVox.ListFormattingEnabled"
 
+    enum App {
+        static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
+        static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
+    }
+
     enum iCloud {
         static let dictionaryLastModifiedAt = "KeyVox.iCloud.DictionaryLastModifiedAt"
         static let triggerBindingLastModifiedAt = "KeyVox.iCloud.TriggerBindingLastModifiedAt"

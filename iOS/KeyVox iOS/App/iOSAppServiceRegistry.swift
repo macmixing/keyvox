@@ -7,12 +7,14 @@ final class iOSAppServiceRegistry {
 
     let dictionaryStore: DictionaryStore
     let settingsStore: iOSAppSettingsStore
+    let weeklyWordStatsStore: iOSWeeklyWordStatsStore
     let whisperService: WhisperService
     let modelManager: iOSModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
     let transcriptionManager: iOSTranscriptionManager
     let iCloudSyncCoordinator: iOSiCloudSyncCoordinator
+    let weeklyWordStatsCloudSync: iOSWeeklyWordStatsCloudSync
     let urlRouter: KeyVoxURLRouter
 
     private init(fileManager: FileManager = .default) {
@@ -28,6 +30,7 @@ final class iOSAppServiceRegistry {
             baseDirectoryURL: dictionaryBaseDirectory
         )
         let settingsStore = iOSAppSettingsStore(defaults: settingsDefaults)
+        let weeklyWordStatsStore = iOSWeeklyWordStatsStore(defaults: settingsDefaults)
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let modelManager = iOSModelManager(
             fileManager: fileManager,
@@ -52,6 +55,7 @@ final class iOSAppServiceRegistry {
             recorder: recorder,
             transcriptionService: whisperService,
             dictionaryStore: dictionaryStore,
+            weeklyWordStatsStore: weeklyWordStatsStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
             modelPathProvider: modelPathProvider,
@@ -68,6 +72,9 @@ final class iOSAppServiceRegistry {
             dictionaryStore: dictionaryStore,
             defaults: settingsDefaults
         )
+        let weeklyWordStatsCloudSync = iOSWeeklyWordStatsCloudSync(
+            weeklyWordStatsStore: weeklyWordStatsStore
+        )
         keyboardBridge.onStartRecordingCommand = {
             transcriptionManager.handleStartRecordingCommand()
         }
@@ -81,12 +88,14 @@ final class iOSAppServiceRegistry {
 
         self.dictionaryStore = dictionaryStore
         self.settingsStore = settingsStore
+        self.weeklyWordStatsStore = weeklyWordStatsStore
         self.whisperService = whisperService
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
         self.transcriptionManager = transcriptionManager
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
+        self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
     }
 }

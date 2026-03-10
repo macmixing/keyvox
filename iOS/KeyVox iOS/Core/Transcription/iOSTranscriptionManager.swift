@@ -22,6 +22,7 @@ final class iOSTranscriptionManager: ObservableObject {
     let recorder: any iOSAudioRecording
     let transcriptionService: any iOSDictationService
     private let dictionaryStore: DictionaryStore
+    private let weeklyWordStatsStore: iOSWeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
     private let modelPathProvider: () -> String?
@@ -49,7 +50,9 @@ final class iOSTranscriptionManager: ObservableObject {
         },
         capsLockEnabledProvider: { false },
         listRenderModeProvider: { .multiline },
-        recordSpokenWords: { _ in },
+        recordSpokenWords: { [weak self] text in
+            self?.weeklyWordStatsStore.recordSpokenWords(from: text)
+        },
         pasteText: { [weak self] text in
             self?.capturePipelineOutput(text)
         }
@@ -59,6 +62,7 @@ final class iOSTranscriptionManager: ObservableObject {
         recorder: any iOSAudioRecording,
         transcriptionService: any iOSDictationService,
         dictionaryStore: DictionaryStore,
+        weeklyWordStatsStore: iOSWeeklyWordStatsStore,
         postProcessor: TranscriptionPostProcessor,
         keyboardBridge: KeyVoxKeyboardBridge,
         modelPathProvider: @escaping () -> String?,
@@ -69,6 +73,7 @@ final class iOSTranscriptionManager: ObservableObject {
         self.recorder = recorder
         self.transcriptionService = transcriptionService
         self.dictionaryStore = dictionaryStore
+        self.weeklyWordStatsStore = weeklyWordStatsStore
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
         self.modelPathProvider = modelPathProvider

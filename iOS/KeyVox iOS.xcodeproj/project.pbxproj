@@ -49,6 +49,8 @@
 		9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */; };
 		9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */; };
 		9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */; };
+		A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */; };
+		A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */; };
 		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
 		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 		9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */; };
@@ -128,6 +130,8 @@
 		9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
+		A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsStore.swift; sourceTree = "<group>"; };
+		A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
 		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
 		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 		9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardCursorTrackpadSupport.swift; path = "KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift"; sourceTree = SOURCE_ROOT; };
@@ -229,6 +233,7 @@
 				9A7001092FA6000100AA0001 /* ModelDownloader */,
 				8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */,
 				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
+				A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */,
 				8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */,
 				8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */,
 				8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */,
@@ -308,6 +313,7 @@
 				9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */,
 				9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */,
 				9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */,
+				A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */,
 			);
 			path = iCloud;
 			sourceTree = "<group>";
@@ -485,6 +491,8 @@
 				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
 				9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
+				A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */,
+				A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
 				8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */,

@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details for the iOS app and keyboard extension.
 
-**Last Updated: 2026-03-07**
+**Last Updated: 2026-03-10**
 
 ## Design Philosophy
 
@@ -24,7 +24,8 @@ Convenience matters, but not more than predictable behavior.
 
 KeyVox iOS is organized by responsibility:
 
-- `KeyVox iOS/App/`: app lifecycle, dependency composition, App Group paths, keyboard/app IPC contract, URL routing, and model management.
+- `KeyVox iOS/App/`: app lifecycle, dependency composition, App Group paths, keyboard/app IPC contract, URL routing, model management, and app-owned weekly stats state.
+- `KeyVox iOS/App/iCloud/`: dedicated iCloud KVS sync helpers and payloads. `iOSiCloudSyncCoordinator` remains focused on dictionary/settings sync, while `iOSWeeklyWordStatsCloudSync` owns weekly usage convergence separately.
 - `KeyVox iOS/Core/Audio/`: `AVAudioSession` setup, engine lifecycle, streaming conversion, and stop-time classification.
 - `KeyVox iOS/Core/Transcription/`: iOS runtime state machine and the boundary between capture, shared-package dictation, and keyboard notifications.
 - `KeyVox iOS/Views/`: minimal containing-app UI for model controls and debug/runtime status.
@@ -113,6 +114,7 @@ The model install path does not use the fallback; missing App Group access is tr
 11. `DictationPipeline` transcribes audio, runs shared post-processing, and returns final text.
 12. The manager transitions back to `idle` and publishes either `transcriptionReady` or `noSpeech`.
 13. The keyboard receives the callback, applies insertion spacing heuristics, and calls `textDocumentProxy.insertText(...)`.
+14. Successful final dictation text is also recorded into the containing app's weekly stats store, which syncs hidden per-device totals through iCloud KVS and exposes only the combined total to the Home tab.
 
 ## Audio Capture Contract
 

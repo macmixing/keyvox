@@ -245,6 +245,19 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.lastErrorMessage == nil)
     }
 
+    @Test func stopFromRecordingRecordsSpokenWordsIntoWeeklyStatsStore() async throws {
+        let harness = try makeHarness()
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world again", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.weeklyWordStatsStore.combinedWordCount == 3)
+        #expect(harness.weeklyWordStatsStore.snapshot.deviceWordCounts["test-device"] == 3)
+    }
+
     @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -372,10 +385,16 @@ struct iOSTranscriptionManagerTests {
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: dictionaryBase)
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
+        let weeklyWordStatsStore = iOSWeeklyWordStatsStore(
+            defaults: UserDefaults(suiteName: "iOSTranscriptionManagerTests.\(UUID().uuidString)")!,
+            now: { Date(timeIntervalSince1970: 0) },
+            installationIDGenerator: { "test-device" }
+        )
         let manager = iOSTranscriptionManager(
             recorder: recorder,
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
+            weeklyWordStatsStore: weeklyWordStatsStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
             modelPathProvider: { resolvedModelPath },
@@ -386,7 +405,8 @@ struct iOSTranscriptionManagerTests {
             manager: manager,
             recorder: recorder,
             transcriptionService: transcriptionService,
-            dictionaryStore: dictionaryStore
+            dictionaryStore: dictionaryStore,
+            weeklyWordStatsStore: weeklyWordStatsStore
         )
     }
 
@@ -460,6 +480,7 @@ private struct ManagerHarness {
     let recorder: StubAudioRecorder
     let transcriptionService: StubDictationService
     let dictionaryStore: DictionaryStore
+    let weeklyWordStatsStore: iOSWeeklyWordStatsStore
 }
 
 @MainActor

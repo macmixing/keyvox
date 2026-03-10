@@ -2,10 +2,12 @@ import SwiftUI
 
 struct HomeTabView: View {
     @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
+    @EnvironmentObject private var weeklyWordStatsStore: iOSWeeklyWordStatsStore
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                weeklyStatsSection
                 sessionSection
                 #if DEBUG
                 diagnosticsSection
@@ -15,6 +17,17 @@ struct HomeTabView: View {
             .padding(16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
+        }
+    }
+
+    @ViewBuilder
+    private var weeklyStatsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Words this week: \(weeklyWordStatsStore.combinedWordCount.formatted())")
+                .font(.body)
+        }
     }
 
     @ViewBuilder
@@ -97,4 +110,5 @@ struct HomeTabView: View {
 #Preview {
     HomeTabView()
         .environmentObject(iOSAppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(iOSAppServiceRegistry.shared.weeklyWordStatsStore)
 }

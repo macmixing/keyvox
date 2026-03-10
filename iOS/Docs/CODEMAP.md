@@ -1,11 +1,12 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-03-07**
+**Last Updated: 2026-03-10**
 
 ## Project Overview
 
 KeyVox iOS is split across a containing app and a custom keyboard extension:
 
 - The containing app owns microphone access, background audio capture, model installation, shared dictionary state, and the Whisper-backed transcription pipeline.
+- The containing app also owns synced weekly word stats state, with the combined total surfaced in the Home tab and per-device counts kept internal.
 - The keyboard extension owns the user-facing mic button, warm/cold app handoff, and final `textDocumentProxy.insertText(...)` insertion into the focused text field.
 - Shared text-processing, silence classification, dictionary correction, list rendering, and Whisper integration live in `../Packages/KeyVoxCore`.
 
@@ -45,11 +46,19 @@ iOS/
 │   ├── App/
 │   │   ├── KeyVoxiOSApp.swift
 │   │   ├── iOSAppServiceRegistry.swift
+│   │   ├── iOSWeeklyWordStatsStore.swift
 │   │   ├── iOSSharedPaths.swift
 │   │   ├── KeyVoxIPCBridge.swift
 │   │   ├── KeyVoxKeyboardBridge.swift
 │   │   ├── KeyVoxURLRoute.swift
 │   │   ├── KeyVoxURLRouter.swift
+│   │   ├── iCloud/
+│   │   │   ├── iOSWeeklyWordStatsCloudSync.swift
+│   │   │   ├── iOSiCloudSyncCoordinator.swift
+│   │   │   ├── iOSAppSettingsStore.swift
+│   │   │   ├── iOSUserDefaultsKeys.swift
+│   │   │   ├── KeyVoxiCloudKeys.swift
+│   │   │   └── KeyVoxiCloudPayloads.swift
 │   │   └── ModelDownloader/
 │   │       ├── iOSModelManager.swift
 │   │       ├── iOSModelManager+InstallLifecycle.swift
@@ -117,8 +126,11 @@ Packages/
   - Registers model background tasks and routes incoming `keyvoxios://` URLs.
 - `KeyVox iOS/App/iOSAppServiceRegistry.swift`
   - Composition root for the containing app.
-  - Wires `DictionaryStore`, `WhisperService`, `iOSModelManager`, `TranscriptionPostProcessor`, `iOSAudioRecorder`, `iOSTranscriptionManager`, and `KeyVoxURLRouter`.
+  - Wires `DictionaryStore`, `iOSWeeklyWordStatsStore`, `WhisperService`, `iOSModelManager`, `TranscriptionPostProcessor`, `iOSAudioRecorder`, `iOSTranscriptionManager`, and `KeyVoxURLRouter`.
   - Connects keyboard-bridge start/stop callbacks to the transcription manager.
+- `KeyVox iOS/App/iOSWeeklyWordStatsStore.swift`
+  - Dedicated local weekly-usage store for combined weekly word count plus hidden per-installation contribution totals.
+  - Persists a stable installation identifier, current-week snapshot, and rollover behavior outside the settings store.
 - `KeyVox iOS/App/iOSSharedPaths.swift`
   - Central source of truth for App Group paths.
   - Resolves model files, Core ML bundle locations, install manifest, and dictionary storage base directory.
@@ -184,6 +196,7 @@ Packages/
 - `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift`
   - Main iOS state machine: `idle -> recording -> processingCapture -> transcribing -> idle`.
   - Coordinates recorder start/stop, model availability checks, dictionary prompt updates, `DictationPipeline` execution, and keyboard notifications.
+  - Records spoken-word totals through `iOSWeeklyWordStatsStore` from final processed dictation output.
   - Stores the latest debug snapshot and surfaced error for the app UI.
 - `KeyVox iOS/Core/Transcription/iOSDictationService.swift`
   - Minimal protocol seam over `WhisperService` for warmup, cancellation, hint-prompt updates, and transcription.
@@ -195,6 +208,9 @@ Packages/
 - `KeyVox iOS/Views/AppRootView.swift`
   - Minimal diagnostic/control UI for model state and transcription state.
   - Exposes model download/delete/repair actions and DEBUG-only runtime diagnostics.
+- `KeyVox iOS/Views/HomeTabView.swift`
+  - Displays the synced combined weekly word total in plain text.
+  - Keeps device-level counts internal to the weekly stats store.
 
 ### Keyboard Extension
 
