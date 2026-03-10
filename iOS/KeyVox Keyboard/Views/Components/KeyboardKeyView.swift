@@ -49,8 +49,15 @@ final class KeyboardKeyView: UIView {
         titleLabel.textColor = colors.foreground
         imageView.tintColor = colors.foreground
 
-        titleLabel.text = model.systemImageName == nil ? model.title : nil
-        titleLabel.font = model.isSpecialKey ? KeyboardStyle.specialKeyFont : KeyboardStyle.keyFont
+        titleLabel.font = model.titleFont
+        if model.systemImageName == nil {
+            let attributes: [NSAttributedString.Key: Any] = [
+                .baselineOffset: model.titleBaselineOffset
+            ]
+            titleLabel.attributedText = NSAttributedString(string: model.title, attributes: attributes)
+        } else {
+            titleLabel.attributedText = nil
+        }
         imageView.image = model.systemImageName.flatMap { name in
             UIImage(systemName: name, withConfiguration: KeyboardStyle.keySymbolConfiguration)
         }

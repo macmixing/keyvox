@@ -93,6 +93,24 @@ struct KeyboardKeyModel: Equatable {
         guard case let .character(value) = kind else { return nil }
         return value
     }
+
+    var titleFont: UIFont {
+        switch kind {
+        case .character("•"):
+            return UIFont.systemFont(ofSize: KeyboardStyle.keyFont.pointSize, weight: .black)
+        default:
+            return isSpecialKey ? KeyboardStyle.specialKeyFont : KeyboardStyle.keyFont
+        }
+    }
+
+    var titleBaselineOffset: CGFloat {
+        switch kind {
+        case .character("•"), .character("("), .character(")"), .character(";"), .character(":"), .character("-"), .character("/"), .character("\\"), .character("|"), .character("~"), .character("<"), .character(">"), .character("["), .character("]"), .character("{"), .character("}"), .character("+"), .character("="):
+            return 6
+        default:
+            return 0
+        }
+    }
 }
 
 enum KeyboardSymbolLayout {
@@ -114,7 +132,7 @@ enum KeyboardSymbolLayout {
             key(.character(",")),
             key(.character("?")),
             key(.character("!")),
-            key(.character("'")),
+            key(.character("‘")),
             key(.delete, width: 1.45),
         ],
         [
@@ -126,14 +144,14 @@ enum KeyboardSymbolLayout {
 
     private static let alternateRows: [[KeyboardKeyModel]] = [
         characterRow(["[", "]", "{", "}", "#", "%", "^", "*", "+", "="]),
-        characterRow(["_", "\\", "|", "~", "<", ">", "€", "£", "¥", "·"]),
+        characterRow(["_", "\\", "|", "~", "<", ">", "€", "£", "¥", "•"]),
         [
             key(.numberSymbols, width: 1.45),
             key(.character(".")),
             key(.character(",")),
             key(.character("?")),
             key(.character("!")),
-            key(.character("'")),
+            key(.character("’")),
             key(.delete, width: 1.45),
         ],
         [
