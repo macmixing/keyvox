@@ -30,13 +30,13 @@ final class KeyboardRootView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let referenceWidth = keyGridView.topRowReferenceKeyView?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        let referenceWidth = keyGridView.topRowLeadingKeyView?.bounds.width ?? KeyboardStyle.cancelButtonSize
         guard referenceWidth > 0 else { return }
         guard let cancelButtonWidthConstraint else { return }
         if abs(cancelButtonWidthConstraint.constant - referenceWidth) > 0.5 {
             cancelButtonWidthConstraint.constant = referenceWidth
-            trailingControlsStack.setNeedsLayout()
-            trailingControlsStack.layoutIfNeeded()
+            leadingControlsStack.setNeedsLayout()
+            leadingControlsStack.layoutIfNeeded()
             cancelButton.setNeedsLayout()
             cancelButton.layoutIfNeeded()
         }
@@ -127,8 +127,8 @@ final class KeyboardRootView: UIView {
         
         // Add buttons as regular subviews to their respective fixed-size containers.
         // This prevents UIStackView from stretching them and keeps the logo centered.
-        leadingControlsStack.addSubview(nextKeyboardButton)
-        trailingControlsStack.addSubview(cancelButton)
+        leadingControlsStack.addSubview(cancelButton)
+        trailingControlsStack.addSubview(nextKeyboardButton)
         
         centerContainerView.addSubview(logoBarView)
 
@@ -153,17 +153,17 @@ final class KeyboardRootView: UIView {
             leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
-            // Next Keyboard button centered on the left
-            nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            nextKeyboardButton.centerXAnchor.constraint(equalTo: leadingControlsStack.centerXAnchor),
-            nextKeyboardButton.centerYAnchor.constraint(equalTo: leadingControlsStack.centerYAnchor),
-
-            // Cancel button flush with the right edge of its container
+            // Cancel button flush with the left edge of its container
             cancelButtonWidthConstraint!,
             cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor),
-            cancelButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor),
-            cancelButton.centerYAnchor.constraint(equalTo: trailingControlsStack.centerYAnchor),
+            cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor),
+            cancelButton.centerYAnchor.constraint(equalTo: leadingControlsStack.centerYAnchor),
+
+            // Next Keyboard button centered on the right
+            nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            nextKeyboardButton.centerXAnchor.constraint(equalTo: trailingControlsStack.centerXAnchor),
+            nextKeyboardButton.centerYAnchor.constraint(equalTo: trailingControlsStack.centerYAnchor),
 
             logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
             logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),

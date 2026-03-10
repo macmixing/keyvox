@@ -62,14 +62,14 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
-    var topRowReferenceKeyView: UIView? {
+    var topRowLeadingKeyView: UIView? {
         guard
             let firstRow = rowsStack.arrangedSubviews.first as? UIStackView,
-            let trailingKeyView = firstRow.arrangedSubviews.last
+            let leadingKeyView = firstRow.arrangedSubviews.first
         else {
             return nil
         }
-        return trailingKeyView
+        return leadingKeyView
     }
 
     private func configureView() {
