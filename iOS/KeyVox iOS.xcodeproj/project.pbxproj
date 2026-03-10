@@ -47,6 +47,7 @@
 		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
 		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 		9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */; };
+		9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +121,7 @@
 		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
 		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 		9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardCursorTrackpadSupport.swift; path = "KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift"; sourceTree = SOURCE_ROOT; };
+		9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardSpecialKeyInteractionSupport.swift; path = "KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -231,6 +233,7 @@
 				8E9E38CB2F5C004200EAFA72 /* Audio */,
 				8E9E38CD2F5C004200EAFA72 /* Transcription */,
 				9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */,
+				9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -476,6 +479,7 @@
 				8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */,
 				8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */,
 				9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */,
+				9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */,
 				9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */,
 				8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */,
 				9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */,

@@ -1,12 +1,5 @@
 import UIKit
 
-enum KeyboardSpaceTrackpadEvent {
-    case began
-    case moved(CGPoint)
-    case ended
-    case cancelled
-}
-
 final class KeyboardKeyGridView: UIView {
     var onKeyActivated: ((KeyboardKeyKind) -> Void)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
@@ -21,6 +14,8 @@ final class KeyboardKeyGridView: UIView {
     private weak var popupContainerView: UIView?
     private weak var trackpadOriginKeyView: KeyboardKeyView?
     private var spaceTrackpadSession = KeyboardSpaceTrackpadSession()
+    private var deleteRepeatController = KeyboardDeleteRepeatController()
+    private var isDeleteTouchConsuming = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -45,6 +40,7 @@ final class KeyboardKeyGridView: UIView {
         updateKeyStates(activeKey: enabled ? activeKeyView : nil)
         if !enabled {
             cancelSpaceTrackpadIfNeeded()
+            cancelDeleteRepeatIfNeeded()
             clearActiveKey(shouldDismissPopup: true)
         }
     }
@@ -81,6 +77,7 @@ final class KeyboardKeyGridView: UIView {
 
     private func rebuildKeys(for page: KeyboardSymbolPage) {
         cancelSpaceTrackpadIfNeeded()
+        cancelDeleteRepeatIfNeeded()
         clearActiveKey(shouldDismissPopup: true)
         keyViews.removeAll()
         rowsStack.arrangedSubviews.forEach { row in
@@ -118,6 +115,18 @@ final class KeyboardKeyGridView: UIView {
 
         switch gesture.state {
         case .began:
+            if hitKey?.model.kind == .delete {
+                isDeleteTouchConsuming = true
+                trackpadOriginKeyView = nil
+                spaceTrackpadSession.cancel()
+                setActiveKey(hitKey)
+                deleteRepeatController.begin { [weak self] in
+                    self?.onKeyActivated?(.delete)
+                }
+                return
+            }
+
+            isDeleteTouchConsuming = false
             trackpadOriginKeyView = hitKey?.model.kind == .space ? hitKey : nil
             spaceTrackpadSession.begin(
                 onSpaceKey: hitKey?.model.kind == .space,
@@ -130,6 +139,19 @@ final class KeyboardKeyGridView: UIView {
                 updatePopup(for: hitKey)
             }
         case .changed:
+            if isDeleteTouchConsuming {
+                if hitKey?.model.kind == .delete {
+                    if hitKey !== activeKeyView {
+                        setActiveKey(hitKey)
+                    }
+                    deleteRepeatController.resumeIfNeeded()
+                } else {
+                    clearActiveKey(shouldDismissPopup: true)
+                    deleteRepeatController.pause()
+                }
+                return
+            }
+
             if spaceTrackpadSession.isActive {
                 let update = spaceTrackpadSession.update(
                     location: location,
@@ -160,6 +182,13 @@ final class KeyboardKeyGridView: UIView {
                 updatePopup(for: hitKey)
             }
         case .ended:
+            if isDeleteTouchConsuming {
+                isDeleteTouchConsuming = false
+                deleteRepeatController.cancel()
+                clearActiveKey(shouldDismissPopup: true)
+                return
+            }
+
             let wasTrackpadActive = spaceTrackpadSession.end()
             let selectedKind = hitKey?.model.kind ?? activeKeyView?.model.kind
             trackpadOriginKeyView = nil
@@ -170,6 +199,13 @@ final class KeyboardKeyGridView: UIView {
                 onKeyActivated?(selectedKind)
             }
         case .cancelled, .failed:
+            if isDeleteTouchConsuming {
+                isDeleteTouchConsuming = false
+                deleteRepeatController.cancel()
+                clearActiveKey(shouldDismissPopup: true)
+                return
+            }
+
             let wasTrackpadActive = spaceTrackpadSession.isActive
             trackpadOriginKeyView = nil
             spaceTrackpadSession.cancel()
@@ -240,5 +276,10 @@ final class KeyboardKeyGridView: UIView {
         if wasTrackpadActive {
             onSpaceTrackpadEvent?(.cancelled)
         }
+    }
+
+    private func cancelDeleteRepeatIfNeeded() {
+        isDeleteTouchConsuming = false
+        deleteRepeatController.cancel()
     }
 }
