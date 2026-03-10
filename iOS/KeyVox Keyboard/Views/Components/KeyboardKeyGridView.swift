@@ -14,6 +14,7 @@ final class KeyboardKeyGridView: UIView {
     private weak var popupContainerView: UIView?
     private weak var trackpadOriginKeyView: KeyboardKeyView?
     private var spaceTrackpadSession = KeyboardSpaceTrackpadSession()
+    private let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     private var deleteRepeatController = KeyboardDeleteRepeatController()
     private var isDeleteTouchConsuming = false
 
@@ -128,6 +129,9 @@ final class KeyboardKeyGridView: UIView {
 
             isDeleteTouchConsuming = false
             trackpadOriginKeyView = hitKey?.model.kind == .space ? hitKey : nil
+            if trackpadOriginKeyView != nil {
+                trackpadActivationFeedback.prepare()
+            }
             spaceTrackpadSession.begin(
                 onSpaceKey: hitKey?.model.kind == .space,
                 location: location,
@@ -170,6 +174,7 @@ final class KeyboardKeyGridView: UIView {
                 isStillOnSpaceKey: hitKey?.model.kind == .space
             )
             if update.activated {
+                emitTrackpadActivationHaptic()
                 setActiveKey(trackpadOriginKeyView ?? hitKey)
                 popupView.dismiss()
                 onSpaceTrackpadEvent?(.began)
@@ -281,5 +286,10 @@ final class KeyboardKeyGridView: UIView {
     private func cancelDeleteRepeatIfNeeded() {
         isDeleteTouchConsuming = false
         deleteRepeatController.cancel()
+    }
+
+    private func emitTrackpadActivationHaptic() {
+        trackpadActivationFeedback.impactOccurred()
+        trackpadActivationFeedback.prepare()
     }
 }
