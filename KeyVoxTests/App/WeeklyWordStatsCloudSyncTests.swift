@@ -168,7 +168,7 @@ final class WeeklyWordStatsCloudSyncTests: XCTestCase {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
 
-        var calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         let storeNow = initialNow ?? now
         let store = WeeklyWordStatsStore(

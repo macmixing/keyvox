@@ -144,7 +144,7 @@ final class WeeklyWordStatsStoreTests: XCTestCase {
     }
 
     private func makeCalendar() -> Calendar {
-        var calendar = Calendar(identifier: .gregorian)
+        var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         return calendar
     }
