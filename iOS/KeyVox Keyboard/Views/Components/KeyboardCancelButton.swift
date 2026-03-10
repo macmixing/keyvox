@@ -13,6 +13,7 @@ final class KeyboardCancelButton: UIControl {
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: KeyboardStyle.controlBlurEffectStyle))
     private let tintOverlay = UIView()
     private let iconImageView = UIImageView()
+    private let borderLayer = CAShapeLayer()
     
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardStyle.cancelButtonSize, height: KeyboardStyle.cancelButtonSize)
@@ -28,6 +29,11 @@ final class KeyboardCancelButton: UIControl {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateBorderPath()
+    }
     
     override var isHighlighted: Bool {
         didSet {
@@ -42,7 +48,6 @@ final class KeyboardCancelButton: UIControl {
         
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        backgroundView.layer.borderWidth = KeyboardStyle.cancelButtonBorderWidth
         backgroundView.layer.masksToBounds = false
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
@@ -69,6 +74,7 @@ final class KeyboardCancelButton: UIControl {
         addSubview(backgroundView)
         backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
+        backgroundView.layer.addSublayer(borderLayer)
         addSubview(iconImageView)
         
         updateVisualState(animated: false)
@@ -90,7 +96,7 @@ final class KeyboardCancelButton: UIControl {
         let animations = {
             self.backgroundView.transform = transform
             self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(self.fillAlpha)
-            self.backgroundView.layer.borderColor = colors.border.cgColor
+            self.borderLayer.strokeColor = colors.border.cgColor
             self.iconImageView.tintColor = colors.icon 
             self.iconImageView.alpha = self.isHighlighted ? self.highlightedIconAlpha : self.normalIconAlpha
             
@@ -110,6 +116,28 @@ final class KeyboardCancelButton: UIControl {
         } else {
             animations()
         }
+    }
+
+    private func updateBorderPath() {
+        let scale = window?.screen.scale ?? UIScreen.main.scale
+        let pixelAlignedLineWidth = max(
+            (KeyboardStyle.cancelButtonBorderWidth * scale).rounded() / max(scale, 1),
+            1 / max(scale, 1)
+        )
+        let lineWidth = pixelAlignedLineWidth
+        let inset = lineWidth / 2
+        let cornerRadius = max(KeyboardStyle.keyCornerRadius - inset, 0)
+        let borderRect = backgroundView.bounds.insetBy(dx: inset, dy: inset)
+
+        borderLayer.frame = backgroundView.bounds
+        borderLayer.contentsScale = scale
+        borderLayer.fillColor = UIColor.clear.cgColor
+        borderLayer.lineWidth = lineWidth
+        borderLayer.lineJoin = .round
+        borderLayer.path = UIBezierPath(
+            roundedRect: borderRect,
+            cornerRadius: cornerRadius
+        ).cgPath
     }
     
     private func setupConstraints() {
