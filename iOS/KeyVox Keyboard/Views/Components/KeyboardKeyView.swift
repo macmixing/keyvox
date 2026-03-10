@@ -35,7 +35,7 @@ final class KeyboardKeyView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func apply(model: KeyboardKeyModel, state: VisualState) {
+    func apply(model: KeyboardKeyModel, state: VisualState, isTrackpadModeActive: Bool = false) {
         self.model = model
         self.widthUnits = model.widthUnits
         self.visualState = state
@@ -76,7 +76,7 @@ final class KeyboardKeyView: UIView {
         case .pressed:
             transform = CGAffineTransform(scaleX: 0.985, y: 0.96)
         case .trackpadActive:
-            transform = CGAffineTransform(scaleX: 0.985, y: 0.96)
+            transform = .identity
         case .disabled:
             transform = .identity
         }
@@ -84,10 +84,10 @@ final class KeyboardKeyView: UIView {
         UIView.animate(withDuration: 0.08, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
             self.backgroundView.transform = transform
         }
-        let titleAlpha: CGFloat = model.kind == .space && state == .trackpadActive ? 0 : 1
-        UIView.animate(withDuration: 0.12, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+        let titleAlpha: CGFloat = isTrackpadModeActive ? 0 : 1
+        UIView.animate(withDuration: 0.18, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
             self.titleLabel.alpha = titleAlpha
-            self.imageView.alpha = 1
+            self.imageView.alpha = titleAlpha
         }
     }
 
@@ -167,10 +167,16 @@ final class KeyboardKeyView: UIView {
                 border: KeyboardStyle.keyBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
             )
-        case .pressed, .trackpadActive:
+        case .pressed:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyPressedFillColor : KeyboardStyle.keyPressedFillColor,
                 border: KeyboardStyle.keyPressedBorderColor,
+                foreground: KeyboardStyle.keyLabelColor
+            )
+        case .trackpadActive:
+            return (
+                fill: model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor,
+                border: KeyboardStyle.keyBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
             )
         }

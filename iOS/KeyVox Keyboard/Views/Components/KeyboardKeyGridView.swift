@@ -258,18 +258,23 @@ final class KeyboardKeyGridView: UIView {
     }
 
     private func updateKeyStates(activeKey: KeyboardKeyView?) {
+        let isTrackpadModeActive = spaceTrackpadSession.isActive
         for keyView in keyViews {
             let state: KeyboardKeyView.VisualState
             if !isKeyboardEnabled {
                 state = .disabled
-            } else if spaceTrackpadSession.isActive, keyView === trackpadOriginKeyView {
+            } else if isTrackpadModeActive, keyView === trackpadOriginKeyView {
                 state = .trackpadActive
             } else if keyView === activeKey {
                 state = .pressed
             } else {
                 state = .normal
             }
-            keyView.apply(model: keyView.model, state: state)
+            keyView.apply(
+                model: keyView.model,
+                state: state,
+                isTrackpadModeActive: isTrackpadModeActive
+            )
         }
         alpha = 1.0
     }
