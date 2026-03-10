@@ -2,14 +2,14 @@ import UIKit
 
 final class KeyboardRootView: UIView {
 
-    let cancelButton = UIButton(type: .system)
+    let cancelButton = KeyboardCancelButton()
     let nextKeyboardButton = UIButton(type: .system)
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
 
-    private let leadingControlsStack = UIStackView()
+    private let leadingControlsStack = UIView()
+    private let trailingControlsStack = UIView()
     private let centerContainerView = UIView()
-    private let trailingSpacerView = UIView()
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
 
@@ -26,8 +26,30 @@ final class KeyboardRootView: UIView {
     }
 
     func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
-        cancelButton.isHidden = !state.showsCancelButton
-        cancelButton.isEnabled = state.showsCancelButton
+        let shouldShowCancel = state.showsCancelButton
+        
+        if shouldShowCancel && cancelButton.isHidden {
+            // Animating in
+            cancelButton.alpha = 0
+            cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+            cancelButton.isHidden = false
+            
+            UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                self.cancelButton.alpha = 1
+                self.cancelButton.transform = .identity
+            })
+        } else if !shouldShowCancel && !cancelButton.isHidden {
+            // Animating out
+            UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                self.cancelButton.alpha = 0
+                self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+            }) { _ in
+                self.cancelButton.isHidden = true
+                self.cancelButton.transform = .identity
+            }
+        }
+        
+        cancelButton.isEnabled = shouldShowCancel
         nextKeyboardButton.isHidden = !showsNextKeyboard
         nextKeyboardButton.isEnabled = showsNextKeyboard
 
@@ -45,16 +67,6 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureSubviews() {
-        cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.tintColor = KeyboardStyle.labelColor
-        cancelButton.backgroundColor = KeyboardStyle.buttonFillColor
-        cancelButton.layer.cornerRadius = KeyboardStyle.buttonCornerRadius
-        cancelButton.setImage(
-            UIImage(systemName: "xmark", withConfiguration: KeyboardStyle.buttonSymbolConfiguration),
-            for: .normal
-        )
-        cancelButton.accessibilityLabel = "Cancel"
-
         nextKeyboardButton.translatesAutoresizingMaskIntoConstraints = false
         nextKeyboardButton.tintColor = KeyboardStyle.labelColor
         nextKeyboardButton.backgroundColor = KeyboardStyle.buttonFillColor
@@ -68,15 +80,9 @@ final class KeyboardRootView: UIView {
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
         centerContainerView.translatesAutoresizingMaskIntoConstraints = false
-        trailingSpacerView.translatesAutoresizingMaskIntoConstraints = false
 
         leadingControlsStack.translatesAutoresizingMaskIntoConstraints = false
-        leadingControlsStack.axis = .horizontal
-        leadingControlsStack.alignment = .center
-        leadingControlsStack.distribution = .fill
-        leadingControlsStack.spacing = KeyboardStyle.stackSpacing
-        leadingControlsStack.setContentCompressionResistancePriority(.required, for: .horizontal)
-        leadingControlsStack.setContentHuggingPriority(.required, for: .horizontal)
+        trailingControlsStack.translatesAutoresizingMaskIntoConstraints = false
 
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         contentStack.axis = .horizontal
@@ -92,13 +98,17 @@ final class KeyboardRootView: UIView {
         mainStack.clipsToBounds = false
 
         addSubview(mainStack)
-        leadingControlsStack.addArrangedSubview(cancelButton)
-        leadingControlsStack.addArrangedSubview(nextKeyboardButton)
+        
+        // Add buttons as regular subviews to their respective fixed-size containers.
+        // This prevents UIStackView from stretching them and keeps the logo centered.
+        leadingControlsStack.addSubview(nextKeyboardButton)
+        trailingControlsStack.addSubview(cancelButton)
+        
         centerContainerView.addSubview(logoBarView)
 
         contentStack.addArrangedSubview(leadingControlsStack)
         contentStack.addArrangedSubview(centerContainerView)
-        contentStack.addArrangedSubview(trailingSpacerView)
+        contentStack.addArrangedSubview(trailingControlsStack)
 
         mainStack.addArrangedSubview(contentStack)
         mainStack.addArrangedSubview(keyGridView)
@@ -108,19 +118,29 @@ final class KeyboardRootView: UIView {
 
     private func configureLayout() {
         NSLayoutConstraint.activate([
-            cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            // Fixed width for both control containers ensures the logo stays perfectly centered
+            // regardless of button visibility or individual button sizes.
+            leadingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
+            // Next Keyboard button centered on the left
             nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            nextKeyboardButton.centerXAnchor.constraint(equalTo: leadingControlsStack.centerXAnchor),
+            nextKeyboardButton.centerYAnchor.constraint(equalTo: leadingControlsStack.centerYAnchor),
+
+            // Cancel button flush with the right edge of its container
+            cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize),
+            cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize),
+            cancelButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor),
+            cancelButton.centerYAnchor.constraint(equalTo: trailingControlsStack.centerYAnchor),
 
             logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
             logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
             centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
-
-            trailingSpacerView.widthAnchor.constraint(equalTo: leadingControlsStack.widthAnchor),
-            trailingSpacerView.heightAnchor.constraint(equalTo: leadingControlsStack.heightAnchor),
 
             keyGridView.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight * 4 + KeyboardStyle.keyboardRowSpacing * 3),
 

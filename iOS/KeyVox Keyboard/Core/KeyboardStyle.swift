@@ -33,6 +33,11 @@ enum KeyboardStyle {
     static let labelColor = UIColor.label
     static let secondaryLabelColor = UIColor.secondaryLabel
     static let buttonFillColor = UIColor.secondarySystemBackground
+    static let controlBlurEffectStyle: UIBlurEffect.Style = .systemThinMaterial
+    static let cancelButtonSize: CGFloat = 32
+    static let cancelButtonBorderColor = UIColor.systemIndigo
+    static let cancelButtonIconColor = UIColor.systemRed
+    static let cancelButtonBorderWidth: CGFloat = 0.5
 
     static let keyFillColor = UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1)
     static let keyPressedFillColor = UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1)
@@ -57,6 +62,7 @@ enum KeyboardStyle {
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+    static let cancelButtonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
 
     static let keyShadow = Shadow(
         color: UIColor.black,
