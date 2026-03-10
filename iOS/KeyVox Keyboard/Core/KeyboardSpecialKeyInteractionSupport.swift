@@ -9,8 +9,19 @@ enum KeyboardSpaceTrackpadEvent {
 }
 
 nonisolated struct KeyboardSpaceTrackpadConfiguration {
-    var activationHoldDuration: TimeInterval = 0.35
-    var horizontalStepDistance: CGFloat = 9
+    var activationHoldDuration: TimeInterval
+    var horizontalStepDistance: CGFloat
+    var activationMovementTolerance: CGFloat
+
+    init(
+        activationHoldDuration: TimeInterval = 0.35,
+        horizontalStepDistance: CGFloat = 9,
+        activationMovementTolerance: CGFloat = 8
+    ) {
+        self.activationHoldDuration = activationHoldDuration
+        self.horizontalStepDistance = horizontalStepDistance
+        self.activationMovementTolerance = activationMovementTolerance
+    }
 }
 
 nonisolated enum KeyboardSpaceTrackpadPhase: Equatable {
@@ -29,7 +40,7 @@ nonisolated struct KeyboardSpaceTrackpadSession {
 
     private let configuration: KeyboardSpaceTrackpadConfiguration
     private var startedOnSpace = false
-    private var startTimestamp: TimeInterval = 0
+    private var startLocation: CGPoint = .zero
     private var lastTrackedLocation: CGPoint = .zero
 
     init(configuration: KeyboardSpaceTrackpadConfiguration = KeyboardSpaceTrackpadConfiguration()) {
@@ -40,14 +51,14 @@ nonisolated struct KeyboardSpaceTrackpadSession {
         phase == .active
     }
 
-    mutating func begin(onSpaceKey: Bool, location: CGPoint, timestamp: TimeInterval) {
+    mutating func begin(onSpaceKey: Bool, location: CGPoint) {
         startedOnSpace = onSpaceKey
-        startTimestamp = timestamp
+        startLocation = location
         lastTrackedLocation = location
         phase = onSpaceKey ? .armed : .inactive
     }
 
-    mutating func update(location: CGPoint, timestamp: TimeInterval, isStillOnSpaceKey: Bool) -> KeyboardSpaceTrackpadUpdate {
+    mutating func update(location: CGPoint, isStillOnSpaceKey: Bool) -> KeyboardSpaceTrackpadUpdate {
         switch phase {
         case .inactive:
             return KeyboardSpaceTrackpadUpdate(activated: false, movementDelta: nil)
@@ -57,18 +68,29 @@ nonisolated struct KeyboardSpaceTrackpadSession {
                 return KeyboardSpaceTrackpadUpdate(activated: false, movementDelta: nil)
             }
 
-            guard timestamp - startTimestamp >= configuration.activationHoldDuration else {
+            let preActivationDelta = CGPoint(
+                x: location.x - startLocation.x,
+                y: location.y - startLocation.y
+            )
+            let preActivationDistance = hypot(preActivationDelta.x, preActivationDelta.y)
+            guard preActivationDistance <= configuration.activationMovementTolerance else {
+                reset()
                 return KeyboardSpaceTrackpadUpdate(activated: false, movementDelta: nil)
             }
-
-            phase = .active
             lastTrackedLocation = location
-            return KeyboardSpaceTrackpadUpdate(activated: true, movementDelta: nil)
+            return KeyboardSpaceTrackpadUpdate(activated: false, movementDelta: nil)
         case .active:
             let delta = CGPoint(x: location.x - lastTrackedLocation.x, y: location.y - lastTrackedLocation.y)
             lastTrackedLocation = location
             return KeyboardSpaceTrackpadUpdate(activated: false, movementDelta: delta)
         }
+    }
+
+    mutating func activate(location: CGPoint) -> Bool {
+        guard phase == .armed, startedOnSpace else { return false }
+        phase = .active
+        lastTrackedLocation = location
+        return true
     }
 
     mutating func end() -> Bool {
@@ -84,8 +106,68 @@ nonisolated struct KeyboardSpaceTrackpadSession {
     private mutating func reset() {
         phase = .inactive
         startedOnSpace = false
-        startTimestamp = 0
+        startLocation = .zero
         lastTrackedLocation = .zero
+    }
+}
+
+final class KeyboardSpaceTrackpadController {
+    private var session: KeyboardSpaceTrackpadSession
+    private let activationHoldDuration: TimeInterval
+    private var activationTimer: Timer?
+    private var currentLocation: CGPoint = .zero
+    private var activationHandler: (() -> Void)?
+
+    init(configuration: KeyboardSpaceTrackpadConfiguration = KeyboardSpaceTrackpadConfiguration()) {
+        session = KeyboardSpaceTrackpadSession(configuration: configuration)
+        activationHoldDuration = configuration.activationHoldDuration
+    }
+
+    var isActive: Bool {
+        session.isActive
+    }
+
+    func begin(onSpaceKey: Bool, location: CGPoint, onActivate: @escaping () -> Void) {
+        cancelTimer()
+        currentLocation = location
+        activationHandler = onSpaceKey ? onActivate : nil
+        session.begin(onSpaceKey: onSpaceKey, location: location)
+
+        guard onSpaceKey else { return }
+        let timer = Timer(timeInterval: activationHoldDuration, repeats: false) { [weak self] _ in
+            self?.activateIfNeeded()
+        }
+        activationTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    func update(location: CGPoint, isStillOnSpaceKey: Bool) -> KeyboardSpaceTrackpadUpdate {
+        currentLocation = location
+        return session.update(location: location, isStillOnSpaceKey: isStillOnSpaceKey)
+    }
+
+    func end() -> Bool {
+        cancelTimer()
+        activationHandler = nil
+        return session.end()
+    }
+
+    func cancel() -> Bool {
+        cancelTimer()
+        activationHandler = nil
+        let wasActive = session.isActive
+        session.cancel()
+        return wasActive
+    }
+
+    private func activateIfNeeded() {
+        guard session.activate(location: currentLocation) else { return }
+        activationHandler?()
+    }
+
+    private func cancelTimer() {
+        activationTimer?.invalidate()
+        activationTimer = nil
     }
 }
 

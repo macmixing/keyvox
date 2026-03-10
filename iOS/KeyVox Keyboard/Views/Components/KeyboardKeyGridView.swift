@@ -13,7 +13,7 @@ final class KeyboardKeyGridView: UIView {
     private weak var activeKeyView: KeyboardKeyView?
     private weak var popupContainerView: UIView?
     private weak var trackpadOriginKeyView: KeyboardKeyView?
-    private var spaceTrackpadSession = KeyboardSpaceTrackpadSession()
+    private let spaceTrackpadController = KeyboardSpaceTrackpadController()
     private let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     private var deleteRepeatController = KeyboardDeleteRepeatController()
     private var isDeleteTouchConsuming = false
@@ -54,7 +54,7 @@ final class KeyboardKeyGridView: UIView {
         activeKeyView = nil
         trackpadOriginKeyView = nil
         isDeleteTouchConsuming = false
-        spaceTrackpadSession.cancel()
+        _ = spaceTrackpadController.cancel()
         deleteRepeatController.cancel()
         popupView.dismiss()
         for keyView in keyViews {
@@ -134,14 +134,12 @@ final class KeyboardKeyGridView: UIView {
 
         let location = gesture.location(in: self)
         let hitKey = keyView(at: location)
-        let timestamp = ProcessInfo.processInfo.systemUptime
-
         switch gesture.state {
         case .began:
             if hitKey?.model.kind == .delete {
                 isDeleteTouchConsuming = true
                 trackpadOriginKeyView = nil
-                spaceTrackpadSession.cancel()
+                _ = spaceTrackpadController.cancel()
                 setActiveKey(hitKey)
                 deleteRepeatController.begin { [weak self] in
                     self?.onKeyActivated?(.delete)
@@ -154,11 +152,12 @@ final class KeyboardKeyGridView: UIView {
             if trackpadOriginKeyView != nil {
                 trackpadActivationFeedback.prepare()
             }
-            spaceTrackpadSession.begin(
+            spaceTrackpadController.begin(
                 onSpaceKey: hitKey?.model.kind == .space,
-                location: location,
-                timestamp: timestamp
-            )
+                location: location
+            ) { [weak self] in
+                self?.activateSpaceTrackpadIfNeeded()
+            }
             if hitKey !== activeKeyView {
                 setActiveKey(hitKey)
             } else if let hitKey {
@@ -178,10 +177,9 @@ final class KeyboardKeyGridView: UIView {
                 return
             }
 
-            if spaceTrackpadSession.isActive {
-                let update = spaceTrackpadSession.update(
+            if spaceTrackpadController.isActive {
+                let update = spaceTrackpadController.update(
                     location: location,
-                    timestamp: timestamp,
                     isStillOnSpaceKey: true
                 )
                 if let movementDelta = update.movementDelta {
@@ -190,18 +188,10 @@ final class KeyboardKeyGridView: UIView {
                 return
             }
 
-            let update = spaceTrackpadSession.update(
+            _ = spaceTrackpadController.update(
                 location: location,
-                timestamp: timestamp,
                 isStillOnSpaceKey: hitKey?.model.kind == .space
             )
-            if update.activated {
-                emitTrackpadActivationHaptic()
-                setActiveKey(trackpadOriginKeyView ?? hitKey)
-                popupView.dismiss()
-                onSpaceTrackpadEvent?(.began)
-                return
-            }
 
             if hitKey !== activeKeyView {
                 setActiveKey(hitKey)
@@ -216,7 +206,7 @@ final class KeyboardKeyGridView: UIView {
                 return
             }
 
-            let wasTrackpadActive = spaceTrackpadSession.end()
+            let wasTrackpadActive = spaceTrackpadController.end()
             let selectedKind = hitKey?.model.kind ?? activeKeyView?.model.kind
             trackpadOriginKeyView = nil
             clearActiveKey(shouldDismissPopup: true)
@@ -233,9 +223,8 @@ final class KeyboardKeyGridView: UIView {
                 return
             }
 
-            let wasTrackpadActive = spaceTrackpadSession.isActive
+            let wasTrackpadActive = spaceTrackpadController.cancel()
             trackpadOriginKeyView = nil
-            spaceTrackpadSession.cancel()
             clearActiveKey(shouldDismissPopup: true)
             if wasTrackpadActive {
                 onSpaceTrackpadEvent?(.cancelled)
@@ -280,7 +269,7 @@ final class KeyboardKeyGridView: UIView {
     }
 
     private func updateKeyStates(activeKey: KeyboardKeyView?) {
-        let isTrackpadModeActive = spaceTrackpadSession.isActive
+        let isTrackpadModeActive = spaceTrackpadController.isActive
         for keyView in keyViews {
             let state: KeyboardKeyView.VisualState
             if !isKeyboardEnabled {
@@ -302,9 +291,8 @@ final class KeyboardKeyGridView: UIView {
     }
 
     private func cancelSpaceTrackpadIfNeeded() {
-        let wasTrackpadActive = spaceTrackpadSession.isActive
+        let wasTrackpadActive = spaceTrackpadController.cancel()
         trackpadOriginKeyView = nil
-        spaceTrackpadSession.cancel()
         if wasTrackpadActive {
             onSpaceTrackpadEvent?(.cancelled)
         }
@@ -318,5 +306,13 @@ final class KeyboardKeyGridView: UIView {
     private func emitTrackpadActivationHaptic() {
         trackpadActivationFeedback.impactOccurred()
         trackpadActivationFeedback.prepare()
+    }
+
+    private func activateSpaceTrackpadIfNeeded() {
+        guard trackpadOriginKeyView != nil else { return }
+        emitTrackpadActivationHaptic()
+        setActiveKey(trackpadOriginKeyView)
+        popupView.dismiss()
+        onSpaceTrackpadEvent?(.began)
     }
 }

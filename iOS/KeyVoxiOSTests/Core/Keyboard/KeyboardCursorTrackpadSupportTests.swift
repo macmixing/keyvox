@@ -9,10 +9,9 @@ struct KeyboardCursorTrackpadSupportTests {
             horizontalStepDistance: 9
         ))
 
-        session.begin(onSpaceKey: true, location: .zero, timestamp: 10)
+        session.begin(onSpaceKey: true, location: .zero)
         let update = session.update(
             location: CGPoint(x: 2, y: 0),
-            timestamp: 10.2,
             isStillOnSpaceKey: true
         )
 
@@ -22,29 +21,68 @@ struct KeyboardCursorTrackpadSupportTests {
         #expect(session.end() == false)
     }
 
-    @Test func holdActivationTransitionsIntoMovementMode() {
+    @Test func explicitActivationTransitionsIntoMovementMode() {
         var session = KeyboardSpaceTrackpadSession(configuration: KeyboardSpaceTrackpadConfiguration(
             activationHoldDuration: 0.3,
             horizontalStepDistance: 9
         ))
 
-        session.begin(onSpaceKey: true, location: CGPoint(x: 10, y: 20), timestamp: 1)
-        let activation = session.update(
-            location: CGPoint(x: 10, y: 20),
-            timestamp: 1.35,
-            isStillOnSpaceKey: true
+        session.begin(onSpaceKey: true, location: CGPoint(x: 10, y: 20))
+        let activation = session.activate(
+            location: CGPoint(x: 10, y: 20)
         )
         let movement = session.update(
             location: CGPoint(x: 24, y: 11),
-            timestamp: 1.4,
             isStillOnSpaceKey: true
         )
 
-        #expect(activation.activated == true)
-        #expect(activation.movementDelta == nil)
+        #expect(activation == true)
         #expect(movement.activated == false)
         #expect(movement.movementDelta == CGPoint(x: 14, y: -9))
         #expect(session.end() == true)
+    }
+
+    @Test func movementBeforeHoldCancelsTrackpadActivation() {
+        var session = KeyboardSpaceTrackpadSession(configuration: KeyboardSpaceTrackpadConfiguration(
+            activationHoldDuration: 0.35,
+            horizontalStepDistance: 9,
+            activationMovementTolerance: 8
+        ))
+
+        session.begin(onSpaceKey: true, location: .zero)
+
+        let earlyDrag = session.update(
+            location: CGPoint(x: 12, y: 0),
+            isStillOnSpaceKey: true
+        )
+        let laterHold = session.update(
+            location: CGPoint(x: 12, y: 0),
+            isStillOnSpaceKey: true
+        )
+
+        #expect(earlyDrag.activated == false)
+        #expect(earlyDrag.movementDelta == nil)
+        #expect(laterHold.activated == false)
+        #expect(laterHold.movementDelta == nil)
+        #expect(session.phase == .inactive)
+        #expect(session.end() == false)
+    }
+
+    @Test func activationFailsAfterArmingIsCancelled() {
+        var session = KeyboardSpaceTrackpadSession(configuration: KeyboardSpaceTrackpadConfiguration(
+            activationHoldDuration: 0.35,
+            horizontalStepDistance: 9,
+            activationMovementTolerance: 8
+        ))
+
+        session.begin(onSpaceKey: true, location: .zero)
+        _ = session.update(
+            location: CGPoint(x: 12, y: 0),
+            isStillOnSpaceKey: true
+        )
+
+        #expect(session.activate(location: CGPoint(x: 12, y: 0)) == false)
+        #expect(session.phase == .inactive)
     }
 
     @Test func accumulatorRequiresThresholdAndEmitsRepeatedHorizontalSteps() {

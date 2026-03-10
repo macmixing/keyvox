@@ -49,12 +49,12 @@
 		9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */; };
 		9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */; };
 		9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */; };
-		A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */; };
-		A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */; };
 		9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */; };
 		9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */; };
 		9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */; };
 		9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */; };
+		A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */; };
+		A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,12 +130,12 @@
 		9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		9B7001052FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
-		A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsStore.swift; sourceTree = "<group>"; };
-		A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
 		9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSessionPolicy.swift; sourceTree = "<group>"; };
 		9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
 		9D7000012FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardCursorTrackpadSupport.swift; path = "KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift"; sourceTree = SOURCE_ROOT; };
 		9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardSpecialKeyInteractionSupport.swift; path = "KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift"; sourceTree = SOURCE_ROOT; };
+		A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsStore.swift; sourceTree = "<group>"; };
+		A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -397,7 +397,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2630;
-				LastUpgradeCheck = 2630;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					8E7EC04E2F5C28B00080C762 = {
 						CreatedOnToolsVersion = 26.3;
@@ -662,6 +662,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -719,6 +720,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -730,6 +732,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = keyvox;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
@@ -751,6 +754,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -771,6 +775,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = keyvox;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
@@ -792,6 +797,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
