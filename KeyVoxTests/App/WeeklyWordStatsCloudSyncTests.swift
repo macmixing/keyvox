@@ -104,7 +104,7 @@ final class WeeklyWordStatsCloudSyncTests: XCTestCase {
     func testNewerRemoteWeekReplacesOlderLocalWeek() throws {
         let localNow = makeDate(year: 2026, month: 3, day: 10, hour: 12)
         let remoteNow = makeDate(year: 2026, month: 3, day: 17, hour: 12)
-        let harness = makeHarness(now: remoteNow, initialNow: localNow)
+        let harness = makeHarness(now: remoteNow)
         harness.store.applySynchronizedSnapshot(
             makeSnapshot(
                 weekStart: harness.calendar.dateInterval(of: .weekOfYear, for: localNow)!.start,

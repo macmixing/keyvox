@@ -108,6 +108,34 @@ final class WeeklyWordStatsStoreTests: XCTestCase {
         XCTAssertEqual(store.combinedWordCount, 0)
     }
 
+    func testApplySynchronizedSnapshotIgnoresStaleWeekPayloads() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calendar = makeCalendar()
+        let currentDate = makeDate(calendar: calendar, year: 2026, month: 3, day: 17)
+        let staleDate = makeDate(calendar: calendar, year: 2026, month: 3, day: 10)
+        let store = WeeklyWordStatsStore(
+            defaults: defaults,
+            calendar: calendar,
+            now: { currentDate },
+            installationIDGenerator: { "device-a" }
+        )
+
+        store.recordSpokenWords(from: "one two", at: currentDate)
+        let currentSnapshot = store.snapshot
+
+        store.applySynchronizedSnapshot(
+            WeeklyWordStatsPayload(
+                weekStart: calendar.dateInterval(of: .weekOfYear, for: staleDate)!.start,
+                modifiedAt: staleDate,
+                deviceWordCounts: ["device-b": 20]
+            )
+        )
+
+        XCTAssertEqual(store.snapshot, currentSnapshot)
+        XCTAssertEqual(store.combinedWordCount, 2)
+    }
+
     private func makeIsolatedDefaults() -> (UserDefaults, String) {
         let suiteName = "WeeklyWordStatsStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

@@ -79,7 +79,7 @@ final class WeeklyWordStatsStore: ObservableObject {
 
     func refreshWeeklyWordStatsIfNeeded(referenceDate: Date? = nil) {
         let evaluatedDate = referenceDate ?? now()
-        let currentWeekStart = Self.weekStart(for: evaluatedDate, calendar: calendar)
+        let currentWeekStart = currentWeekStart(for: evaluatedDate)
         guard !calendar.isDate(snapshot.weekStart, inSameDayAs: currentWeekStart) else { return }
 
         setSnapshot(
@@ -91,6 +91,9 @@ final class WeeklyWordStatsStore: ObservableObject {
     }
 
     internal func applySynchronizedSnapshot(_ snapshot: WeeklyWordStatsPayload) {
+        guard calendar.isDate(snapshot.weekStart, inSameDayAs: currentWeekStart(for: now())) else {
+            return
+        }
         setSnapshot(snapshot)
     }
 
@@ -105,6 +108,10 @@ final class WeeklyWordStatsStore: ObservableObject {
         if let data = try? JSONEncoder().encode(snapshot) {
             defaults.set(data, forKey: UserDefaultsKeys.App.weeklyWordStatsPayload)
         }
+    }
+
+    private func currentWeekStart(for date: Date) -> Date {
+        Self.weekStart(for: date, calendar: calendar)
     }
 
     private static func weekStart(for date: Date, calendar: Calendar) -> Date {
