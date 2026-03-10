@@ -24,7 +24,7 @@ extension SettingsView {
                 Text("Words this week:")
                     .font(.custom("Kanit Medium", size: 14))
                     .foregroundColor(.white.opacity(0.95))
-                Text(appSettings.wordsThisWeek.formatted())
+                Text(weeklyWordStatsStore.combinedWordCount.formatted())
                     .font(.custom("Kanit Medium", size: 14))
                     .foregroundColor(.yellow)
             }

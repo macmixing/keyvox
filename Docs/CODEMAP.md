@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-08**
+**Last Updated: 2026-03-10**
 
 ## Project Overview
 
@@ -35,7 +35,9 @@ KeyVox/
 ├── App/
 │   ├── KeyVoxApp.swift
 │   ├── AppSettingsStore.swift
+│   ├── AppServiceRegistry.swift
 │   ├── LoginItemController.swift
+│   ├── WeeklyWordStatsStore.swift
 │   └── UserDefaultsKeys.swift
 ├── Core/
 │   ├── KeyboardMonitor.swift
@@ -106,8 +108,17 @@ KeyVox/
   - Owns onboarding/settings windows via `WindowManager`.
   - Cancels app termination once to close Settings first when the Settings window is visible.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, weekly word count).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps).
   - Single in-memory observable source consumed by settings UI and runtime managers.
+- `App/AppServiceRegistry.swift`
+  - Retains shared runtime services and app-owned sync helpers.
+  - Owns the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator.
+- `App/WeeklyWordStatsStore.swift`
+  - Dedicated local weekly-usage store for combined weekly word count plus hidden per-installation contribution totals.
+  - Persists a stable installation identifier, current-week snapshot, and rollover behavior outside `AppSettingsStore`.
+- `App/iCloud/WeeklyWordStatsCloudSync.swift`
+  - Dedicated iCloud KVS sync helper for weekly word stats only.
+  - Merges same-week per-device totals deterministically and keeps `KeyVoxiCloudSyncCoordinator` focused on dictionary/settings sync.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
 - `Views/OnboardingView.swift`
@@ -134,6 +145,7 @@ KeyVox/
   - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
+  - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
 - `Core/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
 - `Core/Transcription/DictationPromptEchoGuard.swift`

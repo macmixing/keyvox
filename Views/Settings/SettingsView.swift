@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
 
     @StateObject internal var appSettings = AppSettingsStore.shared
+    @StateObject internal var weeklyWordStatsStore = AppServiceRegistry.shared.weeklyWordStatsStore
     @ObservedObject internal var downloader = ModelDownloader.shared
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
     @ObservedObject internal var dictionaryStore = AppServiceRegistry.shared.dictionaryStore
@@ -79,7 +80,7 @@ struct SettingsView: View {
             )
         }
         .onAppear {
-            appSettings.refreshWeeklyWordCounterIfNeeded()
+            weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
             appSettings.refreshSelectedMicrophoneFromDefaults()
             if selectedTab == .dictionary {
                 hasVisitedDictionaryTab = true

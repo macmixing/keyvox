@@ -7,15 +7,21 @@ final class AppServiceRegistry {
 
     let dictionaryStore: DictionaryStore
     let whisperService: WhisperService
+    let weeklyWordStatsStore: WeeklyWordStatsStore
+    let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
 
     init(
         dictionaryStore: DictionaryStore,
         whisperService: WhisperService,
+        weeklyWordStatsStore: WeeklyWordStatsStore,
+        weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync,
         iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
     ) {
         self.dictionaryStore = dictionaryStore
         self.whisperService = whisperService
+        self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
     }
 
@@ -37,6 +43,10 @@ final class AppServiceRegistry {
                     .path
                 return fileManager.fileExists(atPath: modelPath) ? modelPath : nil
             }
+        )
+        weeklyWordStatsStore = WeeklyWordStatsStore()
+        weeklyWordStatsCloudSync = WeeklyWordStatsCloudSync(
+            weeklyWordStatsStore: weeklyWordStatsStore
         )
         iCloudSyncCoordinator = KeyVoxiCloudSyncCoordinator(
             appSettings: .shared,
