@@ -20,6 +20,7 @@ final class KeyboardViewController: UIInputViewController {
     private let popupOverlayView = UIView()
     private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
     private var gracePeriodWorkItem: DispatchWorkItem?
+    private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
 #if DEBUG
     private var lastDebugLayoutSignature: String?
 #endif
@@ -116,6 +117,9 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind)
+        }
+        rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
+            self?.handleSpaceTrackpadEvent(event)
         }
         rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
     }
@@ -273,6 +277,31 @@ final class KeyboardViewController: UIInputViewController {
             advanceToNextInputMode()
         case .alternateSymbols, .numberSymbols:
             symbolPage.toggle()
+        }
+    }
+
+    private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
+        switch event {
+        case .began:
+            cursorTrackpadInteractor.begin()
+        case let .moved(delta):
+            cursorTrackpadInteractor.handleMovement(
+                delta: delta,
+                adjustCursor: { [weak self] offset in
+                    self?.adjustCursorPosition(by: offset)
+                }
+            )
+        case .ended, .cancelled:
+            cursorTrackpadInteractor.end()
+        }
+    }
+
+    private func adjustCursorPosition(by offset: Int) {
+        guard offset != 0 else { return }
+
+        let step = offset > 0 ? 1 : -1
+        for _ in 0..<abs(offset) {
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: step)
         }
     }
 

@@ -4,6 +4,7 @@ final class KeyboardKeyView: UIView {
     enum VisualState {
         case normal
         case pressed
+        case trackpadActive
         case disabled
     }
 
@@ -67,12 +68,19 @@ final class KeyboardKeyView: UIView {
             transform = .identity
         case .pressed:
             transform = CGAffineTransform(scaleX: 0.985, y: 0.96)
+        case .trackpadActive:
+            transform = CGAffineTransform(scaleX: 0.985, y: 0.96)
         case .disabled:
             transform = .identity
         }
 
         UIView.animate(withDuration: 0.08, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
             self.backgroundView.transform = transform
+        }
+        let titleAlpha: CGFloat = model.kind == .space && state == .trackpadActive ? 0 : 1
+        UIView.animate(withDuration: 0.12, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+            self.titleLabel.alpha = titleAlpha
+            self.imageView.alpha = 1
         }
     }
 
@@ -152,7 +160,7 @@ final class KeyboardKeyView: UIView {
                 border: KeyboardStyle.keyBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
             )
-        case .pressed:
+        case .pressed, .trackpadActive:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyPressedFillColor : KeyboardStyle.keyPressedFillColor,
                 border: KeyboardStyle.keyPressedBorderColor,
