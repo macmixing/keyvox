@@ -50,6 +50,18 @@ final class KeyboardKeyGridView: UIView {
         popupContainerView = view
     }
 
+    func resetInteractionState() {
+        activeKeyView = nil
+        trackpadOriginKeyView = nil
+        isDeleteTouchConsuming = false
+        spaceTrackpadSession.cancel()
+        deleteRepeatController.cancel()
+        popupView.dismiss()
+        for keyView in keyViews {
+            keyView.resetVisualState()
+        }
+    }
+
     private func configureView() {
         translatesAutoresizingMaskIntoConstraints = false
         clipsToBounds = false

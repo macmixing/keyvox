@@ -35,7 +35,12 @@ final class KeyboardKeyView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func apply(model: KeyboardKeyModel, state: VisualState, isTrackpadModeActive: Bool = false) {
+    func apply(
+        model: KeyboardKeyModel,
+        state: VisualState,
+        isTrackpadModeActive: Bool = false,
+        animated: Bool = true
+    ) {
         self.model = model
         self.widthUnits = model.widthUnits
         self.visualState = state
@@ -81,14 +86,36 @@ final class KeyboardKeyView: UIView {
             transform = .identity
         }
 
-        UIView.animate(withDuration: 0.08, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+        let applyBackgroundTransform = {
             self.backgroundView.transform = transform
         }
+        if animated {
+            UIView.animate(withDuration: 0.08, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+                applyBackgroundTransform()
+            }
+        } else {
+            applyBackgroundTransform()
+        }
         let titleAlpha: CGFloat = isTrackpadModeActive ? 0 : 1
-        UIView.animate(withDuration: 0.18, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+        let applyGlyphVisibility = {
             self.titleLabel.alpha = titleAlpha
             self.imageView.alpha = titleAlpha
         }
+        if animated {
+            UIView.animate(withDuration: 0.18, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+                applyGlyphVisibility()
+            }
+        } else {
+            applyGlyphVisibility()
+        }
+    }
+
+    func resetVisualState() {
+        layer.removeAllAnimations()
+        backgroundView.layer.removeAllAnimations()
+        titleLabel.layer.removeAllAnimations()
+        imageView.layer.removeAllAnimations()
+        apply(model: model, state: .normal, isTrackpadModeActive: false, animated: false)
     }
 
     private func configureView() {

@@ -50,6 +50,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         configureDictationBehavior()
+        rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.start()
         configurePrimaryViewHeight()
         syncKeyboardStateFromSharedState()
@@ -58,6 +59,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.stop()
     }
 
