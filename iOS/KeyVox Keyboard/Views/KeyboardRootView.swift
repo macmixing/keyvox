@@ -13,6 +13,7 @@ final class KeyboardRootView: UIView {
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
     private var cancelButtonWidthConstraint: NSLayoutConstraint?
+    private var cancelButtonVisibilityTarget = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,25 +44,30 @@ final class KeyboardRootView: UIView {
 
     func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
         let shouldShowCancel = state.showsCancelButton
-        
-        if shouldShowCancel && cancelButton.isHidden {
-            // Animating in
-            cancelButton.alpha = 0
-            cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-            cancelButton.isHidden = false
-            
-            UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                self.cancelButton.alpha = 1
-                self.cancelButton.transform = .identity
-            })
-        } else if !shouldShowCancel && !cancelButton.isHidden {
-            // Animating out
-            UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                self.cancelButton.alpha = 0
-                self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-            }) { _ in
-                self.cancelButton.isHidden = true
-                self.cancelButton.transform = .identity
+
+        if shouldShowCancel != cancelButtonVisibilityTarget {
+            cancelButtonVisibilityTarget = shouldShowCancel
+            cancelButton.layer.removeAllAnimations()
+
+            if shouldShowCancel {
+                cancelButton.alpha = 0
+                cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                cancelButton.isHidden = false
+
+                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                    self.cancelButton.alpha = 1
+                    self.cancelButton.transform = .identity
+                })
+            } else {
+                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                    self.cancelButton.alpha = 0
+                    self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                }) { _ in
+                    guard !self.cancelButtonVisibilityTarget else { return }
+                    self.cancelButton.isHidden = true
+                    self.cancelButton.alpha = 1
+                    self.cancelButton.transform = .identity
+                }
             }
         }
         
@@ -92,6 +98,10 @@ final class KeyboardRootView: UIView {
             for: .normal
         )
         nextKeyboardButton.accessibilityLabel = "Next Keyboard"
+
+        cancelButton.isHidden = true
+        cancelButton.alpha = 1
+        cancelButton.transform = .identity
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
