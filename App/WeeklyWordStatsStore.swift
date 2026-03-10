@@ -27,7 +27,7 @@ final class WeeklyWordStatsStore: ObservableObject {
         defaults: UserDefaults = .standard,
         calendar: Calendar = makeCanonicalWeekCalendar(),
         now: @escaping () -> Date = Date.init,
-        installationIDGenerator: @escaping () -> String = { UUID().uuidString }
+        installationIDGenerator: @escaping () -> String = { "mac:\(UUID().uuidString)" }
     ) {
         self.defaults = defaults
         self.calendar = calendar

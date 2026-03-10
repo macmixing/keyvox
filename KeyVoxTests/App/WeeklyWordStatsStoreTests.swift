@@ -4,6 +4,22 @@ import XCTest
 
 @MainActor
 final class WeeklyWordStatsStoreTests: XCTestCase {
+    func testInitPrefixesDefaultGeneratedInstallationIDForMac() throws {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calendar = makeCalendar()
+        let now = makeDate(calendar: calendar, year: 2026, month: 3, day: 10)
+
+        let store = WeeklyWordStatsStore(
+            defaults: defaults,
+            calendar: calendar,
+            now: { now }
+        )
+
+        XCTAssertTrue(store.installationID.hasPrefix("mac:"))
+        XCTAssertTrue(defaults.string(forKey: UserDefaultsKeys.App.weeklyWordStatsInstallationID)?.hasPrefix("mac:") == true)
+    }
+
     func testInitCreatesStableInstallationIDAndEmptyCurrentWeekSnapshot() throws {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
