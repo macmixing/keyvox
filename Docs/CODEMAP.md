@@ -437,13 +437,19 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, weekly word counters
+  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps
+- Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
+  - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
 - Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
-- Weekly word-counter keys:
-  - `KeyVox.App.WordsThisWeekCount`
-  - `KeyVox.App.WordsThisWeekWeekStart`
+- Weekly word stats owner: `App/WeeklyWordStatsStore.swift`
+  - persists a stable installation identifier plus the current-week usage snapshot and local rollover behavior
+- Weekly word stats iCloud sync: `App/iCloud/WeeklyWordStatsCloudSync.swift`
+  - syncs the weekly stats payload through iCloud KVS and merges same-week per-device totals deterministically
+- Weekly word stats local keys:
+  - `KeyVox.App.WeeklyWordStatsPayload`
+  - `KeyVox.App.WeeklyWordStatsInstallationID`
 - Overlay placement:
   - preferred display key: `KeyVox.RecordingOverlayPreferredDisplayKey`
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`

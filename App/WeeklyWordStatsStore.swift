@@ -25,7 +25,7 @@ final class WeeklyWordStatsStore: ObservableObject {
 
     init(
         defaults: UserDefaults = .standard,
-        calendar: Calendar = .current,
+        calendar: Calendar = makeCanonicalWeekCalendar(),
         now: @escaping () -> Date = Date.init,
         installationIDGenerator: @escaping () -> String = { UUID().uuidString }
     ) {
@@ -110,4 +110,11 @@ final class WeeklyWordStatsStore: ObservableObject {
     private static func weekStart(for date: Date, calendar: Calendar) -> Date {
         calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? date
     }
+}
+
+nonisolated private func makeCanonicalWeekCalendar() -> Calendar {
+    var calendar = Calendar(identifier: .iso8601)
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+    return calendar
 }
