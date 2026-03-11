@@ -166,11 +166,7 @@ final class KeyVoxiCloudSyncCoordinator {
         case (false, .some(let payload)):
             applyRemoteDictionary(payload)
         case (true, .some(let payload)):
-            guard let modifiedAt = localModifiedAt else {
-                applyRemoteDictionary(payload)
-                return
-            }
-
+            let modifiedAt = localModifiedAt!
             setLocalDictionaryModifiedAt(modifiedAt)
             if payload.modifiedAt > modifiedAt {
                 applyRemoteDictionary(payload)
