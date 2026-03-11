@@ -4,7 +4,7 @@
 
 <h1 align="center">KeyVox</h1>
 
-KeyVox is a local-first macOS dictation app. Hold your trigger key to record, release to transcribe with Whisper on-device, and insert text into the app you are currently using.
+KeyVox is a local-first macOS dictation app. Hold your trigger key to record, release to transcribe with Whisper on-device, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
 
 ## Why KeyVox
 
@@ -13,15 +13,18 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
+- ☁️ iCloud sync for your custom dictionary and core dictation preferences
+- 📊 See your weekly spoken-word total across devices
 - 🪄 Reliable insertion flow with Accessibility-first + fallback paths
 
 ## Core Features
 
 - 🎙️ Hold-to-talk dictation with optional hands-free mode
-- ⚙️ Configurable trigger binding (Option, Command, Control, or Fn)
-- 📓 Optional auto-paragraph splitting for multiline dictation
-- 🧾 Custom dictionary with phonetic-aware matching
+- 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
+- ⚙️ Configurable trigger binding (Option, Command, Control, or Fn), synced across devices
+- 📓 Optional auto-paragraph splitting with Lists preferences with sync
 - 🧱 Deterministic list formatting and safe text post-processing
+- 📈 Weekly word count that reflects how much you talk across all devices
 - 📍 Draggable recording overlay with persisted position
 - 🔊 Optional system cue sounds with adjustable volume
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
@@ -61,6 +64,7 @@ https://github.com/user-attachments/assets/e45120a8-22a0-4576-be4c-41fb70163e1a
 3. Hold **Shift** while releasing to continue recording hands-free.
 4. Press **Esc** to cancel an active recording/transcription session.
 5. Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
+6. Your **Dictionary**, **Trigger Key**, **Paragraphs**, and **Lists** preferences can sync through iCloud, and Settings also shows your weekly total across devices.
 
 ## Troubleshooting
 

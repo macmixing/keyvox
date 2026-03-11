@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-10**
+**Last Updated: 2026-03-11**
 
 ## Project Overview
 
@@ -8,15 +8,14 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 ## Architecture
 
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership
-- **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management
-- **Core/Language**: dictionary matching, pronunciation/scoring, and shared text normalization helpers
-- **Core/Lists**: deterministic text formatting (list detection/rendering)
-- **Core/Services**: reusable integration services (Whisper, paste/injection, update checking)
+- **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, paste/update host integration
+- **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
+- **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
 - **Tools**: maintainer-only scripts (resource generation, dev helpers)
 - **KeyVoxTests**: app unit tests for deterministic/runtime-safe logic
-- **Packages**: local Swift package wrapping `whisper.cpp`
+- **Packages**: local Swift packages for the shared engine and the `whisper.cpp` wrapper
 
 ## Contributor Notes
 
@@ -44,26 +43,14 @@ KeyVox/
 │   ├── Audio/
 │   │   └── AudioRecorder.swift
 │   ├── Transcription/
-│   │   ├── TranscriptionManager.swift
-│   │   ├── DictationPipeline.swift
-│   │   └── TranscriptionPostProcessor.swift
+│   │   └── TranscriptionManager.swift
 │   ├── Services/
-│   │   ├── Whisper/
-│   │   │   └── WhisperService.swift
 │   │   ├── Paste/
 │   │   │   └── PasteService.swift
 │   │   └── AppUpdateService.swift
 │   ├── Overlay/
 │   │   ├── OverlayManager.swift
 │   │   └── AudioIndicatorDriver.swift
-│   ├── Language/
-│   │   ├── Dictionary/
-│   │   │   ├── DictionaryMatcher.swift
-│   │   │   └── DictionaryStore.swift
-│   │   ├── PronunciationLexicon.swift
-│   │   └── PhoneticEncoder.swift
-│   ├── Lists/
-│   │   └── ListFormattingEngine.swift
 ├── Views/
 │   ├── Components/
 │   │   └── LogoBarView.swift
@@ -76,6 +63,14 @@ KeyVox/
 ├── Resources/
 ├── Packages/
 │   ├── KeyVoxCore/
+│   │   └── Sources/KeyVoxCore/
+│   │       ├── Transcription/
+│   │       ├── Services/Whisper/
+│   │       ├── Language/
+│   │       ├── Lists/
+│   │       ├── Normalization/
+│   │       ├── Audio/
+│   │       └── Resources/Pronunciation/
 │   └── KeyVoxWhisper/
 ├── Tools/
 ├── KeyVoxTests/
@@ -90,9 +85,9 @@ KeyVox/
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
-4. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
-5. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
-6. `Core/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Core/Normalization/`, including four-digit quantity grouping.
+4. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
+5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
+6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including four-digit quantity grouping.
 7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 9. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
@@ -146,30 +141,30 @@ KeyVox/
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
   - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
-- `Core/Transcription/DictationPipeline.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
-- `Core/Transcription/DictationPromptEchoGuard.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
-- `Core/Transcription/TranscriptionPostProcessor.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift`
   - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
-- `Core/Normalization/TimeExpressionNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
-- `Core/Normalization/MathExpressionNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/MathExpressionNormalizer.swift`
   - Deterministic math phrase/operator normalization (`plus/minus/times/divided by`, exponents, percent, chained expressions) with protected URL/email/code/time/date/version spans.
   - Strips terminal punctuation only for standalone math utterances while preserving sentence punctuation.
-- `Core/Normalization/LaughterNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/LaughterNormalizer.swift`
   - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
-- `Core/Normalization/CharacterSpamNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/CharacterSpamNormalizer.swift`
   - Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
-- `Core/Normalization/WhitespaceNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/WhitespaceNormalizer.swift`
   - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
-- `Core/Normalization/SentenceCapitalizationNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/SentenceCapitalizationNormalizer.swift`
   - Sentence-start/text-start/line-break capitalization with email/domain safety guards.
-- `Core/Normalization/ColonNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Converts spoken/delimiter forms of `colon` into punctuation (`:`) with lightweight homophone tolerance and punctuation cleanup guards.
-- `Core/Normalization/TerminalPunctuationNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
   - Appends terminal period for sentence-like outputs ending in formatted times when punctuation is absent.
-- `Core/Normalization/AllCapsOverrideNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final independent override that uppercases post-processed output when Caps Lock mode is enabled.
 - `Core/KeyboardMonitor.swift`
   - Global/local key monitors with left/right modifier specificity.
@@ -209,116 +204,116 @@ KeyVox/
   - Stop-time gap removal, normalization, capture classification, and final output frame selection.
 - `Core/Audio/AudioRecorder+Thresholds.swift`
   - Input-volume-based threshold profile calibration and CoreAudio scalar lookup helpers.
-- `Core/Audio/AudioCaptureClassification.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Audio/AudioCaptureClassification.swift`
   - Centralized per-capture classification (absolute silence, long true silence, likely-silence rejection).
-- `Core/Audio/AudioSilencePolicy.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Audio/AudioSilencePolicy.swift`
   - Shared thresholds/rules for low-confidence capture rejection and long true-silence detection.
-- `Core/Audio/AudioSignalMetrics.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Audio/AudioSignalMetrics.swift`
   - Pure signal metrics (RMS, peak, true-silence window ratio) used by capture classification.
 
-### Service Layer (`Core/Services`)
+### Service Layer (`Core/Services` + `Packages/KeyVoxCore/Sources/KeyVoxCore/Services`)
 
-- `Core/Services/Whisper/WhisperAudioParagraphChunker.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift`
   - Splits long captures into paragraph-sized chunks using deterministic RMS silence windows.
   - Uses configurable chunk-size and silence-run guardrails to avoid over-splitting.
-- `Core/Services/Whisper/WhisperService.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift`
   - Loads model from Application Support and runs inference.
   - Uses automatic language detection (`.auto`).
   - Supports optional auto-paragraph stitching via `enableAutoParagraphs`.
-- `Core/Services/Whisper/WhisperService+ModelLifecycle.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+ModelLifecycle.swift`
   - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution).
-- `Core/Services/Whisper/WhisperService+TranscriptionCore.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
   - Owns chunk transcription flow, retry selection, whitespace normalization, and debug segment logging.
 
-### Post-Processing (`Core` + `Core/Normalization` + `Core/Language` + `Core/Lists`)
+### Post-Processing (`Packages/KeyVoxCore/Transcription` + `Packages/KeyVoxCore/Normalization` + `Packages/KeyVoxCore/Language` + `Packages/KeyVoxCore/Lists`)
 
-- `Core/Language/Dictionary/DictionaryMatcher.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
   - Maintains a domain-indexed email dictionary for spoken/literal email recovery.
-- `Core/Normalization/EmailAddressNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/EmailAddressNormalizer.swift`
   - Shared non-dictionary email literal cleanup (casing, punctuation spacing, sentence-boundary repair, ellipsis normalization).
-- `Core/Normalization/WebsiteNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/WebsiteNormalizer.swift`
   - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
   - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
-- `Core/Normalization/MathExpressionNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/MathExpressionNormalizer.swift`
   - Shared deterministic math normalizer pass used by post-processing before list parsing.
   - Converts high-confidence spoken math into symbol form while preserving non-math structures and protected spans.
-- `Core/Normalization/ColonNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
-- `Core/Normalization/CharacterSpamNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/CharacterSpamNormalizer.swift`
   - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
-- `Core/Normalization/ThousandsGroupingNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ThousandsGroupingNormalizer.swift`
   - Adds grouping separators to quantity-style four-digit numerals while preserving year-like references and protected date/version/phone shapes.
-- `Core/Normalization/AllCapsOverrideNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
-- `Core/Language/Dictionary/Email/DictionaryEmailEntry.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryEmailEntry.swift`
   - Canonical email entry model and sanitizer for dictionary phrases that are valid email addresses.
-- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryMatcher+EmailDomainResolution.swift`
   - Domain candidate extraction and fuzzy-domain disambiguation helpers for dictionary email matching.
-- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryMatcher+EmailNormalization.swift`
   - Detects spoken (`name at domain`), compact (`nameatdomain`), and literal email candidates and rewrites them using dictionary-backed resolution.
-- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryMatcher+EmailParsing.swift`
   - Shared local/domain normalization and attached-list-marker parsing helpers used by email normalization/resolution.
-- `Core/Language/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryMatcher+EmailResolution.swift`
   - Resolves spoken/literal/standalone dictionary email candidates and local-part ambiguity via deterministic guards.
-- `Core/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
   - Token extraction and range construction helpers used by matcher runtime.
-- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
   - Applies contextual gating for common-word-like replacements to avoid unsupported prose substitutions.
-- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
   - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
-- `Core/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
   - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
-- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
   - Provides stylized-token evidence and fallback-phonetic helpers used by standard/split-join evaluators.
-- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationSuffixHelpers.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationSuffixHelpers.swift`
   - Implements possessive/plural form generation and suffix inference helpers used by evaluators.
-- `Core/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
   - Contains split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
-- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
   - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
   - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
-- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
   - Split-join observed-form generation and replacement-suffix normalization helpers.
-- `Core/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
   - Split-join guard heuristics (domain-shape suppression, anchoring checks, possessive-sound inference).
   - Requires noun-following context for possessive split-join inference to limit false positives.
-- `Core/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
-- `Core/Language/Dictionary/DictionaryTextNormalization.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryTextNormalization.swift`
   - Shared phrase/token normalization used by dictionary matching and pronunciation lexicon loading.
-- `Core/Language/Dictionary/DictionaryStore.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryStore.swift`
   - Persistent custom dictionary storage, validation, and backup recovery.
   - Exposes warning-clear helper for settings lifecycle cleanup.
-- `Core/Language/Dictionary/DictionaryEntry.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
-- `Core/Language/PronunciationLexicon.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PronunciationLexicon.swift`
   - Loads bundled pronunciation signatures and curated common-word safety list from `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`.
-- `Core/Language/PhoneticEncoder.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
-- `Core/Language/ReplacementScorer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/ReplacementScorer.swift`
   - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
-- `Core/Lists/ListFormattingEngine.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
-- `Core/Lists/ListPatternDetector.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternDetector.swift`
   - Detects monotonic list markers (digits + locale-aware spoken number cues) with false-positive guards.
   - Splits leading/list/trailing segments to preserve non-list prose around list blocks.
   - Delegates leading domain-token lowercasing to `WebsiteNormalizer`.
-- `Core/Lists/ListPatternMarkerParser.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternMarkerParser.swift`
   - Parses spoken/typed marker tokens into canonical marker metadata used by list detection.
   - Handles markers attached to domains, spoken `to` as list marker 2 in email-list shapes, and time-component false-positive suppression.
   - Uses `WebsiteNormalizer` for domain-token heuristics to avoid duplicated website regex logic.
-- `Core/Lists/ListPatternRunSelector.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternRunSelector.swift`
   - Selects best monotonic list run and enforces confidence guards before formatting.
-- `Core/Lists/ListPatternTrailingSplitter.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternTrailingSplitter.swift`
   - Splits trailing prose off list items while preserving valid list item content.
   - Uses scored deterministic split candidates with email-boundary-aware preference.
-- `Core/Lists/ListPatternMarker.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternMarker.swift`
   - Shared marker model for parser/detector/run-selection helpers.
-- `Core/Lists/ListRenderer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListRenderer.swift`
   - Renders detected lists as multiline (`1. ...`) or single-line inline (`1. ...; 2. ...`) based on target context.
-- `Core/Lists/ListFormattingTypes.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListFormattingTypes.swift`
   - Shared types for list render mode and detected list segments/items.
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
@@ -461,5 +456,5 @@ KeyVox/
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
 - Local packages:
-  - `Packages/KeyVoxCore`: extracted shared engine, resources, and reusable tests
+  - `Packages/KeyVoxCore`: extracted shared engine, packaged resources, and reusable tests
   - `Packages/KeyVoxWhisper`: local `whisper.cpp` wrapper package
