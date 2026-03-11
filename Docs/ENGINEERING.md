@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-10**
+**Last Updated: 2026-03-11**
 
 ## Design Philosophy
 
@@ -27,11 +27,11 @@ KeyVox is organized by responsibility:
 
 - `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `WeeklyWordStatsStore`).
 - `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` remains focused on dictionary/settings sync, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
-- `Core/Transcription/`: Runtime state machine and the transcribe -> post-process -> paste orchestration boundary (`TranscriptionManager`, `DictationPipeline`, `TranscriptionPostProcessor`).
+- `Core/Transcription/`: Runtime state machine and macOS host-side orchestration (`TranscriptionManager`), with the reusable transcribe -> post-process -> paste boundary extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`).
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
-- `Core/Language/Dictionary/` and `Core/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Core/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
-- `Core/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
-- `Core/Services/`: Whisper inference (organized under `Core/Services/Whisper/`), paste/injection, and update/checking services.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
+- `Core/Services/`: Paste/injection and update/checking services, while Whisper inference now lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, and generic audio-indicator timing/state driving.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
@@ -51,8 +51,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 ## Post-Processing Order
 
-1. `Core/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
-2. `Core/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
+1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
+2. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
 4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
 5. List formatting applies numeric list rendering when confidence gates pass.
@@ -91,6 +91,10 @@ Maintainers can override the update feed locally without changing tracked defaul
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 - Coverage markdown summary:
   `Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult`
+- KeyVoxCore JSON coverage gate:
+  `Tools/Quality/check_keyvoxcore_coverage.sh <coverage-json-path>`
+- KeyVoxCore JSON coverage summary:
+  `Tools/Quality/keyvoxcore_coverage_summary.sh <coverage-json-path>`
 
 ## Tooling
 
