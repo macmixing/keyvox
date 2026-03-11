@@ -28,6 +28,7 @@ final class iOSTranscriptionManager: ObservableObject {
     private let modelPathProvider: () -> String?
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
+    private let capsLockEnabledProvider: () -> Bool
     let sessionPolicy: iOSSessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
@@ -48,7 +49,9 @@ final class iOSTranscriptionManager: ObservableObject {
         listFormattingEnabledProvider: { [weak self] in
             self?.listFormattingEnabledProvider() ?? true
         },
-        capsLockEnabledProvider: { false },
+        capsLockEnabledProvider: { [weak self] in
+            self?.capsLockEnabledProvider() ?? false
+        },
         listRenderModeProvider: { .multiline },
         recordSpokenWords: { [weak self] text in
             self?.weeklyWordStatsStore.recordSpokenWords(from: text)
@@ -68,6 +71,7 @@ final class iOSTranscriptionManager: ObservableObject {
         modelPathProvider: @escaping () -> String?,
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
+        capsLockEnabledProvider: @escaping () -> Bool = { false },
         sessionPolicy: iOSSessionPolicy = .default
     ) {
         self.recorder = recorder
@@ -79,6 +83,7 @@ final class iOSTranscriptionManager: ObservableObject {
         self.modelPathProvider = modelPathProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
+        self.capsLockEnabledProvider = capsLockEnabledProvider
         self.sessionPolicy = sessionPolicy
 
         bindDictionaryState()

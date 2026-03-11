@@ -65,6 +65,9 @@ final class iOSAppServiceRegistry {
             listFormattingEnabledProvider: { [weak settingsStore] in
                 settingsStore?.listFormattingEnabled ?? true
             },
+            capsLockEnabledProvider: {
+                settingsDefaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
+            },
             sessionPolicy: .default
         )
         let iCloudSyncCoordinator = iOSiCloudSyncCoordinator(

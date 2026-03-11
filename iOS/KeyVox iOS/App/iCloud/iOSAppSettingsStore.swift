@@ -45,6 +45,12 @@ final class iOSAppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var capsLockEnabled: Bool {
+        didSet {
+            defaults.set(capsLockEnabled, forKey: iOSUserDefaultsKeys.capsLockEnabled)
+        }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
@@ -59,6 +65,7 @@ final class iOSAppSettingsStore: ObservableObject {
 
         autoParagraphsEnabled = defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
         listFormattingEnabled = defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+        capsLockEnabled = defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

@@ -6,6 +6,7 @@ final class KeyboardRootView: UIView {
     }
 
     let cancelButton = KeyboardCancelButton()
+    let capsLockButton = KeyboardCapsLockButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
 
@@ -15,6 +16,7 @@ final class KeyboardRootView: UIView {
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
     private var cancelButtonWidthConstraint: NSLayoutConstraint?
+    private var capsLockButtonWidthConstraint: NSLayoutConstraint?
     private var cancelButtonVisibilityTarget = false
 
     override init(frame: CGRect) {
@@ -32,19 +34,30 @@ final class KeyboardRootView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let referenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
-        guard referenceWidth > 0 else { return }
-        guard let cancelButtonWidthConstraint else { return }
-        if abs(cancelButtonWidthConstraint.constant - referenceWidth) > 0.5 {
-            cancelButtonWidthConstraint.constant = referenceWidth
+        let cancelReferenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        if cancelReferenceWidth > 0,
+           let cancelButtonWidthConstraint,
+           abs(cancelButtonWidthConstraint.constant - cancelReferenceWidth) > 0.5 {
+            cancelButtonWidthConstraint.constant = cancelReferenceWidth
             leadingControlsStack.setNeedsLayout()
             leadingControlsStack.layoutIfNeeded()
             cancelButton.setNeedsLayout()
             cancelButton.layoutIfNeeded()
         }
+
+        let capsReferenceWidth = keyGridView.topRowKeyView(for: .zero)?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        if capsReferenceWidth > 0,
+           let capsLockButtonWidthConstraint,
+           abs(capsLockButtonWidthConstraint.constant - capsReferenceWidth) > 0.5 {
+            capsLockButtonWidthConstraint.constant = capsReferenceWidth
+            trailingControlsStack.setNeedsLayout()
+            trailingControlsStack.layoutIfNeeded()
+            capsLockButton.setNeedsLayout()
+            capsLockButton.layoutIfNeeded()
+        }
     }
 
-    func apply(state: KeyboardState, symbolPage: KeyboardSymbolPage) {
+    func apply(state: KeyboardState, symbolPage: KeyboardSymbolPage, isCapsLockEnabled: Bool) {
         let shouldShowCancel = state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
@@ -74,6 +87,7 @@ final class KeyboardRootView: UIView {
         }
         
         cancelButton.isEnabled = shouldShowCancel
+        capsLockButton.isLocked = isCapsLockEnabled
 
         logoBarView.applyIndicatorPhase(state.indicatorPhase)
         logoBarView.isEnabled = state.isIndicatorEnabled
@@ -92,6 +106,7 @@ final class KeyboardRootView: UIView {
         cancelButton.isHidden = true
         cancelButton.alpha = 1
         cancelButton.transform = .identity
+        capsLockButton.translatesAutoresizingMaskIntoConstraints = false
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -115,9 +130,12 @@ final class KeyboardRootView: UIView {
 
         addSubview(mainStack)
         
-        // Add buttons as regular subviews to their respective fixed-size containers.
-        // This prevents UIStackView from stretching them and keeps the logo centered.
+        // Keep special toolbar controls outside the keyboard grid so the logo can stay
+        // vertically centered while those controls align visually with the top row.
+        // This preserves the current keyboard height and keeps toolbar positioning
+        // independent from grid layout rules.
         leadingControlsStack.addSubview(cancelButton)
+        trailingControlsStack.addSubview(capsLockButton)
         
         centerContainerView.addSubview(logoBarView)
 
@@ -133,6 +151,7 @@ final class KeyboardRootView: UIView {
 
     private func configureLayout() {
         cancelButtonWidthConstraint = cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+        capsLockButtonWidthConstraint = capsLockButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
 
         NSLayoutConstraint.activate([
             // Fixed width for both control containers ensures the logo stays perfectly centered
@@ -148,6 +167,14 @@ final class KeyboardRootView: UIView {
             cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor),
             cancelButton.centerYAnchor.constraint(
                 equalTo: leadingControlsStack.centerYAnchor,
+                constant: Metrics.topRowSideControlVerticalOffset
+            ),
+
+            capsLockButtonWidthConstraint!,
+            capsLockButton.heightAnchor.constraint(equalTo: cancelButton.heightAnchor),
+            capsLockButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor),
+            capsLockButton.centerYAnchor.constraint(
+                equalTo: trailingControlsStack.centerYAnchor,
                 constant: Metrics.topRowSideControlVerticalOffset
             ),
 

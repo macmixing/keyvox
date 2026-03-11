@@ -4,6 +4,7 @@ nonisolated enum iOSUserDefaultsKeys {
     static let triggerBinding = "KeyVox.TriggerBinding"
     static let autoParagraphsEnabled = "KeyVox.AutoParagraphsEnabled"
     static let listFormattingEnabled = "KeyVox.ListFormattingEnabled"
+    static let capsLockEnabled = "KeyVox.CapsLockEnabled"
 
     enum App {
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"

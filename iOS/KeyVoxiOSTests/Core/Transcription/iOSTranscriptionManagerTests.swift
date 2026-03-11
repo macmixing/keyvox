@@ -258,6 +258,18 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.weeklyWordStatsStore.snapshot.deviceWordCounts["test-device"] == 3)
     }
 
+    @Test func stopFromRecordingWithCapsLockEnabledUppercasesFinalText() async throws {
+        let harness = try makeHarness(capsLockEnabled: true)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "HELLO WORLD")
+    }
+
     @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -366,6 +378,7 @@ struct iOSTranscriptionManagerTests {
     private func makeHarness(
         modelPath: String? = nil,
         serviceShouldSuspend: Bool = false,
+        capsLockEnabled: Bool = false,
         sessionPolicy: iOSSessionPolicy = .default
     ) throws -> ManagerHarness {
         let recorder = StubAudioRecorder()
@@ -398,6 +411,7 @@ struct iOSTranscriptionManagerTests {
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
             modelPathProvider: { resolvedModelPath },
+            capsLockEnabledProvider: { capsLockEnabled },
             sessionPolicy: sessionPolicy
         )
 

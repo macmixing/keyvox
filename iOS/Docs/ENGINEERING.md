@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details for the iOS app and keyboard extension.
 
-**Last Updated: 2026-03-10**
+**Last Updated: 2026-03-11**
 
 ## Design Philosophy
 
@@ -29,7 +29,7 @@ KeyVox iOS is organized by responsibility:
 - `KeyVox iOS/Core/Audio/`: `AVAudioSession` setup, engine lifecycle, streaming conversion, and stop-time classification.
 - `KeyVox iOS/Core/Transcription/`: iOS runtime state machine and the boundary between capture, shared-package dictation, and keyboard notifications.
 - `KeyVox iOS/Views/`: minimal containing-app UI for model controls and debug/runtime status.
-- `KeyVox Keyboard/`: custom keyboard controller, keyboard-local UI, warm/cold start coordination, and final text insertion.
+- `KeyVox Keyboard/`: custom keyboard controller, toolbar-owned keyboard UI, warm/cold start coordination, and final text insertion.
 - `../Packages/KeyVoxCore/`: shared dictation pipeline, Whisper integration, dictionary persistence, list formatting, post-processing order, and audio silence heuristics used by both platforms.
 - `KeyVoxiOSTests/`: deterministic iOS-specific tests around pathing, routing, install lifecycle, capture processing, and transcription orchestration.
 
@@ -59,6 +59,14 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - `recordingState`
 - `latestTranscription`
 - `session_timestamp`
+
+### Shared App Group Settings Keys
+
+- `KeyVox.CapsLockEnabled`
+  - Owned by the iOS keyboard/app pair rather than `KeyVoxCore`.
+  - Written by the keyboard extension toolbar toggle.
+  - Read by the containing app at dictation time so the shared all-caps override can stay in `KeyVoxCore`.
+  - Persisted locally in the App Group container and intentionally not synced through iCloud.
 
 ### Darwin Notification Names
 
@@ -101,20 +109,22 @@ The model install path does not use the fallback; missing App Group access is tr
 
 ## End-to-End Runtime Flow
 
-1. The user taps the mic in `KeyboardViewController`.
-2. The keyboard sets shared state to `waitingForApp`.
-3. If the session is warm, the extension posts `startRecording` and waits up to 500ms for the app to enter `.recording`.
-4. If the session is cold, or the grace period expires, the extension opens `keyvoxios://record/start`.
-5. `KeyVoxURLRouter` or `KeyVoxKeyboardBridge` forwards the start command to `iOSTranscriptionManager`.
-6. `iOSTranscriptionManager` transitions `idle -> recording`, clears stale UI/debug state, refreshes model availability, and starts the recorder.
-7. `iOSAudioRecorder` ensures the `AVAudioEngine` is warm, requests microphone permission, and records live 16kHz mono float samples.
-8. On stop, the manager transitions `recording -> processingCapture`, asks the recorder for a processed capture, and uses the resulting output frames directly for model gating and transcription.
-9. Empty or rejected output frames short-circuit back to `idle` with a `noSpeech` publish.
-10. If output frames are present and the model exists, the manager transitions to `transcribing`, warms Whisper, and runs `DictationPipeline`.
-11. `DictationPipeline` transcribes audio, runs shared post-processing, and returns final text.
-12. The manager transitions back to `idle` and publishes either `transcriptionReady` or `noSpeech`.
-13. The keyboard receives the callback, applies insertion spacing heuristics, and calls `textDocumentProxy.insertText(...)`.
-14. Successful final dictation text is also recorded into the containing app's weekly stats store, which syncs hidden per-device totals through iCloud KVS and exposes only the combined total to the Home tab.
+1. The keyboard extension renders Caps Lock as a toolbar-owned control outside the key grid so it can visually align with the top row without changing keyboard height or moving the centered logo.
+2. When the user taps the Caps Lock key, the extension updates the App Group-backed `KeyVox.CapsLockEnabled` latch immediately.
+3. The user taps the mic in `KeyboardViewController`.
+4. The keyboard sets shared state to `waitingForApp`.
+5. If the session is warm, the extension posts `startRecording` and waits up to 500ms for the app to enter `.recording`.
+6. If the session is cold, or the grace period expires, the extension opens `keyvoxios://record/start`.
+7. `KeyVoxURLRouter` or `KeyVoxKeyboardBridge` forwards the start command to `iOSTranscriptionManager`.
+8. `iOSTranscriptionManager` transitions `idle -> recording`, clears stale UI/debug state, refreshes model availability, and starts the recorder.
+9. `iOSAudioRecorder` ensures the `AVAudioEngine` is warm, requests microphone permission, and records live 16kHz mono float samples.
+10. On stop, the manager transitions `recording -> processingCapture`, asks the recorder for a processed capture, and uses the resulting output frames directly for model gating and transcription.
+11. Empty or rejected output frames short-circuit back to `idle` with a `noSpeech` publish.
+12. If output frames are present and the model exists, the manager transitions to `transcribing`, warms Whisper, and runs `DictationPipeline`.
+13. The dictation pipeline reads the latest iOS-owned Caps Lock value through the injected provider and applies the existing shared all-caps override only when that latch is enabled.
+14. The manager transitions back to `idle` and publishes either `transcriptionReady` or `noSpeech`.
+15. The keyboard receives the callback, applies insertion spacing heuristics, and calls `textDocumentProxy.insertText(...)`.
+16. Successful final dictation text is also recorded into the containing app's weekly stats store, which syncs hidden per-device totals through iCloud KVS and exposes only the combined total to the Home tab.
 
 ## Audio Capture Contract
 
@@ -254,8 +264,9 @@ The iOS app uses `KeyVoxCore.DictationPipeline` and therefore follows the shared
 4. Dictionary correction and dictionary-backed email recovery run next.
 5. Colon normalization and math normalization run before list formatting.
 6. List formatting, laughter cleanup, repeated-character cleanup, time normalization, and website/domain normalization follow.
-7. Whitespace normalization, capitalization guards, and terminal punctuation finishing complete the output.
-8. The iOS runtime captures the final text from the pipeline and sends it back to the keyboard extension instead of pasting directly.
+7. Whitespace normalization, capitalization guards, terminal punctuation finishing, and the final all-caps override complete the output.
+8. The all-caps override is driven on iOS by the shared App Group `capsLockEnabled` value rather than by keyboard-extension-local text transformation.
+9. The iOS runtime captures the final text from the pipeline and sends it back to the keyboard extension instead of pasting directly.
 
 For the deeper shared implementation details, see the top-level Mac docs and `../Packages/KeyVoxCore/`.
 
@@ -265,10 +276,14 @@ The extension is a transport and insertion surface, not the transcription owner.
 
 - `KeyboardViewController` should only manage:
   - mic taps
+  - toolbar-owned special control state
   - state-driven UI updates
   - app launching fallback
   - insertion of final text
 - The extension must not own model lifecycle, microphone capture, or post-processing policy.
+- Toolbar-owned special keys are intentionally kept outside `KeyboardKeyGridView` so they can match top-row key widths without pushing the centered logo upward or increasing keyboard height.
+- The Caps Lock latch is extension-owned UI state stored in the App Group and consumed by the app at dictation time; the extension does not uppercase text on its own.
+- Caps Lock should reset when the user leaves this keyboard for another active keyboard surface, but it should not clear just because the host app temporarily resigns active.
 - `KeyboardInsertionSpacingHeuristics` is intentionally conservative:
   - do not prepend a space after existing whitespace
   - do not prepend a space before incoming punctuation
@@ -300,6 +315,7 @@ If the iOS app grows a fuller user-facing settings surface later, the runtime ow
 - model install validation and repair flows
 - stop-time silence classification
 - transcription-manager state transitions and model gating
+- App Group-backed Caps Lock settings persistence and uppercase pipeline wiring
 
 ### Integration-Only Exclusions
 

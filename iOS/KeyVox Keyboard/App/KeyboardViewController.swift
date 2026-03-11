@@ -2,6 +2,7 @@ import UIKit
 
 final class KeyboardViewController: UIInputViewController {
     private let ipcManager = KeyboardIPCManager()
+    private let capsLockStateStore = KeyboardCapsLockStateStore()
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private var primaryHeightConstraint: NSLayoutConstraint?
@@ -15,12 +16,20 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    private var isCapsLockEnabled = false {
+        didSet {
+            updateUI()
+        }
+    }
 
     private var rootContainerView: KeyboardRootView!
     private let popupOverlayView = UIView()
     private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
     private var gracePeriodWorkItem: DispatchWorkItem?
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
+    private var extensionHostIsActive = true
+    private var hostWillResignActiveObserver: NSObjectProtocol?
+    private var hostDidBecomeActiveObserver: NSObjectProtocol?
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -39,6 +48,8 @@ final class KeyboardViewController: UIInputViewController {
         configureRootView()
         configureIndicatorDriver()
         configureIPC()
+        configureHostLifecycleObservers()
+        syncCapsLockState()
         syncKeyboardStateFromSharedState()
         updateUI()
     }
@@ -49,6 +60,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.start()
         configurePrimaryViewHeight()
+        syncCapsLockState()
         syncKeyboardStateFromSharedState()
     }
 
@@ -56,12 +68,21 @@ final class KeyboardViewController: UIInputViewController {
         super.viewDidDisappear(animated)
         rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.stop()
+        if extensionHostIsActive {
+            resetCapsLockStateIfNeeded()
+        }
     }
 
     deinit {
         indicatorDriver.stop()
         waitingForAppTimeoutWorkItem?.cancel()
         gracePeriodWorkItem?.cancel()
+        if let hostWillResignActiveObserver {
+            NotificationCenter.default.removeObserver(hostWillResignActiveObserver)
+        }
+        if let hostDidBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(hostDidBecomeActiveObserver)
+        }
         ipcManager.unregisterObservers()
     }
 
@@ -100,6 +121,7 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
+        rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind)
@@ -150,6 +172,26 @@ final class KeyboardViewController: UIInputViewController {
         ipcManager.registerObservers()
     }
 
+    private func configureHostLifecycleObservers() {
+        guard hostWillResignActiveObserver == nil, hostDidBecomeActiveObserver == nil else { return }
+
+        hostWillResignActiveObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.NSExtensionHostWillResignActive,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.extensionHostIsActive = false
+        }
+
+        hostDidBecomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.NSExtensionHostDidBecomeActive,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.extensionHostIsActive = true
+        }
+    }
+
     private func syncKeyboardStateFromSharedState() {
         cancelWaitingTimeout()
 
@@ -167,7 +209,11 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func updateUI() {
-        rootContainerView?.apply(state: keyboardState, symbolPage: symbolPage)
+        rootContainerView?.apply(
+            state: keyboardState,
+            symbolPage: symbolPage,
+            isCapsLockEnabled: isCapsLockEnabled
+        )
         indicatorDriver.phase = keyboardState.indicatorPhase
     }
 
@@ -176,6 +222,11 @@ final class KeyboardViewController: UIInputViewController {
         cancelWaitingTimeout()
         ipcManager.sendCancelCommand()
         keyboardState = .idle
+    }
+
+    @objc
+    private func handleCapsLockTap() {
+        isCapsLockEnabled = capsLockStateStore.toggle()
     }
 
     @objc
@@ -223,6 +274,7 @@ final class KeyboardViewController: UIInputViewController {
         case .returnKey:
             textDocumentProxy.insertText("\n")
         case .abc:
+            resetCapsLockStateIfNeeded()
             advanceToNextInputMode()
         case .alternateSymbols, .numberSymbols:
             symbolPage.toggle()
@@ -252,6 +304,16 @@ final class KeyboardViewController: UIInputViewController {
         for _ in 0..<abs(offset) {
             textDocumentProxy.adjustTextPosition(byCharacterOffset: step)
         }
+    }
+
+    private func syncCapsLockState() {
+        isCapsLockEnabled = capsLockStateStore.isEnabled
+    }
+
+    private func resetCapsLockStateIfNeeded() {
+        guard isCapsLockEnabled else { return }
+        capsLockStateStore.setEnabled(false)
+        isCapsLockEnabled = false
     }
 
     private func scheduleWaitingTimeout() {

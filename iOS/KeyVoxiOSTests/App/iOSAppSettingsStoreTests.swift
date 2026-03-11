@@ -12,10 +12,12 @@ struct iOSAppSettingsStoreTests {
         store.triggerBinding = .leftControl
         store.autoParagraphsEnabled = false
         store.listFormattingEnabled = false
+        store.capsLockEnabled = true
 
         #expect(defaults.string(forKey: iOSUserDefaultsKeys.triggerBinding) == iOSAppSettingsStore.TriggerBinding.leftControl.rawValue)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool == false)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool == true)
     }
 
     @Test func triggerBindingRoundTripsThroughRawValue() {
@@ -63,6 +65,19 @@ struct iOSAppSettingsStoreTests {
 
         store.applyCloudListFormattingEnabled(false)
         #expect(store.listFormattingEnabled == false)
+    }
+
+    @Test func capsLockEnabledDefaultsToFalseAndRoundTripsThroughDefaults() {
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = iOSAppSettingsStore(defaults: defaults)
+        #expect(store.capsLockEnabled == false)
+
+        store.capsLockEnabled = true
+
+        let reloaded = iOSAppSettingsStore(defaults: defaults)
+        #expect(reloaded.capsLockEnabled == true)
     }
 
     private func makeDefaults() -> (UserDefaults, String) {
