@@ -101,7 +101,6 @@ final class KeyboardViewController: UIInputViewController {
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
-        rootContainerView.nextKeyboardButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind)
         }
@@ -168,7 +167,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func updateUI() {
-        rootContainerView?.apply(state: keyboardState, showsNextKeyboard: needsInputModeSwitchKey, symbolPage: symbolPage)
+        rootContainerView?.apply(state: keyboardState, symbolPage: symbolPage)
         indicatorDriver.phase = keyboardState.indicatorPhase
     }
 

@@ -6,7 +6,6 @@ final class KeyboardRootView: UIView {
     }
 
     let cancelButton = KeyboardCancelButton()
-    let nextKeyboardButton = UIButton(type: .system)
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
 
@@ -45,7 +44,7 @@ final class KeyboardRootView: UIView {
         }
     }
 
-    func apply(state: KeyboardState, showsNextKeyboard: Bool, symbolPage: KeyboardSymbolPage) {
+    func apply(state: KeyboardState, symbolPage: KeyboardSymbolPage) {
         let shouldShowCancel = state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
@@ -75,8 +74,6 @@ final class KeyboardRootView: UIView {
         }
         
         cancelButton.isEnabled = shouldShowCancel
-        nextKeyboardButton.isHidden = !showsNextKeyboard
-        nextKeyboardButton.isEnabled = showsNextKeyboard
 
         logoBarView.applyIndicatorPhase(state.indicatorPhase)
         logoBarView.isEnabled = state.isIndicatorEnabled
@@ -92,16 +89,6 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureSubviews() {
-        nextKeyboardButton.translatesAutoresizingMaskIntoConstraints = false
-        nextKeyboardButton.tintColor = KeyboardStyle.labelColor
-        nextKeyboardButton.backgroundColor = KeyboardStyle.buttonFillColor
-        nextKeyboardButton.layer.cornerRadius = KeyboardStyle.buttonCornerRadius
-        nextKeyboardButton.setImage(
-            UIImage(systemName: "globe", withConfiguration: KeyboardStyle.buttonSymbolConfiguration),
-            for: .normal
-        )
-        nextKeyboardButton.accessibilityLabel = "Next Keyboard"
-
         cancelButton.isHidden = true
         cancelButton.alpha = 1
         cancelButton.transform = .identity
@@ -131,7 +118,6 @@ final class KeyboardRootView: UIView {
         // Add buttons as regular subviews to their respective fixed-size containers.
         // This prevents UIStackView from stretching them and keeps the logo centered.
         leadingControlsStack.addSubview(cancelButton)
-        trailingControlsStack.addSubview(nextKeyboardButton)
         
         centerContainerView.addSubview(logoBarView)
 
@@ -162,15 +148,6 @@ final class KeyboardRootView: UIView {
             cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor),
             cancelButton.centerYAnchor.constraint(
                 equalTo: leadingControlsStack.centerYAnchor,
-                constant: Metrics.topRowSideControlVerticalOffset
-            ),
-
-            // Next Keyboard button centered on the right
-            nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            nextKeyboardButton.centerXAnchor.constraint(equalTo: trailingControlsStack.centerXAnchor),
-            nextKeyboardButton.centerYAnchor.constraint(
-                equalTo: trailingControlsStack.centerYAnchor,
                 constant: Metrics.topRowSideControlVerticalOffset
             ),
 
