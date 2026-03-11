@@ -1,5 +1,16 @@
 import UIKit
 
+enum KeyboardTopRowAccessorySlot: Int {
+    case one = 0
+    case two = 1
+    case three = 2
+    case four = 3
+    case seven = 6
+    case eight = 7
+    case nine = 8
+    case zero = 9
+}
+
 final class KeyboardKeyGridView: UIView {
     var onKeyActivated: ((KeyboardKeyKind) -> Void)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
@@ -62,14 +73,14 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
-    var topRowLeadingKeyView: UIView? {
+    func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
         guard
             let firstRow = rowsStack.arrangedSubviews.first as? UIStackView,
-            let leadingKeyView = firstRow.arrangedSubviews.first
+            firstRow.arrangedSubviews.indices.contains(slot.rawValue)
         else {
             return nil
         }
-        return leadingKeyView
+        return firstRow.arrangedSubviews[slot.rawValue]
     }
 
     private func configureView() {

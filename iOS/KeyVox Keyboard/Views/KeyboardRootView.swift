@@ -1,6 +1,9 @@
 import UIKit
 
 final class KeyboardRootView: UIView {
+    private enum Metrics {
+        static let topRowSideControlVerticalOffset: CGFloat = 10
+    }
 
     let cancelButton = KeyboardCancelButton()
     let nextKeyboardButton = UIButton(type: .system)
@@ -30,7 +33,7 @@ final class KeyboardRootView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let referenceWidth = keyGridView.topRowLeadingKeyView?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        let referenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         guard referenceWidth > 0 else { return }
         guard let cancelButtonWidthConstraint else { return }
         if abs(cancelButtonWidthConstraint.constant - referenceWidth) > 0.5 {
@@ -157,13 +160,19 @@ final class KeyboardRootView: UIView {
             cancelButtonWidthConstraint!,
             cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor),
             cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor),
-            cancelButton.centerYAnchor.constraint(equalTo: leadingControlsStack.centerYAnchor),
+            cancelButton.centerYAnchor.constraint(
+                equalTo: leadingControlsStack.centerYAnchor,
+                constant: Metrics.topRowSideControlVerticalOffset
+            ),
 
             // Next Keyboard button centered on the right
             nextKeyboardButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             nextKeyboardButton.centerXAnchor.constraint(equalTo: trailingControlsStack.centerXAnchor),
-            nextKeyboardButton.centerYAnchor.constraint(equalTo: trailingControlsStack.centerYAnchor),
+            nextKeyboardButton.centerYAnchor.constraint(
+                equalTo: trailingControlsStack.centerYAnchor,
+                constant: Metrics.topRowSideControlVerticalOffset
+            ),
 
             logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
             logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
