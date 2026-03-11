@@ -21,9 +21,9 @@ enum KeyboardState: Equatable {
 
     var isIndicatorEnabled: Bool {
         switch self {
-        case .idle, .recording:
+        case .idle, .recording, .transcribing:
             return true
-        case .waitingForApp, .transcribing:
+        case .waitingForApp:
             return false
         }
     }

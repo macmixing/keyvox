@@ -3,6 +3,28 @@ import Foundation
 import KeyVoxCore
 
 extension iOSAudioRecorder {
+    func configureEngineConfigurationObserver() {
+        guard engineConfigurationObserver == nil else { return }
+
+        engineConfigurationObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                guard notification.object as AnyObject? === self.audioEngine else { return }
+                self.handleEngineConfigurationChange()
+            }
+        }
+    }
+
+    func removeEngineConfigurationObserver() {
+        guard let engineConfigurationObserver else { return }
+        NotificationCenter.default.removeObserver(engineConfigurationObserver)
+        self.engineConfigurationObserver = nil
+    }
+
     func enableMonitoring() async throws {
         let permissionGranted = await requestRecordPermission()
         guard permissionGranted else {
@@ -17,10 +39,16 @@ extension iOSAudioRecorder {
 
         // Set up audio session for background persistence
         try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
-        try audioSession.setPreferredSampleRate(outputFormat.sampleRate)
+        // Keep the hardware route's native sample rate. Bluetooth HFP routes can reject
+        // a forced 16 kHz preference, and we already convert captured audio into the
+        // recorder's 16 kHz output format downstream.
         try audioSession.setActive(true)
 
-        let engine = audioEngine ?? AVAudioEngine()
+        // Route changes can leave a stopped engine bound to a stale hardware format.
+        // Always rebuild from a fresh engine when we need to restart monitoring.
+        invalidateAudioEngine(clearSessionActive: false)
+
+        let engine = AVAudioEngine()
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
         // Smaller buffers give the keyboard logo a denser stream of level updates
@@ -70,7 +98,8 @@ extension iOSAudioRecorder {
         
         audioEngine = engine
         isMonitoring = true
-        
+        refreshCurrentCaptureDeviceName()
+
         // Mark session as warm now that engine is running
         KeyVoxIPCBridge.setSessionActive()
     }
@@ -81,9 +110,7 @@ extension iOSAudioRecorder {
             throw iOSAudioRecorderError.monitoringShutdownWhileRecording
         }
 
-        audioEngine?.inputNode.removeTap(onBus: 0)
-        audioEngine?.stop()
-        audioEngine = nil
+        invalidateAudioEngine(clearSessionActive: false)
 
         do {
             try audioSession.setActive(false)
@@ -107,7 +134,20 @@ extension iOSAudioRecorder {
         }
 
         // Ensure engine is running (in monitor mode)
-        try ensureEngineRunning()
+        do {
+            try ensureEngineRunning()
+        } catch {
+            guard shouldRetryRecordingStartAfterRouteTransition(for: error) else {
+                throw error
+            }
+
+            invalidateAudioEngine(clearSessionActive: true)
+            deactivateAudioSessionForRouteRecovery()
+
+            try await Task.sleep(nanoseconds: 350_000_000)
+            refreshCurrentCaptureDeviceName()
+            try ensureEngineRunning()
+        }
 
         // Reset state for new capture
         resetCurrentCaptureState()
@@ -149,7 +189,6 @@ extension iOSAudioRecorder {
 
         // NOTE: We keep the engine running (isMonitoring remains true)
         // to maintain background persistence.
-
         return stoppedCapture
     }
 
@@ -175,7 +214,7 @@ extension iOSAudioRecorder {
 
     private func resetCurrentCaptureState() {
         streamingState.reset()
-        currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName("iPhone Microphone")
+        refreshCurrentCaptureDeviceName()
         lastCaptureWasAbsoluteSilence = false
         lastCaptureHadActiveSignal = false
         lastCaptureWasLikelySilence = false
@@ -194,6 +233,69 @@ extension iOSAudioRecorder {
                 continuation.resume(returning: granted)
             }
         }
+    }
+
+    private func invalidateAudioEngine(clearSessionActive: Bool) {
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine?.stop()
+        audioEngine?.reset()
+        audioEngine = nil
+        isMonitoring = false
+        audioLevel = 0
+        liveInputSignalState = .dead
+        liveMeterUpdateHandler?(0, .dead)
+
+        if clearSessionActive {
+            KeyVoxIPCBridge.clearSessionActive()
+        }
+    }
+
+    private func handleEngineConfigurationChange() {
+        guard isRecording else { return }
+        guard audioEngine?.isRunning != true else { return }
+
+        let snapshot = streamingState.snapshot()
+        let captureDuration = Date().timeIntervalSince(captureStartedAt)
+        let interruptedCapture = iOSStoppedCaptureProcessor.process(
+            snapshot: snapshot.samples,
+            captureDuration: captureDuration,
+            maxActiveSignalRunDuration: snapshot.maxActiveSignalRunDuration,
+            gapRemovalRMSThreshold: sessionGapRemovalRMSThreshold,
+            lowConfidenceRMSCutoff: sessionLikelySilenceRMSCutoff,
+            trueSilenceWindowRMSThreshold: sessionTrueSilenceWindowRMSThreshold,
+            normalizationTargetPeak: normalizationTargetPeak,
+            normalizationMaxGain: normalizationMaxGain
+        )
+
+        invalidateAudioEngine(clearSessionActive: true)
+        deactivateAudioSessionForRouteRecovery()
+        isRecording = false
+        captureStartedAt = .distantPast
+        apply(stopResult: interruptedCapture, hadNonDeadSignal: snapshot.hadNonDeadSignal)
+        streamingState.reset()
+        refreshCurrentCaptureDeviceName()
+        audioInterruptedCaptureHandler?(interruptedCapture)
+    }
+
+    private func deactivateAudioSessionForRouteRecovery() {
+        // The session may already be transitioning during a route change, but recovery
+        // should continue with a fresh engine either way.
+        try? audioSession.setActive(false)
+    }
+
+    private func shouldRetryRecordingStartAfterRouteTransition(for error: Error) -> Bool {
+        let nsError = error as NSError
+        let hasNoInputs = audioSession.currentRoute.inputs.isEmpty
+        let isBluetoothA2DPOnly = audioSession.currentRoute.outputs.contains { $0.portType == .bluetoothA2DP }
+        let isRouteSettlingStartFailure = nsError.domain == "com.apple.coreaudio.avfaudio" && nsError.code == 2003329396
+        let isSessionPropertyFailure = nsError.code == 560557684
+
+        return hasNoInputs || isBluetoothA2DPOnly || isRouteSettlingStartFailure || isSessionPropertyFailure
+    }
+
+    func refreshCurrentCaptureDeviceName() {
+        let portName = audioSession.currentRoute.inputs.first?.portName ?? "iPhone Microphone"
+        currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName(portName)
     }
 }
 

@@ -10,6 +10,7 @@ final class KeyboardIPCManager {
     }
 
     var onRecordingStarted: (() -> Void)?
+    var onTranscribingStarted: (() -> Void)?
     var onTranscriptionReady: ((String) -> Void)?
     var onNoSpeech: (() -> Void)?
 
@@ -21,6 +22,7 @@ final class KeyboardIPCManager {
         isRegistered = true
 
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.recordingStarted)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.transcribingStarted)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.transcriptionReady)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.noSpeech)
     }
@@ -133,6 +135,8 @@ final class KeyboardIPCManager {
             switch name {
             case KeyVoxIPCBridge.Notification.recordingStarted:
                 self.onRecordingStarted?()
+            case KeyVoxIPCBridge.Notification.transcribingStarted:
+                self.onTranscribingStarted?()
             case KeyVoxIPCBridge.Notification.transcriptionReady:
                 guard let text = self.latestTranscription(), !text.isEmpty else {
                     self.onNoSpeech?()

@@ -67,11 +67,21 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     let streamingState = iOSAudioCaptureAccumulator()
     var heartbeatCallback: (() -> Void)?
     var liveMeterUpdateHandler: ((Float, LiveInputSignalState) -> Void)?
+    var audioInterruptedCaptureHandler: ((iOSStoppedCapture) -> Void)?
+    var engineConfigurationObserver: NSObjectProtocol?
 
     init(audioSession: AVAudioSession = .sharedInstance()) {
         self.audioSession = audioSession
         self.sessionActiveSignalRMSThreshold = baseActiveSignalRMSThreshold
         self.sessionGapRemovalRMSThreshold = baseGapRemovalRMSThreshold
+        refreshCurrentCaptureDeviceName()
+        configureEngineConfigurationObserver()
+    }
+
+    deinit {
+        MainActor.assumeIsolated {
+            removeEngineConfigurationObserver()
+        }
     }
 
     var currentCaptureDuration: TimeInterval {

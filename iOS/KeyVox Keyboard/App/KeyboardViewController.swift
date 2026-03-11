@@ -160,6 +160,11 @@ final class KeyboardViewController: UIInputViewController {
             self?.cancelWaitingTimeout()
             self?.keyboardState = .recording
         }
+        ipcManager.onTranscribingStarted = { [weak self] in
+            self?.cancelWaitingTimeout()
+            self?.cancelGracePeriod()
+            self?.keyboardState = .transcribing
+        }
         ipcManager.onTranscriptionReady = { [weak self] text in
             self?.cancelWaitingTimeout()
             self?.insertTranscription(text)

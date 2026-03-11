@@ -1,6 +1,24 @@
 import Foundation
 
 extension iOSTranscriptionManager {
+    func handleRecorderInterruptedCapture(_ stoppedCapture: iOSStoppedCapture) async {
+        guard state == .recording else { return }
+
+        let utteranceID = activeUtteranceID
+        cancelUtteranceSafetyWatchdog()
+        state = .processingCapture
+        isSessionActive = recorder.isMonitoring
+        sessionDisablePending = false
+        cancelIdleTimeout()
+        lastErrorMessage = nil
+
+        await completeStopRecording(
+            stoppedCapture,
+            utteranceID: utteranceID,
+            startTime: Date()
+        )
+    }
+
     func armIdleTimeout() {
         cancelIdleTimeout()
 

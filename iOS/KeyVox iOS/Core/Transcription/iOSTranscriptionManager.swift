@@ -194,7 +194,10 @@ final class iOSTranscriptionManager: ObservableObject {
         #endif
 
         let stoppedCapture = await recorder.stopRecording()
+        await completeStopRecording(stoppedCapture, utteranceID: utteranceID, startTime: startTime)
+    }
 
+    func completeStopRecording(_ stoppedCapture: iOSStoppedCapture, utteranceID: UUID, startTime: Date) async {
         guard utteranceID == activeUtteranceID else {
             await finishAndDisableSessionIfNeeded()
             return
@@ -275,7 +278,7 @@ final class iOSTranscriptionManager: ObservableObject {
                     #endif
                     self.keyboardBridge.publishTranscriptionReady(finalText)
                 }
-
+                
                 Task { await self.finishAndDisableSessionIfNeeded() }
             }
         }

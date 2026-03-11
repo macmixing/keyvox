@@ -87,6 +87,11 @@ final class iOSAppServiceRegistry {
         keyboardBridge.onCancelRecordingCommand = {
             transcriptionManager.cancelCurrentUtterance()
         }
+        recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
+            Task { @MainActor [weak transcriptionManager] in
+                await transcriptionManager?.handleRecorderInterruptedCapture(interruptedCapture)
+            }
+        }
         keyboardBridge.registerObservers()
 
         self.dictionaryStore = dictionaryStore
