@@ -3,84 +3,93 @@
 
 ## Project Overview
 
-KeyVox iOS is split across a containing app and a custom keyboard extension:
+KeyVox iOS ships as a containing app plus a custom keyboard extension:
 
-- The containing app owns microphone access, background audio capture, model installation, shared dictionary state, and the Whisper-backed transcription pipeline.
-- The containing app also owns synced weekly word stats state, with the combined total surfaced in the Home tab and per-device counts kept internal.
-- The keyboard extension owns the user-facing mic button, toolbar-owned Caps Lock toggle, warm/cold app handoff, and final `textDocumentProxy.insertText(...)` insertion into the focused text field.
-- Shared text-processing, silence classification, dictionary correction, list rendering, and Whisper integration live in `../Packages/KeyVoxCore`.
+- The containing app owns microphone access, warm-session monitoring, model installation, dictionary/settings sync, weekly word stats, audio capture, and Whisper-backed transcription.
+- The keyboard extension owns the visible keyboard UI, mic and cancel controls, live activity indicator rendering, warm/cold app handoff, and final `textDocumentProxy` insertion.
+- Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, `WhisperService`, post-processing, silence heuristics, and dictionary persistence primitives.
 
-The default iOS interaction is:
+The default runtime flow is:
 
-1. User taps the mic in the custom keyboard.
-2. The extension signals the containing app over App Group state + Darwin notifications.
-3. The containing app records, classifies, transcribes, and post-processes audio.
-4. The final text is written back through shared state.
-5. The extension inserts the text into the current host app.
+1. The user taps the mic in the keyboard extension.
+2. The extension decides between warm Darwin signaling and cold URL launch.
+3. The containing app records and processes audio, then runs the shared dictation pipeline.
+4. The app publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
+5. The extension inserts the returned text into the focused host app using conservative spacing heuristics.
 
 ## Architecture
 
-- **`KeyVox iOS/`**: containing-app entry point, dependency registry, App Group/IPC bridge, model downloader, audio recorder, transcription manager, and minimal app UI.
-- **`KeyVox Keyboard/`**: keyboard extension UI, toolbar controls, keyboard state machine, IPC client, and text insertion heuristics.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, post-processing, Whisper service, audio silence policy, and dictionary persistence logic reused from the Mac app.
-- **`KeyVoxiOSTests/`**: deterministic tests covering routing, shared paths, model lifecycle, capture processing, and transcription state transitions.
-- **`docs/`**: iOS-local source of truth for architecture and file ownership. `CODEMAP.md` owns structure; `ENGINEERING.md` owns invariants and operational policy.
+- **`KeyVox iOS/`**: app lifecycle, dependency composition, App Group storage, IPC bridge, iCloud sync, model downloader, audio recorder, transcription/session manager, and the SwiftUI app shell.
+- **`KeyVox Keyboard/`**: custom keyboard controller, toolbar and key grid UI, indicator animation, cursor trackpad behavior, delete-repeat behavior, and insertion heuristics.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, Whisper integration, dictionary store, post-processing order, silence classification helpers, and list formatting behavior.
+- **`KeyVoxiOSTests/`**: deterministic tests for routing, shared paths, iCloud sync, weekly stats, model lifecycle, stop-time capture processing, keyboard cursor support, and transcription/session orchestration.
+- **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
 
 ## Contributor Notes
 
-- Keep iOS-specific platform behavior in the `iOS/` targets; keep reusable speech/text logic in `KeyVoxCore`.
-- The keyboard extension should remain thin. If new behavior can live in shared state, IPC, or `KeyVoxCore`, prefer that over expanding extension-only business logic.
-- The containing app is intentionally minimal in UI today. Most complexity belongs in the runtime managers, not in `AppRootView`.
-- Unit tests focus on deterministic seams: URL parsing, state transitions, install validation, and capture classification. Device routing, extension launch timing, and actual text injection remain integration scope.
-- This file is the curated ownership map for the iOS app. Runtime rules, IPC contracts, and operational workflows belong in [`ENGINEERING.md`](ENGINEERING.md).
+- Keep iOS-only platform behavior inside the iOS targets. Reusable speech, text, and dictionary logic should remain in `KeyVoxCore`.
+- Keep the keyboard extension thin. It should transport commands, render keyboard UI, and insert final text, not accumulate app-owned business logic.
+- Keep IPC details centralized in `KeyVoxIPCBridge`; do not duplicate notification names, shared-state keys, or heartbeat assumptions.
+- Keep app UI ownership narrow. Views should present state from managers, not become alternate sources of truth for model, capture, or transcription behavior.
+- Update [`ENGINEERING.md`](ENGINEERING.md) whenever lifecycle rules, IPC contracts, or session behavior change.
 
 ## Directory Index
 
-This is a curated map of the iOS repo area and its direct shared dependency.
+This is the curated iOS structure map, including the direct shared package dependency.
 
 ```text
 iOS/
 ├── KeyVox iOS.xcodeproj
 ├── KeyVox iOS.xctestplan
+├── Docs/
+│   ├── CODEMAP.md
+│   └── ENGINEERING.md
 ├── KeyVox iOS/
 │   ├── App/
 │   │   ├── KeyVoxiOSApp.swift
 │   │   ├── iOSAppServiceRegistry.swift
-│   │   ├── iOSWeeklyWordStatsStore.swift
 │   │   ├── iOSSharedPaths.swift
 │   │   ├── KeyVoxIPCBridge.swift
 │   │   ├── KeyVoxKeyboardBridge.swift
 │   │   ├── KeyVoxURLRoute.swift
 │   │   ├── KeyVoxURLRouter.swift
-│   │   ├── iCloud/
-│   │   │   ├── iOSWeeklyWordStatsCloudSync.swift
-│   │   │   ├── iOSiCloudSyncCoordinator.swift
-│   │   │   ├── iOSAppSettingsStore.swift
-│   │   │   ├── iOSUserDefaultsKeys.swift
-│   │   │   ├── KeyVoxiCloudKeys.swift
-│   │   │   └── KeyVoxiCloudPayloads.swift
-│   │   └── ModelDownloader/
-│   │       ├── iOSModelManager.swift
-│   │       ├── iOSModelManager+InstallLifecycle.swift
-│   │       ├── iOSModelManager+Support.swift
-│   │       ├── iOSModelManager+Validation.swift
-│   │       ├── iOSModelDownloadBackgroundTasks.swift
-│   │       ├── iOSModelDownloadURLs.swift
-│   │       ├── iOSModelInstallManifest.swift
-│   │       └── iOSModelInstallState.swift
+│   │   ├── iOSWeeklyWordStatsStore.swift
+│   │   ├── ModelDownloader/
+│   │   │   ├── iOSModelManager.swift
+│   │   │   ├── iOSModelManager+InstallLifecycle.swift
+│   │   │   ├── iOSModelManager+Support.swift
+│   │   │   ├── iOSModelManager+Validation.swift
+│   │   │   ├── iOSModelDownloadBackgroundTasks.swift
+│   │   │   ├── iOSModelDownloadURLs.swift
+│   │   │   ├── iOSModelInstallManifest.swift
+│   │   │   └── iOSModelInstallState.swift
+│   │   └── iCloud/
+│   │       ├── iOSAppSettingsStore.swift
+│   │       ├── iOSiCloudSyncCoordinator.swift
+│   │       ├── iOSUserDefaultsKeys.swift
+│   │       ├── iOSWeeklyWordStatsCloudSync.swift
+│   │       ├── KeyVoxiCloudKeys.swift
+│   │       └── KeyVoxiCloudPayloads.swift
 │   ├── Core/
 │   │   ├── Audio/
 │   │   │   ├── iOSAudioRecorder.swift
 │   │   │   ├── iOSAudioRecorder+Session.swift
 │   │   │   ├── iOSAudioRecorder+Streaming.swift
 │   │   │   ├── iOSAudioRecorder+StopPipeline.swift
-│   │   │   ├── LiveInputSignalState.swift
+│   │   │   └── LiveInputSignalState.swift
 │   │   └── Transcription/
-│   │       ├── iOSTranscriptionManager.swift
 │   │       ├── iOSDictationService.swift
-│   │       └── iOSTranscriptionDebugSnapshot.swift
+│   │       ├── iOSSessionPolicy.swift
+│   │       ├── iOSTranscriptionDebugSnapshot.swift
+│   │       ├── iOSTranscriptionManager.swift
+│   │       └── iOSTranscriptionManager+SessionLifecycle.swift
 │   ├── Views/
-│   │   └── AppRootView.swift
+│   │   ├── AppRootView.swift
+│   │   ├── MainTabView.swift
+│   │   ├── HomeTabView.swift
+│   │   ├── DictionaryTabView.swift
+│   │   ├── StyleTabView.swift
+│   │   └── SettingsTabView.swift
 │   ├── Assets.xcassets/
 │   ├── Info.plist
 │   └── KeyVoxiOS.entitlements
@@ -88,23 +97,30 @@ iOS/
 │   ├── App/
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
+│   │   ├── AudioIndicatorDriver.swift
 │   │   ├── KeyboardCapsLockStateStore.swift
-│   │   ├── KeyboardIPCManager.swift
+│   │   ├── KeyboardCursorTrackpadSupport.swift
 │   │   ├── KeyboardInsertionSpacingHeuristics.swift
+│   │   ├── KeyboardIPCManager.swift
+│   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   ├── KeyboardState.swift
-│   │   └── KeyboardStyle.swift
+│   │   ├── KeyboardStyle.swift
+│   │   └── KeyboardSymbolLayout.swift
 │   ├── Views/
-│   │   ├── Components/
-│   │   │   └── KeyboardCapsLockButton.swift
-│   │   └── KeyboardRootView.swift
+│   │   ├── KeyboardInputHostView.swift
+│   │   ├── KeyboardRootView.swift
+│   │   └── Components/
+│   │       ├── KeyboardCancelButton.swift
+│   │       ├── KeyboardCapsLockButton.swift
+│   │       ├── KeyboardKeyGridView.swift
+│   │       ├── KeyboardKeyPopupView.swift
+│   │       ├── KeyboardKeyView.swift
+│   │       └── KeyboardLogoBarView.swift
 │   ├── Info.plist
 │   └── KeyVoxKeyboard.entitlements
-├── KeyVoxiOSTests/
-│   ├── App/
-│   └── Core/
-└── docs/
-    ├── CODEMAP.md
-    └── ENGINEERING.md
+└── KeyVoxiOSTests/
+    ├── App/
+    └── Core/
 
 Packages/
 └── KeyVoxCore/
@@ -114,155 +130,148 @@ Packages/
 
 ## Core Runtime Flow
 
-1. `KeyVox Keyboard/App/KeyboardViewController.swift` handles the mic tap, owns the toolbar Caps Lock latch, and decides between warm-session IPC and cold-start app launch via `keyvoxios://record/start`.
-2. `KeyVox Keyboard/Core/KeyboardIPCManager.swift` writes shared recording state and posts Darwin notifications to the containing app.
-3. `KeyVox iOS/App/KeyVoxKeyboardBridge.swift` receives start/stop commands, updates shared heartbeat/state, and publishes app-to-extension events.
-4. `KeyVox iOS/Core/Audio/iOSAudioRecorder.swift` and its extensions keep an `AVAudioEngine` warm, record at 16kHz mono float PCM, and collect live signal metrics.
-5. `KeyVox iOS/Core/Audio/iOSAudioRecorder+StopPipeline.swift` removes internal gaps, classifies silence/no-speech using `KeyVoxCore`, and emits output frames for inference.
-6. `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift` takes the processed capture, gates on model availability, and runs `KeyVoxCore.DictationPipeline`, which delegates transcription to `WhisperService` and post-processing to `TranscriptionPostProcessor`.
-7. The containing app reads the latest App Group-backed Caps Lock value at dictation time and feeds it into the shared all-caps override so iOS and Mac produce the same uppercase behavior.
-8. `KeyVoxKeyboardBridge` publishes either `transcriptionReady` or `noSpeech`, and `KeyboardViewController` inserts the cleaned text with `KeyboardInsertionSpacingHeuristics`.
+1. `KeyVox Keyboard/App/KeyboardViewController.swift` handles mic, cancel, Caps Lock, symbol page toggling, cursor trackpad gestures, and host-text insertion.
+2. `KeyVox Keyboard/Core/KeyboardIPCManager.swift` writes shared recording state, posts Darwin notifications, reads heartbeat state, and reads live meter samples from the App Group container.
+3. `KeyVox iOS/App/KeyVoxKeyboardBridge.swift` receives start, stop, and cancel commands from the extension and republishes recording, transcribing, ready, and no-speech events back to the extension.
+4. `KeyVox iOS/Core/Audio/iOSAudioRecorder.swift` can keep the engine warm in monitoring mode, stream 16 kHz mono PCM, publish live signal state, and hand interrupted captures back to the transcription manager.
+5. `KeyVox iOS/Core/Audio/iOSAudioRecorder+StopPipeline.swift` classifies silence and produces cleaned `outputFrames` for inference.
+6. `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift` owns the iOS runtime state machine, session policy, model gating, dictionary prompt updates, weekly word counting, and `DictationPipeline` execution.
+7. `KeyVoxCore.DictationPipeline` performs transcription and post-processing, then hands the final text back through `pasteText`.
+8. `KeyVoxKeyboardBridge` publishes either `transcriptionReady` or `noSpeech`, and the extension inserts the final text with `KeyboardInsertionSpacingHeuristics`.
 
 ## Key Components
 
-### App Layer
+### App Lifecycle and Composition
 
 - `KeyVox iOS/App/KeyVoxiOSApp.swift`
-  - iOS app entry point.
-  - Pulls singleton services from `iOSAppServiceRegistry`.
-  - Registers model background tasks and routes incoming `keyvoxios://` URLs.
+  - SwiftUI app entry point.
+  - Registers the model-download background task.
+  - Injects app-wide environment objects and routes incoming `keyvoxios://` URLs.
 - `KeyVox iOS/App/iOSAppServiceRegistry.swift`
-  - Composition root for the containing app.
-  - Wires `DictionaryStore`, `iOSWeeklyWordStatsStore`, `WhisperService`, `iOSModelManager`, `TranscriptionPostProcessor`, `iOSAudioRecorder`, `iOSTranscriptionManager`, and `KeyVoxURLRouter`.
-  - Reads the shared App Group `capsLockEnabled` value on demand and passes it into `iOSTranscriptionManager` as the iOS-owned all-caps provider.
-  - Connects keyboard-bridge start/stop callbacks to the transcription manager.
-- `KeyVox iOS/App/iOSWeeklyWordStatsStore.swift`
-  - Dedicated local weekly-usage store for combined weekly word count plus hidden per-installation contribution totals.
-  - Persists a stable installation identifier, current-week snapshot, and rollover behavior outside the settings store.
+  - Main composition root.
+  - Builds `DictionaryStore`, `iOSAppSettingsStore`, `iOSWeeklyWordStatsStore`, `WhisperService`, `iOSModelManager`, `iOSTranscriptionManager`, `iOSiCloudSyncCoordinator`, and `iOSWeeklyWordStatsCloudSync`.
+  - Wires recorder heartbeat and live-meter callbacks into the keyboard bridge.
 - `KeyVox iOS/App/iOSSharedPaths.swift`
-  - Central source of truth for App Group paths.
-  - Resolves model files, Core ML bundle locations, install manifest, and dictionary storage base directory.
-  - Provides a local Application Support fallback for dictionary persistence when the App Group container is unavailable.
-- `KeyVox iOS/App/KeyVoxIPCBridge.swift`
-  - Shared-state contract used by both app and extension.
-  - Stores `recordingState`, `latestTranscription`, and heartbeat/session timestamp in App Group `UserDefaults`.
-  - Defines the Darwin notification names used for start/stop/ready/no-speech signaling.
-- `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
-  - Containing-app side of the keyboard bridge.
-  - Subscribes to Darwin start/stop notifications.
-  - Publishes recording, transcribing, transcription-ready, and no-speech updates back to the extension.
-  - Refreshes the shared heartbeat during major app-side state transitions; the live recorder session is the primary warm-session heartbeat source.
+  - Source of truth for App Group paths.
+  - Resolves model artifacts, install manifest, and dictionary storage directories.
+  - Provides the Application Support fallback used only for dictionary persistence.
 - `KeyVox iOS/App/KeyVoxURLRoute.swift`
-  - Parses supported `keyvoxios://record/start` and `keyvoxios://record/stop` routes.
+  - Parses supported `keyvoxios://record/start` and `keyvoxios://record/stop` URLs.
 - `KeyVox iOS/App/KeyVoxURLRouter.swift`
-  - Maps parsed routes to `iOSTranscriptionManager` commands.
-  - Used for cold-start app launch from the keyboard extension.
+  - Maps parsed URL routes onto transcription-manager commands.
+
+### Shared State, Settings, and Sync
+
+- `KeyVox iOS/App/KeyVoxIPCBridge.swift`
+  - Shared contract for App Group `UserDefaults`, live meter file IO, and Darwin notification names.
+  - Owns shared recording state, latest transcription text, heartbeat timestamps, and `live-meter-state.bin`.
+- `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
+  - App-side IPC endpoint for start, stop, and cancel.
+  - Publishes recording, transcribing, ready, cancelled/no-speech, and live meter updates back to the keyboard.
+- `KeyVox iOS/App/iCloud/iOSAppSettingsStore.swift`
+  - Observable settings store backed by App Group `UserDefaults`.
+  - Persists trigger binding, auto paragraphs, list formatting, and Caps Lock state.
+- `KeyVox iOS/App/iCloud/iOSiCloudSyncCoordinator.swift`
+  - iCloud KVS sync owner for dictionary entries plus settings timestamps and last-writer-wins reconciliation.
+- `KeyVox iOS/App/iOSWeeklyWordStatsStore.swift`
+  - Local weekly spoken-word snapshot store keyed by stable installation ID.
+  - Exposes only the combined weekly total to the UI.
+- `KeyVox iOS/App/iCloud/iOSWeeklyWordStatsCloudSync.swift`
+  - iCloud KVS merge layer for weekly word stats.
+  - Merges device counts by taking the maximum per device for the current week.
 
 ### Model Management
 
 - `KeyVox iOS/App/ModelDownloader/iOSModelManager.swift`
-  - Observable owner of install state, readiness, error messaging, and async install/delete/repair entry points.
-  - Injected with path resolvers, free-space provider, download closure, and unzip closure for testability.
+  - Observable owner of install state, errors, and user-facing download/delete/repair actions.
 - `KeyVox iOS/App/ModelDownloader/iOSModelManager+InstallLifecycle.swift`
-  - Implements download, delete, and repair flows.
-  - Downloads GGML and Core ML artifacts in parallel, validates integrity, extracts the Core ML bundle, writes the install manifest, and warms Whisper.
+  - Parallel download, integrity verification, extraction, manifest writing, and warmup sequencing.
 - `KeyVox iOS/App/ModelDownloader/iOSModelManager+Validation.swift`
-  - Validates install completeness and artifact integrity expectations.
-  - Enforces the presence of the GGML binary, extracted Core ML bundle, cleanup of the zip, and a supported install manifest.
+  - Strict readiness checks for the GGML file, extracted Core ML bundle, zip cleanup, and manifest compatibility.
 - `KeyVox iOS/App/ModelDownloader/iOSModelManager+Support.swift`
-  - Shared helpers for file moves/removal, manifest IO, SHA-256 hashing, zip extraction, and free-space checks.
-  - Includes debug logging and progress aggregation utilities.
+  - Shared helpers for file operations, hashing, manifest IO, free-space checks, and progress aggregation.
 - `KeyVox iOS/App/ModelDownloader/iOSModelDownloadBackgroundTasks.swift`
-  - Registers and schedules a background repair task identifier for failed installs.
-- `KeyVox iOS/App/ModelDownloader/iOSModelDownloadURLs.swift`
-  - Source-of-truth URLs for model artifacts.
-- `KeyVox iOS/App/ModelDownloader/iOSModelInstallManifest.swift`
-  - Persisted versioned description of the installed artifact hashes.
+  - Registers and schedules the background repair task `com.cueit.keyvox.model-download`.
 - `KeyVox iOS/App/ModelDownloader/iOSModelInstallState.swift`
-  - UI-facing install state and phase enums.
-  - Separates byte-driven download progress from install phases like hashing, extraction, validation, manifest writing, and model warmup so the app can show smooth progress through the full lifecycle.
+  - UI-facing install state and phase model used by the Settings tab.
 
-### Audio Capture
+### Audio and Transcription Runtime
 
 - `KeyVox iOS/Core/Audio/iOSAudioRecorder.swift`
-  - Public recorder interface and state holder for the containing app.
-  - Tracks published meter state, current device label, and last capture classification facts.
+  - Public recorder and monitoring surface.
+  - Tracks capture duration, meter state, device label, and last-capture classification facts.
 - `KeyVox iOS/Core/Audio/iOSAudioRecorder+Session.swift`
-  - Configures `AVAudioSession` for `.playAndRecord` with background-friendly options.
-  - Starts and maintains the `AVAudioEngine`, requests microphone permission, resets capture state, and keeps the warm-session heartbeat alive.
+  - Configures `AVAudioSession`, starts and maintains the engine, and supports warm monitoring mode.
 - `KeyVox iOS/Core/Audio/iOSAudioRecorder+Streaming.swift`
-  - Converts live input to 16kHz mono PCM through `AVAudioConverter`.
-  - Buffers frames, computes RMS/peak-based meter state, and tracks active-signal run duration.
+  - Converts live audio into 16 kHz mono PCM and drives UI/debug metering.
 - `KeyVox iOS/Core/Audio/iOSAudioRecorder+StopPipeline.swift`
-  - Transforms a raw snapshot into an `iOSStoppedCapture`.
-  - Uses `KeyVoxCore` post-processing and `AudioCaptureClassifier` to reject likely silence before inference.
-- `KeyVox iOS/Core/Audio/LiveInputSignalState.swift`
-  - UI-facing enum describing live signal states (`dead`, `quiet`, `active`).
-
-### Transcription and Post-Processing
-
+  - Produces `iOSStoppedCapture` values and rejects likely silence before inference.
 - `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift`
-  - Main iOS state machine: `idle -> recording -> processingCapture -> transcribing -> idle`.
-  - Coordinates recorder start/stop, model availability checks, dictionary prompt updates, `DictationPipeline` execution, and keyboard notifications.
-  - Uses an injected `capsLockEnabledProvider` so the shared `KeyVoxCore` all-caps override can be controlled entirely from the iOS side.
-  - Records spoken-word totals through `iOSWeeklyWordStatsStore` from final processed dictation output.
-  - Stores the latest debug snapshot and surfaced error for the app UI.
+  - Primary iOS state machine: `idle -> recording -> processingCapture -> transcribing -> idle`.
+  - Coordinates recorder commands, model checks, shared pipeline execution, weekly stats, and keyboard notifications.
+- `KeyVox iOS/Core/Transcription/iOSTranscriptionManager+SessionLifecycle.swift`
+  - Owns idle shutdown, cancel flow, abandonment watchdogs, and session cleanup behavior.
+- `KeyVox iOS/Core/Transcription/iOSSessionPolicy.swift`
+  - Centralizes idle timeout, no-speech abandonment, post-speech inactivity, and emergency utterance cap thresholds.
 - `KeyVox iOS/Core/Transcription/iOSDictationService.swift`
-  - Minimal protocol seam over `WhisperService` for warmup, cancellation, hint-prompt updates, and transcription.
+  - Small protocol seam over `WhisperService`.
 - `KeyVox iOS/Core/Transcription/iOSTranscriptionDebugSnapshot.swift`
-  - Debug model containing raw text, final text, no-speech classification, timings, and capture facts from the last completed dictation.
+  - Debug surface for raw text, final text, timings, hint-prompt usage, and capture facts.
 
 ### Containing-App UI
 
 - `KeyVox iOS/Views/AppRootView.swift`
-  - Minimal diagnostic/control UI for model state and transcription state.
-  - Exposes model download/delete/repair actions and DEBUG-only runtime diagnostics.
+  - Small root shell that currently routes directly to the main tab UI.
+- `KeyVox iOS/Views/MainTabView.swift`
+  - Tab container for Home, Dictionary, Style, and Settings.
 - `KeyVox iOS/Views/HomeTabView.swift`
-  - Displays the synced combined weekly word total in plain text.
-  - Keeps device-level counts internal to the weekly stats store.
+  - Shows combined weekly word count and the "Keep Session Active" toggle.
+  - Surfaces debug diagnostics only in `DEBUG`.
+- `KeyVox iOS/Views/DictionaryTabView.swift`
+  - Read-only list of current dictionary entries from `DictionaryStore`.
+- `KeyVox iOS/Views/StyleTabView.swift`
+  - User-facing toggles for auto paragraphs and list formatting.
+- `KeyVox iOS/Views/SettingsTabView.swift`
+  - Model install status plus download, repair, and delete actions.
 
 ### Keyboard Extension
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
-  - Keyboard extension controller and mic-button state machine.
-  - Chooses warm Darwin signaling when the app heartbeat is fresh, otherwise opens the containing app immediately through the URL scheme.
-  - Owns the toolbar Caps Lock toggle state for the extension UI and clears it when the user leaves this keyboard for another keyboard while the host remains active.
-  - Handles insertion of completed text into the host app.
+  - Extension controller and top-level state machine.
+  - Owns warm/cold launch behavior, cancel flow, Caps Lock persistence, cursor movement via the spacebar trackpad interaction, and final insertion.
 - `KeyVox Keyboard/Core/KeyboardIPCManager.swift`
-  - Extension-side App Group + Darwin notification client.
-  - Sends start/stop commands, reads shared recording state, checks warm-session heartbeat, and receives transcription/no-speech callbacks.
+  - Extension-side App Group + Darwin client.
+  - Handles shared recording state reconciliation, heartbeat freshness, commands, and callback delivery.
+- `KeyVox Keyboard/Core/AudioIndicatorDriver.swift`
+  - Smooths App Group live-meter samples into UI-friendly animation state for the toolbar indicator.
 - `KeyVox Keyboard/Core/KeyboardCapsLockStateStore.swift`
-  - Small App Group-backed helper that persists the extension-owned Caps Lock latch and keeps the key state available to the containing app at dictation time.
-- `KeyVox Keyboard/Views/KeyboardRootView.swift`
-  - UIKit keyboard surface with a centered toolbar logo, toolbar-owned side controls, and the symbol key grid.
-  - Keeps special toolbar controls outside the key grid so they can align to top-row key widths without shifting the centered logo or increasing keyboard height.
-- `KeyVox Keyboard/Views/Components/KeyboardCapsLockButton.swift`
-  - Dedicated toolbar Caps Lock control with the same visual language as a normal key, using `capslock` and `capslock.fill` to show the latched state.
+  - App Group-backed latch for the extension-owned Caps Lock state consumed by the app at dictation time.
 - `KeyVox Keyboard/Core/KeyboardState.swift`
-  - Small presentational state machine controlling labels, mic enablement, and icon/color treatment.
-- `KeyVox Keyboard/Core/KeyboardStyle.swift`
-  - Visual constants for the keyboard surface.
+  - Maps extension runtime states into indicator phases and cancel-button visibility.
+- `KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift`
+  - Cursor stepping logic for the long-press spacebar trackpad interaction.
+- `KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift`
+  - Spacebar activation timing and delete-key repeat behavior.
+- `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
+  - Source of truth for the two-page symbol keyboard layout.
 - `KeyVox Keyboard/Core/KeyboardInsertionSpacingHeuristics.swift`
-  - Applies a conservative leading-space heuristic before insertion so dictated text does not collide with the existing document context.
+  - Conservative smart-space insertion before pasted dictation text.
+- `KeyVox Keyboard/Views/KeyboardRootView.swift`
+  - Keyboard chrome with a centered logo bar, leading cancel button, trailing Caps Lock button, and the symbol key grid.
+- `KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+  - Mic button plus animated live audio indicator surface.
+- `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
+  - Gesture-driven key grid with popup support, delete repeat, and spacebar trackpad handoff.
 
 ### Tests
 
-- `KeyVoxiOSTests/App/KeyVoxURLRouteTests.swift`
-  - Verifies supported URL routes and rejection of invalid routes.
-- `KeyVoxiOSTests/App/iOSSharedPathsTests.swift`
-  - Verifies App Group path construction and fallback behavior.
-- `KeyVoxiOSTests/App/iOSModelManagerTests.swift`
-  - Covers install validation, download lifecycle, delete/repair behavior, and low-disk-space handling.
-- `KeyVoxiOSTests/App/iOSAppSettingsStoreTests.swift`
-  - Verifies persisted iOS settings behavior, including the shared App Group-backed Caps Lock flag used by the keyboard/app handoff.
-- `KeyVoxiOSTests/Core/Audio/iOSStoppedCaptureProcessorTests.swift`
-  - Verifies speech acceptance and silence rejection rules for stop-time capture processing.
-- `KeyVoxiOSTests/Core/Transcription/iOSTranscriptionManagerTests.swift`
-  - Exercises state transitions, model gating, no-speech handling, dictionary-prompt propagation, and iOS-controlled all-caps transcription output.
-- `../Packages/KeyVoxCore/Tests/KeyVoxCoreTests/`
-  - Holds the deeper shared-package tests for `DictationPipeline`, `TranscriptionPostProcessor`, dictionary logic, list formatting, audio silence policy, and Whisper behavior.
+- `KeyVoxiOSTests/App/`
+  - Route parsing, shared paths, settings persistence, iCloud sync coordination, weekly stats storage/sync, and model manager behavior.
+- `KeyVoxiOSTests/Core/`
+  - Stop-time capture processing, keyboard cursor-trackpad support, and transcription/session manager lifecycle tests.
 
-## Historical Context
+## Change Tracking
 
-- `../Docs/KEYVOX_IOS.md` is the original full implementation plan and migration blueprint.
-- This document reflects the current implemented structure of the iOS targets and should stay aligned with the code as the app evolves.
+- Update this file when iOS file ownership, major system placement, or top-level runtime flow changes.
+- Use [`ENGINEERING.md`](ENGINEERING.md) for lifecycle rules, state-machine invariants, IPC contracts, and testing policy.
+- Keep `Docs/KEYVOX_IOS.md` as historical design context rather than the current iOS source of truth.
