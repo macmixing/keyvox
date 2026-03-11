@@ -27,6 +27,7 @@ public final class DictionaryStore: ObservableObject {
     @Published public private(set) var loadWarningMessage: String?
     @Published public private(set) var saveErrorMessage: String?
     @Published public private(set) var degradedDurability: Bool = false
+    public private(set) var persistedSnapshotModifiedAt: Date?
 
     private struct DictionaryPayload: Codable {
         let version: Int
@@ -145,6 +146,7 @@ public final class DictionaryStore: ObservableObject {
     private func loadFromDisk() {
         saveErrorMessage = nil
         degradedDurability = fileManager.fileExists(atPath: degradedDurabilityMarkerURL.path)
+        persistedSnapshotModifiedAt = nil
 
         let hasPrimary = fileManager.fileExists(atPath: dictionaryFileURL.path)
         let hasBackup = fileManager.fileExists(atPath: backupFileURL.path)
@@ -158,16 +160,18 @@ public final class DictionaryStore: ObservableObject {
 
         if hasPrimary, let payload = try? readPayload(from: dictionaryFileURL) {
             entries = payload.entries
+            persistedSnapshotModifiedAt = fileModificationDate(at: dictionaryFileURL)
             loadWarningMessage = nil
             return
         }
 
         if hasBackup, let backupPayload = try? readPayload(from: backupFileURL) {
             entries = backupPayload.entries
+            persistedSnapshotModifiedAt = fileModificationDate(at: backupFileURL)
             loadWarningMessage = "Dictionary was recovered from backup after a file issue."
 
             do {
-                try persist(entries: backupPayload.entries)
+                try persist(entries: backupPayload.entries, updatePersistedSnapshotModifiedAt: false)
                 // Keep this warning visible until the user performs the next save action.
                 loadWarningMessage = "Dictionary was recovered from backup after a file issue."
             } catch {
@@ -180,6 +184,7 @@ public final class DictionaryStore: ObservableObject {
         quarantineIfPresent(backupFileURL)
 
         entries = []
+        persistedSnapshotModifiedAt = nil
         loadWarningMessage = "Dictionary data was corrupted and reset."
     }
 
@@ -192,7 +197,10 @@ public final class DictionaryStore: ObservableObject {
         }
     }
 
-    private func persist(entries candidateEntries: [DictionaryEntry]) throws {
+    private func persist(
+        entries candidateEntries: [DictionaryEntry],
+        updatePersistedSnapshotModifiedAt: Bool = true
+    ) throws {
         try fileManager.createDirectory(at: dictionaryDirectoryURL, withIntermediateDirectories: true)
 
         let payload = DictionaryPayload(version: 1, entries: candidateEntries)
@@ -204,6 +212,10 @@ public final class DictionaryStore: ObservableObject {
             clearDegradedDurabilityMarker()
         } catch {
             markDegradedDurability()
+        }
+
+        if updatePersistedSnapshotModifiedAt {
+            persistedSnapshotModifiedAt = fileModificationDate(at: dictionaryFileURL)
         }
 
         saveErrorMessage = nil
@@ -238,6 +250,14 @@ public final class DictionaryStore: ObservableObject {
     private func readPayload(from fileURL: URL) throws -> DictionaryPayload {
         let data = try Data(contentsOf: fileURL)
         return try decoder.decode(DictionaryPayload.self, from: data)
+    }
+
+    private func fileModificationDate(at fileURL: URL) -> Date? {
+        guard let attributes = try? fileManager.attributesOfItem(atPath: fileURL.path) else {
+            return nil
+        }
+
+        return attributes[.modificationDate] as? Date
     }
 
     private func quarantineIfPresent(_ fileURL: URL) {
