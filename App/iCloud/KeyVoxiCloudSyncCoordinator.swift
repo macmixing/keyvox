@@ -165,7 +165,11 @@ final class KeyVoxiCloudSyncCoordinator {
         case (true, .some(let payload)):
             applyRemoteDictionary(payload)
         case (false, .some(let payload)):
-            let modifiedAt = localModifiedAt ?? now()
+            guard let modifiedAt = localModifiedAt else {
+                applyRemoteDictionary(payload)
+                return
+            }
+
             setLocalDictionaryModifiedAt(modifiedAt)
             if payload.modifiedAt > modifiedAt {
                 applyRemoteDictionary(payload)
@@ -495,7 +499,7 @@ final class KeyVoxiCloudSyncCoordinator {
     }
 
     private func inferredLocalDictionaryModifiedAt() -> Date? {
-        localDictionaryModifiedAt() ?? (dictionaryStore.entries.isEmpty ? nil : now())
+        localDictionaryModifiedAt() ?? dictionaryStore.persistedSnapshotModifiedAt
     }
 
     private func inferredLocalAutoParagraphsModifiedAt(defaultValue: Bool) -> Date? {

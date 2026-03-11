@@ -6,8 +6,10 @@ import XCTest
 @MainActor
 final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
     func testLocalDictionarySeedsEmptyCloud() async throws {
-        let harness = try makeHarness(now: makeDate(year: 2026, month: 3, day: 7, hour: 12))
+        let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 12)
+        let harness = try makeHarness(now: localDate)
         try harness.dictionaryStore.add(phrase: "Cueboard")
+        harness.defaults.set(localDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
 
         let dictionaryPushed = expectation(description: "Dictionary pushed to cloud")
         harness.cloudStore.onSet = { key in
@@ -22,7 +24,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
 
         let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
         XCTAssertEqual(payload.entries.map(\.phrase), ["Cueboard"])
-        XCTAssertEqual(payload.modifiedAt, makeDate(year: 2026, month: 3, day: 7, hour: 12))
+        XCTAssertEqual(payload.modifiedAt, localDate)
     }
 
     func testCloudDictionarySeedsEmptyLocal() throws {
@@ -135,6 +137,90 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(harness.cloudStore.setCount(forKey: KeyVoxiCloudKeys.dictionaryPayload), 0)
     }
 
+    func testNewerCloudDictionaryWinsWhenOnlyPersistedFileTimestampExists() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 8)
+        let remoteDate = makeDate(year: 2026, month: 3, day: 9, hour: 8)
+        let localEntries = [
+            DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: "Old Local Phrase"),
+        ]
+        let harness = try makeHarness(
+            now: makeDate(year: 2026, month: 3, day: 10, hour: 8),
+            prepareBaseDirectory: { baseDirectoryURL in
+                try self.writePersistedDictionary(entries: localEntries, modifiedAt: localDate, to: baseDirectoryURL)
+            }
+        )
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "New Remote Phrase")], modifiedAt: remoteDate)
+        harness.cloudStore.resetSetCounts()
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        XCTAssertEqual(harness.dictionaryStore.entries.map(\.phrase), ["New Remote Phrase"])
+        XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, remoteDate)
+        XCTAssertEqual(harness.cloudStore.setCount(forKey: KeyVoxiCloudKeys.dictionaryPayload), 0)
+    }
+
+    func testOlderCloudDictionaryIsIgnoredWhenOnlyPersistedFileTimestampExists() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 10, hour: 8)
+        let remoteDate = makeDate(year: 2026, month: 3, day: 9, hour: 8)
+        let localEntries = [
+            DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: "Latest Local Phrase"),
+        ]
+        let harness = try makeHarness(
+            now: makeDate(year: 2026, month: 3, day: 12, hour: 8),
+            prepareBaseDirectory: { baseDirectoryURL in
+                try self.writePersistedDictionary(entries: localEntries, modifiedAt: localDate, to: baseDirectoryURL)
+            }
+        )
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Older Remote Phrase")], modifiedAt: remoteDate)
+
+        let dictionaryPushed = expectation(description: "Persisted dictionary pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+        wait(for: [dictionaryPushed], timeout: 1.0)
+
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertEqual(harness.dictionaryStore.entries.map(\.phrase), ["Latest Local Phrase"])
+        XCTAssertEqual(payload.entries.map(\.phrase), ["Latest Local Phrase"])
+        XCTAssertEqual(payload.modifiedAt, localDate)
+        XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, localDate)
+    }
+
+    func testPersistedDictionarySeedsEmptyCloudUsingFileTimestamp() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 8)
+        let localEntries = [
+            DictionaryEntry(id: UUID(uuidString: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA")!, phrase: "Cueboard"),
+        ]
+        let harness = try makeHarness(
+            now: makeDate(year: 2026, month: 3, day: 10, hour: 8),
+            prepareBaseDirectory: { baseDirectoryURL in
+                try self.writePersistedDictionary(entries: localEntries, modifiedAt: localDate, to: baseDirectoryURL)
+            }
+        )
+
+        let dictionaryPushed = expectation(description: "Persisted dictionary seeded to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+        wait(for: [dictionaryPushed], timeout: 1.0)
+
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertEqual(payload.entries.map(\.phrase), ["Cueboard"])
+        XCTAssertEqual(payload.modifiedAt, localDate)
+        XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, localDate)
+    }
+
     func testNewerCloudAutoParagraphsAppliesLocally() throws {
         let remoteDate = makeDate(year: 2026, month: 3, day: 12, hour: 9)
         let harness = try makeHarness(now: remoteDate)
@@ -213,7 +299,10 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         )
     }
 
-    private func makeHarness(now: Date) throws -> Harness {
+    private func makeHarness(
+        now: Date,
+        prepareBaseDirectory: ((URL) throws -> Void)? = nil
+    ) throws -> Harness {
         let suiteName = "KeyVoxiCloudSyncCoordinatorTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -222,6 +311,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
             .appendingPathComponent("KeyVoxiCloudSyncCoordinatorTests", isDirectory: true)
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        try prepareBaseDirectory?(base)
 
         let appSettings = AppSettingsStore(defaults: defaults)
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -257,6 +347,29 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
             hour: hour
         ).date!
     }
+
+    private func writePersistedDictionary(
+        entries: [DictionaryEntry],
+        modifiedAt: Date,
+        to baseDirectoryURL: URL
+    ) throws {
+        let dictionaryDirectoryURL = baseDirectoryURL.appendingPathComponent("Dictionary", isDirectory: true)
+        let dictionaryFileURL = dictionaryDirectoryURL.appendingPathComponent("dictionary.json")
+
+        try FileManager.default.createDirectory(at: dictionaryDirectoryURL, withIntermediateDirectories: true)
+        let payload = PersistedDictionaryPayload(version: 1, entries: entries)
+        let data = try JSONEncoder().encode(payload)
+        try data.write(to: dictionaryFileURL, options: .atomic)
+        try FileManager.default.setAttributes(
+            [.modificationDate: modifiedAt],
+            ofItemAtPath: dictionaryFileURL.path
+        )
+    }
+}
+
+private struct PersistedDictionaryPayload: Codable {
+    let version: Int
+    let entries: [DictionaryEntry]
 }
 
 private struct Harness {
