@@ -26,6 +26,24 @@ final class DictionaryStoreTests: XCTestCase {
             try store.add(phrase: "Dom Esposito")
             let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
             XCTAssertTrue(reloaded.entries.map(\.phrase) == ["Dom Esposito"])
+            XCTAssertNotNil(reloaded.persistedSnapshotModifiedAt)
+        }
+    }
+
+    func testLoadFromPrimaryCapturesPersistedSnapshotModifiedAt() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
+            let expectedDate = makeDate(year: 2026, month: 3, day: 7, hour: 12)
+            try FileManager.default.createDirectory(at: dictionaryDir, withIntermediateDirectories: true)
+
+            let primary = dictionaryDir.appendingPathComponent("dictionary.json")
+            try makePayload(entries: [DictionaryEntry(phrase: "Cueboard")]).write(to: primary)
+            try FileManager.default.setAttributes([.modificationDate: expectedDate], ofItemAtPath: primary.path)
+
+            let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+            XCTAssertEqual(store.entries.map(\.phrase), ["Cueboard"])
+            XCTAssertEqual(store.persistedSnapshotModifiedAt, expectedDate)
         }
     }
 
@@ -121,16 +139,29 @@ final class DictionaryStoreTests: XCTestCase {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
+            let backupDate = makeDate(year: 2026, month: 3, day: 8, hour: 9)
             try FileManager.default.createDirectory(at: dictionaryDir, withIntermediateDirectories: true)
 
             let primary = dictionaryDir.appendingPathComponent("dictionary.json")
             let backup = dictionaryDir.appendingPathComponent("dictionary.backup.json")
             try "broken".data(using: .utf8)!.write(to: primary)
-            try makePayload(phrases: ["Dom Esposito"]).write(to: backup)
+            try makePayload(entries: [DictionaryEntry(phrase: "Dom Esposito")]).write(to: backup)
+            try FileManager.default.setAttributes([.modificationDate: backupDate], ofItemAtPath: backup.path)
 
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
             XCTAssertTrue(store.entries.map(\.phrase) == ["Dom Esposito"])
+            XCTAssertEqual(store.persistedSnapshotModifiedAt, backupDate)
             XCTAssertTrue(store.loadWarningMessage?.contains("recovered from backup") == true)
+        }
+    }
+
+    func testMissingPersistedDictionaryLeavesSnapshotModifiedAtNil() throws {
+        try withTemporaryDirectory { root in
+            let base = root.appendingPathComponent("KeyVox", isDirectory: true)
+            let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
+
+            XCTAssertTrue(store.entries.isEmpty)
+            XCTAssertNil(store.persistedSnapshotModifiedAt)
         }
     }
 
@@ -259,14 +290,26 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    private func makePayload(phrases: [String]) throws -> Data {
-        let entries: [[String: String]] = phrases.map {
-            ["id": UUID().uuidString, "phrase": $0]
-        }
-        let payload: [String: Any] = [
-            "version": 1,
-            "entries": entries,
-        ]
-        return try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+    private func makePayload(entries: [DictionaryEntry]) throws -> Data {
+        let payload = DictionaryPayloadFixture(version: 1, entries: entries)
+        return try JSONEncoder().encode(payload)
     }
+
+    private func makeDate(year: Int, month: Int, day: Int, hour: Int) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return DateComponents(
+            calendar: calendar,
+            timeZone: calendar.timeZone,
+            year: year,
+            month: month,
+            day: day,
+            hour: hour
+        ).date!
+    }
+}
+
+private struct DictionaryPayloadFixture: Codable {
+    let version: Int
+    let entries: [DictionaryEntry]
 }
