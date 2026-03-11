@@ -154,17 +154,18 @@ final class KeyVoxiCloudSyncCoordinator {
         let localEntries = dictionaryStore.entries
         let localModifiedAt = inferredLocalDictionaryModifiedAt()
         let remotePayload = loadRemoteDictionaryPayload()
+        let hasLocalSnapshot = localModifiedAt != nil
 
-        switch (localEntries.isEmpty, remotePayload) {
-        case (true, nil):
-            return
+        switch (hasLocalSnapshot, remotePayload) {
         case (false, nil):
+            return
+        case (true, nil):
             let modifiedAt = localModifiedAt ?? now()
             setLocalDictionaryModifiedAt(modifiedAt)
             pushDictionary(entries: localEntries, modifiedAt: modifiedAt)
-        case (true, .some(let payload)):
-            applyRemoteDictionary(payload)
         case (false, .some(let payload)):
+            applyRemoteDictionary(payload)
+        case (true, .some(let payload)):
             guard let modifiedAt = localModifiedAt else {
                 applyRemoteDictionary(payload)
                 return

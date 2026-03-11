@@ -221,6 +221,62 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, localDate)
     }
 
+    func testPersistedEmptyDictionarySeedsEmptyCloudUsingFileTimestamp() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 8)
+        let harness = try makeHarness(
+            now: makeDate(year: 2026, month: 3, day: 10, hour: 8),
+            prepareBaseDirectory: { baseDirectoryURL in
+                try self.writePersistedDictionary(entries: [], modifiedAt: localDate, to: baseDirectoryURL)
+            }
+        )
+
+        let dictionaryPushed = expectation(description: "Persisted empty dictionary seeded to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+        wait(for: [dictionaryPushed], timeout: 1.0)
+
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        XCTAssertTrue(payload.entries.isEmpty)
+        XCTAssertEqual(payload.modifiedAt, localDate)
+        XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, localDate)
+    }
+
+    func testPersistedEmptyDictionaryWinsOverOlderCloudDictionary() throws {
+        let localDate = makeDate(year: 2026, month: 3, day: 10, hour: 8)
+        let remoteDate = makeDate(year: 2026, month: 3, day: 9, hour: 8)
+        let harness = try makeHarness(
+            now: makeDate(year: 2026, month: 3, day: 12, hour: 8),
+            prepareBaseDirectory: { baseDirectoryURL in
+                try self.writePersistedDictionary(entries: [], modifiedAt: localDate, to: baseDirectoryURL)
+            }
+        )
+        try harness.cloudStore.seedDictionary(entries: [DictionaryEntry(phrase: "Older Remote Phrase")], modifiedAt: remoteDate)
+
+        let dictionaryPushed = expectation(description: "Persisted empty dictionary pushed to cloud")
+        harness.cloudStore.onSet = { key in
+            if key == KeyVoxiCloudKeys.dictionaryPayload {
+                dictionaryPushed.fulfill()
+            }
+        }
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+        wait(for: [dictionaryPushed], timeout: 1.0)
+
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        XCTAssertTrue(payload.entries.isEmpty)
+        XCTAssertEqual(payload.modifiedAt, localDate)
+        XCTAssertEqual(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date, localDate)
+    }
+
     func testNewerCloudAutoParagraphsAppliesLocally() throws {
         let remoteDate = makeDate(year: 2026, month: 3, day: 12, hour: 9)
         let harness = try makeHarness(now: remoteDate)
