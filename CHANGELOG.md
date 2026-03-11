@@ -6,6 +6,32 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-03-11
+
+### Added
+
+- Added macOS iCloud sync for dictionary entries plus synced settings for trigger binding, auto paragraphs, and list formatting.
+- Added weekly word stats sync so current-week totals can converge across devices.
+- Added the `KeyVoxCore` Swift package to own shared transcription, normalization, dictionary, list, audio, Whisper, and pronunciation resource logic.
+- Added thousands-grouping normalization for quantity-like four-digit numbers while protecting dates, years, versions, and phone numbers.
+- Added a dedicated bug report issue template for more consistent incoming issue reports.
+
+### Changed
+
+- Moved reusable engine code, package resources, and core-focused test coverage into `KeyVoxCore` while keeping app-specific wiring in the app target.
+- Tightened paragraph and list boundary detection to reduce accidental list rendering and awkward post-processing splits.
+- Refactored the macOS recording overlay around a shared audio indicator driver and unified branded logo presentation through `LogoBarView`.
+- Updated onboarding window sizing so the macOS onboarding flow grows with expanded content such as model download progress and errors.
+- Moved weekly word-count persistence responsibilities out of `AppSettingsStore` into a dedicated store.
+
+### Fixed
+
+- Reduced dictionary false positives for stylized split-join and single-token corrections on long shared-prefix matches.
+- Prevented prose number ranges and trailing commentary from being reformatted as lists while preserving terminal punctuation on longer list items.
+- Preserved persisted dictionary freshness and empty dictionary snapshots during macOS iCloud bootstrap and reconciliation.
+- Prefixed newly generated mac weekly-stats installation identifiers with `mac:` for more reliable device grouping.
+- Hardened dictionary durability, audio post-processing, Whisper request cleanup, and regression coverage across sync and formatting edge cases.
+
 ## [1.0.1] - 2026-03-05
 
 ### Changed
