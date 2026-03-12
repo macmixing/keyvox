@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import KeyVoxCore
 import Testing
@@ -15,6 +16,18 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.enableMonitoringCallCount == 1)
         #expect(harness.manager.sessionExpirationDate != nil)
+    }
+
+    @Test func settingsBackedFiveMinuteTimingArmsFiveMinuteTimeout() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+
+        let expirationDate = try #require(harness.manager.sessionExpirationDate)
+        let interval = expirationDate.timeIntervalSinceNow
+        #expect(interval > 295)
+        #expect(interval <= 300)
     }
 
     @Test func repeatedEnableSessionWhileActiveIsIgnored() async throws {
@@ -338,6 +351,97 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "")
     }
 
+    @Test func immediatelyDisablesSessionAfterSuccessfulTranscription() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .immediately)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func immediatelyDisablesSessionAfterEmptyOutput() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .immediately)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = emptyOutputCapture()
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func immediatelyDisablesSessionAfterMissingModel() async throws {
+        let harness = try makeHarness(modelPath: "", sessionDisableTiming: .immediately)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func changingDisableTimingWhileActiveAndIdleRearmsTimeout() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+        let originalExpirationDate = try #require(harness.manager.sessionExpirationDate)
+
+        harness.updateSessionDisableTiming(.oneHour)
+        await settleAsyncManagerWork()
+
+        let updatedExpirationDate = try #require(harness.manager.sessionExpirationDate)
+        #expect(updatedExpirationDate.timeIntervalSince(originalExpirationDate) > 3_000)
+    }
+
+    @Test func changingDisableTimingToImmediatelyWhileActiveAndIdleShutsSessionDown() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+        #expect(harness.manager.isSessionActive == true)
+
+        harness.updateSessionDisableTiming(.immediately)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
+    @Test func changingDisableTimingWhileRecordingAppliesAfterUtteranceCompletes() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+
+        await harness.manager.performEnableSessionCommand()
+        await harness.manager.performStartRecordingCommand()
+
+        harness.updateSessionDisableTiming(.immediately)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.state == .recording)
+        #expect(harness.manager.isSessionActive == true)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
+
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+    }
+
     @Test func repeatedStartWhileTranscribingIsIgnored() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
@@ -404,6 +508,7 @@ struct iOSTranscriptionManagerTests {
         modelPath: String? = nil,
         serviceShouldSuspend: Bool = false,
         capsLockEnabled: Bool = false,
+        sessionDisableTiming: iOSSessionDisableTiming? = nil,
         sessionPolicy: iOSSessionPolicy = .default
     ) throws -> ManagerHarness {
         let tempRootURL = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -426,6 +531,9 @@ struct iOSTranscriptionManagerTests {
         let defaultsSuiteName = "iOSTranscriptionManagerTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: defaultsSuiteName)!
         defaults.removePersistentDomain(forName: defaultsSuiteName)
+        let sessionDisableTimingSubject = sessionDisableTiming.map { timing in
+            CurrentValueSubject<iOSSessionDisableTiming, Never>(timing)
+        }
         let weeklyWordStatsStore = iOSWeeklyWordStatsStore(
             defaults: defaults,
             now: { Date(timeIntervalSince1970: 0) },
@@ -440,6 +548,10 @@ struct iOSTranscriptionManagerTests {
             keyboardBridge: keyboardBridge,
             modelPathProvider: { resolvedModelPath },
             capsLockEnabledProvider: { capsLockEnabled },
+            sessionDisableTimingProvider: sessionDisableTimingSubject.map { subject in
+                { subject.value }
+            },
+            sessionDisableTimingPublisher: sessionDisableTimingSubject?.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher(),
             sessionPolicy: sessionPolicy
         )
 
@@ -449,6 +561,7 @@ struct iOSTranscriptionManagerTests {
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
             weeklyWordStatsStore: weeklyWordStatsStore,
+            sessionDisableTimingSubject: sessionDisableTimingSubject,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
         )
@@ -525,6 +638,7 @@ private final class ManagerHarness {
     let transcriptionService: StubDictationService
     let dictionaryStore: DictionaryStore
     let weeklyWordStatsStore: iOSWeeklyWordStatsStore
+    let sessionDisableTimingSubject: CurrentValueSubject<iOSSessionDisableTiming, Never>?
     let tempRootURL: URL
     let defaultsSuiteName: String
 
@@ -534,6 +648,7 @@ private final class ManagerHarness {
         transcriptionService: StubDictationService,
         dictionaryStore: DictionaryStore,
         weeklyWordStatsStore: iOSWeeklyWordStatsStore,
+        sessionDisableTimingSubject: CurrentValueSubject<iOSSessionDisableTiming, Never>?,
         tempRootURL: URL,
         defaultsSuiteName: String
     ) {
@@ -542,8 +657,13 @@ private final class ManagerHarness {
         self.transcriptionService = transcriptionService
         self.dictionaryStore = dictionaryStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.sessionDisableTimingSubject = sessionDisableTimingSubject
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName
+    }
+
+    func updateSessionDisableTiming(_ timing: iOSSessionDisableTiming) {
+        sessionDisableTimingSubject?.send(timing)
     }
 
     func cleanup() {

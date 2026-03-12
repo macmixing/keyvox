@@ -24,7 +24,7 @@ extension iOSTranscriptionManager {
 
         guard isSessionActive,
               !sessionDisablePending,
-              let idleTimeout = sessionPolicy.idleTimeout else {
+              let idleTimeout = currentIdleTimeout() else {
             return
         }
 
@@ -32,7 +32,12 @@ extension iOSTranscriptionManager {
         sessionExpirationDate = expirationDate
         idleTimeoutTask = Task { [weak self] in
             let duration = UInt64(idleTimeout * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: duration)
+            do {
+                try await Task.sleep(nanoseconds: duration)
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
             await self?.handleIdleTimeoutFired()
         }
     }
@@ -76,9 +81,28 @@ extension iOSTranscriptionManager {
     }
 
     func finishAndDisableSessionIfNeeded() async {
-        if sessionDisablePending && state == .idle {
+        guard state == .idle else { return }
+
+        if sessionDisablePending {
             await completeSessionShutdown()
-        } else if isSessionActive && state == .idle {
+            return
+        }
+
+        guard isSessionActive else { return }
+
+        if shouldDisableSessionImmediatelyWhenIdle() {
+            await completeSessionShutdown()
+        } else {
+            armIdleTimeout()
+        }
+    }
+
+    func handleSessionDisableTimingChanged() async {
+        guard isSessionActive, !sessionDisablePending, state == .idle else { return }
+
+        if shouldDisableSessionImmediatelyWhenIdle() {
+            await completeSessionShutdown()
+        } else {
             armIdleTimeout()
         }
     }

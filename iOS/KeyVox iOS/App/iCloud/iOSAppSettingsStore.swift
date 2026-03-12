@@ -1,6 +1,33 @@
 import Combine
 import Foundation
 
+enum iOSSessionDisableTiming: String, CaseIterable, Identifiable {
+    case immediately
+    case fiveMinutes
+    case fifteenMinutes
+    case oneHour
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .immediately: return "Immediately"
+        case .fiveMinutes: return "5 Minutes"
+        case .fifteenMinutes: return "15 Minutes"
+        case .oneHour: return "1 Hour"
+        }
+    }
+
+    var idleTimeout: TimeInterval? {
+        switch self {
+        case .immediately: return nil
+        case .fiveMinutes: return 300
+        case .fifteenMinutes: return 900
+        case .oneHour: return 3600
+        }
+    }
+}
+
 @MainActor
 final class iOSAppSettingsStore: ObservableObject {
     enum TriggerBinding: String, CaseIterable, Identifiable {
@@ -57,6 +84,12 @@ final class iOSAppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var sessionDisableTiming: iOSSessionDisableTiming {
+        didSet {
+            defaults.set(sessionDisableTiming.rawValue, forKey: iOSUserDefaultsKeys.sessionDisableTiming)
+        }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
@@ -73,6 +106,12 @@ final class iOSAppSettingsStore: ObservableObject {
         listFormattingEnabled = defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
         capsLockEnabled = defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         preferBuiltInMicrophone = defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
+        if let raw = defaults.string(forKey: iOSUserDefaultsKeys.sessionDisableTiming),
+           let timing = iOSSessionDisableTiming(rawValue: raw) {
+            sessionDisableTiming = timing
+        } else {
+            sessionDisableTiming = .fiveMinutes
+        }
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

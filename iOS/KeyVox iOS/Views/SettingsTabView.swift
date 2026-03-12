@@ -7,6 +7,7 @@ struct SettingsTabView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                sessionSection
                 audioSection
                 modelSection
             }
@@ -16,6 +17,25 @@ struct SettingsTabView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             modelManager.refreshStatus()
+        }
+    }
+
+    @ViewBuilder
+    private var sessionSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Session")
+                .font(.headline)
+
+            Picker("Disable Session After", selection: $settingsStore.sessionDisableTiming) {
+                ForEach(iOSSessionDisableTiming.allCases) { timing in
+                    Text(timing.displayName).tag(timing)
+                }
+            }
+            .pickerStyle(.menu)
+
+            Text("Decide when the session turns off")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 

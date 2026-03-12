@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import KeyVoxCore
 
@@ -72,6 +73,10 @@ final class iOSAppServiceRegistry {
             capsLockEnabledProvider: {
                 settingsDefaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
             },
+            sessionDisableTimingProvider: { [weak settingsStore] in
+                settingsStore?.sessionDisableTiming ?? .fiveMinutes
+            },
+            sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
         )
         let iCloudSyncCoordinator = iOSiCloudSyncCoordinator(

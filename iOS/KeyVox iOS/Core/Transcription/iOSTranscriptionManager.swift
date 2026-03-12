@@ -29,6 +29,7 @@ final class iOSTranscriptionManager: ObservableObject {
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
+    private let sessionDisableTimingProvider: (() -> iOSSessionDisableTiming)?
     let sessionPolicy: iOSSessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
@@ -72,6 +73,8 @@ final class iOSTranscriptionManager: ObservableObject {
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
         capsLockEnabledProvider: @escaping () -> Bool = { false },
+        sessionDisableTimingProvider: (() -> iOSSessionDisableTiming)? = nil,
+        sessionDisableTimingPublisher: AnyPublisher<iOSSessionDisableTiming, Never> = Empty().eraseToAnyPublisher(),
         sessionPolicy: iOSSessionPolicy = .default
     ) {
         self.recorder = recorder
@@ -84,9 +87,11 @@ final class iOSTranscriptionManager: ObservableObject {
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
+        self.sessionDisableTimingProvider = sessionDisableTimingProvider
         self.sessionPolicy = sessionPolicy
 
         bindDictionaryState()
+        bindSessionDisableTimingState(sessionDisableTimingPublisher)
         refreshModelAvailability()
         isSessionActive = recorder.isMonitoring
         
@@ -297,6 +302,30 @@ final class iOSTranscriptionManager: ObservableObject {
     private func updateDictionaryState(entries: [DictionaryEntry]) {
         postProcessor.updateDictionaryEntries(entries)
         transcriptionService.updateDictionaryHintPrompt(whisperHintPrompt(for: entries))
+    }
+
+    private func bindSessionDisableTimingState(_ publisher: AnyPublisher<iOSSessionDisableTiming, Never>) {
+        publisher
+            .removeDuplicates()
+            .dropFirst()
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    await self?.handleSessionDisableTimingChanged()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    func currentSessionDisableTiming() -> iOSSessionDisableTiming? {
+        sessionDisableTimingProvider?()
+    }
+
+    func currentIdleTimeout() -> TimeInterval? {
+        currentSessionDisableTiming()?.idleTimeout ?? sessionPolicy.idleTimeout
+    }
+
+    func shouldDisableSessionImmediatelyWhenIdle() -> Bool {
+        currentSessionDisableTiming() == .immediately
     }
 
     private func refreshModelAvailability() {

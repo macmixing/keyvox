@@ -14,12 +14,14 @@ struct iOSAppSettingsStoreTests {
         store.listFormattingEnabled = false
         store.capsLockEnabled = true
         store.preferBuiltInMicrophone = false
+        store.sessionDisableTiming = .oneHour
 
         #expect(defaults.string(forKey: iOSUserDefaultsKeys.triggerBinding) == iOSAppSettingsStore.TriggerBinding.leftControl.rawValue)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool == true)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool == false)
+        #expect(defaults.string(forKey: iOSUserDefaultsKeys.sessionDisableTiming) == iOSSessionDisableTiming.oneHour.rawValue)
     }
 
     @Test func triggerBindingRoundTripsThroughRawValue() {
@@ -93,6 +95,19 @@ struct iOSAppSettingsStoreTests {
 
         let reloaded = iOSAppSettingsStore(defaults: defaults)
         #expect(reloaded.preferBuiltInMicrophone == false)
+    }
+
+    @Test func sessionDisableTimingDefaultsToFiveMinutesAndRoundTripsThroughDefaults() {
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = iOSAppSettingsStore(defaults: defaults)
+        #expect(store.sessionDisableTiming == .fiveMinutes)
+
+        store.sessionDisableTiming = .immediately
+
+        let reloaded = iOSAppSettingsStore(defaults: defaults)
+        #expect(reloaded.sessionDisableTiming == .immediately)
     }
 
     private func makeDefaults() -> (UserDefaults, String) {
