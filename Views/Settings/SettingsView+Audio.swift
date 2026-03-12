@@ -1,6 +1,16 @@
 import SwiftUI
 import AppKit
 
+private extension VerticalAlignment {
+    private struct AudioHeaderCenterAlignment: AlignmentID {
+        static func defaultValue(in dimensions: ViewDimensions) -> CGFloat {
+            dimensions[VerticalAlignment.center]
+        }
+    }
+
+    static let audioHeaderCenter = VerticalAlignment(AudioHeaderCenterAlignment.self)
+}
+
 extension SettingsView {
     private func isRecommendedMicrophone(_ microphone: MicrophoneOption) -> Bool {
         microphone.kind == .builtIn
@@ -16,37 +26,47 @@ extension SettingsView {
                 .padding(.leading, 4)
             
             SettingsCard {
-                HStack(alignment: .top, spacing: 16) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.indigo.opacity(0.15))
-                            .frame(width: 44, height: 44)
-                        Image(systemName: "mic.fill")
-                            .font(.custom("Kanit Medium", size: 20))
-                            .foregroundColor(.indigo)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Microphone Input")
-                            .font(.custom("Kanit Medium", size: 17))
-                        
-                        Text(microphoneSubtitle)
-                            .font(.custom("Kanit Medium", size: 12))
-                            .foregroundColor(microphoneSubtitleColor)
-                            .lineSpacing(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Picker("", selection: $appSettings.selectedMicrophoneUID) {
-                            ForEach(audioDeviceManager.pickerMicrophones) { microphone in
-                                Text(microphonePickerLabel(for: microphone))
-                                    .tag(microphone.id)
-                            }
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .audioHeaderCenter, spacing: 16) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.indigo.opacity(0.15))
+                                .frame(width: 44, height: 44)
+                            Image(systemName: "mic.fill")
+                                .font(.custom("Kanit Medium", size: 20))
+                                .foregroundColor(.indigo)
                         }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                        .disabled(audioDeviceManager.pickerMicrophones.isEmpty)
-                        .frame(maxWidth: .infinity)
+                        .alignmentGuide(.audioHeaderCenter) { dimensions in
+                            dimensions[VerticalAlignment.center]
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Microphone Input")
+                                .font(.custom("Kanit Medium", size: 17))
+                            
+                            Text(microphoneSubtitle)
+                                .font(.custom("Kanit Medium", size: 12))
+                                .foregroundColor(microphoneSubtitleColor)
+                                .lineSpacing(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .alignmentGuide(.audioHeaderCenter) { dimensions in
+                            dimensions[VerticalAlignment.center]
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Picker("", selection: $appSettings.selectedMicrophoneUID) {
+                        ForEach(audioDeviceManager.pickerMicrophones) { microphone in
+                            Text(microphonePickerLabel(for: microphone))
+                                .tag(microphone.id)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .disabled(audioDeviceManager.pickerMicrophones.isEmpty)
+                    .fixedSize()
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
 
@@ -56,7 +76,7 @@ extension SettingsView {
                 .padding(.leading, 4)
             
             SettingsCard {
-                HStack(alignment: .top, spacing: 16) {
+                HStack(alignment: .audioHeaderCenter, spacing: 16) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.indigo.opacity(0.15))
@@ -64,6 +84,9 @@ extension SettingsView {
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.custom("Kanit Medium", size: 20))
                             .foregroundColor(.indigo)
+                    }
+                    .alignmentGuide(.audioHeaderCenter) { dimensions in
+                        dimensions[VerticalAlignment.center]
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
@@ -77,6 +100,9 @@ extension SettingsView {
                                     .foregroundColor(.secondary)
                                     .lineSpacing(2)
                                     .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .alignmentGuide(.audioHeaderCenter) { dimensions in
+                                dimensions[VerticalAlignment.center]
                             }
 
                             Spacer(minLength: 16)
@@ -111,6 +137,7 @@ extension SettingsView {
                         }
                         .opacity(appSettings.isSoundEnabled ? 1 : 0.7)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
