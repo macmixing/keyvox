@@ -7,13 +7,14 @@ protocol KeyboardImpactFeedbackGenerating: AnyObject {
 
 final class KeyboardImpactFeedbackGeneratorAdapter: KeyboardImpactFeedbackGenerating {
     private let generator = UIImpactFeedbackGenerator(style: .light)
+    private let intensity: CGFloat = 0.80
 
     func prepare() {
         generator.prepare()
     }
 
     func impactOccurred() {
-        generator.impactOccurred()
+        generator.impactOccurred(intensity: intensity)
     }
 }
 
