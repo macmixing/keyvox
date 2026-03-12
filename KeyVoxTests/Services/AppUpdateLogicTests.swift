@@ -70,6 +70,32 @@ final class AppUpdateLogicTests: XCTestCase {
         XCTAssertTrue(mapped?.installAssetKind == .manualOnly)
     }
 
+    func testMapReleaseInfoFallsBackToManualOnlyWhenMultipleZipAssetsExist() {
+        let release = GitHubLatestReleaseResponse(
+            tagName: "v1.2.0",
+            body: "Release notes",
+            htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
+            assets: [
+                GitHubReleaseAsset(
+                    name: "KeyVox-1.2.0-arm64.zip",
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0-arm64.zip"
+                ),
+                GitHubReleaseAsset(
+                    name: "KeyVox-1.2.0-universal.zip",
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0-universal.zip"
+                ),
+                GitHubReleaseAsset(
+                    name: AppUpdateLogic.manifestAssetName,
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/keyvox-update-manifest.json"
+                )
+            ]
+        )
+
+        let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
+        XCTAssertTrue(mapped?.installAssetURL == nil)
+        XCTAssertTrue(mapped?.installAssetKind == .manualOnly)
+    }
+
     func testMapReleaseInfoRejectsNonAllowlistedHost() {
         let release = GitHubLatestReleaseResponse(
             tagName: "1.2.0",
@@ -80,5 +106,15 @@ final class AppUpdateLogicTests: XCTestCase {
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped == nil)
+    }
+
+    func testAppUpdatePathsSanitizesVersionForReleaseDirectory() {
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let paths = AppUpdatePaths(fileManager: .default, rootDirectory: rootURL)
+
+        let releaseURL = paths.releaseDirectoryURL(for: "../1.2.3/../../evil")
+
+        XCTAssertTrue(releaseURL.path.hasPrefix(rootURL.path))
+        XCTAssertTrue(releaseURL.lastPathComponent == "1.2.3evil")
     }
 }

@@ -25,7 +25,7 @@ struct AppUpdatePaths {
     }
 
     func releaseDirectoryURL(for version: String) -> URL {
-        updatesDirectoryURL.appendingPathComponent(version, isDirectory: true)
+        updatesDirectoryURL.appendingPathComponent(sanitizedVersion(version), isDirectory: true)
     }
 
     func zipURL(for version: String, assetName: String) -> URL {
@@ -38,5 +38,16 @@ struct AppUpdatePaths {
 
     func createReleaseDirectoryIfNeeded(for version: String) throws {
         try fileManager.createDirectory(at: releaseDirectoryURL(for: version), withIntermediateDirectories: true)
+    }
+
+    private func sanitizedVersion(_ version: String) -> String {
+        let disallowedCharacters = CharacterSet(charactersIn: "/\\:")
+        let sanitized = version
+            .components(separatedBy: disallowedCharacters)
+            .joined(separator: "")
+            .replacingOccurrences(of: "..", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return sanitized.isEmpty ? "unknown-version" : sanitized
     }
 }

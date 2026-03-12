@@ -14,7 +14,26 @@ struct AppUpdateCleanupService {
 
     func cleanupStaleArtifacts() {
         let updatesURL = paths.updatesDirectoryURL
-        guard fileManager.fileExists(atPath: updatesURL.path) else { return }
-        try? fileManager.removeItem(at: updatesURL)
+        if fileManager.fileExists(atPath: updatesURL.path) {
+            try? fileManager.removeItem(at: updatesURL)
+        }
+        cleanupBackupBundles()
+    }
+
+    private func cleanupBackupBundles(bundleURL: URL = Bundle.main.bundleURL) {
+        let parentURL = bundleURL.deletingLastPathComponent()
+        let backupPrefix = "\(bundleURL.lastPathComponent).backup."
+
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: parentURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else {
+            return
+        }
+
+        for candidate in contents where candidate.lastPathComponent.hasPrefix(backupPrefix) {
+            try? fileManager.removeItem(at: candidate)
+        }
     }
 }

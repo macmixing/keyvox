@@ -15,11 +15,15 @@ enum AppUpdateLogic {
             return nil
         }
 
-        let zipAsset = release.assets.first(where: { asset in
+        let zipAssets = release.assets.filter { asset in
             asset.name.lowercased().hasSuffix(".zip")
-        })
+        }
+        // Fail closed when multiple ZIP assets are present. The manifest is
+        // loaded later in the pipeline, so release parsing only auto-installs
+        // when there is a single unambiguous ZIP candidate here.
+        let zipAsset = zipAssets.count == 1 ? zipAssets.first : nil
         let manifestAsset = release.assets.first(where: { asset in
-            asset.name == manifestAssetName
+            asset.name.caseInsensitiveCompare(manifestAssetName) == .orderedSame
         })
 
         let installAssetURL = zipAsset.flatMap { URL(string: $0.browserDownloadURL) }

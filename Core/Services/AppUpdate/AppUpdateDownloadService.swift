@@ -22,6 +22,8 @@ struct AppUpdateDownloadService {
 
         let configuration = URLSessionConfiguration.default
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.timeoutIntervalForRequest = 60
+        configuration.timeoutIntervalForResource = 60 * 30
         let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
 
         defer {

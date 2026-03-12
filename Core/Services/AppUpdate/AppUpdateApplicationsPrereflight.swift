@@ -52,7 +52,15 @@ struct AppUpdateApplicationsPrereflight {
         try fileManager.copyItem(at: sourceURL, to: stagingURL)
 
         if fileManager.fileExists(atPath: destinationURL.path) {
-            try fileManager.removeItem(at: destinationURL)
+            var resultingURL: NSURL?
+            try fileManager.replaceItem(
+                at: destinationURL,
+                withItemAt: stagingURL,
+                backupItemName: nil,
+                options: [],
+                resultingItemURL: &resultingURL
+            )
+            return (resultingURL as URL?) ?? destinationURL
         }
 
         try fileManager.moveItem(at: stagingURL, to: destinationURL)

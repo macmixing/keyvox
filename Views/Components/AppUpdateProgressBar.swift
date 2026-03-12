@@ -4,6 +4,9 @@ struct AppUpdateProgressBar: View {
     let progress: Double
     let label: String
     let detail: String?
+    private var clampedProgress: Double {
+        min(max(progress, 0), 1)
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -18,7 +21,7 @@ struct AppUpdateProgressBar: View {
 
                 Spacer()
 
-                Text("\(Int(progress * 100))%")
+                Text("\(Int(clampedProgress * 100))%")
                     .font(.custom("Kanit Medium", size: 11))
                     .foregroundColor(.indigo)
             }

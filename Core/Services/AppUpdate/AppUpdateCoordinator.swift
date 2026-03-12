@@ -14,6 +14,7 @@ enum AppUpdateError: LocalizedError {
     case releaseUnavailable
     case missingInstallAsset
     case missingInstallerScript
+    case installerLaunchFailed
 
     var errorDescription: String? {
         switch self {
@@ -39,6 +40,8 @@ enum AppUpdateError: LocalizedError {
             return "This release is only available as a manual download."
         case .missingInstallerScript:
             return "The updater script could not be found in the app bundle."
+        case .installerLaunchFailed:
+            return "KeyVox could not start the installer."
         }
     }
 }
@@ -74,17 +77,19 @@ final class AppUpdateCoordinator: ObservableObject {
     private var isResumingInstallAfterApplicationsMove = false
 
     init(bundle: Bundle = .main) {
+        let paths = AppUpdatePaths()
+        let noticeService = AppUpdateLaunchNoticeService(bundle: bundle)
         self.service = AppUpdateService.shared
         self.manifestLoader = AppUpdateManifestLoader(session: .shared)
         self.downloadService = AppUpdateDownloadService(fileManager: .default)
         self.checksumVerifier = AppUpdateChecksumVerifier()
         self.archiveExtractor = AppUpdateArchiveExtractor(fileManager: .default)
         self.bundleVerifier = AppUpdateBundleVerifier(fileManager: .default)
-        self.installLauncher = AppUpdateInstallLauncher(noticeService: AppUpdateLaunchNoticeService(bundle: bundle))
+        self.installLauncher = AppUpdateInstallLauncher(noticeService: noticeService)
         self.applicationsPrereflight = AppUpdateApplicationsPrereflight()
-        self.cleanupService = AppUpdateCleanupService(fileManager: .default, paths: AppUpdatePaths())
-        self.noticeService = AppUpdateLaunchNoticeService(bundle: bundle)
-        self.paths = AppUpdatePaths()
+        self.cleanupService = AppUpdateCleanupService(fileManager: .default, paths: paths)
+        self.noticeService = noticeService
+        self.paths = paths
         self.fileManager = .default
         self.currentVersion = AppUpdateLogic.normalizeVersionTag(
             (bundle.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "Unknown"

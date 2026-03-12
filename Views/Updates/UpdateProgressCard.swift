@@ -6,11 +6,15 @@ struct UpdateProgressCard: View {
     let downloadedBytes: Int64
     let totalBytes: Int64
 
-    private var detailText: String? {
-        guard totalBytes > 0 else { return nil }
+    private static let byteFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
-        return "\(formatter.string(fromByteCount: downloadedBytes)) of \(formatter.string(fromByteCount: totalBytes))"
+        return formatter
+    }()
+
+    private var detailText: String? {
+        guard totalBytes > 0 else { return nil }
+        return "\(Self.byteFormatter.string(fromByteCount: downloadedBytes)) of \(Self.byteFormatter.string(fromByteCount: totalBytes))"
     }
 
     var body: some View {

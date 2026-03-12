@@ -24,10 +24,11 @@ struct AppUpdateLaunchNoticeService {
         guard let pendingVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion) else {
             return nil
         }
+        let normalizedPendingVersion = AppUpdateLogic.normalizeVersionTag(pendingVersion)
 
-        if pendingVersion == currentVersion,
+        if normalizedPendingVersion == currentVersion,
            defaults.string(forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion) != currentVersion {
-            return currentVersion
+            return normalizedPendingVersion
         }
 
         defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
