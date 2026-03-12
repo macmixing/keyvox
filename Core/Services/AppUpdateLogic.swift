@@ -1,26 +1,43 @@
 import Foundation
 
 enum AppUpdateLogic {
+    static let manifestAssetName = "keyvox-update-manifest.json"
+
     static func mapReleaseInfo(
         from release: GitHubLatestReleaseResponse,
         allowedHosts: [String]
-    ) -> LatestReleaseInfo? {
+    ) -> AppReleaseInfo? {
         let normalizedVersion = normalizeVersionTag(release.tagName)
         guard !normalizedVersion.isEmpty else { return nil }
 
-        let selectedDownloadURL: URL? = release.assets.first(where: { asset in
-            asset.name.lowercased().hasSuffix(".dmg")
-        }).flatMap { URL(string: $0.browserDownloadURL) } ?? URL(string: release.htmlURL)
-
-        guard let selectedDownloadURL,
-              hasAllowedHost(selectedDownloadURL, allowedHosts: allowedHosts) else {
+        guard let releasePageURL = URL(string: release.htmlURL),
+              hasAllowedHost(releasePageURL, allowedHosts: allowedHosts) else {
             return nil
         }
 
-        return LatestReleaseInfo(
+        let zipAsset = release.assets.first(where: { asset in
+            asset.name.lowercased().hasSuffix(".zip")
+        })
+        let manifestAsset = release.assets.first(where: { asset in
+            asset.name == manifestAssetName
+        })
+
+        let installAssetURL = zipAsset.flatMap { URL(string: $0.browserDownloadURL) }
+        let manifestAssetURL = manifestAsset.flatMap { URL(string: $0.browserDownloadURL) }
+        let hasValidInstallAssets =
+            installAssetURL != nil &&
+            manifestAssetURL != nil &&
+            installAssetURL.map { hasAllowedHost($0, allowedHosts: allowedHosts) } == true &&
+            manifestAssetURL.map { hasAllowedHost($0, allowedHosts: allowedHosts) } == true
+
+        return AppReleaseInfo(
             version: normalizedVersion,
             message: release.body,
-            updateURL: selectedDownloadURL
+            releasePageURL: releasePageURL,
+            installAssetURL: hasValidInstallAssets ? installAssetURL : nil,
+            installAssetName: hasValidInstallAssets ? zipAsset?.name : nil,
+            manifestAssetURL: hasValidInstallAssets ? manifestAssetURL : nil,
+            installAssetKind: hasValidInstallAssets ? .zip : .manualOnly
         )
     }
 

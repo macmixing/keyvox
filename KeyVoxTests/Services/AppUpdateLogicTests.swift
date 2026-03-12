@@ -22,12 +22,20 @@ final class AppUpdateLogicTests: XCTestCase {
         XCTAssertTrue(!AppUpdateLogic.hasAllowedHost(URL(string: "https://example.com/release")!, allowedHosts: allowed))
     }
 
-    func testMapReleaseInfoPrefersDmgAsset() throws {
+    func testMapReleaseInfoPrefersZipWhenManifestIsPresent() throws {
         let release = GitHubLatestReleaseResponse(
             tagName: "v1.2.0",
             body: "Release notes",
             htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
             assets: [
+                GitHubReleaseAsset(
+                    name: "KeyVox-1.2.0.zip",
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0.zip"
+                ),
+                GitHubReleaseAsset(
+                    name: AppUpdateLogic.manifestAssetName,
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/keyvox-update-manifest.json"
+                ),
                 GitHubReleaseAsset(
                     name: "KeyVox-1.2.0.dmg",
                     browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0.dmg"
@@ -38,20 +46,28 @@ final class AppUpdateLogicTests: XCTestCase {
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped != nil)
         XCTAssertTrue(mapped?.version == "1.2.0")
-        XCTAssertTrue(mapped?.updateURL.absoluteString.contains(".dmg") == true)
+        XCTAssertTrue(mapped?.installAssetURL?.absoluteString.contains(".zip") == true)
+        XCTAssertTrue(mapped?.installAssetKind == .zip)
     }
 
-    func testMapReleaseInfoFallsBackToHtmlWhenNoDmg() throws {
+    func testMapReleaseInfoFallsBackToManualOnlyWhenManifestMissing() throws {
         let release = GitHubLatestReleaseResponse(
             tagName: "v1.2.0",
             body: "Release notes",
             htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v1.2.0",
-            assets: []
+            assets: [
+                GitHubReleaseAsset(
+                    name: "KeyVox-1.2.0.zip",
+                    browserDownloadURL: "https://github.com/macmixing/keyvox/releases/download/v1.2.0/KeyVox-1.2.0.zip"
+                )
+            ]
         )
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped != nil)
-        XCTAssertTrue(mapped?.updateURL.absoluteString == release.htmlURL)
+        XCTAssertTrue(mapped?.releasePageURL.absoluteString == release.htmlURL)
+        XCTAssertTrue(mapped?.installAssetURL == nil)
+        XCTAssertTrue(mapped?.installAssetKind == .manualOnly)
     }
 
     func testMapReleaseInfoRejectsNonAllowlistedHost() {

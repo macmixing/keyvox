@@ -41,6 +41,8 @@ class WindowManager: ObservableObject {
     
     @Published var settingsWindow: NSWindow?
     @Published var onboardingWindow: NSWindow?
+    @Published var updateWindow: NSWindow?
+    @Published var postUpdateNoticeWindow: NSWindow?
     
     private init() {} // Private init for singleton
     
@@ -179,6 +181,7 @@ struct KeyVoxApp: App {
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
+    @ObservedObject private var updateCoordinator = AppUpdateCoordinator.shared
     private let appServiceRegistry = AppServiceRegistry.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
@@ -210,7 +213,11 @@ struct KeyVoxApp: App {
         }
 
         Task { @MainActor in
+            AppUpdateCoordinator.shared.prepareForLaunch()
             AppUpdateService.shared.startUpdateTimer()
+            if AppUpdateCoordinator.shared.postUpdateNoticeVersion != nil {
+                WindowManager.shared.showPostUpdateNoticeWindow()
+            }
         }
 
         _ = appServiceRegistry.iCloudSyncCoordinator
@@ -231,7 +238,7 @@ struct KeyVoxApp: App {
             StatusMenuView(
                 manager: transcriptionManager,
                 openSettings: { tab in WindowManager.shared.openSettings(tab: tab) },
-                checkForUpdates: { AppUpdateService.shared.checkForUpdatesManually() },
+                checkForUpdates: { AppUpdateCoordinator.shared.openWindowForManualCheck() },
                 quitApp: { NSApplication.shared.terminate(nil) }
             )
         } label: {
