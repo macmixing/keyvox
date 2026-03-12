@@ -24,14 +24,14 @@ struct KeyVoxApp: App {
         segmentedControlAppearance.setTitleTextAttributes(
             [
                 .foregroundColor: UIColor.white,
-                .font: UIFont.systemFont(ofSize: 13, weight: .regular)
+                .font: UIFont.systemFont(ofSize: 15, weight: .regular)
             ],
             for: .normal
         )
         segmentedControlAppearance.setTitleTextAttributes(
             [
                 .foregroundColor: UIColor.black,
-                .font: UIFont.systemFont(ofSize: 13, weight: .heavy)
+                .font: UIFont.systemFont(ofSize: 15, weight: .heavy)
             ],
             for: .selected
         )
