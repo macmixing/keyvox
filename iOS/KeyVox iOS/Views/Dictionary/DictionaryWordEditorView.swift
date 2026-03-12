@@ -1,71 +1,73 @@
+import Combine
 import SwiftUI
 import KeyVoxCore
 
 struct DictionaryWordEditorView: View {
+    private enum Layout {
+        static let baseDetentHeight: CGFloat = 200
+    }
+
     let mode: DictionaryWordEditorMode
 
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @Environment(\.dismiss) private var dismiss
-    @FocusState private var isTextFieldFocused: Bool
     @State private var phrase: String
     @State private var errorMessage: String?
+    @StateObject private var keyboardObserver = KeyboardObserver()
 
     init(mode: DictionaryWordEditorMode) {
         self.mode = mode
         _phrase = State(initialValue: mode.initialPhrase)
     }
 
+    private var trimmedPhrase: String {
+        phrase.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var bottomPadding: CGFloat {
+        keyboardObserver.isKeyboardVisible ? 0 : 30
+    }
+
     var body: some View {
         NavigationStack {
-            iOSAppScrollScreen {
-                iOSAppCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Type the exact word or phrase you want KeyVox to preserve.")
-                            .font(.appFont(12))
-                            .foregroundStyle(.secondary)
+            Form {
+                AutoFocusTextField(
+                    text: $phrase,
+                    placeholder: "KeyVox",
+                    onSubmit: submit
+                )
+                .frame(height: 44)
+                .onChange(of: phrase) { _, _ in
+                    errorMessage = nil
+                }
 
-                        TextField("KeyVox", text: $phrase, axis: .vertical)
-                            .font(.appFont(16))
-                            .focused($isTextFieldFocused)
-                            .submitLabel(.done)
-                            .lineLimit(1...3)
-                            .textInputAutocapitalization(.words)
-                            .disableAutocorrection(true)
-                            .onSubmit(saveFromSubmit)
-                            .onChange(of: phrase) { _, _ in
-                                errorMessage = nil
-                            }
-
-                        if let errorMessage {
-                            Text(errorMessage)
-                                .font(.appFont(12))
-                                .foregroundStyle(.red)
-                        }
-                    }
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
                 }
             }
             .navigationTitle(mode.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .font(.appFont(14))
+                    .tint(.white)
                 }
 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(mode.actionTitle) {
-                        save()
+                        submit()
                     }
-                    .font(.appFont(14))
+                    .tint(iOSAppTheme.accent)
+                    .disabled(trimmedPhrase.isEmpty)
                 }
             }
         }
-        .presentationDetents([.medium])
-        .onAppear {
-            isTextFieldFocused = true
-        }
+        .presentationDetents([.height(Layout.baseDetentHeight + bottomPadding)])
+        .presentationDragIndicator(.visible)
     }
 
     private func save() {
@@ -83,9 +85,14 @@ struct DictionaryWordEditorView: View {
         }
     }
 
-    private func saveFromSubmit() {
-        let trimmedPhrase = phrase.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedPhrase.isEmpty else { return }
-        save()
+    private func submit() {
+        let cleanedPhrase = trimmedPhrase
+        guard !cleanedPhrase.isEmpty else { return }
+        phrase = cleanedPhrase
+
+        // Begin dismissal before the save side effects run.
+        DispatchQueue.main.async {
+            save()
+        }
     }
 }

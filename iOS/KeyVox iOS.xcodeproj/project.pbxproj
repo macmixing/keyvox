@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000E2F70000100000001 /* AutoFocusTextField.swift */; };
+		AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000F2F70000100000001 /* KeyboardObserver.swift */; };
 		AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000C2F70000100000001 /* ContainingAppTab.swift */; };
 		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
 		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
@@ -114,6 +116,8 @@
 		AA2000092F70000100000001 /* DictionaryEntryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntryRowView.swift; sourceTree = "<group>"; };
 		AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		AA20000C2F70000100000001 /* ContainingAppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainingAppTab.swift; sourceTree = "<group>"; };
+		AA20000E2F70000100000001 /* AutoFocusTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoFocusTextField.swift; sourceTree = "<group>"; };
+		AA20000F2F70000100000001 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -232,6 +236,8 @@
 		AA3000022F70000100000001 /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
+				AA20000E2F70000100000001 /* AutoFocusTextField.swift */,
+				AA20000F2F70000100000001 /* KeyboardObserver.swift */,
 				AA2000062F70000100000001 /* DictionarySortMode.swift */,
 				AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */,
 				AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */,
@@ -542,6 +548,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */,
+				AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */,
 				AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */,
 				AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */,
 				AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */,

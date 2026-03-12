@@ -17,18 +17,18 @@ enum DictionaryWordEditorMode: Identifiable {
     var title: String {
         switch self {
         case .add:
-            return "Add Dictionary Word"
+            return "Add Word"
         case .edit:
-            return "Edit Dictionary Word"
+            return "Edit Word"
         }
     }
 
     var actionTitle: String {
         switch self {
         case .add:
-            return "Add Word"
+            return "Add"
         case .edit:
-            return "Save Word"
+            return "Save"
         }
     }
 
