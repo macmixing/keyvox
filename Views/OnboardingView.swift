@@ -37,11 +37,11 @@ struct OnboardingView: View {
 
                     VStack(spacing: 4) {
                         Text("Welcome to KeyVox")
-                            .font(.custom("Kanit Medium", size: 32))
+                            .font(.appFont(32))
                             .foregroundColor(.indigo)
 
                         Text("Let's get you set up in three quick steps.")
-                            .font(.custom("Kanit Medium", size: 14))
+                            .font(.appFont(14))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -80,7 +80,7 @@ struct OnboardingView: View {
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
-                                .font(.custom("Kanit Medium", size: 10))
+                                .font(.appFont(10))
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -94,7 +94,7 @@ struct OnboardingView: View {
                 VStack(spacing: 12) {
                     Button(action: onComplete) {
                         Text("Start Using KeyVox")
-                            .font(.custom("Kanit Medium", size: 16))
+                            .font(.appFont(16))
                             .foregroundColor(allStepsCompleted ? .black : .white.opacity(0.3))
                             .padding(.horizontal, 40)
                             .padding(.vertical, 12)
@@ -107,7 +107,7 @@ struct OnboardingView: View {
                     .disabled(!allStepsCompleted)
 
                     Text("Complete all steps to proceed")
-                        .font(.custom("Kanit Medium", size: 11))
+                        .font(.appFont(11))
                         .foregroundColor(.secondary.opacity(0.5))
                         .opacity(allStepsCompleted ? 0 : 1)
                 }
@@ -258,18 +258,18 @@ struct OnboardingStepRow<Content: View>: View {
                             .foregroundColor(.white)
                     } else {
                         Text("\(stepNumber)")
-                            .font(.custom("Kanit Medium", size: 16))
+                            .font(.appFont(16))
                             .foregroundColor(.white)
                     }
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.custom("Kanit Medium", size: 16))
+                        .font(.appFont(16))
                         .foregroundColor(.white)
                     
                     Text(description)
-                        .font(.custom("Kanit Medium", size: 12))
+                        .font(.appFont(12))
                         .foregroundColor(.secondary)
                 }
                 
@@ -279,7 +279,7 @@ struct OnboardingStepRow<Content: View>: View {
                     action()
                 } label: {
                     Text(buttonTitle)
-                        .font(.custom("Kanit Medium", size: 12))
+                        .font(.appFont(12))
                         .foregroundColor(isCompleted ? .green : .white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)

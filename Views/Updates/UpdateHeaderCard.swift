@@ -19,10 +19,10 @@ struct UpdateHeaderCard: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Updater")
-                            .font(.custom("Kanit Medium", size: 18))
+                            .font(.appFont(18))
                             .foregroundColor(.white)
                         Text(statusMessage)
-                            .font(.custom("Kanit Medium", size: 12))
+                            .font(.appFont(12))
                             .foregroundColor(.secondary)
                     }
 
@@ -33,12 +33,12 @@ struct UpdateHeaderCard: View {
 
                 HStack {
                     Text("Current: v\(currentVersion)")
-                        .font(.custom("Kanit Medium", size: 11))
+                        .font(.appFont(11))
                         .foregroundColor(.secondary)
                     Spacer()
                     if let targetVersion, state != .completed {
                         Text("Update: v\(targetVersion)")
-                            .font(.custom("Kanit Medium", size: 11))
+                            .font(.appFont(11))
                             .foregroundColor(.indigo)
                     }
                 }

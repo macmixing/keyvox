@@ -12,7 +12,7 @@ extension SettingsView {
     var dictionarySettings: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("DICTIONARY")
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
 
@@ -25,16 +25,16 @@ extension SettingsView {
                                 .frame(width: 44, height: 44)
 
                             Image(systemName: "text.book.closed.fill")
-                                .font(.custom("Kanit Medium", size: 20))
+                                .font(.appFont(20))
                                 .foregroundColor(.indigo)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Dictionary")
-                                .font(.custom("Kanit Medium", size: 17))
+                                .font(.appFont(17))
 
                             Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
-                                .font(.custom("Kanit Medium", size: 12))
+                                .font(.appFont(12))
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)
                         }
@@ -51,7 +51,7 @@ extension SettingsView {
 
                     if let warning = dictionaryStore.loadWarningMessage {
                         Text(warning)
-                            .font(.custom("Kanit Medium", size: 11))
+                            .font(.appFont(11))
                             .foregroundColor(.red)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -59,7 +59,7 @@ extension SettingsView {
 
                     if let saveError = dictionaryStore.saveErrorMessage {
                         Text(saveError)
-                            .font(.custom("Kanit Medium", size: 11))
+                            .font(.appFont(11))
                             .foregroundColor(.red)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -77,7 +77,7 @@ extension SettingsView {
 
                     if displayedEntries.isEmpty {
                         Text("No custom words added yet.")
-                            .font(.custom("Kanit Medium", size: 12))
+                            .font(.appFont(12))
                             .foregroundColor(.secondary)
                     } else {
                         HStack {
@@ -122,7 +122,7 @@ private struct DictionaryEntryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(entry.phrase)
-                .font(.custom("Kanit Medium", size: 13))
+                .font(.appFont(13))
                 .foregroundColor(.white)
                 .lineLimit(1)
 

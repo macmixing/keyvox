@@ -13,17 +13,17 @@ struct OnboardingMicrophonePickerView: View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Choose Your Microphone")
-                    .font(.custom("Kanit Medium", size: 19))
+                    .font(.appFont(19))
                     .foregroundColor(.white)
 
                 if microphones.isEmpty {
                     Text("No microphone detected. Connect one to continue onboarding.")
-                        .font(.custom("Kanit Medium", size: 12))
+                        .font(.appFont(12))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 } else {
                     Text("No built-in microphone was found. Select a default microphone to continue.")
-                        .font(.custom("Kanit Medium", size: 12))
+                        .font(.appFont(12))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 }

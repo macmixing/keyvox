@@ -33,11 +33,11 @@ struct ConfirmDeletePromptView: View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(config.title)
-                    .font(.custom("Kanit Medium", size: 19))
+                    .font(.appFont(19))
                     .foregroundColor(.white)
 
                 Text(config.message)
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)

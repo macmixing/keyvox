@@ -21,7 +21,7 @@ extension SettingsView {
             Spacer().frame(height: 4)
             
             Text("MICROPHONE")
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
             
@@ -33,7 +33,7 @@ extension SettingsView {
                                 .fill(Color.indigo.opacity(0.15))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "mic.fill")
-                                .font(.custom("Kanit Medium", size: 20))
+                                .font(.appFont(20))
                                 .foregroundColor(.indigo)
                         }
                         .alignmentGuide(.audioHeaderCenter) { dimensions in
@@ -42,10 +42,10 @@ extension SettingsView {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Microphone Input")
-                                .font(.custom("Kanit Medium", size: 17))
+                                .font(.appFont(17))
                             
                             Text(microphoneSubtitle)
-                                .font(.custom("Kanit Medium", size: 12))
+                                .font(.appFont(12))
                                 .foregroundColor(microphoneSubtitleColor)
                                 .lineSpacing(2)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -71,7 +71,7 @@ extension SettingsView {
             }
 
             Text("SOUNDS")
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
             
@@ -82,7 +82,7 @@ extension SettingsView {
                             .fill(Color.indigo.opacity(0.15))
                             .frame(width: 44, height: 44)
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.custom("Kanit Medium", size: 20))
+                            .font(.appFont(20))
                             .foregroundColor(.indigo)
                     }
                     .alignmentGuide(.audioHeaderCenter) { dimensions in
@@ -93,10 +93,10 @@ extension SettingsView {
                         HStack(alignment: .top, spacing: 16) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("System Sounds")
-                                    .font(.custom("Kanit Medium", size: 17))
+                                    .font(.appFont(17))
 
                                 Text("Play audio feedback when recording starts and ends.")
-                                    .font(.custom("Kanit Medium", size: 12))
+                                    .font(.appFont(12))
                                     .foregroundColor(.secondary)
                                     .lineSpacing(2)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -114,7 +114,7 @@ extension SettingsView {
 
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Adjust volume")
-                                .font(.custom("Kanit Medium", size: 13))
+                                .font(.appFont(13))
                                 .foregroundColor(.primary)
 
                             HStack(spacing: 12) {
@@ -130,7 +130,7 @@ extension SettingsView {
                                     .disabled(!appSettings.isSoundEnabled)
 
                                 Text("\(Int((appSettings.soundVolume * 100).rounded()))%")
-                                    .font(.custom("Kanit Medium", size: 12))
+                                    .font(.appFont(12))
                                     .foregroundColor(.secondary)
                                     .frame(width: 40, alignment: .trailing)
                             }

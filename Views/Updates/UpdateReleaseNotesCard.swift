@@ -7,11 +7,11 @@ struct UpdateReleaseNotesCard: View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Release Notes")
-                    .font(.custom("Kanit Medium", size: 15))
+                    .font(.appFont(15))
                     .foregroundColor(.white)
 
                 Text(releaseNotes)
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
                     .frame(maxWidth: .infinity, alignment: .leading)

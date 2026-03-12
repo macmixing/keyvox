@@ -7,7 +7,7 @@ extension SettingsView {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("SYSTEM")
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
 
@@ -32,7 +32,7 @@ extension SettingsView {
 
                         if let errorMessage = loginItemController.errorMessage {
                             Text(errorMessage)
-                                .font(.custom("Kanit Medium", size: 11))
+                                .font(.appFont(11))
                                 .foregroundColor(.orange)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -41,7 +41,7 @@ extension SettingsView {
                             Button("Open Login Items Settings") {
                                 loginItemController.openLoginItemsSettings()
                             }
-                            .font(.custom("Kanit Medium", size: 12))
+                            .font(.appFont(12))
                             .foregroundColor(.indigo)
                             .buttonStyle(DepressedButtonStyle())
                         }
@@ -58,7 +58,7 @@ extension SettingsView {
             // More from Developer Section
             VStack(alignment: .leading, spacing: 10) {
                 Text("MORE FROM DEVELOPER")
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
                 
@@ -73,9 +73,9 @@ extension SettingsView {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Cueboard")
-                                    .font(.custom("Kanit Medium", size: 16))
+                                    .font(.appFont(16))
                                 Text("Cueboard is a shot list planning tool for creators who think visually. Compatible with iPhone, iPad, and Apple Silicon Mac.")
-                                    .font(.custom("Kanit Medium", size: 11))
+                                    .font(.appFont(11))
                                     .foregroundColor(.secondary)
                                     .lineSpacing(2)
                             }
@@ -89,7 +89,7 @@ extension SettingsView {
                                 }
                             }) {
                                 Text("View")
-                                    .font(.custom("Kanit Medium", size: 12))
+                                    .font(.appFont(12))
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(Color.indigo.opacity(0.2))
@@ -109,7 +109,7 @@ extension SettingsView {
                             .font(.system(size: 12))
                         Text("Legal & Licenses")
                     }
-                    .font(.custom("Kanit Medium", size: 13))
+                    .font(.appFont(13))
                     .foregroundColor(.indigo)
                 }
                 .buttonStyle(DepressedButtonStyle())
@@ -141,7 +141,7 @@ private struct GitHubSupportLink: View {
             onOpen()
         }) {
             Text("Support KeyVox on GitHub")
-                .font(.custom("Kanit Medium", size: 12))
+                .font(.appFont(12))
                 .foregroundColor(isHovered ? .yellow : .white)
                 .underline(isHovered)
         }

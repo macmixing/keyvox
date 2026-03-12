@@ -47,7 +47,7 @@ struct ModelSettingsRow: View {
 
             if let error = downloader.errorMessage {
                 Text(error)
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -59,7 +59,7 @@ struct ModelSettingsRow: View {
             Image(systemName: "xmark.circle.fill")
             Text("REMOVE")
         }
-        .font(.custom("Kanit Medium", size: 9))
+        .font(.appFont(9))
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(Color.red.opacity(0.15))
@@ -73,7 +73,7 @@ struct ModelSettingsRow: View {
 
     private var readyBadgeLabel: some View {
         Text("READY")
-            .font(.custom("Kanit Medium", size: 9))
+            .font(.appFont(9))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(Color.green.opacity(0.15))

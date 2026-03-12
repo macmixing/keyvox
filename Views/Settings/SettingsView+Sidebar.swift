@@ -22,10 +22,10 @@ extension SettingsView {
             // Weekly Usage
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text("Words this week:")
-                    .font(.custom("Kanit Medium", size: 14))
+                    .font(.appFont(14))
                     .foregroundColor(.white.opacity(0.95))
                 Text(weeklyWordStatsStore.combinedWordCount.formatted())
-                    .font(.custom("Kanit Medium", size: 14))
+                    .font(.appFont(14))
                     .foregroundColor(.yellow)
             }
         }
