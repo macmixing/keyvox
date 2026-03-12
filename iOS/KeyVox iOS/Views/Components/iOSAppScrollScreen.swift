@@ -17,8 +17,7 @@ struct iOSAppScrollScreen<Content: View>: View {
 
     var body: some View {
         ZStack {
-            iOSAppTheme.screenTint
-                .background(iOSAppTheme.screenBase)
+            iOSAppTheme.screenBackground
                 .ignoresSafeArea()
 
             ScrollView {

@@ -3,8 +3,13 @@ import SwiftUI
 
 enum iOSAppTheme {
     static let accent = Color.indigo
-    static let screenTint = Color.indigo.opacity(0.15)
-    static let screenBase = Color(white: 0.01)
+    static let screenBackground = Color(
+        .sRGB,
+        red: 26.0 / 255.0,
+        green: 23.0 / 255.0,
+        blue: 64.0 / 255.0,
+        opacity: 1
+    )
     static let cardFill = Color.white.opacity(0.05)
     static let cardStroke = Color.white.opacity(0.10)
     static let rowFill = Color.white.opacity(0.04)
