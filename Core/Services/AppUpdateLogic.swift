@@ -1,26 +1,47 @@
 import Foundation
 
 enum AppUpdateLogic {
+    static let manifestAssetName = "keyvox-update-manifest.json"
+
     static func mapReleaseInfo(
         from release: GitHubLatestReleaseResponse,
         allowedHosts: [String]
-    ) -> LatestReleaseInfo? {
+    ) -> AppReleaseInfo? {
         let normalizedVersion = normalizeVersionTag(release.tagName)
         guard !normalizedVersion.isEmpty else { return nil }
 
-        let selectedDownloadURL: URL? = release.assets.first(where: { asset in
-            asset.name.lowercased().hasSuffix(".dmg")
-        }).flatMap { URL(string: $0.browserDownloadURL) } ?? URL(string: release.htmlURL)
-
-        guard let selectedDownloadURL,
-              hasAllowedHost(selectedDownloadURL, allowedHosts: allowedHosts) else {
+        guard let releasePageURL = URL(string: release.htmlURL),
+              hasAllowedHost(releasePageURL, allowedHosts: allowedHosts) else {
             return nil
         }
 
-        return LatestReleaseInfo(
+        let zipAssets = release.assets.filter { asset in
+            asset.name.lowercased().hasSuffix(".zip")
+        }
+        // Fail closed when multiple ZIP assets are present. The manifest is
+        // loaded later in the pipeline, so release parsing only auto-installs
+        // when there is a single unambiguous ZIP candidate here.
+        let zipAsset = zipAssets.count == 1 ? zipAssets.first : nil
+        let manifestAsset = release.assets.first(where: { asset in
+            asset.name.caseInsensitiveCompare(manifestAssetName) == .orderedSame
+        })
+
+        let installAssetURL = zipAsset.flatMap { URL(string: $0.browserDownloadURL) }
+        let manifestAssetURL = manifestAsset.flatMap { URL(string: $0.browserDownloadURL) }
+        let hasValidInstallAssets =
+            installAssetURL != nil &&
+            manifestAssetURL != nil &&
+            installAssetURL.map { hasAllowedHost($0, allowedHosts: allowedHosts) } == true &&
+            manifestAssetURL.map { hasAllowedHost($0, allowedHosts: allowedHosts) } == true
+
+        return AppReleaseInfo(
             version: normalizedVersion,
             message: release.body,
-            updateURL: selectedDownloadURL
+            releasePageURL: releasePageURL,
+            installAssetURL: hasValidInstallAssets ? installAssetURL : nil,
+            installAssetName: hasValidInstallAssets ? zipAsset?.name : nil,
+            manifestAssetURL: hasValidInstallAssets ? manifestAssetURL : nil,
+            installAssetKind: hasValidInstallAssets ? .zip : .manualOnly
         )
     }
 

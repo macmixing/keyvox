@@ -27,6 +27,7 @@
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
+		8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C6EC2F623AFA00E9E555 /* updater.sh */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
@@ -118,6 +119,33 @@
 		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
 		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
 		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
+		F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000012FC2000100AA0001 /* WindowManager+Updates.swift */; };
+		F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */; };
+		F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000062FC2000100AA0001 /* AppReleaseInfo.swift */; };
+		F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */; };
+		F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */; };
+		F300000D2FC2000100AA0001 /* AppUpdateState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300000C2FC2000100AA0001 /* AppUpdateState.swift */; };
+		F300000F2FC2000100AA0001 /* AppUpdatePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300000E2FC2000100AA0001 /* AppUpdatePaths.swift */; };
+		F30000112FC2000100AA0001 /* AppUpdateDownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000102FC2000100AA0001 /* AppUpdateDownloadService.swift */; };
+		F30000132FC2000100AA0001 /* AppUpdateDownloadDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000122FC2000100AA0001 /* AppUpdateDownloadDelegate.swift */; };
+		F30000152FC2000100AA0001 /* AppUpdateChecksumVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000142FC2000100AA0001 /* AppUpdateChecksumVerifier.swift */; };
+		F30000172FC2000100AA0001 /* AppUpdateArchiveExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000162FC2000100AA0001 /* AppUpdateArchiveExtractor.swift */; };
+		F30000192FC2000100AA0001 /* AppUpdateBundleVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000182FC2000100AA0001 /* AppUpdateBundleVerifier.swift */; };
+		F300001B2FC2000100AA0001 /* AppUpdateInstallLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300001A2FC2000100AA0001 /* AppUpdateInstallLauncher.swift */; };
+		F300001D2FC2000100AA0001 /* AppUpdateApplicationsPrereflight.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300001C2FC2000100AA0001 /* AppUpdateApplicationsPrereflight.swift */; };
+		F300001F2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300001E2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift */; };
+		F30000212FC2000100AA0001 /* AppUpdateCleanupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000202FC2000100AA0001 /* AppUpdateCleanupService.swift */; };
+		F30000242FC2000100AA0001 /* UpdateWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000232FC2000100AA0001 /* UpdateWindowView.swift */; };
+		F30000262FC2000100AA0001 /* UpdateHeaderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000252FC2000100AA0001 /* UpdateHeaderCard.swift */; };
+		F30000282FC2000100AA0001 /* UpdateReleaseNotesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */; };
+		F300002A2FC2000100AA0001 /* UpdateProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000292FC2000100AA0001 /* UpdateProgressCard.swift */; };
+		F300002C2FC2000100AA0001 /* UpdateApplicationsRequirementCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300002B2FC2000100AA0001 /* UpdateApplicationsRequirementCard.swift */; };
+		F300002E2FC2000100AA0001 /* UpdateFailureCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300002D2FC2000100AA0001 /* UpdateFailureCard.swift */; };
+		F30000302FC2000100AA0001 /* PostUpdateNoticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300002F2FC2000100AA0001 /* PostUpdateNoticeView.swift */; };
+		F30000322FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000312FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift */; };
+		F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */; };
+		F30000362FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */; };
+		F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000372FC2000100AA0001 /* AppActionButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +182,7 @@
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
+		8E70C6EC2F623AFA00E9E555 /* updater.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = updater.sh; sourceTree = "<group>"; };
 		8E927F6A2F3C7AA000C071B3 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVox.entitlements; sourceTree = "<group>"; };
 		8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderStopRecordingTests.swift; sourceTree = "<group>"; };
@@ -242,6 +271,33 @@
 		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
 		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
+		F30000012FC2000100AA0001 /* WindowManager+Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+Updates.swift"; sourceTree = "<group>"; };
+		F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateProgressBar.swift; sourceTree = "<group>"; };
+		F30000062FC2000100AA0001 /* AppReleaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReleaseInfo.swift; sourceTree = "<group>"; };
+		F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManifestLoader.swift; sourceTree = "<group>"; };
+		F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCoordinator.swift; sourceTree = "<group>"; };
+		F300000C2FC2000100AA0001 /* AppUpdateState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateState.swift; sourceTree = "<group>"; };
+		F300000E2FC2000100AA0001 /* AppUpdatePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdatePaths.swift; sourceTree = "<group>"; };
+		F30000102FC2000100AA0001 /* AppUpdateDownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateDownloadService.swift; sourceTree = "<group>"; };
+		F30000122FC2000100AA0001 /* AppUpdateDownloadDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateDownloadDelegate.swift; sourceTree = "<group>"; };
+		F30000142FC2000100AA0001 /* AppUpdateChecksumVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateChecksumVerifier.swift; sourceTree = "<group>"; };
+		F30000162FC2000100AA0001 /* AppUpdateArchiveExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateArchiveExtractor.swift; sourceTree = "<group>"; };
+		F30000182FC2000100AA0001 /* AppUpdateBundleVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateBundleVerifier.swift; sourceTree = "<group>"; };
+		F300001A2FC2000100AA0001 /* AppUpdateInstallLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateInstallLauncher.swift; sourceTree = "<group>"; };
+		F300001C2FC2000100AA0001 /* AppUpdateApplicationsPrereflight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateApplicationsPrereflight.swift; sourceTree = "<group>"; };
+		F300001E2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLaunchNoticeService.swift; sourceTree = "<group>"; };
+		F30000202FC2000100AA0001 /* AppUpdateCleanupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCleanupService.swift; sourceTree = "<group>"; };
+		F30000232FC2000100AA0001 /* UpdateWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateWindowView.swift; sourceTree = "<group>"; };
+		F30000252FC2000100AA0001 /* UpdateHeaderCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateHeaderCard.swift; sourceTree = "<group>"; };
+		F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateReleaseNotesCard.swift; sourceTree = "<group>"; };
+		F30000292FC2000100AA0001 /* UpdateProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateProgressCard.swift; sourceTree = "<group>"; };
+		F300002B2FC2000100AA0001 /* UpdateApplicationsRequirementCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateApplicationsRequirementCard.swift; sourceTree = "<group>"; };
+		F300002D2FC2000100AA0001 /* UpdateFailureCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFailureCard.swift; sourceTree = "<group>"; };
+		F300002F2FC2000100AA0001 /* PostUpdateNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostUpdateNoticeView.swift; sourceTree = "<group>"; };
+		F30000312FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateChecksumVerifierTests.swift; sourceTree = "<group>"; };
+		F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLaunchNoticeServiceTests.swift; sourceTree = "<group>"; };
+		F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateApplicationsPrereflightTests.swift; sourceTree = "<group>"; };
+		F30000372FC2000100AA0001 /* AppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActionButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,6 +348,7 @@
 				D15000012FA1000100AA0001 /* LoginItemController.swift */,
 				A11000112FC1000100AA0001 /* WeeklyWordStatsStore.swift */,
 				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
+				F30000012FC2000100AA0001 /* WindowManager+Updates.swift */,
 				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
 			);
 			path = App;
@@ -300,6 +357,7 @@
 		8E6D05CA2F3C51D6003BD458 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				F30000052FC2000100AA0001 /* AppUpdate */,
 				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
 				9A1000012F4B000100AA0001 /* Paste */,
@@ -326,6 +384,7 @@
 		8E6D05D32F3C51D6003BD458 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8E70C6EC2F623AFA00E9E555 /* updater.sh */,
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
 				AA1000012F50000100AA0001 /* OFL.txt */,
@@ -341,6 +400,8 @@
 		8E6D05D62F3C51D6003BD458 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				F30000372FC2000100AA0001 /* AppActionButton.swift */,
+				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
@@ -354,6 +415,7 @@
 			children = (
 				8E57FB9B2F3E444B00935A26 /* Settings */,
 				8E6D05D62F3C51D6003BD458 /* Components */,
+				F30000222FC2000100AA0001 /* Updates */,
 				8EC700212F42000100C70001 /* Warnings */,
 				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
 				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
@@ -483,6 +545,9 @@
 		AB1000062F60000100AA0001 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */,
+				F30000312FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift */,
+				F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */,
 				8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */,
 				AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */,
 				AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */,
@@ -606,6 +671,41 @@
 			path = iCloud;
 			sourceTree = "<group>";
 		};
+		F30000052FC2000100AA0001 /* AppUpdate */ = {
+			isa = PBXGroup;
+			children = (
+				F30000062FC2000100AA0001 /* AppReleaseInfo.swift */,
+				F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */,
+				F30000202FC2000100AA0001 /* AppUpdateCleanupService.swift */,
+				F30000142FC2000100AA0001 /* AppUpdateChecksumVerifier.swift */,
+				F300001C2FC2000100AA0001 /* AppUpdateApplicationsPrereflight.swift */,
+				F30000162FC2000100AA0001 /* AppUpdateArchiveExtractor.swift */,
+				F30000182FC2000100AA0001 /* AppUpdateBundleVerifier.swift */,
+				F30000122FC2000100AA0001 /* AppUpdateDownloadDelegate.swift */,
+				F30000102FC2000100AA0001 /* AppUpdateDownloadService.swift */,
+				F300001A2FC2000100AA0001 /* AppUpdateInstallLauncher.swift */,
+				F300001E2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift */,
+				F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */,
+				F300000E2FC2000100AA0001 /* AppUpdatePaths.swift */,
+				F300000C2FC2000100AA0001 /* AppUpdateState.swift */,
+			);
+			path = AppUpdate;
+			sourceTree = "<group>";
+		};
+		F30000222FC2000100AA0001 /* Updates */ = {
+			isa = PBXGroup;
+			children = (
+				F300002F2FC2000100AA0001 /* PostUpdateNoticeView.swift */,
+				F300002B2FC2000100AA0001 /* UpdateApplicationsRequirementCard.swift */,
+				F300002D2FC2000100AA0001 /* UpdateFailureCard.swift */,
+				F30000252FC2000100AA0001 /* UpdateHeaderCard.swift */,
+				F30000292FC2000100AA0001 /* UpdateProgressCard.swift */,
+				F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */,
+				F30000232FC2000100AA0001 /* UpdateWindowView.swift */,
+			);
+			path = Updates;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -698,6 +798,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */,
 				8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */,
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
@@ -724,6 +825,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
+				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
+				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
+				F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */,
+				F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */,
+				F300000D2FC2000100AA0001 /* AppUpdateState.swift in Sources */,
+				F300000F2FC2000100AA0001 /* AppUpdatePaths.swift in Sources */,
+				F30000112FC2000100AA0001 /* AppUpdateDownloadService.swift in Sources */,
+				F30000132FC2000100AA0001 /* AppUpdateDownloadDelegate.swift in Sources */,
+				F30000152FC2000100AA0001 /* AppUpdateChecksumVerifier.swift in Sources */,
+				F30000172FC2000100AA0001 /* AppUpdateArchiveExtractor.swift in Sources */,
+				F30000192FC2000100AA0001 /* AppUpdateBundleVerifier.swift in Sources */,
+				F300001B2FC2000100AA0001 /* AppUpdateInstallLauncher.swift in Sources */,
+				F300001D2FC2000100AA0001 /* AppUpdateApplicationsPrereflight.swift in Sources */,
+				F300001F2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift in Sources */,
+				F30000212FC2000100AA0001 /* AppUpdateCleanupService.swift in Sources */,
+				F30000242FC2000100AA0001 /* UpdateWindowView.swift in Sources */,
+				F30000262FC2000100AA0001 /* UpdateHeaderCard.swift in Sources */,
+				F30000282FC2000100AA0001 /* UpdateReleaseNotesCard.swift in Sources */,
+				F300002A2FC2000100AA0001 /* UpdateProgressCard.swift in Sources */,
+				F300002C2FC2000100AA0001 /* UpdateApplicationsRequirementCard.swift in Sources */,
+				F300002E2FC2000100AA0001 /* UpdateFailureCard.swift in Sources */,
+				F30000302FC2000100AA0001 /* PostUpdateNoticeView.swift in Sources */,
+				F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */,
 				8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */,
 				8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */,
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
@@ -800,6 +925,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F30000362FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift in Sources */,
+				F30000322FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift in Sources */,
+				F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */,
 				AB3000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift in Sources */,
 				AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */,
 				AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */,
