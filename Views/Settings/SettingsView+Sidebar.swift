@@ -33,7 +33,7 @@ extension SettingsView {
         .padding(.top, -8)
         .padding(.bottom, 24)
         .frame(width: 260)
-        .background(Color.white.opacity(0.02))
+        .background(MacAppTheme.sidebarFill)
     }
     
     var appVersion: String {

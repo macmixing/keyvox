@@ -160,7 +160,7 @@ private struct StaticLogoSegmentView: View {
         RoundedRectangle(cornerRadius: 2 * scale)
             .fill(
                 LinearGradient(
-                    colors: [.indigo, .indigo.opacity(0.7)],
+                    colors: [MacAppTheme.accent, MacAppTheme.accent.opacity(0.7)],
                     startPoint: .bottom,
                     endPoint: .top
                 )
@@ -187,7 +187,7 @@ private struct ReactiveIndicatorSegmentView: View {
         RoundedRectangle(cornerRadius: 26)
             .fill(
                 LinearGradient(
-                    colors: [Color.indigo, Color.indigo.opacity(0.9)],
+                    colors: [MacAppTheme.accent, MacAppTheme.accent.opacity(0.9)],
                     startPoint: .bottom,
                     endPoint: .top
                 )

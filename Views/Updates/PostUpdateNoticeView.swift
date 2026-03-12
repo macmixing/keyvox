@@ -9,7 +9,7 @@ struct PostUpdateNoticeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
-                StatusBadge(title: "Updated", color: .indigo)
+                StatusBadge(title: "Updated", color: MacAppTheme.accent)
             }
             .padding(.top, 10)
 
@@ -48,13 +48,12 @@ struct PostUpdateNoticeView: View {
         .padding(.bottom, 28)
         .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
         .background(
-            Color.indigo.opacity(0.15)
-                .background(Color(white: 0.01))
+            MacAppTheme.screenBackground
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.7)
+                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
         )
         .preferredColorScheme(.dark)
     }

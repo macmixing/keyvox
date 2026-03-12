@@ -39,7 +39,7 @@ struct AnimatedWaveHeader<Trailing: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("KeyVox")
                     .font(.appFont(24))
-                    .foregroundColor(.indigo)
+                    .foregroundColor(MacAppTheme.accent)
                 Text("Free Your Voice")
                     .font(.appFont(10))
                     .foregroundColor(.secondary)
@@ -65,10 +65,10 @@ struct SettingsCard<Content: View>: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.05))
+                    .fill(MacAppTheme.cardFill)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(MacAppTheme.cardStroke, lineWidth: 1)
                     )
             )
     }
@@ -92,11 +92,11 @@ struct SettingsRow<Accessory: View>: View {
         HStack(alignment: .center, spacing: 16) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.indigo.opacity(0.15))
+                    .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 Image(systemName: icon)
                     .font(.appFont(20))
-                    .foregroundColor(.indigo)
+                    .foregroundColor(MacAppTheme.accent)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -147,7 +147,7 @@ struct SidebarItem: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.indigo.opacity(0.3) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
+                    .fill(isSelected ? MacAppTheme.sidebarSelectionFill : (isHovered ? MacAppTheme.sidebarHoverFill : Color.clear))
             )
         }
         .buttonStyle(DepressedButtonStyle())
@@ -192,7 +192,7 @@ struct TipItem: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(Color.white.opacity(0.03))
+        .background(MacAppTheme.tipFill)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }

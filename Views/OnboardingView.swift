@@ -38,7 +38,7 @@ struct OnboardingView: View {
                     VStack(spacing: 4) {
                         Text("Welcome to KeyVox")
                             .font(.appFont(32))
-                            .foregroundColor(.indigo)
+                            .foregroundColor(MacAppTheme.accent)
 
                         Text("Let's get you set up in three quick steps.")
                             .font(.appFont(14))
@@ -99,7 +99,7 @@ struct OnboardingView: View {
                             .padding(.horizontal, 40)
                             .padding(.vertical, 12)
                             .frame(minWidth: 240)
-                            .background(allStepsCompleted ? Color.yellow : Color.white.opacity(0.05))
+                            .background(allStepsCompleted ? Color.yellow : MacAppTheme.cardFill)
                             .cornerRadius(25)
                             .shadow(color: allStepsCompleted ? .yellow.opacity(0.3) : .clear, radius: 10)
                     }
@@ -140,8 +140,7 @@ struct OnboardingView: View {
         .frame(width: Self.preferredWindowSize.width)
         .frame(minHeight: Self.preferredWindowSize.height)
         .background(
-            Color.indigo.opacity(0.15)
-                .background(Color(white: 0.01))
+            MacAppTheme.screenBackground
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .onPreferenceChange(HeightPreferenceKey.self) { height in
@@ -249,7 +248,7 @@ struct OnboardingStepRow<Content: View>: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(isCompleted ? Color.green : Color.indigo.opacity(0.2))
+                        .fill(isCompleted ? Color.green : MacAppTheme.accent.opacity(0.2))
                         .frame(width: 32, height: 32)
                     
                     if isCompleted {
@@ -297,7 +296,7 @@ struct OnboardingStepRow<Content: View>: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isCompleted ? Color.green.opacity(0.05) : Color.white.opacity(0.03))
+                .fill(isCompleted ? Color.green.opacity(0.05) : MacAppTheme.tipFill)
         )
     }
 }

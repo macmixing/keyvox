@@ -62,8 +62,7 @@ struct ConfirmDeletePromptView: View {
         .background(
             ZStack {
                 VisualEffectView(material: .menu, blendingMode: .behindWindow)
-                Color.indigo.opacity(0.15)
-                    .background(Color(white: 0.01))
+                MacAppTheme.screenBackground
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))

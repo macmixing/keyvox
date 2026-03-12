@@ -58,8 +58,7 @@ extension SettingsView {
         var body: some View {
             ZStack {
                 // Background Layer: Dark Indigo
-                Color.indigo.opacity(0.15)
-                    .background(Color(white: 0.01))
+                MacAppTheme.screenBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -67,22 +66,22 @@ extension SettingsView {
                     HStack {
                         Text("Legal & Licenses")
                             .font(.appFont(18))
-                            .foregroundColor(.indigo)
+                            .foregroundColor(MacAppTheme.accent)
                         Spacer()
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 24))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(MacAppTheme.closeButtonForeground)
                         }
                         .buttonStyle(.plain)
                         .offset(y: -5)
                     }
                     .padding(20)
-                    .background(Color.white.opacity(0.05))
+                    .background(MacAppTheme.cardFill)
                     .overlay(
                         Rectangle()
                             .frame(height: 1)
-                            .foregroundColor(.white.opacity(0.1)),
+                            .foregroundColor(MacAppTheme.cardStroke),
                         alignment: .bottom
                     )
                     
@@ -169,7 +168,7 @@ extension SettingsView {
                     .font(.system(size: 10, design: .monospaced))
                     .foregroundColor(.white.opacity(0.6))
                     .padding(12)
-                    .background(Color.white.opacity(0.05))
+                    .background(MacAppTheme.cardFill)
                     .cornerRadius(8)
             }
         }

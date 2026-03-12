@@ -42,7 +42,7 @@ extension SettingsView {
                                 loginItemController.openLoginItemsSettings()
                             }
                             .font(.appFont(12))
-                            .foregroundColor(.indigo)
+                            .foregroundColor(MacAppTheme.accent)
                             .buttonStyle(DepressedButtonStyle())
                         }
 
@@ -92,8 +92,8 @@ extension SettingsView {
                                     .font(.appFont(12))
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(Color.indigo.opacity(0.2))
-                                    .foregroundColor(.indigo)
+                                    .background(MacAppTheme.accent.opacity(0.2))
+                                    .foregroundColor(MacAppTheme.accent)
                                     .cornerRadius(8)
                             }
                             .buttonStyle(DepressedButtonStyle())
@@ -110,7 +110,7 @@ extension SettingsView {
                         Text("Legal & Licenses")
                     }
                     .font(.appFont(13))
-                    .foregroundColor(.indigo)
+                    .foregroundColor(MacAppTheme.accent)
                 }
                 .buttonStyle(DepressedButtonStyle())
                 .padding(.leading, 8)

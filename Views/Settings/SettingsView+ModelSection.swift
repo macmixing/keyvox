@@ -32,7 +32,7 @@ struct ModelSettingsRow: View {
                             downloader.downloadBaseModel()
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.indigo)
+                        .tint(MacAppTheme.accent)
                         .controlSize(.small)
                     }
                 }

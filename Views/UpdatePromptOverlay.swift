@@ -24,7 +24,7 @@ struct UpdatePromptOverlay: View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
                 if let versionBadgeTitle {
-                    StatusBadge(title: versionBadgeTitle, color: .indigo)
+                    StatusBadge(title: versionBadgeTitle, color: MacAppTheme.accent)
                 }
             }
 
@@ -72,14 +72,13 @@ struct UpdatePromptOverlay: View {
         .background(
             ZStack {
                 VisualEffectView(material: .menu, blendingMode: .behindWindow)
-                Color.indigo.opacity(0.15)
-                    .background(Color(white: 0.01))
+                MacAppTheme.screenBackground
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.7)
+                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
         )
         .preferredColorScheme(.dark)
     }

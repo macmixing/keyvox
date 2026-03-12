@@ -27,8 +27,7 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.indigo.opacity(0.15)
-                .background(Color(white: 0.01))
+            MacAppTheme.screenBackground
                 .ignoresSafeArea()
             
             HStack(spacing: 0) {
@@ -46,7 +45,7 @@ struct SettingsView: View {
                     Button(action: { NSApp.keyWindow?.orderOut(nil) }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(MacAppTheme.closeButtonForeground)
                     }
                     .buttonStyle(.plain)
                     .padding(.trailing, 20)

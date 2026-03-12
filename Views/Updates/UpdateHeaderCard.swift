@@ -28,7 +28,7 @@ struct UpdateHeaderCard: View {
 
                     Spacer()
 
-                    StatusBadge(title: badgeTitle, color: .indigo)
+                    StatusBadge(title: badgeTitle, color: MacAppTheme.accent)
                 }
 
                 HStack {
@@ -39,7 +39,7 @@ struct UpdateHeaderCard: View {
                     if let targetVersion, state != .completed {
                         Text("Update: v\(targetVersion)")
                             .font(.appFont(11))
-                            .foregroundColor(.indigo)
+                            .foregroundColor(MacAppTheme.accent)
                     }
                 }
             }
