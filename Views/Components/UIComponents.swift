@@ -37,9 +37,9 @@ struct KeyVoxProgressStyle: ProgressViewStyle {
                 
                 if let progress = configuration.fractionCompleted {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.indigo)
+                        .fill(MacAppTheme.accent)
                         .frame(width: geometry.size.width * CGFloat(progress))
-                        .shadow(color: .indigo.opacity(0.5), radius: 3)
+                        .shadow(color: MacAppTheme.accent.opacity(0.5), radius: 3)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: progress)
                 }
             }
@@ -65,7 +65,7 @@ struct ModelDownloadProgress: View {
                     Spacer()
                     Text("\(Int(progress * 100))%")
                         .font(.appFont(11))
-                        .foregroundColor(.indigo)
+                        .foregroundColor(MacAppTheme.accent)
                 }
             }
         }

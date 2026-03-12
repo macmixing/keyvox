@@ -30,11 +30,11 @@ extension SettingsView {
                     HStack(alignment: .audioHeaderCenter, spacing: 16) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.indigo.opacity(0.15))
+                                .fill(MacAppTheme.iconFill)
                                 .frame(width: 44, height: 44)
                             Image(systemName: "mic.fill")
                                 .font(.appFont(20))
-                                .foregroundColor(.indigo)
+                                .foregroundColor(MacAppTheme.accent)
                         }
                         .alignmentGuide(.audioHeaderCenter) { dimensions in
                             dimensions[VerticalAlignment.center]
@@ -79,11 +79,11 @@ extension SettingsView {
                 HStack(alignment: .audioHeaderCenter, spacing: 16) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.indigo.opacity(0.15))
+                            .fill(MacAppTheme.iconFill)
                             .frame(width: 44, height: 44)
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.appFont(20))
-                            .foregroundColor(.indigo)
+                            .foregroundColor(MacAppTheme.accent)
                     }
                     .alignmentGuide(.audioHeaderCenter) { dimensions in
                         dimensions[VerticalAlignment.center]
@@ -108,7 +108,7 @@ extension SettingsView {
                             Spacer(minLength: 16)
 
                             Toggle("", isOn: $appSettings.isSoundEnabled)
-                                .toggleStyle(SwitchToggleStyle(tint: .indigo))
+                                .toggleStyle(SwitchToggleStyle(tint: MacAppTheme.accent))
                                 .labelsHidden()
                         }
 
@@ -126,7 +126,7 @@ extension SettingsView {
                                         playStartSoundPreview()
                                     }
                                 )
-                                    .tint(.indigo)
+                                    .tint(MacAppTheme.accent)
                                     .disabled(!appSettings.isSoundEnabled)
 
                                 Text("\(Int((appSettings.soundVolume * 100).rounded()))%")

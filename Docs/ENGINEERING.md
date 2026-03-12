@@ -37,6 +37,13 @@ KeyVox is organized by responsibility:
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
+### macOS Theme Ownership
+
+- `Views/Components/MacAppTheme.swift` is the shared macOS theme surface for reusable app-window styling tokens.
+- `MacAppTheme.screenBackground` is the source of truth for the standard macOS app window background (`#1A1740` equivalent).
+- Reusable settings/onboarding/update/modal styling should prefer `MacAppTheme` tokens instead of reintroducing local hard-coded indigo/background stacks.
+- `Views/StatusMenuView.swift` and `Views/Warnings/*` intentionally keep separate styling and should not be folded into `MacAppTheme` unless product direction changes.
+
 File-level ownership and locations are intentionally maintained in one place: [`CODEMAP.md`](CODEMAP.md).
 
 ## Platform Compatibility
@@ -186,6 +193,8 @@ These remain integration/manual-test territory by design.
 - Keep behavior/motion constants close to owning logic.
 - Keep branded visual tuning inside branded view files.
 - `Views/Components/LogoBarView.swift` is the only branded Mac logo file on this branch.
+- `Views/Components/MacAppTheme.swift` is the shared non-branded macOS theme file for app-window surfaces; keep generic window/theme tokens there rather than scattering repeated values across settings/onboarding/update views.
+- Do not route `Views/StatusMenuView.swift` or `Views/Warnings/*` through `MacAppTheme` unless the product explicitly wants those surfaces visually unified with the main app windows.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
 - Prefer deterministic pure helpers for unit-test coverage.

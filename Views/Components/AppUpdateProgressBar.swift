@@ -23,7 +23,7 @@ struct AppUpdateProgressBar: View {
 
                 Text("\(Int(clampedProgress * 100))%")
                     .font(.appFont(11))
-                    .foregroundColor(.indigo)
+                    .foregroundColor(MacAppTheme.accent)
             }
 
             if let detail, !detail.isEmpty {

@@ -10,6 +10,7 @@
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
+		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+General.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+General.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -162,6 +163,7 @@
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
 		8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
+		8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppTheme.swift; sourceTree = "<group>"; };
 		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		8E57FB952F3E444B00935A26 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponents.swift; sourceTree = "<group>"; };
 		8E57FB962F3E444B00935A26 /* SettingsView+Audio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Audio.swift"; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
+				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
 				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
@@ -902,6 +905,7 @@
 				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
 				F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */,
+				8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,

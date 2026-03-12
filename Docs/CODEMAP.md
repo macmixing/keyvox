@@ -21,6 +21,8 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - Behavior and motion constants are kept file-local near their owning runtime logic to reduce maintenance confusion.
 - Proprietary visual tuning remains in the excluded branded file `Views/Components/LogoBarView.swift`.
+- Shared macOS app-window theme tokens now live in `Views/Components/MacAppTheme.swift`; use that file for reusable settings/onboarding/update/modal colors instead of repeating local window background stacks.
+- `Views/StatusMenuView.swift` and `Views/Warnings/*` intentionally keep separate styling ownership and are not part of `MacAppTheme`.
 - No shared constants module is required unless a value is truly reused across multiple domains.
 - Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
 - `CODEMAP.md` is the source of truth for high-level file ownership and where major systems live; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
@@ -55,7 +57,8 @@ KeyVox/
 │   │   └── AudioIndicatorDriver.swift
 ├── Views/
 │   ├── Components/
-│   │   └── LogoBarView.swift
+│   │   ├── LogoBarView.swift
+│   │   └── MacAppTheme.swift
 │   ├── StatusMenuView.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
@@ -133,6 +136,10 @@ KeyVox/
   - Drives microphone-step completion state and prompt visibility.
 - `Views/Components/OnboardingMicrophonePickerView.swift`
   - Presentation-only onboarding modal for required microphone selection confirmation.
+- `Views/Components/MacAppTheme.swift`
+  - Shared macOS app-window theme tokens for settings, onboarding, updater, and related modal surfaces.
+  - Owns the standard main-window background color (`#1A1740` equivalent) plus reusable card/icon/sidebar/stroke accents.
+  - Explicitly excludes `StatusMenuView` and warning overlays from the shared theme boundary.
 - `Views/Components/LogoBarView.swift`
   - Single branded Mac logo file.
   - Provides both standalone logo presentation (`LogoBarView(size:)`) and recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`).
@@ -475,6 +482,7 @@ KeyVox/
   - Accessibility and microphone authorization hooks are delegated to `WindowManager` callbacks.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components.
+  - Shared app-window styling is sourced from `Views/Components/MacAppTheme.swift`.
 - `Views/Settings/SettingsView+Dictionary.swift`
   - Dictionary tab container and English-only support footer text.
 - `Views/Settings/SettingsView+DictionarySection.swift`
@@ -493,6 +501,7 @@ KeyVox/
   - Paste-failure recovery view with `⌘ Cmd + V` guidance and progress bar.
 - `Views/UpdatePromptOverlay.swift`
   - In-app update prompt UI.
+  - Shares the standard macOS app-window theme surface through `MacAppTheme`.
 
 ## Change Tracking
 

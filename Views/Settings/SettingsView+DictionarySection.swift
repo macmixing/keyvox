@@ -21,12 +21,12 @@ extension SettingsView {
                     HStack(alignment: .center, spacing: 12) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.indigo.opacity(0.15))
+                                .fill(MacAppTheme.iconFill)
                                 .frame(width: 44, height: 44)
 
                             Image(systemName: "text.book.closed.fill")
                                 .font(.appFont(20))
-                                .foregroundColor(.indigo)
+                                .foregroundColor(MacAppTheme.accent)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
@@ -41,11 +41,15 @@ extension SettingsView {
 
                         Spacer(minLength: 16)
 
-                        Button("Add Word") {
+                        Button {
                             dictionaryEditorMode = .add
+                        } label: {
+                            Text("Add Word")
+                                .foregroundColor(.black)
+                                .fontWeight(.heavy)
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.indigo)
+                        .tint(MacAppTheme.accent)
                         .controlSize(.small)
                     }
 
@@ -153,10 +157,10 @@ private struct DictionaryEntryRow: View {
         .padding(.vertical, 9)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(isHovered ? 0.08 : 0.04))
+                .fill(isHovered ? MacAppTheme.rowPressedFill : MacAppTheme.rowFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.white.opacity(isHovered ? 0.14 : 0.08), lineWidth: 1)
+                        .stroke(isHovered ? MacAppTheme.rowPressedStroke : MacAppTheme.rowStroke, lineWidth: 1)
                 )
         )
         .onHover { isHovered = $0 }
