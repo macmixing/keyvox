@@ -48,6 +48,7 @@ struct DictionaryTabView: View {
                             }
                         }
                         .pickerStyle(.segmented)
+                        .padding(.bottom, 20)
 
                         if displayedEntries.isEmpty {
                             ContentUnavailableView(
