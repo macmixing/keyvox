@@ -16,12 +16,12 @@ struct PostUpdateNoticeView: View {
             SettingsCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("You've been updated to v\(version)")
-                        .font(.custom("Kanit Medium", size: 20))
+                        .font(.appFont(20))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     Text("KeyVox is ready to go with the latest improvements.")
-                        .font(.custom("Kanit Medium", size: 12))
+                        .font(.appFont(12))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                         .multilineTextAlignment(.center)

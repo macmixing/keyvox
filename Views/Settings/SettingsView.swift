@@ -121,7 +121,7 @@ struct SettingsView: View {
 
             if selectedTab == .more {
                 Text("Version \(appVersion)")
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.5))
                     .padding(.trailing, 32)
                     .padding(.bottom, 24)

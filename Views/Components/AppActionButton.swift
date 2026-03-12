@@ -15,7 +15,7 @@ struct AppActionButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.custom("Kanit Medium", size: 14))
+                .font(.appFont(14))
                 .foregroundColor(foregroundColor)
                 .padding(.horizontal, 28)
                 .padding(.vertical, 11)

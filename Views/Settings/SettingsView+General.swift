@@ -6,7 +6,7 @@ extension SettingsView {
             Spacer().frame(height: 4)
             
             Text("KEYBOARD")
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
             
@@ -31,7 +31,7 @@ extension SettingsView {
             tipsSection
 
             Text("STYLE")
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.secondary.opacity(0.6))
                 .padding(.leading, 4)
 

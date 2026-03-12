@@ -1,6 +1,16 @@
 import SwiftUI
 import AppKit
 
+enum AppTypography {
+    static let primaryUIFontName = "Kanit Medium"
+}
+
+extension Font {
+    static func appFont(_ size: CGFloat) -> Font {
+        .custom(AppTypography.primaryUIFontName, size: size)
+    }
+}
+
 struct VisualEffectView: NSViewRepresentable {
     let material: NSVisualEffectView.Material
     let blendingMode: NSVisualEffectView.BlendingMode
@@ -50,11 +60,11 @@ struct ModelDownloadProgress: View {
             if showLabel {
                 HStack {
                     Text("Preparing AI Assets...")
-                        .font(.custom("Kanit Medium", size: 10))
+                        .font(.appFont(10))
                         .foregroundColor(.secondary)
                     Spacer()
                     Text("\(Int(progress * 100))%")
-                        .font(.custom("Kanit Medium", size: 11))
+                        .font(.appFont(11))
                         .foregroundColor(.indigo)
                 }
             }

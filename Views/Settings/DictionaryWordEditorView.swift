@@ -66,23 +66,23 @@ struct DictionaryWordEditorView: View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(mode.title)
-                    .font(.custom("Kanit Medium", size: 19))
+                    .font(.appFont(19))
                     .foregroundColor(.white)
 
                 Text("Type the exact word or phrase you want KeyVox to preserve.")
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
             }
 
             VStack(alignment: .leading, spacing: 6) {
                 TextField("", text: $phrase)
-                    .font(.custom("Kanit Medium", size: 14))
+                    .font(.appFont(14))
                     .textFieldStyle(.roundedBorder)
                     .overlay(alignment: .leading) {
                         if phrase.isEmpty {
                             Text("KeyVox")
-                                .font(.custom("Kanit Medium", size: 14))
+                                .font(.appFont(14))
                                 .foregroundColor(.secondary.opacity(0.5))
                                 .padding(.leading, 7)
                                 .allowsHitTesting(false)
@@ -99,7 +99,7 @@ struct DictionaryWordEditorView: View {
 
                 if let errorMessage {
                     Text(errorMessage)
-                        .font(.custom("Kanit Medium", size: 11))
+                        .font(.appFont(11))
                         .foregroundColor(.red)
                 }
             }

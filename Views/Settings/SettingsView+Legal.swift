@@ -66,7 +66,7 @@ extension SettingsView {
                     // Header
                     HStack {
                         Text("Legal & Licenses")
-                            .font(.custom("Kanit Medium", size: 18))
+                            .font(.appFont(18))
                             .foregroundColor(.indigo)
                         Spacer()
                         Button(action: { dismiss() }) {
@@ -158,11 +158,11 @@ extension SettingsView {
         var body: some View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
-                    .font(.custom("Kanit Medium", size: 16))
+                    .font(.appFont(16))
                     .foregroundColor(.white)
                 
                 Text(copyright)
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.white.opacity(0.7))
                 
                 Text(license)

@@ -30,12 +30,12 @@ struct UpdatePromptOverlay: View {
 
             VStack(alignment: .center, spacing: 8) {
                 Text(prompt.title)
-                    .font(.custom("Kanit Medium", size: 19))
+                    .font(.appFont(19))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)
 
                 Text(prompt.message)
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(0.5)
                     .multilineTextAlignment(.center)

@@ -16,19 +16,19 @@ struct AppUpdateProgressBar: View {
 
             HStack(alignment: .firstTextBaseline) {
                 Text(label)
-                    .font(.custom("Kanit Medium", size: 11))
+                    .font(.appFont(11))
                     .foregroundColor(.secondary)
 
                 Spacer()
 
                 Text("\(Int(clampedProgress * 100))%")
-                    .font(.custom("Kanit Medium", size: 11))
+                    .font(.appFont(11))
                     .foregroundColor(.indigo)
             }
 
             if let detail, !detail.isEmpty {
                 Text(detail)
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.8))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

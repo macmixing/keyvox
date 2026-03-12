@@ -10,7 +10,7 @@ extension SettingsView {
             HStack {
                 Spacer()
                 Text("Custom dictionary correction is currently supported for English only.")
-                    .font(.custom("Kanit Medium", size: 11))
+                    .font(.appFont(11))
                     .foregroundColor(.secondary)
                 Spacer()
             }

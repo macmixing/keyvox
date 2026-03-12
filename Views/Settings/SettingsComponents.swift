@@ -38,10 +38,10 @@ struct AnimatedWaveHeader<Trailing: View>: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text("KeyVox")
-                    .font(.custom("Kanit Medium", size: 24))
+                    .font(.appFont(24))
                     .foregroundColor(.indigo)
                 Text("Free Your Voice")
-                    .font(.custom("Kanit Medium", size: 10))
+                    .font(.appFont(10))
                     .foregroundColor(.secondary)
                     .tracking(0.8)
             }
@@ -95,16 +95,16 @@ struct SettingsRow<Accessory: View>: View {
                     .fill(Color.indigo.opacity(0.15))
                     .frame(width: 44, height: 44)
                 Image(systemName: icon)
-                    .font(.custom("Kanit Medium", size: 20))
+                    .font(.appFont(20))
                     .foregroundColor(.indigo)
             }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("Kanit Medium", size: 17))
+                    .font(.appFont(17))
                 
                 Text(subtitle)
-                    .font(.custom("Kanit Medium", size: 12))
+                    .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
             }
@@ -132,7 +132,7 @@ struct SidebarItem: View {
                     .frame(width: 24)
                 
                 Text(tab.rawValue)
-                    .font(.custom("Kanit Medium", size: 15))
+                    .font(.appFont(15))
                 
                 Spacer()
                 
@@ -162,7 +162,7 @@ struct StatusBadge: View {
     
     var body: some View {
         Text(title.uppercased())
-            .font(.custom("Kanit Medium", size: 9))
+            .font(.appFont(9))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(color.opacity(0.15))
@@ -183,10 +183,10 @@ struct TipItem: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.custom("Kanit Medium", size: 10))
+                .font(.appFont(10))
                 .foregroundColor(.yellow)
             Text(text)
-                .font(.custom("Kanit Medium", size: 11))
+                .font(.appFont(11))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }

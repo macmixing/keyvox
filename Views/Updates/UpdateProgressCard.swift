@@ -21,7 +21,7 @@ struct UpdateProgressCard: View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Download Progress")
-                    .font(.custom("Kanit Medium", size: 15))
+                    .font(.appFont(15))
                     .foregroundColor(.white)
 
                 AppUpdateProgressBar(
