@@ -44,10 +44,10 @@ final class AppUpdateLogicTests: XCTestCase {
         )
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
-        XCTAssertTrue(mapped != nil)
-        XCTAssertTrue(mapped?.version == "1.2.0")
-        XCTAssertTrue(mapped?.installAssetURL?.absoluteString.contains(".zip") == true)
-        XCTAssertTrue(mapped?.installAssetKind == .zip)
+        XCTAssertNotNil(mapped)
+        XCTAssertEqual(mapped?.version, "1.2.0")
+        XCTAssertTrue(mapped?.installAssetURL?.absoluteString.contains(".zip") ?? false)
+        XCTAssertEqual(mapped?.installAssetKind, .zip)
     }
 
     func testMapReleaseInfoFallsBackToManualOnlyWhenManifestMissing() throws {

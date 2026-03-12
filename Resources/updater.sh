@@ -104,7 +104,7 @@ BACKUP_PATH="${INSTALL_PATH}.backup.$(date +%s)"
 mv "$INSTALL_PATH" "$BACKUP_PATH"
 
 if ! mv "$NEW_APP_PATH" "$INSTALL_PATH"; then
-    echo "Error: Failed to move new application bundle into place."
+    echo "Error: Failed to move new application bundle into place." >&2
     restore_backup
     exit 1
 fi

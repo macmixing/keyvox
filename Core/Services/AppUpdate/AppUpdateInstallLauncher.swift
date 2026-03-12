@@ -31,8 +31,8 @@ struct AppUpdateInstallLauncher {
         ]
         try process.run()
 
-        let deadline = Date().addingTimeInterval(1)
-        while !process.isRunning && Date() < deadline {
+        let launchDeadline = Date().addingTimeInterval(1)
+        while !process.isRunning && Date() < launchDeadline {
             try await Task.sleep(nanoseconds: 50_000_000)
         }
 
@@ -41,6 +41,17 @@ struct AppUpdateInstallLauncher {
             print("[AppUpdateInstallLauncher] updater.sh exited before install handoff completed.")
             #endif
             throw AppUpdateError.installerLaunchFailed
+        }
+
+        let confirmationDeadline = Date().addingTimeInterval(0.2)
+        while Date() < confirmationDeadline {
+            if !process.isRunning {
+                #if DEBUG
+                print("[AppUpdateInstallLauncher] updater.sh exited during launch confirmation.")
+                #endif
+                throw AppUpdateError.installerLaunchFailed
+            }
+            try await Task.sleep(nanoseconds: 50_000_000)
         }
 
         NSApplication.shared.terminate(nil)
