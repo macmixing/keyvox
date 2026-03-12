@@ -14,7 +14,12 @@ struct iOSAudioInputPreferenceResolverTests {
             preferBuiltInMicrophone: true
         )
 
-        #expect(action == .preferInput(id: "built-in"))
+        switch action {
+        case .preferInput(let id):
+            #expect(id == "built-in")
+        case .useSystemDefault, .keepCurrentRoute:
+            Issue.record("Expected built-in microphone to be preferred.")
+        }
     }
 
     @Test func usesSystemDefaultWhenPreferenceDisabled() {
@@ -27,7 +32,12 @@ struct iOSAudioInputPreferenceResolverTests {
             preferBuiltInMicrophone: false
         )
 
-        #expect(action == .useSystemDefault)
+        switch action {
+        case .useSystemDefault:
+            break
+        case .preferInput, .keepCurrentRoute:
+            Issue.record("Expected the system default route to be used.")
+        }
     }
 
     @Test func keepsCurrentRouteWhenBuiltInMicrophoneIsUnavailable() {
@@ -40,6 +50,11 @@ struct iOSAudioInputPreferenceResolverTests {
             preferBuiltInMicrophone: true
         )
 
-        #expect(action == .keepCurrentRoute)
+        switch action {
+        case .keepCurrentRoute:
+            break
+        case .preferInput, .useSystemDefault:
+            Issue.record("Expected the current route to be preserved.")
+        }
     }
 }

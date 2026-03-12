@@ -3,12 +3,12 @@ import Foundation
 import KeyVoxCore
 
 struct iOSAudioInputPreferenceResolver {
-    struct Candidate: Equatable {
+    struct Candidate {
         let id: String
         let portType: AVAudioSession.Port
     }
 
-    enum Action: Equatable {
+    enum Action {
         case preferInput(id: String)
         case useSystemDefault
         case keepCurrentRoute

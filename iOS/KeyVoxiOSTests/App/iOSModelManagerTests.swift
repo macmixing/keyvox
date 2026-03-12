@@ -7,6 +7,7 @@ import Testing
 struct iOSModelManagerTests {
     @Test func refreshStatusWithoutFilesReportsNotInstalled() {
         let harness = makeHarness()
+        defer { harness.cleanup() }
 
         harness.manager.refreshStatus()
 
@@ -17,6 +18,7 @@ struct iOSModelManagerTests {
 
     @Test func refreshStatusWithCompleteInstallReportsReady() throws {
         let harness = makeHarness()
+        defer { harness.cleanup() }
         try harness.writeGGMLFile()
         try harness.writeCoreMLDirectory()
         try harness.writeValidManifest()
@@ -29,6 +31,7 @@ struct iOSModelManagerTests {
 
     @Test func refreshStatusWithOnlyGGMLReportsIncompleteInstall() throws {
         let harness = makeHarness()
+        defer { harness.cleanup() }
         try harness.writeGGMLFile()
 
         harness.manager.refreshStatus()
@@ -43,6 +46,7 @@ struct iOSModelManagerTests {
 
     @Test func successfulDownloadInstallsModelAndWarmsWhisper() async throws {
         let harness = makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performDownloadModel()
 
@@ -58,6 +62,7 @@ struct iOSModelManagerTests {
 
     @Test func deleteRemovesInstalledArtifactsAndUnloadsWhisper() throws {
         let harness = makeHarness()
+        defer { harness.cleanup() }
         try harness.writeGGMLFile()
         try harness.writeCoreMLDirectory()
         try harness.writeValidManifest()
@@ -73,7 +78,8 @@ struct iOSModelManagerTests {
 
     @Test func repairRemovesPartialInstallAndRedownloadsModel() async throws {
         let harness = makeHarness()
-        try harness.writeGGMLFile(size: 40_000_000)
+        defer { harness.cleanup() }
+        try harness.writeGGMLFile()
         try harness.writeCoreMLZipFile()
 
         await harness.manager.performRepairModelIfNeeded()
@@ -88,6 +94,7 @@ struct iOSModelManagerTests {
 
     @Test func lowDiskSpaceFailsWithoutStartingInstall() async {
         let harness = makeHarness(freeSpace: 1_000)
+        defer { harness.cleanup() }
 
         await harness.manager.performDownloadModel()
 
@@ -111,8 +118,9 @@ struct iOSModelManagerTests {
         let manifestURL = modelsDirectoryURL.appendingPathComponent("model-install-manifest.json")
         let whisperService = StubWhisperLifecycle()
 
-        let ggmlFixtureURL = Self.makeTempFile(prefix: "ggml", size: 95_000_000)
-        let coreMLZipFixtureURL = Self.makeTempFile(prefix: "coreml", size: 10_000)
+        let fixturesDirectoryURL = rootURL.appendingPathComponent("Fixtures", isDirectory: true)
+        let ggmlFixtureURL = Self.makeTempFile(in: fixturesDirectoryURL, prefix: "ggml", size: 2_048)
+        let coreMLZipFixtureURL = Self.makeTempFile(in: fixturesDirectoryURL, prefix: "coreml", size: 1_024)
         let manager = iOSModelManager(
             fileManager: fileManager,
             whisperService: whisperService,
@@ -121,6 +129,7 @@ struct iOSModelManagerTests {
             coreMLZipURLProvider: { coreMLZipURL },
             coreMLDirectoryURLProvider: { coreMLDirectoryURL },
             manifestURLProvider: { manifestURL },
+            minGGMLBytes: 1_024,
             expectedGGMLSHA256: Self.sha256Hex(forFileAt: ggmlFixtureURL),
             expectedCoreMLZipSHA256: Self.sha256Hex(forFileAt: coreMLZipFixtureURL),
             freeSpaceProvider: { _ in freeSpace },
@@ -145,6 +154,7 @@ struct iOSModelManagerTests {
             manager: manager,
             whisperService: whisperService,
             fileManager: fileManager,
+            rootURL: rootURL,
             modelsDirectoryURL: modelsDirectoryURL,
             ggmlModelURL: ggmlModelURL,
             coreMLZipURL: coreMLZipURL,
@@ -155,8 +165,9 @@ struct iOSModelManagerTests {
         )
     }
 
-    nonisolated private static func makeTempFile(prefix: String, size: Int) -> URL {
-        let url = URL(fileURLWithPath: NSTemporaryDirectory())
+    nonisolated private static func makeTempFile(in directoryURL: URL, prefix: String, size: Int) -> URL {
+        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        let url = directoryURL
             .appendingPathComponent("\(prefix)-\(UUID().uuidString)")
         let data = Data(repeating: 0x5A, count: size)
         try? data.write(to: url)
@@ -171,10 +182,11 @@ struct iOSModelManagerTests {
 }
 
 @MainActor
-private struct ModelManagerHarness {
+private final class ModelManagerHarness {
     let manager: iOSModelManager
     let whisperService: StubWhisperLifecycle
     let fileManager: FileManager
+    let rootURL: URL
     let modelsDirectoryURL: URL
     let ggmlModelURL: URL
     let coreMLZipURL: URL
@@ -183,7 +195,37 @@ private struct ModelManagerHarness {
     let expectedGGMLSHA256: String
     let expectedCoreMLZipSHA256: String
 
-    func writeGGMLFile(size: Int = 95_000_000) throws {
+    init(
+        manager: iOSModelManager,
+        whisperService: StubWhisperLifecycle,
+        fileManager: FileManager,
+        rootURL: URL,
+        modelsDirectoryURL: URL,
+        ggmlModelURL: URL,
+        coreMLZipURL: URL,
+        coreMLDirectoryURL: URL,
+        manifestURL: URL,
+        expectedGGMLSHA256: String,
+        expectedCoreMLZipSHA256: String
+    ) {
+        self.manager = manager
+        self.whisperService = whisperService
+        self.fileManager = fileManager
+        self.rootURL = rootURL
+        self.modelsDirectoryURL = modelsDirectoryURL
+        self.ggmlModelURL = ggmlModelURL
+        self.coreMLZipURL = coreMLZipURL
+        self.coreMLDirectoryURL = coreMLDirectoryURL
+        self.manifestURL = manifestURL
+        self.expectedGGMLSHA256 = expectedGGMLSHA256
+        self.expectedCoreMLZipSHA256 = expectedCoreMLZipSHA256
+    }
+
+    func cleanup() {
+        try? fileManager.removeItem(at: rootURL)
+    }
+
+    func writeGGMLFile(size: Int = 2_048) throws {
         if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
             try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
         }

@@ -7,6 +7,7 @@ import Testing
 struct iOSTranscriptionManagerTests {
     @Test func enableSessionFromInactiveStartsMonitoringAndArmsTimeout() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
 
@@ -18,6 +19,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func repeatedEnableSessionWhileActiveIsIgnored() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performEnableSessionCommand()
@@ -27,6 +29,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func disableSessionWhileIdleStopsMonitoringImmediately() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performDisableSessionCommand()
@@ -39,6 +42,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func disableSessionWhileRecordingFinishesThenDisables() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
 
@@ -59,6 +63,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func disableSessionWhileTranscribingFinishesThenDisables() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
 
@@ -82,6 +87,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func idleTimeoutDisablesActiveIdleSession() async throws {
         let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(idleTimeout: 0.02))
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         try await Task.sleep(nanoseconds: 80_000_000)
@@ -93,6 +99,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func idleTimeoutIsCancelledWhileRecordingAndRearmsAfterCompletion() async throws {
         let harness = try makeHarness(sessionPolicy: iOSSessionPolicy(idleTimeout: 0.03))
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello", languageCode: "en")
 
@@ -113,6 +120,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func enableSessionWithPermissionDeniedSurfacesError() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.enableMonitoringError = iOSAudioRecorderError.microphonePermissionDenied
 
         await harness.manager.performEnableSessionCommand()
@@ -123,6 +131,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func cancelCurrentUtteranceWhileRecordingDiscardsWithoutTranscribing() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -139,6 +148,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func cancelCurrentUtteranceWhileTranscribingCancelsAndReturnsToIdle() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
 
@@ -164,6 +174,7 @@ struct iOSTranscriptionManagerTests {
             postSpeechInactivityTimeout: 180,
             emergencyUtteranceCap: 900
         ))
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -186,6 +197,7 @@ struct iOSTranscriptionManagerTests {
             postSpeechInactivityTimeout: 180,
             emergencyUtteranceCap: 0.02
         ))
+        defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -203,6 +215,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func startFromIdleTransitionsToRecording() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performStartRecordingCommand()
 
@@ -212,6 +225,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func repeatedStartWhileRecordingIsIgnored() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStartRecordingCommand()
@@ -222,6 +236,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func stopWhileIdleIsNoOp() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         await harness.manager.performStopRecordingCommand()
 
@@ -231,6 +246,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func stopFromRecordingPublishesTranscriptionSnapshotAndReturnsToIdle() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
 
@@ -247,6 +263,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func stopFromRecordingRecordsSpokenWordsIntoWeeklyStatsStore() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world again", languageCode: "en")
 
@@ -260,6 +277,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func stopFromRecordingWithCapsLockEnabledUppercasesFinalText() async throws {
         let harness = try makeHarness(capsLockEnabled: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
 
@@ -272,6 +290,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
 
@@ -290,6 +309,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func acceptedCaptureWithMissingModelSurfacesErrorAndSkipsTranscription() async throws {
         let harness = try makeHarness(modelPath: "")
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
 
@@ -305,6 +325,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func likelyNoSpeechResultPublishesSuppressedSnapshot() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "", languageCode: "en")
         harness.transcriptionService.lastResultWasLikelyNoSpeech = true
@@ -319,6 +340,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func repeatedStartWhileTranscribingIsIgnored() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
 
@@ -337,6 +359,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func repeatedStopWhileTranscribingIsIgnored() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
 
@@ -355,6 +378,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func emptyOutputFramesReturnToIdleWithoutTranscribing() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
         harness.recorder.stoppedCapture = emptyOutputCapture()
 
         await harness.manager.performStartRecordingCommand()
@@ -368,6 +392,7 @@ struct iOSTranscriptionManagerTests {
 
     @Test func dictionaryUpdatesRefreshHintPrompt() async throws {
         let harness = try makeHarness()
+        defer { harness.cleanup() }
 
         try harness.dictionaryStore.add(phrase: "cueit")
         await settleAsyncManagerWork()
@@ -381,25 +406,28 @@ struct iOSTranscriptionManagerTests {
         capsLockEnabled: Bool = false,
         sessionPolicy: iOSSessionPolicy = .default
     ) throws -> ManagerHarness {
+        let tempRootURL = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("iOSTranscriptionManagerTests.\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRootURL, withIntermediateDirectories: true)
         let recorder = StubAudioRecorder()
         let transcriptionService = StubDictationService(shouldSuspend: serviceShouldSuspend)
-        let dictionaryBase = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let dictionaryBase = tempRootURL.appendingPathComponent("Dictionary", isDirectory: true)
         let resolvedModelPath: String?
         if let modelPath {
             resolvedModelPath = modelPath.isEmpty ? nil : modelPath
         } else {
-            let modelURL = URL(fileURLWithPath: NSTemporaryDirectory())
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("bin")
+            let modelURL = tempRootURL.appendingPathComponent("stub-model.bin")
             try Data("stub-model".utf8).write(to: modelURL)
             resolvedModelPath = modelURL.path
         }
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: dictionaryBase)
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
+        let defaultsSuiteName = "iOSTranscriptionManagerTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: defaultsSuiteName)!
+        defaults.removePersistentDomain(forName: defaultsSuiteName)
         let weeklyWordStatsStore = iOSWeeklyWordStatsStore(
-            defaults: UserDefaults(suiteName: "iOSTranscriptionManagerTests.\(UUID().uuidString)")!,
+            defaults: defaults,
             now: { Date(timeIntervalSince1970: 0) },
             installationIDGenerator: { "test-device" }
         )
@@ -420,7 +448,9 @@ struct iOSTranscriptionManagerTests {
             recorder: recorder,
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
-            weeklyWordStatsStore: weeklyWordStatsStore
+            weeklyWordStatsStore: weeklyWordStatsStore,
+            tempRootURL: tempRootURL,
+            defaultsSuiteName: defaultsSuiteName
         )
     }
 
@@ -489,12 +519,37 @@ struct iOSTranscriptionManagerTests {
 }
 
 @MainActor
-private struct ManagerHarness {
+private final class ManagerHarness {
     let manager: iOSTranscriptionManager
     let recorder: StubAudioRecorder
     let transcriptionService: StubDictationService
     let dictionaryStore: DictionaryStore
     let weeklyWordStatsStore: iOSWeeklyWordStatsStore
+    let tempRootURL: URL
+    let defaultsSuiteName: String
+
+    init(
+        manager: iOSTranscriptionManager,
+        recorder: StubAudioRecorder,
+        transcriptionService: StubDictationService,
+        dictionaryStore: DictionaryStore,
+        weeklyWordStatsStore: iOSWeeklyWordStatsStore,
+        tempRootURL: URL,
+        defaultsSuiteName: String
+    ) {
+        self.manager = manager
+        self.recorder = recorder
+        self.transcriptionService = transcriptionService
+        self.dictionaryStore = dictionaryStore
+        self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.tempRootURL = tempRootURL
+        self.defaultsSuiteName = defaultsSuiteName
+    }
+
+    func cleanup() {
+        try? FileManager.default.removeItem(at: tempRootURL)
+        UserDefaults(suiteName: defaultsSuiteName)?.removePersistentDomain(forName: defaultsSuiteName)
+    }
 }
 
 @MainActor
