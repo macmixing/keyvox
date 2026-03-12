@@ -24,27 +24,6 @@ struct DictionaryTabView: View {
     var body: some View {
         iOSAppScrollScreen {
             VStack(alignment: .leading, spacing: 10) {
-                DictionaryHeaderCardView()
-
-                Button(action: presentAddWordEditor) {
-                    Text("Add Word")
-                        .font(.appFont(22))
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 52)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(iOSAppTheme.accent)
-                        )
-                }
-                .buttonStyle(.plain)
-                .containerRelativeFrame(.horizontal) { length, _ in
-                    length * 0.8
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
-
                 if let warning = dictionaryStore.loadWarningMessage {
                     Text(warning)
                         .font(.appFont(12))
@@ -63,21 +42,23 @@ struct DictionaryTabView: View {
 
                 iOSAppCard {
                     VStack(alignment: .leading, spacing: 12) {
+                        DictionaryHeaderCardView()
+
+                        Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
+                            ForEach(DictionarySortMode.allCases) { mode in
+                                Text(mode.rawValue).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
                         if displayedEntries.isEmpty {
                             ContentUnavailableView(
                                 "No custom words added yet.",
                                 systemImage: "text.book.closed",
-                                description: Text("Add words, email addresses, and short phrases to improve transcription accuracy.")
+                                description: Text("Tap the plus button to add your first custom word.")
                             )
                             .frame(maxWidth: .infinity)
                         } else {
-                            Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
-                                ForEach(DictionarySortMode.allCases) { mode in
-                                    Text(mode.rawValue).tag(mode)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-
                             VStack(spacing: 8) {
                                 ForEach(displayedEntries) { entry in
                                     DictionaryEntryRowView(
@@ -96,6 +77,15 @@ struct DictionaryTabView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if dictionaryEditorMode == nil {
+                DictionaryFloatingAddButton(action: presentAddWordEditor)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
             }
         }
         .sheet(item: $dictionaryEditorMode) { mode in

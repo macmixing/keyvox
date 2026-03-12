@@ -8,7 +8,7 @@ struct MainTabView: View {
             Group {
                 if #available(iOS 26.0, *) {
                     tabContent
-                        .tabBarMinimizeBehavior(.onScrollDown)
+                        .tabBarMinimizeBehavior(.automatic)
                         .tint(.indigo)
                 } else {
                     tabContent
