@@ -5,6 +5,7 @@ nonisolated enum iOSUserDefaultsKeys {
     static let autoParagraphsEnabled = "KeyVox.AutoParagraphsEnabled"
     static let listFormattingEnabled = "KeyVox.ListFormattingEnabled"
     static let capsLockEnabled = "KeyVox.CapsLockEnabled"
+    static let keyboardHapticsEnabled = "KeyVox.KeyboardHapticsEnabled"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
 

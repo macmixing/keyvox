@@ -78,6 +78,12 @@ final class iOSAppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var keyboardHapticsEnabled: Bool {
+        didSet {
+            defaults.set(keyboardHapticsEnabled, forKey: iOSUserDefaultsKeys.keyboardHapticsEnabled)
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone)
@@ -105,6 +111,7 @@ final class iOSAppSettingsStore: ObservableObject {
         autoParagraphsEnabled = defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
         listFormattingEnabled = defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
         capsLockEnabled = defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
+        keyboardHapticsEnabled = defaults.object(forKey: iOSUserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         preferBuiltInMicrophone = defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         if let raw = defaults.string(forKey: iOSUserDefaultsKeys.sessionDisableTiming),
            let timing = iOSSessionDisableTiming(rawValue: raw) {

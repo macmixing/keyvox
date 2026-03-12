@@ -8,6 +8,7 @@ struct SettingsTabView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 sessionSection
+                keyboardSection
                 audioSection
                 modelSection
             }
@@ -34,6 +35,20 @@ struct SettingsTabView: View {
             .pickerStyle(.menu)
 
             Text("Decide when the session turns off")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var keyboardSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Keyboard")
+                .font(.headline)
+
+            Toggle("Keyboard haptics", isOn: $settingsStore.keyboardHapticsEnabled)
+
+            Text("Get haptic feedback from KeyVox Keyboard")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }

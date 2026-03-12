@@ -13,6 +13,7 @@ struct iOSAppSettingsStoreTests {
         store.autoParagraphsEnabled = false
         store.listFormattingEnabled = false
         store.capsLockEnabled = true
+        store.keyboardHapticsEnabled = false
         store.preferBuiltInMicrophone = false
         store.sessionDisableTiming = .oneHour
 
@@ -20,6 +21,7 @@ struct iOSAppSettingsStoreTests {
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool == true)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.keyboardHapticsEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool == false)
         #expect(defaults.string(forKey: iOSUserDefaultsKeys.sessionDisableTiming) == iOSSessionDisableTiming.oneHour.rawValue)
     }
@@ -95,6 +97,19 @@ struct iOSAppSettingsStoreTests {
 
         let reloaded = iOSAppSettingsStore(defaults: defaults)
         #expect(reloaded.preferBuiltInMicrophone == false)
+    }
+
+    @Test func keyboardHapticsEnabledDefaultsToTrueAndRoundTripsThroughDefaults() {
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = iOSAppSettingsStore(defaults: defaults)
+        #expect(store.keyboardHapticsEnabled == true)
+
+        store.keyboardHapticsEnabled = false
+
+        let reloaded = iOSAppSettingsStore(defaults: defaults)
+        #expect(reloaded.keyboardHapticsEnabled == false)
     }
 
     @Test func sessionDisableTimingDefaultsToFiveMinutesAndRoundTripsThroughDefaults() {

@@ -3,6 +3,7 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     private let ipcManager = KeyboardIPCManager()
     private let capsLockStateStore = KeyboardCapsLockStateStore()
+    private let keypressHaptics = KeyboardKeypressHaptics()
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private var primaryHeightConstraint: NSLayoutConstraint?
@@ -269,6 +270,8 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func handleKeyActivation(_ kind: KeyboardKeyKind) {
+        keypressHaptics.emitKeypressIfEnabled()
+
         switch kind {
         case let .character(value):
             textDocumentProxy.insertText(value)
