@@ -91,7 +91,7 @@ echo "Unzipping update payload..."
 /usr/bin/ditto -x -k "$ZIP_PATH" "$STAGING_DIR"
 
 # Locate the newly extracted .app bundle
-NEW_APP_PATH=$(find "$STAGING_DIR" -name "*.app" -maxdepth 2 | head -n 1)
+NEW_APP_PATH=$(find "$STAGING_DIR" -maxdepth 2 -name "*.app" | head -n 1)
 
 if [ -z "$NEW_APP_PATH" ]; then
     echo "Error: No .app bundle found in the downloaded zip." >&2
