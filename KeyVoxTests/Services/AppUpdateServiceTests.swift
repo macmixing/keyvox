@@ -43,6 +43,7 @@ final class AppUpdateServiceTests: XCTestCase {
 
         XCTAssertTrue(promptPresenter.prompts[0].title == "KeyVox Update Available")
         XCTAssertTrue(service.latestRemoteInfo?.version == "999.0.0")
+        XCTAssertTrue(promptPresenter.prompts[0].primaryButtonTitle == "Open Updater")
     }
 
     func testUpdatePromptUsesSummarySectionWhenPresent() async throws {

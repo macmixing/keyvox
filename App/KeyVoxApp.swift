@@ -12,6 +12,10 @@ import Combine
 final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         Task { @MainActor in
+            if WindowManager.shared.bringForwardNonSettingsWindowIfNeeded() {
+                return
+            }
+
             if AppSettingsStore.shared.hasCompletedOnboarding {
                 WindowManager.shared.openSettings(centered: true)
             } else {
@@ -41,8 +45,29 @@ class WindowManager: ObservableObject {
     
     @Published var settingsWindow: NSWindow?
     @Published var onboardingWindow: NSWindow?
+    @Published var updateWindow: NSWindow?
+    @Published var postUpdateNoticeWindow: NSWindow?
     
     private init() {} // Private init for singleton
+
+    @MainActor
+    func bringForwardNonSettingsWindowIfNeeded() -> Bool {
+        let candidateWindows = [
+            postUpdateNoticeWindow,
+            updateWindow,
+            onboardingWindow
+        ]
+
+        guard let window = candidateWindows
+            .compactMap({ $0 })
+            .first(where: { $0.isVisible && !$0.isMiniaturized }) else {
+            return false
+        }
+
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        return true
+    }
     
     @MainActor
     func showOnboarding() {
@@ -179,6 +204,7 @@ struct KeyVoxApp: App {
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared
+    @ObservedObject private var updateCoordinator = AppUpdateCoordinator.shared
     private let appServiceRegistry = AppServiceRegistry.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
@@ -210,7 +236,11 @@ struct KeyVoxApp: App {
         }
 
         Task { @MainActor in
+            AppUpdateCoordinator.shared.prepareForLaunch()
             AppUpdateService.shared.startUpdateTimer()
+            if AppUpdateCoordinator.shared.postUpdateNoticeVersion != nil {
+                WindowManager.shared.showPostUpdateNoticeWindow()
+            }
         }
 
         _ = appServiceRegistry.iCloudSyncCoordinator

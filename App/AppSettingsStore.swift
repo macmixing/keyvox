@@ -88,6 +88,18 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var pendingUpdatedVersion: String? {
+        didSet {
+            defaults.set(pendingUpdatedVersion, forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
+        }
+    }
+
+    @Published var lastAcknowledgedUpdatedVersion: String? {
+        didSet {
+            defaults.set(lastAcknowledgedUpdatedVersion, forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
+        }
+    }
+
     private let defaults: UserDefaults
     private let defaultSoundVolume: Double = 0.1
 
@@ -121,6 +133,8 @@ final class AppSettingsStore: ObservableObject {
         selectedMicrophoneUID = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
         updateAlertLastShown = defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
+        pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
+        lastAcknowledgedUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
     }
 
     func refreshSelectedMicrophoneFromDefaults() {

@@ -26,12 +26,6 @@ struct GitHubLatestReleaseResponse: Decodable {
     }
 }
 
-struct LatestReleaseInfo {
-    let version: String
-    let message: String?
-    let updateURL: URL
-}
-
 struct UpdatePrompt {
     let title: String
     let message: String
@@ -47,7 +41,7 @@ struct UpdatePrompt {
 final class AppUpdateService: ObservableObject {
     static let shared = AppUpdateService()
 
-    @Published private(set) var latestRemoteInfo: LatestReleaseInfo?
+    @Published private(set) var latestRemoteInfo: AppReleaseInfo?
 
     private enum ReleaseNotesPreview {
         static let maxLines = 4
@@ -63,6 +57,7 @@ final class AppUpdateService: ObservableObject {
     private var updateTimer: Timer?
     private var suppressedUpdateIDThisSession: String?
     private var autoPromptSnoozedUntilInSession: Date?
+    private var suppressNextAutomaticPrompt = false
 
     init(
         feedConfig: UpdateFeedConfig? = nil,
@@ -110,6 +105,18 @@ final class AppUpdateService: ObservableObject {
         }
     }
 
+    func fetchLatestReleaseInfo() async -> AppReleaseInfo? {
+        await fetchLatestVersionInfo()
+    }
+
+    func shouldOfferUpdateToCurrentVersion(_ remoteInfo: AppReleaseInfo) -> Bool {
+        shouldOfferUpdate(remoteInfo: remoteInfo)
+    }
+
+    func suppressNextAutomaticUpdatePrompt() {
+        suppressNextAutomaticPrompt = true
+    }
+
     private func restartUpdateTimerIfNeeded() {
         updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: defaultCheckInterval, repeats: true) { [weak self] _ in
@@ -120,6 +127,11 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func performUpdateCheck(isManualCheck: Bool) async {
+        if !isManualCheck, suppressNextAutomaticPrompt {
+            suppressNextAutomaticPrompt = false
+            return
+        }
+
         guard let remoteInfo = await fetchLatestVersionInfo() else {
             if isManualCheck {
                 showUnavailableUpdatePrompt()
@@ -132,7 +144,7 @@ final class AppUpdateService: ObservableObject {
             }
             return
         }
-        let updateID = "\(remoteInfo.version)+\(remoteInfo.updateURL.absoluteString)"
+        let updateID = "\(remoteInfo.version)+\(remoteInfo.releasePageURL.absoluteString)"
         let cooldown = max(defaultCheckInterval, 1)
 
         // If user pressed "Later", suppress repeats for this app session.
@@ -152,10 +164,10 @@ final class AppUpdateService: ObservableObject {
         promptPresenter.show(prompt: prompt)
     }
 
-    private func buildPrompt(from remoteInfo: LatestReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
-        guard AppUpdateLogic.hasAllowedHost(remoteInfo.updateURL, allowedHosts: feedConfig.allowedHosts) else {
+    private func buildPrompt(from remoteInfo: AppReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
+        guard AppUpdateLogic.hasAllowedHost(remoteInfo.releasePageURL, allowedHosts: feedConfig.allowedHosts) else {
             #if DEBUG
-            print("[AppUpdateService] Ignoring update URL outside allowlist: \(remoteInfo.updateURL.absoluteString)")
+            print("[AppUpdateService] Ignoring update URL outside allowlist: \(remoteInfo.releasePageURL.absoluteString)")
             #endif
             return nil
         }
@@ -174,9 +186,9 @@ final class AppUpdateService: ObservableObject {
             version: remoteInfo.version,
             build: nil,
             dismissButtonTitle: "Later",
-            primaryButtonTitle: "Download Update",
+            primaryButtonTitle: "Open Updater",
             onPrimaryAction: { [weak self] in
-                NSWorkspace.shared.open(remoteInfo.updateURL)
+                AppUpdateCoordinator.shared.openWindow(for: remoteInfo)
                 self?.snoozeAutoPrompt(for: cooldown, updateID: updateID)
             },
             onDismiss: { [weak self] in
@@ -225,7 +237,7 @@ final class AppUpdateService: ObservableObject {
         suppressedUpdateIDThisSession = updateID
     }
 
-    private func fetchLatestVersionInfo() async -> LatestReleaseInfo? {
+    private func fetchLatestVersionInfo() async -> AppReleaseInfo? {
         do {
             var request = URLRequest(url: feedConfig.latestReleaseURL)
             request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
@@ -259,13 +271,20 @@ final class AppUpdateService: ObservableObject {
         }
     }
 
-    private func shouldOfferUpdate(remoteInfo: LatestReleaseInfo) -> Bool {
+    private func shouldOfferUpdate(remoteInfo: AppReleaseInfo) -> Bool {
         guard let localVersion = bundle.infoDictionary?["CFBundleShortVersionString"] as? String else {
             return false
         }
 
         let normalizedLocalVersion = AppUpdateLogic.normalizeVersionTag(localVersion)
         return AppUpdateLogic.compareVersionStrings(remoteInfo.version, normalizedLocalVersion) > 0
+    }
+
+    func summarizedReleaseBodyForDisplay(_ body: String?) -> String {
+        guard let body else {
+            return "A new version of KeyVox is available."
+        }
+        return summarizedReleaseBody(body) ?? "A new version of KeyVox is available."
     }
 
     private func summarizedReleaseBody(_ body: String) -> String? {

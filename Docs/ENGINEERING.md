@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-11**
+**Last Updated: 2026-03-12**
 
 ## Design Philosophy
 
@@ -41,7 +41,7 @@ File-level ownership and locations are intentionally maintained in one place: [`
 
 ## Platform Compatibility
 
-- Supported macOS range: Ventura (macOS 13.5) and newer.
+- Supported macOS range: macOS 15 and newer.
 
 For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
@@ -67,8 +67,53 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - Reads latest release metadata from GitHub Releases.
 - Normalizes release tags such as `v1.2.3` to `1.2.3`.
 - Uses a summarized release-notes preview (summary section when present, else truncated body text).
-- Prefers first `.dmg` asset URL, then falls back to release page URL.
-- Enforces host allowlist checks before opening update links.
+- Parses release metadata into an installable zip path vs manual-only fallback.
+- Enforces host allowlist checks before opening release links or downloading install assets.
+- Treats manual checks differently from automatic prompts: status-menu checks reopen the prompt flow even if the user previously pressed `Later` in the same session.
+
+## In-Place Updater
+
+KeyVox now supports an in-place GitHub Releases updater on macOS.
+
+- Automatic checks still surface a lightweight update prompt first.
+- Installable releases require both a `KeyVox-<version>.zip` asset and `keyvox-update-manifest.json`.
+- The prompt CTA opens a dedicated updater window instead of sending users to the browser.
+- The updater downloads the zip, verifies SHA-256, extracts the staged app, validates bundle identity, and verifies Apple trust before launch handoff.
+- Final app replacement is performed by `Resources/updater.sh` after the main app exits.
+- The updater only performs in-place installation from `/Applications`; if needed, KeyVox first copies itself into `/Applications`, relaunches, and resumes the updater flow automatically.
+- On the first successful launch after update, KeyVox can present a dedicated post-update notice window.
+
+### Updater Runtime Split
+
+The updater is intentionally separated by concern:
+
+- `Core/Services/AppUpdateService.swift`
+  release discovery, session snooze behavior, and prompt construction
+- `Core/Services/AppUpdateLogic.swift`
+  pure release parsing, version comparison, and host allowlist helpers
+- `Core/Services/AppUpdate/`
+  install pipeline pieces (`AppReleaseInfo`, manifest loading, download transport, checksum verification, extraction, bundle verification, install launch, cleanup, launch notice handling)
+- `Views/UpdatePromptOverlay.swift`
+  lightweight update-available prompt window
+- `Views/Updates/`
+  dedicated updater window and post-update notice UI
+- `App/WindowManager+Updates.swift`
+  updater/post-update window lifecycle, centering, and floating-window presentation
+
+### Release Packaging Contract
+
+The updater expects a release zip and manifest that match the shipped app metadata.
+
+- Zip asset name:
+  `KeyVox-<version>.zip`
+- Manifest asset name:
+  `keyvox-update-manifest.json`
+- Manifest fields:
+  `version`, `assetName`, `sha256`, `byteSize`, `bundleIdentifier`, `minimumSupportedMacOS`
+- Packaging helper:
+  `build/build_release.sh`
+
+`build/build_release.sh` assumes maintainers already exported a signed/notarized `.app` from Xcode. The script verifies the exported app, creates the release zip, and writes the updater manifest into `build/Release/`.
 
 ### Local Override Workflow
 
@@ -112,6 +157,8 @@ Maintainers can override the update feed locally without changing tracked defaul
   `Tools/Pronunciation/*`
 - Update-feed local override helper:
   `Tools/UpdateFeed/configure_local_feed.sh`
+- Release zip + manifest packaging helper:
+  `build/build_release.sh`
 
 ### Integration-Only Exclusions
 

@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-11**
+**Last Updated: 2026-03-12**
 
 ## Project Overview
 
@@ -33,6 +33,7 @@ This is a curated map of the repo layout (intentionally not an exhaustive invent
 KeyVox/
 ├── App/
 │   ├── KeyVoxApp.swift
+│   ├── WindowManager+Updates.swift
 │   ├── AppSettingsStore.swift
 │   ├── AppServiceRegistry.swift
 │   ├── LoginItemController.swift
@@ -47,7 +48,8 @@ KeyVox/
 │   ├── Services/
 │   │   ├── Paste/
 │   │   │   └── PasteService.swift
-│   │   └── AppUpdateService.swift
+│   │   ├── AppUpdateService.swift
+│   │   └── AppUpdate/
 │   ├── Overlay/
 │   │   ├── OverlayManager.swift
 │   │   └── AudioIndicatorDriver.swift
@@ -58,6 +60,7 @@ KeyVox/
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
 │   ├── UpdatePromptOverlay.swift
+│   ├── Updates/
 │   ├── Settings/
 │   └── Warnings/
 ├── Resources/
@@ -101,7 +104,12 @@ KeyVox/
 - `App/KeyVoxApp.swift`
   - App entry point and menu bar scene.
   - Owns onboarding/settings windows via `WindowManager`.
+  - Reopen behavior prefers visible non-settings windows (updater, post-update notice, onboarding) before falling back to Settings.
   - Cancels app termination once to close Settings first when the Settings window is visible.
+- `App/WindowManager+Updates.swift`
+  - Dedicated updater and post-update notice window lifecycle.
+  - Applies updater-specific floating-window centering and stoplight hiding.
+  - Keeps update-related window policy out of the primary settings/onboarding window code.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -213,6 +221,38 @@ KeyVox/
 
 ### Service Layer (`Core/Services` + `Packages/KeyVoxCore/Sources/KeyVoxCore/Services`)
 
+- `Core/Services/AppUpdateService.swift`
+  - Fetches the latest GitHub release, applies session snooze rules, and builds the initial update prompt.
+  - Keeps automatic prompt policy separate from the install pipeline.
+- `Core/Services/AppUpdateLogic.swift`
+  - Pure update release parsing, host allowlist checks, version normalization/comparison, and asset classification.
+- `Core/Services/AppUpdate/AppReleaseInfo.swift`
+  - Canonical updater release and manifest metadata models.
+- `Core/Services/AppUpdate/AppUpdateCoordinator.swift`
+  - UI-facing updater state machine for release refresh, download, verification, install handoff, and post-update notice state.
+- `Core/Services/AppUpdate/AppUpdateManifestLoader.swift`
+  - Downloads and decodes the manifest asset referenced by the selected release.
+- `Core/Services/AppUpdate/AppUpdateDownloadService.swift`
+  - URLSession-based zip download orchestration and staged file delivery.
+- `Core/Services/AppUpdate/AppUpdateDownloadDelegate.swift`
+  - Download delegate bridge for progress callbacks and completion handling.
+- `Core/Services/AppUpdate/AppUpdateChecksumVerifier.swift`
+  - SHA-256 verification for downloaded updater archives.
+- `Core/Services/AppUpdate/AppUpdateArchiveExtractor.swift`
+  - Zip extraction into updater-managed staging directories.
+- `Core/Services/AppUpdate/AppUpdateBundleVerifier.swift`
+  - Bundle structure, bundle identifier/version, codesign, Team ID, and Gatekeeper verification for staged update apps.
+- `Core/Services/AppUpdate/AppUpdateInstallLauncher.swift`
+  - Launches `Resources/updater.sh`, stages post-update notice state, and terminates the app only after install handoff is confirmed.
+- `Core/Services/AppUpdate/AppUpdateApplicationsPrereflight.swift`
+  - `/Applications` prerequisite handling, including self-copy-and-relaunch before resuming install.
+- `Core/Services/AppUpdate/AppUpdateLaunchNoticeService.swift`
+  - Launch-time resolution of the one-time “updated” notice after successful installs.
+- `Core/Services/AppUpdate/AppUpdateCleanupService.swift`
+  - Startup cleanup for updater staging artifacts and deferred backup removal.
+- `Core/Services/AppUpdate/AppUpdatePaths.swift`
+  - Centralized release staging, zip, extract, and cleanup path construction.
+
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift`
   - Splits long captures into paragraph-sized chunks using deterministic RMS silence windows.
   - Uses configurable chunk-size and silence-run guardrails to avoid over-splitting.
@@ -318,6 +358,36 @@ KeyVox/
 - `Tools/Pronunciation/build_lexicon.sh`
   - Maintainer pipeline for pinned-source regeneration of lexicon/common-word resources.
   - Enforces row targets and writes package-owned outputs under `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`, including `sources.lock.json`.
+
+### Update UI (`Views/UpdatePromptOverlay.swift` + `Views/Updates` + `Views/Components`)
+
+- `Views/Components/AppActionButton.swift`
+  - Shared capsule-styled primary/secondary button used across updater-related surfaces.
+- `Views/UpdatePromptOverlay.swift`
+  - Lightweight update prompt shown before entering the dedicated updater window.
+  - Owns prompt-window centering through `UpdatePromptManager`.
+- `Views/Updates/UpdateWindowView.swift`
+  - Dedicated updater window shell with dynamic height reporting and explicit drag region.
+- `Views/Updates/UpdateHeaderCard.swift`
+  - Current version / target version / state summary card for the updater window.
+- `Views/Updates/UpdateProgressCard.swift`
+  - Download/install progress card and byte-count presentation.
+- `Views/Updates/UpdateApplicationsRequirementCard.swift`
+  - `/Applications` prerequisite card shown before self-move and relaunch.
+- `Views/Updates/UpdateFailureCard.swift`
+  - Failure presentation card for updater pipeline errors.
+- `Views/Updates/PostUpdateNoticeView.swift`
+  - Final post-update notice window shown after successful installs.
+- `Views/Components/AppUpdateProgressBar.swift`
+  - Updater-specific progress bar component used inside updater progress UI.
+
+### Release Tooling (`build/`)
+
+- `build/build_release.sh`
+  - Maintainer packaging helper for exported release apps.
+  - Verifies a signed/notarized exported `.app`, creates `Release/KeyVox-<version>.zip`, and writes `Release/keyvox-update-manifest.json`.
+- `build/build_dmg.sh`
+  - Maintainer DMG packaging script for manual-install distribution artifacts.
 - `Tools/Pronunciation/train_g2p.sh`
   - Build-time Phonetisaurus/OpenFst G2P generation for OOV pronunciation candidates used when regenerating package-owned pronunciation resources.
 - `Tools/Pronunciation/verify_licenses.sh`
