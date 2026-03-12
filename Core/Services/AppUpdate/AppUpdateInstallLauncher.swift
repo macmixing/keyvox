@@ -8,12 +8,13 @@ struct AppUpdateInstallLauncher {
         self.noticeService = noticeService
     }
 
+    @MainActor
     func launchInstall(
         version: String,
         stagedZipURL: URL,
         installPath: String = Bundle.main.bundleURL.path,
         bundle: Bundle = .main
-    ) throws {
+    ) async throws {
         guard let scriptPath = bundle.path(forResource: "updater", ofType: "sh") else {
             throw AppUpdateError.missingInstallerScript
         }
@@ -32,7 +33,7 @@ struct AppUpdateInstallLauncher {
 
         let deadline = Date().addingTimeInterval(1)
         while !process.isRunning && Date() < deadline {
-            Thread.sleep(forTimeInterval: 0.05)
+            try await Task.sleep(nanoseconds: 50_000_000)
         }
 
         guard process.isRunning else {

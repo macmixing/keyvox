@@ -63,15 +63,26 @@ trap on_exit EXIT INT TERM
 # 1. Wait for KeyVox to exit completely
 # kill -0 checks if the process is running without actually sending a kill signal
 echo "Waiting for KeyVox (PID: $TARGET_PID) to terminate..."
+WAIT_TICKS=0
+MAX_WAIT_SECONDS=30
+TICK_DURATION_SECONDS=0.2
+MAX_WAIT_TICKS=150
 while kill -0 "$TARGET_PID" 2>/dev/null; do
-    sleep 0.2
+    if [ "$WAIT_TICKS" -ge "$MAX_WAIT_TICKS" ]; then
+        # Fail closed instead of force-killing the app so the updater does not
+        # discard unsaved state in the event the original process is hung.
+        echo "Warning: Timed out waiting for PID $TARGET_PID after ${MAX_WAIT_SECONDS}s." >&2
+        exit 1
+    fi
+    sleep "$TICK_DURATION_SECONDS"
+    WAIT_TICKS=$((WAIT_TICKS + 1))
 done
 
 # 2. Create a temporary staging directory
 STAGING_DIR=$(mktemp -d)
 
 if [ ! -e "$INSTALL_PATH" ]; then
-    echo "Error: Install path does not exist: $INSTALL_PATH"
+    echo "Error: Install path does not exist: $INSTALL_PATH" >&2
     exit 1
 fi
 
@@ -83,7 +94,7 @@ echo "Unzipping update payload..."
 NEW_APP_PATH=$(find "$STAGING_DIR" -name "*.app" -maxdepth 2 | head -n 1)
 
 if [ -z "$NEW_APP_PATH" ]; then
-    echo "Error: No .app bundle found in the downloaded zip."
+    echo "Error: No .app bundle found in the downloaded zip." >&2
     exit 1
 fi
 

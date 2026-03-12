@@ -21,7 +21,11 @@ final class AppUpdateDownloadDelegate: NSObject, URLSessionDownloadDelegate {
         didFinishDownloadingTo location: URL
     ) {
         _ = session
-        _ = downloadTask
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            onFinish?(.failure(AppUpdateError.networkUnavailable))
+            return
+        }
         onFinish?(.success(location))
     }
 

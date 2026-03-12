@@ -48,6 +48,10 @@ struct AppUpdatePaths {
             .replacingOccurrences(of: "..", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return sanitized.isEmpty ? "unknown-version" : sanitized
+        if sanitized.isEmpty || sanitized.trimmingCharacters(in: CharacterSet(charactersIn: ".")).isEmpty {
+            return "unknown-version"
+        }
+
+        return sanitized
     }
 }

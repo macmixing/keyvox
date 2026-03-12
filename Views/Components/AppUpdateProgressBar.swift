@@ -10,7 +10,7 @@ struct AppUpdateProgressBar: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            ProgressView(value: progress)
+            ProgressView(value: clampedProgress)
                 .progressViewStyle(KeyVoxProgressStyle())
                 .frame(height: 8)
 

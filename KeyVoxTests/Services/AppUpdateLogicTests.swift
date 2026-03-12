@@ -117,4 +117,14 @@ final class AppUpdateLogicTests: XCTestCase {
         XCTAssertTrue(releaseURL.path.hasPrefix(rootURL.path))
         XCTAssertTrue(releaseURL.lastPathComponent == "1.2.3evil")
     }
+
+    func testAppUpdatePathsFallsBackForDotOnlyVersion() {
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let paths = AppUpdatePaths(fileManager: .default, rootDirectory: rootURL)
+
+        let releaseURL = paths.releaseDirectoryURL(for: ".....")
+
+        XCTAssertTrue(releaseURL.path.hasPrefix(rootURL.path))
+        XCTAssertTrue(releaseURL.lastPathComponent == "unknown-version")
+    }
 }

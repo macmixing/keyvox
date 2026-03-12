@@ -48,6 +48,8 @@ enum AppUpdateError: LocalizedError {
 
 @MainActor
 final class AppUpdateCoordinator: ObservableObject {
+    private typealias CoordinatorOperation = @MainActor () async -> Void
+
     static let shared = AppUpdateCoordinator()
 
     @Published private(set) var state: AppUpdateState = .idle
@@ -75,6 +77,7 @@ final class AppUpdateCoordinator: ObservableObject {
     private let paths: AppUpdatePaths
     private let fileManager: FileManager
     private var isResumingInstallAfterApplicationsMove = false
+    private var isOperationInFlight = false
 
     init(bundle: Bundle = .main) {
         let paths = AppUpdatePaths()
@@ -102,26 +105,27 @@ final class AppUpdateCoordinator: ObservableObject {
         if applicationsPrereflight.consumeResumeAfterApplicationsMove() {
             service.suppressNextAutomaticUpdatePrompt()
             WindowManager.shared.openUpdateWindow()
-            Task {
-                await resumeInstallAfterApplicationsMove()
+            startTrackedOperation {
+                await self.resumeInstallAfterApplicationsMove()
             }
         }
     }
 
     func openWindowForManualCheck() {
         WindowManager.shared.openUpdateWindow()
-        Task {
-            await refreshRelease(userInitiated: true)
+        startTrackedOperation {
+            await self.refreshRelease(userInitiated: true)
         }
     }
 
     func openWindow(for releaseInfo: AppReleaseInfo?) {
         WindowManager.shared.openUpdateWindow()
+        guard !isOperationInFlight else { return }
         if let releaseInfo {
             applyReleaseInfo(releaseInfo, userInitiated: false)
         } else {
-            Task {
-                await refreshRelease(userInitiated: true)
+            startTrackedOperation {
+                await self.refreshRelease(userInitiated: true)
             }
         }
     }
@@ -136,16 +140,16 @@ final class AppUpdateCoordinator: ObservableObject {
     func primaryAction() {
         switch state {
         case .available:
-            Task {
-                await installAvailableRelease()
+            startTrackedOperation {
+                await self.installAvailableRelease()
             }
         case .manualOnly:
             openReleasePage()
         case .requiresApplicationsInstall:
             moveToApplicationsAndResumeUpdater()
         case .failed, .completed, .idle:
-            Task {
-                await refreshRelease(userInitiated: true)
+            startTrackedOperation {
+                await self.refreshRelease(userInitiated: true)
             }
         default:
             break
@@ -154,7 +158,9 @@ final class AppUpdateCoordinator: ObservableObject {
 
     func secondaryAction() {
         switch state {
-        case .available, .manualOnly, .failed, .completed, .requiresApplicationsInstall:
+        case .available, .manualOnly, .failed, .completed, .requiresApplicationsInstall,
+                .checking, .downloading, .verifyingChecksum, .extracting,
+                .verifyingSignature, .readyToInstall, .installing:
             WindowManager.shared.hideUpdateWindow()
         default:
             break
@@ -319,13 +325,18 @@ final class AppUpdateCoordinator: ObservableObject {
                 return
             }
 
-            try paths.createReleaseDirectoryIfNeeded(for: releaseInfo.version)
             let manifest = try await manifestLoader.loadManifest(from: manifestAssetURL)
             guard manifest.assetName == installAssetName else {
                 throw AppUpdateError.missingInstallAsset
             }
 
             let zipURL = paths.zipURL(for: releaseInfo.version, assetName: installAssetName)
+            let extractedURL = paths.extractedDirectoryURL(for: releaseInfo.version)
+            let paths = self.paths
+            try await runBlockingWork {
+                try paths.createReleaseDirectoryIfNeeded(for: releaseInfo.version)
+            }
+
             state = .downloading
             statusMessage = "Downloading update..."
             try await downloadService.download(from: installAssetURL, to: zipURL) { [weak self] written, expected in
@@ -341,28 +352,59 @@ final class AppUpdateCoordinator: ObservableObject {
 
             state = .verifyingChecksum
             statusMessage = "Verifying download..."
-            try checksumVerifier.verify(fileURL: zipURL, expectedSHA256: manifest.sha256)
+            let checksumVerifier = self.checksumVerifier
+            try await runBlockingWork {
+                try checksumVerifier.verify(fileURL: zipURL, expectedSHA256: manifest.sha256)
+            }
 
             state = .extracting
             statusMessage = "Preparing update..."
-            let extractedURL = paths.extractedDirectoryURL(for: releaseInfo.version)
-            try archiveExtractor.extract(zipURL: zipURL, to: extractedURL)
+            let archiveExtractor = self.archiveExtractor
+            try await runBlockingWork {
+                try archiveExtractor.extract(zipURL: zipURL, to: extractedURL)
+            }
 
             state = .verifyingSignature
             statusMessage = "Validating signed app..."
-            _ = try bundleVerifier.verifyExtractedApp(
-                in: extractedURL,
-                expectedBundleIdentifier: manifest.bundleIdentifier,
-                expectedVersion: releaseInfo.version
-            )
+            let bundleVerifier = self.bundleVerifier
+            try await runBlockingWork {
+                _ = try bundleVerifier.verifyExtractedApp(
+                    in: extractedURL,
+                    expectedBundleIdentifier: manifest.bundleIdentifier,
+                    expectedVersion: releaseInfo.version
+                )
+            }
 
             state = .readyToInstall
             statusMessage = "Installing KeyVox..."
-            try installLauncher.launchInstall(version: releaseInfo.version, stagedZipURL: zipURL)
+            try await installLauncher.launchInstall(version: releaseInfo.version, stagedZipURL: zipURL)
         } catch {
             state = .failed
             statusMessage = "The update could not be installed."
             failureMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func startTrackedOperation(_ operation: @escaping CoordinatorOperation) {
+        guard !isOperationInFlight else { return }
+        // The coordinator intentionally serializes update work so release checks,
+        // staging, and install handoff cannot overlap and race shared state.
+        isOperationInFlight = true
+        Task { @MainActor [weak self] in
+            defer { self?.isOperationInFlight = false }
+            await operation()
+        }
+    }
+
+    private func runBlockingWork<T>(_ work: @escaping () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    continuation.resume(returning: try work())
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
 }
