@@ -35,6 +35,7 @@ struct KeyVoxApp: App {
             ],
             for: .selected
         )
+        configureLegacyBarAppearanceIfNeeded()
         iOSModelDownloadBackgroundTasks.register()
     }
 
@@ -50,5 +51,24 @@ struct KeyVoxApp: App {
                     urlRouter.handle(url: url)
                 }
         }
+    }
+
+    private func configureLegacyBarAppearanceIfNeeded() {
+        guard #unavailable(iOS 26.0) else { return }
+
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithDefaultBackground()
+
+        let navigationBarAppearance = UINavigationBarAppearance()
+        navigationBarAppearance.configureWithDefaultBackground()
+
+        let tabBar = UITabBar.appearance()
+        tabBar.standardAppearance = tabBarAppearance
+        tabBar.scrollEdgeAppearance = tabBarAppearance
+
+        let navigationBar = UINavigationBar.appearance()
+        navigationBar.standardAppearance = navigationBarAppearance
+        navigationBar.scrollEdgeAppearance = navigationBarAppearance
+        navigationBar.compactAppearance = navigationBarAppearance
     }
 }

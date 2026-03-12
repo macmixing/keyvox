@@ -23,8 +23,6 @@ struct MainTabView: View {
                         .tint(.indigo)
                 } else {
                     tabContent
-                        .toolbarBackground(.visible, for: .tabBar)
-                        .toolbarBackground(.regularMaterial, for: .tabBar)
                         .tint(.indigo)
                 }
             }
