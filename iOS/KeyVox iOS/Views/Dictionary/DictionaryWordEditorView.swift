@@ -4,7 +4,8 @@ import KeyVoxCore
 
 struct DictionaryWordEditorView: View {
     private enum Layout {
-        static let baseDetentHeight: CGFloat = 220
+        static let addDetentHeight: CGFloat = 220
+        static let editDetentHeight: CGFloat = 180
     }
 
     let mode: DictionaryWordEditorMode
@@ -28,16 +29,14 @@ struct DictionaryWordEditorView: View {
         keyboardObserver.isKeyboardVisible ? 0 : 30
     }
 
+    private var sheetHeight: CGFloat {
+        let baseHeight = mode.showsDescription ? Layout.addDetentHeight : Layout.editDetentHeight
+        return baseHeight + bottomPadding
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if mode.showsDescription {
-                    DictionaryHeaderCardView()
-                        .padding(.top, 8)
-                        .padding(.bottom, 6)
-                        .padding(.horizontal, 16)
-                }
-
                 Form {
                     AutoFocusTextField(
                         text: $phrase,
@@ -57,7 +56,14 @@ struct DictionaryWordEditorView: View {
                     }
                 }
                 .scrollDisabled(true)
-                .padding(.top, mode.showsDescription ? -18 : 0)
+                .padding(.top, -18)
+
+                if mode.showsDescription {
+                    DictionaryHeaderCardView()
+                        .padding(.top, -10)
+                        .padding(.bottom, 10)
+                        .padding(.horizontal, 16)
+                }
             }
             .navigationTitle(mode.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -78,7 +84,7 @@ struct DictionaryWordEditorView: View {
                 }
             }
         }
-        .presentationDetents([.height(Layout.baseDetentHeight + bottomPadding)])
+        .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
     }
 
