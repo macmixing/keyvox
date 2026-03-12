@@ -9,6 +9,7 @@ struct DictionaryWordEditorView: View {
     }
 
     let mode: DictionaryWordEditorMode
+    let onSave: () -> Void
 
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @Environment(\.dismiss) private var dismiss
@@ -16,8 +17,9 @@ struct DictionaryWordEditorView: View {
     @State private var errorMessage: String?
     @StateObject private var keyboardObserver = KeyboardObserver()
 
-    init(mode: DictionaryWordEditorMode) {
+    init(mode: DictionaryWordEditorMode, onSave: @escaping () -> Void = {}) {
         self.mode = mode
+        self.onSave = onSave
         _phrase = State(initialValue: mode.initialPhrase)
     }
 
@@ -97,6 +99,7 @@ struct DictionaryWordEditorView: View {
                 try dictionaryStore.update(id: entry.id, phrase: phrase)
             }
 
+            onSave()
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

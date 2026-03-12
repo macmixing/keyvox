@@ -88,7 +88,14 @@ struct DictionaryTabView: View {
             }
         }
         .sheet(item: $dictionaryEditorMode) { mode in
-            DictionaryWordEditorView(mode: mode)
+            DictionaryWordEditorView(
+                mode: mode,
+                onSave: {
+                    if case .add = mode, dictionarySortMode != .recentlyAdded {
+                        dictionarySortMode = .recentlyAdded
+                    }
+                }
+            )
         }
         .onDisappear {
             dictionaryStore.clearWarnings()
