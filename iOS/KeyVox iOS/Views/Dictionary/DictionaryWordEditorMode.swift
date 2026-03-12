@@ -32,6 +32,15 @@ enum DictionaryWordEditorMode: Identifiable {
         }
     }
 
+    var showsDescription: Bool {
+        switch self {
+        case .add:
+            return true
+        case .edit:
+            return false
+        }
+    }
+
     var initialPhrase: String {
         switch self {
         case .add:

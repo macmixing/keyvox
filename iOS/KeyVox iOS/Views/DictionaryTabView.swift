@@ -42,8 +42,6 @@ struct DictionaryTabView: View {
 
                 iOSAppCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        DictionaryHeaderCardView()
-
                         Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
                             ForEach(DictionarySortMode.allCases) { mode in
                                 Text(mode.rawValue).tag(mode)

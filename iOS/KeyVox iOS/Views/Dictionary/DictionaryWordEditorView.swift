@@ -4,7 +4,7 @@ import KeyVoxCore
 
 struct DictionaryWordEditorView: View {
     private enum Layout {
-        static let baseDetentHeight: CGFloat = 200
+        static let baseDetentHeight: CGFloat = 220
     }
 
     let mode: DictionaryWordEditorMode
@@ -30,22 +30,34 @@ struct DictionaryWordEditorView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                AutoFocusTextField(
-                    text: $phrase,
-                    placeholder: "KeyVox",
-                    onSubmit: submit
-                )
-                .frame(height: 44)
-                .onChange(of: phrase) { _, _ in
-                    errorMessage = nil
+            VStack(spacing: 0) {
+                if mode.showsDescription {
+                    DictionaryHeaderCardView()
+                        .padding(.top, 8)
+                        .padding(.bottom, 6)
+                        .padding(.horizontal, 16)
                 }
 
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.appFont(12))
-                        .foregroundStyle(.red)
+                Form {
+                    AutoFocusTextField(
+                        text: $phrase,
+                        placeholder: "KeyVox",
+                        onSubmit: submit
+                    )
+                    .frame(height: 44)
+                    .onChange(of: phrase) { _, _ in
+                        errorMessage = nil
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.appFont(12))
+                            .foregroundStyle(.red)
+                            .listRowBackground(Color.clear)
+                    }
                 }
+                .scrollDisabled(true)
+                .padding(.top, mode.showsDescription ? -18 : 0)
             }
             .navigationTitle(mode.title)
             .navigationBarTitleDisplayMode(.inline)
