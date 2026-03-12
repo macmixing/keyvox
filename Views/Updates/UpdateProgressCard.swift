@@ -30,6 +30,7 @@ struct UpdateProgressCard: View {
                     detail: detailText
                 )
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

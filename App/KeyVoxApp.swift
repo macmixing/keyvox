@@ -12,6 +12,10 @@ import Combine
 final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         Task { @MainActor in
+            if WindowManager.shared.bringForwardNonSettingsWindowIfNeeded() {
+                return
+            }
+
             if AppSettingsStore.shared.hasCompletedOnboarding {
                 WindowManager.shared.openSettings(centered: true)
             } else {
@@ -45,6 +49,25 @@ class WindowManager: ObservableObject {
     @Published var postUpdateNoticeWindow: NSWindow?
     
     private init() {} // Private init for singleton
+
+    @MainActor
+    func bringForwardNonSettingsWindowIfNeeded() -> Bool {
+        let candidateWindows = [
+            postUpdateNoticeWindow,
+            updateWindow,
+            onboardingWindow
+        ]
+
+        guard let window = candidateWindows
+            .compactMap({ $0 })
+            .first(where: { $0.isVisible && !$0.isMiniaturized }) else {
+            return false
+        }
+
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        return true
+    }
     
     @MainActor
     func showOnboarding() {
@@ -238,7 +261,7 @@ struct KeyVoxApp: App {
             StatusMenuView(
                 manager: transcriptionManager,
                 openSettings: { tab in WindowManager.shared.openSettings(tab: tab) },
-                checkForUpdates: { AppUpdateCoordinator.shared.openWindowForManualCheck() },
+                checkForUpdates: { AppUpdateService.shared.checkForUpdatesManually() },
                 quitApp: { NSApplication.shared.terminate(nil) }
             )
         } label: {

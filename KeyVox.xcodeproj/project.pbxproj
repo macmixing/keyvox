@@ -145,6 +145,7 @@
 		F30000322FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000312FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift */; };
 		F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */; };
 		F30000362FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */; };
+		F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000372FC2000100AA0001 /* AppActionButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -296,6 +297,7 @@
 		F30000312FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateChecksumVerifierTests.swift; sourceTree = "<group>"; };
 		F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLaunchNoticeServiceTests.swift; sourceTree = "<group>"; };
 		F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateApplicationsPrereflightTests.swift; sourceTree = "<group>"; };
+		F30000372FC2000100AA0001 /* AppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActionButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -398,6 +400,7 @@
 		8E6D05D62F3C51D6003BD458 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				F30000372FC2000100AA0001 /* AppActionButton.swift */,
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
@@ -822,6 +825,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
 				F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */,

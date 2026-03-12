@@ -3,9 +3,8 @@ import AppKit
 
 private enum UpdatePromptLayout {
     static let width: CGFloat = 430
-    static let height: CGFloat = 250
-    static let messageMinHeight: CGFloat = 42
-    static let messageMaxHeight: CGFloat = 84
+    static let height: CGFloat = 280
+    static let shellPadding = EdgeInsets(top: 20, leading: 24, bottom: 30, trailing: 24)
 }
 
 struct UpdatePromptOverlay: View {
@@ -22,13 +21,12 @@ struct UpdatePromptOverlay: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
                 if let versionBadgeTitle {
                     StatusBadge(title: versionBadgeTitle, color: .indigo)
                 }
             }
-            .padding(.horizontal, 8)
 
             VStack(alignment: .center, spacing: 8) {
                 Text(prompt.title)
@@ -45,38 +43,31 @@ struct UpdatePromptOverlay: View {
                     .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .center)
-                .frame(maxWidth: .infinity)
-                .frame(
-                    minHeight: UpdatePromptLayout.messageMinHeight,
-                    maxHeight: UpdatePromptLayout.messageMaxHeight,
-                    alignment: .center
-                )
             }
-            .padding(.horizontal, 8)
 
             Spacer(minLength: 0)
 
             HStack(spacing: 10) {
-                Button(prompt.dismissButtonTitle, action: onDismiss)
-                    .buttonStyle(.bordered)
-                    .controlSize(.regular)
+                AppActionButton(
+                    title: prompt.dismissButtonTitle,
+                    style: .secondary,
+                    minWidth: 150,
+                    action: onDismiss
+                )
 
                 if let primaryButtonTitle = prompt.primaryButtonTitle {
-                    Button(action: onPrimaryAction) {
-                        Text(primaryButtonTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.black)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.indigo)
-                    .controlSize(.regular)
+                    AppActionButton(
+                        title: primaryButtonTitle,
+                        style: .primary,
+                        minWidth: 150,
+                        action: onPrimaryAction
+                    )
                 }
             }
-            .environment(\.controlActiveState, .active)
-            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(UpdatePromptLayout.shellPadding)
         .frame(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)
         .background(
             ZStack {
@@ -131,23 +122,27 @@ final class UpdatePromptManager {
         hostingView.frame = NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)
         window?.contentView = hostingView
         window?.setContentSize(NSSize(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height))
-
-        if let screen = NSScreen.main {
-            let visibleFrame = screen.visibleFrame
-            let targetFrame = NSRect(
-                x: visibleFrame.midX - (UpdatePromptLayout.width / 2),
-                y: visibleFrame.midY - (UpdatePromptLayout.height / 2),
-                width: UpdatePromptLayout.width,
-                height: UpdatePromptLayout.height
-            )
-            window?.setFrame(targetFrame, display: false)
-        }
+        centerPromptWindow()
 
         window?.orderFrontRegardless()
     }
 
     func hide() {
         window?.orderOut(nil)
+    }
+
+    private func centerPromptWindow() {
+        guard let window else { return }
+        let screen = window.screen ?? NSApp.keyWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first
+        guard let screen else { return }
+
+        let visibleFrame = screen.visibleFrame
+        let windowSize = window.frame.size
+        let origin = NSPoint(
+            x: visibleFrame.midX - (windowSize.width / 2),
+            y: visibleFrame.midY - (windowSize.height / 2)
+        )
+        window.setFrameOrigin(origin)
     }
 }
 

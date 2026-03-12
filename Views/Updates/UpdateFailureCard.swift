@@ -15,6 +15,7 @@ struct UpdateFailureCard: View {
                     .foregroundColor(.orange)
                     .lineSpacing(2)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

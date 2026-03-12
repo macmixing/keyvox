@@ -1,15 +1,60 @@
+import AppKit
 import SwiftUI
 
 struct UpdateWindowView: View {
-    @ObservedObject var coordinator: AppUpdateCoordinator
+    private struct HeightPreferenceKey: PreferenceKey {
+        static var defaultValue: CGFloat = UpdateWindowView.preferredWindowSize.height
 
-    static let preferredWindowSize = CGSize(width: 520, height: 500)
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
+
+    @ObservedObject var coordinator: AppUpdateCoordinator
+    var onPreferredHeightChange: (CGFloat) -> Void = { _ in }
+
+    static let preferredWindowSize = CGSize(width: 520, height: 300)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
+            draggableContent
+            actionRow
+                .padding(.top, 6)
+                .padding(.bottom, 10)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.top, 28)
+        .padding(.bottom, 28)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(
+            GeometryReader { geometry in
+                Color.clear.preference(
+                    key: HeightPreferenceKey.self,
+                    value: geometry.size.height
+                )
+            }
+        )
+        .frame(width: Self.preferredWindowSize.width)
+        .frame(minHeight: Self.preferredWindowSize.height)
+        .background(
+            Color.indigo.opacity(0.15)
+                .background(Color(white: 0.01))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .preferredColorScheme(.dark)
+        .onPreferenceChange(HeightPreferenceKey.self) { height in
+            onPreferredHeightChange(max(Self.preferredWindowSize.height, height))
+        }
+    }
+
+    private var draggableContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
                 StatusBadge(title: "Updater", color: .indigo)
             }
+            .padding(.top, 10)
+            .background(WindowDragRegion())
 
             UpdateHeaderCard(
                 currentVersion: coordinator.currentVersion,
@@ -17,10 +62,6 @@ struct UpdateWindowView: View {
                 statusMessage: coordinator.statusMessage,
                 state: coordinator.state
             )
-
-            if !coordinator.releaseNotesPreview.isEmpty {
-                UpdateReleaseNotesCard(releaseNotes: coordinator.releaseNotesPreview)
-            }
 
             if coordinator.state == .requiresApplicationsInstall {
                 UpdateApplicationsRequirementCard()
@@ -44,33 +85,43 @@ struct UpdateWindowView: View {
                coordinator.state == .failed {
                 UpdateFailureCard(message: failureMessage)
             }
+        }
+    }
 
-            Spacer(minLength: 0)
+    private var actionRow: some View {
+        HStack(spacing: 10) {
+            AppActionButton(
+                title: coordinator.secondaryButtonTitle,
+                style: .secondary,
+                minWidth: 190
+            ) {
+                coordinator.secondaryAction()
+            }
 
-            HStack(spacing: 10) {
-                Button(coordinator.secondaryButtonTitle) {
-                    coordinator.secondaryAction()
-                }
-                .buttonStyle(.bordered)
+            Spacer()
 
-                Spacer()
-
-                Button(coordinator.primaryButtonTitle) {
-                    coordinator.primaryAction()
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.indigo)
-                .disabled(!coordinator.canTriggerPrimaryAction)
+            AppActionButton(
+                title: coordinator.primaryButtonTitle,
+                style: .primary,
+                minWidth: 190,
+                isEnabled: coordinator.canTriggerPrimaryAction
+            ) {
+                coordinator.primaryAction()
             }
         }
-        .padding(20)
-        .frame(width: Self.preferredWindowSize.width, height: Self.preferredWindowSize.height)
-        .background(
-            ZStack {
-                VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
-                Color.black.opacity(0.94)
-            }
-        )
-        .preferredColorScheme(.dark)
+    }
+}
+
+private struct WindowDragRegion: NSViewRepresentable {
+    func makeNSView(context: Context) -> DragRegionView {
+        DragRegionView()
+    }
+
+    func updateNSView(_ nsView: DragRegionView, context: Context) {}
+}
+
+private final class DragRegionView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
     }
 }

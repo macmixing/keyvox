@@ -5,8 +5,10 @@ extension WindowManager {
     @MainActor
     func openUpdateWindow(centered: Bool = true) {
         let window: NSWindow
+        let isNewWindow: Bool
         if let existing = updateWindow {
             window = existing
+            isNewWindow = false
         } else {
             window = NSWindow(
                 contentRect: NSRect(
@@ -15,24 +17,45 @@ extension WindowManager {
                     width: UpdateWindowView.preferredWindowSize.width,
                     height: UpdateWindowView.preferredWindowSize.height
                 ),
-                styleMask: [.titled, .fullSizeContentView, .closable],
+                styleMask: [.titled, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.isReleasedWhenClosed = false
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
+            window.standardWindowButton(.closeButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+            window.standardWindowButton(.zoomButton)?.isHidden = true
             window.backgroundColor = .clear
             window.isOpaque = false
             window.hasShadow = true
-            window.isMovableByWindowBackground = true
+            window.isMovableByWindowBackground = false
             updateWindow = window
+            isNewWindow = true
         }
 
-        window.contentView = NSHostingView(rootView: UpdateWindowView(coordinator: AppUpdateCoordinator.shared))
-        window.setContentSize(UpdateWindowView.preferredWindowSize)
+        window.contentView = NSHostingView(
+            rootView: UpdateWindowView(
+                coordinator: AppUpdateCoordinator.shared,
+                onPreferredHeightChange: { [weak window] height in
+                    guard let window else { return }
+                    let targetSize = CGSize(
+                        width: UpdateWindowView.preferredWindowSize.width,
+                        height: height
+                    )
+                    if window.contentLayoutRect.size != targetSize {
+                        window.setContentSize(targetSize)
+                        self.centerUpdateWindow(window)
+                    }
+                }
+            )
+        )
+        if isNewWindow {
+            window.setContentSize(UpdateWindowView.preferredWindowSize)
+        }
         if centered {
-            window.center()
+            centerUpdateWindow(window)
         }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -58,17 +81,20 @@ extension WindowManager {
                     width: PostUpdateNoticeView.preferredWindowSize.width,
                     height: PostUpdateNoticeView.preferredWindowSize.height
                 ),
-                styleMask: [.titled, .fullSizeContentView, .closable],
+                styleMask: [.titled, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.isReleasedWhenClosed = false
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
+            window.standardWindowButton(.closeButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+            window.standardWindowButton(.zoomButton)?.isHidden = true
             window.backgroundColor = .clear
             window.isOpaque = false
             window.hasShadow = true
-            window.isMovableByWindowBackground = true
+            window.isMovableByWindowBackground = false
             postUpdateNoticeWindow = window
         }
 
@@ -81,7 +107,7 @@ extension WindowManager {
             )
         )
         window.setContentSize(PostUpdateNoticeView.preferredWindowSize)
-        window.center()
+        centerFloatingWindow(window)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -89,5 +115,24 @@ extension WindowManager {
     @MainActor
     func hidePostUpdateNoticeWindow() {
         postUpdateNoticeWindow?.orderOut(nil)
+    }
+
+    @MainActor
+    private func centerUpdateWindow(_ window: NSWindow) {
+        centerFloatingWindow(window)
+    }
+
+    @MainActor
+    private func centerFloatingWindow(_ window: NSWindow) {
+        let screen = window.screen ?? NSApp.keyWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first
+        guard let screen else { return }
+
+        let visibleFrame = screen.visibleFrame
+        let windowSize = window.frame.size
+        let origin = NSPoint(
+            x: visibleFrame.midX - (windowSize.width / 2),
+            y: visibleFrame.midY - (windowSize.height / 2)
+        )
+        window.setFrameOrigin(origin)
     }
 }

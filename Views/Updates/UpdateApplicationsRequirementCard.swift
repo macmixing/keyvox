@@ -13,6 +13,7 @@ struct UpdateApplicationsRequirementCard: View {
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
