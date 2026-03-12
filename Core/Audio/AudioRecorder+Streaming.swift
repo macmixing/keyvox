@@ -73,7 +73,7 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
 
         // Visual meter scaling only. This does not modify captured audio samples.
         // Keep boosted UI response so waveform movement remains readable.
-        let level = min(max(sqrt(rms) * 5.0, 0.0), 1.0)
+        let level = min(max(sqrt(rms) * 2.5, 0.0), 1.0)
 
         let now = Date()
         if peak > deadSignalPeakThreshold {
