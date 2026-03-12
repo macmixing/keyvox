@@ -58,7 +58,15 @@ on_exit() {
     cleanup
 }
 
-trap on_exit EXIT INT TERM
+on_signal() {
+    # INT/TERM should restore and stop immediately; reusing on_exit alone would
+    # recover but still allow the script body to continue after the signal.
+    on_exit
+    exit 1
+}
+
+trap on_exit EXIT
+trap on_signal INT TERM
 
 # 1. Wait for KeyVox to exit completely
 # kill -0 checks if the process is running without actually sending a kill signal

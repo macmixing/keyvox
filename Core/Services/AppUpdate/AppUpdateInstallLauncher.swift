@@ -43,6 +43,9 @@ struct AppUpdateInstallLauncher {
             throw AppUpdateError.installerLaunchFailed
         }
 
+        // Confirm the updater survives a brief startup window before we
+        // terminate KeyVox, so a process that launches and exits immediately
+        // does not strand the app without an installer actually running.
         let confirmationDeadline = Date().addingTimeInterval(0.2)
         while Date() < confirmationDeadline {
             if !process.isRunning {
