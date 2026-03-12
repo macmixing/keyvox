@@ -5,17 +5,14 @@ struct SettingsTabView: View {
     @EnvironmentObject private var settingsStore: iOSAppSettingsStore
 
     var body: some View {
-        ScrollView {
+        iOSAppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 sessionSection
                 keyboardSection
                 audioSection
                 modelSection
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             modelManager.refreshStatus()
         }
@@ -23,89 +20,108 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private var sessionSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Session")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Session")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Picker("Disable Session After", selection: $settingsStore.sessionDisableTiming) {
-                ForEach(iOSSessionDisableTiming.allCases) { timing in
-                    Text(timing.displayName).tag(timing)
+                Picker("Disable Session After", selection: $settingsStore.sessionDisableTiming) {
+                    ForEach(iOSSessionDisableTiming.allCases) { timing in
+                        Text(timing.displayName).tag(timing)
+                    }
                 }
-            }
-            .pickerStyle(.menu)
+                .pickerStyle(.menu)
+                .font(.appFont(14))
 
-            Text("Decide when the session turns off")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                Text("Decide when the session turns off")
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     @ViewBuilder
     private var keyboardSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Keyboard")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Keyboard")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Toggle("Keyboard haptics", isOn: $settingsStore.keyboardHapticsEnabled)
+                Toggle(isOn: $settingsStore.keyboardHapticsEnabled) {
+                    Text("Keyboard haptics")
+                        .font(.appFont(16))
+                        .foregroundStyle(.white)
+                }
 
-            Text("Get haptic feedback from KeyVox Keyboard")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                Text("Get haptic feedback from KeyVox Keyboard")
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     @ViewBuilder
     private var audioSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Audio")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Audio")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Toggle("Prefer Built-In Microphone", isOn: $settingsStore.preferBuiltInMicrophone)
+                Toggle(isOn: $settingsStore.preferBuiltInMicrophone) {
+                    Text("Prefer Built-In Microphone")
+                        .font(.appFont(16))
+                        .foregroundStyle(.white)
+                }
 
-            Text(settingsStore.preferBuiltInMicrophone
-                 ? "KeyVox will prefer the built-in microphone whenever one is available."
-                 : "KeyVox will use the currently connected input device.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                Text(settingsStore.preferBuiltInMicrophone
+                     ? "KeyVox will prefer the built-in microphone whenever one is available."
+                     : "KeyVox will use the currently connected input device.")
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     @ViewBuilder
     private var modelSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Model")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Model")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Text(modelManager.installState.statusText)
-                .font(.footnote.monospaced())
+                Text(modelManager.installState.statusText)
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
 
-            if let error = modelManager.errorMessage {
-                Text(error)
-                    .font(.footnote.monospaced())
-                    .foregroundStyle(.red)
-            }
+                if let error = modelManager.errorMessage {
+                    Text(error)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
+                }
 
-            HStack(spacing: 8) {
-                switch modelManager.installState {
-                case .notInstalled:
-                    Button("Download Model") {
-                        modelManager.downloadModel()
-                    }
-                case .downloading, .installing:
-                    if let actionText = modelManager.installState.actionText {
-                        Text(actionText)
-                            .font(.footnote.monospaced())
-                    }
-                case .ready:
-                    Button("Delete Model") {
-                        modelManager.deleteModel()
-                    }
-                case .failed:
-                    Button("Repair Model") {
-                        modelManager.repairModelIfNeeded()
-                    }
-                    Button("Delete Model") {
-                        modelManager.deleteModel()
+                HStack(spacing: 8) {
+                    switch modelManager.installState {
+                    case .notInstalled:
+                        Button("Download Model", action: modelManager.downloadModel)
+                            .font(.appFont(14))
+                    case .downloading, .installing:
+                        if let actionText = modelManager.installState.actionText {
+                            Text(actionText)
+                                .font(.appFont(12))
+                                .foregroundStyle(.secondary)
+                        }
+                    case .ready:
+                        Button("Delete Model", action: modelManager.deleteModel)
+                            .font(.appFont(14))
+                    case .failed:
+                        Button("Repair Model", action: modelManager.repairModelIfNeeded)
+                            .font(.appFont(14))
+                        Button("Delete Model", action: modelManager.deleteModel)
+                            .font(.appFont(14))
                     }
                 }
             }

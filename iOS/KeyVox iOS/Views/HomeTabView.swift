@@ -4,8 +4,21 @@ struct HomeTabView: View {
     @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
     @EnvironmentObject private var weeklyWordStatsStore: iOSWeeklyWordStatsStore
 
+    private var sessionToggleBinding: Binding<Bool> {
+        Binding(
+            get: { transcriptionManager.isSessionActive && !transcriptionManager.sessionDisablePending },
+            set: { isEnabled in
+                if isEnabled {
+                    transcriptionManager.handleEnableSessionCommand()
+                } else {
+                    transcriptionManager.handleDisableSessionCommand()
+                }
+            }
+        )
+    }
+
     var body: some View {
-        ScrollView {
+        iOSAppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 weeklyStatsSection
                 sessionSection
@@ -13,10 +26,7 @@ struct HomeTabView: View {
                 diagnosticsSection
                 #endif
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
         }
@@ -24,42 +34,44 @@ struct HomeTabView: View {
 
     @ViewBuilder
     private var weeklyStatsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Words this week: \(weeklyWordStatsStore.combinedWordCount.formatted())")
-                .font(.body)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("This Week")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
+
+                Text("\(weeklyWordStatsStore.combinedWordCount.formatted()) words")
+                    .font(.appFont(24))
+                    .foregroundStyle(.white)
+            }
         }
     }
 
     @ViewBuilder
     private var sessionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Session")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Session")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Toggle(
-                "Keep Session Active",
-                isOn: Binding(
-                    get: { transcriptionManager.isSessionActive && !transcriptionManager.sessionDisablePending },
-                    set: { isEnabled in
-                        if isEnabled {
-                            transcriptionManager.handleEnableSessionCommand()
-                        } else {
-                            transcriptionManager.handleDisableSessionCommand()
-                        }
-                    }
-                )
-            )
+                Toggle(isOn: sessionToggleBinding) {
+                    Text("Keep Session Active")
+                        .font(.appFont(16))
+                        .foregroundStyle(.white)
+                }
 
-            Text(sessionStatusText)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
-            if let expirationDate = transcriptionManager.sessionExpirationDate,
-               transcriptionManager.isSessionActive,
-               !transcriptionManager.sessionDisablePending {
-                Text("Turns off after 5 minutes of idle time (until \(expirationDate.formatted(date: .omitted, time: .shortened))).")
-                    .font(.footnote)
+                Text(sessionStatusText)
+                    .font(.appFont(12))
                     .foregroundStyle(.secondary)
+
+                if let expirationDate = transcriptionManager.sessionExpirationDate,
+                   transcriptionManager.isSessionActive,
+                   !transcriptionManager.sessionDisablePending {
+                    Text("Turns off after 5 minutes of idle time (until \(expirationDate.formatted(date: .omitted, time: .shortened))).")
+                        .font(.appFont(12))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
@@ -67,17 +79,21 @@ struct HomeTabView: View {
     #if DEBUG
     @ViewBuilder
     private var diagnosticsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Diagnostics")
-                .font(.headline)
+        iOSAppCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Diagnostics")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
 
-            Text(statusText)
-                .font(.footnote.monospaced())
+                Text(statusText)
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
 
-            if let error = transcriptionManager.lastErrorMessage {
-                Text(error)
-                    .font(.footnote.monospaced())
-                    .foregroundStyle(.red)
+                if let error = transcriptionManager.lastErrorMessage {
+                    Text(error)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
+                }
             }
         }
     }

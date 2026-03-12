@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import KeyVoxCore
 
 @main
@@ -18,6 +19,22 @@ struct KeyVoxApp: App {
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
+        let segmentedControlAppearance = UISegmentedControl.appearance()
+        segmentedControlAppearance.selectedSegmentTintColor = .systemIndigo
+        segmentedControlAppearance.setTitleTextAttributes(
+            [
+                .foregroundColor: UIColor.white,
+                .font: UIFont.systemFont(ofSize: 13, weight: .regular)
+            ],
+            for: .normal
+        )
+        segmentedControlAppearance.setTitleTextAttributes(
+            [
+                .foregroundColor: UIColor.black,
+                .font: UIFont.systemFont(ofSize: 13, weight: .heavy)
+            ],
+            for: .selected
+        )
         iOSModelDownloadBackgroundTasks.register()
     }
 

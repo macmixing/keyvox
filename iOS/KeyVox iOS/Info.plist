@@ -4,6 +4,10 @@
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>KeyVox needs access to your microphone in order to transcribe your voice.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Kanit-Medium.ttf</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

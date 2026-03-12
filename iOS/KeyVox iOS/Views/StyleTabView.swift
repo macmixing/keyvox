@@ -4,18 +4,27 @@ struct StyleTabView: View {
     @EnvironmentObject private var settingsStore: iOSAppSettingsStore
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Style")
-                    .font(.headline)
+        iOSAppScrollScreen {
+            iOSAppCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Style")
+                        .font(.appFont(17))
+                        .foregroundStyle(.white)
 
-                Toggle("Auto paragraphs", isOn: $settingsStore.autoParagraphsEnabled)
-                Toggle("List formatting", isOn: $settingsStore.listFormattingEnabled)
+                    Toggle(isOn: $settingsStore.autoParagraphsEnabled) {
+                        Text("Auto paragraphs")
+                            .font(.appFont(16))
+                            .foregroundStyle(.white)
+                    }
+
+                    Toggle(isOn: $settingsStore.listFormattingEnabled) {
+                        Text("List formatting")
+                            .font(.appFont(16))
+                            .foregroundStyle(.white)
+                    }
+                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
