@@ -63,6 +63,7 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     var captureStartedAt = Date.distantPast
 
     let audioSession: AVAudioSession
+    let preferBuiltInMicrophoneProvider: () -> Bool
     var audioEngine: AVAudioEngine?
     let streamingState = iOSAudioCaptureAccumulator()
     var heartbeatCallback: (() -> Void)?
@@ -70,8 +71,12 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     var audioInterruptedCaptureHandler: ((iOSStoppedCapture) -> Void)?
     var engineConfigurationObserver: NSObjectProtocol?
 
-    init(audioSession: AVAudioSession = .sharedInstance()) {
+    init(
+        audioSession: AVAudioSession = .sharedInstance(),
+        preferBuiltInMicrophoneProvider: @escaping () -> Bool = { true }
+    ) {
         self.audioSession = audioSession
+        self.preferBuiltInMicrophoneProvider = preferBuiltInMicrophoneProvider
         self.sessionActiveSignalRMSThreshold = baseActiveSignalRMSThreshold
         self.sessionGapRemovalRMSThreshold = baseGapRemovalRMSThreshold
         refreshCurrentCaptureDeviceName()

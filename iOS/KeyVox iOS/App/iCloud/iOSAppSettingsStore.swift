@@ -51,6 +51,12 @@ final class iOSAppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var preferBuiltInMicrophone: Bool {
+        didSet {
+            defaults.set(preferBuiltInMicrophone, forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone)
+        }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
@@ -66,6 +72,7 @@ final class iOSAppSettingsStore: ObservableObject {
         autoParagraphsEnabled = defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
         listFormattingEnabled = defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
         capsLockEnabled = defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
+        preferBuiltInMicrophone = defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

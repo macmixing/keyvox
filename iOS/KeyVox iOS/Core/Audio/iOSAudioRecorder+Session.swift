@@ -2,6 +2,34 @@ import AVFoundation
 import Foundation
 import KeyVoxCore
 
+struct iOSAudioInputPreferenceResolver {
+    struct Candidate: Equatable {
+        let id: String
+        let portType: AVAudioSession.Port
+    }
+
+    enum Action: Equatable {
+        case preferInput(id: String)
+        case useSystemDefault
+        case keepCurrentRoute
+    }
+
+    func resolve(
+        availableInputs: [Candidate],
+        preferBuiltInMicrophone: Bool
+    ) -> Action {
+        guard preferBuiltInMicrophone else {
+            return .useSystemDefault
+        }
+
+        guard let builtInMicrophone = availableInputs.first(where: { $0.portType == .builtInMic }) else {
+            return .keepCurrentRoute
+        }
+
+        return .preferInput(id: builtInMicrophone.id)
+    }
+}
+
 extension iOSAudioRecorder {
     func configureEngineConfigurationObserver() {
         guard engineConfigurationObserver == nil else { return }
@@ -43,6 +71,7 @@ extension iOSAudioRecorder {
         // a forced 16 kHz preference, and we already convert captured audio into the
         // recorder's 16 kHz output format downstream.
         try audioSession.setActive(true)
+        try applyInputPreference()
 
         // Route changes can leave a stopped engine bound to a stale hardware format.
         // Always rebuild from a fresh engine when we need to restart monitoring.
@@ -136,6 +165,7 @@ extension iOSAudioRecorder {
         // Ensure engine is running (in monitor mode)
         do {
             try ensureEngineRunning()
+            try applyInputPreference()
         } catch {
             guard shouldRetryRecordingStartAfterRouteTransition(for: error) else {
                 throw error
@@ -147,6 +177,7 @@ extension iOSAudioRecorder {
             try await Task.sleep(nanoseconds: 350_000_000)
             refreshCurrentCaptureDeviceName()
             try ensureEngineRunning()
+            try applyInputPreference()
         }
 
         // Reset state for new capture
@@ -291,6 +322,28 @@ extension iOSAudioRecorder {
         let isSessionPropertyFailure = nsError.code == 560557684
 
         return hasNoInputs || isBluetoothA2DPOnly || isRouteSettlingStartFailure || isSessionPropertyFailure
+    }
+
+    private func applyInputPreference() throws {
+        let availableInputs = audioSession.availableInputs ?? []
+        let action = iOSAudioInputPreferenceResolver().resolve(
+            availableInputs: availableInputs.map {
+                iOSAudioInputPreferenceResolver.Candidate(id: $0.uid, portType: $0.portType)
+            },
+            preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
+        )
+
+        switch action {
+        case .preferInput(let id):
+            guard let preferredInput = availableInputs.first(where: { $0.uid == id }) else { break }
+            try audioSession.setPreferredInput(preferredInput)
+        case .useSystemDefault:
+            try audioSession.setPreferredInput(nil)
+        case .keepCurrentRoute:
+            break
+        }
+
+        refreshCurrentCaptureDeviceName()
     }
 
     func refreshCurrentCaptureDeviceName() {

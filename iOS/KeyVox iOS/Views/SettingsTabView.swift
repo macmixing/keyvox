@@ -2,10 +2,12 @@ import SwiftUI
 
 struct SettingsTabView: View {
     @EnvironmentObject private var modelManager: iOSModelManager
+    @EnvironmentObject private var settingsStore: iOSAppSettingsStore
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                audioSection
                 modelSection
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -14,6 +16,22 @@ struct SettingsTabView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             modelManager.refreshStatus()
+        }
+    }
+
+    @ViewBuilder
+    private var audioSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Audio")
+                .font(.headline)
+
+            Toggle("Prefer Built-In Microphone", isOn: $settingsStore.preferBuiltInMicrophone)
+
+            Text(settingsStore.preferBuiltInMicrophone
+                 ? "KeyVox will prefer the built-in microphone whenever one is available."
+                 : "KeyVox will use the currently connected input device.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -63,4 +81,5 @@ struct SettingsTabView: View {
 #Preview {
     SettingsTabView()
         .environmentObject(iOSAppServiceRegistry.shared.modelManager)
+        .environmentObject(iOSAppServiceRegistry.shared.settingsStore)
 }

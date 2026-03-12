@@ -42,7 +42,11 @@ final class iOSAppServiceRegistry {
         )
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
-        let recorder = iOSAudioRecorder()
+        let recorder = iOSAudioRecorder(
+            preferBuiltInMicrophoneProvider: { [weak settingsStore] in
+                settingsStore?.preferBuiltInMicrophone ?? true
+            }
+        )
         
         recorder.heartbeatCallback = { [weak keyboardBridge] in
             keyboardBridge?.touchHeartbeat()

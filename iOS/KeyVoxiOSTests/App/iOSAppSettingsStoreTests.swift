@@ -13,11 +13,13 @@ struct iOSAppSettingsStoreTests {
         store.autoParagraphsEnabled = false
         store.listFormattingEnabled = false
         store.capsLockEnabled = true
+        store.preferBuiltInMicrophone = false
 
         #expect(defaults.string(forKey: iOSUserDefaultsKeys.triggerBinding) == iOSAppSettingsStore.TriggerBinding.leftControl.rawValue)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.autoParagraphsEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.listFormattingEnabled) as? Bool == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool == true)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool == false)
     }
 
     @Test func triggerBindingRoundTripsThroughRawValue() {
@@ -78,6 +80,19 @@ struct iOSAppSettingsStoreTests {
 
         let reloaded = iOSAppSettingsStore(defaults: defaults)
         #expect(reloaded.capsLockEnabled == true)
+    }
+
+    @Test func preferBuiltInMicrophoneDefaultsToTrueAndRoundTripsThroughDefaults() {
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = iOSAppSettingsStore(defaults: defaults)
+        #expect(store.preferBuiltInMicrophone == true)
+
+        store.preferBuiltInMicrophone = false
+
+        let reloaded = iOSAppSettingsStore(defaults: defaults)
+        #expect(reloaded.preferBuiltInMicrophone == false)
     }
 
     private func makeDefaults() -> (UserDefaults, String) {
