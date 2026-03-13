@@ -54,6 +54,8 @@ struct DictionaryWordEditorView: View {
                         Text(errorMessage)
                             .font(.appFont(12))
                             .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
                             .listRowBackground(Color.clear)
                     }
                 }
