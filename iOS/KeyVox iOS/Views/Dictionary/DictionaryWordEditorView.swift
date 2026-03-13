@@ -4,7 +4,8 @@ import KeyVoxCore
 
 struct DictionaryWordEditorView: View {
     private enum Layout {
-        static let addDetentHeight: CGFloat = 220
+        static let addDetentHeightiOS18: CGFloat = 167
+        static let addDetentHeightiOS26: CGFloat = 205
         static let editDetentHeight: CGFloat = 180
     }
 
@@ -15,6 +16,7 @@ struct DictionaryWordEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var phrase: String
     @State private var errorMessage: String?
+    @State private var measuredErrorHeight: CGFloat = 0
     @StateObject private var keyboardObserver = KeyboardObserver()
 
     init(mode: DictionaryWordEditorMode, onSave: @escaping () -> Void = {}) {
@@ -32,8 +34,17 @@ struct DictionaryWordEditorView: View {
     }
 
     private var sheetHeight: CGFloat {
-        let baseHeight = mode.showsDescription ? Layout.addDetentHeight : Layout.editDetentHeight
-        return baseHeight + bottomPadding
+        let baseHeight: CGFloat
+        if mode.showsDescription {
+            if #available(iOS 26.0, *) {
+                baseHeight = Layout.addDetentHeightiOS26
+            } else {
+                baseHeight = Layout.addDetentHeightiOS18
+            }
+        } else {
+            baseHeight = Layout.editDetentHeight
+        }
+        return baseHeight + (errorMessage == nil ? 0 : measuredErrorHeight) + bottomPadding
     }
 
     var body: some View {
@@ -48,19 +59,30 @@ struct DictionaryWordEditorView: View {
                     .frame(height: 44)
                     .onChange(of: phrase) { _, _ in
                         errorMessage = nil
-                    }
-
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .font(.appFont(12))
-                            .foregroundStyle(.red)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                            .listRowBackground(Color.clear)
+                        measuredErrorHeight = 0
                     }
                 }
                 .scrollDisabled(true)
                 .padding(.top, -18)
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 16)
+                        .padding(.top, -15)
+                        .padding(.bottom, 15)
+                        .background(
+                            GeometryReader { proxy in
+                                Color.clear.preference(
+                                    key: DictionaryWordEditorErrorHeightPreferenceKey.self,
+                                    value: proxy.size.height
+                                )
+                            }
+                        )
+                }
 
                 if mode.showsDescription {
                     DictionaryHeaderCardView()
@@ -68,6 +90,9 @@ struct DictionaryWordEditorView: View {
                         .padding(.bottom, 10)
                         .padding(.horizontal, 16)
                 }
+            }
+            .onPreferenceChange(DictionaryWordEditorErrorHeightPreferenceKey.self) { height in
+                measuredErrorHeight = height
             }
             .navigationTitle(mode.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -117,5 +142,13 @@ struct DictionaryWordEditorView: View {
         DispatchQueue.main.async {
             save()
         }
+    }
+}
+
+private struct DictionaryWordEditorErrorHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
