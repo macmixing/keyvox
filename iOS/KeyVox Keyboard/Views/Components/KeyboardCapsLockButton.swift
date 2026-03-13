@@ -135,7 +135,7 @@ final class KeyboardCapsLockButton: UIControl {
         if isPressed {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
-                border: UIColor.white,
+                border: traitCollection.userInterfaceStyle == .light ? .black : .white,
                 foreground: KeyboardStyle.keyLabelColor
             )
         }
