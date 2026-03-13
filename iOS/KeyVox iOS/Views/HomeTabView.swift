@@ -35,15 +35,20 @@ struct HomeTabView: View {
     @ViewBuilder
     private var weeklyStatsSection: some View {
         iOSAppCard {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("This Week")
-                    .font(.appFont(17))
-                    .foregroundStyle(.white)
-
-                Text("\(weeklyWordStatsStore.combinedWordCount.formatted()) words")
-                    .font(.appFont(24))
+            VStack(alignment: .center, spacing: -4) {
+                Text("\(weeklyWordStatsStore.combinedWordCount.formatted())")
+                    .font(.appFont(65))
+                    .fontWeight(.heavy)
+                    .foregroundStyle(.yellow)
+                    .padding(.top, -20)
+                
+                Text("Words this week!")
+                    .font(.appFont(20))
+                    .fontWeight(.bold)
                     .foregroundStyle(.white)
             }
+            .frame(maxWidth: .infinity)
+            .padding(10)
         }
     }
 

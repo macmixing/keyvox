@@ -37,6 +37,7 @@
 		8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */; };
 		8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */; };
 		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
+		8EECE64D2F63ED9B00BECF17 /* iOSLogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */; };
@@ -138,6 +139,7 @@
 		8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSharedPaths.swift; sourceTree = "<group>"; };
 		8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDictationService.swift; sourceTree = "<group>"; };
 		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
+		8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLogoBarView.swift; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
 		9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallState.swift; sourceTree = "<group>"; };
 		9A7001022FA6000100AA0001 /* iOSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelManager.swift; sourceTree = "<group>"; };
@@ -377,6 +379,7 @@
 		AA3000012F70000100000001 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */,
 				AA2000012F70000100000001 /* iOSAppTypography.swift */,
 				AA2000022F70000100000001 /* iOSAppTheme.swift */,
 				AA2000032F70000100000001 /* iOSAppCard.swift */,
@@ -617,6 +620,7 @@
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
 				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
+				8EECE64D2F63ED9B00BECF17 /* iOSLogoBarView.swift in Sources */,
 				8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */,
 				8E2546552F6013ED007E720D /* MainTabView.swift in Sources */,
 				8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */,

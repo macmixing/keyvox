@@ -1,5 +1,8 @@
 import UIKit
 
+// NOTE: This file contains the proprietary KeyVox logo system
+// referenced in LICENSE.md under Proprietary Assets and Branding.
+
 final class KeyboardLogoBarView: UIControl {
     // Change this to resize the entire toolbar logo control.
     static let toolbarDiameter: CGFloat = 53
