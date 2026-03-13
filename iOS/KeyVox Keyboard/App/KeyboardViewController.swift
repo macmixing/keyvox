@@ -218,7 +218,8 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
-            isCapsLockEnabled: isCapsLockEnabled
+            isCapsLockEnabled: isCapsLockEnabled,
+            showsLogoBar: KeyboardModelAvailability.isInstalled()
         )
         indicatorDriver.phase = keyboardState.indicatorPhase
     }

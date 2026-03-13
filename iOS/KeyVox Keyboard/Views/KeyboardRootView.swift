@@ -57,8 +57,14 @@ final class KeyboardRootView: UIView {
         }
     }
 
-    func apply(state: KeyboardState, symbolPage: KeyboardSymbolPage, isCapsLockEnabled: Bool) {
-        let shouldShowCancel = state.showsCancelButton
+    func apply(
+        state: KeyboardState,
+        symbolPage: KeyboardSymbolPage,
+        isCapsLockEnabled: Bool,
+        showsLogoBar: Bool
+    ) {
+        let shouldShowToolbarControls = showsLogoBar
+        let shouldShowCancel = shouldShowToolbarControls && state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
@@ -88,9 +94,13 @@ final class KeyboardRootView: UIView {
         
         cancelButton.isEnabled = shouldShowCancel
         capsLockButton.isLocked = isCapsLockEnabled
-
+        capsLockButton.isHidden = !shouldShowToolbarControls
+        leadingControlsStack.isHidden = !shouldShowToolbarControls
+        trailingControlsStack.isHidden = !shouldShowToolbarControls
+        centerContainerView.isHidden = !showsLogoBar
+        logoBarView.isHidden = !showsLogoBar
         logoBarView.applyIndicatorPhase(state.indicatorPhase)
-        logoBarView.isEnabled = state.isIndicatorEnabled
+        logoBarView.isEnabled = showsLogoBar && state.isIndicatorEnabled
 
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
