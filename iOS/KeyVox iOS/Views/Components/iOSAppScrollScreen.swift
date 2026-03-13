@@ -3,9 +3,9 @@ import SwiftUI
 struct iOSAppScrollScreen<Content: View>: View {
     let content: Content
 
-    private var topContentInset: CGFloat {
+    static var sharedTopContentInset: CGFloat {
         if #available(iOS 26.0, *) {
-            return -20
+            return -10
         } else {
             return 12
         }
@@ -25,7 +25,7 @@ struct iOSAppScrollScreen<Content: View>: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(iOSAppTheme.screenPadding)
             }
-            .contentMargins(.top, topContentInset, for: .scrollContent)
+            .contentMargins(.top, Self.sharedTopContentInset, for: .scrollContent)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .preferredColorScheme(.dark)

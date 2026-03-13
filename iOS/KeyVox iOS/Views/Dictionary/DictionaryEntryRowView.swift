@@ -1,7 +1,14 @@
 import SwiftUI
+import UIKit
 import KeyVoxCore
 
 struct DictionaryEntryRowView: View {
+    private enum Layout {
+        static let contentMinHeight: CGFloat = 44
+        static let horizontalPadding: CGFloat = 22
+        static let verticalPadding: CGFloat = 9
+    }
+
     let entry: DictionaryEntry
     let onEdit: () -> Void
     let onDelete: () -> Void
@@ -15,26 +22,10 @@ struct DictionaryEntryRowView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
-
-            Menu {
-                Button("Edit", systemImage: "pencil", action: onEdit)
-                    .tint(.white)
-
-                Button("Delete", systemImage: "trash", role: .destructive) {
-                    isDeleteConfirmationPresented = true
-                }
-                .tint(.red)
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.88))
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .accessibilityLabel("Actions")
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .frame(minHeight: Layout.contentMinHeight)
+        .padding(.horizontal, Layout.horizontalPadding)
+        .padding(.vertical, Layout.verticalPadding)
         .background(
             RoundedRectangle(cornerRadius: iOSAppTheme.rowCornerRadius)
                 .fill(iOSAppTheme.rowFill)
@@ -43,6 +34,32 @@ struct DictionaryEntryRowView: View {
                         .stroke(iOSAppTheme.rowStroke, lineWidth: 1)
                 )
         )
+        .contextMenu {
+            Button("Copy", systemImage: "doc.on.doc") {
+                UIPasteboard.general.string = entry.phrase
+            }
+            .tint(.white)
+
+            Button("Edit", systemImage: "pencil", action: onEdit)
+                .tint(.white)
+
+            Button(role: .destructive) {
+                isDeleteConfirmationPresented = true
+            }
+            label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .tint(.red)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button("Delete", systemImage: "trash") {
+                isDeleteConfirmationPresented = true
+            }
+            .tint(.red)
+
+            Button("Edit", systemImage: "pencil", action: onEdit)
+                .tint(iOSAppTheme.accent)
+        }
         .confirmationDialog(
             "Delete Entry?",
             isPresented: $isDeleteConfirmationPresented,

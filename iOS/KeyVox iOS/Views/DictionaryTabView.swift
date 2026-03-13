@@ -30,52 +30,49 @@ struct DictionaryTabView: View {
     }
 
     var body: some View {
-        iOSAppScrollScreen {
-            VStack(alignment: .leading, spacing: 10) {
+        ZStack {
+            iOSAppTheme.screenBackground
+                .ignoresSafeArea()
+
+            List {
                 if let warning = dictionaryStore.loadWarningMessage {
-                    Text(warning)
-                        .font(.appFont(12))
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    statusMessageRow(warning)
                 }
 
                 if let saveError = dictionaryStore.saveErrorMessage {
-                    Text(saveError)
-                        .font(.appFont(12))
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    statusMessageRow(saveError)
                 }
 
-                iOSAppCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
-                            ForEach(DictionarySortMode.allCases) { mode in
-                                Text(mode.rawValue).tag(mode)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.bottom, 20)
+                Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
+                    ForEach(DictionarySortMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.bottom, 10)
+                .dictionaryScreenRow(top: 12, bottom: displayedEntries.isEmpty ? 10 : 14)
 
-                        if displayedEntries.isEmpty {
-                            ContentUnavailableView(
-                                "No custom words added yet.",
-                                systemImage: "text.book.closed",
-                                description: Text("Tap the plus button to add your first custom word.")
-                            )
-                            .frame(maxWidth: .infinity)
-                        } else {
-                            VStack(spacing: 8) {
-                                ForEach(displayedEntries) { entry in
-                                    DictionaryEntryRowView(
-                                        entry: entry,
-                                        onEdit: { dictionaryEditorMode = .edit(entry) },
-                                        onDelete: { dictionaryStore.delete(id: entry.id) }
-                                    )
+                if displayedEntries.isEmpty {
+                    ContentUnavailableView(
+                        "No custom words added yet.",
+                        systemImage: "text.book.closed",
+                        description: Text("Tap the plus button to add your first custom word.")
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 6)
+                    .dictionaryScreenRow(top: 0, bottom: 0)
+                } else {
+                    ForEach(Array(displayedEntries.enumerated()), id: \.element.id) { index, entry in
+                        DictionaryEntryRowView(
+                            entry: entry,
+                            onEdit: { dictionaryEditorMode = .edit(entry) },
+                            onDelete: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    dictionaryStore.delete(id: entry.id)
                                 }
                             }
-                        }
+                        )
+                        .dictionaryEntryListRow(bottom: index == displayedEntries.indices.last ? 4 : 13)
                     }
                 }
 
@@ -84,7 +81,13 @@ struct DictionaryTabView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)
+                    .dictionaryScreenRow(top: 4, bottom: 0)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
+            .contentMargins(.top, iOSAppScrollScreen<EmptyView>.sharedTopContentInset, for: .scrollContent)
+            .animation(.easeInOut(duration: 0.3), value: displayedEntries.map(\.id))
         }
         .safeAreaInset(edge: .bottom) {
             if showsFloatingAddButton {
@@ -147,6 +150,43 @@ struct DictionaryTabView: View {
 
     private var animationTriggerID: String {
         "\(isActive)-\(dictionaryEditorMode?.id ?? "none")"
+    }
+
+    private func statusMessageRow(_ message: String) -> some View {
+        Text(message)
+            .font(.appFont(12))
+            .foregroundStyle(.red)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .dictionaryScreenRow(top: 0, bottom: 10)
+    }
+}
+
+private extension View {
+    func dictionaryScreenRow(top: CGFloat, bottom: CGFloat) -> some View {
+        listRowInsets(
+            EdgeInsets(
+                top: top,
+                leading: iOSAppTheme.screenPadding,
+                bottom: bottom,
+                trailing: iOSAppTheme.screenPadding
+            )
+        )
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+
+    func dictionaryEntryListRow(bottom: CGFloat) -> some View {
+        listRowInsets(
+            EdgeInsets(
+                top: 0,
+                leading: iOSAppTheme.screenPadding,
+                bottom: bottom,
+                trailing: iOSAppTheme.screenPadding
+            )
+        )
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
     }
 }
 
