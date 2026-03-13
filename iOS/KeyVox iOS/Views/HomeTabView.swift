@@ -41,7 +41,10 @@ struct HomeTabView: View {
 
     @ViewBuilder
     private var lastTranscriptionSection: some View {
-        iOSLastTranscriptionCardView(text: transcriptionManager.lastTranscriptionText)
+        iOSLastTranscriptionCardView(
+            text: transcriptionManager.isRecoveringInterruptedCapture ? nil : transcriptionManager.lastTranscriptionText,
+            isLoading: transcriptionManager.isRecoveringInterruptedCapture
+        )
     }
 
     #if DEBUG

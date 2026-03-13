@@ -3,6 +3,7 @@ import UIKit
 
 struct iOSLastTranscriptionCardView: View {
     let text: String?
+    let isLoading: Bool
 
     @State private var didCopy = false
 
@@ -19,7 +20,7 @@ struct iOSLastTranscriptionCardView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .center, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Latest Transcription")
+                        Text(isLoading ? "Processing..." : "Latest Transcription")
                             .font(.appFont(17))
                             .foregroundStyle(.white)
 
@@ -30,13 +31,22 @@ struct iOSLastTranscriptionCardView: View {
 
                     Spacer(minLength: 0)
 
-                    if let transcriptionText {
+                    if let transcriptionText, !isLoading {
                         copyButton(for: transcriptionText)
                     }
                 }
 
                 Group {
-                    if let transcriptionText {
+                    if isLoading {
+                        HStack {
+                            Spacer(minLength: 0)
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white)
+                            Spacer(minLength: 0)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 70)
+                    } else if let transcriptionText {
                         Text(transcriptionText)
                             .font(.appFont(18))
                             .foregroundStyle(.white)

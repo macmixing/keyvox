@@ -18,13 +18,16 @@ final class iOSTranscriptionManager: ObservableObject {
     @Published var lastErrorMessage: String?
     @Published var lastTranscriptionText: String?
     @Published private(set) var isModelAvailable = false
+    @Published private(set) var hasPendingInterruptedCaptureRecovery = false
+    @Published var isRecoveringInterruptedCapture = false
 
     let recorder: any iOSAudioRecording
     let transcriptionService: any iOSDictationService
-    private let dictionaryStore: DictionaryStore
+    let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: iOSWeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
+    let interruptedCaptureRecoveryStore: iOSInterruptedCaptureRecoveryStore
     private let modelPathProvider: () -> String?
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
@@ -38,7 +41,7 @@ final class iOSTranscriptionManager: ObservableObject {
     var utteranceSafetyTask: Task<Void, Never>?
     var activeUtteranceID = UUID()
 
-    private lazy var dictationPipeline = DictationPipeline(
+    lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
         postProcessor: postProcessor,
         dictionaryEntriesProvider: { [weak self] in
@@ -69,6 +72,7 @@ final class iOSTranscriptionManager: ObservableObject {
         weeklyWordStatsStore: iOSWeeklyWordStatsStore,
         postProcessor: TranscriptionPostProcessor,
         keyboardBridge: KeyVoxKeyboardBridge,
+        interruptedCaptureRecoveryStore: iOSInterruptedCaptureRecoveryStore,
         modelPathProvider: @escaping () -> String?,
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
@@ -83,6 +87,7 @@ final class iOSTranscriptionManager: ObservableObject {
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
+        self.interruptedCaptureRecoveryStore = interruptedCaptureRecoveryStore
         self.modelPathProvider = modelPathProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
@@ -95,6 +100,7 @@ final class iOSTranscriptionManager: ObservableObject {
         refreshModelAvailability()
         isSessionActive = recorder.isMonitoring
         lastTranscriptionText = KeyVoxIPCBridge.latestTranscription()
+        hasPendingInterruptedCaptureRecovery = interruptedCaptureRecoveryStore.load() != nil
         
         if isModelAvailable {
             transcriptionService.warmup()
@@ -317,7 +323,7 @@ final class iOSTranscriptionManager: ObservableObject {
         currentSessionDisableTiming() == .immediately
     }
 
-    private func refreshModelAvailability() {
+    func refreshModelAvailability() {
         guard let path = modelPathProvider()?.trimmingCharacters(in: .whitespacesAndNewlines),
               !path.isEmpty else {
             isModelAvailable = false
@@ -329,6 +335,10 @@ final class iOSTranscriptionManager: ObservableObject {
 
     private func capturePipelineOutput(_ text: String) {
         pendingPipelineOutputText = text
+    }
+
+    func setInterruptedCaptureRecoveryPresence(_ isPresent: Bool) {
+        hasPendingInterruptedCaptureRecovery = isPresent
     }
 
     private func whisperHintPrompt(for entries: [DictionaryEntry], maxEntries: Int = 200, maxChars: Int = 1200) -> String {

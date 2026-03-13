@@ -61,6 +61,16 @@ nonisolated enum iOSSharedPaths {
             .appendingPathComponent("KeyVoxCore", isDirectory: true)
     }
 
+    static func interruptedCaptureRecoveryDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        containerURL(fileManager: fileManager)?
+            .appendingPathComponent("InterruptedCapture", isDirectory: true)
+    }
+
+    static func interruptedCaptureRecoveryURL(fileManager: FileManager = .default) -> URL? {
+        interruptedCaptureRecoveryDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("pending-interrupted-capture.plist")
+    }
+
     static func fallbackBaseDirectoryURL(fileManager: FileManager = .default) -> URL {
         let appSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory

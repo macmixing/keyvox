@@ -52,6 +52,7 @@ struct KeyVoxApp: App {
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
                     switch newPhase {
                     case .active:
+                        transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                     case .background:
                         modelManager.handleAppDidEnterBackground()

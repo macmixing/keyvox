@@ -31,6 +31,26 @@ struct iOSAudioInputPreferenceResolver {
 }
 
 extension iOSAudioRecorder {
+    func configureAudioSessionInterruptionObserver() {
+        guard audioSessionInterruptionObserver == nil else { return }
+
+        audioSessionInterruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: audioSession,
+            queue: .main
+        ) { [weak self] notification in
+            MainActor.assumeIsolated {
+                self?.handleAudioSessionInterruption(notification)
+            }
+        }
+    }
+
+    func removeAudioSessionInterruptionObserver() {
+        guard let audioSessionInterruptionObserver else { return }
+        NotificationCenter.default.removeObserver(audioSessionInterruptionObserver)
+        self.audioSessionInterruptionObserver = nil
+    }
+
     func configureEngineConfigurationObserver() {
         guard engineConfigurationObserver == nil else { return }
 
@@ -284,6 +304,40 @@ extension iOSAudioRecorder {
     private func handleEngineConfigurationChange() {
         guard isRecording else { return }
         guard audioEngine?.isRunning != true else { return }
+
+        handleActiveRecordingInterruption()
+    }
+
+    private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let rawType = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let interruptionType = AVAudioSession.InterruptionType(rawValue: rawType) else {
+            return
+        }
+
+        switch interruptionType {
+        case .began:
+            if isRecording {
+                handleActiveRecordingInterruption()
+            } else if isMonitoring {
+                handleMonitoringInterruption()
+            }
+        case .ended:
+            refreshCurrentCaptureDeviceName()
+        @unknown default:
+            break
+        }
+    }
+
+    private func handleMonitoringInterruption() {
+        invalidateAudioEngine(clearSessionActive: true)
+        deactivateAudioSessionForRouteRecovery()
+        refreshCurrentCaptureDeviceName()
+        audioSessionInterruptedHandler?()
+    }
+
+    private func handleActiveRecordingInterruption() {
+        guard isRecording else { return }
 
         let snapshot = streamingState.snapshot()
         let captureDuration = Date().timeIntervalSince(captureStartedAt)

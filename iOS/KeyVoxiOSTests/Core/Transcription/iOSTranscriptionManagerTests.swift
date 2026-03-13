@@ -492,6 +492,70 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.lastTranscriptionText == nil)
     }
 
+    @Test func interruptedCaptureStagesRecoveryAndReturnsToIdle() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+
+        await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == true)
+        #expect(harness.interruptedCaptureRecoveryStore.load()?.recovery.status == .pending)
+    }
+
+    @Test func interruptedCaptureWithNoUsableAudioDoesNotStageRecovery() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+
+        await harness.manager.handleRecorderInterruptedCapture(emptyOutputCapture())
+
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == false)
+        #expect(harness.interruptedCaptureRecoveryStore.load() == nil)
+    }
+
+    @Test func appDidBecomeActiveRecoversPendingInterruptedCapture() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "recovered phrase", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+        await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
+
+        harness.manager.handleAppDidBecomeActive()
+        await settleAsyncManagerWork()
+
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.manager.lastTranscriptionText == "Recovered phrase")
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == false)
+        #expect(harness.interruptedCaptureRecoveryStore.load() == nil)
+    }
+
+    @Test func appDidBecomeActiveWithoutModelKeepsPendingInterruptedCapture() async throws {
+        let harness = try makeHarness(modelPath: "")
+        defer { harness.cleanup() }
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+        await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
+
+        harness.manager.handleAppDidBecomeActive()
+        await settleAsyncManagerWork()
+
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == true)
+        #expect(harness.interruptedCaptureRecoveryStore.load()?.recovery.status == .pending)
+    }
+
     @Test func dictionaryUpdatesRefreshHintPrompt() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
@@ -526,6 +590,12 @@ struct iOSTranscriptionManagerTests {
         let dictionaryStore = DictionaryStore(fileManager: .default, baseDirectoryURL: dictionaryBase)
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
+        let interruptedCaptureRecoveryStore = iOSInterruptedCaptureRecoveryStore(
+            fileManager: .default,
+            recoveryURLProvider: {
+                tempRootURL.appendingPathComponent("interrupted-capture.plist")
+            }
+        )
         let defaultsSuiteName = "iOSTranscriptionManagerTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: defaultsSuiteName)!
         defaults.removePersistentDomain(forName: defaultsSuiteName)
@@ -544,6 +614,7 @@ struct iOSTranscriptionManagerTests {
             weeklyWordStatsStore: weeklyWordStatsStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
+            interruptedCaptureRecoveryStore: interruptedCaptureRecoveryStore,
             modelPathProvider: { resolvedModelPath },
             capsLockEnabledProvider: { capsLockEnabled },
             sessionDisableTimingProvider: sessionDisableTimingSubject.map { subject in
@@ -559,6 +630,7 @@ struct iOSTranscriptionManagerTests {
             transcriptionService: transcriptionService,
             dictionaryStore: dictionaryStore,
             weeklyWordStatsStore: weeklyWordStatsStore,
+            interruptedCaptureRecoveryStore: interruptedCaptureRecoveryStore,
             sessionDisableTimingSubject: sessionDisableTimingSubject,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
@@ -636,6 +708,7 @@ private final class ManagerHarness {
     let transcriptionService: StubDictationService
     let dictionaryStore: DictionaryStore
     let weeklyWordStatsStore: iOSWeeklyWordStatsStore
+    let interruptedCaptureRecoveryStore: iOSInterruptedCaptureRecoveryStore
     let sessionDisableTimingSubject: CurrentValueSubject<iOSSessionDisableTiming, Never>?
     let tempRootURL: URL
     let defaultsSuiteName: String
@@ -646,6 +719,7 @@ private final class ManagerHarness {
         transcriptionService: StubDictationService,
         dictionaryStore: DictionaryStore,
         weeklyWordStatsStore: iOSWeeklyWordStatsStore,
+        interruptedCaptureRecoveryStore: iOSInterruptedCaptureRecoveryStore,
         sessionDisableTimingSubject: CurrentValueSubject<iOSSessionDisableTiming, Never>?,
         tempRootURL: URL,
         defaultsSuiteName: String
@@ -655,6 +729,7 @@ private final class ManagerHarness {
         self.transcriptionService = transcriptionService
         self.dictionaryStore = dictionaryStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.interruptedCaptureRecoveryStore = interruptedCaptureRecoveryStore
         self.sessionDisableTimingSubject = sessionDisableTimingSubject
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName

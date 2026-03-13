@@ -68,6 +68,9 @@
 		A13000022FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000122FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift */; };
 		A13000032FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000132FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift */; };
 		A13000042FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000142FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift */; };
+		A14000012FD3000100AA0001 /* iOSInterruptedCaptureRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000112FD3000100AA0001 /* iOSInterruptedCaptureRecovery.swift */; };
+		A14000022FD3000100AA0001 /* iOSInterruptedCaptureRecoveryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000122FD3000100AA0001 /* iOSInterruptedCaptureRecoveryStore.swift */; };
+		A14000032FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000132FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift */; };
 		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
 		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
 		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
@@ -172,6 +175,9 @@
 		A13000122FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadJob.swift; sourceTree = "<group>"; };
 		A13000132FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadJobStore.swift; sourceTree = "<group>"; };
 		A13000142FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadCoordinator.swift; sourceTree = "<group>"; };
+		A14000112FD3000100AA0001 /* iOSInterruptedCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSInterruptedCaptureRecovery.swift; sourceTree = "<group>"; };
+		A14000122FD3000100AA0001 /* iOSInterruptedCaptureRecoveryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSInterruptedCaptureRecoveryStore.swift; sourceTree = "<group>"; };
+		A14000132FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+InterruptedCaptureRecovery.swift"; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* iOSAppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* iOSAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
@@ -347,8 +353,11 @@
 			isa = PBXGroup;
 			children = (
 				8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */,
+				A14000112FD3000100AA0001 /* iOSInterruptedCaptureRecovery.swift */,
+				A14000122FD3000100AA0001 /* iOSInterruptedCaptureRecoveryStore.swift */,
 				9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */,
 				8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */,
+				A14000132FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift */,
 				9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */,
 			);
 			path = Transcription;
@@ -625,7 +634,10 @@
 				9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */,
 				9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */,
 				9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */,
+				A14000012FD3000100AA0001 /* iOSInterruptedCaptureRecovery.swift in Sources */,
+				A14000022FD3000100AA0001 /* iOSInterruptedCaptureRecoveryStore.swift in Sources */,
 				8E9E38D92F5C004200EAFA72 /* iOSTranscriptionManager.swift in Sources */,
+				A14000032FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift in Sources */,
 				9C7000022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift in Sources */,
 				8E9E38DB2F5C004200EAFA72 /* iOSAudioRecorder+StopPipeline.swift in Sources */,
 				8E9E38DC2F5C004200EAFA72 /* iOSAudioRecorder+Session.swift in Sources */,

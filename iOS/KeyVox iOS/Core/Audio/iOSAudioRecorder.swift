@@ -69,7 +69,9 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
     var heartbeatCallback: (() -> Void)?
     var liveMeterUpdateHandler: ((Float, LiveInputSignalState) -> Void)?
     var audioInterruptedCaptureHandler: ((iOSStoppedCapture) -> Void)?
+    var audioSessionInterruptedHandler: (() -> Void)?
     var engineConfigurationObserver: NSObjectProtocol?
+    var audioSessionInterruptionObserver: NSObjectProtocol?
 
     init(
         audioSession: AVAudioSession = .sharedInstance(),
@@ -81,11 +83,13 @@ final class iOSAudioRecorder: ObservableObject, iOSAudioRecording {
         self.sessionGapRemovalRMSThreshold = baseGapRemovalRMSThreshold
         refreshCurrentCaptureDeviceName()
         configureEngineConfigurationObserver()
+        configureAudioSessionInterruptionObserver()
     }
 
     deinit {
         MainActor.assumeIsolated {
             removeEngineConfigurationObserver()
+            removeAudioSessionInterruptionObserver()
         }
     }
 

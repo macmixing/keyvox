@@ -36,6 +36,10 @@ final class iOSAppServiceRegistry {
             stagedGGMLURLProvider: { iOSSharedPaths.stagedModelFileURL(fileManager: fileManager) },
             stagedCoreMLZipURLProvider: { iOSSharedPaths.stagedCoreMLEncoderZipURL(fileManager: fileManager) }
         )
+        let interruptedCaptureRecoveryStore = iOSInterruptedCaptureRecoveryStore(
+            fileManager: fileManager,
+            recoveryURLProvider: { iOSSharedPaths.interruptedCaptureRecoveryURL(fileManager: fileManager) }
+        )
 
         let dictionaryStore = DictionaryStore(
             fileManager: fileManager,
@@ -79,6 +83,7 @@ final class iOSAppServiceRegistry {
             weeklyWordStatsStore: weeklyWordStatsStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
+            interruptedCaptureRecoveryStore: interruptedCaptureRecoveryStore,
             modelPathProvider: modelPathProvider,
             autoParagraphsEnabledProvider: { [weak settingsStore] in
                 settingsStore?.autoParagraphsEnabled ?? true
@@ -115,6 +120,11 @@ final class iOSAppServiceRegistry {
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
                 await transcriptionManager?.handleRecorderInterruptedCapture(interruptedCapture)
+            }
+        }
+        recorder.audioSessionInterruptedHandler = { [weak transcriptionManager] in
+            Task { @MainActor [weak transcriptionManager] in
+                await transcriptionManager?.handleRecorderSessionInterrupted()
             }
         }
         keyboardBridge.registerObservers()
