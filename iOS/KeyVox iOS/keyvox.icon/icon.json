@@ -1,29 +1,30 @@
 {
   "fill" : {
-    "automatic-gradient" : "display-p3:0.00714,0.00951,0.01389,1.00000"
+    "linear-gradient" : [
+      "srgb:0.21569,0.21569,0.41961,1.00000",
+      "srgb:0.10196,0.09020,0.32549,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
   },
   "groups" : [
     {
       "layers" : [
         {
-          "hidden" : false,
-          "image-name" : "Image 3.png",
-          "name" : "Image 3",
-          "position" : {
-            "scale" : 0.28,
-            "translation-in-points" : [
-              0.13999999999998636,
-              0.13999999999998636
-            ]
-          }
-        },
-        {
           "glass" : true,
-          "hidden" : true,
+          "hidden" : false,
           "image-name" : "Image.png",
           "name" : "Image",
           "position" : {
-            "scale" : 0.26,
+            "scale" : 0.24,
             "translation-in-points" : [
               0,
               0
