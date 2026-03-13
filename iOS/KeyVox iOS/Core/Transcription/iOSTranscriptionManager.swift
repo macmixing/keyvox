@@ -16,7 +16,7 @@ final class iOSTranscriptionManager: ObservableObject {
     @Published var sessionDisablePending = false
     @Published var sessionExpirationDate: Date?
     @Published var lastErrorMessage: String?
-    @Published var lastTranscriptionSnapshot: iOSTranscriptionDebugSnapshot?
+    @Published var lastTranscriptionText: String?
     @Published private(set) var isModelAvailable = false
 
     let recorder: any iOSAudioRecording
@@ -94,6 +94,7 @@ final class iOSTranscriptionManager: ObservableObject {
         bindSessionDisableTimingState(sessionDisableTimingPublisher)
         refreshModelAvailability()
         isSessionActive = recorder.isMonitoring
+        lastTranscriptionText = KeyVoxIPCBridge.latestTranscription()
         
         if isModelAvailable {
             transcriptionService.warmup()
@@ -167,7 +168,6 @@ final class iOSTranscriptionManager: ObservableObject {
         guard state == .idle else { return }
         state = .recording
         lastErrorMessage = nil
-        lastTranscriptionSnapshot = nil
         pendingPipelineOutputText = nil
         activeUtteranceID = UUID()
         refreshModelAvailability()
@@ -209,7 +209,6 @@ final class iOSTranscriptionManager: ObservableObject {
         }
 
         guard !stoppedCapture.outputFrames.isEmpty else {
-            lastTranscriptionSnapshot = nil
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
@@ -218,7 +217,6 @@ final class iOSTranscriptionManager: ObservableObject {
 
         refreshModelAvailability()
         guard isModelAvailable else {
-            lastTranscriptionSnapshot = nil
             lastErrorMessage = "Whisper model not found in App Group container."
             state = .idle
             keyboardBridge.publishNoSpeech()
@@ -252,16 +250,6 @@ final class iOSTranscriptionManager: ObservableObject {
                 #if DEBUG
                 print("2. Whisper inference: \(String(format: "%.3f", result.inferenceDuration))s")
                 #endif
-                self.lastTranscriptionSnapshot = iOSTranscriptionDebugSnapshot(
-                    rawText: result.rawText,
-                    finalText: finalText,
-                    wasLikelyNoSpeech: result.wasLikelyNoSpeech,
-                    inferenceDuration: result.inferenceDuration,
-                    pasteDuration: result.pasteDuration,
-                    usedDictionaryHintPrompt: usedDictionaryHintPrompt,
-                    captureDuration: self.recorder.lastCaptureDuration,
-                    outputFrameCount: stoppedCapture.outputFrames.count
-                )
                 self.pendingPipelineOutputText = nil
                 self.lastErrorMessage = nil
                 self.state = .idle
@@ -281,6 +269,7 @@ final class iOSTranscriptionManager: ObservableObject {
                     print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
                     print("--- Speed Profile End ---")
                     #endif
+                    self.lastTranscriptionText = finalText
                     self.keyboardBridge.publishTranscriptionReady(finalText)
                 }
                 

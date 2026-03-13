@@ -2,14 +2,12 @@ import SwiftUI
 import UIKit
 
 struct iOSLastTranscriptionCardView: View {
-    let snapshot: iOSTranscriptionDebugSnapshot?
+    let text: String?
 
     @State private var didCopy = false
 
     private var transcriptionText: String? {
-        let latestText = snapshot?.finalText ?? KeyVoxIPCBridge.latestTranscription()
-
-        guard let text = latestText?.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !text.isEmpty else {
             return nil
         }

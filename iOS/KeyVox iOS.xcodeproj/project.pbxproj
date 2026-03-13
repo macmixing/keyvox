@@ -36,7 +36,6 @@
 		8E9E38DD2F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* iOSAudioRecorder+Streaming.swift */; };
 		8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */; };
 		8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */; };
-		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
 		8EECE64D2F63ED9B00BECF17 /* iOSLogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */; };
 		8EECE64F2F63ED9D00BECF17 /* iOSAppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */; };
 		8EECE6512F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */; };
@@ -140,7 +139,6 @@
 		8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionManager.swift; sourceTree = "<group>"; };
 		8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSharedPaths.swift; sourceTree = "<group>"; };
 		8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDictationService.swift; sourceTree = "<group>"; };
-		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
 		8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLogoBarView.swift; sourceTree = "<group>"; };
 		8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppToolbarContent.swift; sourceTree = "<group>"; };
 		8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLastTranscriptionCardView.swift; sourceTree = "<group>"; };
@@ -341,7 +339,6 @@
 			isa = PBXGroup;
 			children = (
 				8E9E38E22F5C104200EAFA72 /* iOSDictationService.swift */,
-				8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */,
 				9C7001012FC1000100CC0001 /* iOSSessionPolicy.swift */,
 				8E9E38CC2F5C004200EAFA72 /* iOSTranscriptionManager.swift */,
 				9C7001022FC1000100CC0001 /* iOSTranscriptionManager+SessionLifecycle.swift */,
@@ -613,7 +610,6 @@
 				8E9E38D62F5C004200EAFA72 /* iOSAudioRecorder.swift in Sources */,
 				8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */,
 				8E9E38E52F5C104200EAFA72 /* iOSDictationService.swift in Sources */,
-				8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */,
 				9D7000032FD0000100DD0001 /* KeyboardCursorTrackpadSupport.swift in Sources */,
 				9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */,
 				9C7000012FC1000100CC0001 /* iOSSessionPolicy.swift in Sources */,

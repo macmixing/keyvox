@@ -129,7 +129,6 @@ extension iOSTranscriptionManager {
         activeUtteranceID = UUID()
         cancelUtteranceSafetyWatchdog()
         pendingPipelineOutputText = nil
-        lastTranscriptionSnapshot = nil
         lastErrorMessage = nil
 
         switch state {

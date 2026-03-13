@@ -41,7 +41,7 @@ struct HomeTabView: View {
 
     @ViewBuilder
     private var lastTranscriptionSection: some View {
-        iOSLastTranscriptionCardView(snapshot: transcriptionManager.lastTranscriptionSnapshot)
+        iOSLastTranscriptionCardView(text: transcriptionManager.lastTranscriptionText)
     }
 
     #if DEBUG
@@ -63,6 +63,7 @@ struct HomeTabView: View {
                         .foregroundStyle(.red)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     #endif

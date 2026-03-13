@@ -257,7 +257,7 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.recorder.stopCallCount == 0)
     }
 
-    @Test func stopFromRecordingPublishesTranscriptionSnapshotAndReturnsToIdle() async throws {
+    @Test func stopFromRecordingPublishesLastTranscriptionTextAndReturnsToIdle() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -269,8 +269,7 @@ struct iOSTranscriptionManagerTests {
 
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 1)
-        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "Hello world")
-        #expect(harness.manager.lastTranscriptionSnapshot?.usedDictionaryHintPrompt == false)
+        #expect(harness.manager.lastTranscriptionText == "Hello world")
         #expect(harness.manager.lastErrorMessage == nil)
     }
 
@@ -298,7 +297,7 @@ struct iOSTranscriptionManagerTests {
         await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
-        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "HELLO WORLD")
+        #expect(harness.manager.lastTranscriptionText == "HELLO WORLD")
     }
 
     @Test func stopSetsTranscribingWhileTranscriptionServiceIsInFlight() async throws {
@@ -332,11 +331,11 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.state == .idle)
         #expect(harness.manager.isModelAvailable == false)
         #expect(harness.transcriptionService.transcribeCallCount == 0)
-        #expect(harness.manager.lastTranscriptionSnapshot == nil)
+        #expect(harness.manager.lastTranscriptionText == nil)
         #expect(harness.manager.lastErrorMessage == "Whisper model not found in App Group container.")
     }
 
-    @Test func likelyNoSpeechResultPublishesSuppressedSnapshot() async throws {
+    @Test func likelyNoSpeechResultDoesNotPublishLastTranscriptionText() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -347,8 +346,7 @@ struct iOSTranscriptionManagerTests {
         await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
-        #expect(harness.manager.lastTranscriptionSnapshot?.wasLikelyNoSpeech == true)
-        #expect(harness.manager.lastTranscriptionSnapshot?.finalText == "")
+        #expect(harness.manager.lastTranscriptionText == nil)
     }
 
     @Test func immediatelyDisablesSessionAfterSuccessfulTranscription() async throws {
@@ -491,7 +489,7 @@ struct iOSTranscriptionManagerTests {
 
         #expect(harness.manager.state == .idle)
         #expect(harness.transcriptionService.transcribeCallCount == 0)
-        #expect(harness.manager.lastTranscriptionSnapshot == nil)
+        #expect(harness.manager.lastTranscriptionText == nil)
     }
 
     @Test func dictionaryUpdatesRefreshHintPrompt() async throws {
