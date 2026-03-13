@@ -86,7 +86,6 @@ enum KeyVoxIPCBridge {
         let d = defaults
         d?.removeObject(forKey: Key.recordingState)
         d?.removeObject(forKey: Key.recordingStateTimestamp)
-        d?.removeObject(forKey: Key.transcription)
         clearLiveMeter()
     }
 
