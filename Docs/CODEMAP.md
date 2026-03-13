@@ -136,10 +136,13 @@ KeyVox/
   - Drives microphone-step completion state and prompt visibility.
 - `Views/Components/OnboardingMicrophonePickerView.swift`
   - Presentation-only onboarding modal for required microphone selection confirmation.
+  - Uses the shared app action button treatment for the microphone confirmation action.
 - `Views/Components/MacAppTheme.swift`
   - Shared macOS app-window theme tokens for settings, onboarding, updater, and related modal surfaces.
   - Owns the standard main-window background color (`#1A1740` equivalent) plus reusable card/icon/sidebar/stroke accents.
   - Explicitly excludes `StatusMenuView` and warning overlays from the shared theme boundary.
+- `Views/Components/DictionaryFloatingAddButton.swift`
+  - Shared floating circular add action used by the dictionary settings surface.
 - `Views/Components/LogoBarView.swift`
   - Single branded Mac logo file.
   - Provides both standalone logo presentation (`LogoBarView(size:)`) and recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`).
@@ -369,7 +372,7 @@ KeyVox/
 ### Update UI (`Views/UpdatePromptOverlay.swift` + `Views/Updates` + `Views/Components`)
 
 - `Views/Components/AppActionButton.swift`
-  - Shared capsule-styled primary/secondary button used across updater-related surfaces.
+  - Shared capsule-styled primary/secondary/destructive button used across updater, settings prompt, and onboarding confirmation surfaces.
 - `Views/UpdatePromptOverlay.swift`
   - Lightweight update prompt shown before entering the dedicated updater window.
   - Owns prompt-window centering through `UpdatePromptManager`.
@@ -488,6 +491,7 @@ KeyVox/
 - `Views/Settings/SettingsView+DictionarySection.swift`
   - Dictionary management UI plus A-Z/Recently Added list sort toggle (hidden when no entries exist).
   - Dictionary description includes custom words, email addresses, and short phrases.
+  - Primary add action is surfaced as a floating corner button from `Views/Components/DictionaryFloatingAddButton.swift`.
 - `Views/Settings/SettingsView+ModelSection.swift`
   - Model install/remove row UI (`ModelSettingsRow`).
 - `Views/Settings/SettingsView+More.swift`

@@ -21,7 +21,8 @@ struct ConfirmDeletePromptConfig {
 
 private enum ConfirmDeletePromptLayout {
     static let width: CGFloat = 420
-    static let height: CGFloat = 130
+    static let height: CGFloat = 150
+    static let actionButtonWidth: CGFloat = 126
 }
 
 struct ConfirmDeletePromptView: View {
@@ -44,18 +45,21 @@ struct ConfirmDeletePromptView: View {
             }
 
             HStack(spacing: 10) {
-                Spacer()
+                AppActionButton(
+                    title: config.cancelButtonTitle,
+                    style: .secondary,
+                    minWidth: ConfirmDeletePromptLayout.actionButtonWidth,
+                    action: onCancel
+                )
 
-                Button(config.cancelButtonTitle, action: onCancel)
-                    .buttonStyle(.bordered)
-                    .controlSize(.regular)
-
-                Button(config.confirmButtonTitle, action: onConfirm)
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-                    .foregroundColor(.white)
-                    .controlSize(.regular)
+                AppActionButton(
+                    title: config.confirmButtonTitle,
+                    style: .destructive,
+                    minWidth: ConfirmDeletePromptLayout.actionButtonWidth,
+                    action: onConfirm
+                )
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(18)
         .frame(width: ConfirmDeletePromptLayout.width, height: ConfirmDeletePromptLayout.height)
@@ -68,7 +72,7 @@ struct ConfirmDeletePromptView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.7)
+                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
         )
         .preferredColorScheme(.dark)
     }

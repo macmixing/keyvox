@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct OnboardingMicrophonePickerView: View {
+    private enum Layout {
+        static let actionButtonWidth: CGFloat = 150
+    }
+
     @Binding var selectedMicrophoneUID: String
     let microphones: [MicrophoneOption]
     let onConfirm: @MainActor () -> Void
@@ -40,16 +44,15 @@ struct OnboardingMicrophonePickerView: View {
             .disabled(microphones.isEmpty)
 
             HStack {
-                Spacer()
-
-                Button("Use Microphone") {
-                    onConfirm()
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(MacAppTheme.accent)
-                .controlSize(.regular)
-                .disabled(!canConfirmSelection)
+                AppActionButton(
+                    title: "Use Microphone",
+                    style: .primary,
+                    minWidth: Layout.actionButtonWidth,
+                    isEnabled: canConfirmSelection,
+                    action: onConfirm
+                )
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(18)
         .frame(maxWidth: .infinity, minHeight: 205)
