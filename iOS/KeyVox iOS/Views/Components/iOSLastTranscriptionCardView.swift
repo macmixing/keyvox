@@ -43,7 +43,7 @@ struct iOSLastTranscriptionCardView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
                     } else {
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .center, spacing: 10) {
                             Image(systemName: "waveform.and.mic")
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundStyle(.yellow)
