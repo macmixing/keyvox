@@ -59,6 +59,7 @@ struct iOSAppToolbarContent: ToolbarContent {
                 .scaledToFit()
                 .frame(width: 28, height: 28)
         }
+        .accessibilityLabel(isSessionEnabled ? "Disable dictation session" : "Enable dictation session")
     }
 
     private func toggleSession() {
