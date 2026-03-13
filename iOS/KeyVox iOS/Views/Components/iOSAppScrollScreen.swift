@@ -20,7 +20,7 @@ struct iOSAppScrollScreen<Content: View>: View {
             iOSAppTheme.screenBackground
                 .ignoresSafeArea()
 
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(iOSAppTheme.screenPadding)

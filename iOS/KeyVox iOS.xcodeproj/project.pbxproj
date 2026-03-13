@@ -39,6 +39,7 @@
 		8E9E38E62F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */; };
 		8EECE64D2F63ED9B00BECF17 /* iOSLogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */; };
 		8EECE64F2F63ED9D00BECF17 /* iOSAppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */; };
+		8EECE6512F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */; };
@@ -142,6 +143,7 @@
 		8E9E38E32F5C104200EAFA72 /* iOSTranscriptionDebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSTranscriptionDebugSnapshot.swift; sourceTree = "<group>"; };
 		8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLogoBarView.swift; sourceTree = "<group>"; };
 		8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppToolbarContent.swift; sourceTree = "<group>"; };
+		8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSLastTranscriptionCardView.swift; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
 		9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelInstallState.swift; sourceTree = "<group>"; };
 		9A7001022FA6000100AA0001 /* iOSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelManager.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 			isa = PBXGroup;
 			children = (
 				8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */,
+				8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */,
 				8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */,
 				AA2000012F70000100000001 /* iOSAppTypography.swift */,
 				AA2000022F70000100000001 /* iOSAppTheme.swift */,
@@ -624,6 +627,7 @@
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
 				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
 				8EECE64F2F63ED9D00BECF17 /* iOSAppToolbarContent.swift in Sources */,
+				8EECE6512F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift in Sources */,
 				8EECE64D2F63ED9B00BECF17 /* iOSLogoBarView.swift in Sources */,
 				8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */,
 				8E2546552F6013ED007E720D /* MainTabView.swift in Sources */,
