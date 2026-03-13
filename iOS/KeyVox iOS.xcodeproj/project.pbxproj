@@ -7,20 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */; };
-		AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000E2F70000100000001 /* AutoFocusTextField.swift */; };
-		AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000F2F70000100000001 /* KeyboardObserver.swift */; };
-		AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000C2F70000100000001 /* ContainingAppTab.swift */; };
-		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
-		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
-		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
-		AA1000042F70000100000001 /* iOSAppIconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000042F70000100000001 /* iOSAppIconTile.swift */; };
-		AA1000052F70000100000001 /* iOSAppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* iOSAppScrollScreen.swift */; };
-		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
-		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
-		AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */; };
-		AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000092F70000100000001 /* DictionaryEntryRowView.swift */; };
-		AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */; };
 		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
 		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
@@ -72,6 +58,24 @@
 		9D7000052FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */; };
 		A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */; };
 		A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */; };
+		A13000012FD2000100EE0001 /* iOSAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000112FD2000100EE0001 /* iOSAppDelegate.swift */; };
+		A13000022FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000122FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift */; };
+		A13000032FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000132FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift */; };
+		A13000042FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000142FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift */; };
+		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
+		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
+		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
+		AA1000042F70000100000001 /* iOSAppIconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000042F70000100000001 /* iOSAppIconTile.swift */; };
+		AA1000052F70000100000001 /* iOSAppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* iOSAppScrollScreen.swift */; };
+		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
+		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
+		AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */; };
+		AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000092F70000100000001 /* DictionaryEntryRowView.swift */; };
+		AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */; };
+		AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000C2F70000100000001 /* ContainingAppTab.swift */; };
+		AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000E2F70000100000001 /* AutoFocusTextField.swift */; };
+		AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000F2F70000100000001 /* KeyboardObserver.swift */; };
+		AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,20 +110,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AA2000012F70000100000001 /* iOSAppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTypography.swift; sourceTree = "<group>"; };
-		AA2000022F70000100000001 /* iOSAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTheme.swift; sourceTree = "<group>"; };
-		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
-		AA2000042F70000100000001 /* iOSAppIconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppIconTile.swift; sourceTree = "<group>"; };
-		AA2000052F70000100000001 /* iOSAppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppScrollScreen.swift; sourceTree = "<group>"; };
-		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
-		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
-		AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryHeaderCardView.swift; sourceTree = "<group>"; };
-		AA2000092F70000100000001 /* DictionaryEntryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntryRowView.swift; sourceTree = "<group>"; };
-		AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
-		AA20000C2F70000100000001 /* ContainingAppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainingAppTab.swift; sourceTree = "<group>"; };
-		AA20000E2F70000100000001 /* AutoFocusTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoFocusTextField.swift; sourceTree = "<group>"; };
-		AA20000F2F70000100000001 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
-		AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -168,6 +158,24 @@
 		9D7000042FD0000100DD0001 /* KeyboardSpecialKeyInteractionSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyboardSpecialKeyInteractionSupport.swift; path = "KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift"; sourceTree = SOURCE_ROOT; };
 		A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsStore.swift; sourceTree = "<group>"; };
 		A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSWeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
+		A13000112FD2000100EE0001 /* iOSAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppDelegate.swift; sourceTree = "<group>"; };
+		A13000122FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadJob.swift; sourceTree = "<group>"; };
+		A13000132FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadJobStore.swift; sourceTree = "<group>"; };
+		A13000142FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSModelBackgroundDownloadCoordinator.swift; sourceTree = "<group>"; };
+		AA2000012F70000100000001 /* iOSAppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTypography.swift; sourceTree = "<group>"; };
+		AA2000022F70000100000001 /* iOSAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTheme.swift; sourceTree = "<group>"; };
+		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
+		AA2000042F70000100000001 /* iOSAppIconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppIconTile.swift; sourceTree = "<group>"; };
+		AA2000052F70000100000001 /* iOSAppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppScrollScreen.swift; sourceTree = "<group>"; };
+		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
+		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
+		AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryHeaderCardView.swift; sourceTree = "<group>"; };
+		AA2000092F70000100000001 /* DictionaryEntryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntryRowView.swift; sourceTree = "<group>"; };
+		AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
+		AA20000C2F70000100000001 /* ContainingAppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainingAppTab.swift; sourceTree = "<group>"; };
+		AA20000E2F70000100000001 /* AutoFocusTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoFocusTextField.swift; sourceTree = "<group>"; };
+		AA20000F2F70000100000001 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
+		AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -223,33 +231,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA3000012F70000100000001 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				AA2000012F70000100000001 /* iOSAppTypography.swift */,
-				AA2000022F70000100000001 /* iOSAppTheme.swift */,
-				AA2000032F70000100000001 /* iOSAppCard.swift */,
-				AA2000042F70000100000001 /* iOSAppIconTile.swift */,
-				AA2000052F70000100000001 /* iOSAppScrollScreen.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		AA3000022F70000100000001 /* Dictionary */ = {
-			isa = PBXGroup;
-			children = (
-				AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */,
-				AA20000E2F70000100000001 /* AutoFocusTextField.swift */,
-				AA20000F2F70000100000001 /* KeyboardObserver.swift */,
-				AA2000062F70000100000001 /* DictionarySortMode.swift */,
-				AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */,
-				AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */,
-				AA2000092F70000100000001 /* DictionaryEntryRowView.swift */,
-				AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */,
-			);
-			path = Dictionary;
-			sourceTree = "<group>";
-		};
 		8E70C90F2F62B1DB00E9E555 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -299,6 +280,7 @@
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
 				9B7001092FB1000100BB0001 /* iCloud */,
 				9A7001092FA6000100AA0001 /* ModelDownloader */,
+				A13000112FD2000100EE0001 /* iOSAppDelegate.swift */,
 				8E9E38E12F5C104200EAFA72 /* iOSSharedPaths.swift */,
 				8E9E38BE2F5C004200EAFA72 /* iOSAppServiceRegistry.swift */,
 				A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */,
@@ -366,6 +348,9 @@
 			children = (
 				9A7001012FA6000100AA0001 /* iOSModelInstallState.swift */,
 				9A7001022FA6000100AA0001 /* iOSModelManager.swift */,
+				A13000122FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift */,
+				A13000132FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift */,
+				A13000142FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift */,
 				9A7001062FA6000100AA0001 /* iOSModelManager+InstallLifecycle.swift */,
 				9A7001072FA6000100AA0001 /* iOSModelManager+Validation.swift */,
 				9A7001082FA6000100AA0001 /* iOSModelManager+Support.swift */,
@@ -387,6 +372,33 @@
 				A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */,
 			);
 			path = iCloud;
+			sourceTree = "<group>";
+		};
+		AA3000012F70000100000001 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA2000012F70000100000001 /* iOSAppTypography.swift */,
+				AA2000022F70000100000001 /* iOSAppTheme.swift */,
+				AA2000032F70000100000001 /* iOSAppCard.swift */,
+				AA2000042F70000100000001 /* iOSAppIconTile.swift */,
+				AA2000052F70000100000001 /* iOSAppScrollScreen.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AA3000022F70000100000001 /* Dictionary */ = {
+			isa = PBXGroup;
+			children = (
+				AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */,
+				AA20000E2F70000100000001 /* AutoFocusTextField.swift */,
+				AA20000F2F70000100000001 /* KeyboardObserver.swift */,
+				AA2000062F70000100000001 /* DictionarySortMode.swift */,
+				AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */,
+				AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */,
+				AA2000092F70000100000001 /* DictionaryEntryRowView.swift */,
+				AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */,
+			);
+			path = Dictionary;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -567,6 +579,9 @@
 				AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */,
 				9A7000112FA6000100AA0001 /* iOSModelInstallState.swift in Sources */,
 				9A7000122FA6000100AA0001 /* iOSModelManager.swift in Sources */,
+				A13000022FD2000100EE0001 /* iOSModelBackgroundDownloadJob.swift in Sources */,
+				A13000032FD2000100EE0001 /* iOSModelBackgroundDownloadJobStore.swift in Sources */,
+				A13000042FD2000100EE0001 /* iOSModelBackgroundDownloadCoordinator.swift in Sources */,
 				9A7000132FA6000100AA0001 /* iOSModelDownloadURLs.swift in Sources */,
 				9A7000142FA6000100AA0001 /* iOSModelDownloadBackgroundTasks.swift in Sources */,
 				9A7000152FA6000100AA0001 /* iOSModelInstallManifest.swift in Sources */,
@@ -579,6 +594,7 @@
 				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
 				9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
+				A13000012FD2000100EE0001 /* iOSAppDelegate.swift in Sources */,
 				A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */,
 				A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
@@ -829,6 +845,7 @@
 				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone in order to transcribe your voice.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -872,6 +889,7 @@
 				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone in order to transcribe your voice.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

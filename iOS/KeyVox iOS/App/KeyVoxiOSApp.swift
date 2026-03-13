@@ -4,6 +4,8 @@ import KeyVoxCore
 
 @main
 struct KeyVoxApp: App {
+    @UIApplicationDelegateAdaptor(iOSAppDelegate.self) private var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var transcriptionManager: iOSTranscriptionManager
     @StateObject private var modelManager: iOSModelManager
     @StateObject private var settingsStore: iOSAppSettingsStore
@@ -47,6 +49,18 @@ struct KeyVoxApp: App {
                 .environmentObject(settingsStore)
                 .environmentObject(weeklyWordStatsStore)
                 .environmentObject(dictionaryStore)
+                .onChange(of: scenePhase, initial: true) { _, newPhase in
+                    switch newPhase {
+                    case .active:
+                        modelManager.handleAppDidBecomeActive()
+                    case .background:
+                        modelManager.handleAppDidEnterBackground()
+                    case .inactive:
+                        break
+                    @unknown default:
+                        break
+                    }
+                }
                 .onOpenURL { url in
                     urlRouter.handle(url: url)
                 }

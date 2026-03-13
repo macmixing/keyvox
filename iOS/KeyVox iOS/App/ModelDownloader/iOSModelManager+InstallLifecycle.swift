@@ -6,7 +6,7 @@ extension iOSModelManager {
         let range: ClosedRange<Double> = switch phase {
         case .downloadingAssets:
             0.05...0.80
-        case .movingFiles:
+        case .resumingInstall, .movingFiles:
             0.80...0.84
         case .verifyingGGML:
             0.84...0.89
@@ -31,6 +31,132 @@ extension iOSModelManager {
             ? .downloading(progress: progress, phase: phase)
             : .installing(progress: progress, phase: phase)
         await Task.yield()
+    }
+
+    private func backgroundJobStore() -> iOSModelBackgroundDownloadJobStore {
+        iOSModelBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: modelDownloadJobURLProvider
+        )
+    }
+
+    func persistedBackgroundDownloadJob() -> iOSModelBackgroundDownloadJob? {
+        backgroundJobStore().load()
+    }
+
+    func applyBackgroundJobStatus(_ job: iOSModelBackgroundDownloadJob) {
+        if let message = job.lastErrorMessage,
+           job.finalizationState == .failed {
+            modelReady = false
+            installState = .failed(message: message)
+            errorMessage = message
+            return
+        }
+
+        if job.isReadyForFinalization || job.finalizationState == .inProgress {
+            modelReady = false
+            installState = .installing(
+                progress: mappedProgress(for: .resumingInstall, fraction: 0.25),
+                phase: .resumingInstall
+            )
+            errorMessage = nil
+            return
+        }
+
+        if job.hasActiveDownload || job.finalizationState == .awaitingDownloads {
+            modelReady = false
+            installState = .downloading(
+                progress: mappedProgress(for: .downloadingAssets, fraction: job.downloadProgressFraction),
+                phase: .downloadingAssets
+            )
+            errorMessage = nil
+            return
+        }
+
+        if let message = job.lastErrorMessage {
+            modelReady = false
+            installState = .failed(message: message)
+            errorMessage = message
+            return
+        }
+
+        modelReady = false
+        installState = .downloading(
+            progress: mappedProgress(for: .downloadingAssets, fraction: job.downloadProgressFraction),
+            phase: .downloadingAssets
+        )
+        errorMessage = nil
+    }
+
+    func startOrResumeDownloadJob() async {
+        defer { currentDownloadTask = nil }
+        errorMessage = nil
+
+        guard let paths = resolvedPaths() else {
+            Self.debugLog("startOrResumeDownloadJob: App Group container unavailable.")
+            installState = .failed(message: "App Group container unavailable.")
+            errorMessage = "App Group container unavailable."
+            modelReady = false
+            return
+        }
+
+        guard let backgroundDownloadCoordinator else {
+            await performDownloadModel()
+            return
+        }
+
+        do {
+            try ensureModelsDirectoryExists(paths.modelsDirectory)
+            try ensureEnoughDiskSpace(in: paths.modelsDirectory)
+            _ = try await backgroundDownloadCoordinator.startOrResumeJob()
+            refreshStatus()
+            await resumeForegroundFinalizationIfNeeded()
+        } catch {
+            let message = Self.userFacingErrorMessage(for: error)
+            modelReady = false
+            installState = .failed(message: message)
+            errorMessage = message
+            backgroundDownloadCoordinator.markFinalizationFailed(message: message)
+            iOSModelDownloadBackgroundTasks.scheduleRepairIfNeeded()
+        }
+    }
+
+    func resumeForegroundFinalizationIfNeeded() async {
+        guard appIsActive,
+              !isFinalizationInFlight,
+              let backgroundDownloadCoordinator,
+              let job = persistedBackgroundDownloadJob(),
+              job.isReadyForFinalization else {
+            return
+        }
+
+        guard let stagedGGMLURL = stagedGGMLURLProvider(),
+              let stagedCoreMLZipURL = stagedCoreMLZipURLProvider(),
+              let paths = resolvedPaths() else {
+            return
+        }
+
+        isFinalizationInFlight = true
+        backgroundDownloadCoordinator.markFinalizationInProgress()
+        defer { isFinalizationInFlight = false }
+
+        do {
+            await applyPhaseProgress(.resumingInstall, fraction: 0)
+            try await finalizeDownloadedArtifacts(
+                stagedGGMLURL: stagedGGMLURL,
+                stagedCoreMLZipURL: stagedCoreMLZipURL,
+                paths: paths
+            )
+            await backgroundDownloadCoordinator.clearJob()
+            refreshStatus()
+        } catch {
+            let message = Self.userFacingErrorMessage(for: error)
+            modelReady = false
+            installState = .failed(message: message)
+            errorMessage = message
+            backgroundDownloadCoordinator.markFinalizationFailed(message: message)
+            iOSModelDownloadBackgroundTasks.scheduleRepairIfNeeded()
+        }
     }
 
     func performDownloadModel() async {
@@ -58,7 +184,6 @@ extension iOSModelManager {
             try ensureEnoughDiskSpace(in: paths.modelsDirectory)
 
             await applyPhaseProgress(.downloadingAssets, fraction: 0)
-            Self.debugLog("performDownloadModel: downloading GGML + Core ML archive.")
             let progressTracker = iOSModelDownloadAggregateProgress()
             let applyProgress: @MainActor (Double) -> Void = { [weak self] overall in
                 guard let self else { return }
@@ -73,6 +198,7 @@ extension iOSModelManager {
                     await applyProgress(overall)
                 }
             }
+
             async let ggmlDownload = download(iOSModelDownloadURLs.ggmlBase) { snapshot in
                 Task {
                     await progressTracker.updateGGML(snapshot)
@@ -88,114 +214,11 @@ extension iOSModelManager {
 
             let ggmlTempURL = try await ggmlDownload
             let coreMLZipTempURL = try await coreMLZipDownload
-            await applyPhaseProgress(.movingFiles, fraction: 0)
-            Self.debugLog("""
-            performDownloadModel: downloads finished
-              ggmlTemp=\(ggmlTempURL.path)
-              coreMLZipTemp=\(coreMLZipTempURL.path)
-            """)
-
-            try moveDownloadedFile(from: ggmlTempURL, to: paths.ggmlModelURL)
-            try moveDownloadedFile(from: coreMLZipTempURL, to: paths.coreMLZipURL)
-            await applyPhaseProgress(.movingFiles, fraction: 1)
-            Self.debugLog("performDownloadModel: moved downloaded files into Models/.")
-
-            let ggmlSHA256 = try Self.sha256Hex(forFileAt: paths.ggmlModelURL) { [weak self] completed, total in
-                guard let self else { return }
-                Task { @MainActor in
-                    let fraction = total > 0 ? Double(completed) / Double(total) : 1
-                    await self.applyPhaseProgress(.verifyingGGML, fraction: fraction)
-                }
-            }
-            Self.debugLog("""
-            performDownloadModel: ggml hash
-              actual=\(ggmlSHA256)
-              expected=\(expectedGGMLSHA256)
-            """)
-            guard ggmlSHA256 == expectedGGMLSHA256 else {
-                throw ModelInstallError.integrityCheckFailed("ggml-base.bin did not match the expected SHA-256.")
-            }
-
-            let coreMLZipSHA256 = try Self.sha256Hex(forFileAt: paths.coreMLZipURL) { [weak self] completed, total in
-                guard let self else { return }
-                Task { @MainActor in
-                    let fraction = total > 0 ? Double(completed) / Double(total) : 1
-                    await self.applyPhaseProgress(.verifyingCoreMLArchive, fraction: fraction)
-                }
-            }
-            Self.debugLog("""
-            performDownloadModel: coreml zip hash
-              actual=\(coreMLZipSHA256)
-              expected=\(expectedCoreMLZipSHA256)
-            """)
-            guard coreMLZipSHA256 == expectedCoreMLZipSHA256 else {
-                throw ModelInstallError.integrityCheckFailed("The Core ML archive did not match the expected SHA-256.")
-            }
-
-            await applyPhaseProgress(.extractingCoreML, fraction: 0)
-            Self.debugLog("performDownloadModel: extracting Core ML archive.")
-            try await unzip(paths.coreMLZipURL, paths.modelsDirectory, fileManager) { [weak self] completed, total in
-                guard let self else { return }
-                Task { @MainActor in
-                    let fraction = total > 0 ? Double(completed) / Double(total) : 1
-                    await self.applyPhaseProgress(.extractingCoreML, fraction: fraction)
-                }
-            }
-
-            let coreMLDirectoryDigest = try Self.directoryDigestHex(
-                at: paths.coreMLDirectoryURL,
-                fileManager: fileManager
-            ) { [weak self] completed, total in
-                guard let self else { return }
-                Task { @MainActor in
-                    let fraction = total > 0 ? Double(completed) / Double(total) : 1
-                    await self.applyPhaseProgress(.validatingCoreMLBundle, fraction: fraction)
-                }
-            }
-            if let structureIssue = Self.validateExtractedCoreMLBundle(at: paths.coreMLDirectoryURL, fileManager: fileManager) {
-                throw ModelInstallError.integrityCheckFailed(structureIssue)
-            }
-            Self.debugLog("""
-            performDownloadModel: coreml directory digest
-              actual=\(coreMLDirectoryDigest)
-            """)
-
-            try removeItemIfExists(at: paths.coreMLZipURL)
-            await applyPhaseProgress(.writingManifest, fraction: 0)
-            Self.debugLog("performDownloadModel: removed Core ML zip after successful extraction.")
-
-            let manifest = iOSModelInstallManifest(
-                version: iOSModelInstallManifest.currentVersion,
-                ggmlSHA256: ggmlSHA256,
-                coreMLZipSHA256: coreMLZipSHA256
+            try await finalizeDownloadedArtifacts(
+                stagedGGMLURL: ggmlTempURL,
+                stagedCoreMLZipURL: coreMLZipTempURL,
+                paths: paths
             )
-            try writeManifest(manifest, to: paths.manifestURL)
-            await applyPhaseProgress(.writingManifest, fraction: 1)
-            Self.debugLog("performDownloadModel: wrote install manifest.")
-
-            let validation = validateInstall(paths: paths)
-            Self.debugLog("performDownloadModel: post-install validation = \(validation.debugDescription)")
-            switch validation {
-            case .ready:
-                await applyPhaseProgress(.warmingModel, fraction: 0)
-                whisperService.unloadModel()
-                whisperService.warmup()
-                await applyPhaseProgress(.warmingModel, fraction: 1)
-                modelReady = true
-                installState = .ready
-                errorMessage = nil
-                Self.debugLog("performDownloadModel: install complete and whisper warmed.")
-            case .notInstalled:
-                modelReady = false
-                installState = .failed(message: "Model install is incomplete.")
-                errorMessage = "Model install is incomplete."
-                Self.debugLog("performDownloadModel: validation unexpectedly returned notInstalled.")
-            case .failed(let message):
-                modelReady = false
-                installState = .failed(message: message)
-                errorMessage = message
-                Self.debugLog("performDownloadModel: validation failed after install: \(message)")
-            }
         } catch {
             let message = Self.userFacingErrorMessage(for: error)
             Self.debugLog("performDownloadModel: failed with error: \(message)")
@@ -203,6 +226,93 @@ extension iOSModelManager {
             installState = .failed(message: message)
             errorMessage = message
             iOSModelDownloadBackgroundTasks.scheduleRepairIfNeeded()
+        }
+    }
+
+    private func finalizeDownloadedArtifacts(
+        stagedGGMLURL: URL,
+        stagedCoreMLZipURL: URL,
+        paths: ResolvedPaths
+    ) async throws {
+        await applyPhaseProgress(.movingFiles, fraction: 0)
+        try moveDownloadedFile(from: stagedGGMLURL, to: paths.ggmlModelURL)
+        try moveDownloadedFile(from: stagedCoreMLZipURL, to: paths.coreMLZipURL)
+        await applyPhaseProgress(.movingFiles, fraction: 1)
+
+        let ggmlSHA256 = try Self.sha256Hex(forFileAt: paths.ggmlModelURL) { [weak self] completed, total in
+            guard let self else { return }
+            Task { @MainActor in
+                let fraction = total > 0 ? Double(completed) / Double(total) : 1
+                await self.applyPhaseProgress(.verifyingGGML, fraction: fraction)
+            }
+        }
+        guard ggmlSHA256 == expectedGGMLSHA256 else {
+            throw ModelInstallError.integrityCheckFailed("ggml-base.bin did not match the expected SHA-256.")
+        }
+
+        let coreMLZipSHA256 = try Self.sha256Hex(forFileAt: paths.coreMLZipURL) { [weak self] completed, total in
+            guard let self else { return }
+            Task { @MainActor in
+                let fraction = total > 0 ? Double(completed) / Double(total) : 1
+                await self.applyPhaseProgress(.verifyingCoreMLArchive, fraction: fraction)
+            }
+        }
+        guard coreMLZipSHA256 == expectedCoreMLZipSHA256 else {
+            throw ModelInstallError.integrityCheckFailed("The Core ML archive did not match the expected SHA-256.")
+        }
+
+        await applyPhaseProgress(.extractingCoreML, fraction: 0)
+        try await unzip(paths.coreMLZipURL, paths.modelsDirectory, fileManager) { [weak self] completed, total in
+            guard let self else { return }
+            Task { @MainActor in
+                let fraction = total > 0 ? Double(completed) / Double(total) : 1
+                await self.applyPhaseProgress(.extractingCoreML, fraction: fraction)
+            }
+        }
+
+        _ = try Self.directoryDigestHex(
+            at: paths.coreMLDirectoryURL,
+            fileManager: fileManager
+        ) { [weak self] completed, total in
+            guard let self else { return }
+            Task { @MainActor in
+                let fraction = total > 0 ? Double(completed) / Double(total) : 1
+                await self.applyPhaseProgress(.validatingCoreMLBundle, fraction: fraction)
+            }
+        }
+        if let structureIssue = Self.validateExtractedCoreMLBundle(at: paths.coreMLDirectoryURL, fileManager: fileManager) {
+            throw ModelInstallError.integrityCheckFailed(structureIssue)
+        }
+
+        try removeItemIfExists(at: paths.coreMLZipURL)
+        await applyPhaseProgress(.writingManifest, fraction: 0)
+
+        let manifest = iOSModelInstallManifest(
+            version: iOSModelInstallManifest.currentVersion,
+            ggmlSHA256: ggmlSHA256,
+            coreMLZipSHA256: coreMLZipSHA256
+        )
+        try writeManifest(manifest, to: paths.manifestURL)
+        await applyPhaseProgress(.writingManifest, fraction: 1)
+
+        let validation = validateInstall(paths: paths)
+        switch validation {
+        case .ready:
+            await applyPhaseProgress(.warmingModel, fraction: 0)
+            whisperService.unloadModel()
+            whisperService.warmup()
+            await applyPhaseProgress(.warmingModel, fraction: 1)
+            modelReady = true
+            installState = .ready
+            errorMessage = nil
+        case .notInstalled:
+            modelReady = false
+            installState = .failed(message: "Model install is incomplete.")
+            errorMessage = "Model install is incomplete."
+        case .failed(let message):
+            modelReady = false
+            installState = .failed(message: message)
+            errorMessage = message
         }
     }
 
@@ -215,18 +325,21 @@ extension iOSModelManager {
             return
         }
 
-        Self.debugLog("""
-        performDeleteModel:
-          ggmlExists=\(fileManager.fileExists(atPath: paths.ggmlModelURL.path))
-          coreMLDirExists=\(fileManager.fileExists(atPath: paths.coreMLDirectoryURL.path))
-          coreMLZipExists=\(fileManager.fileExists(atPath: paths.coreMLZipURL.path))
-          manifestExists=\(fileManager.fileExists(atPath: paths.manifestURL.path))
-        """)
         whisperService.unloadModel()
         try? removeItemIfExists(at: paths.ggmlModelURL)
         try? removeItemIfExists(at: paths.coreMLDirectoryURL)
         try? removeItemIfExists(at: paths.coreMLZipURL)
         try? removeItemIfExists(at: paths.manifestURL)
+        if let stagedGGMLURL = stagedGGMLURLProvider() {
+            try? removeItemIfExists(at: stagedGGMLURL)
+        }
+        if let stagedCoreMLZipURL = stagedCoreMLZipURLProvider() {
+            try? removeItemIfExists(at: stagedCoreMLZipURL)
+        }
+        if let stagingDirectoryURL = iOSSharedPaths.modelDownloadStagingDirectoryURL(fileManager: fileManager) {
+            try? removeItemIfExists(at: stagingDirectoryURL)
+        }
+        try? backgroundJobStore().clear()
 
         refreshStatus()
     }
@@ -242,16 +355,19 @@ extension iOSModelManager {
         }
 
         let validation = validateInstall(paths: paths)
-        Self.debugLog("performRepairModelIfNeeded: validation = \(validation.debugDescription)")
         switch validation {
         case .ready:
-            Self.debugLog("performRepairModelIfNeeded: install already ready, no-op.")
+            return
         case .notInstalled, .failed:
             try? removeItemIfExists(at: paths.ggmlModelURL)
             try? removeItemIfExists(at: paths.coreMLDirectoryURL)
             try? removeItemIfExists(at: paths.coreMLZipURL)
             try? removeItemIfExists(at: paths.manifestURL)
-            await performDownloadModel()
+            if backgroundDownloadCoordinator != nil {
+                await startOrResumeDownloadJob()
+            } else {
+                await performDownloadModel()
+            }
         }
     }
 }

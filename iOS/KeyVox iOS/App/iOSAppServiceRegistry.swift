@@ -25,6 +25,17 @@ final class iOSAppServiceRegistry {
         let modelPathProvider = {
             iOSSharedPaths.modelFileURL(fileManager: fileManager)?.path
         }
+        let backgroundDownloadJobStore = iOSModelBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: { iOSSharedPaths.modelDownloadJobURL(fileManager: fileManager) }
+        )
+        let backgroundDownloadCoordinator = iOSModelBackgroundDownloadCoordinator(
+            fileManager: fileManager,
+            jobStore: backgroundDownloadJobStore,
+            modelsDirectoryURLProvider: { iOSSharedPaths.modelsDirectoryURL(fileManager: fileManager) },
+            stagedGGMLURLProvider: { iOSSharedPaths.stagedModelFileURL(fileManager: fileManager) },
+            stagedCoreMLZipURLProvider: { iOSSharedPaths.stagedCoreMLEncoderZipURL(fileManager: fileManager) }
+        )
 
         let dictionaryStore = DictionaryStore(
             fileManager: fileManager,
@@ -39,7 +50,12 @@ final class iOSAppServiceRegistry {
             modelsDirectoryProvider: { iOSSharedPaths.modelsDirectoryURL(fileManager: fileManager) },
             ggmlModelURLProvider: { iOSSharedPaths.modelFileURL(fileManager: fileManager) },
             coreMLZipURLProvider: { iOSSharedPaths.coreMLEncoderZipURL(fileManager: fileManager) },
-            coreMLDirectoryURLProvider: { iOSSharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager) }
+            coreMLDirectoryURLProvider: { iOSSharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager) },
+            manifestURLProvider: { iOSSharedPaths.modelInstallManifestURL(fileManager: fileManager) },
+            modelDownloadJobURLProvider: { iOSSharedPaths.modelDownloadJobURL(fileManager: fileManager) },
+            stagedGGMLURLProvider: { iOSSharedPaths.stagedModelFileURL(fileManager: fileManager) },
+            stagedCoreMLZipURLProvider: { iOSSharedPaths.stagedCoreMLEncoderZipURL(fileManager: fileManager) },
+            backgroundDownloadCoordinator: backgroundDownloadCoordinator
         )
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()

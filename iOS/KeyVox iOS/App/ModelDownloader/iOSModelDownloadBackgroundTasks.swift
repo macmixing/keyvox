@@ -6,7 +6,19 @@ enum iOSModelDownloadBackgroundTasks {
 
     static func register() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier, using: nil) { task in
-            task.setTaskCompleted(success: true)
+            guard let processingTask = task as? BGProcessingTask else {
+                task.setTaskCompleted(success: true)
+                return
+            }
+
+            processingTask.expirationHandler = {
+                processingTask.setTaskCompleted(success: false)
+            }
+
+            Task { @MainActor in
+                await iOSAppServiceRegistry.shared.modelManager.handleBestEffortBackgroundRepair()
+                processingTask.setTaskCompleted(success: true)
+            }
         }
     }
 

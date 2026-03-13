@@ -2,6 +2,7 @@ import Foundation
 
 enum iOSModelInstallPhase: Equatable {
     case downloadingAssets
+    case resumingInstall
     case movingFiles
     case verifyingGGML
     case verifyingCoreMLArchive
@@ -14,6 +15,8 @@ enum iOSModelInstallPhase: Equatable {
         switch self {
         case .downloadingAssets:
             return "Downloading model assets"
+        case .resumingInstall:
+            return "Preparing model install"
         case .movingFiles:
             return "Moving downloaded files"
         case .verifyingGGML:
