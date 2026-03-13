@@ -61,7 +61,15 @@ struct SettingsView: View {
             LegalView()
         }
         .sheet(item: $dictionaryEditorMode) { mode in
-            DictionaryWordEditorView(mode: mode, dictionaryStore: dictionaryStore)
+            DictionaryWordEditorView(
+                mode: mode,
+                dictionaryStore: dictionaryStore,
+                onSave: {
+                    if case .add = mode, dictionarySortMode != .recentlyAdded {
+                        dictionarySortMode = .recentlyAdded
+                    }
+                }
+            )
         }
         .sheet(item: $dictionaryDeleteTarget) { entry in
             ConfirmDeletePromptView(
@@ -125,7 +133,27 @@ struct SettingsView: View {
                     .padding(.trailing, 32)
                     .padding(.bottom, 24)
             }
+
+            if showsDictionaryFloatingAddButton {
+                DictionaryFloatingAddButton {
+                    dictionaryEditorMode = .add
+                }
+                .padding(.trailing, 28)
+                .padding(.bottom, 24)
+                .transition(
+                    .asymmetric(
+                        insertion: .scale(scale: 0.82)
+                            .combined(with: .opacity),
+                        removal: .identity
+                    )
+                )
+            }
         }
+        .animation(.spring(response: 0.26, dampingFraction: 0.72), value: showsDictionaryFloatingAddButton)
+    }
+
+    private var showsDictionaryFloatingAddButton: Bool {
+        selectedTab == .dictionary && dictionaryEditorMode == nil
     }
 }
 

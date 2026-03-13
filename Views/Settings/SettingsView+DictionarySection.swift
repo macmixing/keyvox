@@ -38,19 +38,6 @@ extension SettingsView {
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)
                         }
-
-                        Spacer(minLength: 16)
-
-                        Button {
-                            dictionaryEditorMode = .add
-                        } label: {
-                            Text("Add Word")
-                                .foregroundColor(.black)
-                                .fontWeight(.heavy)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(MacAppTheme.accent)
-                        .controlSize(.small)
                     }
 
                     if let warning = dictionaryStore.loadWarningMessage {

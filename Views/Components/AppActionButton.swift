@@ -4,6 +4,7 @@ struct AppActionButton: View {
     enum Style {
         case primary
         case secondary
+        case destructive
     }
 
     let title: String
@@ -40,6 +41,8 @@ struct AppActionButton: View {
             return isEnabled ? .black : .white.opacity(0.3)
         case .secondary:
             return isEnabled ? .white.opacity(0.9) : .white.opacity(0.3)
+        case .destructive:
+            return isEnabled ? .white : .white.opacity(0.3)
         }
     }
 
@@ -49,11 +52,21 @@ struct AppActionButton: View {
             return isEnabled ? .yellow : Color.white.opacity(0.05)
         case .secondary:
             return Color.white.opacity(isEnabled ? 0.08 : 0.05)
+        case .destructive:
+            return isEnabled ? .red : Color.white.opacity(0.05)
         }
     }
 
     private var shadowColor: Color {
-        guard style == .primary, isEnabled else { return .clear }
-        return .yellow.opacity(0.3)
+        guard isEnabled else { return .clear }
+
+        switch style {
+        case .primary:
+            return .yellow.opacity(0.3)
+        case .destructive:
+            return .red.opacity(0.3)
+        case .secondary:
+            return .clear
+        }
     }
 }

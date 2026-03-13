@@ -42,6 +42,7 @@
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
 		8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
+		8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */; };
 		8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1100012F43000100AA0001 /* OverlayManager.swift */; };
 		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
 		8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */; };
@@ -196,6 +197,7 @@
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictionarySection.swift"; sourceTree = "<group>"; };
@@ -402,6 +404,7 @@
 		8E6D05D62F3C51D6003BD458 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */,
 				F30000372FC2000100AA0001 /* AppActionButton.swift */,
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
@@ -862,6 +865,7 @@
 				8E57FBA42F3E449000935A26 /* SettingsView.swift in Sources */,
 				8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */,
 				8E57FBA52F3E449000935A26 /* SettingsView+Legal.swift in Sources */,
+				8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */,
 				8E57FB9E2F3E444B00935A26 /* SettingsView+Sidebar.swift in Sources */,
 				8E57FB9F2F3E444B00935A26 /* SettingsView+Dictionary.swift in Sources */,
 				8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */,

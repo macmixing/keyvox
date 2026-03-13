@@ -43,22 +43,29 @@ enum DictionaryWordEditorMode: Identifiable {
 }
 
 private enum DictionaryWordEditorLayout {
-    static let width: CGFloat = 430
-    static let height: CGFloat = 160
+    static let width: CGFloat = 460
+    static let height: CGFloat = 200
+    static let actionButtonWidth: CGFloat = 126
 }
 
 struct DictionaryWordEditorView: View {
     let mode: DictionaryWordEditorMode
     @ObservedObject var dictionaryStore: DictionaryStore
+    let onSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFieldFocused: Bool
     @State private var phrase: String
     @State private var errorMessage: String?
 
-    init(mode: DictionaryWordEditorMode, dictionaryStore: DictionaryStore) {
+    init(
+        mode: DictionaryWordEditorMode,
+        dictionaryStore: DictionaryStore,
+        onSave: @escaping () -> Void = {}
+    ) {
         self.mode = mode
         self.dictionaryStore = dictionaryStore
+        self.onSave = onSave
         _phrase = State(initialValue: mode.initialPhrase)
     }
 
@@ -105,25 +112,22 @@ struct DictionaryWordEditorView: View {
             }
 
             HStack(spacing: 10) {
-                Spacer()
+                AppActionButton(
+                    title: "Cancel",
+                    style: .secondary,
+                    minWidth: DictionaryWordEditorLayout.actionButtonWidth,
+                    action: { dismiss() }
+                )
 
-                Button("Cancel") {
-                    dismiss()
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
-
-                Button {
-                    save()
-                } label: {
-                    Text(mode.actionTitle)
-                        .foregroundColor(.black)
-                        .fontWeight(.heavy)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(MacAppTheme.accent)
-                .controlSize(.regular)
+                AppActionButton(
+                    title: mode.actionTitle,
+                    style: .primary,
+                    minWidth: DictionaryWordEditorLayout.actionButtonWidth,
+                    isEnabled: !phrase.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                    action: save
+                )
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(18)
         .frame(width: DictionaryWordEditorLayout.width, height: DictionaryWordEditorLayout.height)
@@ -136,7 +140,7 @@ struct DictionaryWordEditorView: View {
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.7)
+                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
         )
         .preferredColorScheme(.dark)
         .onAppear {
@@ -153,6 +157,7 @@ struct DictionaryWordEditorView: View {
                 try dictionaryStore.update(id: entry.id, phrase: phrase)
             }
 
+            onSave()
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
