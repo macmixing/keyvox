@@ -61,7 +61,15 @@ struct SettingsView: View {
             LegalView()
         }
         .sheet(item: $dictionaryEditorMode) { mode in
-            DictionaryWordEditorView(mode: mode, dictionaryStore: dictionaryStore)
+            DictionaryWordEditorView(
+                mode: mode,
+                dictionaryStore: dictionaryStore,
+                onSave: {
+                    if case .add = mode, dictionarySortMode != .recentlyAdded {
+                        dictionarySortMode = .recentlyAdded
+                    }
+                }
+            )
         }
         .sheet(item: $dictionaryDeleteTarget) { entry in
             ConfirmDeletePromptView(

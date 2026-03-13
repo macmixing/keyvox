@@ -50,15 +50,21 @@ private enum DictionaryWordEditorLayout {
 struct DictionaryWordEditorView: View {
     let mode: DictionaryWordEditorMode
     @ObservedObject var dictionaryStore: DictionaryStore
+    let onSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFieldFocused: Bool
     @State private var phrase: String
     @State private var errorMessage: String?
 
-    init(mode: DictionaryWordEditorMode, dictionaryStore: DictionaryStore) {
+    init(
+        mode: DictionaryWordEditorMode,
+        dictionaryStore: DictionaryStore,
+        onSave: @escaping () -> Void = {}
+    ) {
         self.mode = mode
         self.dictionaryStore = dictionaryStore
+        self.onSave = onSave
         _phrase = State(initialValue: mode.initialPhrase)
     }
 
@@ -153,6 +159,7 @@ struct DictionaryWordEditorView: View {
                 try dictionaryStore.update(id: entry.id, phrase: phrase)
             }
 
+            onSave()
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
