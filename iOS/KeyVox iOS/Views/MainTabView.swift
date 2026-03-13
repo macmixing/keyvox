@@ -91,15 +91,11 @@ struct MainTabView: View {
         if edge == .trailing,
            horizontalDistance <= -Swipe.threshold,
            let nextTab = selectedTab.next {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedTab = nextTab
-            }
+            selectedTab = nextTab
         } else if edge == .leading,
                   horizontalDistance >= Swipe.threshold,
                   let previousTab = selectedTab.previous {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedTab = previousTab
-            }
+            selectedTab = previousTab
         }
     }
 
