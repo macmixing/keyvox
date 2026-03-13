@@ -2,9 +2,13 @@ import SwiftUI
 import KeyVoxCore
 
 struct DictionaryTabView: View {
+    let isActive: Bool
+
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @State private var dictionarySortMode: DictionarySortMode = .alphabetical
     @State private var dictionaryEditorMode: DictionaryWordEditorMode?
+    @State private var isFloatingAddButtonVisible = false
+    @State private var lastPresentedEditorID: String?
 
     private var displayedEntries: [DictionaryEntry] {
         switch dictionarySortMode {
@@ -19,6 +23,10 @@ struct DictionaryTabView: View {
         case .recentlyAdded:
             return Array(dictionaryStore.entries.reversed())
         }
+    }
+
+    private var showsFloatingAddButton: Bool {
+        dictionaryEditorMode == nil
     }
 
     var body: some View {
@@ -79,8 +87,11 @@ struct DictionaryTabView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if dictionaryEditorMode == nil {
+            if showsFloatingAddButton {
                 DictionaryFloatingAddButton(action: presentAddWordEditor)
+                    .scaleEffect(isFloatingAddButtonVisible ? 1 : 0.82)
+                    .opacity(isFloatingAddButtonVisible ? 1 : 0)
+                    .animation(.spring(response: 0.26, dampingFraction: 0.72), value: isFloatingAddButtonVisible)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing, 20)
                     .padding(.top, 8)
@@ -97,7 +108,35 @@ struct DictionaryTabView: View {
                 }
             )
         }
+        .onChange(of: dictionaryEditorMode?.id) { _, newValue in
+            if let newValue {
+                lastPresentedEditorID = newValue
+            }
+        }
+        .task(id: animationTriggerID) {
+            guard isActive, dictionaryEditorMode == nil else {
+                isFloatingAddButtonVisible = false
+                return
+            }
+
+            isFloatingAddButtonVisible = false
+
+            if lastPresentedEditorID != nil {
+                try? await Task.sleep(for: .seconds(0.2))
+                lastPresentedEditorID = nil
+            } else {
+                try? await Task.sleep(for: .seconds(0.1))
+            }
+
+            await Task.yield()
+
+            withAnimation(.spring(response: 0.26, dampingFraction: 0.72)) {
+                isFloatingAddButtonVisible = true
+            }
+        }
         .onDisappear {
+            isFloatingAddButtonVisible = false
+            lastPresentedEditorID = nil
             dictionaryStore.clearWarnings()
         }
     }
@@ -105,9 +144,13 @@ struct DictionaryTabView: View {
     private func presentAddWordEditor() {
         dictionaryEditorMode = .add
     }
+
+    private var animationTriggerID: String {
+        "\(isActive)-\(dictionaryEditorMode?.id ?? "none")"
+    }
 }
 
 #Preview {
-    DictionaryTabView()
+    DictionaryTabView(isActive: true)
         .environmentObject(iOSAppServiceRegistry.shared.dictionaryStore)
 }

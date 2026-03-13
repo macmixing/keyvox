@@ -39,7 +39,7 @@ struct MainTabView: View {
                 }
                 .tag(ContainingAppTab.home)
 
-            DictionaryTabView()
+            DictionaryTabView(isActive: selectedTab == .dictionary)
                 .tabItem {
                     Label("Dictionary", systemImage: "text.book.closed.fill")
                 }
