@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */; };
+		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
+		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
+		8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
 		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
 		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
@@ -121,6 +124,8 @@
 
 /* Begin PBXFileReference section */
 		8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnToHostView.swift; sourceTree = "<group>"; };
+		8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
+		8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = ReturnToHost.mov; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -262,6 +267,7 @@
 			children = (
 				8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */,
 				8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */,
+				8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -407,6 +413,7 @@
 		AA3000012F70000100000001 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */,
 				8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */,
 				8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */,
 				8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */,
@@ -567,6 +574,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */,
+				8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
 				8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 				8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
@@ -582,6 +590,7 @@
 				8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */,
 				8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8EECE9512F641B7F00BECF17 /* keyvox.icon in Resources */,
+				8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
 				8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -637,6 +646,7 @@
 				A13000012FD2000100EE0001 /* iOSAppDelegate.swift in Sources */,
 				A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */,
 				A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */,
+				8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
 				8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */,
