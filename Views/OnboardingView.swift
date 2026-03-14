@@ -50,26 +50,8 @@ struct OnboardingView: View {
                 // Steps
                 VStack(spacing: 12) {
                     OnboardingStepRow(
-                        isCompleted: microphoneStepController.isMicStepCompleted,
-                        stepNumber: 1,
-                        title: "Microphone Access",
-                        description: "KeyVox needs to hear you to transcribe.",
-                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
-                        action: requestMicrophoneAccess
-                    )
-
-                    OnboardingStepRow(
-                        isCompleted: accessibilityAuthorized,
-                        stepNumber: 2,
-                        title: "Accessibility Access",
-                        description: "Required to paste text into other apps.",
-                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
-                        action: requestAccessibilityAccess
-                    )
-
-                    OnboardingStepRow(
                         isCompleted: downloader.isModelDownloaded,
-                        stepNumber: 3,
+                        stepNumber: 1,
                         title: "AI Model Setup",
                         description: "OpenAI Whisper Base (~190 MB)",
                         buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
@@ -87,6 +69,24 @@ struct OnboardingView: View {
                                 .padding(.top, 8)
                         }
                     }
+
+                    OnboardingStepRow(
+                        isCompleted: microphoneStepController.isMicStepCompleted,
+                        stepNumber: 2,
+                        title: "Microphone Access",
+                        description: "KeyVox needs to hear you to transcribe.",
+                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
+                        action: requestMicrophoneAccess
+                    )
+
+                    OnboardingStepRow(
+                        isCompleted: accessibilityAuthorized,
+                        stepNumber: 3,
+                        title: "Accessibility Access",
+                        description: "Required to paste text into other apps.",
+                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
+                        action: requestAccessibilityAccess
+                    )
                 }
                 .padding(.horizontal, 30)
 
