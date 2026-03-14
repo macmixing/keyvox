@@ -196,6 +196,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8E10F5912F65C82E00A0AA65 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox iOSTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Core/KeyboardCursorTrackpadSupport.swift,
+				Core/KeyboardSpecialKeyInteractionSupport.swift,
+			);
+			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
+		};
 		8E7EC05A2F5C28B00080C762 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox Keyboard" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -209,6 +217,7 @@
 		8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				8E10F5912F65C82E00A0AA65 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox iOSTests" target */,
 				8E7EC05A2F5C28B00080C762 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox Keyboard" target */,
 			);
 			path = "KeyVox Keyboard";
