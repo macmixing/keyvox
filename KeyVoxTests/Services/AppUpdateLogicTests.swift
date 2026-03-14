@@ -47,7 +47,10 @@ final class AppUpdateLogicTests: XCTestCase {
         XCTAssertNotNil(mapped)
         XCTAssertEqual(mapped?.version, "1.2.0")
         XCTAssertTrue(mapped?.installAssetURL?.absoluteString.contains(".zip") ?? false)
-        XCTAssertEqual(mapped?.installAssetKind, .zip)
+        guard case .zip? = mapped?.installAssetKind else {
+            XCTFail("Expected install asset kind to be zip")
+            return
+        }
     }
 
     func testMapReleaseInfoFallsBackToManualOnlyWhenManifestMissing() throws {
@@ -67,7 +70,10 @@ final class AppUpdateLogicTests: XCTestCase {
         XCTAssertTrue(mapped != nil)
         XCTAssertTrue(mapped?.releasePageURL.absoluteString == release.htmlURL)
         XCTAssertTrue(mapped?.installAssetURL == nil)
-        XCTAssertTrue(mapped?.installAssetKind == .manualOnly)
+        guard case .manualOnly? = mapped?.installAssetKind else {
+            XCTFail("Expected install asset kind to be manualOnly")
+            return
+        }
     }
 
     func testMapReleaseInfoFallsBackToManualOnlyWhenMultipleZipAssetsExist() {
@@ -93,7 +99,10 @@ final class AppUpdateLogicTests: XCTestCase {
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
         XCTAssertTrue(mapped?.installAssetURL == nil)
-        XCTAssertTrue(mapped?.installAssetKind == .manualOnly)
+        guard case .manualOnly? = mapped?.installAssetKind else {
+            XCTFail("Expected install asset kind to be manualOnly")
+            return
+        }
     }
 
     func testMapReleaseInfoRejectsNonAllowlistedHost() {
@@ -105,7 +114,7 @@ final class AppUpdateLogicTests: XCTestCase {
         )
 
         let mapped = AppUpdateLogic.mapReleaseInfo(from: release, allowedHosts: ["github.com", "api.github.com"])
-        XCTAssertTrue(mapped == nil)
+        XCTAssertNil(mapped)
     }
 
     func testAppUpdatePathsSanitizesVersionForReleaseDirectory() {

@@ -34,7 +34,7 @@ extension SettingsView {
                                 .font(.appFont(17))
 
                             Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
-                                .font(.appFont(12))
+                                .font(.appFont(12, variant: .light))
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)
                         }
@@ -68,7 +68,7 @@ extension SettingsView {
 
                     if displayedEntries.isEmpty {
                         Text("No custom words added yet.")
-                            .font(.appFont(12))
+                            .font(.appFont(12, variant: .light))
                             .foregroundColor(.secondary)
                     } else {
                         HStack {
@@ -113,7 +113,7 @@ private struct DictionaryEntryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(entry.phrase)
-                .font(.appFont(13))
+                .font(.appFont(13, variant: .light))
                 .foregroundColor(.white)
                 .lineLimit(1)
 

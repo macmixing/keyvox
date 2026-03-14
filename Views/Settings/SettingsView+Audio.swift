@@ -45,7 +45,7 @@ extension SettingsView {
                                 .font(.appFont(17))
                             
                             Text(microphoneSubtitle)
-                                .font(.appFont(12))
+                                .font(.appFont(12, variant: .light))
                                 .foregroundColor(microphoneSubtitleColor)
                                 .lineSpacing(2)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -96,7 +96,7 @@ extension SettingsView {
                                     .font(.appFont(17))
 
                                 Text("Play audio feedback when recording starts and ends.")
-                                    .font(.appFont(12))
+                                    .font(.appFont(12, variant: .light))
                                     .foregroundColor(.secondary)
                                     .lineSpacing(2)
                                     .fixedSize(horizontal: false, vertical: true)
