@@ -9,7 +9,7 @@ struct UpdateApplicationsRequirementCard: View {
                     .foregroundColor(.white)
 
                 Text("KeyVox will copy itself into Applications, relaunch there, and resume the updater automatically.")
-                    .font(.appFont(12))
+                    .font(.appFont(12, variant: .light))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
             }

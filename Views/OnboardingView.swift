@@ -41,7 +41,7 @@ struct OnboardingView: View {
                             .foregroundColor(MacAppTheme.accent)
 
                         Text("Let's get you set up in three quick steps.")
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -80,7 +80,7 @@ struct OnboardingView: View {
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
-                                .font(.appFont(10))
+                                .font(.appFont(10, variant: .light))
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -107,7 +107,7 @@ struct OnboardingView: View {
                     .disabled(!allStepsCompleted)
 
                     Text("Complete all steps to proceed")
-                        .font(.appFont(11))
+                        .font(.appFont(11, variant: .light))
                         .foregroundColor(.secondary.opacity(0.5))
                         .opacity(allStepsCompleted ? 0 : 1)
                 }
@@ -268,7 +268,7 @@ struct OnboardingStepRow<Content: View>: View {
                         .foregroundColor(.white)
                     
                     Text(description)
-                        .font(.appFont(12))
+                        .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                 }
                 

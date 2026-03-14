@@ -35,7 +35,7 @@ struct UpdatePromptOverlay: View {
                     .frame(maxWidth: .infinity, alignment: .center)
 
                 Text(prompt.message)
-                    .font(.appFont(12))
+                    .font(.appFont(12, variant: .light))
                     .foregroundColor(.secondary)
                     .lineSpacing(0.5)
                     .multilineTextAlignment(.center)

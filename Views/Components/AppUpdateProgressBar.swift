@@ -16,7 +16,7 @@ struct AppUpdateProgressBar: View {
 
             HStack(alignment: .firstTextBaseline) {
                 Text(label)
-                    .font(.appFont(11))
+                    .font(.appFont(11, variant: .light))
                     .foregroundColor(.secondary)
 
                 Spacer()
@@ -28,7 +28,7 @@ struct AppUpdateProgressBar: View {
 
             if let detail, !detail.isEmpty {
                 Text(detail)
-                    .font(.appFont(10))
+                    .font(.appFont(10, variant: .light))
                     .foregroundColor(.secondary.opacity(0.8))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

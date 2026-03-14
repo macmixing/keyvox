@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
+		8E10F53B2F656E3800A0AA65 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F53A2F656E3800A0AA65 /* keyvox.icon */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
@@ -31,7 +32,6 @@
 		8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C6EC2F623AFA00E9E555 /* updater.sh */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
-		8E927F672F3C533300C071B3 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D22F3C51D6003BD458 /* keyvox.icon */; };
 		8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8E927F6A2F3C7AA000C071B3 /* Credits.rtf */; };
 		8E9E38242F5BB59A00EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38232F5BB59A00EAFA72 /* KeyVoxCore */; };
 		8E9E38262F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */; };
@@ -163,6 +163,7 @@
 
 /* Begin PBXFileReference section */
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
+		8E10F53A2F656E3800A0AA65 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
 		8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppTheme.swift; sourceTree = "<group>"; };
@@ -181,7 +182,6 @@
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
-		8E6D05D22F3C51D6003BD458 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
@@ -399,7 +399,7 @@
 				AA1000032F50000100AA0001 /* ../LICENSE.md */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
 				8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */,
-				8E6D05D22F3C51D6003BD458 /* keyvox.icon */,
+				8E10F53A2F656E3800A0AA65 /* keyvox.icon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -811,11 +811,11 @@
 				8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */,
 				8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */,
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
-				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
 				AA1000112F50000100AA0001 /* OFL.txt in Resources */,
 				AA1000122F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md in Resources */,
 				AA1000132F50000100AA0001 /* ../LICENSE.md in Resources */,
+				8E10F53B2F656E3800A0AA65 /* keyvox.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

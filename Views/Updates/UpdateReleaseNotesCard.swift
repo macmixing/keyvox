@@ -11,7 +11,7 @@ struct UpdateReleaseNotesCard: View {
                     .foregroundColor(.white)
 
                 Text(releaseNotes)
-                    .font(.appFont(12))
+                    .font(.appFont(12, variant: .light))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
