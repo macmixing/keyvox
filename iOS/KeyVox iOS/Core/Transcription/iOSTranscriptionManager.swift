@@ -20,6 +20,7 @@ final class iOSTranscriptionManager: ObservableObject {
     @Published private(set) var isModelAvailable = false
     @Published private(set) var hasPendingInterruptedCaptureRecovery = false
     @Published var isRecoveringInterruptedCapture = false
+    @Published var isReturnToHostViewPresented = false
 
     let recorder: any iOSAudioRecording
     let transcriptionService: any iOSDictationService
@@ -111,6 +112,10 @@ final class iOSTranscriptionManager: ObservableObject {
         }
     }
 
+    func handleAppDidEnterBackground() {
+        isReturnToHostViewPresented = false
+    }
+
     func handleEnableSessionCommand() {
         Task { await performEnableSessionCommand() }
     }
@@ -133,8 +138,8 @@ final class iOSTranscriptionManager: ObservableObject {
         Task { await performCancelCurrentUtterance() }
     }
 
-    func handleStartRecordingCommand() {
-        Task { await performStartRecordingCommand() }
+    func handleStartRecordingCommand(isFromURL: Bool = false) {
+        Task { await performStartRecordingCommand(isFromURL: isFromURL) }
     }
 
     func handleStopRecordingCommand() {
@@ -170,7 +175,7 @@ final class iOSTranscriptionManager: ObservableObject {
         cancelIdleTimeout()
     }
 
-    func performStartRecordingCommand() async {
+    func performStartRecordingCommand(isFromURL: Bool = false) async {
         guard state == .idle else { return }
         state = .recording
         lastErrorMessage = nil
@@ -178,6 +183,10 @@ final class iOSTranscriptionManager: ObservableObject {
         activeUtteranceID = UUID()
         refreshModelAvailability()
         cancelIdleTimeout()
+
+        if isFromURL {
+            isReturnToHostViewPresented = true
+        }
 
         do {
             try await recorder.startRecording()

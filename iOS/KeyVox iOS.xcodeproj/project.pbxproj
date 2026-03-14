@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */; };
 		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
 		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
@@ -119,6 +120,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnToHostView.swift; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -197,19 +199,9 @@
 		8E7EC05A2F5C28B00080C762 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox Keyboard" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Core/KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift",
-				"Core/KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift",
 				Info.plist,
 			);
 			target = 8E7EC04E2F5C28B00080C762 /* KeyVox Keyboard */;
-		};
-		8EECEA712F655FCE00BECF17 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox iOS" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Core/KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift",
-				"Core/KeyVox Keyboard/Core/KeyboardSpecialKeyInteractionSupport.swift",
-			);
-			target = 8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -217,7 +209,6 @@
 		8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8EECEA712F655FCE00BECF17 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox iOS" target */,
 				8E7EC05A2F5C28B00080C762 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox Keyboard" target */,
 			);
 			path = "KeyVox Keyboard";
@@ -337,6 +328,7 @@
 				AA3000022F70000100000001 /* Dictionary */,
 				AA20000C2F70000100000001 /* ContainingAppTab.swift */,
 				8E25464E2F6013ED007E720D /* DictionaryTabView.swift */,
+				8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */,
 				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
 				8E2546502F6013ED007E720D /* MainTabView.swift */,
 				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
@@ -632,6 +624,7 @@
 				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
 				9B7000152FB1000100BB0001 /* iOSiCloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* iOSAppServiceRegistry.swift in Sources */,
+				8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */,
 				A13000012FD2000100EE0001 /* iOSAppDelegate.swift in Sources */,
 				A12000012FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift in Sources */,
 				A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */,
@@ -697,7 +690,7 @@
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Keyboard";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -710,11 +703,15 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -727,7 +724,7 @@
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Keyboard";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -740,11 +737,15 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -974,6 +975,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -996,6 +1001,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.KeyVoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;

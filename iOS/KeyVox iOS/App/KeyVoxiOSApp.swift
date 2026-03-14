@@ -55,6 +55,7 @@ struct KeyVoxApp: App {
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                     case .background:
+                        transcriptionManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()
                     case .inactive:
                         break
@@ -63,6 +64,13 @@ struct KeyVoxApp: App {
                     }
                 }
                 .onOpenURL { url in
+                    if let route = KeyVoxURLRoute(url: url), route == .startRecording {
+                        var transaction = Transaction()
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) {
+                            transcriptionManager.isReturnToHostViewPresented = true
+                        }
+                    }
                     urlRouter.handle(url: url)
                 }
         }

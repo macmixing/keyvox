@@ -22,7 +22,7 @@ final class KeyVoxURLRouter {
 
         switch route {
         case .startRecording:
-            transcriptionManager.handleStartRecordingCommand()
+            transcriptionManager.handleStartRecordingCommand(isFromURL: true)
         case .stopRecording:
             transcriptionManager.handleStopRecordingCommand()
         }

@@ -5,14 +5,20 @@ struct AppRootView: View {
         case main
     }
 
+    @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
+
     private var destination: RootDestination {
         .main
     }
 
     var body: some View {
-        switch destination {
-        case .main:
-            MainTabView()
+        if transcriptionManager.isReturnToHostViewPresented {
+            ReturnToHostView()
+        } else {
+            switch destination {
+            case .main:
+                MainTabView()
+            }
         }
     }
 }
