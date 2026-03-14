@@ -18,7 +18,7 @@ struct DictionaryEntryRowView: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(entry.phrase)
-                .font(.appFont(16))
+                .font(.appFont(16, variant: .light))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)

@@ -32,7 +32,7 @@ struct SettingsTabView: View {
                     }
                 }
                 .pickerStyle(.menu)
-                .font(.appFont(14))
+                .font(.appFont(14, variant: .light))
 
                 Text("Decide when the session turns off")
                     .font(.appFont(12))
@@ -51,7 +51,7 @@ struct SettingsTabView: View {
 
                 Toggle(isOn: $settingsStore.keyboardHapticsEnabled) {
                     Text("Keyboard haptics")
-                        .font(.appFont(16))
+                        .font(.appFont(16, variant: .light))
                         .foregroundStyle(.white)
                 }
 
@@ -72,7 +72,7 @@ struct SettingsTabView: View {
 
                 Toggle(isOn: $settingsStore.preferBuiltInMicrophone) {
                     Text("Prefer Built-In Microphone")
-                        .font(.appFont(16))
+                        .font(.appFont(16, variant: .light))
                         .foregroundStyle(.white)
                 }
 
@@ -107,7 +107,7 @@ struct SettingsTabView: View {
                     switch modelManager.installState {
                     case .notInstalled:
                         Button("Download Model", action: modelManager.downloadModel)
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                     case .downloading, .installing:
                         if let actionText = modelManager.installState.actionText {
                             Text(actionText)
@@ -116,12 +116,12 @@ struct SettingsTabView: View {
                         }
                     case .ready:
                         Button("Delete Model", action: modelManager.deleteModel)
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                     case .failed:
                         Button("Repair Model", action: modelManager.repairModelIfNeeded)
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                         Button("Delete Model", action: modelManager.deleteModel)
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                     }
                 }
             }

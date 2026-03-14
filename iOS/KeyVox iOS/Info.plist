@@ -17,6 +17,7 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Kanit-Light.ttf</string>
 		<string>Kanit-Medium.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>

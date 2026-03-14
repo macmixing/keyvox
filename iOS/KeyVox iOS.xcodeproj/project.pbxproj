@@ -54,6 +54,8 @@
 		8EECEA6E2F655FB900BECF17 /* iOSModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA642F655FB900BECF17 /* iOSModelManager+Validation.swift */; };
 		8EECEA6F2F655FB900BECF17 /* iOSModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5D2F655FB900BECF17 /* iOSModelDownloadBackgroundTasks.swift */; };
 		8EECEA702F655FB900BECF17 /* iOSModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA622F655FB900BECF17 /* iOSModelManager+InstallLifecycle.swift */; };
+		8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
+		8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9B7000112FB1000100BB0001 /* iOSAppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */; };
@@ -160,6 +162,7 @@
 		8EECEA622F655FB900BECF17 /* iOSModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
 		8EECEA632F655FB900BECF17 /* iOSModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Support.swift"; sourceTree = "<group>"; };
 		8EECEA642F655FB900BECF17 /* iOSModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSModelManager+Validation.swift"; sourceTree = "<group>"; };
+		8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
 		9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppSettingsStore.swift; sourceTree = "<group>"; };
 		9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSUserDefaultsKeys.swift; sourceTree = "<group>"; };
@@ -258,6 +261,7 @@
 			isa = PBXGroup;
 			children = (
 				8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */,
+				8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -562,6 +566,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */,
+				8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 				8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8EECE9522F641B7F00BECF17 /* keyvox.icon in Resources */,
@@ -576,6 +581,7 @@
 				8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */,
 				8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8EECE9512F641B7F00BECF17 /* keyvox.icon in Resources */,
+				8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

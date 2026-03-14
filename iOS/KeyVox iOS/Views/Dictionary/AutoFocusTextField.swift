@@ -37,12 +37,12 @@ struct AutoFocusTextField: UIViewRepresentable {
     }
 
     private func resolvedFont(size: CGFloat) -> UIFont {
-        if let name = AppTypography.resolvedFontName(for: size),
+        if let name = AppTypography.resolvedFontName(for: size, variant: .light),
            let font = UIFont(name: name, size: size) {
             return font
         }
 
-        return .systemFont(ofSize: size)
+        return .systemFont(ofSize: size, weight: .light)
     }
 }
 

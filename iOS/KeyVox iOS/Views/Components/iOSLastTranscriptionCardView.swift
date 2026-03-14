@@ -48,7 +48,7 @@ struct iOSLastTranscriptionCardView: View {
                         .frame(maxWidth: .infinity, minHeight: 70)
                     } else if let transcriptionText {
                         Text(transcriptionText)
-                            .font(.appFont(18))
+                            .font(.appFont(18, variant: .light))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
