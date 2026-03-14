@@ -324,6 +324,7 @@ struct iOSTranscriptionManagerTests {
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
+        let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -331,7 +332,7 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.state == .idle)
         #expect(harness.manager.isModelAvailable == false)
         #expect(harness.transcriptionService.transcribeCallCount == 0)
-        #expect(harness.manager.lastTranscriptionText == nil)
+        #expect(harness.manager.lastTranscriptionText == initialLastTranscriptionText)
         #expect(harness.manager.lastErrorMessage == "Whisper model not found in App Group container.")
     }
 
@@ -341,12 +342,13 @@ struct iOSTranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "", languageCode: "en")
         harness.transcriptionService.lastResultWasLikelyNoSpeech = true
+        let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
-        #expect(harness.manager.lastTranscriptionText == nil)
+        #expect(harness.manager.lastTranscriptionText == initialLastTranscriptionText)
     }
 
     @Test func immediatelyDisablesSessionAfterSuccessfulTranscription() async throws {
@@ -482,6 +484,7 @@ struct iOSTranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = emptyOutputCapture()
+        let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -489,7 +492,7 @@ struct iOSTranscriptionManagerTests {
 
         #expect(harness.manager.state == .idle)
         #expect(harness.transcriptionService.transcribeCallCount == 0)
-        #expect(harness.manager.lastTranscriptionText == nil)
+        #expect(harness.manager.lastTranscriptionText == initialLastTranscriptionText)
     }
 
     @Test func interruptedCaptureStagesRecoveryAndReturnsToIdle() async throws {
