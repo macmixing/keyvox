@@ -20,11 +20,11 @@ struct StatusMenuView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("KeyVox Status")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.appFont(12, variant: .medium))
                             .foregroundColor(.secondary)
                         HStack(alignment: .center, spacing: 6) {
                             Text(currentStatus.text)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.appFont(12, variant: .medium))
                                 .foregroundColor(.primary)
                             StatusIndicator(status: currentStatus)
                                 .offset(y: 1)
@@ -217,19 +217,19 @@ struct WarningRow: View {
                 
                 HStack(spacing: 10) {
                     Image(systemName: icon)
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.appFont(12, variant: .medium))
                         .foregroundColor(isHovering ? .white : .red)
                         .frame(width: 20)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         Text(isHovering ? "Click to resolve" : title)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.appFont(12, variant: .medium))
                             .foregroundColor(isHovering ? .white : .red.opacity(0.9))
                         
                         // Keep title visible on hover so they know what they are clicking
                         if isHovering {
                             Text(title)
-                                .font(.system(size: 9, weight: .medium))
+                                .font(.appFont(12, variant: .light))
                                 .foregroundColor(.white.opacity(0.8))
                         }
                     }
@@ -259,7 +259,7 @@ struct MenuActionRow: View {
                     .font(.system(size: 12))
                     .frame(width: 16)
                 Text(title)
-                    .font(.system(size: 13))
+                    .font(.appFont(12, variant: .light))
                 Spacer()
             }
             .padding(.horizontal, 8)
