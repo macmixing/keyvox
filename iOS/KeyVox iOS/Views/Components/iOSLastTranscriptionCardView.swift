@@ -95,5 +95,6 @@ struct iOSLastTranscriptionCardView: View {
         .font(.appFont(12))
         .buttonStyle(.borderedProminent)
         .tint(.indigo)
+        .foregroundStyle(.black)
     }
 }
