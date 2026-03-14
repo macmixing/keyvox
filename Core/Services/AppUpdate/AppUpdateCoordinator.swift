@@ -203,6 +203,15 @@ final class AppUpdateCoordinator: ObservableObject {
         }
     }
 
+    var canTriggerSecondaryAction: Bool {
+        switch state {
+        case .downloading, .verifyingChecksum, .extracting, .verifyingSignature, .readyToInstall, .installing:
+            return false
+        default:
+            return true
+        }
+    }
+
     var canTriggerPrimaryAction: Bool {
         switch state {
         case .available, .manualOnly, .requiresApplicationsInstall, .failed, .completed, .idle:

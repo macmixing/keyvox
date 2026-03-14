@@ -21,7 +21,7 @@ struct PostUpdateNoticeView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     Text("KeyVox is ready to go with the latest improvements.")
-                        .font(.appFont(12))
+                        .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                         .multilineTextAlignment(.center)

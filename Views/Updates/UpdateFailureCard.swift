@@ -11,7 +11,7 @@ struct UpdateFailureCard: View {
                     .foregroundColor(.white)
 
                 Text(message)
-                    .font(.appFont(12))
+                    .font(.appFont(12, variant: .light))
                     .foregroundColor(.orange)
                     .lineSpacing(2)
             }

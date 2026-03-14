@@ -6,6 +6,35 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-03-14
+
+### Added
+
+- Added a full in-app GitHub release updater for macOS, including release parsing, manifest loading, zip download, checksum verification, staged install, relaunch handling, and post-update confirmation.
+- Added updater-specific macOS windows and cards for release notes, progress, install requirements, failure states, and post-update messaging.
+- Added automatic move-to-Applications prereflight so update installs can continue after relaunch from the correct location.
+- Added updater safety checks for SHA validation, bundle and Team ID verification, Gatekeeper checks, staged cleanup, and rollback-aware install handoff.
+- Added shared updater UI components and app-wide styling primitives, including `AppActionButton`, `AppUpdateProgressBar`, `MacAppTheme`, and centralized `appFont` selection.
+- Added a floating dictionary add button in macOS settings and automatically switch dictionary sorting to Recently Added after a successful add.
+- Added Kanit Light to the macOS app for lighter settings, warning, onboarding, updater, and status-menu supporting copy.
+- Added refreshed bundled app artwork and logo assets.
+
+### Changed
+
+- Replaced browser-led update actions with an in-app updater flow that keeps release notes, progress, install guidance, and completion messaging inside KeyVox.
+- Refreshed the macOS app theme by centralizing shared colors, window chrome, card styling, and common typography hooks across onboarding, settings, prompts, and updater surfaces.
+- Moved AI model download to the first onboarding step so new users can start setup in a more natural order.
+- Unified prompt and modal actions around shared button styling, including centered actions for onboarding, dictionary editing, and destructive confirmation flows.
+- Refined macOS dictionary management by moving Add Word to a floating corner action and enlarging the word editor presentation.
+- Polished audio settings layout so microphone selection and card icon alignment render more cleanly.
+- Updated status-menu typography to use the shared app font system.
+- Tuned the recording overlay meter boost for a steadier visual response.
+
+### Fixed
+
+- Prevented users from closing the updater window while an update is actively downloading, extracting, or installing.
+- Fixed Swift 6 actor-isolation issues in updater test coverage by removing invalid `Equatable` assertions.
+
 ## [1.0.2] - 2026-03-11
 
 ### Added

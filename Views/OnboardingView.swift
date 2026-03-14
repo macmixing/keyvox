@@ -41,7 +41,7 @@ struct OnboardingView: View {
                             .foregroundColor(MacAppTheme.accent)
 
                         Text("Let's get you set up in three quick steps.")
-                            .font(.appFont(14))
+                            .font(.appFont(14, variant: .light))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -50,26 +50,8 @@ struct OnboardingView: View {
                 // Steps
                 VStack(spacing: 12) {
                     OnboardingStepRow(
-                        isCompleted: microphoneStepController.isMicStepCompleted,
-                        stepNumber: 1,
-                        title: "Microphone Access",
-                        description: "KeyVox needs to hear you to transcribe.",
-                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
-                        action: requestMicrophoneAccess
-                    )
-
-                    OnboardingStepRow(
-                        isCompleted: accessibilityAuthorized,
-                        stepNumber: 2,
-                        title: "Accessibility Access",
-                        description: "Required to paste text into other apps.",
-                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
-                        action: requestAccessibilityAccess
-                    )
-
-                    OnboardingStepRow(
                         isCompleted: downloader.isModelDownloaded,
-                        stepNumber: 3,
+                        stepNumber: 1,
                         title: "AI Model Setup",
                         description: "OpenAI Whisper Base (~190 MB)",
                         buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
@@ -80,13 +62,31 @@ struct OnboardingView: View {
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
-                                .font(.appFont(10))
+                                .font(.appFont(10, variant: .light))
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .padding(.top, 8)
                         }
                     }
+
+                    OnboardingStepRow(
+                        isCompleted: microphoneStepController.isMicStepCompleted,
+                        stepNumber: 2,
+                        title: "Microphone Access",
+                        description: "KeyVox needs to hear you to transcribe.",
+                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
+                        action: requestMicrophoneAccess
+                    )
+
+                    OnboardingStepRow(
+                        isCompleted: accessibilityAuthorized,
+                        stepNumber: 3,
+                        title: "Accessibility Access",
+                        description: "Required to paste text into other apps.",
+                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
+                        action: requestAccessibilityAccess
+                    )
                 }
                 .padding(.horizontal, 30)
 
@@ -107,7 +107,7 @@ struct OnboardingView: View {
                     .disabled(!allStepsCompleted)
 
                     Text("Complete all steps to proceed")
-                        .font(.appFont(11))
+                        .font(.appFont(11, variant: .light))
                         .foregroundColor(.secondary.opacity(0.5))
                         .opacity(allStepsCompleted ? 0 : 1)
                 }
@@ -268,7 +268,7 @@ struct OnboardingStepRow<Content: View>: View {
                         .foregroundColor(.white)
                     
                     Text(description)
-                        .font(.appFont(12))
+                        .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                 }
                 

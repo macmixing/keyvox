@@ -29,7 +29,7 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 - 🔊 Optional system cue sounds with adjustable volume
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
 
-https://github.com/user-attachments/assets/e45120a8-22a0-4576-be4c-41fb70163e1a
+https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 
 ## Quick Start
 

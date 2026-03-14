@@ -92,7 +92,8 @@ struct UpdateWindowView: View {
             AppActionButton(
                 title: coordinator.secondaryButtonTitle,
                 style: .secondary,
-                minWidth: 190
+                minWidth: 190,
+                isEnabled: coordinator.canTriggerSecondaryAction
             ) {
                 coordinator.secondaryAction()
             }

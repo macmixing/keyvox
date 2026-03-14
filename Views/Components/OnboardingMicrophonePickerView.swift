@@ -22,12 +22,12 @@ struct OnboardingMicrophonePickerView: View {
 
                 if microphones.isEmpty {
                     Text("No microphone detected. Connect one to continue onboarding.")
-                        .font(.appFont(12))
+                        .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 } else {
                     Text("No built-in microphone was found. Select a default microphone to continue.")
-                        .font(.appFont(12))
+                        .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 }
