@@ -104,7 +104,7 @@ struct SettingsRow<Accessory: View>: View {
                     .font(.appFont(17))
                 
                 Text(subtitle)
-                    .font(.appFont(12))
+                    .font(.appFont(12, variant: .light))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
             }

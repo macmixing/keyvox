@@ -18,7 +18,7 @@ struct WarningOverlayView: View {
             }
 
             Text(kind.message)
-                .font(.system(size: 11, weight: .medium))
+                .font(.appFont(11, variant: .light))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)

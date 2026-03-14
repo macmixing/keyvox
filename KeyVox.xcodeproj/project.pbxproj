@@ -43,6 +43,7 @@
 		8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
 		8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */; };
+		8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEB112F65676100BECF17 /* Kanit-Light.ttf */; };
 		8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1100012F43000100AA0001 /* OverlayManager.swift */; };
 		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
 		8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */; };
@@ -198,6 +199,7 @@
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
+		8EECEB112F65676100BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictionarySection.swift"; sourceTree = "<group>"; };
@@ -390,6 +392,7 @@
 			children = (
 				8E70C6EC2F623AFA00E9E555 /* updater.sh */,
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
+				8EECEB112F65676100BECF17 /* Kanit-Light.ttf */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
 				AA1000012F50000100AA0001 /* OFL.txt */,
 				AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */,
@@ -805,6 +808,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */,
+				8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */,
 				8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */,
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F672F3C533300C071B3 /* keyvox.icon in Resources */,
