@@ -17,7 +17,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: nil,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -52,7 +52,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: nil,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -85,7 +85,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: .actionSucceeded,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -116,7 +116,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: .actionErrored,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -146,7 +146,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: .actionSucceeded,
             suppressFirstWarmupFailureWarning: true
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -182,7 +182,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let secondTimestamp = Date(timeIntervalSince1970: 200)
         let timestamps = MutableDateSequence([firstTimestamp, secondTimestamp])
 
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
             capitalization: capitalization,
@@ -246,9 +246,9 @@ final class PasteServiceExecutionTests: XCTestCase {
         restoreDelayAfterMenuFallback: TimeInterval,
         restoreDelayAfterAccessibilityInjection: TimeInterval,
         clockNow: @escaping () -> Date = Date.init
-    ) -> PasteService {
+    ) throws -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
-        let dictionaryFileURL = makeIsolatedDictionaryFileURL()
+        let dictionaryFileURL = try makeIsolatedDictionaryFileURL()
         let service = PasteService(
             pasteQueue: queue,
             heuristicTTL: 10,
@@ -272,10 +272,15 @@ final class PasteServiceExecutionTests: XCTestCase {
         return service
     }
 
-    private func makeIsolatedDictionaryFileURL() -> URL {
+    private func makeIsolatedDictionaryFileURL() throws -> URL {
+        PasteDictionaryCasingStore.resetCaches()
         let directoryURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        addTeardownBlock {
+            PasteDictionaryCasingStore.resetCaches()
+            try? FileManager.default.removeItem(at: directoryURL)
+        }
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
 
         let fileURL = directoryURL.appendingPathComponent("dictionary.json")
         let payload = """
@@ -284,7 +289,7 @@ final class PasteServiceExecutionTests: XCTestCase {
           "entries": []
         }
         """
-        try? Data(payload.utf8).write(to: fileURL)
+        try Data(payload.utf8).write(to: fileURL)
         return fileURL
     }
 }

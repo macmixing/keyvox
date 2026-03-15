@@ -17,6 +17,8 @@ protocol PasteAXInspecting {
 }
 
 final class PasteAXInspector: PasteAXInspecting {
+    private let maxPreviousNonWhitespaceScanLength = 100
+
     func focusedInsertionContext() -> PasteInsertionContext? {
         guard let focusedElement = focusedUIElement() else { return nil }
 
@@ -147,7 +149,8 @@ final class PasteAXInspector: PasteAXInspecting {
         }
 
         var candidateLocation = caretLocation - 1
-        while candidateLocation >= 0 {
+        var scannedCharacterCount = 0
+        while candidateLocation >= 0 && scannedCharacterCount < maxPreviousNonWhitespaceScanLength {
             let candidate = stringForRange(
                 CFRange(location: candidateLocation, length: 1),
                 element: element
@@ -156,6 +159,7 @@ final class PasteAXInspector: PasteAXInspecting {
                 return candidate
             }
             candidateLocation -= 1
+            scannedCharacterCount += 1
         }
 
         return nil

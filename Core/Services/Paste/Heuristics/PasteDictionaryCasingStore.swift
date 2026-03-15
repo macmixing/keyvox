@@ -19,31 +19,34 @@ struct PasteDictionaryCasingStore {
         guard !trimmedText.isEmpty else { return false }
 
         let cacheKey = dictionaryFileURL.path
-        reloadIfNeeded(cacheKey: cacheKey)
-        let cachedEntries = Self.cachedEntriesByPath[cacheKey] ?? []
+        let cachedEntries = reloadIfNeeded(cacheKey: cacheKey)
 
         return cachedEntries.contains { phrase in
             hasLeadingPhraseMatch(trimmedText, phrase: phrase)
         }
     }
 
-    private func reloadIfNeeded(cacheKey: String) {
+    private func reloadIfNeeded(cacheKey: String) -> [String] {
         let modificationDate = fileModificationDate()
-        let hasLoadedEntries = Self.loadedPaths.contains(cacheKey)
-        let cachedModificationDate = Self.cachedModificationDateByPath[cacheKey]
-        guard !hasLoadedEntries || cachedModificationDate != modificationDate else {
-            return
+        return Self.cacheQueue.sync {
+            let hasLoadedEntries = Self.loadedPaths.contains(cacheKey)
+            let cachedModificationDate = Self.cachedModificationDateByPath[cacheKey]
+            guard !hasLoadedEntries || cachedModificationDate != modificationDate else {
+                return Self.cachedEntriesByPath[cacheKey] ?? []
+            }
+
+            Self.loadedPaths.insert(cacheKey)
+            Self.cachedModificationDateByPath[cacheKey] = modificationDate
+
+            guard let data = try? Data(contentsOf: dictionaryFileURL) else {
+                Self.cachedEntriesByPath[cacheKey] = []
+                return []
+            }
+
+            let entries = extractPhrases(from: data)
+            Self.cachedEntriesByPath[cacheKey] = entries
+            return entries
         }
-
-        Self.loadedPaths.insert(cacheKey)
-        Self.cachedModificationDateByPath[cacheKey] = modificationDate
-
-        guard let data = try? Data(contentsOf: dictionaryFileURL) else {
-            Self.cachedEntriesByPath[cacheKey] = []
-            return
-        }
-
-        Self.cachedEntriesByPath[cacheKey] = extractPhrases(from: data)
     }
 
     private func fileModificationDate() -> Date? {
@@ -77,6 +80,15 @@ struct PasteDictionaryCasingStore {
         }
     }
 
+    static func resetCaches() {
+        cacheQueue.sync {
+            cachedEntriesByPath.removeAll()
+            cachedModificationDateByPath.removeAll()
+            loadedPaths.removeAll()
+        }
+    }
+
+    private static let cacheQueue = DispatchQueue(label: "PasteDictionaryCasingStore.cacheQueue")
     private static var cachedEntriesByPath: [String: [String]] = [:]
     private static var cachedModificationDateByPath: [String: Date?] = [:]
     private static var loadedPaths: Set<String> = []

@@ -249,8 +249,13 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     }
 
     func testDictionaryCasingStoreReadsPersistedDictionaryPayload() throws {
+        PasteDictionaryCasingStore.resetCaches()
         let directoryURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        addTeardownBlock {
+            PasteDictionaryCasingStore.resetCaches()
+            try? FileManager.default.removeItem(at: directoryURL)
+        }
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
         let fileURL = directoryURL.appendingPathComponent("dictionary.json")
         let payload = """
