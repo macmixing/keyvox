@@ -7,6 +7,7 @@ protocol PasteCapitalizationHeuristicApplying {
         lastInsertionAppIdentity: PasteAppIdentity?,
         lastInsertionAt: Date,
         lastInsertedTrailingCharacter: Character?,
+        lastInsertedTrailingNonWhitespaceCharacter: Character?,
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool,
         shouldPreserveLeadingCapitalization: (String) -> Bool
     ) -> String
@@ -33,6 +34,7 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
         lastInsertionAppIdentity: PasteAppIdentity?,
         lastInsertionAt: Date,
         lastInsertedTrailingCharacter: Character?,
+        lastInsertedTrailingNonWhitespaceCharacter: Character?,
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool,
         shouldPreserveLeadingCapitalization: (String) -> Bool
     ) -> String {
@@ -48,6 +50,7 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
             lastInsertionAppIdentity: lastInsertionAppIdentity,
             lastInsertionAt: lastInsertionAt,
             lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
+            lastInsertedTrailingNonWhitespaceCharacter: lastInsertedTrailingNonWhitespaceCharacter,
             identityMatcher: identityMatcher
         ) else {
             return text
@@ -67,15 +70,19 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
         lastInsertionAppIdentity: PasteAppIdentity?,
         lastInsertionAt: Date,
         lastInsertedTrailingCharacter: Character?,
+        lastInsertedTrailingNonWhitespaceCharacter: Character?,
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool
     ) -> Bool {
         if let context = axInspector.focusedInsertionContext() {
-            if context.caretLocation == 0 {
+            if let caretLocation = context.caretLocation, caretLocation == 0 {
                 return true
             }
 
-            guard context.selectionLength == 0 else { return false }
-            return context.previousCharacter.map(isSentenceBoundary) ?? false
+            if let selectionLength = context.selectionLength,
+               let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
+               selectionLength == 0 {
+                return isSentenceBoundary(previousNonWhitespaceCharacter)
+            }
         }
 
         guard let currentIdentity,
@@ -85,7 +92,9 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
             return true
         }
 
-        return lastInsertedTrailingCharacter.map(isSentenceBoundary) ?? false
+        let boundaryCharacter = lastInsertedTrailingNonWhitespaceCharacter
+            ?? lastInsertedTrailingCharacter.flatMap { $0.isWhitespace ? nil : $0 }
+        return boundaryCharacter.map(isSentenceBoundary) ?? false
     }
 
     private func isSentenceBoundary(_ character: Character) -> Bool {

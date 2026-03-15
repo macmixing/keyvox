@@ -10,6 +10,7 @@ class PasteService {
     private var lastInsertionAppIdentity: PasteAppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
+    private var lastInsertedTrailingNonWhitespaceCharacter: Character?
 
     private let axInspector: PasteAXInspecting
     private let accessibilityInjector: PasteAccessibilityInjecting
@@ -87,6 +88,7 @@ class PasteService {
             lastInsertionAppIdentity: lastInsertionAppIdentity,
             lastInsertionAt: lastInsertionAt,
             lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
+            lastInsertedTrailingNonWhitespaceCharacter: lastInsertedTrailingNonWhitespaceCharacter,
             identityMatcher: appIdentityMatches,
             shouldPreserveLeadingCapitalization: { [dictionaryCasingStore] incomingText in
                 dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: incomingText)
@@ -209,6 +211,7 @@ class PasteService {
         lastInsertionAppIdentity = appIdentity
         lastInsertionAt = clockNow()
         lastInsertedTrailingCharacter = text.last
+        lastInsertedTrailingNonWhitespaceCharacter = text.last { !$0.isWhitespace }
     }
 
     private func cancelActiveRecoveryOnMainThread() {

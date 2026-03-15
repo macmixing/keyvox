@@ -20,6 +20,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -39,10 +40,15 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: "!")
     }
 
-    func testLowercasesDefaultSentenceCaseMidSentence() {
+    func testKeepsCapitalizationAfterPunctuationAndSpace() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 4, previousCharacter: "x")
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 5,
+                    previousCharacter: " ",
+                    previousNonWhitespaceCharacter: "."
+                )
             )
         )
 
@@ -52,6 +58,33 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
+    func testLowercasesDefaultSentenceCaseMidSentence() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 4,
+                    previousCharacter: "x",
+                    previousNonWhitespaceCharacter: "x"
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -62,7 +95,12 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     func testLowercasesDefaultSentenceCaseWithLeadingWhitespace() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 4, previousCharacter: "x")
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 4,
+                    previousCharacter: "x",
+                    previousNonWhitespaceCharacter: "x"
+                )
             )
         )
 
@@ -72,6 +110,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -97,16 +136,22 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     func testSelectionReplacementStillNormalizesMidSentence() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 3, caretLocation: 4, previousCharacter: "x")
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 3,
+                    caretLocation: 4,
+                    previousCharacter: "x",
+                    previousNonWhitespaceCharacter: "x"
+                )
             )
         )
 
         let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
             in: "Hello",
             currentIdentity: identity("com.example.app", 1),
-            lastInsertionAppIdentity: nil,
-            lastInsertionAt: .distantPast,
-            lastInsertedTrailingCharacter: nil,
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date().addingTimeInterval(-1),
+            lastInsertedTrailingCharacter: "x",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -124,6 +169,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: identity("com.example.app", 1),
             lastInsertionAt: now.addingTimeInterval(-1),
             lastInsertedTrailingCharacter: "x",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -140,6 +186,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -147,10 +194,43 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
         XCTAssertEqual(output, "Hello")
     }
 
+    func testPartialAXContextFallsBackToTTLSignal() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: nil,
+                    caretLocation: 8,
+                    previousCharacter: nil,
+                    previousNonWhitespaceCharacter: nil
+                )
+            ),
+            heuristicTTL: 10
+        )
+        let now = Date()
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: now.addingTimeInterval(-1),
+            lastInsertedTrailingCharacter: "x",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "hello")
+    }
+
     func testPreservesDictionaryCasedNameMidSentence() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 4, previousCharacter: "x")
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 4,
+                    previousCharacter: "x",
+                    previousNonWhitespaceCharacter: "x"
+                )
             )
         )
 
@@ -160,6 +240,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { $0.hasPrefix("Dom Esposito") }
         )
@@ -194,7 +275,12 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     private func assertSentenceBoundaryPreservesCapitalization(previousCharacter: Character) {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 4, previousCharacter: previousCharacter)
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 4,
+                    previousCharacter: previousCharacter,
+                    previousNonWhitespaceCharacter: previousCharacter
+                )
             )
         )
 
@@ -204,6 +290,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )
@@ -214,7 +301,12 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     private func normalizeMidSentence(_ text: String) -> String {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
-                focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 4, previousCharacter: "x")
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 4,
+                    previousCharacter: "x",
+                    previousNonWhitespaceCharacter: "x"
+                )
             )
         )
 
@@ -224,6 +316,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             lastInsertionAppIdentity: nil,
             lastInsertionAt: .distantPast,
             lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
         )

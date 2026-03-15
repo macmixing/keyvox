@@ -78,6 +78,7 @@ final class MockCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
         let lastInsertionAppIdentity: PasteAppIdentity?
         let lastInsertionAt: Date
         let lastInsertedTrailingCharacter: Character?
+        let lastInsertedTrailingNonWhitespaceCharacter: Character?
     }
 
     private let outputText: String
@@ -94,6 +95,7 @@ final class MockCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
         lastInsertionAppIdentity: PasteAppIdentity?,
         lastInsertionAt: Date,
         lastInsertedTrailingCharacter: Character?,
+        lastInsertedTrailingNonWhitespaceCharacter: Character?,
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool,
         shouldPreserveLeadingCapitalization: (String) -> Bool
     ) -> String {
@@ -104,7 +106,8 @@ final class MockCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
                 currentIdentity: currentIdentity,
                 lastInsertionAppIdentity: lastInsertionAppIdentity,
                 lastInsertionAt: lastInsertionAt,
-                lastInsertedTrailingCharacter: lastInsertedTrailingCharacter
+                lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
+                lastInsertedTrailingNonWhitespaceCharacter: lastInsertedTrailingNonWhitespaceCharacter
             )
         )
         preserveChecks.append(text)

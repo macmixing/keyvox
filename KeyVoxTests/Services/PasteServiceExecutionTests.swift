@@ -1,5 +1,6 @@
 import XCTest
 @testable import KeyVox
+import Foundation
 
 @MainActor
 final class PasteServiceExecutionTests: XCTestCase {
@@ -247,6 +248,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         clockNow: @escaping () -> Date = Date.init
     ) -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
+        let dictionaryFileURL = makeIsolatedDictionaryFileURL()
         let service = PasteService(
             pasteQueue: queue,
             heuristicTTL: 10,
@@ -262,10 +264,27 @@ final class PasteServiceExecutionTests: XCTestCase {
             accessibilityInjector: injector,
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
+            dictionaryCasingStore: PasteDictionaryCasingStore(dictionaryFileURL: dictionaryFileURL),
             capitalizationHeuristics: capitalization,
             spacingHeuristics: spacing
         )
         Self.retainedServices.append(service)
         return service
+    }
+
+    private func makeIsolatedDictionaryFileURL() -> URL {
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+
+        let fileURL = directoryURL.appendingPathComponent("dictionary.json")
+        let payload = """
+        {
+          "version": 1,
+          "entries": []
+        }
+        """
+        try? Data(payload.utf8).write(to: fileURL)
+        return fileURL
     }
 }
