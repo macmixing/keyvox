@@ -16,6 +16,7 @@ final class iOSAppServiceRegistry {
     let transcriptionManager: iOSTranscriptionManager
     let iCloudSyncCoordinator: iOSiCloudSyncCoordinator
     let weeklyWordStatsCloudSync: iOSWeeklyWordStatsCloudSync
+    let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
     let urlRouter: KeyVoxURLRouter
 
     private init(fileManager: FileManager = .default) {
@@ -108,6 +109,16 @@ final class iOSAppServiceRegistry {
         let weeklyWordStatsCloudSync = iOSWeeklyWordStatsCloudSync(
             weeklyWordStatsStore: weeklyWordStatsStore
         )
+        let sessionLiveActivityCoordinator = KeyVoxSessionLiveActivityCoordinator(
+            initialIsSessionActive: transcriptionManager.isSessionActive,
+            initialSessionDisablePending: transcriptionManager.sessionDisablePending,
+            initialWeeklyWordCount: weeklyWordStatsStore.combinedWordCount,
+            isSessionActivePublisher: transcriptionManager.$isSessionActive.eraseToAnyPublisher(),
+            sessionDisablePendingPublisher: transcriptionManager.$sessionDisablePending.eraseToAnyPublisher(),
+            weeklyWordCountPublisher: weeklyWordStatsStore.$snapshot
+                .map(\.combinedWordCount)
+                .eraseToAnyPublisher()
+        )
         keyboardBridge.onStartRecordingCommand = {
             transcriptionManager.handleStartRecordingCommand()
         }
@@ -116,6 +127,9 @@ final class iOSAppServiceRegistry {
         }
         keyboardBridge.onCancelRecordingCommand = {
             transcriptionManager.cancelCurrentUtterance()
+        }
+        keyboardBridge.onDisableSessionCommand = {
+            transcriptionManager.handleDisableSessionCommand()
         }
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
@@ -139,6 +153,7 @@ final class iOSAppServiceRegistry {
         self.transcriptionManager = transcriptionManager
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
+        self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
     }
 }

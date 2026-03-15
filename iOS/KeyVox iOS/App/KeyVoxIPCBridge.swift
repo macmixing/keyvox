@@ -35,6 +35,7 @@ enum KeyVoxIPCBridge {
         static let startRecording = "com.cueit.keyvox.startRecording"
         static let stopRecording = "com.cueit.keyvox.stopRecording"
         static let cancelRecording = "com.cueit.keyvox.cancelRecording"
+        static let disableSession = "com.cueit.keyvox.disableSession"
         static let recordingStarted = "com.cueit.keyvox.recordingStarted"
         static let transcribingStarted = "com.cueit.keyvox.transcribingStarted"
         static let transcriptionReady = "com.cueit.keyvox.transcriptionReady"

@@ -34,13 +34,13 @@ struct iOSAppToolbarContent: ToolbarContent {
                     .buttonStyle(.glassProminent)
                     .buttonBorderShape(.circle)
                     .controlSize(.small)
-                    .tint(.indigo.opacity(0.5))
+                    .tint(.yellow.opacity(0.6))
             } else {
                 sessionToggleButton
                     .buttonStyle(.glassProminent)
                     .buttonBorderShape(.circle)
                     .controlSize(.small)
-                    .tint(.white.opacity(0.001))
+                    .tint(.indigo.opacity(0.5))
             }
         } else {
             sessionToggleButton

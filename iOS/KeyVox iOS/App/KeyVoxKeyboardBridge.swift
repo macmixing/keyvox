@@ -7,6 +7,7 @@ final class KeyVoxKeyboardBridge {
     var onStartRecordingCommand: (() -> Void)?
     var onStopRecordingCommand: (() -> Void)?
     var onCancelRecordingCommand: (() -> Void)?
+    var onDisableSessionCommand: (() -> Void)?
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
@@ -18,6 +19,7 @@ final class KeyVoxKeyboardBridge {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.startRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.cancelRecording)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.disableSession)
         
         touchHeartbeat()
     }
@@ -103,6 +105,8 @@ final class KeyVoxKeyboardBridge {
                 self.onStopRecordingCommand?()
             case KeyVoxIPCBridge.Notification.cancelRecording:
                 self.onCancelRecordingCommand?()
+            case KeyVoxIPCBridge.Notification.disableSession:
+                self.onDisableSessionCommand?()
             default:
                 break
             }
