@@ -70,7 +70,7 @@ private struct KeyVoxDynamicIslandBrandView: View {
 
 private struct KeyVoxDynamicIslandLogo: View {
     var body: some View {
-        Image("logo-white-island", bundle: .main)
+        Image("live-activity-island", bundle: .main)
             .resizable()
             .renderingMode(.template)
             .scaledToFit()
@@ -82,7 +82,7 @@ private struct KeyVoxDynamicIslandLogo: View {
 private struct KeyVoxSessionStopButton: View {
     var body: some View {
         Button(intent: EndSessionIntent()) {
-            Image("logo-white-ios", bundle: .main)
+            Image("live-activity-button", bundle: .main)
                 .resizable()
                 .renderingMode(.template)
                 .scaledToFit()
