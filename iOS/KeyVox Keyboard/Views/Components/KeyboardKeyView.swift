@@ -13,10 +13,12 @@ final class KeyboardKeyView: UIView {
     private let tintOverlay = UIView()
     private let titleLabel = UILabel()
     private let imageView = UIImageView()
+    private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 
     private(set) var model: KeyboardKeyModel
     private(set) var visualState: VisualState = .normal
     private var widthUnits: CGFloat
+    private var isTrackpadModeActive = false
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: widthUnits * KeyboardStyle.keyUnitWidth, height: KeyboardStyle.keyHeight)
@@ -27,12 +29,18 @@ final class KeyboardKeyView: UIView {
         self.widthUnits = model.widthUnits
         super.init(frame: .zero)
         configureView()
+        observeBorderAppearanceChanges()
         apply(model: model, state: .normal)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateBorderPath()
     }
 
     func apply(
@@ -44,13 +52,16 @@ final class KeyboardKeyView: UIView {
         self.model = model
         self.widthUnits = model.widthUnits
         self.visualState = state
+        self.isTrackpadModeActive = isTrackpadModeActive
         accessibilityLabel = model.accessibilityLabel
         invalidateIntrinsicContentSize()
 
         let colors = colorsForCurrentState(model: model, state: state)
+        let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
+        let effectiveBorderColor = isTrackpadModeActive ? UIColor.clear : resolvedBorderColor
         backgroundView.backgroundColor = .clear
         tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
-        backgroundView.layer.borderColor = colors.border.cgColor
+        borderRenderer.strokeColor = effectiveBorderColor.cgColor
         titleLabel.textColor = colors.foreground
         imageView.tintColor = colors.foreground
 
@@ -115,6 +126,7 @@ final class KeyboardKeyView: UIView {
         backgroundView.layer.removeAllAnimations()
         titleLabel.layer.removeAllAnimations()
         imageView.layer.removeAllAnimations()
+        isTrackpadModeActive = false
         apply(model: model, state: .normal, isTrackpadModeActive: false, animated: false)
     }
 
@@ -125,7 +137,6 @@ final class KeyboardKeyView: UIView {
 
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        backgroundView.layer.borderWidth = 0.5
         backgroundView.layer.masksToBounds = false
         
         blurEffectView.translatesAutoresizingMaskIntoConstraints = false
@@ -153,6 +164,7 @@ final class KeyboardKeyView: UIView {
         backgroundView.addSubview(tintOverlay)
         addSubview(titleLabel)
         addSubview(imageView)
+        _ = borderRenderer
 
         NSLayoutConstraint.activate([
             backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -180,6 +192,24 @@ final class KeyboardKeyView: UIView {
         ])
     }
 
+    private func observeBorderAppearanceChanges() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.apply(
+                model: self.model,
+                state: self.visualState,
+                isTrackpadModeActive: self.isTrackpadModeActive,
+                animated: false
+            )
+        }
+    }
+
+    private func updateBorderPath() {
+        borderRenderer.updatePath(
+            cornerRadius: KeyboardStyle.keyCornerRadius,
+            borderWidth: KeyboardStyle.keyBorderWidth
+        )
+    }
+
     private func colorsForCurrentState(model: KeyboardKeyModel, state: VisualState) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
         switch state {
         case .disabled:
@@ -203,7 +233,7 @@ final class KeyboardKeyView: UIView {
         case .trackpadActive:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor,
-                border: KeyboardStyle.keyBorderColor,
+                border: .clear,
                 foreground: KeyboardStyle.keyLabelColor
             )
         }

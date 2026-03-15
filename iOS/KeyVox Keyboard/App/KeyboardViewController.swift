@@ -28,6 +28,7 @@ final class KeyboardViewController: UIInputViewController {
     private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
     private var gracePeriodWorkItem: DispatchWorkItem?
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
+    private var isTrackpadModeActive = false
     private var extensionHostIsActive = true
     private var hostWillResignActiveObserver: NSObjectProtocol?
     private var hostDidBecomeActiveObserver: NSObjectProtocol?
@@ -47,6 +48,7 @@ final class KeyboardViewController: UIInputViewController {
         view.backgroundColor = .clear
         view.clipsToBounds = true
         configureRootView()
+        configureTraitChangeObservation()
         configureIndicatorDriver()
         configureIPC()
         configureHostLifecycleObservers()
@@ -156,6 +158,12 @@ final class KeyboardViewController: UIInputViewController {
         primaryHeightConstraint = heightConstraint
     }
 
+    private func configureTraitChangeObservation() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.updateUI()
+        }
+    }
+
     private func configureIPC() {
         ipcManager.onRecordingStarted = { [weak self] in
             self?.cancelWaitingTimeout()
@@ -219,7 +227,8 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
-            showsLogoBar: KeyboardModelAvailability.isInstalled()
+            showsLogoBar: KeyboardModelAvailability.isInstalled(),
+            isTrackpadModeActive: isTrackpadModeActive
         )
         indicatorDriver.phase = keyboardState.indicatorPhase
     }
@@ -293,7 +302,9 @@ final class KeyboardViewController: UIInputViewController {
     private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
         switch event {
         case .began:
+            isTrackpadModeActive = true
             cursorTrackpadInteractor.begin()
+            updateUI()
         case let .moved(delta):
             cursorTrackpadInteractor.handleMovement(
                 delta: delta,
@@ -302,7 +313,9 @@ final class KeyboardViewController: UIInputViewController {
                 }
             )
         case .ended, .cancelled:
+            isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
+            updateUI()
         }
     }
 

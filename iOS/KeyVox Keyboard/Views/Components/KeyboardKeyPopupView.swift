@@ -1,15 +1,13 @@
 import UIKit
 
 final class KeyboardKeyPopupView: UIView {
-    private let shapeLayer = CAShapeLayer()
     private let titleLabel = UILabel()
-    private var popupText: String?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
         alpha = 0
-        layer.addSublayer(shapeLayer)
+        observeBorderAppearanceChanges()
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = KeyboardStyle.popupFont
@@ -25,6 +23,13 @@ final class KeyboardKeyPopupView: UIView {
         ])
     }
 
+    private func observeBorderAppearanceChanges() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
+        }
+    }
+
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -32,31 +37,36 @@ final class KeyboardKeyPopupView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        shapeLayer.frame = bounds
-        shapeLayer.path = UIBezierPath(roundedRect: bounds, cornerRadius: 12).cgPath
-        shapeLayer.fillColor = KeyboardStyle.popupFillColor.cgColor
-        shapeLayer.strokeColor = UIColor.separator.withAlphaComponent(0.15).cgColor
-        shapeLayer.lineWidth = 0.5
-        
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.25
-        layer.shadowRadius = 8
-        layer.shadowOffset = CGSize(width: 0, height: 3)
+        let resolvedFillColor = KeyboardStyle.popupFillColor.resolvedColor(with: traitCollection)
+        let resolvedBorderColor = KeyboardStyle.popupBorderColor.resolvedColor(with: traitCollection)
+
+        layer.cornerRadius = KeyboardStyle.popupCornerRadius
+        layer.backgroundColor = resolvedFillColor.cgColor
+        layer.borderColor = resolvedBorderColor.cgColor
+        layer.borderWidth = KeyboardStyle.popupBorderWidth
+
+        layer.shadowColor = KeyboardStyle.popupShadowColor.cgColor
+        layer.shadowOpacity = KeyboardStyle.popupShadowOpacity
+        layer.shadowRadius = KeyboardStyle.popupShadowRadius
+        layer.shadowOffset = KeyboardStyle.popupShadowOffset
     }
 
     func present(text: String, from keyView: KeyboardKeyView, in container: UIView) {
-        popupText = text
         titleLabel.text = text
 
         let keyFrame = keyView.convert(keyView.bounds, to: container)
-        let popupSize = CGSize(width: keyFrame.width * 1.25, height: keyFrame.height * 1.35)
+        let popupSize = CGSize(
+            width: keyFrame.width * KeyboardStyle.popupWidthMultiplier,
+            height: keyFrame.height * KeyboardStyle.popupHeightMultiplier
+        )
         let popupY = max(0, keyFrame.minY - popupSize.height - 2)
-        frame = CGRect(
+        let popupFrame = CGRect(
             x: keyFrame.midX - popupSize.width / 2,
             y: popupY,
             width: popupSize.width,
             height: popupSize.height
         )
+        frame = pixelAlignedFrame(for: popupFrame)
 
         if superview !== container {
             removeFromSuperview()
@@ -73,6 +83,23 @@ final class KeyboardKeyPopupView: UIView {
     func dismiss() {
         guard superview != nil else { return }
         removeFromSuperview()
+    }
+
+    private func pixelAlignedFrame(for rect: CGRect) -> CGRect {
+        let scale = window?.screen.scale ?? UIScreen.main.scale
+        let safeScale = max(scale, 1)
+
+        return CGRect(
+            x: (rect.origin.x * safeScale).rounded() / safeScale,
+            y: (rect.origin.y * safeScale).rounded() / safeScale,
+            width: (rect.size.width * safeScale).rounded() / safeScale,
+            height: (rect.size.height * safeScale).rounded() / safeScale
+        )
+    }
+
+    func refreshAppearance() {
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
 }

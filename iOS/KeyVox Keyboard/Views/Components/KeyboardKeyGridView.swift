@@ -73,6 +73,11 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
+    func refreshAppearance() {
+        updateKeyStates(activeKey: activeKeyView)
+        popupView.refreshAppearance()
+    }
+
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
         guard
             let firstRow = rowsStack.arrangedSubviews.first as? UIStackView,

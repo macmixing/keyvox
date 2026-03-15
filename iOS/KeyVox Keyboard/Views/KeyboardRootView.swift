@@ -61,7 +61,8 @@ final class KeyboardRootView: UIView {
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
-        showsLogoBar: Bool
+        showsLogoBar: Bool,
+        isTrackpadModeActive: Bool
     ) {
         let shouldShowToolbarControls = showsLogoBar
         let shouldShowCancel = shouldShowToolbarControls && state.showsCancelButton
@@ -92,8 +93,11 @@ final class KeyboardRootView: UIView {
             }
         }
         
-        cancelButton.isEnabled = shouldShowCancel
+        cancelButton.isEnabled = shouldShowCancel && !isTrackpadModeActive
+        cancelButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isLocked = isCapsLockEnabled
+        capsLockButton.isTrackpadModeActive = isTrackpadModeActive
+        capsLockButton.isEnabled = !isTrackpadModeActive
         capsLockButton.isHidden = !shouldShowToolbarControls
         leadingControlsStack.isHidden = !shouldShowToolbarControls
         trailingControlsStack.isHidden = !shouldShowToolbarControls
@@ -104,6 +108,7 @@ final class KeyboardRootView: UIView {
 
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
+        keyGridView.refreshAppearance()
     }
 
     private func configureView() {

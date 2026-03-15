@@ -23,10 +23,24 @@ enum KeyboardStyle {
     static let keyHeight: CGFloat = 48
     static let keyUnitWidth: CGFloat = 34
     static let keyCornerRadius: CGFloat = 8
-    static let popupCornerRadius: CGFloat = 18
-    static let popupStemWidth: CGFloat = 34
-    static let popupStemHeight: CGFloat = 28
-    static let popupStemCornerRadius: CGFloat = 10
+    static let popupWidthMultiplier: CGFloat = 1.15
+    static let popupHeightMultiplier: CGFloat = 1.25
+    static let popupCornerRadius: CGFloat = 10
+    static let popupBorderWidth: CGFloat = 0.6
+    static let popupShadowColor = UIColor.black
+    static let popupShadowOpacity: Float = 0.25
+    static let popupShadowRadius: CGFloat = 4
+    static let popupShadowOffset = CGSize(width: 0, height: 3)
+    static let popupFillColor = UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
+    }
+    static let popupBorderColor = UIColor { trait in
+        trait.userInterfaceStyle == .dark
+            ? UIColor.white.withAlphaComponent(0.75)
+            : UIColor.separator.withAlphaComponent(0.65)
+    }
+    static let popupLabelColor = UIColor.black
+    static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 
     static let backgroundColor = UIColor.clear
     static let borderColor = UIColor.clear
@@ -38,6 +52,7 @@ enum KeyboardStyle {
     static let cancelButtonBorderColor = UIColor.systemIndigo
     static let cancelButtonIconColor = UIColor.systemRed
     static let cancelButtonBorderWidth: CGFloat = 0.5
+    static let keyBorderWidth: CGFloat = 0.5
 
     static let keyFillColor = UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1)
     static let keyPressedFillColor = UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1)
@@ -46,24 +61,25 @@ enum KeyboardStyle {
     static let keyDisabledFillColor = UIColor.tertiarySystemFill
     static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
     static let keyBorderColor = UIColor { trait in
-        trait.userInterfaceStyle == .light ? 
-            UIColor(red: 0.42, green: 0.42, blue: 0.44, alpha: 1.0) : 
-            UIColor.separator.withAlphaComponent(0.18)
+        trait.userInterfaceStyle == .light
+            ? UIColor(red: 0.42, green: 0.42, blue: 0.44, alpha: 0.65)
+            : UIColor.white.withAlphaComponent(0.15)
     }
-    static let keyPressedBorderColor = UIColor.separator.withAlphaComponent(0.32)
-    static let keyDisabledBorderColor = UIColor.separator.withAlphaComponent(0.08)
+    static let keyPressedBorderColor = UIColor { trait in
+        trait.userInterfaceStyle == .light
+            ? UIColor.separator.withAlphaComponent(0.26)
+            : UIColor.white.withAlphaComponent(0.04)
+    }
+    static let keyDisabledBorderColor = UIColor { trait in
+        trait.userInterfaceStyle == .light
+            ? UIColor.separator.withAlphaComponent(0.08)
+            : UIColor.white.withAlphaComponent(0.08)
+    }
     static let keyLabelColor = UIColor.label
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
-    static let popupFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
-    }
-    static let popupBorderColor = UIColor.separator.withAlphaComponent(0.16)
-    static let popupLabelColor = UIColor.black
-
     static let keyFont = UIFont.systemFont(ofSize: 22, weight: .regular)
     static let specialKeyFont = UIFont.systemFont(ofSize: 17, weight: .semibold)
-    static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
     static let cancelButtonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
@@ -79,11 +95,5 @@ enum KeyboardStyle {
         opacity: 0.18,
         radius: 2,
         offset: CGSize(width: 0, height: 2)
-    )
-    static let popupShadow = Shadow(
-        color: UIColor.black,
-        opacity: 0.18,
-        radius: 8,
-        offset: CGSize(width: 0, height: 4)
     )
 }

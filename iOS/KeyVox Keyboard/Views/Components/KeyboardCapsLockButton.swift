@@ -1,10 +1,19 @@
 import UIKit
 
 final class KeyboardCapsLockButton: UIControl {
+    private static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+
     private let backgroundView = UIView()
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let imageView = UIImageView()
+    private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
+
+    var isTrackpadModeActive = false {
+        didSet {
+            updateVisualState(animated: true)
+        }
+    }
 
     var isLocked = false {
         didSet {
@@ -20,6 +29,7 @@ final class KeyboardCapsLockButton: UIControl {
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureView()
+        observeBorderAppearanceChanges()
         updateAccessibility()
         updateVisualState(animated: false)
     }
@@ -29,9 +39,20 @@ final class KeyboardCapsLockButton: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateBorderPath()
+    }
+
     override var isHighlighted: Bool {
         didSet {
             updateVisualState(animated: true)
+        }
+    }
+
+    override var isEnabled: Bool {
+        didSet {
+            updateVisualState(animated: false)
         }
     }
 
@@ -42,7 +63,6 @@ final class KeyboardCapsLockButton: UIControl {
 
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        backgroundView.layer.borderWidth = 0.5
         backgroundView.layer.masksToBounds = false
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
@@ -65,6 +85,7 @@ final class KeyboardCapsLockButton: UIControl {
         backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         addSubview(imageView)
+        _ = borderRenderer
 
         NSLayoutConstraint.activate([
             backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -87,9 +108,16 @@ final class KeyboardCapsLockButton: UIControl {
         ])
     }
 
+    private func observeBorderAppearanceChanges() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.updateVisualState(animated: false)
+        }
+    }
+
     private func updateVisualState(animated: Bool) {
         let isPressed = isLocked || isHighlighted
         let colors = colorsForState(isPressed: isPressed, isEnabled: isEnabled)
+        let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
         let transform = isPressed ? CGAffineTransform(scaleX: 0.985, y: 0.96) : .identity
         let shadow = isPressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
         let symbolName = isLocked ? "capslock.fill" : "capslock"
@@ -97,15 +125,16 @@ final class KeyboardCapsLockButton: UIControl {
         let applyState = {
             self.backgroundView.transform = transform
             self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
-            self.backgroundView.layer.borderColor = colors.border.cgColor
+            self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.backgroundView.layer.shadowColor = shadow.color.cgColor
             self.backgroundView.layer.shadowOpacity = shadow.opacity
             self.backgroundView.layer.shadowRadius = shadow.radius
             self.backgroundView.layer.shadowOffset = shadow.offset
             self.imageView.tintColor = colors.foreground
+            self.imageView.alpha = self.isTrackpadModeActive ? 0 : 1
             self.imageView.image = UIImage(
                 systemName: symbolName,
-                withConfiguration: KeyboardStyle.keySymbolConfiguration
+                withConfiguration: Self.symbolConfiguration
             )
         }
 
@@ -117,6 +146,12 @@ final class KeyboardCapsLockButton: UIControl {
             applyState()
         }
     }
+    private func updateBorderPath() {
+        borderRenderer.updatePath(
+            cornerRadius: KeyboardStyle.keyCornerRadius,
+            borderWidth: KeyboardStyle.keyBorderWidth
+        )
+    }
 
     private func updateAccessibility() {
         accessibilityLabel = "Caps Lock"
@@ -124,6 +159,14 @@ final class KeyboardCapsLockButton: UIControl {
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
+        if isTrackpadModeActive {
+            return (
+                fill: KeyboardStyle.keyFillColor,
+                border: .clear,
+                foreground: KeyboardStyle.keyLabelColor
+            )
+        }
+
         guard isEnabled else {
             return (
                 fill: KeyboardStyle.keyDisabledFillColor,

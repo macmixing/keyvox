@@ -13,7 +13,13 @@ final class KeyboardCancelButton: UIControl {
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: KeyboardStyle.controlBlurEffectStyle))
     private let tintOverlay = UIView()
     private let iconImageView = UIImageView()
-    private let borderLayer = CAShapeLayer()
+    private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
+
+    var isTrackpadModeActive = false {
+        didSet {
+            updateVisualState(animated: true)
+        }
+    }
     
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardStyle.cancelButtonSize, height: KeyboardStyle.cancelButtonSize)
@@ -22,6 +28,7 @@ final class KeyboardCancelButton: UIControl {
     override init(frame: CGRect) {
         super.init(frame: .zero)
         configureView()
+        observeBorderAppearanceChanges()
         updateAccessibility()
     }
     
@@ -38,6 +45,12 @@ final class KeyboardCancelButton: UIControl {
     override var isHighlighted: Bool {
         didSet {
             updateVisualState(animated: true)
+        }
+    }
+
+    override var isEnabled: Bool {
+        didSet {
+            updateVisualState(animated: false)
         }
     }
     
@@ -74,8 +87,8 @@ final class KeyboardCancelButton: UIControl {
         addSubview(backgroundView)
         backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
-        backgroundView.layer.addSublayer(borderLayer)
         addSubview(iconImageView)
+        _ = borderRenderer
         
         updateVisualState(animated: false)
         
@@ -87,18 +100,25 @@ final class KeyboardCancelButton: UIControl {
         
         setupConstraints()
     }
+
+    private func observeBorderAppearanceChanges() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.updateVisualState(animated: false)
+        }
+    }
     
     private func updateVisualState(animated: Bool) {
         let transform: CGAffineTransform = isHighlighted ? CGAffineTransform(scaleX: 0.985, y: 0.96) : .identity
         let colors = colorsForState(isHighlighted: isHighlighted)
+        let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
         let shadow = isHighlighted ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
         
         let animations = {
             self.backgroundView.transform = transform
             self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(self.fillAlpha)
-            self.borderLayer.strokeColor = colors.border.cgColor
-            self.iconImageView.tintColor = colors.icon 
-            self.iconImageView.alpha = self.isHighlighted ? self.highlightedIconAlpha : self.normalIconAlpha
+            self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
+            self.iconImageView.tintColor = colors.icon
+            self.iconImageView.alpha = self.isTrackpadModeActive ? 0 : (self.isHighlighted ? self.highlightedIconAlpha : self.normalIconAlpha)
             
             self.backgroundView.layer.shadowColor = shadow.color.cgColor
             self.backgroundView.layer.shadowOpacity = shadow.opacity
@@ -117,27 +137,11 @@ final class KeyboardCancelButton: UIControl {
             animations()
         }
     }
-
     private func updateBorderPath() {
-        let scale = window?.screen.scale ?? UIScreen.main.scale
-        let pixelAlignedLineWidth = max(
-            (KeyboardStyle.cancelButtonBorderWidth * scale).rounded() / max(scale, 1),
-            1 / max(scale, 1)
+        borderRenderer.updatePath(
+            cornerRadius: KeyboardStyle.keyCornerRadius,
+            borderWidth: KeyboardStyle.cancelButtonBorderWidth
         )
-        let lineWidth = pixelAlignedLineWidth
-        let inset = lineWidth / 2
-        let cornerRadius = max(KeyboardStyle.keyCornerRadius - inset, 0)
-        let borderRect = backgroundView.bounds.insetBy(dx: inset, dy: inset)
-
-        borderLayer.frame = backgroundView.bounds
-        borderLayer.contentsScale = scale
-        borderLayer.fillColor = UIColor.clear.cgColor
-        borderLayer.lineWidth = lineWidth
-        borderLayer.lineJoin = .round
-        borderLayer.path = UIBezierPath(
-            roundedRect: borderRect,
-            cornerRadius: cornerRadius
-        ).cgPath
     }
     
     private func setupConstraints() {
