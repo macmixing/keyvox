@@ -1,5 +1,6 @@
 import XCTest
 @testable import KeyVox
+import Foundation
 
 @MainActor
 final class PasteServiceExecutionTests: XCTestCase {
@@ -8,6 +9,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testAccessibilityVerifiedSuccessRestoresClipboardAndSkipsRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -15,9 +17,10 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: nil,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -34,12 +37,47 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(recovery.cancelCalls, 1)
         XCTAssertEqual(recovery.startCalls, 0)
         XCTAssertEqual(coordinator.executeCalls, 0)
+        XCTAssertEqual(capitalization.inputs.map(\.text), ["hello"])
+        XCTAssertEqual(clipboard.writes, ["hello"])
+    }
+
+    func testCapitalizationNormalizationFeedsSpacingHeuristics() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
+        let spacing = MockSpacingHeuristics()
+        let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: nil,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: recovery,
+            capitalization: capitalization,
+            spacing: spacing,
+            injector: injector,
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0.5,
+            restoreDelayAfterAccessibilityInjection: 0
+        )
+
+        service.pasteText("Hello")
+
+        try await waitForCondition {
+            clipboard.restoreCalls == 1
+        }
+
+        XCTAssertEqual(capitalization.inputs.map(\.text), ["Hello"])
+        XCTAssertEqual(spacing.inputs.map(\.text), ["hello"])
         XCTAssertEqual(clipboard.writes, ["hello"])
     }
 
     func testMenuFallbackSuccessRestoresClipboardAndSkipsRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -47,9 +85,10 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuAttempt: .actionSucceeded,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -70,15 +109,17 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testMenuFallbackFailureStartsRecoveryWhenNotSuppressed() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
             didMenuFallbackInsert: false,
             menuAttempt: .actionErrored,
             suppressFirstWarmupFailureWarning: false
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: MockSpacingHeuristics(),
             injector: injector,
             coordinator: coordinator,
@@ -98,15 +139,17 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testMenuFallbackFailureSuppressedRestoresClipboardWithoutRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
             didMenuFallbackInsert: false,
             menuAttempt: .actionSucceeded,
             suppressFirstWarmupFailureWarning: true
         ))
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: MockSpacingHeuristics(),
             injector: injector,
             coordinator: coordinator,
@@ -126,6 +169,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testSuccessfulInsertionMemoryFeedsNextSpacingDecision() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello.")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -138,9 +182,10 @@ final class PasteServiceExecutionTests: XCTestCase {
         let secondTimestamp = Date(timeIntervalSince1970: 200)
         let timestamps = MutableDateSequence([firstTimestamp, secondTimestamp])
 
-        let service = makeService(
+        let service = try makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -194,14 +239,16 @@ final class PasteServiceExecutionTests: XCTestCase {
     private func makeService(
         clipboard: MockClipboardAdapter,
         recovery: MockFailureRecoveryController,
+        capitalization: MockCapitalizationHeuristics,
         spacing: MockSpacingHeuristics,
         injector: MockAccessibilityInjector,
         coordinator: MockMenuFallbackCoordinator,
         restoreDelayAfterMenuFallback: TimeInterval,
         restoreDelayAfterAccessibilityInjection: TimeInterval,
         clockNow: @escaping () -> Date = Date.init
-    ) -> PasteService {
+    ) throws -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
+        let dictionaryFileURL = try makeIsolatedDictionaryFileURL()
         let service = PasteService(
             pasteQueue: queue,
             heuristicTTL: 10,
@@ -217,9 +264,32 @@ final class PasteServiceExecutionTests: XCTestCase {
             accessibilityInjector: injector,
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
+            dictionaryCasingStore: PasteDictionaryCasingStore(dictionaryFileURL: dictionaryFileURL),
+            capitalizationHeuristics: capitalization,
             spacingHeuristics: spacing
         )
         Self.retainedServices.append(service)
         return service
+    }
+
+    private func makeIsolatedDictionaryFileURL() throws -> URL {
+        PasteDictionaryCasingStore.resetCaches()
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        addTeardownBlock {
+            PasteDictionaryCasingStore.resetCaches()
+            try? FileManager.default.removeItem(at: directoryURL)
+        }
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+
+        let fileURL = directoryURL.appendingPathComponent("dictionary.json")
+        let payload = """
+        {
+          "version": 1,
+          "entries": []
+        }
+        """
+        try Data(payload.utf8).write(to: fileURL)
+        return fileURL
     }
 }

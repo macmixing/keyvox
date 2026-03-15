@@ -17,6 +17,8 @@ protocol PasteAXInspecting {
 }
 
 final class PasteAXInspector: PasteAXInspecting {
+    private let maxPreviousNonWhitespaceScanLength = 100
+
     func focusedInsertionContext() -> PasteInsertionContext? {
         guard let focusedElement = focusedUIElement() else { return nil }
 
@@ -26,6 +28,7 @@ final class PasteAXInspector: PasteAXInspecting {
         let selectionLength = selectedRange.map { max(0, $0.length) }
 
         var previousCharacter: Character?
+        var previousNonWhitespaceCharacter: Character?
         if let caretLocation, caretLocation > 0 {
             previousCharacter = previousCharacterFromValueAttribute(element: focusedElement, caretLocation: caretLocation)
             if previousCharacter == nil {
@@ -34,12 +37,18 @@ final class PasteAXInspector: PasteAXInspecting {
                     element: focusedElement
                 )?.first
             }
+
+            previousNonWhitespaceCharacter = computePreviousNonWhitespaceCharacter(
+                element: focusedElement,
+                caretLocation: caretLocation
+            )
         }
 
         return PasteInsertionContext(
             selectionLength: selectionLength,
             caretLocation: caretLocation,
-            previousCharacter: previousCharacter
+            previousCharacter: previousCharacter,
+            previousNonWhitespaceCharacter: previousNonWhitespaceCharacter
         )
     }
 
@@ -116,6 +125,55 @@ final class PasteAXInspector: PasteAXInspecting {
 
         let previousText = nsValue.substring(with: NSRange(location: caretLocation - 1, length: 1))
         return previousText.first
+    }
+
+    private func computePreviousNonWhitespaceCharacter(
+        element: AXUIElement,
+        caretLocation: Int
+    ) -> Character? {
+        guard caretLocation > 0 else { return nil }
+
+        if let value = valueString(for: element) {
+            let nsValue = value as NSString
+            let startingLocation = min(caretLocation, nsValue.length) - 1
+            var candidateLocation = startingLocation
+            while candidateLocation >= 0 {
+                let candidate = nsValue.substring(with: NSRange(location: candidateLocation, length: 1))
+                if let character = candidate.first, !character.isWhitespace {
+                    return character
+                }
+                candidateLocation -= 1
+            }
+            return nil
+        }
+
+        var candidateLocation = caretLocation - 1
+        var scannedCharacterCount = 0
+        while candidateLocation >= 0 && scannedCharacterCount < maxPreviousNonWhitespaceScanLength {
+            let candidate = stringForRange(
+                CFRange(location: candidateLocation, length: 1),
+                element: element
+            )?.first
+            if let candidate, !candidate.isWhitespace {
+                return candidate
+            }
+            candidateLocation -= 1
+            scannedCharacterCount += 1
+        }
+
+        return nil
+    }
+
+    private func valueString(for element: AXUIElement) -> String? {
+        var valueRef: CFTypeRef?
+        let valueResult = AXUIElementCopyAttributeValue(
+            element,
+            kAXValueAttribute as CFString,
+            &valueRef
+        )
+
+        guard valueResult == .success, let value = valueRef as? String else { return nil }
+        return value
     }
 
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
