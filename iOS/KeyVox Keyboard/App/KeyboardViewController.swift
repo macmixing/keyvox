@@ -6,6 +6,25 @@ final class KeyboardViewController: UIInputViewController {
     private let keypressHaptics = KeyboardKeypressHaptics()
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
+    private lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
+        self
+    })
+    private lazy var textInputController = KeyboardTextInputController(
+        documentProxy: KeyboardTextDocumentProxyAdapter(proxyProvider: { [weak self] in
+            self?.textDocumentProxy
+        }),
+        emitKeypress: { [weak self] in
+            self?.keypressHaptics.emitKeypressIfEnabled()
+        }
+    )
+    private lazy var dictationController = KeyboardDictationController(
+        ipcManager: ipcManager,
+        scheduleAction: keyboardMainQueueScheduler,
+        openContainingApp: { [weak self] url in
+            self?.containingAppLauncher.open(url)
+        },
+        startRecordingURL: startRecordingURL
+    )
     private var primaryHeightConstraint: NSLayoutConstraint?
     private var keyboardState: KeyboardState = .idle {
         didSet {
@@ -25,8 +44,6 @@ final class KeyboardViewController: UIInputViewController {
 
     private var rootContainerView: KeyboardRootView!
     private let popupOverlayView = UIView()
-    private var waitingForAppTimeoutWorkItem: DispatchWorkItem?
-    private var gracePeriodWorkItem: DispatchWorkItem?
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
     private var isTrackpadModeActive = false
     private var extensionHostIsActive = true
@@ -50,10 +67,10 @@ final class KeyboardViewController: UIInputViewController {
         configureRootView()
         configureTraitChangeObservation()
         configureIndicatorDriver()
-        configureIPC()
+        configureDictationController()
         configureHostLifecycleObservers()
         syncCapsLockState()
-        syncKeyboardStateFromSharedState()
+        dictationController.syncStateFromSharedState()
         updateUI()
     }
 
@@ -64,7 +81,7 @@ final class KeyboardViewController: UIInputViewController {
         indicatorDriver.start()
         configurePrimaryViewHeight()
         syncCapsLockState()
-        syncKeyboardStateFromSharedState()
+        dictationController.syncStateFromSharedState()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -78,15 +95,13 @@ final class KeyboardViewController: UIInputViewController {
 
     deinit {
         indicatorDriver.stop()
-        waitingForAppTimeoutWorkItem?.cancel()
-        gracePeriodWorkItem?.cancel()
         if let hostWillResignActiveObserver {
             NotificationCenter.default.removeObserver(hostWillResignActiveObserver)
         }
         if let hostDidBecomeActiveObserver {
             NotificationCenter.default.removeObserver(hostDidBecomeActiveObserver)
         }
-        ipcManager.unregisterObservers()
+        dictationController.unregisterObservers()
     }
 
     private func configureDictationBehavior() {
@@ -164,26 +179,14 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func configureIPC() {
-        ipcManager.onRecordingStarted = { [weak self] in
-            self?.cancelWaitingTimeout()
-            self?.keyboardState = .recording
+    private func configureDictationController() {
+        dictationController.onStateChange = { [weak self] state in
+            self?.keyboardState = state
         }
-        ipcManager.onTranscribingStarted = { [weak self] in
-            self?.cancelWaitingTimeout()
-            self?.cancelGracePeriod()
-            self?.keyboardState = .transcribing
+        dictationController.onTranscriptionReady = { [weak self] text in
+            self?.handleTranscriptionReady(text)
         }
-        ipcManager.onTranscriptionReady = { [weak self] text in
-            self?.cancelWaitingTimeout()
-            self?.insertTranscription(text)
-        }
-        ipcManager.onNoSpeech = { [weak self] in
-            self?.cancelWaitingTimeout()
-            self?.cancelGracePeriod()
-            self?.keyboardState = .idle
-        }
-        ipcManager.registerObservers()
+        dictationController.registerObservers()
     }
 
     private func configureHostLifecycleObservers() {
@@ -206,22 +209,6 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func syncKeyboardStateFromSharedState() {
-        cancelWaitingTimeout()
-
-        switch ipcManager.reconcileStaleSharedStateIfNeeded() {
-        case .idle:
-            keyboardState = .idle
-        case .waitingForApp:
-            keyboardState = .waitingForApp
-            scheduleWaitingTimeout()
-        case .recording:
-            keyboardState = .recording
-        case .transcribing:
-            keyboardState = .transcribing
-        }
-    }
-
     private func updateUI() {
         rootContainerView?.apply(
             state: keyboardState,
@@ -235,9 +222,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     private func handleCancelTap() {
-        cancelWaitingTimeout()
-        ipcManager.sendCancelCommand()
-        keyboardState = .idle
+        dictationController.handleCancelTap()
     }
 
     @objc
@@ -247,117 +232,21 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     private func handleMicTap() {
-        syncKeyboardStateFromSharedState()
-
-        switch keyboardState {
-        case .idle:
-            keyboardState = .waitingForApp
-            scheduleWaitingTimeout()
-
-            let isWarm = ipcManager.isSessionWarm()
-
-            if isWarm {
-                ipcManager.sendStartCommand()
-
-                cancelGracePeriod()
-                let workItem = DispatchWorkItem { [weak self] in
-                    guard let self, self.keyboardState == .waitingForApp else { return }
-                    if self.ipcManager.currentSharedRecordingState() != .recording {
-                        self.openContainingAppIfPossible(self.startRecordingURL)
-                    }
-                }
-                gracePeriodWorkItem = workItem
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
-            } else {
-                openContainingAppIfPossible(startRecordingURL)
-            }
-        case .recording:
-            keyboardState = .transcribing
-            ipcManager.sendStopCommand()
-        case .waitingForApp, .transcribing:
-            break
-        }
+        dictationController.handleMicTap()
     }
 
     @discardableResult
     private func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
-        switch kind {
-        case let .character(value):
-            keypressHaptics.emitKeypressIfEnabled()
-            textDocumentProxy.insertText(value)
-            return true
-        case .delete:
-            guard canDeleteBackward else { return false }
-            keypressHaptics.emitKeypressIfEnabled()
-            textDocumentProxy.deleteBackward()
-            return true
-        case .space:
-            keypressHaptics.emitKeypressIfEnabled()
-            if handleDoubleSpacePeriodInsertionIfNeeded() {
-                return true
+        textInputController.handleKeyActivation(
+            kind,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: { [weak self] in
+                self?.resetCapsLockStateIfNeeded()
+            },
+            advanceToNextInputMode: { [weak self] in
+                self?.advanceToNextInputMode()
             }
-            textDocumentProxy.insertText(" ")
-            return true
-        case .returnKey:
-            keypressHaptics.emitKeypressIfEnabled()
-            textDocumentProxy.insertText("\n")
-            return true
-        case .abc:
-            keypressHaptics.emitKeypressIfEnabled()
-            resetCapsLockStateIfNeeded()
-            advanceToNextInputMode()
-            return true
-        case .alternateSymbols, .numberSymbols:
-            keypressHaptics.emitKeypressIfEnabled()
-            symbolPage.toggle()
-            return true
-        }
-    }
-
-    private var canDeleteBackward: Bool {
-        guard let context = textDocumentProxy.documentContextBeforeInput else {
-            return false
-        }
-
-        return !context.isEmpty
-    }
-
-    private func handleDoubleSpacePeriodInsertionIfNeeded() -> Bool {
-        guard let context = textDocumentProxy.documentContextBeforeInput else {
-            return false
-        }
-
-        guard shouldInsertPeriodAfterDoubleSpace(context: context) else {
-            return false
-        }
-
-        textDocumentProxy.deleteBackward()
-        textDocumentProxy.insertText(". ")
-        return true
-    }
-
-    private func shouldInsertPeriodAfterDoubleSpace(context: String) -> Bool {
-        guard context.last == " " else {
-            return false
-        }
-
-        let contentBeforeTrailingSpace = context.dropLast()
-        guard let previousCharacter = contentBeforeTrailingSpace.last else {
-            return false
-        }
-
-        let whitespaceAndNewlines = CharacterSet.whitespacesAndNewlines
-        let punctuation = CharacterSet.punctuationCharacters
-
-        guard let scalar = previousCharacter.unicodeScalars.first else {
-            return false
-        }
-
-        if whitespaceAndNewlines.contains(scalar) || punctuation.contains(scalar) {
-            return false
-        }
-
-        return true
+        )
     }
 
     private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
@@ -370,22 +259,13 @@ final class KeyboardViewController: UIInputViewController {
             cursorTrackpadInteractor.handleMovement(
                 delta: delta,
                 adjustCursor: { [weak self] offset in
-                    self?.adjustCursorPosition(by: offset)
+                    self?.textInputController.adjustCursorPosition(by: offset)
                 }
             )
         case .ended, .cancelled:
             isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
             updateUI()
-        }
-    }
-
-    private func adjustCursorPosition(by offset: Int) {
-        guard offset != 0 else { return }
-
-        let step = offset > 0 ? 1 : -1
-        for _ in 0..<abs(offset) {
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: step)
         }
     }
 
@@ -399,69 +279,7 @@ final class KeyboardViewController: UIInputViewController {
         isCapsLockEnabled = false
     }
 
-    private func scheduleWaitingTimeout() {
-        cancelWaitingTimeout()
-        let workItem = DispatchWorkItem { [weak self] in
-            guard let self, self.keyboardState == .waitingForApp else { return }
-            self.keyboardState = .idle
-        }
-        waitingForAppTimeoutWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: workItem)
-    }
-
-    private func cancelWaitingTimeout() {
-        waitingForAppTimeoutWorkItem?.cancel()
-        waitingForAppTimeoutWorkItem = nil
-        cancelGracePeriod()
-    }
-
-    private func cancelGracePeriod() {
-        gracePeriodWorkItem?.cancel()
-        gracePeriodWorkItem = nil
-    }
-
-    private func insertTranscription(_ text: String) {
-        let cleanedText = text.replacingOccurrences(
-            of: #"[\r\n]+$"#,
-            with: "",
-            options: .regularExpression
-        )
-        guard !cleanedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            keyboardState = .idle
-            return
-        }
-
-        let insertionText = KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
-            to: cleanedText,
-            documentContextBeforeInput: textDocumentProxy.documentContextBeforeInput
-        )
-        textDocumentProxy.insertText(insertionText)
-        keyboardState = .idle
-    }
-
-    private func openContainingAppIfPossible(_ url: URL?) {
-        guard let url else { return }
-
-        let modernSelector = NSSelectorFromString("openURL:options:completionHandler:")
-        let legacySelector = NSSelectorFromString("openURL:")
-
-        var responder: UIResponder? = self
-        while let currentResponder = responder {
-            if currentResponder.responds(to: modernSelector) {
-                _ = currentResponder.perform(modernSelector, with: url, with: nil)
-                return
-            }
-
-            if currentResponder.responds(to: legacySelector) {
-                _ = currentResponder.perform(legacySelector, with: url)
-                return
-            }
-
-            responder = currentResponder.next
-        }
-
-#if DEBUG
-        print("KeyboardViewController: unable to open containing app for URL \(url.absoluteString)")
-#endif
+    private func handleTranscriptionReady(_ text: String) {
+        _ = textInputController.insertTranscription(text)
     }
 }

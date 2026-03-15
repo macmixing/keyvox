@@ -11,6 +11,8 @@
 		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
 		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
 		8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
+		8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
+		8E10F65E2F66862000A0AA65 /* iOSUserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */; };
 		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
 		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
@@ -204,8 +206,30 @@
 		8E10F5912F65C82E00A0AA65 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox iOSTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/KeyboardContainingAppLauncher.swift,
+				App/KeyboardViewController.swift,
+				Core/AudioIndicatorDriver.swift,
+				Core/KeyboardCapsLockStateStore.swift,
 				Core/KeyboardCursorTrackpadSupport.swift,
+				Core/KeyboardDictationController.swift,
+				Core/KeyboardHapticsSettingsStore.swift,
+				Core/KeyboardInsertionSpacingHeuristics.swift,
+				Core/KeyboardIPCManager.swift,
+				Core/KeyboardKeypressHaptics.swift,
+				Core/KeyboardModelAvailability.swift,
 				Core/KeyboardSpecialKeyInteractionSupport.swift,
+				Core/KeyboardState.swift,
+				Core/KeyboardStyle.swift,
+				Core/KeyboardSymbolLayout.swift,
+				Core/KeyboardTextInputController.swift,
+				Views/Components/KeyboardCancelButton.swift,
+				Views/Components/KeyboardCapsLockButton.swift,
+				Views/Components/KeyboardKeyGridView.swift,
+				Views/Components/KeyboardKeyPopupView.swift,
+				Views/Components/KeyboardKeyView.swift,
+				Views/Components/KeyboardLogoBarView.swift,
+				Views/Components/KeyboardRoundedBorderRenderer.swift,
+				Views/KeyboardRootView.swift,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
 		};
@@ -681,6 +705,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */,
+				8E10F65E2F66862000A0AA65 /* iOSUserDefaultsKeys.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
