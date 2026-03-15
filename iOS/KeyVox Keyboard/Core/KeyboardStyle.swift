@@ -35,9 +35,9 @@ enum KeyboardStyle {
         trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
     }
     static let popupBorderColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark
-            ? UIColor.white.withAlphaComponent(0.75)
-            : UIColor.separator.withAlphaComponent(0.65)
+        trait.userInterfaceStyle == .light
+            ? UIColor.separator.withAlphaComponent(0.45)
+            : UIColor.white.withAlphaComponent(0.50)
     }
     static let popupLabelColor = UIColor.black
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
@@ -62,12 +62,12 @@ enum KeyboardStyle {
     static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
     static let keyBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light
-            ? UIColor(red: 0.42, green: 0.42, blue: 0.44, alpha: 0.65)
+            ? UIColor(red: 0.42, green: 0.42, blue: 0.44, alpha: 0.35)
             : UIColor.white.withAlphaComponent(0.15)
     }
     static let keyPressedBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light
-            ? UIColor.separator.withAlphaComponent(0.26)
+            ? UIColor.separator.withAlphaComponent(0.20)
             : UIColor.white.withAlphaComponent(0.04)
     }
     static let keyDisabledBorderColor = UIColor { trait in

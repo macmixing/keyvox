@@ -22,6 +22,7 @@ final class KeyboardLogoBarView: UIControl {
 
     private let glowLayer = CAShapeLayer()
     private let backgroundLayer = CAShapeLayer()
+    private let innerBorderLayer = CAShapeLayer()
     private let ringLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
@@ -93,6 +94,7 @@ final class KeyboardLogoBarView: UIControl {
     private func configureLayers() {
         layer.addSublayer(glowLayer)
         layer.addSublayer(backgroundLayer)
+        layer.addSublayer(innerBorderLayer)
         layer.addSublayer(ringLayer)
 
         let indigo = UIColor.systemIndigo.cgColor
@@ -275,6 +277,21 @@ final class KeyboardLogoBarView: UIControl {
         backgroundLayer.shadowRadius = Metrics.shadowRadius * scale
         backgroundLayer.shadowOffset = .zero
         backgroundLayer.shadowPath = circlePath
+
+        let innerBorderLineWidth = max(0.9 * scale, 1 / (window?.screen.scale ?? UIScreen.main.scale))
+        let innerBorderInset = ((Metrics.ringLineWidth * scale) / 2) + (innerBorderLineWidth / 2)
+        let innerBorderRect = circleRect.insetBy(dx: innerBorderInset, dy: innerBorderInset)
+        let innerBorderPath = UIBezierPath(ovalIn: innerBorderRect).cgPath
+        let lightModeInnerBorderColor = KeyboardStyle.keyBorderColor
+            .resolvedColor(with: traitCollection)
+            .withAlphaComponent(0.42)
+
+        innerBorderLayer.path = innerBorderPath
+        innerBorderLayer.fillColor = UIColor.clear.cgColor
+        innerBorderLayer.strokeColor = traitCollection.userInterfaceStyle == .light
+            ? lightModeInnerBorderColor.cgColor
+            : UIColor.clear.cgColor
+        innerBorderLayer.lineWidth = innerBorderLineWidth
 
         ringLayer.path = circlePath
         ringLayer.fillColor = UIColor.clear.cgColor
