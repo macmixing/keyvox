@@ -135,9 +135,8 @@ final class PasteAXInspector: PasteAXInspecting {
 
         if let value = valueString(for: element) {
             let nsValue = value as NSString
-            guard caretLocation <= nsValue.length else { return nil }
-
-            var candidateLocation = caretLocation - 1
+            let startingLocation = min(caretLocation, nsValue.length) - 1
+            var candidateLocation = startingLocation
             while candidateLocation >= 0 {
                 let candidate = nsValue.substring(with: NSRange(location: candidateLocation, length: 1))
                 if let character = candidate.first, !character.isWhitespace {
