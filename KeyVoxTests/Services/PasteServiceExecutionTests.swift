@@ -8,6 +8,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testAccessibilityVerifiedSuccessRestoresClipboardAndSkipsRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -18,6 +19,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let service = makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -34,12 +36,47 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(recovery.cancelCalls, 1)
         XCTAssertEqual(recovery.startCalls, 0)
         XCTAssertEqual(coordinator.executeCalls, 0)
+        XCTAssertEqual(capitalization.inputs.map(\.text), ["hello"])
+        XCTAssertEqual(clipboard.writes, ["hello"])
+    }
+
+    func testCapitalizationNormalizationFeedsSpacingHeuristics() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
+        let spacing = MockSpacingHeuristics()
+        let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: nil,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = makeService(
+            clipboard: clipboard,
+            recovery: recovery,
+            capitalization: capitalization,
+            spacing: spacing,
+            injector: injector,
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0.5,
+            restoreDelayAfterAccessibilityInjection: 0
+        )
+
+        service.pasteText("Hello")
+
+        try await waitForCondition {
+            clipboard.restoreCalls == 1
+        }
+
+        XCTAssertEqual(capitalization.inputs.map(\.text), ["Hello"])
+        XCTAssertEqual(spacing.inputs.map(\.text), ["hello"])
         XCTAssertEqual(clipboard.writes, ["hello"])
     }
 
     func testMenuFallbackSuccessRestoresClipboardAndSkipsRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -50,6 +87,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let service = makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -70,6 +108,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testMenuFallbackFailureStartsRecoveryWhenNotSuppressed() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
             didMenuFallbackInsert: false,
@@ -79,6 +118,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let service = makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: MockSpacingHeuristics(),
             injector: injector,
             coordinator: coordinator,
@@ -98,6 +138,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testMenuFallbackFailureSuppressedRestoresClipboardWithoutRecovery() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
         let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
             didMenuFallbackInsert: false,
@@ -107,6 +148,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let service = makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: MockSpacingHeuristics(),
             injector: injector,
             coordinator: coordinator,
@@ -126,6 +168,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     func testSuccessfulInsertionMemoryFeedsNextSpacingDecision() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello.")
         let spacing = MockSpacingHeuristics()
         let injector = MockAccessibilityInjector(outcome: .verifiedSuccess)
         let coordinator = MockMenuFallbackCoordinator(result: .init(
@@ -141,6 +184,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let service = makeService(
             clipboard: clipboard,
             recovery: recovery,
+            capitalization: capitalization,
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
@@ -194,6 +238,7 @@ final class PasteServiceExecutionTests: XCTestCase {
     private func makeService(
         clipboard: MockClipboardAdapter,
         recovery: MockFailureRecoveryController,
+        capitalization: MockCapitalizationHeuristics,
         spacing: MockSpacingHeuristics,
         injector: MockAccessibilityInjector,
         coordinator: MockMenuFallbackCoordinator,
@@ -217,6 +262,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             accessibilityInjector: injector,
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
+            capitalizationHeuristics: capitalization,
             spacingHeuristics: spacing
         )
         Self.retainedServices.append(service)

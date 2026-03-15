@@ -71,6 +71,48 @@ final class MockSpacingHeuristics: PasteSpacingHeuristicApplying {
     }
 }
 
+final class MockCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
+    struct Input {
+        let text: String
+        let currentIdentity: PasteAppIdentity?
+        let lastInsertionAppIdentity: PasteAppIdentity?
+        let lastInsertionAt: Date
+        let lastInsertedTrailingCharacter: Character?
+    }
+
+    private let outputText: String
+    private(set) var inputs: [Input] = []
+    private(set) var preserveChecks: [String] = []
+
+    init(outputText: String) {
+        self.outputText = outputText
+    }
+
+    func normalizeLeadingCapitalizationIfNeeded(
+        in text: String,
+        currentIdentity: PasteAppIdentity?,
+        lastInsertionAppIdentity: PasteAppIdentity?,
+        lastInsertionAt: Date,
+        lastInsertedTrailingCharacter: Character?,
+        identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool,
+        shouldPreserveLeadingCapitalization: (String) -> Bool
+    ) -> String {
+        _ = identityMatcher
+        inputs.append(
+            Input(
+                text: text,
+                currentIdentity: currentIdentity,
+                lastInsertionAppIdentity: lastInsertionAppIdentity,
+                lastInsertionAt: lastInsertionAt,
+                lastInsertedTrailingCharacter: lastInsertedTrailingCharacter
+            )
+        )
+        preserveChecks.append(text)
+        _ = shouldPreserveLeadingCapitalization(text)
+        return outputText
+    }
+}
+
 final class MockAccessibilityInjector: PasteAccessibilityInjecting {
     private let outcome: PasteAccessibilityInjectionOutcome
 

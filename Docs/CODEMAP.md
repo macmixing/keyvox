@@ -94,7 +94,7 @@ KeyVox/
 4. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries.
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` transcribes each chunk through `KeyVoxWhisper` and stitches chunks with paragraph or space separators.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including four-digit quantity grouping.
-7. `Core/Services/Paste/PasteService.swift` inserts text via Accessibility first, then menu-bar Paste fallback.
+7. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
 8. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 9. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
 10. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
@@ -423,7 +423,7 @@ KeyVox/
 - `Tools/README.md`
   - Maintainer/contributor guide for all scripts in `Tools/`.
 - `Core/Services/Paste/PasteService.swift`
-  - Orchestrates paste pipeline (AX injection, menu fallback, recovery, clipboard restore).
+  - Orchestrates paste pipeline (dictionary-aware leading-cap normalization, smart spacing, AX injection, menu fallback, recovery, clipboard restore).
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
 - `Core/Services/Paste/Clipboard/PasteFailureRecoveryCoordinator.swift`
   - Manages active paste-failure recovery session lifecycle, timers, and Command-V detection.
@@ -445,6 +445,11 @@ KeyVox/
   - Encapsulates AXObserver lifecycle used for live value-change verification during menu fallback.
 - `Core/Services/Paste/Clipboard/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
+- `Core/Services/Paste/Heuristics/PasteCapitalizationHeuristics.swift`
+  - Sentence-boundary-aware leading-cap normalization for finalized transcription right before insertion.
+  - Preserves dictionary-backed and structurally intentional casing while removing Whisper-style sentence casing mid-sentence.
+- `Core/Services/Paste/Heuristics/PasteDictionaryCasingStore.swift`
+  - Reads the persisted macOS dictionary snapshot to preserve exact leading phrase casing during paste-time normalization.
 - `Core/Services/Paste/Heuristics/PasteSpacingHeuristics.swift`
   - Smart leading separator logic and cross-dictation spacing heuristics.
 - `Core/Services/Paste/Pipeline/PastePolicies.swift`

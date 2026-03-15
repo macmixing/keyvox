@@ -65,7 +65,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 5. List formatting applies numeric list rendering when confidence gates pass.
 6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
-8. Final text is inserted via the paste service.
+8. Final text is inserted via the paste service, where macOS applies final insertion-time heuristics such as dictionary-aware leading-cap normalization and smart spacing based on the focused target context.
 
 ## Update Feed and Release Checks
 
