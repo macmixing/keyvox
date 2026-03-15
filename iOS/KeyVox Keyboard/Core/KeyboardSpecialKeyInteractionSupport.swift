@@ -183,14 +183,17 @@ final class KeyboardDeleteRepeatController {
     private let repeatInterval: TimeInterval = 0.085
 
     private var state: State = .inactive
-    private var action: (() -> Void)?
+    private var action: (() -> Bool)?
     private var delayTimer: Timer?
     private var repeatTimer: Timer?
 
-    func begin(action: @escaping () -> Void) {
+    func begin(action: @escaping () -> Bool) {
         cancel()
         self.action = action
-        action()
+        guard action() else {
+            cancel()
+            return
+        }
         scheduleInitialDelay()
     }
 
@@ -230,7 +233,11 @@ final class KeyboardDeleteRepeatController {
         invalidateTimers()
         state = .repeating
         let timer = Timer(timeInterval: repeatInterval, repeats: true) { [weak self] _ in
-            self?.action?()
+            guard let self else { return }
+            guard self.action?() == true else {
+                self.cancel()
+                return
+            }
         }
         repeatTimer = timer
         RunLoop.main.add(timer, forMode: .common)

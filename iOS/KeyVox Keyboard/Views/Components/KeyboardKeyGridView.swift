@@ -12,7 +12,7 @@ enum KeyboardTopRowAccessorySlot: Int {
 }
 
 final class KeyboardKeyGridView: UIView {
-    var onKeyActivated: ((KeyboardKeyKind) -> Void)?
+    var onKeyActivated: ((KeyboardKeyKind) -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
 
     private let rowsStack = UIStackView()
@@ -158,7 +158,12 @@ final class KeyboardKeyGridView: UIView {
                 _ = spaceTrackpadController.cancel()
                 setActiveKey(hitKey)
                 deleteRepeatController.begin { [weak self] in
-                    self?.onKeyActivated?(.delete)
+                    guard let self else { return true }
+                    let didDelete = self.onKeyActivated?(.delete) ?? false
+                    if !didDelete {
+                        self.deleteRepeatController.cancel()
+                    }
+                    return didDelete
                 }
                 return
             }
@@ -229,7 +234,7 @@ final class KeyboardKeyGridView: UIView {
             if wasTrackpadActive {
                 onSpaceTrackpadEvent?(.ended)
             } else if let selectedKind {
-                onKeyActivated?(selectedKind)
+                _ = onKeyActivated?(selectedKind)
             }
         case .cancelled, .failed:
             if isDeleteTouchConsuming {

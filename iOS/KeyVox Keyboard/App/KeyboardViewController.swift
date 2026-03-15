@@ -127,7 +127,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
-            self?.handleKeyActivation(kind)
+            self?.handleKeyActivation(kind) ?? false
         }
         rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
             self?.handleSpaceTrackpadEvent(event)
@@ -279,24 +279,44 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func handleKeyActivation(_ kind: KeyboardKeyKind) {
-        keypressHaptics.emitKeypressIfEnabled()
-
+    @discardableResult
+    private func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
         switch kind {
         case let .character(value):
+            keypressHaptics.emitKeypressIfEnabled()
             textDocumentProxy.insertText(value)
+            return true
         case .delete:
+            guard canDeleteBackward else { return false }
+            keypressHaptics.emitKeypressIfEnabled()
             textDocumentProxy.deleteBackward()
+            return true
         case .space:
+            keypressHaptics.emitKeypressIfEnabled()
             textDocumentProxy.insertText(" ")
+            return true
         case .returnKey:
+            keypressHaptics.emitKeypressIfEnabled()
             textDocumentProxy.insertText("\n")
+            return true
         case .abc:
+            keypressHaptics.emitKeypressIfEnabled()
             resetCapsLockStateIfNeeded()
             advanceToNextInputMode()
+            return true
         case .alternateSymbols, .numberSymbols:
+            keypressHaptics.emitKeypressIfEnabled()
             symbolPage.toggle()
+            return true
         }
+    }
+
+    private var canDeleteBackward: Bool {
+        guard let context = textDocumentProxy.documentContextBeforeInput else {
+            return false
+        }
+
+        return !context.isEmpty
     }
 
     private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
