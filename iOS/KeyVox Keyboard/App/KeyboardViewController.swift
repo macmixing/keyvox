@@ -6,6 +6,7 @@ final class KeyboardViewController: UIInputViewController {
     private let keypressHaptics = KeyboardKeypressHaptics()
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
+    private let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     private lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
     })
@@ -15,6 +16,9 @@ final class KeyboardViewController: UIInputViewController {
         }),
         emitKeypress: { [weak self] in
             self?.keypressHaptics.emitKeypressIfEnabled()
+        },
+        shouldPreserveLeadingCapitalization: { [weak self] text in
+            self?.dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: text) ?? false
         }
     )
     private lazy var dictationController = KeyboardDictationController(

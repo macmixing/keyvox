@@ -133,6 +133,189 @@ struct KeyboardTextInputControllerTests {
         #expect(documentProxy.insertedTexts == [" world"])
         #expect(haptics.emissionCount == 0)
     }
+
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAtEmptyContext() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAfterPeriod() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hello. "
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAfterQuestionMark() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hello? "
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAfterExclamationMark() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hello! "
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
+    @Test func transcriptionInsertionLowercasesDefaultSentenceCaseMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" hello"])
+    }
+
+    @Test func transcriptionInsertionLowercasesDefaultSentenceCaseWithLeadingWhitespaceMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello there")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" hello there"])
+    }
+
+    @Test func transcriptionInsertionPreservesAllCapsMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("NASA launched")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" NASA launched"])
+    }
+
+    @Test func transcriptionInsertionPreservesMixedCaseMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("OpenAI launched")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" OpenAI launched"])
+    }
+
+    @Test func transcriptionInsertionLowercasesSentenceCaseBeforePunctuationMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello, world")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" hello, world"])
+    }
+
+    @Test func transcriptionInsertionPreservesLeadingNonLetterMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("1Password launched")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" 1Password launched"])
+    }
+
+    @Test func transcriptionInsertionReplacementPathStillNormalizesCapitalization() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        documentProxy.selectedText = "world"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" hello"])
+    }
+
+    @Test func transcriptionInsertionPreservesDictionaryCasedNameMidSentence() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled,
+            shouldPreserveLeadingCapitalization: { text in
+                text.hasPrefix("Dom Esposito")
+            }
+        )
+
+        let inserted = controller.insertTranscription("Dom Esposito.")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" Dom Esposito."])
+    }
 }
 
 private final class KeyboardTextDocumentProxySpy: KeyboardTextDocumentProxying {

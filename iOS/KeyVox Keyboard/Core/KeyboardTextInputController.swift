@@ -39,13 +39,16 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
 final class KeyboardTextInputController {
     private let documentProxy: any KeyboardTextDocumentProxying
     private let emitKeypress: () -> Void
+    private let shouldPreserveLeadingCapitalization: (String) -> Bool
 
     init(
         documentProxy: any KeyboardTextDocumentProxying,
-        emitKeypress: @escaping () -> Void
+        emitKeypress: @escaping () -> Void,
+        shouldPreserveLeadingCapitalization: @escaping (String) -> Bool = { _ in false }
     ) {
         self.documentProxy = documentProxy
         self.emitKeypress = emitKeypress
+        self.shouldPreserveLeadingCapitalization = shouldPreserveLeadingCapitalization
     }
 
     @discardableResult
@@ -99,8 +102,14 @@ final class KeyboardTextInputController {
             return false
         }
 
+        let capitalizationNormalizedText = KeyboardInsertionCapitalizationHeuristics
+            .normalizeLeadingCapitalizationIfNeeded(
+                text: cleanedText,
+                documentContextBeforeInput: documentProxy.documentContextBeforeInput,
+                shouldPreserveLeadingCapitalization: shouldPreserveLeadingCapitalization
+            )
         let insertionText = KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
-            to: cleanedText,
+            to: capitalizationNormalizedText,
             documentContextBeforeInput: documentProxy.documentContextBeforeInput
         )
         documentProxy.insertText(insertionText)
