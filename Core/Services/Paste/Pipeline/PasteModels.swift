@@ -10,6 +10,19 @@ struct PasteInsertionContext {
     let selectionLength: Int?
     let caretLocation: Int?
     let previousCharacter: Character?
+    let previousNonWhitespaceCharacter: Character?
+
+    init(
+        selectionLength: Int?,
+        caretLocation: Int?,
+        previousCharacter: Character?,
+        previousNonWhitespaceCharacter: Character? = nil
+    ) {
+        self.selectionLength = selectionLength
+        self.caretLocation = caretLocation
+        self.previousCharacter = previousCharacter
+        self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
+    }
 }
 
 enum PasteAccessibilityInjectionOutcome {

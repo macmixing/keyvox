@@ -10,11 +10,14 @@ class PasteService {
     private var lastInsertionAppIdentity: PasteAppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
+    private var lastInsertedTrailingNonWhitespaceCharacter: Character?
 
     private let axInspector: PasteAXInspecting
     private let accessibilityInjector: PasteAccessibilityInjecting
     private let menuFallbackExecutor: PasteMenuFallbackExecuting
     private let menuFallbackCoordinator: PasteMenuFallbackCoordinating
+    private let dictionaryCasingStore: PasteDictionaryCasingStore
+    private let capitalizationHeuristics: PasteCapitalizationHeuristicApplying
     private let spacingHeuristics: PasteSpacingHeuristicApplying
     private let clipboardAdapter: PasteClipboardAdapting
     private let failureRecoveryController: PasteFailureRecoveryControlling
@@ -36,6 +39,8 @@ class PasteService {
         accessibilityInjector: PasteAccessibilityInjecting? = nil,
         menuFallbackExecutor: PasteMenuFallbackExecuting? = nil,
         menuFallbackCoordinator: PasteMenuFallbackCoordinating = PasteMenuFallbackCoordinator(),
+        dictionaryCasingStore: PasteDictionaryCasingStore = PasteDictionaryCasingStore(),
+        capitalizationHeuristics: PasteCapitalizationHeuristicApplying? = nil,
         spacingHeuristics: PasteSpacingHeuristicApplying? = nil
     ) {
         self.pasteQueue = pasteQueue
@@ -57,6 +62,13 @@ class PasteService {
                 verificationPollInterval: menuFallbackVerificationPollInterval
             )
         self.menuFallbackCoordinator = menuFallbackCoordinator
+        self.dictionaryCasingStore = dictionaryCasingStore
+        self.capitalizationHeuristics = capitalizationHeuristics
+            ?? PasteCapitalizationHeuristics(
+                axInspector: axInspector,
+                heuristicTTL: heuristicTTL,
+                clockNow: clockNow
+            )
         self.spacingHeuristics = spacingHeuristics
             ?? PasteSpacingHeuristics(
                 axInspector: axInspector,
@@ -70,8 +82,20 @@ class PasteService {
         cancelActiveRecoveryOnMainThread()
 
         let targetAppIdentity = frontmostAppIdentity()
+        let capitalizationNormalizedText = capitalizationHeuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: text,
+            currentIdentity: targetAppIdentity,
+            lastInsertionAppIdentity: lastInsertionAppIdentity,
+            lastInsertionAt: lastInsertionAt,
+            lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
+            lastInsertedTrailingNonWhitespaceCharacter: lastInsertedTrailingNonWhitespaceCharacter,
+            identityMatcher: appIdentityMatches,
+            shouldPreserveLeadingCapitalization: { [dictionaryCasingStore] incomingText in
+                dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: incomingText)
+            }
+        )
         let insertionText = spacingHeuristics.applySmartLeadingSeparatorIfNeeded(
-            to: text,
+            to: capitalizationNormalizedText,
             currentIdentity: targetAppIdentity,
             lastInsertionAppIdentity: lastInsertionAppIdentity,
             lastInsertionAt: lastInsertionAt,
@@ -187,6 +211,7 @@ class PasteService {
         lastInsertionAppIdentity = appIdentity
         lastInsertionAt = clockNow()
         lastInsertedTrailingCharacter = text.last
+        lastInsertedTrailingNonWhitespaceCharacter = text.last { !$0.isWhitespace }
     }
 
     private func cancelActiveRecoveryOnMainThread() {
