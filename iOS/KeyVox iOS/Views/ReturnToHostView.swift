@@ -47,7 +47,7 @@ struct ReturnToHostView: View {
                         Text("do this once per session.")
                     }
                     .font(.appFont(22, variant: .light))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(UIColor.systemGray))
                     .multilineTextAlignment(.center)
                 }
                 .offset(y: -5) // Nudge it up to stay closer to the video
