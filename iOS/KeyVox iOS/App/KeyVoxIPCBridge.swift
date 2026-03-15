@@ -15,6 +15,7 @@ struct KeyVoxIPCLiveMeterSnapshot: Equatable {
 
 enum KeyVoxIPCBridge {
     static let appGroupID = "group.com.cueit.keyvox"
+    static let keyboardBundleIdentifier = "com.cueit.keyvox.ios.keyboard"
     
     // MARK: - Keys
     enum Key {
@@ -22,6 +23,8 @@ enum KeyVoxIPCBridge {
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
+        static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
+        static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
     }
 
     private enum LiveMeterPacket {
@@ -126,6 +129,15 @@ enum KeyVoxIPCBridge {
         d?.set(now, forKey: Key.sessionTimestamp)
         
     }
+
+    static func reportKeyboardOnboardingState(hasFullAccess: Bool) {
+        let now = Date().timeIntervalSince1970
+        defaults?.set(hasFullAccess, forKey: Key.keyboardOnboardingHasFullAccess)
+
+        if hasFullAccess {
+            defaults?.set(now, forKey: Key.keyboardOnboardingAccessTimestamp)
+        }
+    }
     
     // MARK: - Read (Both)
     
@@ -154,6 +166,21 @@ enum KeyVoxIPCBridge {
         let d = defaults
         
         return d?.string(forKey: Key.transcription)
+    }
+
+    static func keyboardOnboardingAccessTimestamp() -> TimeInterval? {
+        guard let d = defaults else { return nil }
+
+        let timestamp = d.double(forKey: Key.keyboardOnboardingAccessTimestamp)
+        guard timestamp.isFinite, timestamp > 0 else {
+            return nil
+        }
+
+        return timestamp
+    }
+
+    static func keyboardOnboardingHasFullAccess() -> Bool {
+        defaults?.object(forKey: Key.keyboardOnboardingHasFullAccess) as? Bool ?? false
     }
 
     static func currentLiveMeterSnapshot() -> KeyVoxIPCLiveMeterSnapshot? {

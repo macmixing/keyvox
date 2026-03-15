@@ -9,6 +9,7 @@ struct KeyVoxApp: App {
     @StateObject private var transcriptionManager: iOSTranscriptionManager
     @StateObject private var modelManager: iOSModelManager
     @StateObject private var settingsStore: iOSAppSettingsStore
+    @StateObject private var onboardingStore: iOSOnboardingStore
     @StateObject private var weeklyWordStatsStore: iOSWeeklyWordStatsStore
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
@@ -18,6 +19,7 @@ struct KeyVoxApp: App {
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
+        _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
@@ -47,6 +49,7 @@ struct KeyVoxApp: App {
                 .environmentObject(transcriptionManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
+                .environmentObject(onboardingStore)
                 .environmentObject(weeklyWordStatsStore)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in

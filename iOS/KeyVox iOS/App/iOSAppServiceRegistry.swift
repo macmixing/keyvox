@@ -8,6 +8,7 @@ final class iOSAppServiceRegistry {
 
     let dictionaryStore: DictionaryStore
     let settingsStore: iOSAppSettingsStore
+    let onboardingStore: iOSOnboardingStore
     let weeklyWordStatsStore: iOSWeeklyWordStatsStore
     let whisperService: WhisperService
     let modelManager: iOSModelManager
@@ -46,7 +47,9 @@ final class iOSAppServiceRegistry {
             fileManager: fileManager,
             baseDirectoryURL: dictionaryBaseDirectory
         )
+        let runtimeFlags = iOSRuntimeFlags()
         let settingsStore = iOSAppSettingsStore(defaults: settingsDefaults)
+        let onboardingStore = iOSOnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = iOSWeeklyWordStatsStore(defaults: settingsDefaults)
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let modelManager = iOSModelManager(
@@ -147,6 +150,7 @@ final class iOSAppServiceRegistry {
 
         self.dictionaryStore = dictionaryStore
         self.settingsStore = settingsStore
+        self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.whisperService = whisperService
         self.modelManager = modelManager

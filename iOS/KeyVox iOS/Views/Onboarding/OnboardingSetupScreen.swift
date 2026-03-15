@@ -1,0 +1,239 @@
+import SwiftUI
+import UIKit
+
+struct OnboardingSetupScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var modelManager: iOSModelManager
+    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
+    @StateObject private var downloadNetworkMonitor: iOSOnboardingDownloadNetworkMonitor
+    @StateObject private var microphonePermissionController: iOSOnboardingMicrophonePermissionController
+    @StateObject private var keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe
+
+    @MainActor
+    init(
+        downloadNetworkMonitor: iOSOnboardingDownloadNetworkMonitor? = nil,
+        microphonePermissionController: iOSOnboardingMicrophonePermissionController? = nil,
+        keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe? = nil
+    ) {
+        let resolvedDownloadNetworkMonitor = downloadNetworkMonitor ?? iOSOnboardingDownloadNetworkMonitor()
+        let resolvedMicrophonePermissionController = microphonePermissionController ?? iOSOnboardingMicrophonePermissionController()
+        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? iOSOnboardingKeyboardAccessProbe()
+
+        _downloadNetworkMonitor = StateObject(wrappedValue: resolvedDownloadNetworkMonitor)
+        _microphonePermissionController = StateObject(wrappedValue: resolvedMicrophonePermissionController)
+        _keyboardAccessProbe = StateObject(wrappedValue: resolvedKeyboardAccessProbe)
+    }
+
+    private var setupState: iOSOnboardingSetupState {
+        iOSOnboardingSetupState(
+            isModelReady: modelManager.installState == .ready,
+            isMicrophonePermissionGranted: microphonePermissionController.status == .granted,
+            isKeyboardAccessConfirmed: keyboardAccessProbe.hasConfirmedKeyboardAccess
+        )
+    }
+
+    var body: some View {
+        OnboardingScreenScaffold(
+            title: "Set up KeyVox",
+            actionTitle: "Start using",
+            isActionEnabled: setupState.canContinue,
+            action: onboardingStore.completeOnboarding
+        ) {
+            VStack(alignment: .leading, spacing: 16) {
+                modelRequirementRow
+                microphoneRequirementRow
+                keyboardRequirementRow
+            }
+        }
+        .task {
+            refreshState()
+        }
+        .onChange(of: scenePhase, initial: false) { _, newPhase in
+            guard newPhase == .active else { return }
+            refreshState()
+        }
+    }
+
+    @ViewBuilder
+    private var modelRequirementRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            OnboardingRequirementRow(
+                title: "Download the model",
+                detail: modelRequirementDetail,
+                isComplete: modelManager.installState == .ready,
+                actionTitle: modelRequirementActionTitle,
+                action: modelRequirementAction
+            )
+
+            if shouldShowCellularModelWarning {
+                Text("You’re on cellular. We recommend Wi-Fi for this download.")
+                    .font(.appFont(12))
+                    .foregroundStyle(.yellow)
+                    .padding(.horizontal, 4)
+            }
+        }
+    }
+
+    private var microphoneRequirementRow: some View {
+        OnboardingRequirementRow(
+            title: "Allow microphone access",
+            detail: microphoneRequirementDetail,
+            isComplete: microphonePermissionController.status == .granted,
+            actionTitle: microphoneRequirementActionTitle,
+            action: microphoneRequirementAction
+        )
+    }
+
+    private var keyboardRequirementRow: some View {
+        OnboardingRequirementRow(
+            title: "Enable keyboard access",
+            detail: keyboardRequirementDetail,
+            isComplete: keyboardAccessProbe.hasConfirmedKeyboardAccess,
+            actionTitle: keyboardRequirementActionTitle,
+            action: keyboardRequirementAction
+        )
+    }
+
+    private var modelRequirementDetail: String {
+        switch modelManager.installState {
+        case .ready:
+            return "Model downloaded and ready."
+        case .downloading, .installing:
+            return "\(modelManager.installState.statusText). You can keep finishing the other setup steps while this runs."
+        case .notInstalled:
+            return "Download size: \(formattedDownloadSize)"
+        case .failed:
+            return "\(modelManager.installState.statusText) Download size: \(formattedDownloadSize)"
+        }
+    }
+
+    private var modelRequirementActionTitle: String? {
+        switch modelManager.installState {
+        case .notInstalled:
+            return downloadNetworkMonitor.isOnCellular ? "Download now" : "Download"
+        case .failed:
+            return "Repair model"
+        case .downloading, .installing, .ready:
+            return nil
+        }
+    }
+
+    private var modelRequirementAction: (() -> Void)? {
+        switch modelManager.installState {
+        case .notInstalled:
+            return {
+                modelManager.downloadModel()
+            }
+        case .failed:
+            return {
+                modelManager.repairModelIfNeeded()
+            }
+        case .downloading, .installing, .ready:
+            return nil
+        }
+    }
+
+    private var microphoneRequirementDetail: String {
+        switch microphonePermissionController.status {
+        case .undetermined:
+            return "KeyVox needs microphone access to capture dictation."
+        case .denied:
+            return "Enable microphone access for KeyVox in iOS Settings."
+        case .granted:
+            return "Microphone access granted."
+        }
+    }
+
+    private var microphoneRequirementActionTitle: String? {
+        switch microphonePermissionController.status {
+        case .undetermined, .denied:
+            return "Allow access"
+        case .granted:
+            return nil
+        }
+    }
+
+    private var microphoneRequirementAction: (() -> Void)? {
+        switch microphonePermissionController.status {
+        case .undetermined, .denied:
+            return {
+                Task {
+                    await microphonePermissionController.requestPermission()
+                }
+            }
+        case .granted:
+            return nil
+        }
+    }
+
+    private var keyboardRequirementDetail: String {
+        if keyboardAccessProbe.hasConfirmedKeyboardAccess {
+            return "Keyboard access confirmed."
+        }
+
+        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
+            return "Full Access is on. Open the KeyVox keyboard once more if setup still needs to finish."
+        }
+
+        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings {
+            return "KeyVox Keyboard is enabled. Open the KeyVox keyboard once with Full Access turned on to finish setup."
+        }
+
+        return "Enable KeyVox Keyboard and Allow Full Access in Settings, then open the KeyVox keyboard once."
+    }
+
+    private var keyboardRequirementActionTitle: String? {
+        if keyboardAccessProbe.hasConfirmedKeyboardAccess {
+            return nil
+        }
+
+        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
+            return "Check again"
+        }
+
+        return "Open KeyVox Settings"
+    }
+
+    private var keyboardRequirementAction: (() -> Void)? {
+        guard !keyboardAccessProbe.hasConfirmedKeyboardAccess else {
+            return nil
+        }
+
+        return {
+            if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
+                keyboardAccessProbe.refresh()
+            } else {
+                openKeyboardSettings()
+            }
+        }
+    }
+
+    private func refreshState() {
+        modelManager.refreshStatus()
+        microphonePermissionController.refreshStatus()
+        keyboardAccessProbe.refresh()
+    }
+
+    private func openKeyboardSettings() {
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier,
+              let url = URL(string: "App-prefs:\(bundleIdentifier)") else {
+            return
+        }
+
+        UIApplication.shared.open(url)
+    }
+
+    private var shouldShowCellularModelWarning: Bool {
+        downloadNetworkMonitor.isOnCellular && modelManager.installState == .notInstalled
+    }
+
+    private var formattedDownloadSize: String {
+        Self.megabytesString(for: modelManager.requiredDownloadBytes)
+    }
+
+    private static func megabytesString(for byteCount: Int64) -> String {
+        let megabytes = Double(byteCount) / 1_000_000
+        return String(format: "%.1f MB", megabytes)
+    }
+
+}

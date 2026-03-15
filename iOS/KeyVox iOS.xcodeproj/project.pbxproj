@@ -88,6 +88,17 @@
 		A15000012FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
 		A15000022FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */; };
 		A15000032FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
+		B30000012FD5000100AA0001 /* iOSRuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000012FD5000100AA0001 /* iOSRuntimeFlags.swift */; };
+		B30000022FD5000100AA0001 /* iOSOnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000022FD5000100AA0001 /* iOSOnboardingStore.swift */; };
+		B30000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift */; };
+		B30000042FD5000100AA0001 /* iOSOnboardingKeyboardAccessProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000042FD5000100AA0001 /* iOSOnboardingKeyboardAccessProbe.swift */; };
+		B30000052FD5000100AA0001 /* iOSOnboardingSetupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000052FD5000100AA0001 /* iOSOnboardingSetupState.swift */; };
+		B30000062FD5000100AA0001 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000012FD5000100AA0001 /* OnboardingFlowView.swift */; };
+		B30000072FD5000100AA0001 /* OnboardingScreenScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000022FD5000100AA0001 /* OnboardingScreenScaffold.swift */; };
+		B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
+		B30000092FD5000100AA0001 /* OnboardingRequirementRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */; };
+		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
+		B300000B2FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift */; };
 		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
 		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
 		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
@@ -210,6 +221,17 @@
 		A14000132FD3000100AA0001 /* iOSTranscriptionManager+InterruptedCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSTranscriptionManager+InterruptedCaptureRecovery.swift"; sourceTree = "<group>"; };
 		A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxSessionLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxSessionLiveActivityCoordinator.swift; sourceTree = "<group>"; };
+		B10000012FD5000100AA0001 /* iOSRuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSRuntimeFlags.swift; sourceTree = "<group>"; };
+		B10000022FD5000100AA0001 /* iOSOnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingStore.swift; sourceTree = "<group>"; };
+		B10000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingMicrophonePermissionController.swift; sourceTree = "<group>"; };
+		B10000042FD5000100AA0001 /* iOSOnboardingKeyboardAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingKeyboardAccessProbe.swift; sourceTree = "<group>"; };
+		B10000052FD5000100AA0001 /* iOSOnboardingSetupState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingSetupState.swift; sourceTree = "<group>"; };
+		B10000062FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingDownloadNetworkMonitor.swift; sourceTree = "<group>"; };
+		B20000012FD5000100AA0001 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		B20000022FD5000100AA0001 /* OnboardingScreenScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreenScaffold.swift; sourceTree = "<group>"; };
+		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
+		B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRequirementRow.swift; sourceTree = "<group>"; };
+		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* iOSAppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* iOSAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
@@ -416,6 +438,7 @@
 				A12000112FD1000100AA0001 /* iOSWeeklyWordStatsStore.swift */,
 				A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */,
 				A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */,
+				B10000102FD5000100AA0001 /* Onboarding */,
 				8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */,
 				8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */,
 				8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */,
@@ -439,6 +462,7 @@
 			children = (
 				AA3000012F70000100000001 /* Components */,
 				AA3000022F70000100000001 /* Dictionary */,
+				B20000102FD5000100AA0001 /* Onboarding */,
 				AA20000C2F70000100000001 /* ContainingAppTab.swift */,
 				8E25464E2F6013ED007E720D /* DictionaryTabView.swift */,
 				8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */,
@@ -506,6 +530,31 @@
 				A12000122FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift */,
 			);
 			path = iCloud;
+			sourceTree = "<group>";
+		};
+		B10000102FD5000100AA0001 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				B10000062FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift */,
+				B10000042FD5000100AA0001 /* iOSOnboardingKeyboardAccessProbe.swift */,
+				B10000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift */,
+				B10000052FD5000100AA0001 /* iOSOnboardingSetupState.swift */,
+				B10000022FD5000100AA0001 /* iOSOnboardingStore.swift */,
+				B10000012FD5000100AA0001 /* iOSRuntimeFlags.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		B20000102FD5000100AA0001 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				B20000012FD5000100AA0001 /* OnboardingFlowView.swift */,
+				B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */,
+				B20000022FD5000100AA0001 /* OnboardingScreenScaffold.swift */,
+				B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */,
+				B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		AA3000012F70000100000001 /* Components */ = {
@@ -791,6 +840,12 @@
 				A12000022FD1000100AA0001 /* iOSWeeklyWordStatsCloudSync.swift in Sources */,
 				A15000012FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */,
 				A15000022FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */,
+				B30000012FD5000100AA0001 /* iOSRuntimeFlags.swift in Sources */,
+				B30000022FD5000100AA0001 /* iOSOnboardingStore.swift in Sources */,
+				B30000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift in Sources */,
+				B30000042FD5000100AA0001 /* iOSOnboardingKeyboardAccessProbe.swift in Sources */,
+				B30000052FD5000100AA0001 /* iOSOnboardingSetupState.swift in Sources */,
+				B300000B2FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift in Sources */,
 				8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */,
 				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
 				8E9E38E42F5C104200EAFA72 /* iOSSharedPaths.swift in Sources */,
@@ -811,6 +866,11 @@
 				8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */,
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
+				B30000062FD5000100AA0001 /* OnboardingFlowView.swift in Sources */,
+				B30000072FD5000100AA0001 /* OnboardingScreenScaffold.swift in Sources */,
+				B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,
+				B30000092FD5000100AA0001 /* OnboardingRequirementRow.swift in Sources */,
+				B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */,
 				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
 				8EECE64F2F63ED9D00BECF17 /* iOSAppToolbarContent.swift in Sources */,
 				8EECE6512F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift in Sources */,
