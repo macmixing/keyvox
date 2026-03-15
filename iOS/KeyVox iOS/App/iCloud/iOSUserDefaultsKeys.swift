@@ -7,6 +7,7 @@ nonisolated enum iOSUserDefaultsKeys {
     static let capsLockEnabled = "KeyVox.CapsLockEnabled"
     static let keyboardHapticsEnabled = "KeyVox.KeyboardHapticsEnabled"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
+    static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
 
     enum App {

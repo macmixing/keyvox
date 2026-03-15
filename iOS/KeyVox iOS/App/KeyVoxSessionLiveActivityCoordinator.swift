@@ -79,25 +79,30 @@ final class KeyVoxSessionLiveActivityCoordinator {
 
     private var isSessionActive: Bool
     private var sessionDisablePending: Bool
+    private var liveActivitiesEnabled: Bool
     private var weeklyWordCount: Int
 
     init(
         initialIsSessionActive: Bool,
         initialSessionDisablePending: Bool,
+        initialLiveActivitiesEnabled: Bool,
         initialWeeklyWordCount: Int,
         isSessionActivePublisher: AnyPublisher<Bool, Never>,
         sessionDisablePendingPublisher: AnyPublisher<Bool, Never>,
+        liveActivitiesEnabledPublisher: AnyPublisher<Bool, Never>,
         weeklyWordCountPublisher: AnyPublisher<Int, Never>,
         liveActivityController: (any KeyVoxSessionLiveActivityControlling)? = nil
     ) {
         self.isSessionActive = initialIsSessionActive
         self.sessionDisablePending = initialSessionDisablePending
+        self.liveActivitiesEnabled = initialLiveActivitiesEnabled
         self.weeklyWordCount = initialWeeklyWordCount
         self.liveActivityController = liveActivityController ?? KeyVoxSessionLiveActivityController()
 
         bind(
             isSessionActivePublisher: isSessionActivePublisher,
             sessionDisablePendingPublisher: sessionDisablePendingPublisher,
+            liveActivitiesEnabledPublisher: liveActivitiesEnabledPublisher,
             weeklyWordCountPublisher: weeklyWordCountPublisher
         )
 
@@ -109,10 +114,12 @@ final class KeyVoxSessionLiveActivityCoordinator {
     func applyState(
         isSessionActive: Bool,
         sessionDisablePending: Bool,
+        liveActivitiesEnabled: Bool,
         weeklyWordCount: Int
     ) async {
         self.isSessionActive = isSessionActive
         self.sessionDisablePending = sessionDisablePending
+        self.liveActivitiesEnabled = liveActivitiesEnabled
         self.weeklyWordCount = weeklyWordCount
         await reconcileActivity()
     }
@@ -120,6 +127,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
     private func bind(
         isSessionActivePublisher: AnyPublisher<Bool, Never>,
         sessionDisablePendingPublisher: AnyPublisher<Bool, Never>,
+        liveActivitiesEnabledPublisher: AnyPublisher<Bool, Never>,
         weeklyWordCountPublisher: AnyPublisher<Int, Never>
     ) {
         isSessionActivePublisher
@@ -131,6 +139,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
                     await self.applyState(
                         isSessionActive: isSessionActive,
                         sessionDisablePending: self.sessionDisablePending,
+                        liveActivitiesEnabled: self.liveActivitiesEnabled,
                         weeklyWordCount: self.weeklyWordCount
                     )
                 }
@@ -146,6 +155,23 @@ final class KeyVoxSessionLiveActivityCoordinator {
                     await self.applyState(
                         isSessionActive: self.isSessionActive,
                         sessionDisablePending: sessionDisablePending,
+                        liveActivitiesEnabled: self.liveActivitiesEnabled,
+                        weeklyWordCount: self.weeklyWordCount
+                    )
+                }
+            }
+            .store(in: &cancellables)
+
+        liveActivitiesEnabledPublisher
+            .removeDuplicates()
+            .sink { [weak self] liveActivitiesEnabled in
+                guard let self else { return }
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    await self.applyState(
+                        isSessionActive: self.isSessionActive,
+                        sessionDisablePending: self.sessionDisablePending,
+                        liveActivitiesEnabled: liveActivitiesEnabled,
                         weeklyWordCount: self.weeklyWordCount
                     )
                 }
@@ -161,6 +187,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
                     await self.applyState(
                         isSessionActive: self.isSessionActive,
                         sessionDisablePending: self.sessionDisablePending,
+                        liveActivitiesEnabled: self.liveActivitiesEnabled,
                         weeklyWordCount: weeklyWordCount
                     )
                 }
@@ -179,6 +206,6 @@ final class KeyVoxSessionLiveActivityCoordinator {
     }
 
     private var shouldShowActivity: Bool {
-        isSessionActive && !sessionDisablePending
+        liveActivitiesEnabled && isSessionActive && !sessionDisablePending
     }
 }

@@ -112,9 +112,11 @@ final class iOSAppServiceRegistry {
         let sessionLiveActivityCoordinator = KeyVoxSessionLiveActivityCoordinator(
             initialIsSessionActive: transcriptionManager.isSessionActive,
             initialSessionDisablePending: transcriptionManager.sessionDisablePending,
+            initialLiveActivitiesEnabled: settingsStore.liveActivitiesEnabled,
             initialWeeklyWordCount: weeklyWordStatsStore.combinedWordCount,
             isSessionActivePublisher: transcriptionManager.$isSessionActive.eraseToAnyPublisher(),
             sessionDisablePendingPublisher: transcriptionManager.$sessionDisablePending.eraseToAnyPublisher(),
+            liveActivitiesEnabledPublisher: settingsStore.$liveActivitiesEnabled.eraseToAnyPublisher(),
             weeklyWordCountPublisher: weeklyWordStatsStore.$snapshot
                 .map(\.combinedWordCount)
                 .eraseToAnyPublisher()

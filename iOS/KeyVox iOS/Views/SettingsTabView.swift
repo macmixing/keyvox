@@ -37,6 +37,16 @@ struct SettingsTabView: View {
                 Text("Decide when the session turns off")
                     .font(.appFont(12))
                     .foregroundStyle(.secondary)
+
+                Toggle(isOn: $settingsStore.liveActivitiesEnabled) {
+                    Text("Live Activities")
+                        .font(.appFont(16, variant: .light))
+                        .foregroundStyle(.white)
+                }
+
+                Text("Allow KeyVox to show live activity updates")
+                    .font(.appFont(12))
+                    .foregroundStyle(.secondary)
             }
         }
     }

@@ -11,6 +11,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await coordinator.applyState(
             isSessionActive: true,
             sessionDisablePending: false,
+            liveActivitiesEnabled: true,
             weeklyWordCount: 128
         )
 
@@ -25,11 +26,13 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await coordinator.applyState(
             isSessionActive: true,
             sessionDisablePending: false,
+            liveActivitiesEnabled: true,
             weeklyWordCount: 128
         )
         await coordinator.applyState(
             isSessionActive: true,
             sessionDisablePending: true,
+            liveActivitiesEnabled: true,
             weeklyWordCount: 128
         )
 
@@ -44,11 +47,13 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await coordinator.applyState(
             isSessionActive: true,
             sessionDisablePending: false,
+            liveActivitiesEnabled: true,
             weeklyWordCount: 128
         )
         await coordinator.applyState(
             isSessionActive: true,
             sessionDisablePending: false,
+            liveActivitiesEnabled: true,
             weeklyWordCount: 512
         )
 
@@ -60,6 +65,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         _ = makeCoordinator(
             initialIsSessionActive: false,
             initialSessionDisablePending: false,
+            initialLiveActivitiesEnabled: true,
             initialWeeklyWordCount: 42,
             controller: controller
         )
@@ -69,18 +75,57 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         #expect(controller.endCallCount == 1)
     }
 
+    @Test func doesNotStartActivityWhenLiveActivitiesAreDisabled() async {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+
+        await coordinator.applyState(
+            isSessionActive: true,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: false,
+            weeklyWordCount: 128
+        )
+
+        #expect(controller.startedOrUpdatedWordCounts.isEmpty)
+        #expect(controller.endCallCount == 0)
+    }
+
+    @Test func endsExistingActivityWhenLiveActivitiesAreDisabled() async {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+
+        await coordinator.applyState(
+            isSessionActive: true,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: true,
+            weeklyWordCount: 128
+        )
+        await coordinator.applyState(
+            isSessionActive: true,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: false,
+            weeklyWordCount: 128
+        )
+
+        #expect(controller.startedOrUpdatedWordCounts == [128])
+        #expect(controller.endCallCount == 1)
+    }
+
     private func makeCoordinator(
         initialIsSessionActive: Bool = false,
         initialSessionDisablePending: Bool = false,
+        initialLiveActivitiesEnabled: Bool = true,
         initialWeeklyWordCount: Int = 0,
         controller: MockKeyVoxSessionLiveActivityController
     ) -> KeyVoxSessionLiveActivityCoordinator {
         KeyVoxSessionLiveActivityCoordinator(
             initialIsSessionActive: initialIsSessionActive,
             initialSessionDisablePending: initialSessionDisablePending,
+            initialLiveActivitiesEnabled: initialLiveActivitiesEnabled,
             initialWeeklyWordCount: initialWeeklyWordCount,
             isSessionActivePublisher: Empty().eraseToAnyPublisher(),
             sessionDisablePendingPublisher: Empty().eraseToAnyPublisher(),
+            liveActivitiesEnabledPublisher: Empty().eraseToAnyPublisher(),
             weeklyWordCountPublisher: Empty().eraseToAnyPublisher(),
             liveActivityController: controller
         )

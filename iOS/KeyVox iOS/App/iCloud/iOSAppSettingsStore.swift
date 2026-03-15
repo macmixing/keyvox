@@ -90,6 +90,12 @@ final class iOSAppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var liveActivitiesEnabled: Bool {
+        didSet {
+            defaults.set(liveActivitiesEnabled, forKey: iOSUserDefaultsKeys.liveActivitiesEnabled)
+        }
+    }
+
     @Published var sessionDisableTiming: iOSSessionDisableTiming {
         didSet {
             defaults.set(sessionDisableTiming.rawValue, forKey: iOSUserDefaultsKeys.sessionDisableTiming)
@@ -113,6 +119,7 @@ final class iOSAppSettingsStore: ObservableObject {
         capsLockEnabled = defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: iOSUserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         preferBuiltInMicrophone = defaults.object(forKey: iOSUserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
+        liveActivitiesEnabled = defaults.object(forKey: iOSUserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: iOSUserDefaultsKeys.sessionDisableTiming),
            let timing = iOSSessionDisableTiming(rawValue: raw) {
             sessionDisableTiming = timing
