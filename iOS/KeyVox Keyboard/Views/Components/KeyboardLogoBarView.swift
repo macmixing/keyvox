@@ -256,9 +256,9 @@ final class KeyboardLogoBarView: UIControl {
         glowLayer.fillColor = UIColor.clear.cgColor
         glowLayer.strokeColor = UIColor.systemYellow.withAlphaComponent(0.45).cgColor
         glowLayer.lineWidth = Metrics.ringLineWidth * scale
-        glowLayer.shadowColor = UIColor.systemYellow.withAlphaComponent(0.35).cgColor
+        glowLayer.shadowColor = UIColor.systemYellow.withAlphaComponent(0.25).cgColor
         glowLayer.shadowOpacity = 1
-        glowLayer.shadowRadius = 6 * scale
+        glowLayer.shadowRadius = 5 * scale
         glowLayer.shadowOffset = .zero
         glowLayer.shadowPath = circlePath
 
