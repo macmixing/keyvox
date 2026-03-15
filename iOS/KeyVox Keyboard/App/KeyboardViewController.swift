@@ -293,6 +293,9 @@ final class KeyboardViewController: UIInputViewController {
             return true
         case .space:
             keypressHaptics.emitKeypressIfEnabled()
+            if handleDoubleSpacePeriodInsertionIfNeeded() {
+                return true
+            }
             textDocumentProxy.insertText(" ")
             return true
         case .returnKey:
@@ -317,6 +320,44 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         return !context.isEmpty
+    }
+
+    private func handleDoubleSpacePeriodInsertionIfNeeded() -> Bool {
+        guard let context = textDocumentProxy.documentContextBeforeInput else {
+            return false
+        }
+
+        guard shouldInsertPeriodAfterDoubleSpace(context: context) else {
+            return false
+        }
+
+        textDocumentProxy.deleteBackward()
+        textDocumentProxy.insertText(". ")
+        return true
+    }
+
+    private func shouldInsertPeriodAfterDoubleSpace(context: String) -> Bool {
+        guard context.last == " " else {
+            return false
+        }
+
+        let contentBeforeTrailingSpace = context.dropLast()
+        guard let previousCharacter = contentBeforeTrailingSpace.last else {
+            return false
+        }
+
+        let whitespaceAndNewlines = CharacterSet.whitespacesAndNewlines
+        let punctuation = CharacterSet.punctuationCharacters
+
+        guard let scalar = previousCharacter.unicodeScalars.first else {
+            return false
+        }
+
+        if whitespaceAndNewlines.contains(scalar) || punctuation.contains(scalar) {
+            return false
+        }
+
+        return true
     }
 
     private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
