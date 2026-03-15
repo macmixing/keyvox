@@ -58,7 +58,7 @@ private struct KeyVoxSessionLockScreenView: View {
 
 private struct KeyVoxDynamicIslandBrandView: View {
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 6) {
             KeyVoxDynamicIslandLogo()
 
             Text("KeyVox")
@@ -74,7 +74,7 @@ private struct KeyVoxDynamicIslandLogo: View {
             .resizable()
             .renderingMode(.template)
             .scaledToFit()
-            .frame(width: 27, height: 27)
+            .frame(width: 25, height: 25)
             .foregroundStyle(.primary)
     }
 }
@@ -89,13 +89,19 @@ private struct KeyVoxSessionStopButton: View {
                 .frame(width: 29, height: 29)
                 .foregroundStyle(.primary)
                 .padding(10)
-                .background(
-                    Circle()
-                        .fill(Color(uiColor: .white).opacity(0.2))
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KeyVoxLiveActivityButtonStyle())
         .accessibilityLabel("End dictation session")
+    }
+}
+
+private struct KeyVoxLiveActivityButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Circle()
+                    .fill(Color(uiColor: .white).opacity(configuration.isPressed ? 0.10 : 0.2))
+            )
     }
 }
 
