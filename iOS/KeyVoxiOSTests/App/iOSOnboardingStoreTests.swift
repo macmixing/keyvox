@@ -14,6 +14,7 @@ struct iOSOnboardingStoreTests {
         #expect(store.shouldShowOnboarding)
         #expect(store.hasCompletedOnboarding == false)
         #expect(store.isForceOnboardingLaunch == false)
+        #expect(store.hasPendingKeyboardTour == false)
     }
 
     @Test func completedOnboardingHidesFlowWhenForceFlagIsOff() {
@@ -56,6 +57,40 @@ struct iOSOnboardingStoreTests {
         #expect(store.hasCompletedOnboarding)
         #expect(store.isForceOnboardingLaunch == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == true)
+    }
+
+    @Test func recordingPendingKeyboardTourPersistsFlagAcrossLaunches() {
+        let defaults = makeDefaults()
+        let store = iOSOnboardingStore(
+            defaults: defaults,
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
+        )
+
+        store.recordPendingKeyboardTour()
+
+        let restoredStore = iOSOnboardingStore(
+            defaults: defaults,
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
+        )
+
+        #expect(store.hasPendingKeyboardTour)
+        #expect(restoredStore.hasPendingKeyboardTour)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == true)
+    }
+
+    @Test func clearingPendingKeyboardTourResetsPersistedFlag() {
+        let defaults = makeDefaults()
+        defaults.set(true, forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour)
+
+        let store = iOSOnboardingStore(
+            defaults: defaults,
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
+        )
+
+        store.clearPendingKeyboardTour()
+
+        #expect(store.hasPendingKeyboardTour == false)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
     }
 
     private func makeDefaults() -> UserDefaults {

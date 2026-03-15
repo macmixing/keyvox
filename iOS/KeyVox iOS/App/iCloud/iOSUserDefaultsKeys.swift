@@ -14,6 +14,7 @@ nonisolated enum iOSUserDefaultsKeys {
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let hasCompletedOnboarding = "KeyVox.App.HasCompletedOnboarding"
+        static let hasPendingKeyboardTour = "KeyVox.App.HasPendingKeyboardTour"
     }
 
     enum iCloud {

@@ -88,7 +88,7 @@ struct OnboardingSetupScreen: View {
         OnboardingRequirementRow(
             title: "Enable keyboard access",
             detail: keyboardRequirementDetail,
-            isComplete: keyboardAccessProbe.hasConfirmedKeyboardAccess,
+            isComplete: isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess,
             actionTitle: keyboardRequirementActionTitle,
             action: keyboardRequirementAction
         )
@@ -167,6 +167,10 @@ struct OnboardingSetupScreen: View {
     }
 
     private var keyboardRequirementDetail: String {
+        guard isKeyboardRequirementAvailable else {
+            return "Finish downloading the model before setting up keyboard access."
+        }
+
         if keyboardAccessProbe.hasConfirmedKeyboardAccess {
             return "Keyboard access confirmed."
         }
@@ -183,6 +187,10 @@ struct OnboardingSetupScreen: View {
     }
 
     private var keyboardRequirementActionTitle: String? {
+        guard isKeyboardRequirementAvailable else {
+            return nil
+        }
+
         if keyboardAccessProbe.hasConfirmedKeyboardAccess {
             return nil
         }
@@ -195,6 +203,10 @@ struct OnboardingSetupScreen: View {
     }
 
     private var keyboardRequirementAction: (() -> Void)? {
+        guard isKeyboardRequirementAvailable else {
+            return nil
+        }
+
         guard !keyboardAccessProbe.hasConfirmedKeyboardAccess else {
             return nil
         }
@@ -220,6 +232,7 @@ struct OnboardingSetupScreen: View {
             return
         }
 
+        onboardingStore.recordPendingKeyboardTour()
         UIApplication.shared.open(url)
     }
 
@@ -229,6 +242,10 @@ struct OnboardingSetupScreen: View {
 
     private var formattedDownloadSize: String {
         Self.megabytesString(for: modelManager.requiredDownloadBytes)
+    }
+
+    private var isKeyboardRequirementAvailable: Bool {
+        modelManager.installState == .ready
     }
 
     private static func megabytesString(for byteCount: Int64) -> String {
