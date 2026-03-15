@@ -13,8 +13,10 @@ struct iOSOnboardingStoreTests {
 
         #expect(store.shouldShowOnboarding)
         #expect(store.hasCompletedOnboarding == false)
+        #expect(store.hasCompletedWelcomeScreen == false)
         #expect(store.isForceOnboardingLaunch == false)
         #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.shouldShowWelcomeScreen)
     }
 
     @Test func completedOnboardingHidesFlowWhenForceFlagIsOff() {
@@ -28,35 +30,42 @@ struct iOSOnboardingStoreTests {
 
         #expect(store.shouldShowOnboarding == false)
         #expect(store.hasCompletedOnboarding)
+        #expect(store.shouldShowWelcomeScreen)
     }
 
-    @Test func forceFlagShowsOnboardingOnColdLaunchEvenWhenCompletionWasPersisted() {
-        let defaults = makeDefaults()
-        defaults.set(true, forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding)
-
-        let store = iOSOnboardingStore(
-            defaults: defaults,
-            runtimeFlags: iOSRuntimeFlags(environment: [iOSRuntimeFlags.forceOnboardingEnvironmentKey: "1"])
-        )
-
-        #expect(store.shouldShowOnboarding)
-        #expect(store.hasCompletedOnboarding)
-        #expect(store.isForceOnboardingLaunch)
-    }
-
-    @Test func completingOnboardingPersistsStateAndClearsLaunchOverride() {
+    @Test func completingOnboardingPersistsCompletedState() {
         let defaults = makeDefaults()
         let store = iOSOnboardingStore(
             defaults: defaults,
-            runtimeFlags: iOSRuntimeFlags(environment: [iOSRuntimeFlags.forceOnboardingEnvironmentKey: "1"])
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
         )
 
         store.completeOnboarding()
 
         #expect(store.shouldShowOnboarding == false)
         #expect(store.hasCompletedOnboarding)
-        #expect(store.isForceOnboardingLaunch == false)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == true)
+    }
+
+    @Test func completingWelcomeScreenPersistsAndSkipsWelcomeWhenForceFlagIsOff() {
+        let defaults = makeDefaults()
+        let store = iOSOnboardingStore(
+            defaults: defaults,
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
+        )
+
+        store.completeWelcomeScreen()
+
+        let restoredStore = iOSOnboardingStore(
+            defaults: defaults,
+            runtimeFlags: iOSRuntimeFlags(environment: [:])
+        )
+
+        #expect(store.hasCompletedWelcomeScreen)
+        #expect(store.shouldShowWelcomeScreen == false)
+        #expect(restoredStore.hasCompletedWelcomeScreen)
+        #expect(restoredStore.shouldShowWelcomeScreen == false)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool == true)
     }
 
     @Test func recordingPendingKeyboardTourPersistsFlagAcrossLaunches() {

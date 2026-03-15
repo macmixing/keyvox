@@ -1,20 +1,14 @@
 import SwiftUI
 
 struct OnboardingFlowView: View {
-    private enum Screen {
-        case welcome
-        case setup
-    }
-
-    @State private var screen: Screen = .welcome
+    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
 
     var body: some View {
-        switch screen {
-        case .welcome:
+        if onboardingStore.shouldShowWelcomeScreen {
             OnboardingWelcomeScreen {
-                screen = .setup
+                onboardingStore.completeWelcomeScreen()
             }
-        case .setup:
+        } else {
             OnboardingSetupScreen()
         }
     }
