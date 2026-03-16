@@ -16,18 +16,14 @@ struct OnboardingCustomizeAppScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
-                Button(action: {
-                    onboardingStore.completeOnboarding()
-                }) {
-                    Text("Finish")
-                        .font(.appFont(18))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.roundedRectangle(radius: 16))
-                .tint(.yellow)
-                .foregroundStyle(.black)
+                iOSAppActionButton(
+                    title: "Finish",
+                    style: .primary,
+                    fillsWidth: true,
+                    fontSize: 25,
+                    action: onboardingStore.completeOnboarding
+                )
+                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, iOSAppTheme.screenPadding)
             .padding(.top, 8)

@@ -41,11 +41,14 @@ struct OnboardingKeyboardTourScreen: View {
                 HStack {
                     Spacer()
 
-                    Button("Next") {
-                        onboardingStore.completeKeyboardTour()
-                    }
-                    .tint(iOSAppTheme.accent)
-                    .disabled(!tourState.canFinish)
+                    iOSAppActionButton(
+                        title: "Next",
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 16,
+                        isEnabled: tourState.canFinish,
+                        action: onboardingStore.completeKeyboardTour
+                    )
                 }
                 .padding(.horizontal, iOSAppTheme.screenPadding)
                 .padding(.top, 8)

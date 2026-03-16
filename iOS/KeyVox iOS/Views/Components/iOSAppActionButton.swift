@@ -7,10 +7,16 @@ struct iOSAppActionButton: View {
         case destructive
     }
 
+    enum Size {
+        case regular
+        case compact
+    }
+
     let title: String
     let style: Style
     var width: CGFloat? = nil
     var fillsWidth: Bool = false
+    var size: Size = .regular
     var fontSize: CGFloat = 14
     var isEnabled: Bool = true
     let action: () -> Void
@@ -20,14 +26,14 @@ struct iOSAppActionButton: View {
             Text(title)
                 .font(.appFont(fontSize))
                 .foregroundColor(foregroundColor)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 11)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.vertical, verticalPadding)
                 .frame(
                     minWidth: fillsWidth ? nil : width,
                     idealWidth: fillsWidth ? nil : width,
                     maxWidth: fillsWidth ? .infinity : width,
-                    minHeight: 54,
-                    maxHeight: 64
+                    minHeight: minHeight,
+                    maxHeight: maxHeight
                 )
                 .background(backgroundColor)
                 .overlay {
@@ -41,6 +47,42 @@ struct iOSAppActionButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+    }
+
+    private var horizontalPadding: CGFloat {
+        switch size {
+        case .regular:
+            return 28
+        case .compact:
+            return 18
+        }
+    }
+
+    private var verticalPadding: CGFloat {
+        switch size {
+        case .regular:
+            return 11
+        case .compact:
+            return 8
+        }
+    }
+
+    private var minHeight: CGFloat {
+        switch size {
+        case .regular:
+            return 54
+        case .compact:
+            return 36
+        }
+    }
+
+    private var maxHeight: CGFloat {
+        switch size {
+        case .regular:
+            return 64
+        case .compact:
+            return 44
+        }
     }
 
     private var foregroundColor: Color {
