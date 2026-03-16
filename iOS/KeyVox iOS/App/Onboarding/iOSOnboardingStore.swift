@@ -23,9 +23,10 @@ final class iOSOnboardingStore: ObservableObject {
     }
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
     @Published private(set) var isPendingKeyboardTourRouteArmed: Bool
+    @Published private(set) var isIgnoringPersistedPendingKeyboardTourThisLaunch: Bool
 
     var shouldShowOnboarding: Bool {
-        !hasCompletedOnboarding || isForceOnboardingLaunch
+        !hasCompletedOnboarding || isForceOnboardingLaunch || hasPendingKeyboardTour
     }
 
     var shouldShowWelcomeScreen: Bool {
@@ -33,7 +34,10 @@ final class iOSOnboardingStore: ObservableObject {
     }
 
     var shouldShowKeyboardTourScreen: Bool {
-        hasPendingKeyboardTour && isPendingKeyboardTourRouteArmed && shouldShowOnboarding
+        hasPendingKeyboardTour
+            && isPendingKeyboardTourRouteArmed
+            && !isIgnoringPersistedPendingKeyboardTourThisLaunch
+            && shouldShowOnboarding
     }
 
     private let defaults: UserDefaults
@@ -47,6 +51,7 @@ final class iOSOnboardingStore: ObservableObject {
         hasPendingKeyboardTour = persistedPendingKeyboardTour
         hasPassedWelcomeScreenThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
+        isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
     }
 
     func completeOnboarding() {
@@ -57,11 +62,13 @@ final class iOSOnboardingStore: ObservableObject {
     func recordPendingKeyboardTour() {
         hasPendingKeyboardTour = true
         isPendingKeyboardTourRouteArmed = false
+        isIgnoringPersistedPendingKeyboardTourThisLaunch = false
     }
 
     func clearPendingKeyboardTour() {
         hasPendingKeyboardTour = false
         isPendingKeyboardTourRouteArmed = false
+        isIgnoringPersistedPendingKeyboardTourThisLaunch = false
     }
 
     func completeWelcomeScreen() {
@@ -75,7 +82,7 @@ final class iOSOnboardingStore: ObservableObject {
     }
 
     func armPendingKeyboardTourRouteIfNeeded() {
-        guard hasPendingKeyboardTour else { return }
+        guard hasPendingKeyboardTour, !isIgnoringPersistedPendingKeyboardTourThisLaunch else { return }
         isPendingKeyboardTourRouteArmed = true
     }
 }

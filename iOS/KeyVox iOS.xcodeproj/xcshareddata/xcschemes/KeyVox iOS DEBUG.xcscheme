@@ -71,7 +71,7 @@
          <EnvironmentVariable
             key = "KEYVOX_FORCE_ONBOARDING"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
