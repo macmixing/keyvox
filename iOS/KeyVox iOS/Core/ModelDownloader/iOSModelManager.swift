@@ -166,11 +166,7 @@ final class iOSModelManager: ObservableObject {
         appIsActive = true
         Task { [weak self] in
             guard let self else { return }
-            if let backgroundDownloadCoordinator {
-                _ = await backgroundDownloadCoordinator.synchronizeWithSystemTasks()
-            }
-            self.refreshStatus()
-            await self.resumeForegroundFinalizationIfNeeded()
+            await self.recoverInterruptedDownloadIfNeeded()
         }
     }
 
@@ -204,5 +200,29 @@ final class iOSModelManager: ObservableObject {
     private func handleBackgroundDownloadStateChanged() async {
         refreshStatus()
         await resumeForegroundFinalizationIfNeeded()
+    }
+
+    private func recoverInterruptedDownloadIfNeeded() async {
+        guard let backgroundDownloadCoordinator else {
+            refreshStatus()
+            return
+        }
+
+        let synchronizedJob = await backgroundDownloadCoordinator.synchronizeWithSystemTasks()
+        refreshStatus()
+
+        guard currentDownloadTask == nil,
+              let synchronizedJob,
+              synchronizedJob.finalizationState != .failed else {
+            await resumeForegroundFinalizationIfNeeded()
+            return
+        }
+
+        if synchronizedJob.isReadyForFinalization {
+            await resumeForegroundFinalizationIfNeeded()
+            return
+        }
+
+        await startOrResumeDownloadJob()
     }
 }

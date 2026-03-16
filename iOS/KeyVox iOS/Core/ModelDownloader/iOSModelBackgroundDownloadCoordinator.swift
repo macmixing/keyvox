@@ -71,6 +71,7 @@ final class iOSModelBackgroundDownloadCoordinator: NSObject {
             }
 
             if let task = existingTasksByKind[kind] {
+                task.resume()
                 artifact.phase = .downloading
                 artifact.taskIdentifier = task.taskIdentifier
                 artifact.completedBytes = max(task.countOfBytesReceived, 0)
@@ -127,7 +128,10 @@ final class iOSModelBackgroundDownloadCoordinator: NSObject {
                 artifact.errorMessage = nil
                 artifact.updatedAt = .now
             } else if artifact.phase == .downloading && !taskDescriptions.contains(kind.taskDescription) {
+                artifact.phase = .pending
                 artifact.taskIdentifier = nil
+                artifact.errorMessage = nil
+                artifact.updatedAt = .now
             }
 
             job.setArtifactState(artifact, for: kind)
