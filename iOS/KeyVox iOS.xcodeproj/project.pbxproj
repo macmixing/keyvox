@@ -19,7 +19,9 @@
 		8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464E2F6013ED007E720D /* DictionaryTabView.swift */; };
 		8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546512F6013ED007E720D /* SettingsTabView.swift */; };
 		8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8E32B5EC2F6790ED00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
+		8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
+		8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
+		8E32B73A2F67A7CF00F8DA9F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B904A2F5C6C8B00EE4F08 /* iOSUserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */; };
@@ -71,7 +73,6 @@
 		8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8EECEA762F65638A00BECF17 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9B7000112FB1000100BB0001 /* iOSAppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001012FB1000100BB0001 /* iOSAppSettingsStore.swift */; };
@@ -274,13 +275,17 @@
 				Core/KeyboardStyle.swift,
 				Core/KeyboardSymbolLayout.swift,
 				Core/KeyboardTextInputController.swift,
+				Core/KeyboardToolbarMode.swift,
+				Core/KeyboardTypography.swift,
 				Views/Components/KeyboardCancelButton.swift,
 				Views/Components/KeyboardCapsLockButton.swift,
+				Views/Components/KeyboardHitTargetButton.swift,
 				Views/Components/KeyboardKeyGridView.swift,
 				Views/Components/KeyboardKeyPopupView.swift,
 				Views/Components/KeyboardKeyView.swift,
 				Views/Components/KeyboardLogoBarView.swift,
 				Views/Components/KeyboardRoundedBorderRenderer.swift,
+				Views/FullAccessView.swift,
 				Views/KeyboardRootView.swift,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
@@ -744,9 +749,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
+				8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */,
 				8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */,
-				8E32B5EC2F6790ED00F8DA9F /* Kanit-Medium.ttf in Resources */,
 				8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */,
+				8E32B73A2F67A7CF00F8DA9F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -754,8 +760,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */,
 				8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
-				8EECEA762F65638A00BECF17 /* Kanit-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

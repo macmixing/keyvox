@@ -48,6 +48,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private var rootContainerView: KeyboardRootView!
     private let popupOverlayView = UIView()
+    private var fullAccessView: FullAccessView!
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
     private var isTrackpadModeActive = false
     private var extensionHostIsActive = true
@@ -88,6 +89,7 @@ final class KeyboardViewController: UIInputViewController {
         configurePrimaryViewHeight()
         syncCapsLockState()
         dictationController.syncStateFromSharedState()
+        updateUI()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -128,8 +130,17 @@ final class KeyboardViewController: UIInputViewController {
             popupOverlayView.isUserInteractionEnabled = false
             popupOverlayView.clipsToBounds = false
 
+            let fullAccessView = FullAccessView()
+            fullAccessView.translatesAutoresizingMaskIntoConstraints = false
+            fullAccessView.isHidden = true
+            fullAccessView.onBack = { [weak self] in
+                self?.setFullAccessInstructionsPresented(false)
+            }
+            self.fullAccessView = fullAccessView
+
             view.addSubview(rootView)
             view.addSubview(popupOverlayView)
+            view.addSubview(fullAccessView)
 
             NSLayoutConstraint.activate([
                 rootView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -141,12 +152,18 @@ final class KeyboardViewController: UIInputViewController {
                 popupOverlayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 popupOverlayView.topAnchor.constraint(equalTo: view.topAnchor),
                 popupOverlayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+                fullAccessView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                fullAccessView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                fullAccessView.topAnchor.constraint(equalTo: view.topAnchor),
+                fullAccessView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
         }
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
+        rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind) ?? false
         }
@@ -212,18 +229,39 @@ final class KeyboardViewController: UIInputViewController {
             queue: .main
         ) { [weak self] _ in
             self?.extensionHostIsActive = true
+            guard let self else { return }
+            KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
+            self.updateUI()
         }
     }
 
     private func updateUI() {
+        let toolbarMode = currentToolbarMode()
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
-            showsLogoBar: KeyboardModelAvailability.isInstalled(),
+            toolbarMode: toolbarMode,
             isTrackpadModeActive: isTrackpadModeActive
         )
+        if toolbarMode != .fullAccessWarning {
+            setFullAccessInstructionsPresented(false)
+        }
         indicatorDriver.phase = keyboardState.indicatorPhase
+    }
+
+    private func currentToolbarMode() -> KeyboardToolbarMode {
+        guard KeyboardModelAvailability.isInstalled() else {
+            return .hidden
+        }
+
+        return hasFullAccess ? .branded : .fullAccessWarning
+    }
+
+    private func setFullAccessInstructionsPresented(_ isPresented: Bool) {
+        fullAccessView?.isHidden = !isPresented
+        rootContainerView?.isHidden = isPresented
+        popupOverlayView.isHidden = isPresented
     }
 
     @objc
@@ -239,6 +277,11 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     private func handleMicTap() {
         dictationController.handleMicTap()
+    }
+
+    @objc
+    private func handleFullAccessInfoTap() {
+        setFullAccessInstructionsPresented(true)
     }
 
     @discardableResult

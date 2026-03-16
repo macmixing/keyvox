@@ -3,18 +3,23 @@ import UIKit
 final class KeyboardRootView: UIView {
     private enum Metrics {
         static let topRowSideControlVerticalOffset: CGFloat = 10
+        static let infoButtonSize: CGFloat = 44
+        static let warningLabelHorizontalInset: CGFloat = 12
     }
 
     let cancelButton = KeyboardCancelButton()
     let capsLockButton = KeyboardCapsLockButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
+    let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
 
     private let leadingControlsStack = UIView()
     private let trailingControlsStack = UIView()
     private let centerContainerView = UIView()
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
+    private let fullAccessWarningContainer = UIView()
+    private let fullAccessWarningLabel = UILabel()
     private var cancelButtonWidthConstraint: NSLayoutConstraint?
     private var capsLockButtonWidthConstraint: NSLayoutConstraint?
     private var cancelButtonVisibilityTarget = false
@@ -61,11 +66,13 @@ final class KeyboardRootView: UIView {
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
-        showsLogoBar: Bool,
+        toolbarMode: KeyboardToolbarMode,
         isTrackpadModeActive: Bool
     ) {
-        let shouldShowToolbarControls = showsLogoBar
-        let shouldShowCancel = shouldShowToolbarControls && state.showsCancelButton
+        let showsToolbar = toolbarMode != .hidden
+        let showsBrandedToolbar = toolbarMode == .branded
+        let showsFullAccessWarning = toolbarMode == .fullAccessWarning
+        let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
@@ -97,14 +104,17 @@ final class KeyboardRootView: UIView {
         cancelButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isLocked = isCapsLockEnabled
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
-        capsLockButton.isEnabled = !isTrackpadModeActive
-        capsLockButton.isHidden = !shouldShowToolbarControls
-        leadingControlsStack.isHidden = !shouldShowToolbarControls
-        trailingControlsStack.isHidden = !shouldShowToolbarControls
-        centerContainerView.isHidden = !showsLogoBar
-        logoBarView.isHidden = !showsLogoBar
+        capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
+        capsLockButton.isHidden = !showsBrandedToolbar
+        leadingControlsStack.isHidden = !showsToolbar
+        trailingControlsStack.isHidden = !showsToolbar
+        centerContainerView.isHidden = !showsToolbar
+        logoBarView.isHidden = !showsBrandedToolbar
+        fullAccessWarningContainer.isHidden = !showsFullAccessWarning
+        fullAccessInfoButton.isHidden = !showsFullAccessWarning
+        fullAccessInfoButton.isEnabled = showsFullAccessWarning
         logoBarView.applyIndicatorPhase(state.indicatorPhase)
-        logoBarView.isEnabled = showsLogoBar && state.isIndicatorEnabled
+        logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
@@ -125,6 +135,32 @@ final class KeyboardRootView: UIView {
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
+        fullAccessWarningContainer.translatesAutoresizingMaskIntoConstraints = false
+        fullAccessWarningContainer.isHidden = true
+
+        fullAccessWarningLabel.translatesAutoresizingMaskIntoConstraints = false
+        fullAccessWarningLabel.font = UIFont.systemFont(ofSize: 15, weight: .heavy)
+        fullAccessWarningLabel.textColor = .systemRed
+        fullAccessWarningLabel.textAlignment = .center
+        fullAccessWarningLabel.numberOfLines = 1
+        fullAccessWarningLabel.text = "Allow Full Access for dictation"
+        fullAccessWarningLabel.adjustsFontSizeToFitWidth = true
+        fullAccessWarningLabel.minimumScaleFactor = 0.8
+        fullAccessWarningLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        fullAccessInfoButton.translatesAutoresizingMaskIntoConstraints = false
+        fullAccessInfoButton.backgroundColor = UIColor.white.withAlphaComponent(0.001)
+        fullAccessInfoButton.tintColor = .label
+        fullAccessInfoButton.setImage(
+            UIImage(
+                systemName: "info.circle",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+            ),
+            for: .normal
+        )
+        fullAccessInfoButton.accessibilityLabel = "Full Access instructions"
+        fullAccessInfoButton.isHidden = true
+
         centerContainerView.translatesAutoresizingMaskIntoConstraints = false
 
         leadingControlsStack.translatesAutoresizingMaskIntoConstraints = false
@@ -144,6 +180,8 @@ final class KeyboardRootView: UIView {
         mainStack.clipsToBounds = false
 
         addSubview(mainStack)
+
+        addSubview(fullAccessWarningContainer)
         
         // Keep special toolbar controls outside the keyboard grid so the logo can stay
         // vertically centered while those controls align visually with the top row.
@@ -153,6 +191,9 @@ final class KeyboardRootView: UIView {
         trailingControlsStack.addSubview(capsLockButton)
         
         centerContainerView.addSubview(logoBarView)
+
+        fullAccessWarningContainer.addSubview(fullAccessWarningLabel)
+        fullAccessWarningContainer.addSubview(fullAccessInfoButton)
 
         contentStack.addArrangedSubview(leadingControlsStack)
         contentStack.addArrangedSubview(centerContainerView)
@@ -193,8 +234,31 @@ final class KeyboardRootView: UIView {
                 constant: Metrics.topRowSideControlVerticalOffset
             ),
 
+            fullAccessWarningContainer.leadingAnchor.constraint(equalTo: contentStack.leadingAnchor),
+            fullAccessWarningContainer.trailingAnchor.constraint(equalTo: contentStack.trailingAnchor),
+            fullAccessWarningContainer.topAnchor.constraint(equalTo: contentStack.topAnchor),
+            fullAccessWarningContainer.bottomAnchor.constraint(equalTo: contentStack.bottomAnchor),
+
+            fullAccessInfoButton.widthAnchor.constraint(equalToConstant: Metrics.infoButtonSize),
+            fullAccessInfoButton.heightAnchor.constraint(equalTo: fullAccessInfoButton.widthAnchor),
+            fullAccessInfoButton.trailingAnchor.constraint(equalTo: fullAccessWarningContainer.trailingAnchor),
+            fullAccessInfoButton.centerYAnchor.constraint(
+                equalTo: fullAccessWarningContainer.centerYAnchor,
+                constant: Metrics.topRowSideControlVerticalOffset
+            ),
+
             logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
             logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
+            fullAccessWarningLabel.leadingAnchor.constraint(
+                greaterThanOrEqualTo: fullAccessWarningContainer.leadingAnchor,
+                constant: Metrics.warningLabelHorizontalInset
+            ),
+            fullAccessWarningLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: fullAccessInfoButton.leadingAnchor,
+                constant: -Metrics.warningLabelHorizontalInset
+            ),
+            fullAccessWarningLabel.centerXAnchor.constraint(equalTo: fullAccessWarningContainer.centerXAnchor),
+            fullAccessWarningLabel.centerYAnchor.constraint(equalTo: fullAccessWarningContainer.centerYAnchor),
             centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
 

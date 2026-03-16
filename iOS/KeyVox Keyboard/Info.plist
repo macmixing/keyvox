@@ -20,5 +20,10 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).KeyboardViewController</string>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Kanit-Light.ttf</string>
+		<string>Kanit-Medium.ttf</string>
+	</array>
 </dict>
 </plist>
