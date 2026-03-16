@@ -81,8 +81,14 @@ final class iOSOnboardingStore: ObservableObject {
         completeOnboarding()
     }
 
-    func armPendingKeyboardTourRouteIfNeeded() {
+    func armPendingKeyboardTourRouteIfNeeded(isKeyboardEnabledInSystemSettings: Bool) {
         guard hasPendingKeyboardTour, !isIgnoringPersistedPendingKeyboardTourThisLaunch else { return }
+
+        guard isKeyboardEnabledInSystemSettings else {
+            clearPendingKeyboardTour()
+            return
+        }
+
         isPendingKeyboardTourRouteArmed = true
     }
 }

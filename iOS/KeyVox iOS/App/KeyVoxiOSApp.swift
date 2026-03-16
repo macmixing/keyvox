@@ -57,7 +57,9 @@ struct KeyVoxApp: App {
                     case .active:
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
-                        onboardingStore.armPendingKeyboardTourRouteIfNeeded()
+                        onboardingStore.armPendingKeyboardTourRouteIfNeeded(
+                            isKeyboardEnabledInSystemSettings: iOSOnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
+                        )
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()

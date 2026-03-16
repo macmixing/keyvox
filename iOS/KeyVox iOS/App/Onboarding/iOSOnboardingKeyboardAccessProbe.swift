@@ -59,4 +59,8 @@ final class iOSOnboardingKeyboardAccessProbe: ObservableObject {
         let enabledKeyboards = UserDefaults.standard.dictionaryRepresentation()["AppleKeyboards"] as? [String] ?? []
         return enabledKeyboards.contains { $0 == KeyVoxIPCBridge.keyboardBundleIdentifier || $0.hasPrefix(keyboardIdentifierPrefix) }
     }
+
+    static func isKeyboardEnabledInSystemSettings() -> Bool {
+        defaultEnabledProvider()
+    }
 }
