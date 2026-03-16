@@ -53,7 +53,7 @@ struct iOSTranscriptionManagerTests {
         #expect(harness.manager.sessionExpirationDate == nil)
     }
 
-    @Test func disableSessionWhileRecordingFinishesThenDisables() async throws {
+    @Test func disableSessionWhileRecordingCancelsImmediatelyAndDisables() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -63,18 +63,17 @@ struct iOSTranscriptionManagerTests {
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performDisableSessionCommand()
 
-        #expect(harness.manager.sessionDisablePending == true)
-        #expect(harness.manager.isSessionActive == true)
-
-        await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.state == .idle)
         #expect(harness.manager.isSessionActive == false)
+        #expect(harness.manager.sessionDisablePending == false)
+        #expect(harness.recorder.cancelCurrentUtteranceCallCount == 1)
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
     }
 
-    @Test func disableSessionWhileTranscribingFinishesThenDisables() async throws {
+    @Test func disableSessionWhileTranscribingCancelsImmediatelyAndDisables() async throws {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
@@ -88,13 +87,15 @@ struct iOSTranscriptionManagerTests {
 
         #expect(harness.manager.state == .transcribing)
         await harness.manager.performDisableSessionCommand()
-        #expect(harness.manager.sessionDisablePending == true)
 
         harness.transcriptionService.resumeSuccess()
         await task.value
         await settleAsyncManagerWork()
 
+        #expect(harness.manager.state == .idle)
         #expect(harness.manager.isSessionActive == false)
+        #expect(harness.manager.sessionDisablePending == false)
+        #expect(harness.transcriptionService.cancelCallCount == 1)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
     }
 

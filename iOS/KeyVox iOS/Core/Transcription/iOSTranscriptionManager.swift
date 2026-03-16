@@ -173,6 +173,7 @@ final class iOSTranscriptionManager: ObservableObject {
 
         sessionDisablePending = true
         cancelIdleTimeout()
+        await performCancelCurrentUtterance()
     }
 
     func performStartRecordingCommand(isFromURL: Bool = false) async {
