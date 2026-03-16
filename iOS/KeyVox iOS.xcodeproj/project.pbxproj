@@ -102,6 +102,7 @@
 		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
 		AA1000042F70000100000001 /* iOSAppIconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000042F70000100000001 /* iOSAppIconTile.swift */; };
 		AA1000052F70000100000001 /* iOSAppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* iOSAppScrollScreen.swift */; };
+		AA1000112F70000100000001 /* iOSAppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000112F70000100000001 /* iOSAppActionButton.swift */; };
 		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
 		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
 		AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */; };
@@ -240,6 +241,7 @@
 		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
 		AA2000042F70000100000001 /* iOSAppIconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppIconTile.swift; sourceTree = "<group>"; };
 		AA2000052F70000100000001 /* iOSAppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppScrollScreen.swift; sourceTree = "<group>"; };
+		AA2000112F70000100000001 /* iOSAppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppActionButton.swift; sourceTree = "<group>"; };
 		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
 		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
 		AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryHeaderCardView.swift; sourceTree = "<group>"; };
@@ -567,6 +569,7 @@
 				8EECE64E2F63ED9D00BECF17 /* iOSAppToolbarContent.swift */,
 				8EECE6502F63ED9F00BECF17 /* iOSLastTranscriptionCardView.swift */,
 				8EECE64C2F63ED9B00BECF17 /* iOSLogoBarView.swift */,
+				AA2000112F70000100000001 /* iOSAppActionButton.swift */,
 				AA2000012F70000100000001 /* iOSAppTypography.swift */,
 				AA2000022F70000100000001 /* iOSAppTheme.swift */,
 				AA2000032F70000100000001 /* iOSAppCard.swift */,
@@ -849,6 +852,7 @@
 				AA1000032F70000100000001 /* iOSAppCard.swift in Sources */,
 				AA1000042F70000100000001 /* iOSAppIconTile.swift in Sources */,
 				AA1000052F70000100000001 /* iOSAppScrollScreen.swift in Sources */,
+				AA1000112F70000100000001 /* iOSAppActionButton.swift in Sources */,
 				AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */,
 				8EECEA662F655FB900BECF17 /* iOSModelBackgroundDownloadJobStore.swift in Sources */,
 				8EECEA672F655FB900BECF17 /* iOSModelBackgroundDownloadCoordinator.swift in Sources */,
