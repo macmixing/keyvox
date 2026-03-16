@@ -1,6 +1,7 @@
 import Testing
 @testable import KeyVox_iOS
 
+@MainActor
 struct iOSOnboardingKeyboardTourStateTests {
     @Test func sceneProgressesFromAToBToC() {
         #expect(iOSOnboardingKeyboardTourState().scene == .a)

@@ -103,7 +103,7 @@ struct iOSOnboardingStoreTests {
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
     }
 
-    @Test func completingKeyboardTourClearsPendingFlagAndCompletesOnboarding() {
+    @Test func completingKeyboardTourClearsPendingFlagAndRoutesToCustomizeStep() {
         let defaults = makeDefaults()
         let store = iOSOnboardingStore(
             defaults: defaults,
@@ -114,10 +114,12 @@ struct iOSOnboardingStoreTests {
         store.completeKeyboardTour()
 
         #expect(store.hasPendingKeyboardTour == false)
-        #expect(store.hasCompletedOnboarding)
-        #expect(store.shouldShowOnboarding == false)
+        #expect(store.hasCompletedKeyboardTourThisLaunch)
+        #expect(store.hasCompletedOnboarding == false)
+        #expect(store.shouldShowOnboarding)
+        #expect(store.shouldShowCustomizeAppScreen)
         #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
-        #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == true)
+        #expect(defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == nil)
     }
 
     private func makeDefaults() -> UserDefaults {
