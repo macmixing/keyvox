@@ -25,14 +25,18 @@ struct OnboardingSetupScreen: View {
     }
 
     var body: some View {
-        OnboardingScreenScaffold(
-            title: "Set up KeyVox"
-        ) {
+        iOSAppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
+                Text("Set up KeyVox")
+                    .font(.appFont(34))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.leading)
+
                 modelRequirementRow
                 microphoneRequirementRow
                 keyboardRequirementRow
             }
+            .padding(.bottom, 24)
         }
         .task {
             refreshState()
