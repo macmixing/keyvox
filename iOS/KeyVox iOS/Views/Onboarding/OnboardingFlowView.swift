@@ -8,6 +8,8 @@ struct OnboardingFlowView: View {
             OnboardingWelcomeScreen {
                 onboardingStore.completeWelcomeScreen()
             }
+        } else if onboardingStore.shouldShowCustomizeAppScreen {
+            OnboardingCustomizeAppScreen()
         } else if onboardingStore.shouldShowKeyboardTourScreen {
             OnboardingKeyboardTourScreen()
         } else {

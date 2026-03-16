@@ -27,6 +27,7 @@
 		8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */; };
 		8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */; };
 		8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */; };
+		8E32B87D2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B904A2F5C6C8B00EE4F08 /* iOSUserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* iOSUserDefaultsKeys.swift */; };
@@ -176,6 +177,7 @@
 		8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneBView.swift; sourceTree = "<group>"; };
 		8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneCView.swift; sourceTree = "<group>"; };
 		8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourScreen.swift; sourceTree = "<group>"; };
+		8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCustomizeAppScreen.swift; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
 		8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
@@ -609,6 +611,7 @@
 			isa = PBXGroup;
 			children = (
 				8E32B8732F67D33C00F8DA9F /* Tour */,
+				8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */,
 				B20000012FD5000100AA0001 /* OnboardingFlowView.swift */,
 				B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */,
 				B20000022FD5000100AA0001 /* OnboardingScreenScaffold.swift */,
@@ -843,6 +846,7 @@
 				8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */,
 				8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */,
 				8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */,
+				8E32B87D2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift in Sources */,
 				AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */,
 				AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */,
 				AA1000032F70000100000001 /* iOSAppCard.swift in Sources */,

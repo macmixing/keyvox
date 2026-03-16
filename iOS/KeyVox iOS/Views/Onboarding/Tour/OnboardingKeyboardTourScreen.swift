@@ -41,7 +41,7 @@ struct OnboardingKeyboardTourScreen: View {
                 HStack {
                     Spacer()
 
-                    Button("Finish") {
+                    Button("Next") {
                         onboardingStore.completeKeyboardTour()
                     }
                     .tint(iOSAppTheme.accent)
