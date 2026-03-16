@@ -102,7 +102,6 @@
 		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
 		AA1000042F70000100000001 /* iOSAppIconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000042F70000100000001 /* iOSAppIconTile.swift */; };
 		AA1000052F70000100000001 /* iOSAppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* iOSAppScrollScreen.swift */; };
-		AA1000112F70000100000001 /* iOSAppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000112F70000100000001 /* iOSAppActionButton.swift */; };
 		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
 		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
 		AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */; };
@@ -112,6 +111,7 @@
 		AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000E2F70000100000001 /* AutoFocusTextField.swift */; };
 		AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000F2F70000100000001 /* KeyboardObserver.swift */; };
 		AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */; };
+		AA1000112F70000100000001 /* iOSAppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000112F70000100000001 /* iOSAppActionButton.swift */; };
 		B30000012FD5000100AA0001 /* iOSRuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000012FD5000100AA0001 /* iOSRuntimeFlags.swift */; };
 		B30000022FD5000100AA0001 /* iOSOnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000022FD5000100AA0001 /* iOSOnboardingStore.swift */; };
 		B30000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift */; };
@@ -241,7 +241,6 @@
 		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
 		AA2000042F70000100000001 /* iOSAppIconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppIconTile.swift; sourceTree = "<group>"; };
 		AA2000052F70000100000001 /* iOSAppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppScrollScreen.swift; sourceTree = "<group>"; };
-		AA2000112F70000100000001 /* iOSAppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppActionButton.swift; sourceTree = "<group>"; };
 		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
 		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
 		AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryHeaderCardView.swift; sourceTree = "<group>"; };
@@ -251,6 +250,7 @@
 		AA20000E2F70000100000001 /* AutoFocusTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoFocusTextField.swift; sourceTree = "<group>"; };
 		AA20000F2F70000100000001 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
 		AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
+		AA2000112F70000100000001 /* iOSAppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppActionButton.swift; sourceTree = "<group>"; };
 		B10000012FD5000100AA0001 /* iOSRuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSRuntimeFlags.swift; sourceTree = "<group>"; };
 		B10000022FD5000100AA0001 /* iOSOnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingStore.swift; sourceTree = "<group>"; };
 		B10000032FD5000100AA0001 /* iOSOnboardingMicrophonePermissionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSOnboardingMicrophonePermissionController.swift; sourceTree = "<group>"; };
@@ -1038,7 +1038,7 @@
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1071,7 +1071,7 @@
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

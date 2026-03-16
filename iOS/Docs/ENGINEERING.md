@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-15**
+**Last Updated: 2026-03-16**
 
 ## Design Philosophy
 
@@ -89,7 +89,9 @@ It builds and wires:
 - `iOSOnboardingStore`
 - `iOSWeeklyWordStatsStore`
 - `WhisperService`
+- `TranscriptionPostProcessor`
 - `iOSModelManager`
+- `KeyVoxKeyboardBridge`
 - `iOSTranscriptionManager`
 - `iOSiCloudSyncCoordinator`
 - `iOSWeeklyWordStatsCloudSync`
@@ -110,7 +112,7 @@ Current root behavior:
 
 - show onboarding when `iOSOnboardingStore.shouldShowOnboarding` is `true`
 - otherwise show the main tab shell
-- `ReturnToHostView` may appear only when onboarding is not being shown
+- `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 
 ### Onboarding Store Rules
 
@@ -120,8 +122,11 @@ Current root behavior:
 - `hasCompletedWelcomeScreen`
 - `isForceOnboardingLaunch`
 - `hasPendingKeyboardTour`
-- launch-scoped welcome progression
-- launch-scoped keyboard-tour arming/ignore behavior
+- `hasCompletedKeyboardTourThisLaunch`
+- `hasPassedWelcomeScreenThisLaunch`
+- `isPendingKeyboardTourRouteArmed`
+- `isIgnoringPersistedPendingKeyboardTourThisLaunch`
+- `hasCompletedOnboardingThisLaunch`
 
 ### Force-Onboarding Runtime Flag
 
@@ -149,6 +154,7 @@ Current onboarding order is:
 1. welcome
 2. setup
 3. keyboard tour
+4. customize app
 
 ### Setup Screen Contract
 
@@ -175,20 +181,33 @@ Rules:
 - it is full-screen, not a sheet
 - it autofocuses a text field so the KeyVox keyboard can appear immediately
 - it uses `KeyboardObserver` height to pin the input above the keyboard
-- `Finish` is disabled until a **fresh** keyboard-side confirmation arrives on that screen
+- it is driven by `iOSOnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
+- `Next` is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
 - stale old keyboard-ready state must not be enough to finish onboarding
-- completing the keyboard tour clears the pending keyboard-tour handoff and completes onboarding
+- completing the keyboard tour clears the pending keyboard-tour handoff, but onboarding itself finishes on the following customize-app screen
+
+### Customize-App Contract
+
+The customize-app screen is the final onboarding step.
+
+Rules:
+
+- it appears only after the keyboard tour completes during the current launch
+- its `Finish` action marks onboarding complete
+- `ReturnToHostView` remains suppressed for the rest of that launch after onboarding completion
 
 ### Keyboard Access Detection
 
-Keyboard onboarding detection is deliberately split across two signals:
+Keyboard onboarding detection is deliberately split across three signals:
 
 - app-side detection that the keyboard is enabled in system settings
-- extension-side confirmation that the keyboard launched and reported Full Access through the App Group bridge
+- extension-side confirmation that the keyboard was presented
+- extension-side confirmation that the keyboard launched with Full Access through the App Group bridge
 
 `iOSOnboardingKeyboardAccessProbe` is the app-side read surface for:
 
 - `AppleKeyboards` enablement
+- `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingHasFullAccess`
 - `keyboardOnboardingAccess_timestamp`
 
@@ -202,6 +221,7 @@ Keyboard onboarding detection is deliberately split across two signals:
 - `recordingState_timestamp`
 - `latestTranscription`
 - `session_timestamp`
+- `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
 
@@ -256,9 +276,11 @@ The App Group container is the stable cross-process boundary:
 - `Models/ggml-base.bin`
 - `Models/ggml-base-encoder.mlmodelc/`
 - `Models/ggml-base-encoder.mlmodelc.zip` during install only
+- `Models/DownloadStaging/ggml-base.bin` during staged download only
+- `Models/DownloadStaging/ggml-base-encoder.mlmodelc.zip` during staged download only
 - `Models/model-install-manifest.json`
-- `Models/Downloads/model-download-job.json` or equivalent staged job storage
-- interrupted-capture recovery payload storage
+- `Models/model-download-job.json`
+- `InterruptedCapture/pending-interrupted-capture.plist`
 - `KeyVoxCore/` for dictionary persistence
 - `live-meter-state.bin` for transient keyboard indicator transport
 
@@ -590,7 +612,7 @@ Current app-owned surfaces:
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and model actions
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
-- onboarding screens: welcome, setup, keyboard tour
+- onboarding screens: welcome, setup, keyboard tour, customize app
 
 Views may surface manager state, but runtime ownership stays in the managers and services.
 
@@ -603,6 +625,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 
 - onboarding store persistence and routing state
 - onboarding keyboard access probe behavior
+- onboarding keyboard-tour state transitions
 - onboarding microphone permission refresh behavior
 - onboarding setup-state gating
 - shared path construction
