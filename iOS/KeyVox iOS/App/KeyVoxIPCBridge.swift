@@ -23,6 +23,7 @@ enum KeyVoxIPCBridge {
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
+        static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
     }
@@ -138,6 +139,14 @@ enum KeyVoxIPCBridge {
             defaults?.set(now, forKey: Key.keyboardOnboardingAccessTimestamp)
         }
     }
+
+    static func reportKeyboardOnboardingPresentation() {
+        defaults?.set(Date().timeIntervalSince1970, forKey: Key.keyboardOnboardingPresentationTimestamp)
+    }
+
+    static func clearKeyboardOnboardingPresentation() {
+        defaults?.removeObject(forKey: Key.keyboardOnboardingPresentationTimestamp)
+    }
     
     // MARK: - Read (Both)
     
@@ -172,6 +181,17 @@ enum KeyVoxIPCBridge {
         guard let d = defaults else { return nil }
 
         let timestamp = d.double(forKey: Key.keyboardOnboardingAccessTimestamp)
+        guard timestamp.isFinite, timestamp > 0 else {
+            return nil
+        }
+
+        return timestamp
+    }
+
+    static func keyboardOnboardingPresentationTimestamp() -> TimeInterval? {
+        guard let d = defaults else { return nil }
+
+        let timestamp = d.double(forKey: Key.keyboardOnboardingPresentationTimestamp)
         guard timestamp.isFinite, timestamp > 0 else {
             return nil
         }

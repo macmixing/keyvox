@@ -1,10 +1,18 @@
+import Combine
 import SwiftUI
 
 struct OnboardingKeyboardTourScreen: View {
+    private enum Metrics {
+        static let inputBarHeight: CGFloat = 44
+        static let inputBarBottomSpacing: CGFloat = 16
+        static let sceneBottomSpacing: CGFloat = 92
+    }
+
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboardingStore: iOSOnboardingStore
+    @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
     @State private var text = ""
-    @State private var hasFreshKeyboardAccessConfirmation = false
+    @State private var tourState = iOSOnboardingKeyboardTourState()
     @StateObject private var keyboardObserver = KeyboardObserver()
     @StateObject private var keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe
 
@@ -20,6 +28,11 @@ struct OnboardingKeyboardTourScreen: View {
                 iOSAppTheme.screenBackground
                     .ignoresSafeArea()
 
+                sceneContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .padding(.horizontal, iOSAppTheme.screenPadding)
+                    .padding(.bottom, sceneBottomPadding(for: geometry))
+
                 inputBar
                     .padding(.horizontal, iOSAppTheme.screenPadding)
                     .padding(.bottom, bottomPadding(for: geometry))
@@ -32,7 +45,7 @@ struct OnboardingKeyboardTourScreen: View {
                         onboardingStore.completeKeyboardTour()
                     }
                     .tint(iOSAppTheme.accent)
-                    .disabled(!hasFreshKeyboardAccessConfirmation)
+                    .disabled(!tourState.canFinish)
                 }
                 .padding(.horizontal, iOSAppTheme.screenPadding)
                 .padding(.top, 8)
@@ -41,17 +54,34 @@ struct OnboardingKeyboardTourScreen: View {
             }
         }
         .task {
-            hasFreshKeyboardAccessConfirmation = false
+            tourState = iOSOnboardingKeyboardTourState()
             keyboardAccessProbe.refresh()
+            syncKeyboardPresentationState()
         }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             guard newPhase == .active else { return }
-            hasFreshKeyboardAccessConfirmation = false
             keyboardAccessProbe.refresh()
+            syncKeyboardPresentationState()
         }
         .onChange(of: keyboardObserver.keyboardHeight, initial: false) { _, newHeight in
             guard newHeight > 0 else { return }
             refreshAfterKeyboardPresentation()
+        }
+        .onReceive(transcriptionManager.$lastTranscriptionText.dropFirst()) { latestTranscription in
+            handleLatestTranscription(latestTranscription)
+        }
+    }
+
+    private var sceneContent: some View {
+        Group {
+            switch tourState.scene {
+            case .a:
+                OnboardingKeyboardTourSceneAView()
+            case .b:
+                OnboardingKeyboardTourSceneBView()
+            case .c:
+                OnboardingKeyboardTourSceneCView()
+            }
         }
     }
 
@@ -68,17 +98,37 @@ struct OnboardingKeyboardTourScreen: View {
 
     private func bottomPadding(for geometry: GeometryProxy) -> CGFloat {
         let keyboardInset = max(0, keyboardObserver.keyboardHeight - geometry.safeAreaInsets.bottom)
-        return max(16, keyboardInset)
+        return max(Metrics.inputBarBottomSpacing, keyboardInset)
+    }
+
+    private func sceneBottomPadding(for geometry: GeometryProxy) -> CGFloat {
+        bottomPadding(for: geometry) + Metrics.inputBarHeight + Metrics.sceneBottomSpacing
     }
 
     private func refreshAfterKeyboardPresentation() {
         keyboardAccessProbe.refresh()
-        hasFreshKeyboardAccessConfirmation = keyboardAccessProbe.hasConfirmedKeyboardAccess
+        syncKeyboardPresentationState()
 
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(250))
             keyboardAccessProbe.refresh()
-            hasFreshKeyboardAccessConfirmation = keyboardAccessProbe.hasConfirmedKeyboardAccess
+            syncKeyboardPresentationState()
         }
+    }
+
+    private func syncKeyboardPresentationState() {
+        guard keyboardAccessProbe.hasShownKeyVoxKeyboard else { return }
+        tourState.hasShownKeyVoxKeyboard = true
+    }
+
+    private func handleLatestTranscription(_ latestTranscription: String?) {
+        guard scenePhase == .active,
+              tourState.hasShownKeyVoxKeyboard,
+              let latestTranscription,
+              !latestTranscription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
+        tourState.hasCompletedFirstTourTranscription = true
     }
 }

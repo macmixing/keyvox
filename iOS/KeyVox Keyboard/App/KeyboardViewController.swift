@@ -92,6 +92,11 @@ final class KeyboardViewController: UIInputViewController {
         updateUI()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
+    }
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         rootContainerView?.keyGridView.resetInteractionState()
@@ -231,6 +236,7 @@ final class KeyboardViewController: UIInputViewController {
             self?.extensionHostIsActive = true
             guard let self else { return }
             KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
+            KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
             self.updateUI()
         }
     }

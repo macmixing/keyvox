@@ -237,6 +237,7 @@ struct OnboardingSetupScreen: View {
             return
         }
 
+        KeyVoxIPCBridge.clearKeyboardOnboardingPresentation()
         onboardingStore.recordPendingKeyboardTour()
         UIApplication.shared.open(url)
     }
