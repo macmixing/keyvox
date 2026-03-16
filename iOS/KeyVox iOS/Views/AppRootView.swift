@@ -14,7 +14,7 @@ struct AppRootView: View {
     }
 
     private var shouldShowReturnToHostView: Bool {
-        !onboardingStore.shouldShowOnboarding && transcriptionManager.isReturnToHostViewPresented
+        !onboardingStore.shouldSuppressReturnToHostView && transcriptionManager.isReturnToHostViewPresented
     }
 
     var body: some View {

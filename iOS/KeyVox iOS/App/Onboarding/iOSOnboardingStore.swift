@@ -24,6 +24,7 @@ final class iOSOnboardingStore: ObservableObject {
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
     @Published private(set) var isPendingKeyboardTourRouteArmed: Bool
     @Published private(set) var isIgnoringPersistedPendingKeyboardTourThisLaunch: Bool
+    @Published private(set) var hasCompletedOnboardingThisLaunch: Bool
 
     var shouldShowOnboarding: Bool {
         !hasCompletedOnboarding || isForceOnboardingLaunch || hasPendingKeyboardTour
@@ -40,6 +41,10 @@ final class iOSOnboardingStore: ObservableObject {
             && shouldShowOnboarding
     }
 
+    var shouldSuppressReturnToHostView: Bool {
+        shouldShowOnboarding || hasCompletedOnboardingThisLaunch
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults, runtimeFlags: iOSRuntimeFlags) {
@@ -52,11 +57,13 @@ final class iOSOnboardingStore: ObservableObject {
         hasPassedWelcomeScreenThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
         isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
+        hasCompletedOnboardingThisLaunch = false
     }
 
     func completeOnboarding() {
         hasCompletedOnboarding = true
         isForceOnboardingLaunch = false
+        hasCompletedOnboardingThisLaunch = true
     }
 
     func recordPendingKeyboardTour() {
