@@ -1,8 +1,8 @@
 # KeyVox iOS Engineering Notes
 
-This document captures the current implementation rules and maintainer-facing architecture for the iOS app and keyboard extension.
+This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-11**
+**Last Updated: 2026-03-15**
 
 ## Design Philosophy
 
@@ -11,31 +11,62 @@ KeyVox iOS keeps the same trust model as the Mac app while adapting to iOS proce
 - No hidden speech collection.
 - No silent text insertion.
 - No transcription logic inside the keyboard extension.
-- No ambiguous app-extension state during warm, cold, cancel, or timeout flows.
 
-Speech stays local.  
-The containing app owns privileged work.  
+Speech stays local.
+The containing app owns privileged work.
 Shared state must stay explicit, deterministic, and recoverable.
 The keyboard extension remains intentionally thin.
+The widget extension remains presentation-only.
 Convenience matters, but not more than predictable behavior.
 
-## Architecture Overview
+## Target Boundaries
 
-KeyVox iOS is organized by responsibility:
+### Containing App
 
-- `KeyVox iOS/App/`: app lifecycle, composition root, App Group storage, URL routing, IPC bridge, model lifecycle, weekly stats, and iCloud sync.
-- `KeyVox iOS/Core/Audio/`: monitoring mode, capture session setup, live PCM conversion, metering, interruption handoff, and stop-time silence classification.
-- `KeyVox iOS/Core/Transcription/`: iOS runtime state machine, session lifecycle, watchdog policy, and the boundary into `KeyVoxCore.DictationPipeline`.
-- `KeyVox iOS/Views/`: tabbed SwiftUI shell with Home, Dictionary, Style, and Settings surfaces.
-- `KeyVox Keyboard/`: custom keyboard UI, toolbar controls, warm/cold app handoff, cancel flow, live indicator rendering, cursor trackpad support, and final text insertion.
-- `../Packages/KeyVoxCore/`: shared dictation pipeline, Whisper integration, dictionary persistence primitives, shared post-processing order, silence heuristics, and list formatting logic.
-- `KeyVoxiOSTests/`: deterministic tests around paths, routing, iCloud sync, weekly stats, model lifecycle, stop-time capture processing, keyboard interaction helpers, and transcription/session behavior.
+The containing app owns:
 
-For file ownership and placement, see [`CODEMAP.md`](CODEMAP.md).
+- onboarding state and routing
+- settings and iCloud sync
+- model installation, validation, and recovery
+- microphone capture and session warmth
+- interrupted-capture recovery
+- dictation pipeline ownership
+- weekly word stats
+- Live Activity coordination
+- the SwiftUI app shell
 
-## Platform Compatibility
+### Keyboard Extension
 
-- Supported deployment target: iOS 18.6 and newer for the app, extension, and test target.
+The keyboard extension owns:
+
+- visible keyboard UI
+- toolbar mode selection and full-access warning presentation
+- warm/cold launch handoff into the containing app
+- text insertion into host apps
+- keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
+
+The keyboard extension does **not** own:
+
+- model lifecycle
+- microphone permissions
+- model downloads
+- dictionary logic
+- transcription post-processing policy
+- onboarding progression
+
+### Widget Extension
+
+The widget extension owns:
+
+- lock screen Live Activity rendering
+- Dynamic Island rendering
+- the stop-session App Intent
+
+The widget extension does **not** own session policy, dictation state, or business logic beyond presenting the current mirrored session state.
+
+## Platform and Target Requirements
+
+- Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
   - `BGTaskSchedulerPermittedIdentifiers = ["com.cueit.keyvox.model-download"]`
@@ -43,50 +74,169 @@ For file ownership and placement, see [`CODEMAP.md`](CODEMAP.md).
 - The keyboard extension declares:
   - `NSExtensionPointIdentifier = com.apple.keyboard-service`
   - `RequestsOpenAccess = true`
-- Both targets require the App Group entitlement:
+- Both the app and keyboard extension require the App Group entitlement:
   - `group.com.cueit.keyvox`
+- The widget target also depends on the shared code/project wiring needed for ActivityKit and the shared App Group-backed session state.
+
+## Composition Root
+
+`iOSAppServiceRegistry` is the only sanctioned composition root for the containing app.
+
+It builds and wires:
+
+- `DictionaryStore`
+- `iOSAppSettingsStore`
+- `iOSOnboardingStore`
+- `iOSWeeklyWordStatsStore`
+- `WhisperService`
+- `iOSModelManager`
+- `iOSTranscriptionManager`
+- `iOSiCloudSyncCoordinator`
+- `iOSWeeklyWordStatsCloudSync`
+- `KeyVoxSessionLiveActivityCoordinator`
+- `KeyVoxURLRouter`
+
+Service ownership rules:
+
+- Managers own runtime state.
+- Views present state and call actions, but do not become alternate sources of truth.
+- IPC contracts remain centralized in `KeyVoxIPCBridge`.
+
+## Root Routing and Onboarding Contract
+
+`AppRootView` is the top-level route owner.
+
+Current root behavior:
+
+- show onboarding when `iOSOnboardingStore.shouldShowOnboarding` is `true`
+- otherwise show the main tab shell
+- `ReturnToHostView` may appear only when onboarding is not being shown
+
+### Onboarding Store Rules
+
+`iOSOnboardingStore` owns:
+
+- `hasCompletedOnboarding`
+- `hasCompletedWelcomeScreen`
+- `isForceOnboardingLaunch`
+- `hasPendingKeyboardTour`
+- launch-scoped welcome progression
+- launch-scoped keyboard-tour arming/ignore behavior
+
+### Force-Onboarding Runtime Flag
+
+The only supported runtime flag is:
+
+- `KEYVOX_FORCE_ONBOARDING`
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- a cold launch with the flag set must always begin at the welcome screen
+- the flag must still allow in-launch progression through the flow
+- persisted onboarding completion must not block the forced flow
+- stale persisted keyboard-tour handoff state must not skip setup during a forced run
+
+### Onboarding Screen Order
+
+Current onboarding order is:
+
+1. welcome
+2. setup
+3. keyboard tour
+
+### Setup Screen Contract
+
+The setup screen owns three real requirements:
+
+- model ready
+- microphone permission granted
+- keyboard access confirmed
+
+Rules:
+
+- keyboard setup stays gated until the model install state is `.ready`
+- microphone permission may be completed while the model download is still running
+- model download may continue while the user works through the other visible steps
+- when microphone access is denied, onboarding must route the user to app settings rather than pretending the permission can still be requested in place
+- the setup screen records a pending keyboard-tour handoff before opening KeyVox settings
+
+### Keyboard Tour Contract
+
+The keyboard tour is a resumed onboarding step after the user leaves setup for Settings.
+
+Rules:
+
+- it is full-screen, not a sheet
+- it autofocuses a text field so the KeyVox keyboard can appear immediately
+- it uses `KeyboardObserver` height to pin the input above the keyboard
+- `Finish` is disabled until a **fresh** keyboard-side confirmation arrives on that screen
+- stale old keyboard-ready state must not be enough to finish onboarding
+- completing the keyboard tour clears the pending keyboard-tour handoff and completes onboarding
+
+### Keyboard Access Detection
+
+Keyboard onboarding detection is deliberately split across two signals:
+
+- app-side detection that the keyboard is enabled in system settings
+- extension-side confirmation that the keyboard launched and reported Full Access through the App Group bridge
+
+`iOSOnboardingKeyboardAccessProbe` is the app-side read surface for:
+
+- `AppleKeyboards` enablement
+- `keyboardOnboardingHasFullAccess`
+- `keyboardOnboardingAccess_timestamp`
 
 ## Shared Storage and IPC Contract
 
-`KeyVoxIPCBridge` is the only source of truth for the app-extension coordination contract.
+`KeyVoxIPCBridge` is the only source of truth for app-extension and app-widget coordination.
 
-### App Group `UserDefaults` Keys
+### App Group `UserDefaults` Transport Keys
 
 - `recordingState`
 - `recordingState_timestamp`
 - `latestTranscription`
 - `session_timestamp`
+- `keyboardOnboardingAccess_timestamp`
+- `keyboardOnboardingHasFullAccess`
 
 ### App Group Settings Keys
 
 - `KeyVox.TriggerBinding`
-  - App-owned settings state.
-  - Persisted and synced through `iOSAppSettingsStore` and `iOSiCloudSyncCoordinator`.
-  - Present in the iOS settings store even though the current iOS UI does not expose a trigger-binding control.
 - `KeyVox.AutoParagraphsEnabled`
-  - App-owned style setting.
-  - Consumed by `iOSTranscriptionManager` through injected providers.
 - `KeyVox.ListFormattingEnabled`
-  - App-owned style setting.
-  - Consumed by `iOSTranscriptionManager` through injected providers.
 - `KeyVox.CapsLockEnabled`
-  - Extension-owned UI latch.
-  - Written by the keyboard toolbar control.
-  - Read by the containing app at dictation time so the shared all-caps override stays in `KeyVoxCore`.
-  - Intentionally local-only and not synced through iCloud.
+- `KeyVox.KeyboardHapticsEnabled`
+- `KeyVox.PreferBuiltInMicrophone`
+- `KeyVox.LiveActivitiesEnabled`
+- `KeyVox.SessionDisableTiming`
+
+### App-Owned Persistent Defaults Keys
+
+- `KeyVox.App.WeeklyWordStatsPayload`
+- `KeyVox.App.WeeklyWordStatsInstallationID`
+- `KeyVox.App.HasCompletedOnboarding`
+- `KeyVox.App.HasCompletedOnboardingWelcome`
+- `KeyVox.App.HasPendingKeyboardTour`
 
 ### App Group File Transport
 
 - `live-meter-state.bin`
-  - Written atomically by the containing app.
-  - Read by the extension to animate the toolbar indicator while recording.
-  - Treated as ephemeral transport state, not durable storage.
+  - written atomically by the containing app
+  - read by the keyboard extension only
+  - ephemeral transport, not durable storage
 
 ### Darwin Notification Names
 
 - `com.cueit.keyvox.startRecording`
 - `com.cueit.keyvox.stopRecording`
 - `com.cueit.keyvox.cancelRecording`
+- `com.cueit.keyvox.disableSession`
 - `com.cueit.keyvox.recordingStarted`
 - `com.cueit.keyvox.transcribingStarted`
 - `com.cueit.keyvox.transcriptionReady`
@@ -99,22 +249,6 @@ For file ownership and placement, see [`CODEMAP.md`](CODEMAP.md).
 - `recording`
 - `transcribing`
 
-### Warm-Session Rule
-
-- Heartbeat freshness is controlled by `session_timestamp`.
-- `KeyVoxIPCBridge.heartbeatFreshnessWindow` is `5` seconds.
-- The recorder or app-side bridge refreshes the heartbeat while the containing app is active enough to be considered warm.
-- The extension treats the app as warm only when the latest heartbeat is newer than that window.
-- Warm path:
-  - write `waitingForApp`
-  - post `startRecording`
-  - wait briefly for `.recording`
-  - fall back to URL launch if the app does not take ownership quickly
-- Cold path:
-  - open `keyvoxios://record/start` immediately
-
-Warm-session freshness is separate from the user-facing "Keep Session Active" idle timeout described below.
-
 ## Shared Container Layout
 
 The App Group container is the stable cross-process boundary:
@@ -123,40 +257,53 @@ The App Group container is the stable cross-process boundary:
 - `Models/ggml-base-encoder.mlmodelc/`
 - `Models/ggml-base-encoder.mlmodelc.zip` during install only
 - `Models/model-install-manifest.json`
+- `Models/Downloads/model-download-job.json` or equivalent staged job storage
+- interrupted-capture recovery payload storage
 - `KeyVoxCore/` for dictionary persistence
 - `live-meter-state.bin` for transient keyboard indicator transport
 
-If the App Group container is unavailable, dictionary persistence falls back to:
+If the App Group container is unavailable:
 
-- `Application Support/KeyVoxFallback/`
+- dictionary persistence falls back to `Application Support/KeyVoxFallback/`
+- model installation does **not** fall back and must fail loudly
 
-Model installation does not use a fallback path; missing App Group access is an install failure.
+## Warm Session and App Launch Contract
 
-## End-to-End Runtime Flow
+Warmth is controlled by `session_timestamp`.
 
-1. The user can optionally enable "Keep Session Active" from the Home tab, which starts monitoring mode in the containing app to prepare the keyboard.
-2. The keyboard renders the cancel button and Caps Lock control outside the key grid so they align with the top row without moving the centered logo or changing keyboard height.
-3. When the user taps Caps Lock, the extension immediately updates `KeyVox.CapsLockEnabled` in App Group defaults.
-4. The user taps the mic in `KeyboardViewController`.
-5. The extension reconciles stale shared state, writes `waitingForApp`, and checks the heartbeat freshness window.
-6. If the session is warm, the extension posts `startRecording` and waits up to 500 ms for `.recording`.
-7. If the session is cold, or the warm grace period fails, the extension launches `keyvoxios://record/start`.
-8. `KeyVoxKeyboardBridge` or `KeyVoxURLRouter` forwards the start command to `iOSTranscriptionManager`.
-9. `iOSTranscriptionManager` transitions `idle -> recording`, clears stale errors and snapshots, refreshes model availability, and starts recording.
-10. `iOSAudioRecorder` records live 16 kHz mono float samples, updates heartbeat state, and streams live meter snapshots back through `KeyVoxIPCBridge`.
-11. If the user taps the cancel button, the extension posts `cancelRecording`, the manager cancels the active utterance, and both sides return to `idle`.
-12. On stop, the manager transitions to `processingCapture`, asks the recorder for an `iOSStoppedCapture`, and short-circuits to `noSpeech` when output frames are empty.
-13. If output frames exist and the model is installed, the manager transitions to `transcribing`, warms Whisper, and runs `KeyVoxCore.DictationPipeline`.
-14. The pipeline reads current style toggles and the App Group-backed Caps Lock value through injected providers.
-15. The manager transitions back to `idle` and publishes either `transcriptionReady` or `noSpeech`.
-16. The keyboard receives the callback, applies `KeyboardInsertionSpacingHeuristics`, and inserts the final text into the focused host app.
-17. Final processed dictation text also updates the local weekly stats store, which then converges current-week device counts through iCloud KVS.
+Rules:
+
+- `KeyVoxIPCBridge.heartbeatFreshnessWindow` is `5` seconds
+- the recorder or keyboard bridge refreshes the heartbeat while the app is active enough to be considered warm
+- the extension treats the app as warm only when the heartbeat is newer than that window
+
+Warm path:
+
+1. keyboard writes `waitingForApp`
+2. keyboard posts `startRecording`
+3. keyboard waits briefly for `.recording`
+4. keyboard falls back to URL launch if the app does not take ownership quickly
+
+Cold path:
+
+1. keyboard launches `keyvoxios://record/start`
+2. the app presents `ReturnToHostView`
+3. the user returns to the host app once the session is active
+
+`ReturnToHostView` must never interrupt onboarding.
 
 ## Session Lifecycle and Safety Policy
 
 `iOSTranscriptionManager` owns session policy through `iOSSessionPolicy`.
 
-### Default Session Policy
+### Public Session State
+
+- `idle`
+- `recording`
+- `processingCapture`
+- `transcribing`
+
+### Default Policy
 
 - idle timeout: `300` seconds
 - no-speech abandonment timeout: `45` seconds
@@ -165,117 +312,131 @@ Model installation does not use a fallback path; missing App Group access is an 
 
 ### Session Rules
 
-- Monitoring mode and active dictation are separate concepts.
-- `enableMonitoring()` can keep the audio engine warm without starting a recording.
-- The Home tab toggle controls monitoring mode through `handleEnableSessionCommand()` and `handleDisableSessionCommand()`.
-- If the user disables the session while idle, shutdown happens immediately.
-- If the user disables the session during an utterance, shutdown is deferred until the current recording or transcription finishes.
-- While idle and active, the session arms an idle timeout and exposes `sessionExpirationDate` to the Home tab.
+- monitoring mode and active dictation are separate concepts
+- enabling a session warms the recorder without starting an utterance
+- disabling a session while idle tears down immediately
+- disabling a session during an utterance defers shutdown until the current work finishes
+- the Home/Settings surfaces read and configure session timing, but `iOSTranscriptionManager` remains the runtime owner
 
-### Utterance Safety Rules
+### Safety Rules
 
-- If no meaningful speech is detected for too long, the manager cancels the utterance and returns to idle without transcribing.
-- If meaningful speech has already occurred and the capture then goes inactive for too long, the manager cancels the utterance.
-- If the utterance exceeds the emergency cap, the manager cancels it.
-- Cancellation keeps the session alive unless a deferred shutdown was already pending.
+- likely silence short-circuits to `noSpeech`
+- long no-speech or post-speech inactivity cancels the utterance
+- the emergency utterance cap cancels runaway recordings
+- cancellation keeps the session alive unless a deferred shutdown was already pending
 
 ## Audio Capture Contract
 
 `iOSAudioRecorder` owns iOS-specific audio behavior.
 
-- Audio session category: `.playAndRecord`
-- Audio session options: `.defaultToSpeaker`, `.mixWithOthers`, `.allowBluetoothHFP`
-- Preferred sample rate: `16000`
-- Output format: mono float PCM, non-interleaved
-- Engine lifetime:
-  - monitoring mode keeps the engine warm after a completed dictation
-  - stopping a single utterance does not necessarily stop monitoring
-  - full shutdown happens only through session teardown or external process loss
+- audio session category: `.playAndRecord`
+- audio session options: `.defaultToSpeaker`, `.mixWithOthers`, `.allowBluetoothHFP`
+- preferred sample rate: `16000`
+- output format: mono float PCM, non-interleaved
+
+Engine lifetime rules:
+
+- monitoring mode can keep the engine warm after a completed dictation
+- stopping a single utterance does not necessarily shut down monitoring
+- full shutdown happens only through explicit session teardown or external process loss
 
 ### Live Metering
 
 The recorder publishes:
 
 - `audioLevel`
-- `LiveInputSignalState` (`dead`, `quiet`, `active`)
+- `LiveInputSignalState`
 - `maxActiveSignalRunDuration`
 - whether meaningful speech has been observed during the current capture
 
-The keyboard does not sample the recorder directly. It only consumes the App Group `live-meter-state.bin` transport through `KeyboardIPCManager` and `AudioIndicatorDriver`.
+The keyboard never samples the recorder directly. It only consumes `live-meter-state.bin` through `KeyboardIPCManager` and `AudioIndicatorDriver`.
 
-### Stop-Time Capture Processing
+### Stop-Time Processing
 
 When recording stops:
 
-1. The raw capture snapshot is collected.
-2. `AudioPostProcessing.removeInternalGaps(...)` is used to improve classification quality.
-3. `AudioCaptureClassifier.classify(...)` evaluates absolute silence, active signal presence, likely silence, and long true silence.
-4. True silence and likely-silence captures clear `outputFrames`.
-5. Accepted captures return normalized transcription frames in `iOSStoppedCapture.outputFrames`.
+1. raw frames are collected
+2. internal gaps are removed
+3. silence classification runs
+4. true silence and likely silence clear `outputFrames`
+5. accepted captures become `iOSStoppedCapture.outputFrames`
 
-Interrupted captures can also be handed back through `audioInterruptedCaptureHandler`, and the transcription manager processes them through the same completion path.
+Interrupted captures follow the same post-stop processing rules before they are staged for recovery.
 
-## Inference Model
+## Interrupted Capture Recovery
 
-The current iOS runtime uses the same base Whisper model family as the shared Mac runtime:
+Interrupted capture recovery is now a first-class iOS runtime feature.
 
-- GGML model: `ggml-base.bin`
-- accelerator bundle: `ggml-base-encoder.mlmodelc`
+`iOSTranscriptionManager+InterruptedCaptureRecovery` owns:
 
-`WhisperService` comes from `KeyVoxCore`, but the iOS app owns:
+- staging accepted interrupted captures
+- persisting recovery payloads
+- resuming recovery on app activation
+- marking failed recovery attempts
 
-- model path resolution
-- install readiness
-- download, delete, and repair actions
-- post-install unload and warmup behavior
+Rules:
 
-## Model Installation and Integrity Rules
+- only captures with non-empty `outputFrames` are staged
+- recovery requires model readiness
+- recovery runs through the shared `DictationPipeline`
+- successful recovery updates `latestTranscription`
+- failed recovery stays visible to the app instead of being silently discarded
+
+## Model Installation, Background Downloads, and Recovery
 
 `iOSModelManager` is the source of truth for install lifecycle.
 
 ### Install Flow
 
-1. Resolve App Group model paths.
-2. Ensure the models directory exists.
-3. Ensure enough free disk space is available.
-4. Download the GGML model and Core ML zip in parallel.
-5. Move the downloads into `Models/`.
-6. SHA-256 validate both downloaded artifacts.
-7. Extract the Core ML bundle.
-8. Validate that the extracted bundle is structurally non-empty.
-9. Remove the Core ML zip after successful extraction.
-10. Write `model-install-manifest.json`.
-11. Re-validate the final install.
-12. Unload and warm Whisper so the runtime can use the new artifacts immediately.
+1. resolve App Group model paths
+2. ensure directories and free space are available
+3. start or resume the background download job for GGML and Core ML artifacts
+4. move staged downloads into final locations
+5. SHA-256 validate both artifacts
+6. extract the Core ML bundle
+7. validate the extracted bundle
+8. remove the Core ML zip
+9. write `model-install-manifest.json`
+10. revalidate the final install
+11. unload and warm Whisper
 
-### Install Progress Contract
-
-Progress is phase-aware rather than a fake single percentage:
-
-- byte-driven progress during parallel downloads
-- explicit install phases for file moves, hashing, extraction, validation, manifest writing, and model warmup
-
-### Validation Rules
+### Readiness Contract
 
 An install is only `ready` when all of the following are true:
 
 - `ggml-base.bin` exists
-- `ggml-base.bin` meets the minimum size threshold
-- `ggml-base-encoder.mlmodelc/` exists
-- `ggml-base-encoder.mlmodelc.zip` has been removed
-- `model-install-manifest.json` exists and is readable
-- the manifest version is supported
-- manifest hashes match the expected artifact hashes
-- the extracted Core ML bundle is structurally non-empty
+- the GGML file meets the minimum size threshold
+- `ggml-base-encoder.mlmodelc/` exists and is structurally non-empty
+- the Core ML zip has been removed
+- `model-install-manifest.json` exists and is valid
+- manifest version and hashes match the expected artifact versions
 
 Partial installs are never treated as ready.
 
+### Background Download Rules
+
+`iOSModelBackgroundDownloadCoordinator` owns the background `URLSession`.
+
+Rules:
+
+- GGML and Core ML zip downloads run as tracked artifact phases inside a persisted job
+- rediscovered background tasks are resumed on relaunch, not just relabeled
+- missing tasks are demoted back to `.pending` so the manager can restart them
+- finalization remains foreground-owned even when downloads finished in the background
+- app activation must attempt interrupted-download recovery on the first relaunch after a kill
+
+Important force-quit nuance:
+
+- iOS will not transparently continue a user-force-quit app's background transfer work
+- the correct behavior is to restart or resume the persisted job on relaunch
+- this is why `iOSModelManager.handleAppDidBecomeActive()` and `iOSModelBackgroundDownloadCoordinator.synchronizeWithSystemTasks()` exist
+
 ### Failure Policy
 
-- User-facing errors collapse to actionable text rather than raw storage or network detail.
-- Failed installs schedule a background repair task.
-- `deleteModel()` unloads Whisper before removing artifacts.
-- `repairModelIfNeeded()` removes partial state and performs a clean reinstall when validation is not ready.
+- user-facing model errors collapse to actionable install/repair messages
+- failed installs schedule a background repair task
+- `deleteModel()` unloads Whisper before artifact deletion
+- `repairModelIfNeeded()` clears partial state and performs a clean reinstall when validation is not ready
 
 ## Dictionary, Style, and Sync Contract
 
@@ -283,123 +444,201 @@ The containing app owns live dictionary and style state, while the dictation pip
 
 ### Dictionary Rules
 
-- `iOSAppServiceRegistry` creates `DictionaryStore` with the App Group-backed dictionary base directory.
-- `iOSTranscriptionManager` observes `dictionaryStore.$entries`.
-- Dictionary changes immediately refresh:
-  - `TranscriptionPostProcessor`
-  - the Whisper hint prompt
-- Hint prompts are bounded to:
-  - newest entries only
-  - up to `200` phrases
-  - up to `1200` characters
+- `DictionaryStore` is created with the App Group-backed base directory
+- `iOSTranscriptionManager` observes dictionary entries and refreshes the post-processor plus Whisper hint prompt
+- hint prompts are bounded to the newest entries, up to `200` phrases and `1200` characters
 
 ### Style Rules
 
-- `autoParagraphsEnabled` and `listFormattingEnabled` are app-owned runtime toggles.
-- `StyleTabView` is the current user-facing surface for those toggles.
-- `iOSTranscriptionManager` injects those settings into the shared `DictationPipeline` at runtime.
+- `autoParagraphsEnabled` and `listFormattingEnabled` are app-owned toggles
+- `StyleTabView` is the current user-facing surface
+- the runtime injects those values into the shared `DictationPipeline` at transcription time
 
 ### iCloud Sync Rules
 
-- `iOSiCloudSyncCoordinator` syncs:
-  - dictionary payloads
-  - trigger binding timestamps
-  - auto paragraphs timestamps
-  - list formatting timestamps
-- `iOSWeeklyWordStatsCloudSync` syncs only the current-week word snapshot payload.
-- Weekly stats merge by taking the maximum count seen for each device ID within the same week.
-- Caps Lock state is intentionally excluded from iCloud sync.
+`iOSiCloudSyncCoordinator` syncs:
 
-## Post-Processing Order
+- dictionary payloads
+- trigger binding timestamps
+- auto paragraphs timestamps
+- list formatting timestamps
 
-The iOS app uses `KeyVoxCore.DictationPipeline`, so it follows the shared post-processing order:
+`iOSWeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
 
-1. `WhisperService` transcribes the supplied frames.
-2. `TranscriptionPostProcessor` performs shared cleanup and formatting.
-3. Email literal normalization runs before dictionary correction.
-4. Dictionary correction and dictionary-backed email recovery run next.
-5. Colon normalization and math normalization run before list formatting.
-6. List formatting, laughter cleanup, repeated-character cleanup, time normalization, and website/domain normalization follow.
-7. Whitespace normalization, capitalization guards, terminal punctuation finishing, and the final all-caps override complete the output.
-8. On iOS, the all-caps override is controlled by the App Group `KeyVox.CapsLockEnabled` latch rather than keyboard-side text mutation.
-9. The iOS runtime captures final pipeline output and sends it back to the keyboard extension instead of pasting directly.
+Weekly word stats merge by taking the maximum count seen for each device ID within the same week.
+
+Excluded from iCloud sync:
+
+- Caps Lock latch
+- keyboard haptics
+- microphone preference
+- onboarding state
+- pending keyboard-tour handoff
+
+## Live Activity Contract
+
+The app owns Live Activity state; the widget renders it.
+
+### App-Side Rules
+
+`KeyVoxSessionLiveActivityCoordinator` mirrors:
+
+- `isSessionActive`
+- `sessionDisablePending`
+- `liveActivitiesEnabled`
+- combined weekly word count
+
+The Live Activity should be shown only when:
+
+- session is active
+- session disable is not pending
+- the user setting `liveActivitiesEnabled` is `true`
+
+Turning the toggle off must end any active Live Activity immediately.
+
+### Widget-Side Rules
+
+`KeyVox_WidgetLiveActivity` owns:
+
+- lock screen presentation
+- Dynamic Island presentation
+- stop button rendering
+
+The widget stop action must use the shared `disableSession` Darwin notification through `EndSessionIntent`.
+
+The widget is presentation-only:
+
+- no session policy
+- no state mutation beyond the stop action
+- no app-owned business logic
 
 ## Keyboard Extension Contract
 
 The extension is a transport and insertion surface, not the transcription owner.
 
-- `KeyboardViewController` should own only:
-  - UI event handling
-  - keyboard state transitions
-  - warm/cold app handoff
-  - cancel flow
-  - host-text insertion
-  - cursor movement and key-repeat interactions
-- The extension must not own model lifecycle, microphone capture, shared post-processing policy, or dictionary logic.
-- Toolbar controls remain outside `KeyboardKeyGridView` so they can visually align with the top row while keeping the centered logo fixed.
-- The live indicator is purely a rendering client over shared meter snapshots; it must not invent recording state.
-- Caps Lock remains an extension-owned latch whose effect is applied later by the shared pipeline in the app.
-- Caps Lock resets when the user leaves this keyboard for another active keyboard surface, but not merely because the host app briefly resigns active.
-- `KeyboardInsertionSpacingHeuristics` stays intentionally conservative:
-  - do not prepend a space after existing whitespace
-  - do not prepend a space before incoming punctuation
-  - do prepend a space after word-like or trigger punctuation contexts when needed
-- The spacebar long-press trackpad and delete-repeat behaviors are keyboard-only interaction helpers and should stay separate from IPC concerns.
+`KeyboardViewController` should own only:
 
-`RequestsOpenAccess = true` remains required because the extension depends on App Group communication with the containing app.
+- UI event handling
+- toolbar mode switching
+- full-access instructions presentation
+- keyboard state transitions
+- warm/cold app handoff
+- cancel flow
+- host-text insertion
+- cursor movement and key-repeat interactions
+
+### Toolbar and Layout Rules
+
+Toolbar modes are:
+
+- hidden
+- branded
+- full-access warning
+
+The keyboard root layout has an important invariant:
+
+- the stable non-flashing keyboard structure lives in the main keyboard stack
+- the full-access warning UI is layered as an overlay on top of the toolbar row
+- the warning must **not** be moved into the root arranged-subview layout path again
+
+That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
+
+### Full Access Rules
+
+The branded toolbar requires:
+
+- installed model
+- `hasFullAccess == true`
+
+When the model is installed but Full Access is missing:
+
+- keep the key grid visible
+- hide the branded toolbar controls
+- show the red warning toolbar
+- allow the user to open the full-screen `FullAccessView`
+
+`FullAccessView` is keyboard-only instructional UI. It does not route through onboarding state or the containing app.
+
+### Text Insertion Rules
+
+`KeyboardInsertionSpacingHeuristics` stays intentionally conservative:
+
+- do not prepend a space after existing whitespace
+- do not prepend a space before incoming punctuation
+- do prepend a space after word-like or trigger-punctuation contexts when needed
+
+`KeyboardInsertionCapitalizationHeuristics` stays keyboard-only and does not replace the shared all-caps override owned by the pipeline.
+
+### Keyboard-Owned Local State
+
+The keyboard extension locally owns:
+
+- Caps Lock latch
+- haptics preference
+- dictionary casing preservation helpers
+
+These remain extension-facing conveniences, not app-owned business logic.
 
 ## App UI Contract
 
-The containing app is no longer a single diagnostic view, but it is still intentionally thin:
+The containing app is intentionally thin, but it is no longer a minimal debug shell.
 
-- `MainTabView` owns the four-tab shell only.
-- `HomeTabView` shows weekly usage and session activity controls.
-- `DictionaryTabView` presents current dictionary entries.
-- `StyleTabView` exposes dictation style toggles.
-- `SettingsTabView` owns model install actions and status.
-- Debug diagnostics remain conditional and view-only.
+Current app-owned surfaces:
 
-Views may surface manager state, but runtime ownership must stay in the managers and services.
+- `HomeTabView`: weekly stats, last transcription, debug diagnostics
+- `DictionaryTabView`: dictionary browsing/editing
+- `StyleTabView`: dictation style toggles
+- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and model actions
+- `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
+- onboarding screens: welcome, setup, keyboard tour
+
+Views may surface manager state, but runtime ownership stays in the managers and services.
 
 ## Testing and Quality Gates
 
-- iOS app tests:
-  `xcodebuild -project "iOS/KeyVox iOS.xcodeproj" -scheme "KeyVox iOS DEBUG" -destination 'platform=iOS Simulator,name=<installed simulator>' test`
-- Shared package tests:
-  `swift test --package-path Packages/KeyVoxCore`
+- Do not treat the absence of an iOS simulator run as proof that a runtime contract changed safely.
+- Prefer deterministic store/manager/probe tests for app-owned state and manual device validation for cross-process behavior.
 
 ### iOS-Focused Test Coverage
 
-- URL route parsing
-- App Group path construction
-- App Group-backed settings persistence
-- iCloud sync coordination for dictionary and style settings
-- weekly stats storage and iCloud convergence
-- model install validation and repair flows
-- stop-time silence classification
+- onboarding store persistence and routing state
+- onboarding keyboard access probe behavior
+- onboarding microphone permission refresh behavior
+- onboarding setup-state gating
+- shared path construction
+- settings persistence
+- iCloud sync coordination
+- weekly stats storage and merge behavior
+- Live Activity coordination
+- model manager validation and repair behavior
+- stop-time capture processing
+- keyboard dictation controller behavior
+- keyboard text input helpers
 - keyboard cursor-trackpad support
-- transcription-manager session lifecycle, cancellation, timeout, and model gating
+- transcription manager lifecycle and interruption handling
 
 ### Integration-Only Exclusions
 
 - actual microphone hardware routing and Bluetooth behavior
-- real host-app keyboard insertion across third-party apps
-- process wake timing between extension and containing app
-- long-running background execution under iOS memory pressure
+- real host-app text insertion across third-party apps
+- keyboard-extension wake timing under device memory pressure
+- exact process relaunch timing between extension and containing app
 - App Store review behavior around extension-to-app launch UX
+- widget rendering differences across iOS releases
 
 Those remain device, integration, or manual-test territory by design.
 
 ## Contributor Notes
 
 - Keep the app-extension contract centralized in `KeyVoxIPCBridge`; do not hand-roll duplicate keys, timestamps, or notification names elsewhere.
+- Keep onboarding state separate from app settings and keyboard runtime state.
 - Keep session rules explicit. If idle timeout, watchdog thresholds, or warm-session behavior change, update this document and the keyboard assumptions together.
-- Keep model integrity checks strict. Accepting partial installs would create hard-to-debug runtime failures.
-- Prefer injectable seams for time, storage, downloads, and services, following the existing `iOSModelManager`, sync coordinators, and transcription manager patterns.
-- When shared `KeyVoxCore` behavior changes, update this document only if the iOS runtime contract changes as well.
+- Keep model integrity checks strict. Accepting partial installs creates hard-to-debug runtime failures.
+- Prefer injectable seams for time, storage, downloads, permissions, and services, following the existing onboarding, model, and transcription manager patterns.
+- When `KeyVoxCore` behavior changes, update this document only if the iOS runtime contract or target boundaries change as well.
 
 ## Change Tracking
 
-- `ENGINEERING.md` tracks stable iOS architecture, IPC contracts, lifecycle rules, and operational/testing policy.
-- `CODEMAP.md` tracks iOS file ownership and major system placement.
-- `Docs/KEYVOX_IOS.md` remains historical design context rather than the primary source of truth for the current implementation.
+- `ENGINEERING.md` tracks stable iOS architecture, onboarding rules, IPC contracts, lifecycle rules, and operational/testing policy.
+- `CODEMAP.md` tracks file ownership and major system placement.
+- `Docs/KEYVOX_IOS.md` remains historical design context rather than the current source of truth.
