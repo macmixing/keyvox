@@ -63,6 +63,7 @@ struct KeyVoxApp: App {
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()
+                        onboardingStore.handleAppDidEnterBackground()
                     case .inactive:
                         break
                     @unknown default:
