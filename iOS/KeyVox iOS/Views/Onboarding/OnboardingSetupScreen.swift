@@ -68,6 +68,7 @@ struct OnboardingSetupScreen: View {
             title: "Allow microphone access",
             detail: microphoneRequirementDetail,
             isComplete: microphonePermissionController.status == .granted,
+            detailColor: microphoneRequirementDetailColor,
             actionTitle: microphoneRequirementActionTitle,
             action: microphoneRequirementAction
         )
@@ -127,16 +128,27 @@ struct OnboardingSetupScreen: View {
         case .undetermined:
             return "KeyVox needs microphone access to capture dictation."
         case .denied:
-            return "Enable microphone access for KeyVox in iOS Settings."
+            return "Microphone access is off. Enable it in KeyVox Settings to continue onboarding."
         case .granted:
             return "Microphone access granted."
         }
     }
 
+    private var microphoneRequirementDetailColor: Color {
+        switch microphonePermissionController.status {
+        case .denied:
+            return .yellow
+        case .undetermined, .granted:
+            return .secondary
+        }
+    }
+
     private var microphoneRequirementActionTitle: String? {
         switch microphonePermissionController.status {
-        case .undetermined, .denied:
+        case .undetermined:
             return "Allow access"
+        case .denied:
+            return "Open KeyVox Settings"
         case .granted:
             return nil
         }
@@ -144,11 +156,15 @@ struct OnboardingSetupScreen: View {
 
     private var microphoneRequirementAction: (() -> Void)? {
         switch microphonePermissionController.status {
-        case .undetermined, .denied:
+        case .undetermined:
             return {
                 Task {
                     await microphonePermissionController.requestPermission()
                 }
+            }
+        case .denied:
+            return {
+                openAppSettings()
             }
         case .granted:
             return nil
@@ -222,6 +238,15 @@ struct OnboardingSetupScreen: View {
         }
 
         onboardingStore.recordPendingKeyboardTour()
+        UIApplication.shared.open(url)
+    }
+
+    private func openAppSettings() {
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier,
+              let url = URL(string: "App-prefs:\(bundleIdentifier)") else {
+            return
+        }
+
         UIApplication.shared.open(url)
     }
 

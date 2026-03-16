@@ -4,8 +4,25 @@ struct OnboardingRequirementRow: View {
     let title: String
     let detail: String
     let isComplete: Bool
+    let detailColor: Color
     let actionTitle: String?
     let action: (() -> Void)?
+
+    init(
+        title: String,
+        detail: String,
+        isComplete: Bool,
+        detailColor: Color = .secondary,
+        actionTitle: String?,
+        action: (() -> Void)?
+    ) {
+        self.title = title
+        self.detail = detail
+        self.isComplete = isComplete
+        self.detailColor = detailColor
+        self.actionTitle = actionTitle
+        self.action = action
+    }
 
     var body: some View {
         iOSAppCard {
@@ -22,7 +39,7 @@ struct OnboardingRequirementRow: View {
 
                         Text(detail)
                             .font(.appFont(13, variant: .light))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(detailColor)
                     }
 
                     Spacer(minLength: 0)
