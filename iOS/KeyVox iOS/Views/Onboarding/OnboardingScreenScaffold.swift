@@ -2,16 +2,16 @@ import SwiftUI
 
 struct OnboardingScreenScaffold<Content: View>: View {
     let title: String
-    let actionTitle: String
+    let actionTitle: String?
     let isActionEnabled: Bool
-    let action: () -> Void
+    let action: (() -> Void)?
     let content: Content
 
     init(
         title: String,
-        actionTitle: String,
+        actionTitle: String? = nil,
         isActionEnabled: Bool = true,
-        action: @escaping () -> Void,
+        action: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -31,26 +31,28 @@ struct OnboardingScreenScaffold<Content: View>: View {
 
                 content
             }
-            .padding(.bottom, 112)
+            .padding(.bottom, action == nil ? 24 : 112)
         }
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 0) {
-                Button(action: action) {
-                    Text(actionTitle)
-                        .font(.appFont(18))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+            if let actionTitle, let action {
+                VStack(spacing: 0) {
+                    Button(action: action) {
+                        Text(actionTitle)
+                            .font(.appFont(18))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.roundedRectangle(radius: 16))
+                    .tint(.yellow)
+                    .foregroundStyle(.black)
+                    .disabled(!isActionEnabled)
                 }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.roundedRectangle(radius: 16))
-                .tint(.yellow)
-                .foregroundStyle(.black)
-                .disabled(!isActionEnabled)
+                .padding(.horizontal, iOSAppTheme.screenPadding)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(iOSAppTheme.screenBackground.opacity(0.98))
             }
-            .padding(.horizontal, iOSAppTheme.screenPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-            .background(iOSAppTheme.screenBackground.opacity(0.98))
         }
     }
 }

@@ -57,6 +57,7 @@ struct KeyVoxApp: App {
                     case .active:
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
+                        onboardingStore.armPendingKeyboardTourRouteIfNeeded()
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()

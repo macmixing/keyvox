@@ -24,20 +24,9 @@ struct OnboardingSetupScreen: View {
         _keyboardAccessProbe = StateObject(wrappedValue: resolvedKeyboardAccessProbe)
     }
 
-    private var setupState: iOSOnboardingSetupState {
-        iOSOnboardingSetupState(
-            isModelReady: modelManager.installState == .ready,
-            isMicrophonePermissionGranted: microphonePermissionController.status == .granted,
-            isKeyboardAccessConfirmed: keyboardAccessProbe.hasConfirmedKeyboardAccess
-        )
-    }
-
     var body: some View {
         OnboardingScreenScaffold(
-            title: "Set up KeyVox",
-            actionTitle: "Start using",
-            isActionEnabled: setupState.canContinue,
-            action: onboardingStore.completeOnboarding
+            title: "Set up KeyVox"
         ) {
             VStack(alignment: .leading, spacing: 16) {
                 modelRequirementRow

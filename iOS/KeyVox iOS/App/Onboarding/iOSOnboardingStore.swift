@@ -22,6 +22,7 @@ final class iOSOnboardingStore: ObservableObject {
         }
     }
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
+    @Published private(set) var isPendingKeyboardTourRouteArmed: Bool
 
     var shouldShowOnboarding: Bool {
         !hasCompletedOnboarding || isForceOnboardingLaunch
@@ -31,15 +32,21 @@ final class iOSOnboardingStore: ObservableObject {
         !hasPassedWelcomeScreenThisLaunch && (isForceOnboardingLaunch || !hasCompletedWelcomeScreen)
     }
 
+    var shouldShowKeyboardTourScreen: Bool {
+        hasPendingKeyboardTour && isPendingKeyboardTourRouteArmed && shouldShowOnboarding
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults, runtimeFlags: iOSRuntimeFlags) {
         self.defaults = defaults
+        let persistedPendingKeyboardTour = defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
         hasCompletedOnboarding = defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboarding) as? Bool ?? false
         hasCompletedWelcomeScreen = defaults.object(forKey: iOSUserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
-        hasPendingKeyboardTour = defaults.object(forKey: iOSUserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
+        hasPendingKeyboardTour = persistedPendingKeyboardTour
         hasPassedWelcomeScreenThisLaunch = false
+        isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
     }
 
     func completeOnboarding() {
@@ -49,14 +56,26 @@ final class iOSOnboardingStore: ObservableObject {
 
     func recordPendingKeyboardTour() {
         hasPendingKeyboardTour = true
+        isPendingKeyboardTourRouteArmed = false
     }
 
     func clearPendingKeyboardTour() {
         hasPendingKeyboardTour = false
+        isPendingKeyboardTourRouteArmed = false
     }
 
     func completeWelcomeScreen() {
         hasCompletedWelcomeScreen = true
         hasPassedWelcomeScreenThisLaunch = true
+    }
+
+    func completeKeyboardTour() {
+        clearPendingKeyboardTour()
+        completeOnboarding()
+    }
+
+    func armPendingKeyboardTourRouteIfNeeded() {
+        guard hasPendingKeyboardTour else { return }
+        isPendingKeyboardTourRouteArmed = true
     }
 }

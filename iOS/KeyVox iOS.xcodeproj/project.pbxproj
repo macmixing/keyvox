@@ -99,6 +99,7 @@
 		B30000092FD5000100AA0001 /* OnboardingRequirementRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */; };
 		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		B300000B2FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* iOSOnboardingDownloadNetworkMonitor.swift */; };
+		B300000C2FD5000100AA0001 /* OnboardingKeyboardTourScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000062FD5000100AA0001 /* OnboardingKeyboardTourScreen.swift */; };
 		AA1000012F70000100000001 /* iOSAppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* iOSAppTypography.swift */; };
 		AA1000022F70000100000001 /* iOSAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* iOSAppTheme.swift */; };
 		AA1000032F70000100000001 /* iOSAppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* iOSAppCard.swift */; };
@@ -232,6 +233,7 @@
 		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
 		B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRequirementRow.swift; sourceTree = "<group>"; };
 		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
+		B20000062FD5000100AA0001 /* OnboardingKeyboardTourScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourScreen.swift; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* iOSAppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* iOSAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* iOSAppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAppCard.swift; sourceTree = "<group>"; };
@@ -549,6 +551,7 @@
 			isa = PBXGroup;
 			children = (
 				B20000012FD5000100AA0001 /* OnboardingFlowView.swift */,
+				B20000062FD5000100AA0001 /* OnboardingKeyboardTourScreen.swift */,
 				B20000042FD5000100AA0001 /* OnboardingRequirementRow.swift */,
 				B20000022FD5000100AA0001 /* OnboardingScreenScaffold.swift */,
 				B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */,
@@ -867,6 +870,7 @@
 				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
 				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
 				B30000062FD5000100AA0001 /* OnboardingFlowView.swift in Sources */,
+				B300000C2FD5000100AA0001 /* OnboardingKeyboardTourScreen.swift in Sources */,
 				B30000072FD5000100AA0001 /* OnboardingScreenScaffold.swift in Sources */,
 				B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,
 				B30000092FD5000100AA0001 /* OnboardingRequirementRow.swift in Sources */,
