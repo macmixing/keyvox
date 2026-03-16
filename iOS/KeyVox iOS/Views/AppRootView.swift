@@ -13,8 +13,12 @@ struct AppRootView: View {
         onboardingStore.shouldShowOnboarding ? .onboarding : .main
     }
 
+    private var shouldShowReturnToHostView: Bool {
+        !onboardingStore.shouldShowOnboarding && transcriptionManager.isReturnToHostViewPresented
+    }
+
     var body: some View {
-        if transcriptionManager.isReturnToHostViewPresented {
+        if shouldShowReturnToHostView {
             ReturnToHostView()
         } else {
             switch destination {

@@ -4,6 +4,7 @@ struct OnboardingKeyboardTourScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboardingStore: iOSOnboardingStore
     @State private var text = ""
+    @State private var hasFreshKeyboardAccessConfirmation = false
     @StateObject private var keyboardObserver = KeyboardObserver()
     @StateObject private var keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe
 
@@ -31,7 +32,7 @@ struct OnboardingKeyboardTourScreen: View {
                         onboardingStore.completeKeyboardTour()
                     }
                     .tint(iOSAppTheme.accent)
-                    .disabled(!keyboardAccessProbe.hasConfirmedKeyboardAccess)
+                    .disabled(!hasFreshKeyboardAccessConfirmation)
                 }
                 .padding(.horizontal, iOSAppTheme.screenPadding)
                 .padding(.top, 8)
@@ -40,10 +41,12 @@ struct OnboardingKeyboardTourScreen: View {
             }
         }
         .task {
+            hasFreshKeyboardAccessConfirmation = false
             keyboardAccessProbe.refresh()
         }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             guard newPhase == .active else { return }
+            hasFreshKeyboardAccessConfirmation = false
             keyboardAccessProbe.refresh()
         }
         .onChange(of: keyboardObserver.keyboardHeight, initial: false) { _, newHeight in
@@ -70,10 +73,12 @@ struct OnboardingKeyboardTourScreen: View {
 
     private func refreshAfterKeyboardPresentation() {
         keyboardAccessProbe.refresh()
+        hasFreshKeyboardAccessConfirmation = keyboardAccessProbe.hasConfirmedKeyboardAccess
 
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(250))
             keyboardAccessProbe.refresh()
+            hasFreshKeyboardAccessConfirmation = keyboardAccessProbe.hasConfirmedKeyboardAccess
         }
     }
 }
