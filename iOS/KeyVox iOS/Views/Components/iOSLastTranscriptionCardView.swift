@@ -81,7 +81,16 @@ struct iOSLastTranscriptionCardView: View {
 
     @ViewBuilder
     private func copyButton(for text: String) -> some View {
-        Button {
+        iOSAppActionButton(
+            title: "Copy",
+            systemImage: didCopy ? "checkmark" : "doc.on.doc",
+            systemImageColor: didCopy ? .black : nil,
+            systemImageWeight: didCopy ? .black : .regular,
+            style: .primary,
+            minWidth: 84,
+            size: .compact,
+            fontSize: 14
+        ) {
             UIPasteboard.general.string = text
             didCopy = true
 
@@ -89,12 +98,6 @@ struct iOSLastTranscriptionCardView: View {
                 try? await Task.sleep(for: .seconds(1.2))
                 didCopy = false
             }
-        } label: {
-            Label(didCopy ? "Copied" : "Copy", systemImage: didCopy ? "checkmark" : "doc.on.doc")
         }
-        .font(.appFont(12))
-        .buttonStyle(.borderedProminent)
-        .tint(.indigo)
-        .foregroundStyle(.black)
     }
 }

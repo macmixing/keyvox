@@ -152,7 +152,7 @@ struct OnboardingSetupScreen: View {
         case .undetermined:
             return "Allow access"
         case .denied:
-            return "Open KeyVox Settings"
+            return "Open Settings"
         case .granted:
             return nil
         }
@@ -208,7 +208,7 @@ struct OnboardingSetupScreen: View {
             return "Check again"
         }
 
-        return "Open KeyVox Settings"
+        return "Open Settings"
     }
 
     private var keyboardRequirementAction: (() -> Void)? {

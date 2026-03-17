@@ -46,10 +46,13 @@ struct OnboardingRequirementRow: View {
                 }
 
                 if let actionTitle, let action {
-                    Button(actionTitle, action: action)
-                        .buttonStyle(.bordered)
-                        .tint(.indigo.opacity(0.8))
-                        .font(.appFont(14, variant: .light))
+                    iOSAppActionButton(
+                        title: actionTitle,
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 15,
+                        action: action
+                    )
                 }
             }
         }

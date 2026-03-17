@@ -13,7 +13,11 @@ struct iOSAppActionButton: View {
     }
 
     let title: String
+    var systemImage: String? = nil
+    var systemImageColor: Color? = nil
+    var systemImageWeight: Font.Weight = .regular
     let style: Style
+    var minWidth: CGFloat? = nil
     var width: CGFloat? = nil
     var fillsWidth: Bool = false
     var size: Size = .regular
@@ -23,13 +27,11 @@ struct iOSAppActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.appFont(fontSize))
-                .foregroundColor(foregroundColor)
+            buttonLabel
                 .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, verticalPadding)
                 .frame(
-                    minWidth: fillsWidth ? nil : width,
+                    minWidth: fillsWidth ? nil : (width ?? minWidth),
                     idealWidth: fillsWidth ? nil : width,
                     maxWidth: fillsWidth ? .infinity : width,
                     minHeight: minHeight,
@@ -47,6 +49,25 @@ struct iOSAppActionButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+    }
+
+    @ViewBuilder
+    private var buttonLabel: some View {
+        if let systemImage {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: fontSize, weight: systemImageWeight))
+                    .foregroundStyle(systemImageColor ?? foregroundColor)
+
+                Text(title)
+                    .font(.appFont(fontSize))
+                    .foregroundStyle(foregroundColor)
+            }
+        } else {
+            Text(title)
+                .font(.appFont(fontSize))
+                .foregroundStyle(foregroundColor)
+        }
     }
 
     private var horizontalPadding: CGFloat {
