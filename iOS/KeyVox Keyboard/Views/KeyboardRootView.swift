@@ -69,7 +69,6 @@ final class KeyboardRootView: UIView {
         toolbarMode: KeyboardToolbarMode,
         isTrackpadModeActive: Bool
     ) {
-        let showsToolbar = toolbarMode != .hidden
         let showsBrandedToolbar = toolbarMode == .branded
         let showsFullAccessWarning = toolbarMode == .fullAccessWarning
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
@@ -106,9 +105,14 @@ final class KeyboardRootView: UIView {
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar
-        leadingControlsStack.isHidden = !showsToolbar
-        trailingControlsStack.isHidden = !showsToolbar
-        centerContainerView.isHidden = !showsToolbar
+
+        // Keep the toolbar row containers visible even when the toolbar content is hidden.
+        // Hiding the arranged containers causes the top row to collapse and the key grid to
+        // jump, which shows up as a flash in the unconfigured keyboard state.
+        leadingControlsStack.isHidden = false
+        trailingControlsStack.isHidden = false
+        centerContainerView.isHidden = false
+
         logoBarView.isHidden = !showsBrandedToolbar
         fullAccessWarningContainer.isHidden = !showsFullAccessWarning
         fullAccessInfoButton.isHidden = !showsFullAccessWarning
