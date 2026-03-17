@@ -4,12 +4,12 @@ struct OnboardingWelcomeScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        iOSAppScrollScreen {
+        AppScrollScreen {
             VStack(spacing: 0) {
                 Spacer()
                     .frame(height: 50)
 
-                iOSLogoBarView(size: 100)
+                LogoBarView(size: 100)
                     .padding(.bottom, 32)
 
                 Text("Welcome to KeyVox")
@@ -28,7 +28,7 @@ struct OnboardingWelcomeScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
-                iOSAppActionButton(
+                AppActionButton(
                     title: "Let's go",
                     style: .primary,
                     fillsWidth: true,
@@ -37,10 +37,10 @@ struct OnboardingWelcomeScreen: View {
                 )
                 .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, iOSAppTheme.screenPadding)
+            .padding(.horizontal, AppTheme.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 12)
-            .background(iOSAppTheme.screenBackground.opacity(0.98))
+            .background(AppTheme.screenBackground.opacity(0.98))
         }
     }
 }

@@ -3,21 +3,21 @@ import UIKit
 
 struct OnboardingSetupScreen: View {
     @Environment(\.scenePhase) private var scenePhase
-    @EnvironmentObject private var modelManager: iOSModelManager
-    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
-    @StateObject private var downloadNetworkMonitor: iOSOnboardingDownloadNetworkMonitor
-    @StateObject private var microphonePermissionController: iOSOnboardingMicrophonePermissionController
-    @StateObject private var keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe
+    @EnvironmentObject private var modelManager: ModelManager
+    @EnvironmentObject private var onboardingStore: OnboardingStore
+    @StateObject private var downloadNetworkMonitor: OnboardingDownloadNetworkMonitor
+    @StateObject private var microphonePermissionController: OnboardingMicrophonePermissionController
+    @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
 
     @MainActor
     init(
-        downloadNetworkMonitor: iOSOnboardingDownloadNetworkMonitor? = nil,
-        microphonePermissionController: iOSOnboardingMicrophonePermissionController? = nil,
-        keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe? = nil
+        downloadNetworkMonitor: OnboardingDownloadNetworkMonitor? = nil,
+        microphonePermissionController: OnboardingMicrophonePermissionController? = nil,
+        keyboardAccessProbe: OnboardingKeyboardAccessProbe? = nil
     ) {
-        let resolvedDownloadNetworkMonitor = downloadNetworkMonitor ?? iOSOnboardingDownloadNetworkMonitor()
-        let resolvedMicrophonePermissionController = microphonePermissionController ?? iOSOnboardingMicrophonePermissionController()
-        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? iOSOnboardingKeyboardAccessProbe()
+        let resolvedDownloadNetworkMonitor = downloadNetworkMonitor ?? OnboardingDownloadNetworkMonitor()
+        let resolvedMicrophonePermissionController = microphonePermissionController ?? OnboardingMicrophonePermissionController()
+        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? OnboardingKeyboardAccessProbe()
 
         _downloadNetworkMonitor = StateObject(wrappedValue: resolvedDownloadNetworkMonitor)
         _microphonePermissionController = StateObject(wrappedValue: resolvedMicrophonePermissionController)
@@ -25,7 +25,7 @@ struct OnboardingSetupScreen: View {
     }
 
     var body: some View {
-        iOSAppScrollScreen {
+        AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Set up KeyVox")
                     .font(.appFont(34))

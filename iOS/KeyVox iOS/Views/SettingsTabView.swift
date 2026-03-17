@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct SettingsTabView: View {
-    @EnvironmentObject private var modelManager: iOSModelManager
-    @EnvironmentObject private var settingsStore: iOSAppSettingsStore
+    @EnvironmentObject private var modelManager: ModelManager
+    @EnvironmentObject private var settingsStore: AppSettingsStore
 
     var body: some View {
-        iOSAppScrollScreen {
+        AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 sessionSection
                 keyboardSection
@@ -20,14 +20,14 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private var sessionSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Session")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
 
                 Picker("Disable Session After", selection: $settingsStore.sessionDisableTiming) {
-                    ForEach(iOSSessionDisableTiming.allCases) { timing in
+                    ForEach(SessionDisableTiming.allCases) { timing in
                         Text(timing.displayName).tag(timing)
                     }
                 }
@@ -53,7 +53,7 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private var keyboardSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Keyboard")
                     .font(.appFont(17))
@@ -74,7 +74,7 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private var audioSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Audio")
                     .font(.appFont(17))
@@ -97,7 +97,7 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private var modelSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Model")
                     .font(.appFont(17))
@@ -141,6 +141,6 @@ struct SettingsTabView: View {
 
 #Preview {
     SettingsTabView()
-        .environmentObject(iOSAppServiceRegistry.shared.modelManager)
-        .environmentObject(iOSAppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

@@ -2,7 +2,7 @@ import Foundation
 import CoreFoundation
 
 final class KeyVoxKeyboardBridge {
-    private let appGroupID = iOSSharedPaths.appGroupID
+    private let appGroupID = SharedPaths.appGroupID
  
     var onStartRecordingCommand: (() -> Void)?
     var onStopRecordingCommand: (() -> Void)?

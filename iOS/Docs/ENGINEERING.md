@@ -80,21 +80,21 @@ The widget extension does **not** own session policy, dictation state, or busine
 
 ## Composition Root
 
-`iOSAppServiceRegistry` is the only sanctioned composition root for the containing app.
+`AppServiceRegistry` is the only sanctioned composition root for the containing app.
 
 It builds and wires:
 
 - `DictionaryStore`
-- `iOSAppSettingsStore`
-- `iOSOnboardingStore`
-- `iOSWeeklyWordStatsStore`
+- `AppSettingsStore`
+- `OnboardingStore`
+- `WeeklyWordStatsStore`
 - `WhisperService`
 - `TranscriptionPostProcessor`
-- `iOSModelManager`
+- `ModelManager`
 - `KeyVoxKeyboardBridge`
-- `iOSTranscriptionManager`
-- `iOSiCloudSyncCoordinator`
-- `iOSWeeklyWordStatsCloudSync`
+- `TranscriptionManager`
+- `CloudSyncCoordinator`
+- `WeeklyWordStatsCloudSync`
 - `KeyVoxSessionLiveActivityCoordinator`
 - `KeyVoxURLRouter`
 
@@ -110,13 +110,13 @@ Service ownership rules:
 
 Current root behavior:
 
-- show onboarding when `iOSOnboardingStore.shouldShowOnboarding` is `true`
+- show onboarding when `OnboardingStore.shouldShowOnboarding` is `true`
 - otherwise show the main tab shell
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 
 ### Onboarding Store Rules
 
-`iOSOnboardingStore` owns:
+`OnboardingStore` owns:
 
 - `hasCompletedOnboarding`
 - `hasCompletedWelcomeScreen`
@@ -181,7 +181,7 @@ Rules:
 - it is full-screen, not a sheet
 - it autofocuses a text field so the KeyVox keyboard can appear immediately
 - it uses `KeyboardObserver` height to pin the input above the keyboard
-- it is driven by `iOSOnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
+- it is driven by `OnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
 - `Next` is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
 - stale old keyboard-ready state must not be enough to finish onboarding
 - completing the keyboard tour clears the pending keyboard-tour handoff, but onboarding itself finishes on the following customize-app screen
@@ -204,7 +204,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - extension-side confirmation that the keyboard was presented
 - extension-side confirmation that the keyboard launched with Full Access through the App Group bridge
 
-`iOSOnboardingKeyboardAccessProbe` is the app-side read surface for:
+`OnboardingKeyboardAccessProbe` is the app-side read surface for:
 
 - `AppleKeyboards` enablement
 - `keyboardOnboardingPresentation_timestamp`
@@ -316,7 +316,7 @@ Cold path:
 
 ## Session Lifecycle and Safety Policy
 
-`iOSTranscriptionManager` owns session policy through `iOSSessionPolicy`.
+`TranscriptionManager` owns session policy through `SessionPolicy`.
 
 ### Public Session State
 
@@ -338,7 +338,7 @@ Cold path:
 - enabling a session warms the recorder without starting an utterance
 - disabling a session while idle tears down immediately
 - disabling a session during an utterance defers shutdown until the current work finishes
-- the Home/Settings surfaces read and configure session timing, but `iOSTranscriptionManager` remains the runtime owner
+- the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
 
 ### Safety Rules
 
@@ -349,7 +349,7 @@ Cold path:
 
 ## Audio Capture Contract
 
-`iOSAudioRecorder` owns iOS-specific audio behavior.
+`AudioRecorder` owns iOS-specific audio behavior.
 
 - audio session category: `.playAndRecord`
 - audio session options: `.defaultToSpeaker`, `.mixWithOthers`, `.allowBluetoothHFP`
@@ -381,7 +381,7 @@ When recording stops:
 2. internal gaps are removed
 3. silence classification runs
 4. true silence and likely silence clear `outputFrames`
-5. accepted captures become `iOSStoppedCapture.outputFrames`
+5. accepted captures become `StoppedCapture.outputFrames`
 
 Interrupted captures follow the same post-stop processing rules before they are staged for recovery.
 
@@ -389,7 +389,7 @@ Interrupted captures follow the same post-stop processing rules before they are 
 
 Interrupted capture recovery is now a first-class iOS runtime feature.
 
-`iOSTranscriptionManager+InterruptedCaptureRecovery` owns:
+`TranscriptionManager+InterruptedCaptureRecovery` owns:
 
 - staging accepted interrupted captures
 - persisting recovery payloads
@@ -406,7 +406,7 @@ Rules:
 
 ## Model Installation, Background Downloads, and Recovery
 
-`iOSModelManager` is the source of truth for install lifecycle.
+`ModelManager` is the source of truth for install lifecycle.
 
 ### Install Flow
 
@@ -437,7 +437,7 @@ Partial installs are never treated as ready.
 
 ### Background Download Rules
 
-`iOSModelBackgroundDownloadCoordinator` owns the background `URLSession`.
+`ModelBackgroundDownloadCoordinator` owns the background `URLSession`.
 
 Rules:
 
@@ -451,7 +451,7 @@ Important force-quit nuance:
 
 - iOS will not transparently continue a user-force-quit app's background transfer work
 - the correct behavior is to restart or resume the persisted job on relaunch
-- this is why `iOSModelManager.handleAppDidBecomeActive()` and `iOSModelBackgroundDownloadCoordinator.synchronizeWithSystemTasks()` exist
+- this is why `ModelManager.handleAppDidBecomeActive()` and `ModelBackgroundDownloadCoordinator.synchronizeWithSystemTasks()` exist
 
 ### Failure Policy
 
@@ -467,7 +467,7 @@ The containing app owns live dictionary and style state, while the dictation pip
 ### Dictionary Rules
 
 - `DictionaryStore` is created with the App Group-backed base directory
-- `iOSTranscriptionManager` observes dictionary entries and refreshes the post-processor plus Whisper hint prompt
+- `TranscriptionManager` observes dictionary entries and refreshes the post-processor plus Whisper hint prompt
 - hint prompts are bounded to the newest entries, up to `200` phrases and `1200` characters
 
 ### Style Rules
@@ -478,14 +478,14 @@ The containing app owns live dictionary and style state, while the dictation pip
 
 ### iCloud Sync Rules
 
-`iOSiCloudSyncCoordinator` syncs:
+`CloudSyncCoordinator` syncs:
 
 - dictionary payloads
 - trigger binding timestamps
 - auto paragraphs timestamps
 - list formatting timestamps
 
-`iOSWeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
+`WeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
 
 Weekly word stats merge by taking the maximum count seen for each device ID within the same week.
 

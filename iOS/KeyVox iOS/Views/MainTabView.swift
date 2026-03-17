@@ -29,7 +29,7 @@ struct MainTabView: View {
             .navigationTitle(selectedTab == .home ? "" : selectedTab.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                iOSAppToolbarContent(selectedTab: selectedTab)
+                AppToolbarContent(selectedTab: selectedTab)
             }
         }
     }
@@ -103,9 +103,9 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .environmentObject(iOSAppServiceRegistry.shared.transcriptionManager)
-        .environmentObject(iOSAppServiceRegistry.shared.modelManager)
-        .environmentObject(iOSAppServiceRegistry.shared.settingsStore)
-        .environmentObject(iOSAppServiceRegistry.shared.weeklyWordStatsStore)
-        .environmentObject(iOSAppServiceRegistry.shared.dictionaryStore)
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
+        .environmentObject(AppServiceRegistry.shared.dictionaryStore)
 }

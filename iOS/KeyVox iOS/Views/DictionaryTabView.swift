@@ -31,7 +31,7 @@ struct DictionaryTabView: View {
 
     var body: some View {
         ZStack {
-            iOSAppTheme.screenBackground
+            AppTheme.screenBackground
                 .ignoresSafeArea()
 
             List {
@@ -86,7 +86,7 @@ struct DictionaryTabView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
-            .contentMargins(.top, iOSAppScrollScreen<EmptyView>.sharedTopContentInset, for: .scrollContent)
+            .contentMargins(.top, AppScrollScreen<EmptyView>.sharedTopContentInset, for: .scrollContent)
             .animation(.easeInOut(duration: 0.3), value: displayedEntries.map(\.id))
         }
         .safeAreaInset(edge: .bottom) {
@@ -167,9 +167,9 @@ private extension View {
         listRowInsets(
             EdgeInsets(
                 top: top,
-                leading: iOSAppTheme.screenPadding,
+                leading: AppTheme.screenPadding,
                 bottom: bottom,
-                trailing: iOSAppTheme.screenPadding
+                trailing: AppTheme.screenPadding
             )
         )
         .listRowSeparator(.hidden)
@@ -180,9 +180,9 @@ private extension View {
         listRowInsets(
             EdgeInsets(
                 top: 0,
-                leading: iOSAppTheme.screenPadding,
+                leading: AppTheme.screenPadding,
                 bottom: bottom,
-                trailing: iOSAppTheme.screenPadding
+                trailing: AppTheme.screenPadding
             )
         )
         .listRowSeparator(.hidden)
@@ -192,5 +192,5 @@ private extension View {
 
 #Preview {
     DictionaryTabView(isActive: true)
-        .environmentObject(iOSAppServiceRegistry.shared.dictionaryStore)
+        .environmentObject(AppServiceRegistry.shared.dictionaryStore)
 }

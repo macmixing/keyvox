@@ -27,11 +27,11 @@ struct DictionaryEntryRowView: View {
         .padding(.horizontal, Layout.horizontalPadding)
         .padding(.vertical, Layout.verticalPadding)
         .background(
-            RoundedRectangle(cornerRadius: iOSAppTheme.rowCornerRadius)
-                .fill(iOSAppTheme.rowFill)
+            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                .fill(AppTheme.rowFill)
                 .overlay(
-                    RoundedRectangle(cornerRadius: iOSAppTheme.rowCornerRadius)
-                        .stroke(iOSAppTheme.rowStroke, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                        .stroke(AppTheme.rowStroke, lineWidth: 1)
                 )
         )
         .contextMenu {
@@ -58,7 +58,7 @@ struct DictionaryEntryRowView: View {
             .tint(.red)
 
             Button("Edit", systemImage: "pencil", action: onEdit)
-                .tint(iOSAppTheme.accent)
+                .tint(AppTheme.accent)
         }
         .confirmationDialog(
             "Delete Entry?",

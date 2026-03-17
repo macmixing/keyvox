@@ -9,39 +9,39 @@ struct OnboardingKeyboardTourScreen: View {
     }
 
     @Environment(\.scenePhase) private var scenePhase
-    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
-    @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
+    @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @State private var text = ""
-    @State private var tourState = iOSOnboardingKeyboardTourState()
+    @State private var tourState = OnboardingKeyboardTourState()
     @StateObject private var keyboardObserver = KeyboardObserver()
-    @StateObject private var keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe
+    @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
 
     @MainActor
-    init(keyboardAccessProbe: iOSOnboardingKeyboardAccessProbe? = nil) {
-        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? iOSOnboardingKeyboardAccessProbe()
+    init(keyboardAccessProbe: OnboardingKeyboardAccessProbe? = nil) {
+        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? OnboardingKeyboardAccessProbe()
         _keyboardAccessProbe = StateObject(wrappedValue: resolvedKeyboardAccessProbe)
     }
 
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                iOSAppTheme.screenBackground
+                AppTheme.screenBackground
                     .ignoresSafeArea()
 
                 sceneContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .padding(.horizontal, iOSAppTheme.screenPadding)
+                    .padding(.horizontal, AppTheme.screenPadding)
                     .padding(.bottom, sceneBottomPadding(for: geometry))
 
                 inputBar
-                    .padding(.horizontal, iOSAppTheme.screenPadding)
+                    .padding(.horizontal, AppTheme.screenPadding)
                     .padding(.bottom, bottomPadding(for: geometry))
             }
             .safeAreaInset(edge: .top) {
                 HStack {
                     Spacer()
 
-                    iOSAppActionButton(
+                    AppActionButton(
                         title: "Next",
                         style: .primary,
                         size: .compact,
@@ -50,14 +50,14 @@ struct OnboardingKeyboardTourScreen: View {
                         action: onboardingStore.completeKeyboardTour
                     )
                 }
-                .padding(.horizontal, iOSAppTheme.screenPadding)
+                .padding(.horizontal, AppTheme.screenPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
-                .background(iOSAppTheme.screenBackground.opacity(0.98))
+                .background(AppTheme.screenBackground.opacity(0.98))
             }
         }
         .task {
-            tourState = iOSOnboardingKeyboardTourState()
+            tourState = OnboardingKeyboardTourState()
             keyboardAccessProbe.refresh()
             syncKeyboardPresentationState()
         }
@@ -89,7 +89,7 @@ struct OnboardingKeyboardTourScreen: View {
     }
 
     private var inputBar: some View {
-        iOSAppCard {
+        AppCard {
             AutoFocusTextField(
                 text: $text,
                 placeholder: "",

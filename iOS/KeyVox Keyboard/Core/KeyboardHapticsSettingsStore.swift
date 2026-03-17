@@ -8,6 +8,6 @@ struct KeyboardHapticsSettingsStore {
     }
 
     var isKeypressHapticsEnabled: Bool {
-        defaults.object(forKey: iOSUserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
+        defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
     }
 }

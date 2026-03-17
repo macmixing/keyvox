@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct OnboardingCustomizeAppScreen: View {
-    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
+    @EnvironmentObject private var onboardingStore: OnboardingStore
 
     var body: some View {
-        iOSAppScrollScreen {
+        AppScrollScreen {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Customize KeyVox")
                     .font(.appFont(34))
@@ -16,7 +16,7 @@ struct OnboardingCustomizeAppScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
-                iOSAppActionButton(
+                AppActionButton(
                     title: "Finish",
                     style: .primary,
                     fillsWidth: true,
@@ -25,10 +25,10 @@ struct OnboardingCustomizeAppScreen: View {
                 )
                 .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, iOSAppTheme.screenPadding)
+            .padding(.horizontal, AppTheme.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 12)
-            .background(iOSAppTheme.screenBackground.opacity(0.98))
+            .background(AppTheme.screenBackground.opacity(0.98))
         }
     }
 }

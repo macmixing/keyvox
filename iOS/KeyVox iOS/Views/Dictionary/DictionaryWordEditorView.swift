@@ -108,7 +108,7 @@ struct DictionaryWordEditorView: View {
                     Button(mode.actionTitle) {
                         submit()
                     }
-                    .tint(iOSAppTheme.accent)
+                    .tint(AppTheme.accent)
                     .disabled(trimmedPhrase.isEmpty)
                 }
             }

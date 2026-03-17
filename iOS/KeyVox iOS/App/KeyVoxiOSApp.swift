@@ -4,18 +4,18 @@ import KeyVoxCore
 
 @main
 struct KeyVoxApp: App {
-    @UIApplicationDelegateAdaptor(iOSAppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject private var transcriptionManager: iOSTranscriptionManager
-    @StateObject private var modelManager: iOSModelManager
-    @StateObject private var settingsStore: iOSAppSettingsStore
-    @StateObject private var onboardingStore: iOSOnboardingStore
-    @StateObject private var weeklyWordStatsStore: iOSWeeklyWordStatsStore
+    @StateObject private var transcriptionManager: TranscriptionManager
+    @StateObject private var modelManager: ModelManager
+    @StateObject private var settingsStore: AppSettingsStore
+    @StateObject private var onboardingStore: OnboardingStore
+    @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
 
     init() {
-        let services = iOSAppServiceRegistry.shared
+        let services = AppServiceRegistry.shared
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
@@ -40,7 +40,7 @@ struct KeyVoxApp: App {
             for: .selected
         )
         configureLegacyBarAppearanceIfNeeded()
-        iOSModelDownloadBackgroundTasks.register()
+        ModelDownloadBackgroundTasks.register()
     }
 
     var body: some Scene {
@@ -58,7 +58,7 @@ struct KeyVoxApp: App {
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
-                            isKeyboardEnabledInSystemSettings: iOSOnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
+                            isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()

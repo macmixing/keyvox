@@ -6,8 +6,8 @@ struct AppRootView: View {
         case main
     }
 
-    @EnvironmentObject private var onboardingStore: iOSOnboardingStore
-    @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
+    @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var transcriptionManager: TranscriptionManager
 
     private var destination: RootDestination {
         onboardingStore.shouldShowOnboarding ? .onboarding : .main
@@ -33,10 +33,10 @@ struct AppRootView: View {
 
 #Preview {
     AppRootView()
-        .environmentObject(iOSAppServiceRegistry.shared.transcriptionManager)
-        .environmentObject(iOSAppServiceRegistry.shared.modelManager)
-        .environmentObject(iOSAppServiceRegistry.shared.settingsStore)
-        .environmentObject(iOSAppServiceRegistry.shared.onboardingStore)
-        .environmentObject(iOSAppServiceRegistry.shared.weeklyWordStatsStore)
-        .environmentObject(iOSAppServiceRegistry.shared.dictionaryStore)
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.onboardingStore)
+        .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
+        .environmentObject(AppServiceRegistry.shared.dictionaryStore)
 }

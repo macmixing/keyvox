@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct HomeTabView: View {
-    @EnvironmentObject private var transcriptionManager: iOSTranscriptionManager
-    @EnvironmentObject private var weeklyWordStatsStore: iOSWeeklyWordStatsStore
+    @EnvironmentObject private var transcriptionManager: TranscriptionManager
+    @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
 
     var body: some View {
-        iOSAppScrollScreen {
+        AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 weeklyStatsSection
                 lastTranscriptionSection
@@ -21,7 +21,7 @@ struct HomeTabView: View {
 
     @ViewBuilder
     private var weeklyStatsSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .center, spacing: -4) {
                 Text("\(weeklyWordStatsStore.combinedWordCount.formatted())")
                     .font(.appFont(65))
@@ -41,7 +41,7 @@ struct HomeTabView: View {
 
     @ViewBuilder
     private var lastTranscriptionSection: some View {
-        iOSLastTranscriptionCardView(
+        LastTranscriptionCardView(
             text: transcriptionManager.isRecoveringInterruptedCapture ? nil : transcriptionManager.lastTranscriptionText,
             isLoading: transcriptionManager.isRecoveringInterruptedCapture
         )
@@ -50,7 +50,7 @@ struct HomeTabView: View {
     #if DEBUG
     @ViewBuilder
     private var diagnosticsSection: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Diagnostics")
                     .font(.appFont(17))
@@ -88,6 +88,6 @@ struct HomeTabView: View {
 
 #Preview {
     HomeTabView()
-        .environmentObject(iOSAppServiceRegistry.shared.transcriptionManager)
-        .environmentObject(iOSAppServiceRegistry.shared.weeklyWordStatsStore)
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
 }

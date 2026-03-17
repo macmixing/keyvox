@@ -2,9 +2,9 @@ import Foundation
 
 @MainActor
 final class KeyVoxURLRouter {
-    private let transcriptionManager: iOSTranscriptionManager
+    private let transcriptionManager: TranscriptionManager
 
-    init(transcriptionManager: iOSTranscriptionManager) {
+    init(transcriptionManager: TranscriptionManager) {
         self.transcriptionManager = transcriptionManager
     }
 

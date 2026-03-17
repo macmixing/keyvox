@@ -5,7 +5,7 @@ struct ReturnToHostView: View {
     
     var body: some View {
         ZStack {
-            iOSAppTheme.screenBackground.ignoresSafeArea()
+            AppTheme.screenBackground.ignoresSafeArea()
             
             VStack(spacing: 30) {
                 Spacer()

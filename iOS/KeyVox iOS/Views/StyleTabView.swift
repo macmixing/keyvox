@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct StyleTabView: View {
-    @EnvironmentObject private var settingsStore: iOSAppSettingsStore
+    @EnvironmentObject private var settingsStore: AppSettingsStore
 
     var body: some View {
-        iOSAppScrollScreen {
-            iOSAppCard {
+        AppScrollScreen {
+            AppCard {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Style")
                         .font(.appFont(17))
@@ -30,5 +30,5 @@ struct StyleTabView: View {
 
 #Preview {
     StyleTabView()
-        .environmentObject(iOSAppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

@@ -8,11 +8,11 @@ struct KeyboardCapsLockStateStore {
     }
 
     var isEnabled: Bool {
-        defaults.object(forKey: iOSUserDefaultsKeys.capsLockEnabled) as? Bool ?? false
+        defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
     }
 
     func setEnabled(_ isEnabled: Bool) {
-        defaults.set(isEnabled, forKey: iOSUserDefaultsKeys.capsLockEnabled)
+        defaults.set(isEnabled, forKey: UserDefaultsKeys.capsLockEnabled)
     }
 
     @discardableResult

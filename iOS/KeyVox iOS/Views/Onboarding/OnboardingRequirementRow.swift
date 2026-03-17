@@ -25,7 +25,7 @@ struct OnboardingRequirementRow: View {
     }
 
     var body: some View {
-        iOSAppCard {
+        AppCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: isComplete ? "checkmark.circle.fill" : "circle")
@@ -46,7 +46,7 @@ struct OnboardingRequirementRow: View {
                 }
 
                 if let actionTitle, let action {
-                    iOSAppActionButton(
+                    AppActionButton(
                         title: actionTitle,
                         style: .primary,
                         size: .compact,

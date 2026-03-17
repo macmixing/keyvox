@@ -38,7 +38,7 @@ The current default runtime flow is:
 - Keep iOS-only platform behavior inside the iOS targets. Reusable speech, text, and dictionary logic should remain in `KeyVoxCore`.
 - Keep the keyboard extension thin. It should transport commands, render keyboard UI, and insert final text, not become an alternate owner of model, microphone, or onboarding state.
 - Keep app-extension and app-widget contracts centralized in `KeyVoxIPCBridge`; do not duplicate App Group keys, timestamps, or Darwin notification names.
-- Keep onboarding state separate from settings state. `iOSOnboardingStore` is the routing owner for onboarding progress and launch flags.
+- Keep onboarding state separate from settings state. `OnboardingStore` is the routing owner for onboarding progress and launch flags.
 - Keep the keyboard root layout stable. The full-access warning is intentionally layered as an overlay instead of participating in the main keyboard stack layout.
 - Update [`ENGINEERING.md`](ENGINEERING.md) whenever lifecycle rules, IPC contracts, onboarding routing, Live Activity behavior, or model recovery behavior change.
 
@@ -55,10 +55,10 @@ iOS/
 ├── KeyVox iOS.xctestplan
 ├── KeyVox iOS/
 │   ├── App/
-│   │   ├── iOSAppDelegate.swift
-│   │   ├── iOSAppServiceRegistry.swift
-│   │   ├── iOSSharedPaths.swift
-│   │   ├── iOSWeeklyWordStatsStore.swift
+│   │   ├── AppDelegate.swift
+│   │   ├── AppServiceRegistry.swift
+│   │   ├── SharedPaths.swift
+│   │   ├── WeeklyWordStatsStore.swift
 │   │   ├── KeyVoxIPCBridge.swift
 │   │   ├── KeyVoxKeyboardBridge.swift
 │   │   ├── KeyVoxSessionLiveActivityAttributes.swift
@@ -67,48 +67,48 @@ iOS/
 │   │   ├── KeyVoxURLRouter.swift
 │   │   ├── KeyVoxiOSApp.swift
 │   │   ├── Onboarding/
-│   │   │   ├── iOSOnboardingDownloadNetworkMonitor.swift
-│   │   │   ├── iOSOnboardingKeyboardAccessProbe.swift
-│   │   │   ├── iOSOnboardingKeyboardTourState.swift
-│   │   │   ├── iOSOnboardingMicrophonePermissionController.swift
-│   │   │   ├── iOSOnboardingSetupState.swift
-│   │   │   ├── iOSOnboardingStore.swift
-│   │   │   └── iOSRuntimeFlags.swift
+│   │   │   ├── OnboardingDownloadNetworkMonitor.swift
+│   │   │   ├── OnboardingKeyboardAccessProbe.swift
+│   │   │   ├── OnboardingKeyboardTourState.swift
+│   │   │   ├── OnboardingMicrophonePermissionController.swift
+│   │   │   ├── OnboardingSetupState.swift
+│   │   │   ├── OnboardingStore.swift
+│   │   │   └── RuntimeFlags.swift
 │   │   └── iCloud/
-│   │       ├── iOSAppSettingsStore.swift
-│   │       ├── iOSUserDefaultsKeys.swift
-│   │       ├── iOSWeeklyWordStatsCloudSync.swift
-│   │       ├── iOSiCloudSyncCoordinator.swift
+│   │       ├── AppSettingsStore.swift
+│   │       ├── UserDefaultsKeys.swift
+│   │       ├── WeeklyWordStatsCloudSync.swift
+│   │       ├── CloudSyncCoordinator.swift
 │   │       ├── KeyVoxiCloudKeys.swift
 │   │       └── KeyVoxiCloudPayloads.swift
 │   ├── Assets.xcassets/
 │   ├── Core/
 │   │   ├── Audio/
 │   │   │   ├── LiveInputSignalState.swift
-│   │   │   ├── iOSAudioRecorder.swift
-│   │   │   ├── iOSAudioRecorder+Session.swift
-│   │   │   ├── iOSAudioRecorder+StopPipeline.swift
-│   │   │   └── iOSAudioRecorder+Streaming.swift
+│   │   │   ├── AudioRecorder.swift
+│   │   │   ├── AudioRecorder+Session.swift
+│   │   │   ├── AudioRecorder+StopPipeline.swift
+│   │   │   └── AudioRecorder+Streaming.swift
 │   │   ├── ModelDownloader/
-│   │   │   ├── iOSModelBackgroundDownloadCoordinator.swift
-│   │   │   ├── iOSModelBackgroundDownloadJob.swift
-│   │   │   ├── iOSModelBackgroundDownloadJobStore.swift
-│   │   │   ├── iOSModelDownloadBackgroundTasks.swift
-│   │   │   ├── iOSModelDownloadURLs.swift
-│   │   │   ├── iOSModelInstallManifest.swift
-│   │   │   ├── iOSModelInstallState.swift
-│   │   │   ├── iOSModelManager.swift
-│   │   │   ├── iOSModelManager+InstallLifecycle.swift
-│   │   │   ├── iOSModelManager+Support.swift
-│   │   │   └── iOSModelManager+Validation.swift
+│   │   │   ├── ModelBackgroundDownloadCoordinator.swift
+│   │   │   ├── ModelBackgroundDownloadJob.swift
+│   │   │   ├── ModelBackgroundDownloadJobStore.swift
+│   │   │   ├── ModelDownloadBackgroundTasks.swift
+│   │   │   ├── ModelDownloadURLs.swift
+│   │   │   ├── ModelInstallManifest.swift
+│   │   │   ├── ModelInstallState.swift
+│   │   │   ├── ModelManager.swift
+│   │   │   ├── ModelManager+InstallLifecycle.swift
+│   │   │   ├── ModelManager+Support.swift
+│   │   │   └── ModelManager+Validation.swift
 │   │   └── Transcription/
-│   │       ├── iOSDictationService.swift
-│   │       ├── iOSInterruptedCaptureRecovery.swift
-│   │       ├── iOSInterruptedCaptureRecoveryStore.swift
-│   │       ├── iOSSessionPolicy.swift
-│   │       ├── iOSTranscriptionManager.swift
-│   │       ├── iOSTranscriptionManager+InterruptedCaptureRecovery.swift
-│   │       └── iOSTranscriptionManager+SessionLifecycle.swift
+│   │       ├── DictationService.swift
+│   │       ├── InterruptedCaptureRecovery.swift
+│   │       ├── InterruptedCaptureRecoveryStore.swift
+│   │       ├── SessionPolicy.swift
+│   │       ├── TranscriptionManager.swift
+│   │       ├── TranscriptionManager+InterruptedCaptureRecovery.swift
+│   │       └── TranscriptionManager+SessionLifecycle.swift
 │   ├── Info.plist
 │   ├── KeyVoxiOS.entitlements
 │   ├── Resources/
@@ -128,15 +128,15 @@ iOS/
 │   │   ├── StyleTabView.swift
 │   │   ├── Components/
 │   │   │   ├── LoopingVideoPlayer.swift
-│   │   │   ├── iOSAppActionButton.swift
-│   │   │   ├── iOSAppCard.swift
-│   │   │   ├── iOSAppIconTile.swift
-│   │   │   ├── iOSAppScrollScreen.swift
-│   │   │   ├── iOSAppTheme.swift
-│   │   │   ├── iOSAppToolbarContent.swift
-│   │   │   ├── iOSAppTypography.swift
-│   │   │   ├── iOSLastTranscriptionCardView.swift
-│   │   │   └── iOSLogoBarView.swift
+│   │   │   ├── AppActionButton.swift
+│   │   │   ├── AppCard.swift
+│   │   │   ├── AppIconTile.swift
+│   │   │   ├── AppScrollScreen.swift
+│   │   │   ├── AppTheme.swift
+│   │   │   ├── AppToolbarContent.swift
+│   │   │   ├── AppTypography.swift
+│   │   │   ├── LastTranscriptionCardView.swift
+│   │   │   └── LogoBarView.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
@@ -207,27 +207,27 @@ iOS/
 │   ├── App/
 │   │   ├── KeyVoxSessionLiveActivityCoordinatorTests.swift
 │   │   ├── KeyVoxURLRouteTests.swift
-│   │   ├── iOSAppSettingsStoreTests.swift
-│   │   ├── iOSModelManagerTests.swift
-│   │   ├── iOSOnboardingKeyboardAccessProbeTests.swift
-│   │   ├── iOSOnboardingKeyboardTourStateTests.swift
-│   │   ├── iOSOnboardingMicrophonePermissionControllerTests.swift
-│   │   ├── iOSOnboardingSetupStateTests.swift
-│   │   ├── iOSOnboardingStoreTests.swift
-│   │   ├── iOSSharedPathsTests.swift
-│   │   ├── iOSWeeklyWordStatsCloudSyncTests.swift
-│   │   ├── iOSWeeklyWordStatsStoreTests.swift
-│   │   └── iOSiCloudSyncCoordinatorTests.swift
+│   │   ├── AppSettingsStoreTests.swift
+│   │   ├── ModelManagerTests.swift
+│   │   ├── OnboardingKeyboardAccessProbeTests.swift
+│   │   ├── OnboardingKeyboardTourStateTests.swift
+│   │   ├── OnboardingMicrophonePermissionControllerTests.swift
+│   │   ├── OnboardingSetupStateTests.swift
+│   │   ├── OnboardingStoreTests.swift
+│   │   ├── SharedPathsTests.swift
+│   │   ├── WeeklyWordStatsCloudSyncTests.swift
+│   │   ├── WeeklyWordStatsStoreTests.swift
+│   │   └── CloudSyncCoordinatorTests.swift
 │   ├── Core/
 │   │   ├── Audio/
-│   │   │   ├── iOSAudioInputPreferenceResolverTests.swift
-│   │   │   └── iOSStoppedCaptureProcessorTests.swift
+│   │   │   ├── AudioInputPreferenceResolverTests.swift
+│   │   │   └── StoppedCaptureProcessorTests.swift
 │   │   ├── Keyboard/
 │   │   │   ├── KeyboardCursorTrackpadSupportTests.swift
 │   │   │   ├── KeyboardDictationControllerTests.swift
 │   │   │   └── KeyboardTextInputControllerTests.swift
 │   │   └── Transcription/
-│   │       └── iOSTranscriptionManagerTests.swift
+│   │       └── TranscriptionManagerTests.swift
 │   └── KeyVoxiOSTests.swift
 ├── Launch Screen.storyboard
 └── LaunchLogo.png
@@ -248,9 +248,9 @@ Packages/
   - Registers model-download background tasks.
   - Handles scene activation/background callbacks for transcription recovery, model recovery, and onboarding keyboard-tour arming.
   - Pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
-- `KeyVox iOS/App/iOSAppDelegate.swift`
-  - Receives background `URLSession` callbacks for model downloads and forwards them into `iOSModelManager`.
-- `KeyVox iOS/App/iOSAppServiceRegistry.swift`
+- `KeyVox iOS/App/AppDelegate.swift`
+  - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
+- `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, Whisper, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
 
@@ -259,7 +259,7 @@ Packages/
 - `KeyVox iOS/Views/AppRootView.swift`
   - Root router for onboarding vs main app.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
-- `KeyVox iOS/App/Onboarding/iOSOnboardingStore.swift`
+- `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
   - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
 - `KeyVox iOS/Views/Onboarding/OnboardingFlowView.swift`
@@ -270,18 +270,18 @@ Packages/
 - `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourScreen.swift`
   - Full-screen post-Settings handoff screen that autofocuses a text field and keeps the input pinned above the keyboard.
   - Advances through three tour scenes and enables `Next` only after the KeyVox keyboard has been shown and a first non-empty transcription has completed.
-- `KeyVox iOS/App/Onboarding/iOSOnboardingKeyboardTourState.swift`
+- `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourState.swift`
   - Small state machine that drives tour scene A/B/C progression and completion gating.
 - `KeyVox iOS/Views/Onboarding/OnboardingCustomizeAppScreen.swift`
   - Final onboarding step.
   - Owns the explicit `Finish` action that completes onboarding.
-- `KeyVox iOS/App/Onboarding/iOSOnboardingKeyboardAccessProbe.swift`
+- `KeyVox iOS/App/Onboarding/OnboardingKeyboardAccessProbe.swift`
   - App-side probe for keyboard enablement, keyboard presentation, and keyboard-reported Full Access confirmation.
-- `KeyVox iOS/App/Onboarding/iOSOnboardingMicrophonePermissionController.swift`
+- `KeyVox iOS/App/Onboarding/OnboardingMicrophonePermissionController.swift`
   - App-side microphone permission surface for onboarding.
-- `KeyVox iOS/App/Onboarding/iOSOnboardingDownloadNetworkMonitor.swift`
+- `KeyVox iOS/App/Onboarding/OnboardingDownloadNetworkMonitor.swift`
   - Cellular vs non-cellular detection for onboarding download copy.
-- `KeyVox iOS/App/Onboarding/iOSRuntimeFlags.swift`
+- `KeyVox iOS/App/Onboarding/RuntimeFlags.swift`
   - Reads `KEYVOX_FORCE_ONBOARDING`.
 
 ### Shared State, IPC, and Session Surfaces
@@ -301,39 +301,39 @@ Packages/
 
 ### Model Installation and Recovery
 
-- `KeyVox iOS/Core/ModelDownloader/iOSModelManager.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelManager.swift`
   - Observable owner of install state, user-facing download/delete/repair actions, and relaunch recovery.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelBackgroundDownloadCoordinator.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator.swift`
   - Background `URLSession` owner for staged model artifact downloads.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelBackgroundDownloadJob.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJob.swift`
   - Durable representation of per-artifact progress and finalization state.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelBackgroundDownloadJobStore.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJobStore.swift`
   - Persistence seam for the background download job file.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelManager+InstallLifecycle.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelManager+InstallLifecycle.swift`
   - Finalization, extraction, manifest writes, staged-file cleanup, and Whisper warmup sequencing after downloads complete.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelManager+Validation.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelManager+Validation.swift`
   - Strict readiness validation for installed artifacts and the manifest.
-- `KeyVox iOS/Core/ModelDownloader/iOSModelDownloadBackgroundTasks.swift`
+- `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
 
 ### Audio and Transcription Runtime
 
-- `KeyVox iOS/Core/Audio/iOSAudioRecorder.swift`
+- `KeyVox iOS/Core/Audio/AudioRecorder.swift`
   - Public recorder and monitoring surface.
   - Tracks session warmth, meter state, and last capture facts.
-- `KeyVox iOS/Core/Audio/iOSAudioRecorder+StopPipeline.swift`
-  - Produces cleaned `iOSStoppedCapture` values and rejects silence before inference.
-- `KeyVox iOS/Core/Transcription/iOSDictationService.swift`
+- `KeyVox iOS/Core/Audio/AudioRecorder+StopPipeline.swift`
+  - Produces cleaned `StoppedCapture` values and rejects silence before inference.
+- `KeyVox iOS/Core/Transcription/DictationService.swift`
   - iOS-local transcription-service abstraction used by the runtime manager.
-- `KeyVox iOS/Core/Transcription/iOSTranscriptionManager.swift`
+- `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
   - Primary iOS runtime state machine and dictation owner.
-- `KeyVox iOS/Core/Transcription/iOSTranscriptionManager+SessionLifecycle.swift`
+- `KeyVox iOS/Core/Transcription/TranscriptionManager+SessionLifecycle.swift`
   - Idle shutdown, deferred disable-session handling, and watchdog cleanup.
-- `KeyVox iOS/Core/Transcription/iOSTranscriptionManager+InterruptedCaptureRecovery.swift`
+- `KeyVox iOS/Core/Transcription/TranscriptionManager+InterruptedCaptureRecovery.swift`
   - Interrupted-capture staging and recovery on app reactivation.
-- `KeyVox iOS/Core/Transcription/iOSInterruptedCaptureRecoveryStore.swift`
+- `KeyVox iOS/Core/Transcription/InterruptedCaptureRecoveryStore.swift`
   - Durable storage for interrupted captures that need to be resumed later.
-- `KeyVox iOS/Core/Transcription/iOSSessionPolicy.swift`
+- `KeyVox iOS/Core/Transcription/SessionPolicy.swift`
   - Session safety thresholds and timeout policy.
 
 ### App UI
