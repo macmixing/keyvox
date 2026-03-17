@@ -82,6 +82,12 @@ struct OnboardingSetupScreen: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
+                    if shouldShowOfflineModelError {
+                        Text("An internet connection is required for model download.")
+                            .font(.appFont(12))
+                            .foregroundStyle(.red)
+                    }
+
                     if shouldShowCellularModelWarning {
                         Text("We recommend Wi-Fi for this download.")
                             .font(.appFont(12))
@@ -121,7 +127,7 @@ struct OnboardingSetupScreen: View {
         case .notInstalled:
             return OnboardingStepButton(
                 title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
-                isEnabled: true,
+                isEnabled: downloadNetworkMonitor.isOnline,
                 action: { modelManager.downloadModel() }
             )
         case .failed:
@@ -239,6 +245,10 @@ struct OnboardingSetupScreen: View {
 
     private var shouldShowCellularModelWarning: Bool {
         downloadNetworkMonitor.isOnCellular && modelManager.installState == .notInstalled
+    }
+
+    private var shouldShowOfflineModelError: Bool {
+        !downloadNetworkMonitor.isOnline && modelManager.installState == .notInstalled
     }
 
     private var formattedDownloadSize: String {

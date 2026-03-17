@@ -4,28 +4,44 @@ import Network
 
 @MainActor
 final class OnboardingDownloadNetworkMonitor: ObservableObject {
+    @Published private(set) var isOnline: Bool
     @Published private(set) var isOnCellular: Bool
 
-    private let pathMonitor: NWPathMonitor
-    private let queue: DispatchQueue
+    private var cancelMonitoring: () -> Void
 
-    init(
+    convenience init(
         pathMonitor: NWPathMonitor = NWPathMonitor(),
         queue: DispatchQueue = DispatchQueue(label: "com.cueit.keyvox.ios.onboarding-network-monitor")
     ) {
-        self.pathMonitor = pathMonitor
-        self.queue = queue
-        isOnCellular = false
+        self.init { update in
+            pathMonitor.pathUpdateHandler = { path in
+                Task { @MainActor in
+                    update(path.status == .satisfied, path.usesInterfaceType(.cellular))
+                }
+            }
 
-        pathMonitor.pathUpdateHandler = { [weak self] path in
-            Task { @MainActor [weak self] in
-                self?.isOnCellular = path.usesInterfaceType(.cellular)
+            pathMonitor.start(queue: queue)
+            return {
+                pathMonitor.cancel()
             }
         }
-        pathMonitor.start(queue: queue)
+    }
+
+    init(
+        initialIsOnline: Bool = true,
+        initialIsOnCellular: Bool = false,
+        startMonitoring: (@escaping (Bool, Bool) -> Void) -> (() -> Void)
+    ) {
+        isOnline = initialIsOnline
+        isOnCellular = initialIsOnCellular
+        cancelMonitoring = {}
+        cancelMonitoring = startMonitoring { [weak self] isOnline, isOnCellular in
+            self?.isOnline = isOnline
+            self?.isOnCellular = isOnCellular
+        }
     }
 
     deinit {
-        pathMonitor.cancel()
+        cancelMonitoring()
     }
 }
