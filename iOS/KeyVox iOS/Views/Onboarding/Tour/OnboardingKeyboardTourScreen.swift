@@ -42,18 +42,28 @@ struct OnboardingKeyboardTourScreen: View {
                 }
         }
         .safeAreaInset(edge: .top) {
-            HStack {
-                Spacer()
+            ZStack {
+                if let topBarTitle {
+                    Text(topBarTitle)
+                        .font(.appFont(22))
+                        .foregroundStyle(.white)
+                }
 
-                AppActionButton(
-                    title: "Next",
-                    style: .primary,
-                    size: .compact,
-                    fontSize: 16,
-                    isEnabled: tourState.canFinish,
-                    action: onboardingStore.completeKeyboardTour
-                )
+                HStack {
+                    Spacer()
+
+                    AppActionButton(
+                        title: "Next",
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 16,
+                        isEnabled: tourState.canFinish,
+                        action: onboardingStore.completeKeyboardTour
+                    )
+                }
+                .frame(maxWidth: .infinity)
             }
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, AppTheme.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 12)
@@ -76,6 +86,15 @@ struct OnboardingKeyboardTourScreen: View {
         }
         .onReceive(transcriptionManager.$lastTranscriptionText.dropFirst()) { latestTranscription in
             handleLatestTranscription(latestTranscription)
+        }
+    }
+
+    private var topBarTitle: String? {
+        switch tourState.scene {
+        case .a:
+            return "Select KeyVox"
+        case .b, .c:
+            return nil
         }
     }
 
