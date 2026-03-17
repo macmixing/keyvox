@@ -28,6 +28,7 @@
 		8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */; };
 		8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */; };
 		8E32B87D2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */; };
+		A16000012FD4000100AA0001 /* KeyboardMenuSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */; };
 		8E32BEF82F68F8C500F8DA9F /* ModelDownloadProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */; };
 		8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
@@ -179,6 +180,7 @@
 		8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneCView.swift; sourceTree = "<group>"; };
 		8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourScreen.swift; sourceTree = "<group>"; };
 		8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCustomizeAppScreen.swift; sourceTree = "<group>"; };
+		A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMenuSequence.swift; sourceTree = "<group>"; };
 		8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadProgress.swift; sourceTree = "<group>"; };
 		8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepRow.swift; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
@@ -392,6 +394,7 @@
 		8E32B8732F67D33C00F8DA9F /* Tour */ = {
 			isa = PBXGroup;
 			children = (
+				A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */,
 				8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */,
 				8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */,
 				8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */,
@@ -845,6 +848,7 @@
 				AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */,
 				AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */,
 				AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */,
+				A16000012FD4000100AA0001 /* KeyboardMenuSequence.swift in Sources */,
 				8E32B8782F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift in Sources */,
 				8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */,
 				8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */,
