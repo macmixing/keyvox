@@ -24,38 +24,42 @@ struct OnboardingKeyboardTourScreen: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .bottom) {
-                AppTheme.screenBackground
-                    .ignoresSafeArea()
-
-                sceneContent
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .padding(.horizontal, AppTheme.screenPadding)
-                    .padding(.bottom, sceneBottomPadding(for: geometry))
-
-                inputBar
-                    .padding(.horizontal, AppTheme.screenPadding)
-                    .padding(.bottom, bottomPadding(for: geometry))
-            }
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    Spacer()
-
-                    AppActionButton(
-                        title: "Next",
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 16,
-                        isEnabled: tourState.canFinish,
-                        action: onboardingStore.completeKeyboardTour
-                    )
+            AppTheme.screenBackground
+                .ignoresSafeArea()
+                .overlay {
+                    // Keep scene content on its own overlay layer so it cannot
+                    // participate in the input bar's layout when scene copy grows.
+                    sceneContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .padding(.horizontal, AppTheme.screenPadding)
+                        .padding(.bottom, sceneBottomPadding(for: geometry))
                 }
-                .padding(.horizontal, AppTheme.screenPadding)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-                .background(AppTheme.screenBackground.opacity(0.98))
-            }
+                .overlay(alignment: .bottom) {
+                    inputBar
+                        .padding(.horizontal, AppTheme.screenPadding)
+                        .padding(.bottom, Metrics.inputBarBottomSpacing)
+                        .offset(y: -keyboardLift(for: geometry))
+                }
         }
+        .safeAreaInset(edge: .top) {
+            HStack {
+                Spacer()
+
+                AppActionButton(
+                    title: "Next",
+                    style: .primary,
+                    size: .compact,
+                    fontSize: 16,
+                    isEnabled: tourState.canFinish,
+                    action: onboardingStore.completeKeyboardTour
+                )
+            }
+            .padding(.horizontal, AppTheme.screenPadding)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
+            .background(AppTheme.screenBackground.opacity(0.98))
+        }
+        .ignoresSafeArea(.keyboard)
         .task {
             tourState = OnboardingKeyboardTourState()
             keyboardAccessProbe.refresh()
@@ -99,13 +103,19 @@ struct OnboardingKeyboardTourScreen: View {
         }
     }
 
-    private func bottomPadding(for geometry: GeometryProxy) -> CGFloat {
-        let keyboardInset = max(0, keyboardObserver.keyboardHeight - geometry.safeAreaInsets.bottom)
-        return max(Metrics.inputBarBottomSpacing, keyboardInset)
+    private func keyboardLift(for geometry: GeometryProxy) -> CGFloat {
+        guard keyboardObserver.keyboardHeight > 0 else {
+            return 0
+        }
+
+        return max(0, keyboardObserver.keyboardHeight - geometry.safeAreaInsets.bottom)
     }
 
     private func sceneBottomPadding(for geometry: GeometryProxy) -> CGFloat {
-        bottomPadding(for: geometry) + Metrics.inputBarHeight + Metrics.sceneBottomSpacing
+        keyboardLift(for: geometry)
+            + Metrics.inputBarHeight
+            + Metrics.inputBarBottomSpacing
+            + Metrics.sceneBottomSpacing
     }
 
     private func refreshAfterKeyboardPresentation() {
