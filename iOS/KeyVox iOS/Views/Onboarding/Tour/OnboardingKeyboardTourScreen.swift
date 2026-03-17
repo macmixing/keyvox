@@ -93,7 +93,9 @@ struct OnboardingKeyboardTourScreen: View {
         switch tourState.scene {
         case .a:
             return "Select KeyVox"
-        case .b, .c:
+        case .b:
+            return "Try It Out!"
+        case .c:
             return nil
         }
     }

@@ -3,14 +3,11 @@ import SwiftUI
 struct OnboardingWelcomeScreen: View {
     let onContinue: () -> Void
 
-    @State private var logoScale: CGFloat = 0.12
-    @State private var logoOpacity: Double = 0
     @State private var logoCenterOffset: CGFloat = 0
     @State private var titleOpacity: Double = 0
     @State private var subtitleOpacity: Double = 0
     @State private var buttonOpacity: Double = 0
-    @State private var popWorkItem: DispatchWorkItem?
-    @State private var settleWorkItem: DispatchWorkItem?
+    @State private var animationTask: Task<Void, Never>?
 
     var body: some View {
         GeometryReader { geometry in
@@ -19,10 +16,12 @@ struct OnboardingWelcomeScreen: View {
                     Spacer()
                         .frame(height: 50)
 
-                    LogoBarView(size: 100)
+                    OnboardingLogoPopInSequence(
+                        size: 100,
+                        delay: 0.7,
+                        onRevealStarted: runPostPopInSequence
+                    )
                         .padding(.bottom, 32)
-                        .scaleEffect(logoScale)
-                        .opacity(logoOpacity)
                         .offset(y: logoCenterOffset)
 
                     Text("Welcome to KeyVox")
@@ -62,70 +61,47 @@ struct OnboardingWelcomeScreen: View {
                 let screenCenter = geometry.size.height / 2
                 let finalLogoY: CGFloat = 50 + 50 + 16 // Spacer + logo half height approx + padding
                 logoCenterOffset = screenCenter - finalLogoY
-                runAnimationSequence()
+                titleOpacity = 0
+                subtitleOpacity = 0
+                buttonOpacity = 0
+            }
+            .onDisappear {
+                animationTask?.cancel()
+                animationTask = nil
             }
         }
     }
 
-    private func runAnimationSequence() {
-        // Cancel any pending animations
-        popWorkItem?.cancel()
-        popWorkItem = nil
-        settleWorkItem?.cancel()
-        settleWorkItem = nil
+    private func runPostPopInSequence() {
+        animationTask?.cancel()
 
-        // Step 0: Wait 0.7 seconds before doing anything
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            // Phase 1: Quick reveal to 0.92
-            self.logoOpacity = 1.0
-            withAnimation(.easeOut(duration: 0.15)) {
-                self.logoScale = 0.92
+        animationTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard Task.isCancelled == false else { return }
+
+            withAnimation(.easeInOut(duration: 0.5)) {
+                logoCenterOffset = 0
             }
 
-            // Phase 2: Pop overshoot to 1.16
-            let pop = DispatchWorkItem {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    self.logoScale = 1.16
-                }
+            try? await Task.sleep(for: .seconds(0.25))
+            guard Task.isCancelled == false else { return }
+
+            withAnimation(.easeIn(duration: 0.4)) {
+                titleOpacity = 1.0
             }
-            self.popWorkItem = pop
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: pop)
 
-            // Phase 3: Settle to 1.0
-            let settle = DispatchWorkItem {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    self.logoScale = 1.0
-                }
+            try? await Task.sleep(for: .seconds(0.15))
+            guard Task.isCancelled == false else { return }
+
+            withAnimation(.easeIn(duration: 0.4)) {
+                subtitleOpacity = 1.0
             }
-            self.settleWorkItem = settle
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: settle)
 
-            // Wait 1.5 seconds after pop-in completes, then slide up
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                // Slide logo up from center to final position
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    self.logoCenterOffset = 0
-                }
+            try? await Task.sleep(for: .seconds(0.4))
+            guard Task.isCancelled == false else { return }
 
-                // Text fade in staggered as logo approaches stop
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    withAnimation(.easeIn(duration: 0.4)) {
-                        self.titleOpacity = 1.0
-                    }
-
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.easeIn(duration: 0.4)) {
-                            self.subtitleOpacity = 1.0
-                        }
-
-                        // Fade in button after all other animations complete
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                            withAnimation(.easeIn(duration: 0.4)) {
-                                self.buttonOpacity = 1.0
-                            }
-                        }
-                    }
-                }
+            withAnimation(.easeIn(duration: 0.4)) {
+                buttonOpacity = 1.0
             }
         }
     }
