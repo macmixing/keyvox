@@ -16,7 +16,7 @@ struct iOSAppToolbarContent: ToolbarContent {
                     iOSLogoBarView(size: 32)
                     Text("KeyVox")
                         .font(.appFont(28))
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.white)
                 }
             }
 
