@@ -35,72 +35,78 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
 
     var body: some View {
         AppCard {
-            VStack(alignment: .leading, spacing: 12) {
-                // Top row: Step circle + Title + Button
+            VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .center, spacing: 12) {
-                    // Step Number Circle
-                    ZStack {
-                        Circle()
-                            .fill(isCompleted ? Color.green : AppTheme.accent.opacity(0.2))
-                            .frame(width: 32, height: 32)
-
-                        if isCompleted {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
-                        } else {
-                            Text("\(stepNumber)")
-                                .font(.appFont(16))
-                                .foregroundColor(.white)
-                        }
-                    }
-
-                    Text(title)
-                        .font(.appFont(18))
-                        .foregroundStyle(.white)
-                    
-                    Spacer()
-
-                    if let buttonTitle {
-                        AppActionButton(
-                            title: buttonTitle,
-                            style: .primary,
-                            size: .compact,
-                            fontSize: 15,
-                            isEnabled: isButtonEnabled,
-                            action: action ?? {}
-                        )
-                    }
+                    stepIndicator
+                    titleView
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                // Description row - full width with proper leading padding
-                HStack(spacing: 0) {
-                    // Align with title text (circle width + spacing)
-                    Spacer()
-                        .frame(width: 44)
-                    
+                VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(description)
-                            .font(.appFont(14, variant: .light))
-                            .foregroundStyle(.white.opacity(0.8))
+                            .font(.appFont(15, variant: .light))
+                            .foregroundStyle(.white.opacity(0.85))
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         trailingContent
                     }
-                }
-                
-                // Extra content (like download progress) - full width with padding
-                if extraContent is EmptyView == false {
-                    HStack(spacing: 0) {
-                        Spacer()
-                            .frame(width: 44)
-                        
+                    
+                    if extraContent is EmptyView == false {
                         extraContent
+                    }
+                    
+                    if let _ = buttonTitle {
+                        buttonView
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
             }
         }
     }
+
+    private var stepIndicator: some View {
+        ZStack {
+            Circle()
+                .fill(isCompleted ? Color.green : AppTheme.accent.opacity(0.2))
+                .frame(width: 32, height: 32)
+
+            if isCompleted {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+            } else {
+                Text("\(stepNumber)")
+                    .font(.appFont(16))
+                    .foregroundColor(.white)
+            }
+        }
+    }
+
+    private var titleView: some View {
+        Text(title)
+            .font(.appFont(18))
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .layoutPriority(1)
+    }
+
+    @ViewBuilder
+    private var buttonView: some View {
+        if let buttonTitle {
+            AppActionButton(
+                title: buttonTitle,
+                style: .primary,
+                size: .compact,
+                fontSize: 15,
+                isEnabled: isButtonEnabled,
+                action: action ?? {}
+            )
+            .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
 }
 
 #Preview {
