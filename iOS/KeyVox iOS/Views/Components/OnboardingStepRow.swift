@@ -68,7 +68,7 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
     private var stepIndicator: some View {
         ZStack {
             Circle()
-                .fill(isCompleted ? Color.green : AppTheme.accent.opacity(0.2))
+                .fill(isCompleted ? Color.green : AppTheme.accent.opacity(0.4))
                 .frame(width: 32, height: 32)
 
             if isCompleted {
