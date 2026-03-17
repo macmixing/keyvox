@@ -10,6 +10,10 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
     let action: (() -> Void)?
     let extraContent: ExtraContent
     let trailingContent: TrailingContent
+    @State private var displayedButtonTitle: String?
+    @State private var showsButtonSlot: Bool
+    @State private var isButtonVisible: Bool
+    @State private var buttonCollapseTask: Task<Void, Never>?
 
     init(
         isCompleted: Bool,
@@ -31,6 +35,9 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
         self.action = action
         self.trailingContent = trailingContent()
         self.extraContent = extraContent()
+        _displayedButtonTitle = State(initialValue: buttonTitle)
+        _showsButtonSlot = State(initialValue: buttonTitle != nil)
+        _isButtonVisible = State(initialValue: buttonTitle != nil)
     }
 
     var body: some View {
@@ -56,12 +63,18 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
                         extraContent
                     }
                     
-                    if let _ = buttonTitle {
+                    if showsButtonSlot {
                         buttonView
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
             }
+        }
+        .onChange(of: buttonTitle, initial: false) { _, newValue in
+            updateButtonPresentation(for: newValue)
+        }
+        .onDisappear {
+            buttonCollapseTask?.cancel()
         }
     }
 
@@ -94,9 +107,9 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
 
     @ViewBuilder
     private var buttonView: some View {
-        if let buttonTitle {
+        if let displayedButtonTitle {
             AppActionButton(
-                title: buttonTitle,
+                title: displayedButtonTitle,
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -104,6 +117,79 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
                 action: action ?? {}
             )
             .fixedSize(horizontal: true, vertical: false)
+            .opacity(isButtonVisible ? 1 : 0)
+            .allowsHitTesting(isButtonVisible)
+            .accessibilityHidden(!isButtonVisible)
+        }
+    }
+
+    private var buttonFadeAnimation: Animation {
+        .easeOut(duration: buttonFadeDuration)
+    }
+
+    private var rowResizeAnimation: Animation {
+        .easeInOut(duration: rowResizeDuration)
+    }
+
+    private var buttonFadeDuration: Double {
+        0.14
+    }
+
+    private var rowResizeDuration: Double {
+        0.52
+    }
+
+    private var rowResizeDelay: Double {
+        0.1
+    }
+
+    private var buttonRemovalDelay: UInt64 {
+        UInt64((buttonFadeDuration + rowResizeDelay) * 1_000_000_000)
+    }
+
+    private var buttonCleanupDelay: UInt64 {
+        UInt64(rowResizeDuration * 1_000_000_000)
+    }
+
+    private func updateButtonPresentation(for newValue: String?) {
+        buttonCollapseTask?.cancel()
+
+        if let newValue {
+            displayedButtonTitle = newValue
+
+            if showsButtonSlot == false {
+                showsButtonSlot = true
+            }
+
+            withAnimation(buttonFadeAnimation) {
+                isButtonVisible = true
+            }
+            return
+        }
+
+        guard showsButtonSlot else {
+            displayedButtonTitle = nil
+            return
+        }
+
+        withAnimation(buttonFadeAnimation) {
+            isButtonVisible = false
+        }
+
+        buttonCollapseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: buttonRemovalDelay)
+
+            guard Task.isCancelled == false else { return }
+
+            withAnimation(rowResizeAnimation) {
+                showsButtonSlot = false
+            }
+
+            try? await Task.sleep(nanoseconds: buttonCleanupDelay)
+
+            guard Task.isCancelled == false else { return }
+
+            displayedButtonTitle = nil
         }
     }
 
