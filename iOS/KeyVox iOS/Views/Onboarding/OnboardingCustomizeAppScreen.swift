@@ -4,7 +4,7 @@ struct OnboardingCustomizeAppScreen: View {
     @EnvironmentObject private var onboardingStore: OnboardingStore
 
     var body: some View {
-        AppScrollScreen {
+        AppScrollScreen(scrollDisabled: true) {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Customize KeyVox")
                     .font(.appFont(34))

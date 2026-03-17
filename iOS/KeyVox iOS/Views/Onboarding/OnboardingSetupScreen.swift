@@ -25,7 +25,7 @@ struct OnboardingSetupScreen: View {
     }
 
     var body: some View {
-        AppScrollScreen {
+        AppScrollScreen(scrollDisabled: true) {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Set up KeyVox")
                     .font(.appFont(34))

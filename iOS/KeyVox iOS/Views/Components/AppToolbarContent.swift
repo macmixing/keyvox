@@ -47,7 +47,7 @@ struct AppToolbarContent: ToolbarContent {
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.circle)
                 .controlSize(.small)
-                .tint(isSessionEnabled ? .indigo.opacity(0.5) : .gray.opacity(0.25))
+                .tint(isSessionEnabled ? .yellow.opacity(0.6) : .indigo.opacity(0.5))
         }
     }
 
