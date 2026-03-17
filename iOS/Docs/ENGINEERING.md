@@ -166,7 +166,7 @@ The setup screen owns three real requirements:
 
 Rules:
 
-- keyboard setup stays gated until the model install state is `.ready`
+- keyboard setup stays gated until the model install state is `.ready` and microphone permission is granted
 - microphone permission may be completed while the model download is still running
 - model download may continue while the user works through the other visible steps
 - when microphone access is denied, onboarding must route the user to app settings rather than pretending the permission can still be requested in place

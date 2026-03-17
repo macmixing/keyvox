@@ -14,7 +14,7 @@ Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, includi
 The current default runtime flow is:
 
 1. On first launch, the app routes through onboarding instead of dropping directly into tabs.
-2. The setup screen lets the user work through model download and microphone access in parallel, but keeps keyboard setup gated on model readiness.
+2. The setup screen lets the user work through model download and microphone access in parallel, but keeps keyboard setup gated until both prerequisites are complete.
 3. When the user leaves setup for Settings, the app records a pending keyboard-tour handoff and later resumes into the keyboard tour after reactivation.
 4. The keyboard tour autofocuses a text field, waits for the KeyVox keyboard to be shown, and advances only after the first non-empty tour transcription completes.
 5. After the keyboard tour, onboarding finishes on the customize-app screen rather than ending inside the tour itself.
@@ -136,7 +136,9 @@ iOS/
 │   │   │   ├── AppToolbarContent.swift
 │   │   │   ├── AppTypography.swift
 │   │   │   ├── LastTranscriptionCardView.swift
-│   │   │   └── LogoBarView.swift
+│   │   │   ├── LogoBarView.swift
+│   │   │   ├── ModelDownloadProgress.swift
+│   │   │   └── OnboardingStepRow.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
@@ -149,7 +151,6 @@ iOS/
 │   │   └── Onboarding/
 │   │       ├── OnboardingCustomizeAppScreen.swift
 │   │       ├── OnboardingFlowView.swift
-│   │       ├── OnboardingRequirementRow.swift
 │   │       ├── OnboardingSetupScreen.swift
 │   │       ├── OnboardingWelcomeScreen.swift
 │   │       └── Tour/
@@ -266,7 +267,12 @@ Packages/
   - Ordered onboarding router: welcome -> setup -> keyboard tour -> customize app.
 - `KeyVox iOS/Views/Onboarding/OnboardingSetupScreen.swift`
   - Model download, microphone permission, and keyboard-settings handoff screen.
-  - Gates keyboard setup on model readiness while allowing the other setup tasks to proceed in parallel.
+  - Gates keyboard setup until both the model is ready and microphone access has been granted, while allowing those two setup tasks to proceed in parallel.
+- `KeyVox iOS/Views/Components/OnboardingStepRow.swift`
+  - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
+  - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
+- `KeyVox iOS/Views/Components/ModelDownloadProgress.swift`
+  - Reusable onboarding download progress bar with the app accent styling and an optional percent label.
 - `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourScreen.swift`
   - Full-screen post-Settings handoff screen that autofocuses a text field and keeps the input pinned above the keyboard.
   - Advances through three tour scenes and enables `Next` only after the KeyVox keyboard has been shown and a first non-empty transcription has completed.

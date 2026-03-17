@@ -36,6 +36,22 @@ struct OnboardingKeyboardAccessProbeTests {
         #expect(probe.lastConfirmedAccessTimestamp == 123)
     }
 
+    @Test func fullAccessWithoutConfirmationTimestampRemainsIntermediateState() {
+        let probe = OnboardingKeyboardAccessProbe(
+            timestampProvider: { nil },
+            presentationTimestampProvider: { 456 },
+            enabledProvider: { true },
+            fullAccessProvider: { true }
+        )
+
+        #expect(probe.hasConfirmedKeyboardAccess == false)
+        #expect(probe.hasShownKeyVoxKeyboard)
+        #expect(probe.isKeyboardEnabledInSystemSettings)
+        #expect(probe.lastKeyboardPresentationTimestamp == 456)
+        #expect(probe.hasFullAccessConfirmedByKeyboard)
+        #expect(probe.lastConfirmedAccessTimestamp == nil)
+    }
+
     @Test func invalidKeyboardMarkerIsRejectedOnRefresh() {
         let state = TimestampState(value: 123)
         let presentationState = TimestampState(value: 456)

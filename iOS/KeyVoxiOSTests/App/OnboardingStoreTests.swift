@@ -88,6 +88,19 @@ struct OnboardingStoreTests {
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == true)
     }
 
+    @Test func persistedPendingKeyboardTourStartsArmedOnInit() {
+        let defaults = makeDefaults()
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
+
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        #expect(store.hasPendingKeyboardTour)
+        #expect(store.shouldShowKeyboardTourScreen)
+    }
+
     @Test func clearingPendingKeyboardTourResetsPersistedFlag() {
         let defaults = makeDefaults()
         defaults.set(true, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
@@ -120,6 +133,33 @@ struct OnboardingStoreTests {
         #expect(store.shouldShowCustomizeAppScreen)
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == nil)
+    }
+
+    @Test func recordingPendingKeyboardTourDisarmsRouteUntilActivationCheckRuns() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordPendingKeyboardTour()
+
+        #expect(store.hasPendingKeyboardTour)
+        #expect(store.shouldShowKeyboardTourScreen == false)
+    }
+
+    @Test func activationCheckClearsPendingKeyboardTourWhenKeyboardIsNotEnabled() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordPendingKeyboardTour()
+        store.armPendingKeyboardTourRouteIfNeeded(isKeyboardEnabledInSystemSettings: false)
+
+        #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.shouldShowKeyboardTourScreen == false)
     }
 
     private func makeDefaults() -> UserDefaults {

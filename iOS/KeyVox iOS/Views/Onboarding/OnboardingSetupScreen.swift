@@ -1,6 +1,12 @@
 import SwiftUI
 import UIKit
 
+private struct OnboardingStepButton {
+    let title: String
+    let isEnabled: Bool
+    let action: () -> Void
+}
+
 struct OnboardingSetupScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var modelManager: ModelManager
@@ -49,184 +55,160 @@ struct OnboardingSetupScreen: View {
 
     @ViewBuilder
     private var modelRequirementRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            OnboardingRequirementRow(
-                title: "Download the model",
-                detail: modelRequirementDetail,
-                isComplete: modelManager.installState == .ready,
-                actionTitle: modelRequirementActionTitle,
-                action: modelRequirementAction
-            )
+        OnboardingStepRow(
+            isCompleted: modelManager.installState == .ready,
+            stepNumber: 1,
+            title: "AI Model Setup",
+            description: modelStepDescription,
+            buttonTitle: modelStepButton?.title,
+            isButtonEnabled: modelStepButton?.isEnabled ?? true,
+            action: modelStepButton?.action,
+            trailingContent: {
+                if let progress = modelDownloadProgress {
+                    Text("\(Int(progress * 100))%")
+                        .font(.appFont(11))
+                        .foregroundStyle(.yellow)
+                }
+            },
+            extraContent: {
+                VStack(alignment: .leading, spacing: 8) {
+                    if let progress = modelDownloadProgress {
+                        ModelDownloadProgress(progress: progress, showLabel: false)
+                    } else if let error = modelManager.errorMessage {
+                        Text(error)
+                            .font(.appFont(10, variant: .light))
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
 
-            if shouldShowCellularModelWarning {
-                Text("You’re on cellular. We recommend Wi-Fi for this download.")
-                    .font(.appFont(12))
-                    .foregroundStyle(.yellow)
-                    .padding(.horizontal, 4)
+                    if shouldShowCellularModelWarning {
+                        Text("We recommend Wi-Fi for this download.")
+                            .font(.appFont(12))
+                            .foregroundStyle(.yellow)
+                    }
+                }
             }
-        }
+        )
     }
 
     private var microphoneRequirementRow: some View {
-        OnboardingRequirementRow(
-            title: "Allow microphone access",
-            detail: microphoneRequirementDetail,
-            isComplete: microphonePermissionController.status == .granted,
-            detailColor: microphoneRequirementDetailColor,
-            actionTitle: microphoneRequirementActionTitle,
-            action: microphoneRequirementAction
+        OnboardingStepRow(
+            isCompleted: microphonePermissionController.status == .granted,
+            stepNumber: 2,
+            title: "Microphone Access",
+            description: "KeyVox needs to hear you to transcribe.",
+            buttonTitle: microphoneStepButton?.title,
+            isButtonEnabled: microphoneStepButton?.isEnabled ?? true,
+            action: microphoneStepButton?.action
         )
     }
 
     private var keyboardRequirementRow: some View {
-        OnboardingRequirementRow(
-            title: "Enable keyboard access",
-            detail: keyboardRequirementDetail,
-            isComplete: isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess,
-            actionTitle: keyboardRequirementActionTitle,
-            action: keyboardRequirementAction
+        OnboardingStepRow(
+            isCompleted: isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess,
+            stepNumber: 3,
+            title: "Enable Keyboard",
+            description: keyboardStepDescription,
+            buttonTitle: keyboardStepButton?.title,
+            isButtonEnabled: keyboardStepButton?.isEnabled ?? true,
+            action: keyboardStepButton?.action
         )
     }
 
-    private var modelRequirementDetail: String {
+    private var modelStepButton: OnboardingStepButton? {
         switch modelManager.installState {
+        case .notInstalled:
+            return OnboardingStepButton(
+                title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
+                isEnabled: true,
+                action: { modelManager.downloadModel() }
+            )
+        case .failed:
+            return OnboardingStepButton(
+                title: "Repair",
+                isEnabled: true,
+                action: { modelManager.repairModelIfNeeded() }
+            )
+        case .downloading, .installing, .ready:
+            return nil
+        }
+    }
+
+    private var modelStepDescription: String {
+        switch modelManager.installState {
+        case .notInstalled:
+            return "OpenAI Whisper Base (~190 MB)"
+        case .downloading(_, let phase), .installing(_, let phase):
+            return phase.statusText
         case .ready:
-            return "Model downloaded and ready."
-        case .downloading, .installing:
-            return "\(modelManager.installState.statusText). You can keep finishing the other setup steps while this runs."
-        case .notInstalled:
-            return "Download size: \(formattedDownloadSize)"
+            return "Model ready"
         case .failed:
-            return "\(modelManager.installState.statusText) Download size: \(formattedDownloadSize)"
+            return "Model repair needed"
         }
     }
 
-    private var modelRequirementActionTitle: String? {
-        switch modelManager.installState {
-        case .notInstalled:
-            return downloadNetworkMonitor.isOnCellular ? "Download now" : "Download"
-        case .failed:
-            return "Repair model"
-        case .downloading, .installing, .ready:
-            return nil
-        }
-    }
-
-    private var modelRequirementAction: (() -> Void)? {
-        switch modelManager.installState {
-        case .notInstalled:
-            return {
-                modelManager.downloadModel()
-            }
-        case .failed:
-            return {
-                modelManager.repairModelIfNeeded()
-            }
-        case .downloading, .installing, .ready:
-            return nil
-        }
-    }
-
-    private var microphoneRequirementDetail: String {
+    private var microphoneStepButton: OnboardingStepButton? {
         switch microphonePermissionController.status {
         case .undetermined:
-            return "KeyVox needs microphone access to capture dictation."
-        case .denied:
-            return "Microphone access is off. Enable it in KeyVox Settings to continue onboarding."
-        case .granted:
-            return "Microphone access granted."
-        }
-    }
-
-    private var microphoneRequirementDetailColor: Color {
-        switch microphonePermissionController.status {
-        case .denied:
-            return .yellow
-        case .undetermined, .granted:
-            return .secondary
-        }
-    }
-
-    private var microphoneRequirementActionTitle: String? {
-        switch microphonePermissionController.status {
-        case .undetermined:
-            return "Allow access"
-        case .denied:
-            return "Open Settings"
-        case .granted:
-            return nil
-        }
-    }
-
-    private var microphoneRequirementAction: (() -> Void)? {
-        switch microphonePermissionController.status {
-        case .undetermined:
-            return {
-                Task {
-                    await microphonePermissionController.requestPermission()
+            return OnboardingStepButton(
+                title: "Allow access",
+                isEnabled: true,
+                action: {
+                    Task {
+                        await microphonePermissionController.requestPermission()
+                    }
                 }
-            }
+            )
         case .denied:
-            return {
-                openAppSettings()
-            }
+            return OnboardingStepButton(
+                title: "Open Settings",
+                isEnabled: true,
+                action: { openAppSettings() }
+            )
         case .granted:
             return nil
         }
     }
 
-    private var keyboardRequirementDetail: String {
+    private var keyboardStepDescription: String {
         guard isKeyboardRequirementAvailable else {
-            return "Finish downloading the model before setting up keyboard access."
-        }
-
-        if keyboardAccessProbe.hasConfirmedKeyboardAccess {
-            return "Keyboard access confirmed."
-        }
-
-        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
-            return "Full Access is on. Open the KeyVox keyboard once more if setup still needs to finish."
+            return "Finish downloading the model and allow microphone access before continuing."
         }
 
         if keyboardAccessProbe.isKeyboardEnabledInSystemSettings {
-            return "KeyVox Keyboard is enabled. Open the KeyVox keyboard once with Full Access turned on to finish setup."
+            return "KeyVox Keyboard is enabled. Open Settings and turn on Allow Full Access to finish setup."
         }
 
-        return "Enable KeyVox Keyboard and Allow Full Access in Settings, then open the KeyVox keyboard once."
+        return "Enable KeyVox Keyboard and turn on Allow Full Access in Settings, then come back here."
     }
 
-    private var keyboardRequirementActionTitle: String? {
-        guard isKeyboardRequirementAvailable else {
-            return nil
-        }
-
+    private var keyboardStepButton: OnboardingStepButton? {
         if keyboardAccessProbe.hasConfirmedKeyboardAccess {
             return nil
         }
 
-        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
-            return "Check again"
-        }
-
-        return "Open Settings"
-    }
-
-    private var keyboardRequirementAction: (() -> Void)? {
         guard isKeyboardRequirementAvailable else {
-            return nil
+            return OnboardingStepButton(
+                title: "Open Settings",
+                isEnabled: false,
+                action: {}
+            )
         }
 
-        guard !keyboardAccessProbe.hasConfirmedKeyboardAccess else {
-            return nil
+        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
+            return OnboardingStepButton(
+                title: "Check again",
+                isEnabled: true,
+                action: { keyboardAccessProbe.refresh() }
+            )
         }
 
-        return {
-            if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
-                keyboardAccessProbe.refresh()
-            } else {
-                openKeyboardSettings()
-            }
-        }
+        return OnboardingStepButton(
+            title: "Open Settings",
+            isEnabled: true,
+            action: { openKeyboardSettings() }
+        )
     }
 
     private func refreshState() {
@@ -264,7 +246,17 @@ struct OnboardingSetupScreen: View {
     }
 
     private var isKeyboardRequirementAvailable: Bool {
-        modelManager.installState == .ready
+        modelManager.installState == .ready && microphonePermissionController.status == .granted
+    }
+
+    private var modelDownloadProgress: Double? {
+        switch modelManager.installState {
+        case .downloading(let progress, _),
+             .installing(let progress, _):
+            return progress
+        default:
+            return nil
+        }
     }
 
     private static func megabytesString(for byteCount: Int64) -> String {
