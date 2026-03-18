@@ -28,10 +28,10 @@ struct SettingsTabView: View {
         AppCard {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack(alignment: .center, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
                         ZStack {
                             Circle()
-                                .fill(AppTheme.accent.opacity(0.2))
+                                .fill(AppTheme.accent.opacity(0.4))
                                 .frame(width: 32, height: 32)
                             
                             Image(systemName: "clock")
@@ -62,6 +62,7 @@ struct SettingsTabView: View {
                                 .font(.appFont(16))
                                 .foregroundColor(.yellow)
                         }
+                        .padding(.top, 2)
                     }
                     
                     Text("Decide when the session turns off")
@@ -70,7 +71,7 @@ struct SettingsTabView: View {
                 }
                 
                 Divider()
-                    .background(.white.opacity(0.2))
+                    .background(.white.opacity(0.4))
                 
                 SettingsRow(
                     icon: "widget.small",

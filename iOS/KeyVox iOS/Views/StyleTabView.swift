@@ -5,23 +5,23 @@ struct StyleTabView: View {
 
     var body: some View {
         AppScrollScreen {
-            AppCard {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Style")
-                        .font(.appFont(17))
-                        .foregroundStyle(.white)
-
-                    Toggle(isOn: $settingsStore.autoParagraphsEnabled) {
-                        Text("Auto paragraphs")
-                            .font(.appFont(16, variant: .light))
-                            .foregroundStyle(.white)
-                    }
-
-                    Toggle(isOn: $settingsStore.listFormattingEnabled) {
-                        Text("List formatting")
-                            .font(.appFont(16, variant: .light))
-                            .foregroundStyle(.white)
-                    }
+            VStack(alignment: .leading, spacing: 16) {
+                AppCard {
+                    SettingsRow(
+                        icon: "list.number",
+                        title: "Lists",
+                        description: "Format spoken numbered lists automatically when detected.",
+                        isOn: $settingsStore.listFormattingEnabled
+                    )
+                }
+                
+                AppCard {
+                    SettingsRow(
+                        icon: "text.alignleft",
+                        title: "Paragraphs",
+                        description: "Start new paragraphs automatically after brief pauses in multiline fields.",
+                        isOn: $settingsStore.autoParagraphsEnabled
+                    )
                 }
             }
         }
