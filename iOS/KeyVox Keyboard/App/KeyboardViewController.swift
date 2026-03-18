@@ -5,6 +5,7 @@ final class KeyboardViewController: UIInputViewController {
     private let ipcManager = KeyboardIPCManager()
     private let capsLockStateStore = KeyboardCapsLockStateStore()
     private let keypressHaptics = KeyboardKeypressHaptics()
+    private let interactionHaptics = KeyboardInteractionHaptics()
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private let dictionaryCasingStore = KeyboardDictionaryCasingStore()
@@ -292,16 +293,19 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     private func handleCancelTap() {
+        interactionHaptics.emitWarningIfEnabled()
         dictationController.handleCancelTap()
     }
 
     @objc
     private func handleCapsLockTap() {
         isCapsLockEnabled = capsLockStateStore.toggle()
+        interactionHaptics.emitLightIfEnabled()
     }
 
     @objc
     private func handleMicTap() {
+        interactionHaptics.emitMediumIfEnabled()
         dictationController.handleMicTap()
     }
 

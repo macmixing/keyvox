@@ -6,8 +6,16 @@ protocol KeyboardImpactFeedbackGenerating: AnyObject {
 }
 
 final class KeyboardImpactFeedbackGeneratorAdapter: KeyboardImpactFeedbackGenerating {
-    private let generator = UIImpactFeedbackGenerator(style: .light)
-    private let intensity: CGFloat = 0.80
+    private let generator: UIImpactFeedbackGenerator
+    private let intensity: CGFloat
+
+    init(
+        style: UIImpactFeedbackGenerator.FeedbackStyle = .light,
+        intensity: CGFloat = 0.80
+    ) {
+        generator = UIImpactFeedbackGenerator(style: style)
+        self.intensity = intensity
+    }
 
     func prepare() {
         generator.prepare()
