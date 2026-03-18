@@ -262,11 +262,15 @@ final class KeyboardViewController: UIInputViewController {
             return .hidden
         }
 
+        guard hasFullAccess else {
+            return .fullAccessWarning
+        }
+
         guard hasMicrophonePermission else {
             return .microphoneWarning
         }
 
-        return hasFullAccess ? .branded : .fullAccessWarning
+        return .branded
     }
 
     private var hasMicrophonePermission: Bool {
