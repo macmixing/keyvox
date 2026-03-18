@@ -6,6 +6,7 @@ struct AppRootView: View {
         case main
     }
 
+    @EnvironmentObject private var appLaunchRouteStore: AppLaunchRouteStore
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
 
@@ -14,11 +15,17 @@ struct AppRootView: View {
     }
 
     private var shouldShowReturnToHostView: Bool {
-        !onboardingStore.shouldSuppressReturnToHostView && transcriptionManager.isReturnToHostViewPresented
+        !onboardingStore.shouldSuppressReturnToHostView
+            && (
+                transcriptionManager.isReturnToHostViewPresented
+                    || appLaunchRouteStore.initialURLRoute == .startRecording
+            )
     }
 
     var body: some View {
-        if shouldShowReturnToHostView {
+        if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
+            AppTheme.screenBackground.ignoresSafeArea()
+        } else if shouldShowReturnToHostView {
             ReturnToHostView()
         } else {
             switch destination {
@@ -33,6 +40,7 @@ struct AppRootView: View {
 
 #Preview {
     AppRootView()
+        .environmentObject(AppLaunchRouteStore.shared)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)

@@ -55,7 +55,9 @@ iOS/
 ├── KeyVox iOS.xctestplan
 ├── KeyVox iOS/
 │   ├── App/
+│   │   ├── AppLaunchRouteStore.swift
 │   │   ├── AppDelegate.swift
+│   │   ├── AppSceneDelegate.swift
 │   │   ├── AppServiceRegistry.swift
 │   │   ├── SharedPaths.swift
 │   │   ├── WeeklyWordStatsStore.swift
@@ -248,9 +250,13 @@ Packages/
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
   - Handles scene activation/background callbacks for transcription recovery, model recovery, and onboarding keyboard-tour arming.
-  - Pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
+  - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
 - `KeyVox iOS/App/AppDelegate.swift`
   - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
+- `KeyVox iOS/App/AppSceneDelegate.swift`
+  - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
+- `KeyVox iOS/App/AppLaunchRouteStore.swift`
+  - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, Whisper, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
@@ -258,7 +264,7 @@ Packages/
 ### Onboarding and Root Routing
 
 - `KeyVox iOS/Views/AppRootView.swift`
-  - Root router for onboarding vs main app.
+  - Root router for onboarding vs main app, with a temporary launch-resolution hold so cold URL launches do not flash the lower UI.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.

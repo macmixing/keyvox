@@ -110,9 +110,11 @@ Service ownership rules:
 
 Current root behavior:
 
+- hold on a neutral background until the initial launch context is resolved
 - show onboarding when `OnboardingStore.shouldShowOnboarding` is `true`
 - otherwise show the main tab shell
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
+- a cold `keyvoxios://record/start` launch may preselect `ReturnToHostView` before the first real SwiftUI route render
 
 ### Onboarding Store Rules
 
@@ -309,8 +311,10 @@ Warm path:
 Cold path:
 
 1. keyboard launches `keyvoxios://record/start`
-2. the app presents `ReturnToHostView`
-3. the user returns to the host app once the session is active
+2. `AppSceneDelegate` captures the scene connection URL before the first root render
+3. `AppRootView` holds on a neutral background until launch routing resolves
+4. the app presents `ReturnToHostView`
+5. the user returns to the host app once the session is active
 
 `ReturnToHostView` must never interrupt onboarding.
 

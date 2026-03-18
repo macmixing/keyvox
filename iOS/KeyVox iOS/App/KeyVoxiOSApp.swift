@@ -6,6 +6,7 @@ import KeyVoxCore
 struct KeyVoxApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var appLaunchRouteStore: AppLaunchRouteStore
     @StateObject private var transcriptionManager: TranscriptionManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
@@ -16,6 +17,7 @@ struct KeyVoxApp: App {
 
     init() {
         let services = AppServiceRegistry.shared
+        _appLaunchRouteStore = StateObject(wrappedValue: AppLaunchRouteStore.shared)
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
@@ -46,6 +48,7 @@ struct KeyVoxApp: App {
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .environmentObject(appLaunchRouteStore)
                 .environmentObject(transcriptionManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
@@ -55,6 +58,9 @@ struct KeyVoxApp: App {
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
                     switch newPhase {
                     case .active:
+                        if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
+                            handle(route: initialRoute)
+                        }
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
@@ -71,16 +77,26 @@ struct KeyVoxApp: App {
                     }
                 }
                 .onOpenURL { url in
-                    if let route = KeyVoxURLRoute(url: url), route == .startRecording {
-                        var transaction = Transaction()
-                        transaction.disablesAnimations = true
-                        withTransaction(transaction) {
-                            transcriptionManager.isReturnToHostViewPresented = true
-                        }
+                    if let route = KeyVoxURLRoute(url: url) {
+                        handle(route: route)
+                    } else {
+                        urlRouter.handle(url: url)
                     }
-                    urlRouter.handle(url: url)
                 }
         }
+    }
+
+    private func handle(route: KeyVoxURLRoute) {
+        if route == .startRecording {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                transcriptionManager.isReturnToHostViewPresented = true
+            }
+            appLaunchRouteStore.clearInitialPresentationRoute()
+        }
+
+        urlRouter.handle(route: route)
     }
 
     private func configureLegacyBarAppearanceIfNeeded() {

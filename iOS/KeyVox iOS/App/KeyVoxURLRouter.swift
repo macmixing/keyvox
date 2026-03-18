@@ -12,6 +12,15 @@ final class KeyVoxURLRouter {
         KeyVoxURLRoute(url: url)
     }
 
+    func handle(route: KeyVoxURLRoute) {
+        switch route {
+        case .startRecording:
+            transcriptionManager.handleStartRecordingCommand(isFromURL: true)
+        case .stopRecording:
+            transcriptionManager.handleStopRecordingCommand()
+        }
+    }
+
     func handle(url: URL) {
         guard let route = route(for: url) else {
             #if DEBUG
@@ -20,11 +29,6 @@ final class KeyVoxURLRouter {
             return
         }
 
-        switch route {
-        case .startRecording:
-            transcriptionManager.handleStartRecordingCommand(isFromURL: true)
-        case .stopRecording:
-            transcriptionManager.handleStopRecordingCommand()
-        }
+        handle(route: route)
     }
 }
