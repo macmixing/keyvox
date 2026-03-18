@@ -99,7 +99,8 @@ struct AppRootView: View {
     }
 
     private var shouldSkipRootTransition: Bool {
-        previousDestination == .launchHold && destination == .onboarding
+        previousDestination == .launchHold
+            && (destination == .onboarding || destination == .main)
     }
 }
 
