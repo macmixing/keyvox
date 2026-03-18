@@ -289,9 +289,9 @@
 				Core/KeyboardDictationController.swift,
 				Core/KeyboardDictionaryCasingStore.swift,
 				Core/KeyboardHapticsSettingsStore.swift,
-				Core/KeyboardInteractionHaptics.swift,
 				Core/KeyboardInsertionCapitalizationHeuristics.swift,
 				Core/KeyboardInsertionSpacingHeuristics.swift,
+				Core/KeyboardInteractionHaptics.swift,
 				Core/KeyboardIPCManager.swift,
 				Core/KeyboardKeypressHaptics.swift,
 				Core/KeyboardModelAvailability.swift,
@@ -1250,7 +1250,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1295,7 +1295,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
