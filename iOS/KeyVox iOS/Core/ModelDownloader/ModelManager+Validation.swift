@@ -105,6 +105,21 @@ extension ModelManager {
         }
     }
 
+    func preflightDiskSpaceErrorMessage() -> String? {
+        guard let modelsDirectory = modelsDirectoryProvider(),
+              let availableBytes = freeSpaceProvider(modelsDirectory),
+              availableBytes < requiredDownloadBytes else {
+            return nil
+        }
+
+        return ModelInstallError
+            .insufficientDiskSpace(
+                requiredBytes: requiredDownloadBytes,
+                availableBytes: availableBytes
+            )
+            .localizedDescription
+    }
+
     func fileSizeBytes(at url: URL) -> Int64? {
         (try? fileManager.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? nil
     }

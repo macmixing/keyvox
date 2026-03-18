@@ -133,6 +133,10 @@ struct OnboardingSetupScreen: View {
                         Text("An internet connection is required for model download.")
                             .font(.appFont(12))
                             .foregroundStyle(.red)
+                    } else if let storageError = preflightModelStorageError {
+                        Text(storageError)
+                            .font(.appFont(12))
+                            .foregroundStyle(.red)
                     }
 
                     if shouldShowCellularModelWarning {
@@ -174,7 +178,7 @@ struct OnboardingSetupScreen: View {
         case .notInstalled:
             return OnboardingStepButton(
                 title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
-                isEnabled: downloadNetworkMonitor.isOnline,
+                isEnabled: downloadNetworkMonitor.isOnline && preflightModelStorageError == nil,
                 action: {
                     appHaptics.light()
                     modelManager.downloadModel()
@@ -314,6 +318,14 @@ struct OnboardingSetupScreen: View {
         !downloadNetworkMonitor.isOnline && modelManager.installState == .notInstalled
     }
 
+    private var preflightModelStorageError: String? {
+        guard modelManager.installState == .notInstalled else {
+            return nil
+        }
+
+        return modelManager.preflightDiskSpaceErrorMessage()
+    }
+
     private var formattedDownloadSize: String {
         Self.megabytesString(for: modelManager.requiredDownloadBytes)
     }
@@ -337,6 +349,10 @@ struct OnboardingSetupScreen: View {
 
         if let error = modelManager.errorMessage, shouldShowOfflineModelError == false {
             return "model.error.\(error)"
+        }
+
+        if let storageError = preflightModelStorageError, shouldShowOfflineModelError == false {
+            return "model.storage.\(storageError)"
         }
 
         if microphonePermissionController.status == .denied {
