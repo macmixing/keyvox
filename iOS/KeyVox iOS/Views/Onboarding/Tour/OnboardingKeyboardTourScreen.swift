@@ -1,5 +1,6 @@
 import Combine
 import SwiftUI
+import UIKit
 
 struct OnboardingKeyboardTourScreen: View {
     private enum Metrics {
@@ -8,11 +9,19 @@ struct OnboardingKeyboardTourScreen: View {
         static let sceneBottomSpacing: CGFloat = 92
     }
 
+    private enum TourSceneDirection {
+        case forward
+        case backward
+        case none
+    }
+
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @State private var text = ""
     @State private var tourState = OnboardingKeyboardTourState()
+    @State private var previousScene = OnboardingKeyboardTourState.Scene.a
+    @State private var isInputBarVisible = true
     @StateObject private var keyboardObserver = KeyboardObserver()
     @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
 
@@ -35,10 +44,13 @@ struct OnboardingKeyboardTourScreen: View {
                         .padding(.bottom, sceneBottomPadding(for: geometry))
                 }
                 .overlay(alignment: .bottom) {
-                    inputBar
-                        .padding(.horizontal, AppTheme.screenPadding)
-                        .padding(.bottom, Metrics.inputBarBottomSpacing)
-                        .offset(y: -keyboardLift(for: geometry))
+                    if isInputBarVisible {
+                        inputBar
+                            .padding(.horizontal, AppTheme.screenPadding)
+                            .padding(.bottom, Metrics.inputBarBottomSpacing)
+                            .offset(y: -keyboardLift(for: geometry))
+                            .transition(.opacity)
+                    }
                 }
         }
         .safeAreaInset(edge: .top) {
@@ -47,6 +59,8 @@ struct OnboardingKeyboardTourScreen: View {
                     Text(topBarTitle)
                         .font(.appFont(22))
                         .foregroundStyle(.white)
+                        .id(topBarTitle)
+                        .transition(.opacity.combined(with: .offset(y: -8)))
                 }
 
                 HStack {
@@ -58,7 +72,7 @@ struct OnboardingKeyboardTourScreen: View {
                         size: .compact,
                         fontSize: 16,
                         isEnabled: tourState.canFinish,
-                        action: onboardingStore.completeKeyboardTour
+                        action: handlePrimaryAction
                     )
                 }
                 .frame(maxWidth: .infinity)
@@ -72,6 +86,8 @@ struct OnboardingKeyboardTourScreen: View {
         .ignoresSafeArea(.keyboard)
         .task {
             tourState = OnboardingKeyboardTourState()
+            previousScene = tourState.scene
+            isInputBarVisible = true
             keyboardAccessProbe.refresh()
             syncKeyboardPresentationState()
         }
@@ -86,6 +102,10 @@ struct OnboardingKeyboardTourScreen: View {
         }
         .onReceive(transcriptionManager.$lastTranscriptionText.dropFirst()) { latestTranscription in
             handleLatestTranscription(latestTranscription)
+        }
+        .onChange(of: tourState.scene, initial: false) { oldScene, newScene in
+            guard oldScene != newScene else { return }
+            previousScene = oldScene
         }
     }
 
@@ -114,6 +134,39 @@ struct OnboardingKeyboardTourScreen: View {
             case .c:
                 OnboardingKeyboardTourSceneCView()
             }
+        }
+        .id(tourState.scene)
+        .transition(sceneTransition)
+        .animation(.easeInOut(duration: 0.32), value: tourState.scene)
+    }
+
+    private var sceneTransition: AnyTransition {
+        switch sceneDirection {
+        case .forward:
+            return .asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            )
+        case .backward:
+            return .asymmetric(
+                insertion: .move(edge: .leading).combined(with: .opacity),
+                removal: .move(edge: .trailing).combined(with: .opacity)
+            )
+        case .none:
+            return .opacity
+        }
+    }
+
+    private var sceneDirection: TourSceneDirection {
+        switch (previousScene, tourState.scene) {
+        case let (oldScene, newScene) where oldScene == newScene:
+            return .none
+        case (.a, .b), (.b, .c), (.a, .c):
+            return .forward
+        case (.c, .b), (.b, .a), (.c, .a):
+            return .backward
+        default:
+            return .none
         }
     }
 
@@ -168,5 +221,32 @@ struct OnboardingKeyboardTourScreen: View {
         }
 
         tourState.hasCompletedFirstTourTranscription = true
+    }
+
+    private func handlePrimaryAction() {
+        guard tourState.canFinish else { return }
+
+        if tourState.scene == .c {
+            withAnimation(.easeOut(duration: 0.18)) {
+                isInputBarVisible = false
+            }
+
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder),
+                to: nil,
+                from: nil,
+                for: nil
+            )
+
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(500))
+                withAnimation(.easeInOut(duration: 0.34)) {
+                    onboardingStore.completeKeyboardTour()
+                }
+            }
+            return
+        }
+
+        onboardingStore.completeKeyboardTour()
     }
 }

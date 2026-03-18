@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AppRootView: View {
     private enum RootDestination {
+        case launchHold
+        case returnToHost
         case onboarding
         case main
     }
@@ -11,30 +13,40 @@ struct AppRootView: View {
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
 
     private var destination: RootDestination {
-        onboardingStore.shouldShowOnboarding ? .onboarding : .main
-    }
+        if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
+            return .launchHold
+        }
 
-    private var shouldShowReturnToHostView: Bool {
-        !onboardingStore.shouldSuppressReturnToHostView
+        if !onboardingStore.shouldSuppressReturnToHostView
             && (
                 transcriptionManager.isReturnToHostViewPresented
                     || appLaunchRouteStore.initialURLRoute == .startRecording
-            )
+            ) {
+            return .returnToHost
+        }
+
+        return onboardingStore.shouldShowOnboarding ? .onboarding : .main
     }
 
     var body: some View {
-        if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
-            AppTheme.screenBackground.ignoresSafeArea()
-        } else if shouldShowReturnToHostView {
-            ReturnToHostView()
-        } else {
+        ZStack {
             switch destination {
+            case .launchHold:
+                AppTheme.screenBackground
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+            case .returnToHost:
+                ReturnToHostView()
+                    .transition(.opacity)
             case .onboarding:
                 OnboardingFlowView()
+                    .transition(.opacity)
             case .main:
                 MainTabView()
+                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.34), value: destination)
     }
 }
 
