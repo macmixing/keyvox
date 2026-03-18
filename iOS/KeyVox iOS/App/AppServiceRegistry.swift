@@ -10,6 +10,7 @@ final class AppServiceRegistry {
     let settingsStore: AppSettingsStore
     let onboardingStore: OnboardingStore
     let weeklyWordStatsStore: WeeklyWordStatsStore
+    let appHaptics: AppHaptics
     let whisperService: WhisperService
     let modelManager: ModelManager
     let postProcessor: TranscriptionPostProcessor
@@ -51,6 +52,7 @@ final class AppServiceRegistry {
         let settingsStore = AppSettingsStore(defaults: settingsDefaults)
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
+        let appHaptics = AppHaptics()
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let modelManager = ModelManager(
             fileManager: fileManager,
@@ -152,6 +154,7 @@ final class AppServiceRegistry {
         self.settingsStore = settingsStore
         self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.appHaptics = appHaptics
         self.whisperService = whisperService
         self.modelManager = modelManager
         self.postProcessor = postProcessor

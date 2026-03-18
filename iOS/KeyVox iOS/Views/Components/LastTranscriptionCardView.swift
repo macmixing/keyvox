@@ -5,6 +5,7 @@ struct LastTranscriptionCardView: View {
     let text: String?
     let isLoading: Bool
 
+    @Environment(\.appHaptics) private var appHaptics
     @State private var didCopy = false
 
     private var transcriptionText: String? {
@@ -88,6 +89,7 @@ struct LastTranscriptionCardView: View {
             fontSize: 15
         ) {
             UIPasteboard.general.string = text
+            appHaptics.success()
             didCopy = true
 
             Task { @MainActor in

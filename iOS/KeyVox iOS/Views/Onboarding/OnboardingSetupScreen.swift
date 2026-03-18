@@ -9,11 +9,17 @@ private struct OnboardingStepButton {
 
 struct OnboardingSetupScreen: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var modelManager: ModelManager
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @StateObject private var downloadNetworkMonitor: OnboardingDownloadNetworkMonitor
     @StateObject private var microphonePermissionController: OnboardingMicrophonePermissionController
     @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
+    @State private var previousWarningToken: String?
+    @State private var previousModelStepCompletion: Bool?
+    @State private var previousKeyboardStepCompletion: Bool?
+    @State private var displaysMicrophoneStepCompletion = false
+    @State private var hasPendingMicrophoneStepCompletion = false
 
     @MainActor
     init(
@@ -50,13 +56,54 @@ struct OnboardingSetupScreen: View {
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             guard newPhase == .active else { return }
             refreshState()
+
+            if hasPendingMicrophoneStepCompletion,
+               microphonePermissionController.status == .granted {
+                completeMicrophoneStep()
+            }
+        }
+        .onAppear {
+            previousWarningToken = currentWarningToken
+            previousModelStepCompletion = isModelStepCompleted
+            previousKeyboardStepCompletion = isKeyboardStepCompleted
+            displaysMicrophoneStepCompletion = microphonePermissionController.status == .granted
+        }
+        .onChange(of: currentWarningToken, initial: false) { _, newToken in
+            guard let newToken, newToken != previousWarningToken else {
+                previousWarningToken = newToken
+                return
+            }
+
+            appHaptics.warning()
+            previousWarningToken = newToken
+        }
+        .onChange(of: isModelStepCompleted, initial: false) { _, newValue in
+            emitStepCompletionHaptic(previousCompletion: &previousModelStepCompletion, newValue: newValue)
+        }
+        .onChange(of: isKeyboardStepCompleted, initial: false) { _, newValue in
+            emitStepCompletionHaptic(previousCompletion: &previousKeyboardStepCompletion, newValue: newValue)
+        }
+        .onChange(of: microphonePermissionController.status, initial: false) { oldValue, newValue in
+            if newValue != .granted {
+                displaysMicrophoneStepCompletion = false
+                hasPendingMicrophoneStepCompletion = false
+                return
+            }
+
+            guard oldValue != .granted else { return }
+
+            if scenePhase == .active {
+                completeMicrophoneStep()
+            } else {
+                hasPendingMicrophoneStepCompletion = true
+            }
         }
     }
 
     @ViewBuilder
     private var modelRequirementRow: some View {
         OnboardingStepRow(
-            isCompleted: modelManager.installState == .ready,
+            isCompleted: isModelStepCompleted,
             stepNumber: 1,
             title: "AI Model Setup",
             description: modelStepDescription,
@@ -100,7 +147,7 @@ struct OnboardingSetupScreen: View {
 
     private var microphoneRequirementRow: some View {
         OnboardingStepRow(
-            isCompleted: microphonePermissionController.status == .granted,
+            isCompleted: displaysMicrophoneStepCompletion,
             stepNumber: 2,
             title: "Microphone Access",
             description: "KeyVox needs to hear you to transcribe.",
@@ -112,7 +159,7 @@ struct OnboardingSetupScreen: View {
 
     private var keyboardRequirementRow: some View {
         OnboardingStepRow(
-            isCompleted: isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess,
+            isCompleted: isKeyboardStepCompleted,
             stepNumber: 3,
             title: "Enable Keyboard",
             description: keyboardStepDescription,
@@ -128,13 +175,19 @@ struct OnboardingSetupScreen: View {
             return OnboardingStepButton(
                 title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
                 isEnabled: downloadNetworkMonitor.isOnline,
-                action: { modelManager.downloadModel() }
+                action: {
+                    appHaptics.light()
+                    modelManager.downloadModel()
+                }
             )
         case .failed:
             return OnboardingStepButton(
                 title: "Repair",
                 isEnabled: true,
-                action: { modelManager.repairModelIfNeeded() }
+                action: {
+                    appHaptics.light()
+                    modelManager.repairModelIfNeeded()
+                }
             )
         case .downloading, .installing, .ready:
             return nil
@@ -161,6 +214,7 @@ struct OnboardingSetupScreen: View {
                 title: "Allow access",
                 isEnabled: true,
                 action: {
+                    appHaptics.light()
                     Task {
                         await microphonePermissionController.requestPermission()
                     }
@@ -170,7 +224,10 @@ struct OnboardingSetupScreen: View {
             return OnboardingStepButton(
                 title: "Open Settings",
                 isEnabled: true,
-                action: { openAppSettings() }
+                action: {
+                    appHaptics.light()
+                    openAppSettings()
+                }
             )
         case .granted:
             return nil
@@ -206,14 +263,20 @@ struct OnboardingSetupScreen: View {
             return OnboardingStepButton(
                 title: "Check again",
                 isEnabled: true,
-                action: { keyboardAccessProbe.refresh() }
+                action: {
+                    appHaptics.light()
+                    keyboardAccessProbe.refresh()
+                }
             )
         }
 
         return OnboardingStepButton(
             title: "Open Settings",
             isEnabled: true,
-            action: { openKeyboardSettings() }
+            action: {
+                appHaptics.light()
+                openKeyboardSettings()
+            }
         )
     }
 
@@ -259,6 +322,30 @@ struct OnboardingSetupScreen: View {
         modelManager.installState == .ready && microphonePermissionController.status == .granted
     }
 
+    private var isModelStepCompleted: Bool {
+        modelManager.installState == .ready
+    }
+
+    private var isKeyboardStepCompleted: Bool {
+        isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess
+    }
+
+    private var currentWarningToken: String? {
+        if case .failed = modelManager.installState {
+            return "model.failed"
+        }
+
+        if let error = modelManager.errorMessage, shouldShowOfflineModelError == false {
+            return "model.error.\(error)"
+        }
+
+        if microphonePermissionController.status == .denied {
+            return "microphone.denied"
+        }
+
+        return nil
+    }
+
     private var modelDownloadProgress: Double? {
         switch modelManager.installState {
         case .downloading(let progress, _),
@@ -272,6 +359,23 @@ struct OnboardingSetupScreen: View {
     private static func megabytesString(for byteCount: Int64) -> String {
         let megabytes = Double(byteCount) / 1_000_000
         return String(format: "%.1f MB", megabytes)
+    }
+
+    private func emitStepCompletionHaptic(previousCompletion: inout Bool?, newValue: Bool) {
+        if let event = OnboardingStepCompletionHapticsDecision.event(
+            previousIsCompleted: previousCompletion,
+            currentIsCompleted: newValue
+        ) {
+            appHaptics.emit(event)
+        }
+
+        previousCompletion = newValue
+    }
+
+    private func completeMicrophoneStep() {
+        appHaptics.success()
+        displaysMicrophoneStepCompletion = true
+        hasPendingMicrophoneStepCompletion = false
     }
 
 }

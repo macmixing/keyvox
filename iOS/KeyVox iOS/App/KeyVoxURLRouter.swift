@@ -12,10 +12,10 @@ final class KeyVoxURLRouter {
         KeyVoxURLRoute(url: url)
     }
 
-    func handle(route: KeyVoxURLRoute) {
+    func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool = true) {
         switch route {
         case .startRecording:
-            transcriptionManager.handleStartRecordingCommand(isFromURL: true)
+            transcriptionManager.handleStartRecordingCommand(isFromURL: shouldPresentReturnToHost)
         case .stopRecording:
             transcriptionManager.handleStopRecordingCommand()
         }

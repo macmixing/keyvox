@@ -7,6 +7,7 @@ struct OnboardingKeyboardTourSceneCView: View {
         static let particleCount = 12
     }
 
+    @Environment(\.appHaptics) private var appHaptics
     @State private var checkmarkTrim: CGFloat = 0
     @State private var ringScale: CGFloat = 0.5
     @State private var ringOpacity: Double = 0
@@ -14,6 +15,7 @@ struct OnboardingKeyboardTourSceneCView: View {
     @State private var particleOffsets: [CGSize] = Array(repeating: .zero, count: Metrics.particleCount)
     @State private var particleOpacities: [Double] = Array(repeating: 0, count: Metrics.particleCount)
     @State private var isAnimating = false
+    @State private var hasEmittedCompletionHaptic = false
     private var animationTask: Task<Void, Never>?
 
     var body: some View {
@@ -98,6 +100,7 @@ struct OnboardingKeyboardTourSceneCView: View {
         ringOpacity = 0
         checkmarkTrim = 0
         contentOpacity = 0
+        hasEmittedCompletionHaptic = false
 
         try? await Task.sleep(for: .seconds(0.3))
 
@@ -113,6 +116,10 @@ struct OnboardingKeyboardTourSceneCView: View {
         }
 
         try? await Task.sleep(for: .seconds(0.3))
+        if hasEmittedCompletionHaptic == false {
+            appHaptics.success()
+            hasEmittedCompletionHaptic = true
+        }
 
         animateParticles()
 
@@ -166,5 +173,6 @@ struct OnboardingKeyboardTourSceneCView: View {
 
     private func stopCelebration() {
         isAnimating = false
+        hasEmittedCompletionHaptic = false
     }
 }

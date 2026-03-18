@@ -12,6 +12,7 @@ struct DictionaryWordEditorView: View {
     let mode: DictionaryWordEditorMode
     let onSave: () -> Void
 
+    @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @Environment(\.dismiss) private var dismiss
     @State private var phrase: String
@@ -126,9 +127,13 @@ struct DictionaryWordEditorView: View {
                 try dictionaryStore.update(id: entry.id, phrase: phrase)
             }
 
+            if let event = DictionarySaveHapticsDecision.successEvent(isAddingNewWord: mode.isAdd) {
+                appHaptics.emit(event)
+            }
             onSave()
             dismiss()
         } catch {
+            appHaptics.emit(DictionarySaveHapticsDecision.failureEvent())
             errorMessage = error.localizedDescription
         }
     }
@@ -142,6 +147,16 @@ struct DictionaryWordEditorView: View {
         DispatchQueue.main.async {
             save()
         }
+    }
+}
+
+private extension DictionaryWordEditorMode {
+    var isAdd: Bool {
+        if case .add = self {
+            return true
+        }
+
+        return false
     }
 }
 

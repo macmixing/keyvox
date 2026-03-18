@@ -87,6 +87,7 @@ extension AudioRecorder {
 
         // Set up audio session for background persistence
         try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
+        try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
         // Keep the hardware route's native sample rate. Bluetooth HFP routes can reject
         // a forced 16 kHz preference, and we already convert captured audio into the
         // recorder's 16 kHz output format downstream.

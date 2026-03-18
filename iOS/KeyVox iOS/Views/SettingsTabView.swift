@@ -2,6 +2,7 @@ import SwiftUI
 import StoreKit
 
 struct SettingsTabView: View {
+    @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var modelManager: ModelManager
     @EnvironmentObject private var settingsStore: AppSettingsStore
 
@@ -146,6 +147,7 @@ struct SettingsTabView: View {
     }
     
     private func openAppStoreReview() {
+        appHaptics.light()
         if #available(iOS 18.0, *) {
             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                 AppStore.requestReview(in: scene)
@@ -195,6 +197,7 @@ struct SettingsTabView: View {
     }
     
     private func openGitHubSponsors() {
+        appHaptics.light()
         if let url = URL(string: "https://github.com/sponsors/macmixing/") {
             UIApplication.shared.open(url)
         }

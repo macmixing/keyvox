@@ -8,8 +8,9 @@ struct OnboardingFlowView: View {
     }
 
     @EnvironmentObject private var onboardingStore: OnboardingStore
+    @State private var lastActiveRoute: Route = .welcome
 
-    private var route: Route {
+    private var resolvedRoute: Route {
         if onboardingStore.shouldShowWelcomeScreen {
             return .welcome
         } else if onboardingStore.shouldShowKeyboardTourScreen {
@@ -17,6 +18,10 @@ struct OnboardingFlowView: View {
         } else {
             return .setup
         }
+    }
+
+    private var route: Route {
+        onboardingStore.shouldShowOnboarding ? resolvedRoute : lastActiveRoute
     }
 
     var body: some View {
@@ -38,11 +43,18 @@ struct OnboardingFlowView: View {
                     ))
             case .keyboardTour:
                 OnboardingKeyboardTourScreen()
-                    .transition(.asymmetric(
+                .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)
                     ))
             }
+        }
+        .onAppear {
+            lastActiveRoute = resolvedRoute
+        }
+        .onChange(of: resolvedRoute, initial: false) { _, newValue in
+            guard onboardingStore.shouldShowOnboarding else { return }
+            lastActiveRoute = newValue
         }
         .animation(.easeInOut(duration: 0.34), value: route)
     }

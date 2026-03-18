@@ -48,6 +48,7 @@
 		8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */; };
 		8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* AppRootView.swift */; };
 		8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
+		8E9E38932F5BF41900EAFA72 /* AppHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000012FDE000100AA0001 /* AppHaptics.swift */; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BE2F5C004200EAFA72 /* AppServiceRegistry.swift */; };
 		8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */; };
@@ -103,6 +104,7 @@
 		A16000032FD4000100AA0001 /* OnboardingLogoPopInSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */; };
 		A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */; };
 		A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000042FD5000100AA0001 /* AppSceneDelegate.swift */; };
+		A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */; };
 		AA1000012F70000100000001 /* AppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* AppTypography.swift */; };
 		AA1000022F70000100000001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* AppTheme.swift */; };
 		AA1000032F70000100000001 /* AppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* AppCard.swift */; };
@@ -247,6 +249,8 @@
 		A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLogoPopInSequence.swift; sourceTree = "<group>"; };
 		A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchRouteStore.swift; sourceTree = "<group>"; };
 		A17000042FD5000100AA0001 /* AppSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSceneDelegate.swift; sourceTree = "<group>"; };
+		A18000012FDE000100AA0001 /* AppHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHaptics.swift; sourceTree = "<group>"; };
+		A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHapticsDecisions.swift; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* AppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* AppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCard.swift; sourceTree = "<group>"; };
@@ -473,6 +477,8 @@
 			children = (
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
 				9B7001092FB1000100BB0001 /* iCloud */,
+				A18000012FDE000100AA0001 /* AppHaptics.swift */,
+				A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */,
 				A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */,
 				A17000042FD5000100AA0001 /* AppSceneDelegate.swift */,
 				A13000112FD2000100EE0001 /* AppDelegate.swift */,
@@ -896,6 +902,8 @@
 				A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */,
 				A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */,
 				A13000012FD2000100EE0001 /* AppDelegate.swift in Sources */,
+				8E9E38932F5BF41900EAFA72 /* AppHaptics.swift in Sources */,
+				A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */,
 				A12000012FD1000100AA0001 /* WeeklyWordStatsStore.swift in Sources */,
 				A12000022FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift in Sources */,
 				A15000012FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */,

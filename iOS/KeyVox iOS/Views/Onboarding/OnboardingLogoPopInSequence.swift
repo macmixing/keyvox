@@ -5,6 +5,7 @@ struct OnboardingLogoPopInSequence: View {
     let delay: Double
     var onRevealStarted: (() -> Void)? = nil
 
+    @Environment(\.appHaptics) private var appHaptics
     @State private var scale: CGFloat = 0.12
     @State private var opacity: Double = 0
     @State private var sequenceTask: Task<Void, Never>?
@@ -32,6 +33,7 @@ struct OnboardingLogoPopInSequence: View {
 
             opacity = 1
             onRevealStarted?()
+            appHaptics.light()
 
             withAnimation(.easeOut(duration: 0.15)) {
                 scale = 0.92
@@ -40,6 +42,7 @@ struct OnboardingLogoPopInSequence: View {
             try? await Task.sleep(for: .seconds(0.2))
             guard Task.isCancelled == false else { return }
 
+            appHaptics.medium()
             withAnimation(.easeOut(duration: 0.2)) {
                 scale = 1.16
             }
@@ -47,6 +50,7 @@ struct OnboardingLogoPopInSequence: View {
             try? await Task.sleep(for: .seconds(0.05))
             guard Task.isCancelled == false else { return }
 
+            appHaptics.selection()
             withAnimation(.easeInOut(duration: 0.3)) {
                 scale = 1.0
             }

@@ -4,11 +4,13 @@ import KeyVoxCore
 struct DictionaryTabView: View {
     let isActive: Bool
 
+    @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @State private var dictionarySortMode: DictionarySortMode = .alphabetical
     @State private var dictionaryEditorMode: DictionaryWordEditorMode?
     @State private var isFloatingAddButtonVisible = false
     @State private var lastPresentedEditorID: String?
+    @State private var shouldEmitSortSelectionHaptic = true
 
     private var displayedEntries: [DictionaryEntry] {
         switch dictionarySortMode {
@@ -106,6 +108,7 @@ struct DictionaryTabView: View {
                 mode: mode,
                 onSave: {
                     if case .add = mode, dictionarySortMode != .recentlyAdded {
+                        shouldEmitSortSelectionHaptic = false
                         dictionarySortMode = .recentlyAdded
                     }
                 }
@@ -115,6 +118,13 @@ struct DictionaryTabView: View {
             if let newValue {
                 lastPresentedEditorID = newValue
             }
+        }
+        .onChange(of: dictionarySortMode, initial: false) { _, _ in
+            guard shouldEmitSortSelectionHaptic else {
+                shouldEmitSortSelectionHaptic = true
+                return
+            }
+            appHaptics.selection()
         }
         .task(id: animationTriggerID) {
             guard isActive, dictionaryEditorMode == nil else {
@@ -145,6 +155,7 @@ struct DictionaryTabView: View {
     }
 
     private func presentAddWordEditor() {
+        appHaptics.light()
         dictionaryEditorMode = .add
     }
 

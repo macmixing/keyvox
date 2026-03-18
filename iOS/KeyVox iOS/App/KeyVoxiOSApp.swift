@@ -12,6 +12,7 @@ struct KeyVoxApp: App {
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    private let appHaptics: AppHaptics
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
 
@@ -23,6 +24,7 @@ struct KeyVoxApp: App {
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
+        appHaptics = services.appHaptics
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
         let segmentedControlAppearance = UISegmentedControl.appearance()
@@ -48,6 +50,7 @@ struct KeyVoxApp: App {
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .environment(\.appHaptics, appHaptics)
                 .environmentObject(appLaunchRouteStore)
                 .environmentObject(transcriptionManager)
                 .environmentObject(modelManager)
@@ -99,7 +102,7 @@ struct KeyVoxApp: App {
             appLaunchRouteStore.clearInitialPresentationRoute()
         }
 
-        urlRouter.handle(route: route)
+        urlRouter.handle(route: route, shouldPresentReturnToHost: shouldPresentReturnToHost)
     }
 
     private func configureLegacyBarAppearanceIfNeeded() {

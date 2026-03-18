@@ -16,6 +16,7 @@ struct OnboardingKeyboardTourScreen: View {
     }
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @State private var text = ""
@@ -227,6 +228,7 @@ struct OnboardingKeyboardTourScreen: View {
         guard tourState.canFinish else { return }
 
         if tourState.scene == .c {
+            appHaptics.medium()
             withAnimation(.easeOut(duration: 0.18)) {
                 isInputBarVisible = false
             }
@@ -240,9 +242,7 @@ struct OnboardingKeyboardTourScreen: View {
 
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(500))
-                withAnimation(.easeInOut(duration: 0.34)) {
-                    onboardingStore.completeKeyboardTour()
-                }
+                onboardingStore.completeKeyboardTour()
             }
             return
         }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    private enum Edge {
+    enum Edge {
         case leading
         case trailing
     }
@@ -12,6 +12,7 @@ struct MainTabView: View {
         static let edgeInset: CGFloat = 24
     }
 
+    @Environment(\.appHaptics) private var appHaptics
     @State private var selectedTab: ContainingAppTab = .home
 
     var body: some View {
@@ -30,6 +31,11 @@ struct MainTabView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 AppToolbarContent(selectedTab: selectedTab)
+            }
+        }
+        .onChange(of: selectedTab, initial: false) { oldTab, newTab in
+            if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
+                appHaptics.emit(event)
             }
         }
     }
@@ -96,6 +102,12 @@ struct MainTabView: View {
                   horizontalDistance >= Swipe.threshold,
                   let previousTab = selectedTab.previous {
             selectedTab = previousTab
+        } else if let event = MainTabHapticsDecision.eventForEdgeSwipeAttempt(
+            currentTab: selectedTab,
+            edge: edge,
+            horizontalDistance: horizontalDistance
+        ) {
+            appHaptics.emit(event)
         }
     }
 

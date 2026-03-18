@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingWelcomeScreen: View {
     let onContinue: () -> Void
 
+    @Environment(\.appHaptics) private var appHaptics
     @State private var logoCenterOffset: CGFloat = 0
     @State private var titleOpacity: Double = 0
     @State private var subtitleOpacity: Double = 0
@@ -47,7 +48,10 @@ struct OnboardingWelcomeScreen: View {
                         style: .primary,
                         fillsWidth: true,
                         fontSize: 25,
-                        action: onContinue
+                        action: {
+                            appHaptics.medium()
+                            onContinue()
+                        }
                     )
                     .opacity(buttonOpacity)
                     .frame(maxWidth: .infinity)
@@ -82,6 +86,11 @@ struct OnboardingWelcomeScreen: View {
             withAnimation(.easeInOut(duration: 0.5)) {
                 logoCenterOffset = 0
             }
+
+            try? await Task.sleep(for: .seconds(0.5))
+            guard Task.isCancelled == false else { return }
+
+            appHaptics.light()
 
             try? await Task.sleep(for: .seconds(0.25))
             guard Task.isCancelled == false else { return }
