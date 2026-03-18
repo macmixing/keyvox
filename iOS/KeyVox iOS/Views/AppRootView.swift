@@ -18,6 +18,7 @@ struct AppRootView: View {
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
+    @State private var onboardingOverlayOpacity = 1.0
 
     private var destination: RootDestination {
         if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
@@ -39,11 +40,10 @@ struct AppRootView: View {
         ZStack {
             if destination == .onboarding || destination == .main {
                 MainTabView()
-                    .opacity(mainOpacity)
 
                 if onboardingOverlayState == .visible || destination == .onboarding {
                     OnboardingFlowView()
-                        .opacity(onboardingOpacity)
+                        .opacity(onboardingOverlayOpacity)
                 }
             } else {
                 switch destination {
@@ -62,32 +62,32 @@ struct AppRootView: View {
         .onAppear {
             previousDestination = destination
             onboardingOverlayState = destination == .onboarding ? .visible : .hidden
+            onboardingOverlayOpacity = 1
         }
         .onChange(of: destination, initial: false) { oldValue, newValue in
             previousDestination = oldValue
 
             if newValue == .onboarding {
                 onboardingOverlayState = .visible
+                onboardingOverlayOpacity = 1
             } else if oldValue == .onboarding && newValue == .main {
+                withAnimation(.easeInOut(duration: 0.34)) {
+                    onboardingOverlayOpacity = 0
+                }
+
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(340))
                     if destination == .main {
                         onboardingOverlayState = .hidden
+                        onboardingOverlayOpacity = 1
                     }
                 }
             } else {
                 onboardingOverlayState = .hidden
+                onboardingOverlayOpacity = 1
             }
         }
         .animation(rootAnimation, value: destination)
-    }
-
-    private var mainOpacity: Double {
-        destination == .main ? 1 : 0
-    }
-
-    private var onboardingOpacity: Double {
-        destination == .main ? 0 : 1
     }
 
     private var rootTransition: AnyTransition {
