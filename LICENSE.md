@@ -38,7 +38,7 @@ Notable third-party items include:
 - Kanit font (`OFL-1.1`)
 
 For full third-party notices, see `THIRD_PARTY_NOTICES.md` and
-`Resources/Pronunciation/LICENSES.md`.
+`Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`.
 
 ---
 ## Excluded Proprietary Assets and Branding
