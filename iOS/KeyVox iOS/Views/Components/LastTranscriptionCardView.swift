@@ -23,10 +23,6 @@ struct LastTranscriptionCardView: View {
                         Text(isLoading ? "Processing..." : "Latest Transcription")
                             .font(.appFont(17))
                             .foregroundStyle(.white)
-
-                        Text("Your most recent on-device dictation.")
-                            .font(.appFont(12))
-                            .foregroundStyle(.secondary)
                     }
 
                     Spacer(minLength: 0)
