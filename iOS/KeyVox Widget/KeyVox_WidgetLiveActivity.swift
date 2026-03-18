@@ -12,16 +12,19 @@ struct KeyVox_WidgetLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    KeyVoxDynamicIslandBrandView()
+                    KeyVoxExpandedDynamicIslandTitleView()
                 }
-                DynamicIslandExpandedRegion(.trailing) {
-                    KeyVoxSessionStopButton()
-                }
-                DynamicIslandExpandedRegion(.bottom) {
+                DynamicIslandExpandedRegion(.leading, priority: 1) {
                     Text(wordsThisWeekLabel(for: context.state.weeklyWordCount))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .dynamicIsland(verticalPlacement: .belowIfTooWide)
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    KeyVoxSessionStopButton()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 }
             } compactLeading: {
                 KeyVoxDynamicIslandLogo()
@@ -31,6 +34,17 @@ struct KeyVox_WidgetLiveActivity: Widget {
                 KeyVoxDynamicIslandLogo()
             }
         }
+    }
+}
+
+private struct KeyVoxExpandedDynamicIslandTitleView: View {
+    var body: some View {
+        Text("KeyVox")
+            .font(.custom("Kanit-Medium", size: 23))
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .allowsTightening(true)
+            .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 }
 
