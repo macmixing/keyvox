@@ -1,3 +1,4 @@
+import AVFoundation
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
@@ -261,7 +262,22 @@ final class KeyboardViewController: UIInputViewController {
             return .hidden
         }
 
+        guard hasMicrophonePermission else {
+            return .microphoneWarning
+        }
+
         return hasFullAccess ? .branded : .fullAccessWarning
+    }
+
+    private var hasMicrophonePermission: Bool {
+        switch AVAudioApplication.shared.recordPermission {
+        case .granted:
+            return true
+        case .undetermined, .denied:
+            return false
+        @unknown default:
+            return false
+        }
     }
 
     private func setFullAccessInstructionsPresented(_ isPresented: Bool) {

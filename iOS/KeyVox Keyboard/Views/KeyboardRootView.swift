@@ -70,7 +70,8 @@ final class KeyboardRootView: UIView {
         isTrackpadModeActive: Bool
     ) {
         let showsBrandedToolbar = toolbarMode == .branded
-        let showsFullAccessWarning = toolbarMode == .fullAccessWarning
+        let warningText = toolbarMode.warningText
+        let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
@@ -114,9 +115,10 @@ final class KeyboardRootView: UIView {
         centerContainerView.isHidden = false
 
         logoBarView.isHidden = !showsBrandedToolbar
-        fullAccessWarningContainer.isHidden = !showsFullAccessWarning
-        fullAccessInfoButton.isHidden = !showsFullAccessWarning
-        fullAccessInfoButton.isEnabled = showsFullAccessWarning
+        fullAccessWarningLabel.text = warningText
+        fullAccessWarningContainer.isHidden = !showsToolbarWarning
+        fullAccessInfoButton.isHidden = !toolbarMode.showsWarningInfoButton
+        fullAccessInfoButton.isEnabled = toolbarMode.showsWarningInfoButton
         logoBarView.applyIndicatorPhase(state.indicatorPhase)
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
