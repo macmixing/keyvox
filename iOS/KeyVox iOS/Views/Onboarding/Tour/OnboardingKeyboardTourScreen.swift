@@ -96,7 +96,7 @@ struct OnboardingKeyboardTourScreen: View {
         case .b:
             return "Try It Out!"
         case .c:
-            return nil
+            return "Success!"
         }
     }
 
