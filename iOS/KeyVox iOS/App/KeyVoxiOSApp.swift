@@ -59,7 +59,7 @@ struct KeyVoxApp: App {
                     switch newPhase {
                     case .active:
                         if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
-                            handle(route: initialRoute)
+                            handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
@@ -78,7 +78,10 @@ struct KeyVoxApp: App {
                 }
                 .onOpenURL { url in
                     if let route = KeyVoxURLRoute(url: url) {
-                        handle(route: route)
+                        handle(
+                            route: route,
+                            shouldPresentReturnToHost: scenePhase != .active
+                        )
                     } else {
                         urlRouter.handle(url: url)
                     }
@@ -86,8 +89,8 @@ struct KeyVoxApp: App {
         }
     }
 
-    private func handle(route: KeyVoxURLRoute) {
-        if route == .startRecording {
+    private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
+        if route == .startRecording, shouldPresentReturnToHost {
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
