@@ -116,7 +116,7 @@ struct OnboardingStoreTests {
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
     }
 
-    @Test func completingKeyboardTourClearsPendingFlagAndRoutesToCustomizeStep() {
+    @Test func completingKeyboardTourClearsPendingFlagAndCompletesOnboarding() {
         let defaults = makeDefaults()
         let store = OnboardingStore(
             defaults: defaults,
@@ -127,12 +127,10 @@ struct OnboardingStoreTests {
         store.completeKeyboardTour()
 
         #expect(store.hasPendingKeyboardTour == false)
-        #expect(store.hasCompletedKeyboardTourThisLaunch)
-        #expect(store.hasCompletedOnboarding == false)
-        #expect(store.shouldShowOnboarding)
-        #expect(store.shouldShowCustomizeAppScreen)
+        #expect(store.hasCompletedOnboarding)
+        #expect(store.shouldShowOnboarding == false)
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
-        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == nil)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == true)
     }
 
     @Test func recordingPendingKeyboardTourDisarmsRouteUntilActivationCheckRuns() {

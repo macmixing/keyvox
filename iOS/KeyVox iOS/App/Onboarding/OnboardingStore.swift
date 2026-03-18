@@ -21,7 +21,6 @@ final class OnboardingStore: ObservableObject {
             defaults.set(hasPendingKeyboardTour, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
         }
     }
-    @Published private(set) var hasCompletedKeyboardTourThisLaunch: Bool
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
     @Published private(set) var isPendingKeyboardTourRouteArmed: Bool
     @Published private(set) var isIgnoringPersistedPendingKeyboardTourThisLaunch: Bool
@@ -31,7 +30,6 @@ final class OnboardingStore: ObservableObject {
         !hasCompletedOnboarding
             || isForceOnboardingLaunch
             || hasPendingKeyboardTour
-            || hasCompletedKeyboardTourThisLaunch
     }
 
     var shouldShowWelcomeScreen: Bool {
@@ -43,10 +41,6 @@ final class OnboardingStore: ObservableObject {
             && isPendingKeyboardTourRouteArmed
             && !isIgnoringPersistedPendingKeyboardTourThisLaunch
             && shouldShowOnboarding
-    }
-
-    var shouldShowCustomizeAppScreen: Bool {
-        hasCompletedKeyboardTourThisLaunch && shouldShowOnboarding
     }
 
     var shouldSuppressReturnToHostView: Bool {
@@ -62,7 +56,6 @@ final class OnboardingStore: ObservableObject {
         hasCompletedWelcomeScreen = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
         hasPendingKeyboardTour = persistedPendingKeyboardTour
-        hasCompletedKeyboardTourThisLaunch = false
         hasPassedWelcomeScreenThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
         isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
@@ -70,7 +63,7 @@ final class OnboardingStore: ObservableObject {
     }
 
     func completeOnboarding() {
-        hasCompletedKeyboardTourThisLaunch = false
+        clearPendingKeyboardTour()
         hasCompletedOnboarding = true
         isForceOnboardingLaunch = false
         hasCompletedOnboardingThisLaunch = true
@@ -94,12 +87,10 @@ final class OnboardingStore: ObservableObject {
     }
 
     func completeKeyboardTour() {
-        clearPendingKeyboardTour()
-        hasCompletedKeyboardTourThisLaunch = true
+        completeOnboarding()
     }
 
     func handleAppDidEnterBackground() {
-        hasCompletedKeyboardTourThisLaunch = false
         hasCompletedOnboardingThisLaunch = false
     }
 

@@ -53,7 +53,7 @@ struct OnboardingKeyboardTourScreen: View {
                     Spacer()
 
                     AppActionButton(
-                        title: "Next",
+                        title: primaryActionTitle,
                         style: .primary,
                         size: .compact,
                         fontSize: 16,
@@ -98,6 +98,10 @@ struct OnboardingKeyboardTourScreen: View {
         case .c:
             return "Success!"
         }
+    }
+
+    private var primaryActionTitle: String {
+        tourState.scene == .c ? "Finish" : "Next"
     }
 
     private var sceneContent: some View {

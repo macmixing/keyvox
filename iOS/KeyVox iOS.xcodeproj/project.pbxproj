@@ -27,7 +27,6 @@
 		8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */; };
 		8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */; };
 		8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */; };
-		8E32B87D2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */; };
 		8E32BEF82F68F8C500F8DA9F /* ModelDownloadProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */; };
 		8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */; };
 		8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */; };
@@ -183,7 +182,6 @@
 		8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneBView.swift; sourceTree = "<group>"; };
 		8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneCView.swift; sourceTree = "<group>"; };
 		8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourScreen.swift; sourceTree = "<group>"; };
-		8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCustomizeAppScreen.swift; sourceTree = "<group>"; };
 		8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadProgress.swift; sourceTree = "<group>"; };
 		8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepRow.swift; sourceTree = "<group>"; };
 		8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
@@ -631,7 +629,6 @@
 			children = (
 				A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */,
 				8E32B8732F67D33C00F8DA9F /* Tour */,
-				8E32B87C2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift */,
 				B20000012FD5000100AA0001 /* OnboardingFlowView.swift */,
 				B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */,
 				B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */,
@@ -866,7 +863,6 @@
 				8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */,
 				8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */,
 				8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */,
-				8E32B87D2F67DBA400F8DA9F /* OnboardingCustomizeAppScreen.swift in Sources */,
 				AA1000012F70000100000001 /* AppTypography.swift in Sources */,
 				AA1000022F70000100000001 /* AppTheme.swift in Sources */,
 				AA1000032F70000100000001 /* AppCard.swift in Sources */,
