@@ -21,11 +21,11 @@ This policy applies to:
 - The name `KeyVox`
 - KeyVox logos, app icons, and related brand imagery
 - Brand-identity assets listed as excluded/proprietary in `LICENSE.md`, including:
-  - `Resources/Assets.xcassets/`
-  - `Resources/keyvox.icon/`
-  - `Resources/logo.png`
-  - `Views/Components/KeyVoxLogo.swift`
-  - `Views/RecordingOverlay.swift`
+  - `macOS/Resources/Assets.xcassets/`
+  - `macOS/Resources/keyvox.icon/`
+  - `macOS/Resources/logo.png`
+  - `macOS/Views/Components/KeyVoxLogo.swift`
+  - `macOS/Views/Components/LogoBarView.swift`
 
 ## 4) Allowed Uses (No Prior Approval Required)
 

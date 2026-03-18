@@ -33,14 +33,14 @@
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8E927F6A2F3C7AA000C071B3 /* Credits.rtf */; };
-		8E9E38242F5BB59A00EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38232F5BB59A00EAFA72 /* KeyVoxCore */; };
+		8E95400B2F6AA90B00B1F3B5 /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = 8E9540092F6AA90B00B1F3B5 /* LICENSE.md */; };
+		8E95400C2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = 8E95400A2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md */; };
 		8E9E38262F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */; };
 		8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */; };
 		8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
 		8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700122F42000100C70001 /* WarningOverlayView.swift */; };
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
-		8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = 8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
 		8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */; };
 		8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEB112F65676100BECF17 /* Kanit-Light.ttf */; };
@@ -59,12 +59,12 @@
 		9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */; };
 		9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */; };
 		9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */; };
-		9A1000222F4B000100AA0001 /* PasteCapitalizationHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */; };
-		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
 		9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000082F4B000100AA0001 /* PastePolicies.swift */; };
 		9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */; };
 		9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */; };
 		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
+		9A1000222F4B000100AA0001 /* PasteCapitalizationHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */; };
+		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
 		9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000032F4C000100AA0001 /* OverlayMotionController.swift */; };
 		9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */; };
@@ -80,8 +80,6 @@
 		A11000032FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */; };
 		A11000042FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */; };
 		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
-		AA1000122F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */; };
-		AA1000132F50000100AA0001 /* ../LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = AA1000032F50000100AA0001 /* ../LICENSE.md */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
 		AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */; };
@@ -101,7 +99,6 @@
 		AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */; };
 		AB3000302F60000100AA0001 /* ModelDownloaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */; };
 		AB3000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */; };
-		AB3000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */; };
 		AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */; };
 		AB3000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */; };
 		AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */; };
@@ -109,6 +106,7 @@
 		AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */; };
 		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
 		AB3000392F60000100AA0001 /* DictationPipelineSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */; };
+		AB3000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
@@ -117,7 +115,6 @@
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
 		D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
-		D17000212FA3000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = D17000312FA3000100AA0001 /* KeyVoxCore */; };
 		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
 		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
 		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
@@ -192,6 +189,8 @@
 		8E70C6EC2F623AFA00E9E555 /* updater.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = updater.sh; sourceTree = "<group>"; };
 		8E927F6A2F3C7AA000C071B3 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVox.entitlements; sourceTree = "<group>"; };
+		8E9540092F6AA90B00B1F3B5 /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = LICENSE.md; path = ../LICENSE.md; sourceTree = SOURCE_ROOT; };
+		8E95400A2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = THIRD_PARTY_NOTICES.md; path = ../THIRD_PARTY_NOTICES.md; sourceTree = SOURCE_ROOT; };
 		8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderStopRecordingTests.swift; sourceTree = "<group>"; };
 		8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
 		8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
@@ -218,12 +217,12 @@
 		9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackExecutor.swift; sourceTree = "<group>"; };
 		9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshot.swift; sourceTree = "<group>"; };
 		9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingHeuristics.swift; sourceTree = "<group>"; };
-		9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristics.swift; sourceTree = "<group>"; };
-		9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDictionaryCasingStore.swift; sourceTree = "<group>"; };
 		9A1000082F4B000100AA0001 /* PastePolicies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePolicies.swift; sourceTree = "<group>"; };
 		9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuScanner.swift; sourceTree = "<group>"; };
 		9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAXLiveSession.swift; sourceTree = "<group>"; };
 		9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinator.swift; sourceTree = "<group>"; };
+		9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristics.swift; sourceTree = "<group>"; };
+		9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDictionaryCasingStore.swift; sourceTree = "<group>"; };
 		9B2000022F4C000100AA0001 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		9B2000032F4C000100AA0001 /* OverlayMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayMotionController.swift; sourceTree = "<group>"; };
 		9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistence.swift; sourceTree = "<group>"; };
@@ -239,8 +238,6 @@
 		A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsStoreTests.swift; sourceTree = "<group>"; };
 		A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSyncTests.swift; sourceTree = "<group>"; };
 		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
-		AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
-		AA1000032F50000100AA0001 /* ../LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ../LICENSE.md; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistenceTests.swift; sourceTree = "<group>"; };
 		AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysicsTests.swift; sourceTree = "<group>"; };
@@ -260,7 +257,6 @@
 		AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteWarningGuardrailTests.swift; sourceTree = "<group>"; };
 		AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloaderTests.swift; sourceTree = "<group>"; };
 		AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingHeuristicsTests.swift; sourceTree = "<group>"; };
-		AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristicsTests.swift; sourceTree = "<group>"; };
 		AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinatorExecutionTests.swift; sourceTree = "<group>"; };
 		AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshotTests.swift; sourceTree = "<group>"; };
 		AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStoreTests.swift; sourceTree = "<group>"; };
@@ -268,6 +264,7 @@
 		AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerTests.swift; sourceTree = "<group>"; };
 		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
 		AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipelineSmokeTests.swift; sourceTree = "<group>"; };
+		AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristicsTests.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
@@ -317,8 +314,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EE0049F2F3BA79A00BBAB30 /* KeyVoxWhisper in Frameworks */,
-				8E9E38242F5BB59A00EAFA72 /* KeyVoxCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,7 +321,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D17000212FA3000100AA0001 /* KeyVoxCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,13 +390,13 @@
 		8E6D05D32F3C51D6003BD458 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8E9540092F6AA90B00B1F3B5 /* LICENSE.md */,
+				8E95400A2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md */,
 				8E70C6EC2F623AFA00E9E555 /* updater.sh */,
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
 				8EECEB112F65676100BECF17 /* Kanit-Light.ttf */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
 				AA1000012F50000100AA0001 /* OFL.txt */,
-				AA1000022F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md */,
-				AA1000032F50000100AA0001 /* ../LICENSE.md */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
 				8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */,
 				8E10F53A2F656E3800A0AA65 /* keyvox.icon */,
@@ -741,8 +735,7 @@
 			);
 			name = KeyVox;
 			packageProductDependencies = (
-				8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */,
-				8E9E38232F5BB59A00EAFA72 /* KeyVoxCore */,
+				A10000012FD1000100AA0001 /* KeyVoxCore */,
 			);
 			productName = KeyVox;
 			productReference = 8EE0045A2F3BA59900BBAB30 /* KeyVox.app */;
@@ -763,7 +756,7 @@
 			);
 			name = KeyVoxTests;
 			packageProductDependencies = (
-				D17000312FA3000100AA0001 /* KeyVoxCore */,
+				A10000022FD1000100AA0001 /* KeyVoxCore */,
 			);
 			productName = KeyVoxTests;
 			productReference = 8EE602882F412B920094EC16 /* KeyVoxTests.xctest */;
@@ -798,8 +791,8 @@
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
-				8EE0049C2F3BA70100BBAB30 /* XCLocalSwiftPackageReference "Packages/KeyVoxWhisper" */,
-				8E9E38222F5BB59A00EAFA72 /* XCLocalSwiftPackageReference "Packages/KeyVoxCore" */,
+				8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */,
+				8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 			);
 			productRefGroup = 8EE0045B2F3BA59900BBAB30 /* Products */;
 			projectDirPath = "";
@@ -822,9 +815,9 @@
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
 				AA1000112F50000100AA0001 /* OFL.txt in Resources */,
-				AA1000122F50000100AA0001 /* ../THIRD_PARTY_NOTICES.md in Resources */,
-				AA1000132F50000100AA0001 /* ../LICENSE.md in Resources */,
 				8E10F53B2F656E3800A0AA65 /* keyvox.icon in Resources */,
+				8E95400B2F6AA90B00B1F3B5 /* LICENSE.md in Resources */,
+				8E95400C2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1307,30 +1300,23 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		8E9E38222F5BB59A00EAFA72 /* XCLocalSwiftPackageReference "Packages/KeyVoxCore" */ = {
+		8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/KeyVoxCore;
+			relativePath = ../Packages/KeyVoxWhisper;
 		};
-		8EE0049C2F3BA70100BBAB30 /* XCLocalSwiftPackageReference "Packages/KeyVoxWhisper" */ = {
+		8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/KeyVoxWhisper;
+			relativePath = ../Packages/KeyVoxCore;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8E9E38232F5BB59A00EAFA72 /* KeyVoxCore */ = {
+		A10000012FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8E9E38222F5BB59A00EAFA72 /* XCLocalSwiftPackageReference "Packages/KeyVoxCore" */;
 			productName = KeyVoxCore;
 		};
-		8EE0049E2F3BA79A00BBAB30 /* KeyVoxWhisper */ = {
+		A10000022FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8EE0049C2F3BA70100BBAB30 /* XCLocalSwiftPackageReference "Packages/KeyVoxWhisper" */;
-			productName = KeyVoxWhisper;
-		};
-		D17000312FA3000100AA0001 /* KeyVoxCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8E9E38222F5BB59A00EAFA72 /* XCLocalSwiftPackageReference "Packages/KeyVoxCore" */;
 			productName = KeyVoxCore;
 		};
 /* End XCSwiftPackageProductDependency section */

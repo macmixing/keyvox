@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Resources/logo.png" width="128" alt="KeyVox Logo">
+  <img src="macOS/Resources/logo.png" width="128" alt="KeyVox Logo">
 </p>
 
 <h1 align="center">KeyVox</h1>
@@ -52,7 +52,7 @@ https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 1. Clone the repo:
    `git clone https://github.com/macmixing/keyvox.git`
 2. Open:
-   `KeyVox.xcodeproj`
+   `macOS/KeyVox.xcodeproj`
 3. Build and run in Xcode.
 4. Complete onboarding:
    Microphone permission, Accessibility permission, and model setup.
