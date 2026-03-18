@@ -27,5 +27,7 @@
 		<string>audio</string>
 		<string>processing</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KeyVox needs access to your microphone to transcribe your speech.</string>
 </dict>
 </plist>
