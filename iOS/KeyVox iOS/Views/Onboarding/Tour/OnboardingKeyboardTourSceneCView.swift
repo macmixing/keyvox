@@ -136,7 +136,7 @@ struct OnboardingKeyboardTourSceneCView: View {
 
     private func animateParticles() {
         for index in 0..<Metrics.particleCount {
-            let angle = Double(index) * (2 * .pi / Double(Metrics.particleCount))
+            let angle = CGFloat(index) * (2 * .pi / CGFloat(Metrics.particleCount))
             let distance: CGFloat = 50 + CGFloat.random(in: 10...30)
 
             let endOffset = CGSize(

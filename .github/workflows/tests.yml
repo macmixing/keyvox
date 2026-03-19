@@ -34,7 +34,7 @@ jobs:
         run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
 
   ios-app-tests:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
             -project "iOS/KeyVox iOS.xcodeproj" \
             -scheme "KeyVox iOS DEBUG" \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 17' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             -resultBundlePath /tmp/keyvox-ios-tests.xcresult \
