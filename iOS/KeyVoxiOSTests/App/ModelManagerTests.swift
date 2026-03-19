@@ -274,6 +274,14 @@ struct ModelManagerTests {
                 stagedCoreMLZipURLProvider: { stagedCoreMLZipURL }
             )
             : nil
+        let unzip: ModelManager.UnzipClosure = { _, _, fileManager, progress in
+            progress(0, 1)
+            if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
+                try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
+            }
+            try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
+            progress(1, 1)
+        }
         let manager = ModelManager(
             fileManager: fileManager,
             whisperService: whisperService,
@@ -297,14 +305,7 @@ struct ModelManagerTests {
                 }
                 return coreMLZipFixtureURL
             },
-            unzip: { _, _, fileManager, progress in
-                progress(0, 1)
-                if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
-                    try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
-                }
-                try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
-                progress(1, 1)
-            }
+            unzip: unzip
         )
 
         return ModelManagerHarness(
