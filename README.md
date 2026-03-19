@@ -4,7 +4,23 @@
 
 <h1 align="center">KeyVox</h1>
 
-KeyVox is a local-first macOS dictation app. Hold your trigger key to record, release to transcribe with Whisper on-device, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
+<p align="center">
+  <a href="https://github.com/macmixing/keyvox/releases/latest"><img src="https://img.shields.io/github/v/release/macmixing/keyvox?label=macOS&color=navy" alt="macOS Release"></a>
+  <a href="https://test.keyvox.app"><img src="https://img.shields.io/badge/iOS-TestFlight-navy" alt="iOS TestFlight"></a>
+  <img src="https://img.shields.io/badge/macOS-13.5%2B-FFCC00" alt="macOS 13.5+">
+  <img src="https://img.shields.io/badge/iOS-18%2B-FFCC00" alt="iOS 18+">
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
+</p>
+
+KeyVox is a local-first macOS and iPhone AI-powered dictation app. 
+
+KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe with Whisper AI on-device, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
+
+KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into a mobile experience, with on-device transcription, post-processing,  shared dictionary via iCloud and synced preferences.
+
+## Join the iOS Beta
+
+**KeyVox Keyboard Beta** is now available through TestFlight for iPhone: [Join the Beta](https://test.keyvox.app)
 
 ## Why KeyVox
 
@@ -15,11 +31,13 @@ KeyVox is a local-first macOS dictation app. Hold your trigger key to record, re
 - 🧠 Smart post-processing for custom words, lists, and time formatting
 - ☁️ iCloud sync for your custom dictionary and core dictation preferences
 - 📊 See your weekly spoken-word total across devices
-- 🪄 Reliable insertion flow with Accessibility-first + fallback paths
+- 🪄 Reliable insertion flow with Accessibility-first + fallback paths on macOS
+- 💪 Native and reliable iOS implementation with keyboard extension
 
 ## Core Features
 
-- 🎙️ Hold-to-talk dictation with optional hands-free mode
+- 🎙️ Hold-to-talk dictation with optional hands-free mode on macOS
+- 🎙️ Tap-to-talk dictation on iPhone
 - 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
 - ⚙️ Configurable trigger binding (Option, Command, Control, or Fn), synced across devices
 - 📓 Optional auto-paragraph splitting with Lists preferences with sync
@@ -35,50 +53,67 @@ https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 
 ### Requirements
 
+macOS
 - macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
 - ~190 MB disk space for the base model
 
+iOS
+- iOS 18.6 or later
+- ~190 MB disk space for the base model
+
 ### Install and Run
 
-### Recommended (Release DMG)
+### Recommended ( macOS Release DMG)
 
 1. Download the `.dmg` from the [latest release](https://github.com/macmixing/keyvox/releases/latest).
 2. Open the DMG and drag `KeyVox.app` to `Applications`.
 3. Launch KeyVox and complete onboarding (Microphone, Accessibility, model setup).
 
-### Build From Source (Optional)
+### Build From Source (macOS/iOS):
 
 1. Clone the repo:
    `git clone https://github.com/macmixing/keyvox.git`
 2. Open:
-   `macOS/KeyVox.xcodeproj`
+   `macOS/KeyVox.xcodeproj` or `iOS/KeyVox iOS/KeyVox iOS.xcodeproj`
 3. Build and run in Xcode.
 4. Complete onboarding:
-   Microphone permission, Accessibility permission, and model setup.
+   Model download, Microphone permission, and Accessibility/keyboard permission.
+   
 
-## How to Use
+## How to Use (macOS)
 
 1. Configure your trigger key in Settings (default is **Right Option ⌥**).
 2. Hold trigger, speak, release to transcribe and insert.
 3. Hold **Shift** while releasing to continue recording hands-free.
 4. Press **Esc** to cancel an active recording/transcription session.
-5. Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
-6. Your **Dictionary**, **Trigger Key**, **Paragraphs**, and **Lists** preferences can sync through iCloud, and Settings also shows your weekly total across devices.
+
+## How to Use (iPhone)
+
+1. Tap microphone icon on keyboard to start recording, tap again to stop and transcribe.
+2. Tap the cancel button on the keyboard toolbar to cancel recording.
+
+## Dictionary & Settings
+
+- Custom Dictionary entries can be added on either platform and will sync across devices via iCloud.
+- Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
+
 
 ## Troubleshooting
 
 - ❌ No text inserted:
-  Verify Accessibility permission in macOS System Settings.
+  Verify Accessibility permission in macOS System Settings or Keyboard Settings on iOS.
 - 🎤 No input audio:
-  Verify microphone permission and selected input in Settings.
+  Verify microphone permission and selected input in Settings on macOS or microphone access in iOS Settings.
 - 📦 Model missing:
-  Open Settings and re-run model setup/download.
+  Open Settings and re-run model setup/download on macOS, reinstall on iOS.
 
 ## Documentation
 
-- 📘 Engineering details: [`Docs/ENGINEERING.md`](Docs/ENGINEERING.md)
-- 🗺️ File/component map: [`Docs/CODEMAP.md`](Docs/CODEMAP.md)
+- 📘 macOS Engineering details: [`macOS/Docs/ENGINEERING.md`](macOS/Docs/ENGINEERING.md)
+- 🗺️ macOS File/component map: [`macOS/Docs/CODEMAP.md`](macOS/Docs/CODEMAP.md)
+- 📘 iOS Engineering details: [`iOS/Docs/ENGINEERING.md`](iOS/Docs/ENGINEERING.md)
+- 🗺️ iOS File/component map: [`iOS/Docs/CODEMAP.md`](iOS/Docs/CODEMAP.md)
 - 📜 License terms: [`LICENSE.md`](LICENSE.md)
 - 📄 Trademark policy: [`TRADEMARK.md`](TRADEMARK.md)
 - 📎 Third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)

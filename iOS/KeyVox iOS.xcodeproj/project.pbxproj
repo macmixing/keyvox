@@ -21,7 +21,6 @@
 		8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
-		8E32B73A2F67A7CF00F8DA9F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E32B8722F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */; };
 		8E32B8782F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */; };
 		8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */; };
@@ -30,6 +29,12 @@
 		8E32BEF82F68F8C500F8DA9F /* ModelDownloadProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */; };
 		8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */; };
 		8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */; };
+		8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
+		8E4CE59E2F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
+		8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
+		8E4CE5A02F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
+		8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
+		8E4CE5A22F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B904A2F5C6C8B00EE4F08 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
@@ -44,10 +49,8 @@
 		8E9794F12F66BB47009A691D /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E9794F22F66BBC0009A691D /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
 		8E9794F32F66BBC0009A691D /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */; };
-		8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */; };
 		8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* AppRootView.swift */; };
-		8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9E38862F5BF41900EAFA72 /* Assets.xcassets */; };
 		8E9E38932F5BF41900EAFA72 /* AppHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000012FDE000100AA0001 /* AppHaptics.swift */; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BE2F5C004200EAFA72 /* AppServiceRegistry.swift */; };
@@ -66,8 +69,6 @@
 		8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */; };
 		8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
 		8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
-		8EECE9512F641B7F00BECF17 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE9502F641B7F00BECF17 /* keyvox.icon */; };
-		8EECE9522F641B7F00BECF17 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE9502F641B7F00BECF17 /* keyvox.icon */; };
 		8EECEA662F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5C2F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift */; };
 		8EECEA672F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5A2F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift */; };
 		8EECEA682F655FB900BECF17 /* ModelBackgroundDownloadJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5B2F655FB900BECF17 /* ModelBackgroundDownloadJob.swift */; };
@@ -187,6 +188,8 @@
 		8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadProgress.swift; sourceTree = "<group>"; };
 		8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepRow.swift; sourceTree = "<group>"; };
 		8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
+		8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
 		8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
@@ -196,7 +199,6 @@
 		8E97944C2F66B54A009A691D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeyVox iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8E9E38862F5BF41900EAFA72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E9E38872F5BF41900EAFA72 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		8E9E38882F5BF41900EAFA72 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVoxiOS.entitlements; sourceTree = "<group>"; };
@@ -216,7 +218,6 @@
 		8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolbarContent.swift; sourceTree = "<group>"; };
 		8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTranscriptionCardView.swift; sourceTree = "<group>"; };
 		8EECE7322F64020900BECF17 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
-		8EECE9502F641B7F00BECF17 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8EECEA5A2F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadCoordinator.swift; sourceTree = "<group>"; };
 		8EECEA5B2F655FB900BECF17 /* ModelBackgroundDownloadJob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadJob.swift; sourceTree = "<group>"; };
 		8EECEA5C2F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadJobStore.swift; sourceTree = "<group>"; };
@@ -417,6 +418,8 @@
 		8E70C90F2F62B1DB00E9E555 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */,
+				8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */,
 				8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */,
 				8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */,
 				8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */,
@@ -465,9 +468,7 @@
 				8E9E389A2F5C000000EAFA72 /* App */,
 				8E9E389B2F5C000000EAFA72 /* Core */,
 				8E9E389C2F5C000000EAFA72 /* Views */,
-				8E9E38862F5BF41900EAFA72 /* Assets.xcassets */,
 				8E9E38882F5BF41900EAFA72 /* Info.plist */,
-				8EECE9502F641B7F00BECF17 /* keyvox.icon */,
 				8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */,
 			);
 			path = "KeyVox iOS";
@@ -796,8 +797,9 @@
 				8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */,
 				8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */,
+				8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
+				8E4CE5A02F6B7F76009C7CE8 /* keyvox.icon in Resources */,
 				8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */,
-				8E32B73A2F67A7CF00F8DA9F /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -814,12 +816,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E9E38922F5BF41900EAFA72 /* Assets.xcassets in Resources */,
+				8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
+				8E4CE59E2F6B7F76009C7CE8 /* keyvox.icon in Resources */,
 				8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
 				8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 				8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
-				8EECE9522F641B7F00BECF17 /* keyvox.icon in Resources */,
 				8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -828,10 +830,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E9E388E2F5BF41900EAFA72 /* Assets.xcassets in Resources */,
 				8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
-				8EECE9512F641B7F00BECF17 /* keyvox.icon in Resources */,
 				8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
+				8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
+				8E4CE5A22F6B7F76009C7CE8 /* keyvox.icon in Resources */,
 				8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

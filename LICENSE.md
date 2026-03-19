@@ -50,12 +50,19 @@ The following files and assets are **NOT licensed under the MIT License** and re
 ### Excluded Files and Assets
 
 1. `macOS/Resources/Assets.xcassets/`  
-   Includes all App Icons, the KeyVox logo, and related brand imagery.
+   `iOS/KeyVox iOS/Resources/Assets.xcassets`
+   `iOS/KeyVox Widget/Assets.xcassets`
+   `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
+   `iOS/LaunchLogo.png`
+   Includes all App Icons, instructional assets, the KeyVox logo, and related brand imagery.
 
 2. `macOS/Views/Components/LogoBarView.swift`  
+   `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
+   `iOS/KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
    The proprietary KeyVox logo system implementation, including the standalone logo treatment and the recording-overlay audio-reactive visual identity.
 
 3. `macOS/Resources/keyvox.icon/`  
+   `iOS/KeyVox iOS/Resources/keyvox.icon/`
    The proprietary app icon package and source imagery.
 
 4. `macOS/Resources/logo.png`  
