@@ -274,14 +274,6 @@ struct ModelManagerTests {
                 stagedCoreMLZipURLProvider: { stagedCoreMLZipURL }
             )
             : nil
-        let unzip: ModelManager.UnzipClosure = { _, _, fileManager, progress in
-            progress(0, 1)
-            if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
-                try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
-            }
-            try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
-            progress(1, 1)
-        }
         let manager = ModelManager(
             fileManager: fileManager,
             whisperService: whisperService,
@@ -305,7 +297,7 @@ struct ModelManagerTests {
                 }
                 return coreMLZipFixtureURL
             },
-            unzip: unzip
+            unzip: Self.makeUnzipStub(coreMLDirectoryURL: coreMLDirectoryURL)
         )
 
         return ModelManagerHarness(
@@ -340,6 +332,17 @@ struct ModelManagerTests {
     nonisolated private static func sha256Hex(forFileAt url: URL) -> String {
         let data = (try? Data(contentsOf: url)) ?? Data()
         return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
+    nonisolated private static func makeUnzipStub(coreMLDirectoryURL: URL) -> ModelManager.UnzipClosure {
+        { _, _, fileManager, progress in
+            progress(0, 1)
+            if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
+                try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
+            }
+            try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
+            progress(1, 1)
+        }
     }
 
 }
