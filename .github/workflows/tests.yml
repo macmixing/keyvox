@@ -45,7 +45,7 @@ jobs:
             -project "iOS/KeyVox iOS.xcodeproj" \
             -scheme "KeyVox iOS DEBUG" \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 17' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             -resultBundlePath /tmp/keyvox-ios-tests.xcresult \
