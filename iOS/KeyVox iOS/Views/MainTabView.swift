@@ -1,0 +1,123 @@
+import SwiftUI
+
+struct MainTabView: View {
+    enum Edge {
+        case leading
+        case trailing
+    }
+
+    private enum Swipe {
+        static let minimumDistance: CGFloat = 20
+        static let threshold: CGFloat = 50
+        static let edgeInset: CGFloat = 24
+    }
+
+    @Environment(\.appHaptics) private var appHaptics
+    @State private var selectedTab: ContainingAppTab = .home
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if #available(iOS 26.0, *) {
+                    tabContent
+                        .tabBarMinimizeBehavior(.automatic)
+                        .tint(.indigo)
+                } else {
+                    tabContent
+                        .tint(.indigo)
+                }
+            }
+            .navigationTitle(selectedTab == .home ? "" : selectedTab.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                AppToolbarContent(selectedTab: selectedTab)
+            }
+        }
+        .onChange(of: selectedTab, initial: false) { oldTab, newTab in
+            if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
+                appHaptics.emit(event)
+            }
+        }
+    }
+
+    private var tabContent: some View {
+        TabView(selection: $selectedTab) {
+            HomeTabView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(ContainingAppTab.home)
+
+            DictionaryTabView(isActive: selectedTab == .dictionary)
+                .tabItem {
+                    Label("Dictionary", systemImage: "text.book.closed.fill")
+                }
+                .tag(ContainingAppTab.dictionary)
+
+            StyleTabView()
+                .tabItem {
+                    Label("Style", systemImage: "scribble.variable")
+                }
+                .tag(ContainingAppTab.style)
+
+            SettingsTabView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(ContainingAppTab.settings)
+        }
+        .overlay(alignment: .leading) {
+            edgeSwipeCatcher(for: .leading)
+        }
+        .overlay(alignment: .trailing) {
+            edgeSwipeCatcher(for: .trailing)
+        }
+    }
+
+    private func edgeSwipeCatcher(for edge: Edge) -> some View {
+        Color.clear
+            .frame(width: Swipe.edgeInset)
+            .contentShape(Rectangle())
+            .highPriorityGesture(
+                DragGesture(minimumDistance: Swipe.minimumDistance)
+                    .onEnded { value in
+                        handleTabSwipe(value, edge: edge)
+                    }
+            )
+    }
+
+    private func handleTabSwipe(_ value: DragGesture.Value, edge: Edge) {
+        let horizontalDistance = value.translation.width
+        let verticalDistance = value.translation.height
+
+        guard abs(horizontalDistance) > abs(verticalDistance) else {
+            return
+        }
+
+        if edge == .trailing,
+           horizontalDistance <= -Swipe.threshold,
+           let nextTab = selectedTab.next {
+            selectedTab = nextTab
+        } else if edge == .leading,
+                  horizontalDistance >= Swipe.threshold,
+                  let previousTab = selectedTab.previous {
+            selectedTab = previousTab
+        } else if let event = MainTabHapticsDecision.eventForEdgeSwipeAttempt(
+            currentTab: selectedTab,
+            edge: edge,
+            horizontalDistance: horizontalDistance
+        ) {
+            appHaptics.emit(event)
+        }
+    }
+
+}
+
+#Preview {
+    MainTabView()
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
+        .environmentObject(AppServiceRegistry.shared.dictionaryStore)
+}

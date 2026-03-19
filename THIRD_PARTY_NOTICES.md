@@ -51,7 +51,7 @@ Pronunciation-data notices for `KeyVoxCore` are bundled with the package resourc
 ### Kanit Font
 - Upstream: <https://github.com/cadsondemak/kanit>
 - License: SIL Open Font License 1.1 (OFL-1.1)
-- Bundled file: `Resources/Kanit-Medium.ttf`
+- Bundled file: `Resources/Kanit-Medium.ttf`, `Resources/Kanit-Light.ttf`
 
 Full OFL text is bundled in `Resources/OFL.txt`.
 
