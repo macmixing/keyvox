@@ -113,7 +113,6 @@
 		AA1000052F70000100000001 /* AppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* AppScrollScreen.swift */; };
 		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
 		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
-		AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */; };
 		AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000092F70000100000001 /* DictionaryEntryRowView.swift */; };
 		AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */; };
 		AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000C2F70000100000001 /* ContainingAppTab.swift */; };
@@ -259,7 +258,6 @@
 		AA2000052F70000100000001 /* AppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScrollScreen.swift; sourceTree = "<group>"; };
 		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
 		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
-		AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryHeaderCardView.swift; sourceTree = "<group>"; };
 		AA2000092F70000100000001 /* DictionaryEntryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntryRowView.swift; sourceTree = "<group>"; };
 		AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
 		AA20000C2F70000100000001 /* ContainingAppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainingAppTab.swift; sourceTree = "<group>"; };
@@ -611,7 +609,6 @@
 				AA20000F2F70000100000001 /* KeyboardObserver.swift */,
 				AA2000062F70000100000001 /* DictionarySortMode.swift */,
 				AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */,
-				AA2000082F70000100000001 /* DictionaryHeaderCardView.swift */,
 				AA2000092F70000100000001 /* DictionaryEntryRowView.swift */,
 				AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */,
 			);
@@ -891,7 +888,6 @@
 				8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */,
 				8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */,
 				AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */,
-				AA1000082F70000100000001 /* DictionaryHeaderCardView.swift in Sources */,
 				AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */,
 				AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */,
 				AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */,

@@ -145,7 +145,6 @@ iOS/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
 │   │   │   ├── DictionaryFloatingAddButton.swift
-│   │   │   ├── DictionaryHeaderCardView.swift
 │   │   │   ├── DictionarySortMode.swift
 │   │   │   ├── DictionaryWordEditorMode.swift
 │   │   │   ├── DictionaryWordEditorView.swift

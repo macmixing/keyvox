@@ -86,7 +86,12 @@ struct DictionaryWordEditorView: View {
                 }
 
                 if mode.showsDescription {
-                    DictionaryHeaderCardView()
+                    Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
+                        .font(.appFont(12))
+                        .foregroundStyle(.yellow)
+                        .frame(maxWidth: 380)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .multilineTextAlignment(.center)
                         .padding(.top, -10)
                         .padding(.bottom, 10)
                         .padding(.horizontal, 16)
