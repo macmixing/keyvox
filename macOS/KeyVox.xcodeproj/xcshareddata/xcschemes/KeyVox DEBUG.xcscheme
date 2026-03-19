@@ -41,17 +41,6 @@
                ReferencedContainer = "container:KeyVox.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8EE004702F3BA59B00BBAB30"
-               BuildableName = "KeyVoxUITests.xctest"
-               BlueprintName = "KeyVoxUITests"
-               ReferencedContainer = "container:KeyVox.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

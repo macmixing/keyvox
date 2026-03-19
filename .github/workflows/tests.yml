@@ -16,7 +16,7 @@ jobs:
       - name: Run app unit tests with coverage
         run: |
           xcodebuild \
-            -project KeyVox.xcodeproj \
+            -project macOS/KeyVox.xcodeproj \
             -scheme "KeyVox DEBUG" \
             -configuration Debug \
             -destination 'platform=macOS' \
@@ -32,6 +32,24 @@ jobs:
 
       - name: Enforce app-owned core coverage
         run: Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult
+
+  ios-app-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run iOS unit tests
+        run: |
+          xcodebuild \
+            -project "iOS/KeyVox iOS.xcodeproj" \
+            -scheme "KeyVox iOS DEBUG" \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            -resultBundlePath /tmp/keyvox-ios-tests.xcresult \
+            test
 
   pronunciation-quality:
     runs-on: macos-latest
