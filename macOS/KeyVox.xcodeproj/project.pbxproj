@@ -12,6 +12,8 @@
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
+		8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000012FD1000100AA0001 /* KeyVoxCore */; };
+		8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000022FD1000100AA0001 /* KeyVoxCore */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -43,7 +45,6 @@
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
 		8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */; };
-		C22000012FA5000100AA0001 /* SettingsLastTranscriptionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */; };
 		8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEB112F65676100BECF17 /* Kanit-Light.ttf */; };
 		8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1100012F43000100AA0001 /* OverlayManager.swift */; };
 		8F2202052F44010000BB2201 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */; };
@@ -113,6 +114,7 @@
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
 		C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */; };
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
+		C22000012FA5000100AA0001 /* SettingsLastTranscriptionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */; };
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
 		D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
@@ -202,7 +204,6 @@
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
-		C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLastTranscriptionCard.swift; sourceTree = "<group>"; };
 		8EECEB112F65676100BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
 		8F1100012F43000100AA0001 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
 		8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
@@ -272,6 +273,7 @@
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
 		C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+Validation.swift"; sourceTree = "<group>"; };
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
+		C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLastTranscriptionCard.swift; sourceTree = "<group>"; };
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelSection.swift"; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
@@ -316,6 +318,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,6 +326,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1154,7 +1158,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1205,7 +1209,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

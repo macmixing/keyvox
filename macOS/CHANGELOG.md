@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-03-19
+
+### Added
+
+- Added leading-capitalization normalization before macOS paste so fresh transcriptions better match text expectations at insertion time.
+
+### Changed
+
+- Reworked the macOS settings window to align with the iOS tab structure, including Home, Dictionary, Style, and Settings tabs.
+- Added a Home dashboard for weekly word totals and the most recent transcription, and moved trigger key, audio, system, and developer controls into the new Settings layout.
+
+### Fixed
+
+- Reset dismissed macOS settings windows to Home when reopened from the Dock instead of returning to the previously viewed tab.
+
 ## [1.0.3] - 2026-03-14
 
 ### Added
