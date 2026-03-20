@@ -179,10 +179,14 @@ class WindowManager: ObservableObject {
             self.settingsWindow = window
         }
 
-        if !isNewWindow, let requestedTab = tab {
-            // Only rebuild settings content when the caller explicitly requests a tab.
-            // This preserves the user's current tab selection for passive reopen flows (e.g. Dock click).
-            window.contentView = NSHostingView(rootView: settingsRootView(initialTab: requestedTab))
+        if !isNewWindow {
+            if let requestedTab = tab {
+                // Explicit deeplinks should always rebuild to the requested tab.
+                window.contentView = NSHostingView(rootView: settingsRootView(initialTab: requestedTab))
+            } else if !window.isVisible {
+                // Reopen a previously dismissed Settings window at the default tab.
+                window.contentView = NSHostingView(rootView: settingsRootView(initialTab: initialTab))
+            }
         }
 
         window.setContentSize(settingsSize)
