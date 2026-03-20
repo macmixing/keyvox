@@ -14,6 +14,7 @@ extension SettingsView {
                     Toggle("", isOn: $appSettings.listFormattingEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
+                        .accessibilityLabel("Lists")
                 }
             }
 
@@ -26,6 +27,7 @@ extension SettingsView {
                     Toggle("", isOn: $appSettings.autoParagraphsEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
+                        .accessibilityLabel("Paragraphs")
                 }
             }
         }

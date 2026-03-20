@@ -229,6 +229,7 @@ extension SettingsView {
                         Toggle("", isOn: $appSettings.isSoundEnabled)
                             .toggleStyle(SwitchToggleStyle(tint: MacAppTheme.accent))
                             .labelsHidden()
+                            .accessibilityLabel("System Sounds")
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
