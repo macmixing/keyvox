@@ -49,7 +49,7 @@ struct StatusMenuView: View {
                         if !downloader.isModelDownloaded {
                             WarningRow(icon: "cpu", title: "Model missing") {
                                 dismiss()
-                                openSettings(.more)
+                                openSettings(.settings)
                                 DispatchQueue.main.async {
                                     ModelDownloader.shared.downloadBaseModel()
                                 }
@@ -74,7 +74,7 @@ struct StatusMenuView: View {
                         disabled: !appSettings.hasCompletedOnboarding
                     ) {
                         dismiss()
-                        openSettings(.general)
+                        openSettings(.home)
                     }
 
                     MenuActionRow(icon: "arrow.triangle.2.circlepath", title: "Check for Updates") {

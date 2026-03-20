@@ -30,8 +30,8 @@ final class WarningKindTests: XCTestCase {
         let muted = WarningKind.microphoneSilence(reason: .muted, microphoneName: "Mic A")
         let noSpeech = WarningKind.microphoneSilence(reason: .noSpeechDetected, microphoneName: "Mic B")
 
-        XCTAssertTrue(muted.settingsTab == .audio)
-        XCTAssertTrue(noSpeech.settingsTab == .audio)
+        XCTAssertTrue(muted.settingsTab == .settings)
+        XCTAssertTrue(noSpeech.settingsTab == .settings)
         XCTAssertTrue(muted.showsKeyVoxSettingsButton)
         XCTAssertTrue(noSpeech.showsKeyVoxSettingsButton)
         XCTAssertTrue(muted.systemSettingsURL != nil)

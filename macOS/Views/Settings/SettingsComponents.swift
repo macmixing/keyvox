@@ -2,19 +2,19 @@ import SwiftUI
 
 // MARK: - Settings Tab Enum
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case general = "General"
-    case audio = "Audio"
+    case home = "Home"
     case dictionary = "Dictionary"
-    case more = "More"
+    case style = "Style"
+    case settings = "Settings"
     
     var id: String { self.rawValue }
     
     var icon: String {
         switch self {
-        case .general: return "keyboard"
-        case .audio: return "mic.fill"
+        case .home: return "house.fill"
         case .dictionary: return "text.book.closed.fill"
-        case .more: return "star.fill"
+        case .style: return "scribble.variable"
+        case .settings: return "gearshape.fill"
         }
     }
 }
@@ -39,7 +39,7 @@ struct AnimatedWaveHeader<Trailing: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("KeyVox")
                     .font(.appFont(24))
-                    .foregroundColor(MacAppTheme.accent)
+                    .foregroundColor(.white)
                 Text("Free Your Voice")
                     .font(.appFont(10))
                     .foregroundColor(.secondary)

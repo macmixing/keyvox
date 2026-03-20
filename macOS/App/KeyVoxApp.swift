@@ -150,6 +150,7 @@ class WindowManager: ObservableObject {
     func openSettings(centered: Bool = true, tab: SettingsTab? = nil) {
         let settingsSize = SettingsView.preferredWindowSize
         let isNewWindow = (settingsWindow == nil)
+        let initialTab = tab ?? .home
 
         let window: NSWindow
         if let existing = settingsWindow {
@@ -174,14 +175,18 @@ class WindowManager: ObservableObject {
             window.hidesOnDeactivate = false
             window.isMovableByWindowBackground = true
 
-            window.contentView = NSHostingView(rootView: SettingsView(initialTab: tab ?? .general))
+            window.contentView = NSHostingView(rootView: settingsRootView(initialTab: initialTab))
             self.settingsWindow = window
         }
 
-        if !isNewWindow, let requestedTab = tab {
-            // Only rebuild settings content when the caller explicitly requests a tab.
-            // This preserves the user's current tab selection for passive reopen flows (e.g. Dock click).
-            window.contentView = NSHostingView(rootView: SettingsView(initialTab: requestedTab))
+        if !isNewWindow {
+            if let requestedTab = tab {
+                // Explicit deeplinks should always rebuild to the requested tab.
+                window.contentView = NSHostingView(rootView: settingsRootView(initialTab: requestedTab))
+            } else if !window.isVisible {
+                // Reopen a previously dismissed Settings window at the default tab.
+                window.contentView = NSHostingView(rootView: settingsRootView(initialTab: initialTab))
+            }
         }
 
         window.setContentSize(settingsSize)
@@ -194,13 +199,19 @@ class WindowManager: ObservableObject {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
+
+    @MainActor
+    private func settingsRootView(initialTab: SettingsTab) -> some View {
+        SettingsView(initialTab: initialTab)
+            .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+    }
 }
 
 @MainActor
 @main
 struct KeyVoxApp: App {
     @NSApplicationDelegateAdaptor(KeyVoxAppDelegate.self) private var appDelegate
-    @StateObject private var transcriptionManager = TranscriptionManager()
+    @StateObject private var transcriptionManager = AppServiceRegistry.shared.transcriptionManager
     @ObservedObject private var appSettings = AppSettingsStore.shared
     @ObservedObject private var windowManager = WindowManager.shared
     @ObservedObject private var downloader = ModelDownloader.shared

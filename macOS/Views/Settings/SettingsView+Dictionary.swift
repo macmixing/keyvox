@@ -3,7 +3,7 @@ import SwiftUI
 extension SettingsView {
     var dictionaryTabSettings: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Spacer().frame(height: 4)
+            Spacer().frame(height: 10)
 
             dictionarySettings
 
