@@ -10,6 +10,15 @@ final class AppServiceRegistry {
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
+    lazy var transcriptionManager: TranscriptionManager = {
+        TranscriptionManager(
+            appSettings: .shared,
+            modelDownloader: .shared,
+            audioRecorder: AudioRecorder(),
+            serviceRegistry: self,
+            postProcessor: TranscriptionPostProcessor()
+        )
+    }()
 
     init(
         dictionaryStore: DictionaryStore,

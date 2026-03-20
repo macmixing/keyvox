@@ -23,6 +23,7 @@ enum UserDefaultsKeys {
         static let resumeUpdaterAfterApplicationsMove = "KeyVox.App.ResumeUpdaterAfterApplicationsMove"
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
+        static let lastTranscription = "KeyVox.App.LastTranscription"
     }
 
     enum iCloud {

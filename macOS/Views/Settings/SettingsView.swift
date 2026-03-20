@@ -6,6 +6,7 @@ import KeyVoxCore
 struct SettingsView: View {
     static let preferredWindowSize = CGSize(width: 800, height: 600)
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject internal var transcriptionManager: TranscriptionManager
 
     @StateObject internal var appSettings = AppSettingsStore.shared
     @StateObject internal var weeklyWordStatsStore = AppServiceRegistry.shared.weeklyWordStatsStore
@@ -20,7 +21,7 @@ struct SettingsView: View {
     @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
     @State private var hasVisitedDictionaryTab = false
 
-    init(initialTab: SettingsTab = .general) {
+    init(initialTab: SettingsTab = .home) {
         _selectedTab = State(initialValue: initialTab)
     }
 
@@ -110,13 +111,13 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 32) {
                     switch selectedTab {
-                    case .general:
-                        generalSettings
-                    case .audio:
-                        audioSettings
+                    case .home:
+                        homeSettings
                     case .dictionary:
                         dictionaryTabSettings
-                    case .more:
+                    case .style:
+                        styleSettings
+                    case .settings:
                         moreSettings
                     }
                 }
@@ -124,14 +125,6 @@ struct SettingsView: View {
                 .padding(.top, 32)
                 .padding(.bottom, 40)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            if selectedTab == .more {
-                Text("Version \(appVersion)")
-                    .font(.appFont(10))
-                    .foregroundColor(.secondary.opacity(0.5))
-                    .padding(.trailing, 32)
-                    .padding(.bottom, 24)
             }
 
             if showsDictionaryFloatingAddButton {
@@ -159,4 +152,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
 }

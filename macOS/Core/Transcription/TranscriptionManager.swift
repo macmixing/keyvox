@@ -6,7 +6,9 @@ import KeyVoxCore
 @MainActor
 class TranscriptionManager: ObservableObject {
     @Published var state: AppState = .idle
-    @Published var lastTranscription: String = ""
+    @Published var lastTranscription: String = UserDefaults.standard.string(
+        forKey: UserDefaultsKeys.App.lastTranscription
+    ) ?? ""
     
     enum AppState: Equatable {
         case idle
@@ -317,6 +319,10 @@ class TranscriptionManager: ObservableObject {
                         return
                     }
                     self.lastTranscription = pipelineResult.finalText
+                    UserDefaults.standard.set(
+                        pipelineResult.finalText,
+                        forKey: UserDefaultsKeys.App.lastTranscription
+                    )
 
                     let pasteDuration = pipelineResult.pasteDuration
                     #if DEBUG

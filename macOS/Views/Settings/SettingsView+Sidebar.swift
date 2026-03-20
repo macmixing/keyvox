@@ -18,16 +18,6 @@ extension SettingsView {
             }
             
             Spacer()
-            
-            // Weekly Usage
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("Words this week:")
-                    .font(.appFont(14))
-                    .foregroundColor(.white.opacity(0.95))
-                Text(weeklyWordStatsStore.combinedWordCount.formatted())
-                    .font(.appFont(14))
-                    .foregroundColor(.yellow)
-            }
         }
         .padding(.horizontal, 32)
         .padding(.top, -8)

@@ -58,11 +58,11 @@ enum WarningKind {
     var settingsTab: SettingsTab {
         switch self {
         case .microphoneSilence:
-            return .audio
+            return .settings
         case .accessibilityPermission:
-            return .general
+            return .home
         case .modelMissing:
-            return .more
+            return .settings
         }
     }
 

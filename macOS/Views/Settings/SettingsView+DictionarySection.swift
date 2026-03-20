@@ -11,10 +11,6 @@ enum DictionarySortMode: String, CaseIterable, Identifiable {
 extension SettingsView {
     var dictionarySettings: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("DICTIONARY")
-                .font(.appFont(10))
-                .foregroundColor(.secondary.opacity(0.6))
-                .padding(.leading, 4)
 
             SettingsCard {
                 VStack(alignment: .leading, spacing: 12) {

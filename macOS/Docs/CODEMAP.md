@@ -484,13 +484,17 @@ KeyVox/
 
 - `Views/StatusMenuView.swift`
   - Menu bar UI, status rendering, warning actions.
-  - Routes model-missing actions to the More settings tab and triggers model download.
+  - Routes model-missing actions to the Settings tab and triggers model download.
 - `Views/OnboardingView.swift`
   - First-run setup for permissions and model download.
   - Accessibility and microphone authorization hooks are delegated to `WindowManager` callbacks.
 - `Views/Settings/*`
-  - Split settings tabs and reusable settings components.
+  - Split settings tabs and reusable settings components for Home, Dictionary, Style, and Settings.
   - Shared app-window styling is sourced from `Views/Components/MacAppTheme.swift`.
+- `Views/Components/SettingsLastTranscriptionCard.swift`
+  - Home-tab last-transcription card with persisted text display, bordered inner container, and copy action.
+- `Views/Settings/SettingsView+Home.swift`
+  - Home tab container with Words per week and last transcription cards.
 - `Views/Settings/SettingsView+Dictionary.swift`
   - Dictionary tab container and English-only support footer text.
 - `Views/Settings/SettingsView+DictionarySection.swift`
@@ -499,8 +503,10 @@ KeyVox/
   - Primary add action is surfaced as a floating corner button from `Views/Components/DictionaryFloatingAddButton.swift`.
 - `Views/Settings/SettingsView+ModelSection.swift`
   - Model install/remove row UI (`ModelSettingsRow`).
+- `Views/Settings/SettingsView+Style.swift`
+  - Style tab with standalone Lists and Paragraphs cards.
 - `Views/Settings/SettingsView+More.swift`
-  - More tab includes Launch at Login and model installer controls.
+  - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`
