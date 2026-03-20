@@ -5,6 +5,7 @@ struct SettingsLastTranscriptionCard: View {
     let text: String
 
     @State private var didCopy = false
+    @State private var copyResetTask: Task<Void, Never>?
 
     private var trimmedText: String? {
         let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -50,6 +51,10 @@ struct SettingsLastTranscriptionCard: View {
                 }
             }
         }
+        .onDisappear {
+            copyResetTask?.cancel()
+            copyResetTask = nil
+        }
     }
 
     private func copyButton(for text: String) -> some View {
@@ -61,10 +66,13 @@ struct SettingsLastTranscriptionCard: View {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
             didCopy = true
+            copyResetTask?.cancel()
 
-            Task { @MainActor in
+            copyResetTask = Task { @MainActor in
                 try? await Task.sleep(for: .seconds(1.2))
+                guard !Task.isCancelled else { return }
                 didCopy = false
+                copyResetTask = nil
             }
         }
     }

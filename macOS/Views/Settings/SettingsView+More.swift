@@ -286,7 +286,7 @@ extension SettingsView {
 
     private var microphoneSubtitleColor: Color {
         guard let selected = audioDeviceManager.selectedMicrophone else {
-            return .secondary
+            return .yellow
         }
 
         switch selected.kind {
