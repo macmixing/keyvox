@@ -5,6 +5,19 @@ struct SettingsTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var modelManager: ModelManager
     @EnvironmentObject private var settingsStore: AppSettingsStore
+    
+    private var appVersionBuildText: String? {
+        guard
+            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+            let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+            !version.isEmpty,
+            !build.isEmpty
+        else {
+            return nil
+        }
+        
+        return "v\(version) (\(build))"
+    }
 
     var body: some View {
         AppScrollScreen {
@@ -17,6 +30,7 @@ struct SettingsTabView: View {
                 #if DEBUG
                 modelSection
                 #endif
+                versionFooter
             }
         }
         .task {
@@ -200,6 +214,18 @@ struct SettingsTabView: View {
         appHaptics.light()
         if let url = URL(string: "https://github.com/sponsors/macmixing/") {
             UIApplication.shared.open(url)
+        }
+    }
+    
+    @ViewBuilder
+    private var versionFooter: some View {
+        if let appVersionBuildText {
+            Text(appVersionBuildText)
+                .font(.appFont(12))
+                .foregroundStyle(.white.opacity(0.5))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
         }
     }
 
