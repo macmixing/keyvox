@@ -39,7 +39,7 @@ enum KeyboardToolbarMode {
         case .microphoneWarning:
             return "Allow Microphone Access for dictation"
         case .phoneCallWarning:
-            return "Use KeyVox after this call."
+            return "Use KeyVox after this call"
         case .hidden, .branded:
             return nil
         }
