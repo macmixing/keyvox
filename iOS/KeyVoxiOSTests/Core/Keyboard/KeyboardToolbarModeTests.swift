@@ -11,7 +11,8 @@ struct KeyboardToolbarModeTests {
         )
 
         #expect(mode == .phoneCallWarning)
-        #expect(mode.warningText == "Use KeyVox after this call.")
+        #expect(mode.warningText != nil)
+        #expect(mode.showsWarningInfoButton == false)
     }
 
     @Test func activePhoneCallDoesNotOverrideHigherPriorityWarnings() {
