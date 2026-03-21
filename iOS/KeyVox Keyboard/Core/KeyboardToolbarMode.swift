@@ -5,6 +5,32 @@ enum KeyboardToolbarMode {
     case branded
     case fullAccessWarning
     case microphoneWarning
+    case phoneCallWarning
+
+    static func resolve(
+        isModelInstalled: Bool,
+        hasFullAccess: Bool,
+        hasMicrophonePermission: Bool,
+        hasActivePhoneCall: Bool
+    ) -> KeyboardToolbarMode {
+        guard isModelInstalled else {
+            return .hidden
+        }
+
+        guard hasFullAccess else {
+            return .fullAccessWarning
+        }
+
+        guard hasMicrophonePermission else {
+            return .microphoneWarning
+        }
+
+        guard hasActivePhoneCall == false else {
+            return .phoneCallWarning
+        }
+
+        return .branded
+    }
 
     var warningText: String? {
         switch self {
@@ -12,6 +38,8 @@ enum KeyboardToolbarMode {
             return "Allow Full Access for dictation"
         case .microphoneWarning:
             return "Allow Microphone Access for dictation"
+        case .phoneCallWarning:
+            return "Use KeyVox after this call"
         case .hidden, .branded:
             return nil
         }

@@ -9,6 +9,7 @@ final class KeyboardViewController: UIInputViewController {
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private let dictionaryCasingStore = KeyboardDictionaryCasingStore()
+    private let callObserver = KeyboardCallObserver()
     private lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
     })
@@ -77,6 +78,7 @@ final class KeyboardViewController: UIInputViewController {
         configureIndicatorDriver()
         configureDictationController()
         configureHostLifecycleObservers()
+        configureCallObserver()
         syncCapsLockState()
         dictationController.syncStateFromSharedState()
         updateUI()
@@ -86,6 +88,7 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillAppear(animated)
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
+        callObserver.refreshState()
         rootContainerView?.keyGridView.resetInteractionState()
         indicatorDriver.start()
         configurePrimaryViewHeight()
@@ -219,6 +222,12 @@ final class KeyboardViewController: UIInputViewController {
         dictationController.registerObservers()
     }
 
+    private func configureCallObserver() {
+        callObserver.onCallStateChange = { [weak self] in
+            self?.updateUI()
+        }
+    }
+
     private func configureHostLifecycleObservers() {
         guard hostWillResignActiveObserver == nil, hostDidBecomeActiveObserver == nil else { return }
 
@@ -259,19 +268,12 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func currentToolbarMode() -> KeyboardToolbarMode {
-        guard KeyboardModelAvailability.isInstalled() else {
-            return .hidden
-        }
-
-        guard hasFullAccess else {
-            return .fullAccessWarning
-        }
-
-        guard hasMicrophonePermission else {
-            return .microphoneWarning
-        }
-
-        return .branded
+        KeyboardToolbarMode.resolve(
+            isModelInstalled: KeyboardModelAvailability.isInstalled(),
+            hasFullAccess: hasFullAccess,
+            hasMicrophonePermission: hasMicrophonePermission,
+            hasActivePhoneCall: callObserver.hasActivePhoneCall
+        )
     }
 
     private var hasMicrophonePermission: Bool {
