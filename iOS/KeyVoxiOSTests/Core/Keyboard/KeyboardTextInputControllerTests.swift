@@ -193,6 +193,36 @@ struct KeyboardTextInputControllerTests {
         #expect(documentProxy.insertedTexts == ["Hello"])
     }
 
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAtStartOfNewLine() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there\n"
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
+    @Test func transcriptionInsertionKeepsLeadingCapitalizationAfterNewLineAndIndentation() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "hello there\n   "
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+
+        let inserted = controller.insertTranscription("Hello")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["Hello"])
+    }
+
     @Test func transcriptionInsertionLowercasesDefaultSentenceCaseMidSentence() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.documentContextBeforeInput = "hello there"

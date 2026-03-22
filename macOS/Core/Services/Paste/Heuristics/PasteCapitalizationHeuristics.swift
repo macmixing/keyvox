@@ -78,11 +78,19 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
                 return true
             }
 
-            if let selectionLength = context.selectionLength,
-               let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
-               selectionLength == 0 {
-                return isSentenceBoundary(previousNonWhitespaceCharacter)
+            if let selectionLength = context.selectionLength, selectionLength == 0 {
+                if context.previousCharacter?.isNewline == true {
+                    return true
+                }
+
+                if let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter {
+                    return isSentenceBoundary(previousNonWhitespaceCharacter)
+                }
             }
+        }
+
+        if lastInsertedTrailingCharacter?.isNewline == true {
+            return true
         }
 
         guard let currentIdentity,
@@ -100,8 +108,16 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
     private func isSentenceBoundary(_ character: Character) -> Bool {
         character == "." || character == "?" || character == "!"
     }
+}
 
-    private func isDefaultSentenceCase<S: StringProtocol>(word: S) -> Bool {
+private extension Character {
+    var isNewline: Bool {
+        unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+    }
+}
+
+private extension PasteCapitalizationHeuristics {
+    func isDefaultSentenceCase<S: StringProtocol>(word: S) -> Bool {
         guard let firstCharacter = word.first else { return false }
         guard firstCharacter.isUppercase else { return false }
 
