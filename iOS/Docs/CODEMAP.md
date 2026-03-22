@@ -189,6 +189,7 @@ iOS/
 │   └── Views/
 │       ├── FullAccessView.swift
 │       ├── KeyboardInputHostView.swift
+│       ├── KeyboardLayoutGeometry.swift
 │       ├── KeyboardRootView.swift
 │       └── Components/
 │           ├── KeyboardCancelButton.swift
@@ -391,6 +392,11 @@ Packages/
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
+- `KeyVox Keyboard/Views/KeyboardLayoutGeometry.swift`
+  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
+  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
+- `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
+  - Builds the symbol-key rows, keeps the first two rows equal-width, and delegates row 3 and row 4 special-key sizing to the unified keyboard layout helper.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 

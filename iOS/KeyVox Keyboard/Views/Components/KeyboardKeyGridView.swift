@@ -28,6 +28,8 @@ final class KeyboardKeyGridView: UIView {
     private let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     private var deleteRepeatController = KeyboardDeleteRepeatController()
     private var isDeleteTouchConsuming = false
+    private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
+    private var bottomRowLayoutGeometry: KeyboardLayoutGeometry.BottomRowLayout?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -88,6 +90,13 @@ final class KeyboardKeyGridView: UIView {
         return firstRow.arrangedSubviews[slot.rawValue]
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        thirdRowLayoutGeometry?.update(isLandscape: isLandscape)
+        bottomRowLayoutGeometry?.update(isLandscape: isLandscape)
+    }
+
     private func configureView() {
         translatesAutoresizingMaskIntoConstraints = false
         clipsToBounds = false
@@ -123,12 +132,14 @@ final class KeyboardKeyGridView: UIView {
             rowsStack.removeArrangedSubview(row)
             row.removeFromSuperview()
         }
+        thirdRowLayoutGeometry = nil
+        bottomRowLayoutGeometry = nil
 
-        for rowModels in KeyboardSymbolLayout.rows(for: page) {
+        for (rowIndex, rowModels) in KeyboardSymbolLayout.rows(for: page).enumerated() {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
             rowStack.alignment = .fill
-            rowStack.distribution = .fillProportionally
+            rowStack.distribution = rowIndex < 2 ? .fillEqually : .fillProportionally
             rowStack.spacing = KeyboardStyle.keySpacing
             rowStack.translatesAutoresizingMaskIntoConstraints = false
 
@@ -139,6 +150,18 @@ final class KeyboardKeyGridView: UIView {
             }
 
             rowsStack.addArrangedSubview(rowStack)
+
+            if rowIndex == 2 {
+                thirdRowLayoutGeometry = KeyboardLayoutGeometry.ThirdRowLayout(
+                    keyGridView: self,
+                    rowStack: rowStack
+                )
+            } else if rowIndex == 3 {
+                bottomRowLayoutGeometry = KeyboardLayoutGeometry.BottomRowLayout(
+                    keyGridView: self,
+                    rowStack: rowStack
+                )
+            }
         }
 
         updateKeyStates(activeKey: nil)

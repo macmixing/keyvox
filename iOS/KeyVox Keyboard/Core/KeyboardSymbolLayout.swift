@@ -31,9 +31,9 @@ struct KeyboardKeyModel: Equatable {
         case .delete:
             return ""
         case .space:
-            return "space"
+            return ""
         case .returnKey:
-            return "return"
+            return "⏎"
         case .abc:
             return "ABC"
         case .alternateSymbols:
@@ -98,6 +98,8 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .character("•"):
             return UIFont.systemFont(ofSize: KeyboardStyle.keyFont.pointSize, weight: .black)
+        case .returnKey:
+            return KeyboardStyle.specialKeyFont.withSize(KeyboardStyle.specialKeyFont.pointSize * 1.5)
         default:
             return isSpecialKey ? KeyboardStyle.specialKeyFont : KeyboardStyle.keyFont
         }

@@ -10,10 +10,10 @@ final class KeyboardLogoBarView: UIControl {
     private enum Metrics {
         static let barWidth: CGFloat = 4
         static let barSpacing: CGFloat = 4
-        static let micSymbolSizeRatio: CGFloat = 0.60
+        static let micSymbolSizeRatio: CGFloat = 0.65
         static let ringLineWidth: CGFloat = 2
-        static let shadowRadius: CGFloat = 6
-        static let barGlowRadius: CGFloat = 2.2
+        static let shadowRadius: CGFloat = 5
+        static let barGlowRadius: CGFloat = 1.5
     }
 
     override var intrinsicContentSize: CGSize {
@@ -76,11 +76,8 @@ final class KeyboardLogoBarView: UIControl {
 
         microphoneImageView.translatesAutoresizingMaskIntoConstraints = false
         microphoneImageView.contentMode = .scaleAspectFit
-        microphoneImageView.tintColor = UIColor.systemIndigo.withAlphaComponent(0.95)
-        microphoneImageView.image = UIImage(
-            systemName: "mic.fill",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
-        )
+        microphoneImageView.tintColor = UIColor.systemIndigo.withAlphaComponent(0.85)
+        microphoneImageView.image = UIImage(named: "microphone-icon")
         addSubview(microphoneImageView)
     }
 
@@ -103,7 +100,7 @@ final class KeyboardLogoBarView: UIControl {
             barLayer.colors = [indigo, topIndigo]
             barLayer.startPoint = CGPoint(x: 0.5, y: 1)
             barLayer.endPoint = CGPoint(x: 0.5, y: 0)
-            barLayer.shadowColor = UIColor.systemYellow.withAlphaComponent(0.75).cgColor
+            barLayer.shadowColor = UIColor.systemYellow.cgColor
             barLayer.shadowOpacity = 0.95
             barLayer.shadowRadius = Metrics.barGlowRadius
             barLayer.shadowOffset = .zero
