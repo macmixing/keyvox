@@ -284,6 +284,7 @@
 				App/KeyboardViewController.swift,
 				Core/AudioIndicatorDriver.swift,
 				Core/KeyboardCapsLockStateStore.swift,
+				Core/KeyboardCallObserver.swift,
 				Core/KeyboardCursorTrackpadSupport.swift,
 				Core/KeyboardDictationController.swift,
 				Core/KeyboardDictionaryCasingStore.swift,

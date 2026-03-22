@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-16**
+**Last Updated: 2026-03-20**
 
 ## Design Philosophy
 
@@ -40,7 +40,7 @@ The containing app owns:
 The keyboard extension owns:
 
 - visible keyboard UI
-- toolbar mode selection and full-access warning presentation
+- toolbar mode selection and warning presentation
 - warm/cold launch handoff into the containing app
 - text insertion into host apps
 - keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
@@ -546,6 +546,7 @@ The extension is a transport and insertion surface, not the transcription owner.
 
 - UI event handling
 - toolbar mode switching
+- call-state observation for warning presentation
 - full-access instructions presentation
 - keyboard state transitions
 - warm/cold app handoff
@@ -560,21 +561,25 @@ Toolbar modes are:
 - hidden
 - branded
 - full-access warning
+- microphone warning
+- phone-call warning
 
 The keyboard root layout has an important invariant:
 
 - the stable non-flashing keyboard structure lives in the main keyboard stack
-- the full-access warning UI is layered as an overlay on top of the toolbar row
+- the warning UI is layered as an overlay on top of the toolbar row
 - the warning must **not** be moved into the root arranged-subview layout path again
 
 That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
 
-### Full Access Rules
+### Warning Toolbar Rules
 
 The branded toolbar requires:
 
 - installed model
 - `hasFullAccess == true`
+- microphone permission granted
+- no active phone call reported by `KeyboardCallObserver`
 
 When the model is installed but Full Access is missing:
 
@@ -582,6 +587,28 @@ When the model is installed but Full Access is missing:
 - hide the branded toolbar controls
 - show the red warning toolbar
 - allow the user to open the full-screen `FullAccessView`
+
+When the model is installed and Full Access is granted but microphone permission is missing:
+
+- keep the key grid visible
+- hide the branded toolbar controls
+- show the red warning toolbar with the microphone message
+- do not show the Full Access instructional button
+
+When the model is installed, Full Access is granted, microphone permission is granted, and an active phone call is reported:
+
+- keep the key grid visible
+- hide the branded toolbar controls
+- show the red warning toolbar with `Use KeyVox after this call.`
+- do not launch any separate instructional surface
+
+Warning precedence must remain:
+
+1. model unavailable -> hidden toolbar
+2. Full Access missing -> full-access warning
+3. microphone permission missing -> microphone warning
+4. active phone call -> phone-call warning
+5. otherwise -> branded toolbar
 
 `FullAccessView` is keyboard-only instructional UI. It does not route through onboarding state or the containing app.
 
