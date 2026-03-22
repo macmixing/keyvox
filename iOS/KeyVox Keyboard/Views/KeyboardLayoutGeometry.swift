@@ -151,41 +151,23 @@ enum KeyboardLayoutGeometry {
         }
     }
 
-    final class ThirdRowLayout {
-        private weak var keyGridView: KeyboardKeyGridView?
-        private weak var rowStack: UIStackView?
-        private var widthConstraints: [NSLayoutConstraint] = []
+    class RowLayout {
+        weak var keyGridView: KeyboardKeyGridView?
+        weak var rowStack: UIStackView?
+        var widthConstraints: [NSLayoutConstraint] = []
 
         init(keyGridView: KeyboardKeyGridView, rowStack: UIStackView) {
             self.keyGridView = keyGridView
             self.rowStack = rowStack
         }
 
-        func update(isLandscape _: Bool) {
-            guard let keyGridView, let rowStack else { return }
-
-            let spacing = KeyboardStyle.keySpacing
-            let rowWidth = keyGridView.bounds.width
-            let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
-            let specialKeyWidth = (topRowKeyWidth * 1.5) + (spacing * 0.5)
-            let middleKeyWidth = (rowWidth - (specialKeyWidth * 2) - (spacing * 6)) / 5
-
-            guard specialKeyWidth > 0, middleKeyWidth > 0 else { return }
+        func applyLayout(expectedKeyCount: Int, targetWidths: [CGFloat]) {
+            guard let rowStack else { return }
 
             let keyViews = rowStack.arrangedSubviews.compactMap { $0 as? KeyboardKeyView }
-            guard keyViews.count == 7 else { return }
+            guard keyViews.count == expectedKeyCount else { return }
 
             rowStack.distribution = .fill
-
-            let targetWidths = [
-                specialKeyWidth,
-                middleKeyWidth,
-                middleKeyWidth,
-                middleKeyWidth,
-                middleKeyWidth,
-                middleKeyWidth,
-                specialKeyWidth,
-            ]
 
             if widthConstraints.count != targetWidths.count {
                 NSLayoutConstraint.deactivate(widthConstraints)
@@ -202,18 +184,36 @@ enum KeyboardLayoutGeometry {
         }
     }
 
-    final class BottomRowLayout {
-        private weak var keyGridView: KeyboardKeyGridView?
-        private weak var rowStack: UIStackView?
-        private var widthConstraints: [NSLayoutConstraint] = []
+    final class ThirdRowLayout: RowLayout {
 
-        init(keyGridView: KeyboardKeyGridView, rowStack: UIStackView) {
-            self.keyGridView = keyGridView
-            self.rowStack = rowStack
+        func update(isLandscape _: Bool) {
+            guard let keyGridView else { return }
+
+            let spacing = KeyboardStyle.keySpacing
+            let rowWidth = keyGridView.bounds.width
+            let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
+            let specialKeyWidth = (topRowKeyWidth * 1.5) + (spacing * 0.5)
+            let middleKeyWidth = (rowWidth - (specialKeyWidth * 2) - (spacing * 6)) / 5
+
+            guard specialKeyWidth > 0, middleKeyWidth > 0 else { return }
+
+            let targetWidths = [
+                specialKeyWidth,
+                middleKeyWidth,
+                middleKeyWidth,
+                middleKeyWidth,
+                middleKeyWidth,
+                middleKeyWidth,
+                specialKeyWidth,
+            ]
+
+            applyLayout(expectedKeyCount: 7, targetWidths: targetWidths)
         }
+    }
 
-        func update(isLandscape: Bool) {
-            guard let keyGridView, let rowStack else { return }
+    final class BottomRowLayout: RowLayout {
+        func update(isLandscape _: Bool) {
+            guard let keyGridView else { return }
 
             let spacing = KeyboardStyle.keySpacing
             let rowWidth = keyGridView.bounds.width
@@ -223,29 +223,13 @@ enum KeyboardLayoutGeometry {
 
             guard sideKeyWidth > 0, spaceKeyWidth > 0 else { return }
 
-            let keyViews = rowStack.arrangedSubviews.compactMap { $0 as? KeyboardKeyView }
-            guard keyViews.count == 3 else { return }
-
-            rowStack.distribution = .fill
-
             let targetWidths = [
                 sideKeyWidth,
                 spaceKeyWidth,
                 sideKeyWidth,
             ]
 
-            if widthConstraints.count != targetWidths.count {
-                NSLayoutConstraint.deactivate(widthConstraints)
-                widthConstraints = zip(keyViews, targetWidths).map { keyView, width in
-                    keyView.widthAnchor.constraint(equalToConstant: width)
-                }
-                NSLayoutConstraint.activate(widthConstraints)
-                return
-            }
-
-            for (constraint, width) in zip(widthConstraints, targetWidths) {
-                constraint.constant = width
-            }
+            applyLayout(expectedKeyCount: 3, targetWidths: targetWidths)
         }
     }
 }
