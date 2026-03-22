@@ -283,8 +283,8 @@
 				App/KeyboardContainingAppLauncher.swift,
 				App/KeyboardViewController.swift,
 				Core/AudioIndicatorDriver.swift,
-				Core/KeyboardCapsLockStateStore.swift,
 				Core/KeyboardCallObserver.swift,
+				Core/KeyboardCapsLockStateStore.swift,
 				Core/KeyboardCursorTrackpadSupport.swift,
 				Core/KeyboardDictationController.swift,
 				Core/KeyboardDictionaryCasingStore.swift,
@@ -989,7 +989,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -1023,7 +1023,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -1060,7 +1060,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -1097,7 +1097,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -1257,7 +1257,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1302,7 +1302,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
