@@ -40,6 +40,32 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: "!")
     }
 
+    func testKeepsCapitalizationAtStartOfNewLine() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 5,
+                    previousCharacter: "\n",
+                    previousNonWhitespaceCharacter: "x"
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testKeepsCapitalizationAfterPunctuationAndSpace() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
@@ -175,6 +201,24 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "hello")
+    }
+
+    func testFallbackHeuristicKeepsCapitalizationAfterTrailingNewLine() {
+        let heuristics = makeRetainedHeuristics(axInspector: MockPasteAXInspector(focusedContext: nil), heuristicTTL: 10)
+        let now = Date()
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: now.addingTimeInterval(-1),
+            lastInsertedTrailingCharacter: "\n",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
     }
 
     func testUnknownContextKeepsCapitalizationWithoutFallbackSignal() {
