@@ -42,13 +42,23 @@ enum KeyboardInsertionCapitalizationHeuristics {
     }
 
     private static func isSentenceStart(documentContextBeforeInput: String?) -> Bool {
-        guard let context = documentContextBeforeInput?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-              let previousCharacter = context.last else {
+        guard let context = documentContextBeforeInput, context.isEmpty == false else {
             return true
         }
 
-        return previousCharacter == "." || previousCharacter == "?" || previousCharacter == "!"
+        for character in context.reversed() {
+            if character.isNewline {
+                return true
+            }
+
+            if character.isWhitespace {
+                continue
+            }
+
+            return character == "." || character == "?" || character == "!"
+        }
+
+        return true
     }
 
     private static func leadingWordRun(in text: String) -> Substring? {
@@ -67,5 +77,11 @@ enum KeyboardInsertionCapitalizationHeuristics {
         }
 
         return remainingCharacters.allSatisfy(\.isLowercase)
+    }
+}
+
+private extension Character {
+    var isNewline: Bool {
+        unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
     }
 }
