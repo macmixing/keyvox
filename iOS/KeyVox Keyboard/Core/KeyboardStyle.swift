@@ -79,7 +79,7 @@ enum KeyboardStyle {
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
     static let keyFont = UIFont.systemFont(ofSize: 22, weight: .regular)
-    static let specialKeyFont = UIFont.systemFont(ofSize: 17, weight: .semibold)
+    static let specialKeyFont = UIFont.systemFont(ofSize: 17)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
     static let cancelButtonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
