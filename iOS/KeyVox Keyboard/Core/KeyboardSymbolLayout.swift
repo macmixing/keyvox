@@ -111,6 +111,13 @@ struct KeyboardKeyModel: Equatable {
             return 0
         }
     }
+
+    func attributedTitle(for text: String? = nil) -> NSAttributedString {
+        NSAttributedString(
+            string: text ?? title,
+            attributes: [.baselineOffset: titleBaselineOffset]
+        )
+    }
 }
 
 enum KeyboardSymbolLayout {

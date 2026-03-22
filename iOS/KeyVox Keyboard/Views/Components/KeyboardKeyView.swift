@@ -67,10 +67,7 @@ final class KeyboardKeyView: UIView {
 
         titleLabel.font = model.titleFont
         if model.systemImageName == nil {
-            let attributes: [NSAttributedString.Key: Any] = [
-                .baselineOffset: model.titleBaselineOffset
-            ]
-            titleLabel.attributedText = NSAttributedString(string: model.title, attributes: attributes)
+            titleLabel.attributedText = model.attributedTitle()
         } else {
             titleLabel.attributedText = nil
         }
