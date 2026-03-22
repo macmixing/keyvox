@@ -20,8 +20,13 @@ final class KeyboardRootView: UIView {
     private let mainStack = UIStackView()
     private let fullAccessWarningContainer = UIView()
     private let fullAccessWarningLabel = UILabel()
+    private var leadingControlsWidthConstraint: NSLayoutConstraint?
+    private var trailingControlsWidthConstraint: NSLayoutConstraint?
     private var cancelButtonWidthConstraint: NSLayoutConstraint?
+    private var cancelButtonHeightConstraint: NSLayoutConstraint?
     private var capsLockButtonWidthConstraint: NSLayoutConstraint?
+    private var capsLockButtonHeightConstraint: NSLayoutConstraint?
+    private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
 
     override init(frame: CGRect) {
@@ -41,25 +46,44 @@ final class KeyboardRootView: UIView {
 
         let cancelReferenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if cancelReferenceWidth > 0,
+           let leadingControlsWidthConstraint,
            let cancelButtonWidthConstraint,
-           abs(cancelButtonWidthConstraint.constant - cancelReferenceWidth) > 0.5 {
-            cancelButtonWidthConstraint.constant = cancelReferenceWidth
-            leadingControlsStack.setNeedsLayout()
-            leadingControlsStack.layoutIfNeeded()
-            cancelButton.setNeedsLayout()
-            cancelButton.layoutIfNeeded()
+           let cancelButtonHeightConstraint {
+            let buttonHeight = min(cancelReferenceWidth, KeyboardStyle.buttonSize)
+            if abs(leadingControlsWidthConstraint.constant - cancelReferenceWidth) > 0.5 ||
+                abs(cancelButtonWidthConstraint.constant - cancelReferenceWidth) > 0.5 ||
+                abs(cancelButtonHeightConstraint.constant - buttonHeight) > 0.5 {
+                leadingControlsWidthConstraint.constant = cancelReferenceWidth
+                cancelButtonWidthConstraint.constant = cancelReferenceWidth
+                cancelButtonHeightConstraint.constant = buttonHeight
+                leadingControlsStack.setNeedsLayout()
+                leadingControlsStack.layoutIfNeeded()
+                cancelButton.setNeedsLayout()
+                cancelButton.layoutIfNeeded()
+            }
         }
 
         let capsReferenceWidth = keyGridView.topRowKeyView(for: .zero)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if capsReferenceWidth > 0,
+           let trailingControlsWidthConstraint,
            let capsLockButtonWidthConstraint,
-           abs(capsLockButtonWidthConstraint.constant - capsReferenceWidth) > 0.5 {
-            capsLockButtonWidthConstraint.constant = capsReferenceWidth
-            trailingControlsStack.setNeedsLayout()
-            trailingControlsStack.layoutIfNeeded()
-            capsLockButton.setNeedsLayout()
-            capsLockButton.layoutIfNeeded()
+           let capsLockButtonHeightConstraint {
+            let buttonHeight = min(capsReferenceWidth, KeyboardStyle.buttonSize)
+            if abs(trailingControlsWidthConstraint.constant - capsReferenceWidth) > 0.5 ||
+                abs(capsLockButtonWidthConstraint.constant - capsReferenceWidth) > 0.5 ||
+                abs(capsLockButtonHeightConstraint.constant - buttonHeight) > 0.5 {
+                trailingControlsWidthConstraint.constant = capsReferenceWidth
+                capsLockButtonWidthConstraint.constant = capsReferenceWidth
+                capsLockButtonHeightConstraint.constant = buttonHeight
+                trailingControlsStack.setNeedsLayout()
+                trailingControlsStack.layoutIfNeeded()
+                capsLockButton.setNeedsLayout()
+                capsLockButton.layoutIfNeeded()
+            }
         }
+
+        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        topRowAccessoryLayoutGeometry?.update(isLandscape: isLandscape)
     }
 
     func apply(
@@ -212,33 +236,41 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureLayout() {
+        leadingControlsWidthConstraint = leadingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
+        trailingControlsWidthConstraint = trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
+        let cancelButtonLeadingConstraint = cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor)
+        let cancelButtonCenterYConstraint = cancelButton.centerYAnchor.constraint(
+            equalTo: leadingControlsStack.centerYAnchor,
+            constant: Metrics.topRowSideControlVerticalOffset
+        )
         cancelButtonWidthConstraint = cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+        cancelButtonHeightConstraint = cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+        let capsLockButtonTrailingConstraint = capsLockButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor)
+        let capsLockButtonCenterYConstraint = capsLockButton.centerYAnchor.constraint(
+            equalTo: trailingControlsStack.centerYAnchor,
+            constant: Metrics.topRowSideControlVerticalOffset
+        )
         capsLockButtonWidthConstraint = capsLockButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+        capsLockButtonHeightConstraint = capsLockButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
 
         NSLayoutConstraint.activate([
             // Fixed width for both control containers ensures the logo stays perfectly centered
             // regardless of button visibility or individual button sizes.
-            leadingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            leadingControlsWidthConstraint!,
+            trailingControlsWidthConstraint!,
             leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
             // Cancel button flush with the left edge of its container
             cancelButtonWidthConstraint!,
-            cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor),
-            cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor),
-            cancelButton.centerYAnchor.constraint(
-                equalTo: leadingControlsStack.centerYAnchor,
-                constant: Metrics.topRowSideControlVerticalOffset
-            ),
+            cancelButtonHeightConstraint!,
+            cancelButtonLeadingConstraint,
+            cancelButtonCenterYConstraint,
 
             capsLockButtonWidthConstraint!,
-            capsLockButton.heightAnchor.constraint(equalTo: cancelButton.heightAnchor),
-            capsLockButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor),
-            capsLockButton.centerYAnchor.constraint(
-                equalTo: trailingControlsStack.centerYAnchor,
-                constant: Metrics.topRowSideControlVerticalOffset
-            ),
+            capsLockButtonHeightConstraint!,
+            capsLockButtonTrailingConstraint,
+            capsLockButtonCenterYConstraint,
 
             fullAccessWarningContainer.leadingAnchor.constraint(equalTo: contentStack.leadingAnchor),
             fullAccessWarningContainer.trailingAnchor.constraint(equalTo: contentStack.trailingAnchor),
@@ -275,6 +307,25 @@ final class KeyboardRootView: UIView {
             mainStack.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding),
             mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.bottomPadding),
         ])
+
+        if let cancelButtonWidthConstraint,
+           let cancelButtonHeightConstraint,
+           let capsLockButtonWidthConstraint,
+           let capsLockButtonHeightConstraint {
+            topRowAccessoryLayoutGeometry = KeyboardLayoutGeometry.TopRowAccessoryLayout(
+                cancelButton: cancelButton,
+                capsLockButton: capsLockButton,
+                keyGridView: keyGridView,
+                cancelButtonLeadingConstraint: cancelButtonLeadingConstraint,
+                capsLockButtonTrailingConstraint: capsLockButtonTrailingConstraint,
+                cancelButtonCenterYConstraint: cancelButtonCenterYConstraint,
+                capsLockButtonCenterYConstraint: capsLockButtonCenterYConstraint,
+                cancelButtonWidthConstraint: cancelButtonWidthConstraint,
+                cancelButtonHeightConstraint: cancelButtonHeightConstraint,
+                capsLockButtonWidthConstraint: capsLockButtonWidthConstraint,
+                capsLockButtonHeightConstraint: capsLockButtonHeightConstraint
+            )
+        }
     }
 
 }

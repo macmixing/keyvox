@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-20**
+**Last Updated: 2026-03-22**
 
 ## Design Philosophy
 
@@ -571,6 +571,27 @@ The keyboard root layout has an important invariant:
 - the warning must **not** be moved into the root arranged-subview layout path again
 
 That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
+
+### Symbol Keyboard Layout Rules
+
+Keyboard-specific row geometry must stay separated by responsibility:
+
+- `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, and the top-row accessory button containers
+- `KeyboardKeyGridView` owns row creation and key interaction wiring
+- `KeyboardLayoutGeometry` owns live measurement-based row sizing and accessory alignment rules
+
+Do not push special-case row width math back into `KeyboardSymbolLayout` when the requirement depends on the rendered keyboard width.
+
+Current symbol layout rules:
+
+- rows 1 and 2 stay equal-width
+- row 3 side keys use a 1.5-key span
+- row 3 middle keys evenly divide the remaining width
+- row 4 side keys use a 2.5-key span
+- the space bar consumes the remaining row-4 width
+- top-row cancel and caps lock alignment is derived from the live `1` and `0` key geometry instead of guessed offsets
+
+The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
 
 ### Warning Toolbar Rules
 
