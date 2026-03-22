@@ -311,6 +311,7 @@
 				Views/Components/KeyboardLogoBarView.swift,
 				Views/Components/KeyboardRoundedBorderRenderer.swift,
 				Views/FullAccessView.swift,
+				Views/KeyboardLayoutGeometry.swift,
 				Views/KeyboardRootView.swift,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
