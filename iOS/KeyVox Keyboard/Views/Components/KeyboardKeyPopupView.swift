@@ -52,7 +52,7 @@ final class KeyboardKeyPopupView: UIView {
     }
 
     func present(text: String, from keyView: KeyboardKeyView, in container: UIView) {
-        titleLabel.text = text
+        titleLabel.attributedText = keyView.model.attributedTitle(for: text)
 
         let keyFrame = keyView.convert(keyView.bounds, to: container)
         let popupSize = CGSize(
