@@ -125,7 +125,7 @@ final class AudioCaptureAccumulator {
 
             let rms = sqrt(sumSquares / Float(frameCount))
             let frameDuration = TimeInterval(Double(convertedBuffer.frameLength) / outputFormat.sampleRate)
-            let level = min(max(sqrt(rms) * 3.0, 0), 1)
+            let level = min(max(sqrt(rms) * 2.5, 0), 1)
 
             let now = Date()
             if peak > deadSignalPeakThreshold {
