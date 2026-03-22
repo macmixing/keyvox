@@ -9,7 +9,7 @@ final class KeyboardViewController: UIInputViewController {
     private let indicatorDriver = AudioIndicatorDriver()
     private let startRecordingURL = URL(string: "keyvoxios://record/start")
     private let dictionaryCasingStore = KeyboardDictionaryCasingStore()
-    private let callObserver = KeyboardCallObserver()
+    private let callObserver =  KeyboardCallObserver()
     private lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
     })
@@ -51,7 +51,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private var rootContainerView: KeyboardRootView!
     private let popupOverlayView = UIView()
-    private var fullAccessView: FullAccessView!
+    private var fullAccessView: FullAccessView?
     private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
     private var isTrackpadModeActive = false
     private var extensionHostIsActive = true
@@ -140,17 +140,8 @@ final class KeyboardViewController: UIInputViewController {
             popupOverlayView.isUserInteractionEnabled = false
             popupOverlayView.clipsToBounds = false
 
-            let fullAccessView = FullAccessView()
-            fullAccessView.translatesAutoresizingMaskIntoConstraints = false
-            fullAccessView.isHidden = true
-            fullAccessView.onBack = { [weak self] in
-                self?.setFullAccessInstructionsPresented(false)
-            }
-            self.fullAccessView = fullAccessView
-
             view.addSubview(rootView)
             view.addSubview(popupOverlayView)
-            view.addSubview(fullAccessView)
 
             NSLayoutConstraint.activate([
                 rootView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -162,11 +153,6 @@ final class KeyboardViewController: UIInputViewController {
                 popupOverlayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 popupOverlayView.topAnchor.constraint(equalTo: view.topAnchor),
                 popupOverlayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-                fullAccessView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                fullAccessView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                fullAccessView.topAnchor.constraint(equalTo: view.topAnchor),
-                fullAccessView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
         }
 
@@ -276,6 +262,30 @@ final class KeyboardViewController: UIInputViewController {
         )
     }
 
+    private func ensureFullAccessView() -> FullAccessView {
+        if let fullAccessView {
+            return fullAccessView
+        }
+
+        let fullAccessView = FullAccessView()
+        fullAccessView.translatesAutoresizingMaskIntoConstraints = false
+        fullAccessView.isHidden = true
+        fullAccessView.onBack = { [weak self] in
+            self?.setFullAccessInstructionsPresented(false)
+        }
+
+        view.addSubview(fullAccessView)
+        NSLayoutConstraint.activate([
+            fullAccessView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            fullAccessView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            fullAccessView.topAnchor.constraint(equalTo: view.topAnchor),
+            fullAccessView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        self.fullAccessView = fullAccessView
+        return fullAccessView
+    }
+
     private var hasMicrophonePermission: Bool {
         switch AVAudioApplication.shared.recordPermission {
         case .granted:
@@ -288,7 +298,11 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func setFullAccessInstructionsPresented(_ isPresented: Bool) {
-        fullAccessView?.isHidden = !isPresented
+        if isPresented {
+            ensureFullAccessView().isHidden = false
+        } else {
+            fullAccessView?.isHidden = true
+        }
         rootContainerView?.isHidden = isPresented
         popupOverlayView.isHidden = isPresented
     }
