@@ -161,7 +161,7 @@ enum KeyboardLayoutGeometry {
             self.rowStack = rowStack
         }
 
-        func update(isLandscape: Bool) {
+        func update(isLandscape _: Bool) {
             guard let keyGridView, let rowStack else { return }
 
             let spacing = KeyboardStyle.keySpacing
