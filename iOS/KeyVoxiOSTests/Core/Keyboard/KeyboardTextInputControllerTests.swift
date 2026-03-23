@@ -69,6 +69,87 @@ struct KeyboardTextInputControllerTests {
         #expect(haptics.emissionCount == 1)
     }
 
+    @Test func deleteKeyUsesHasTextWhenLeadingContextIsUnavailableAtDocumentEnd() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = ""
+        documentProxy.documentContextAfterInput = ""
+        documentProxy.hasText = true
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        let handled = controller.handleKeyActivation(
+            .delete,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+
+        #expect(handled == true)
+        #expect(documentProxy.deleteBackwardCallCount == 1)
+        #expect(haptics.emissionCount == 1)
+    }
+
+    @Test func deleteKeyPerformsPhantomDeleteWhenFieldSeemsEmpty() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = ""
+        documentProxy.documentContextAfterInput = ""
+        documentProxy.hasText = false
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        // Attempt 1: Ghost delete, emits haptic
+        let handled1 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        #expect(handled1 == true)
+        #expect(documentProxy.deleteBackwardCallCount == 1)
+        #expect(haptics.emissionCount == 1)
+
+        // Attempt 2: Ghost delete, silent
+        let handled2 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        #expect(handled2 == true)
+        #expect(documentProxy.deleteBackwardCallCount == 2)
+        #expect(haptics.emissionCount == 1)
+
+        // Attempt 3: Ghost delete, silent
+        let handled3 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        #expect(handled3 == true)
+        #expect(documentProxy.deleteBackwardCallCount == 3)
+        #expect(haptics.emissionCount == 1)
+
+        // Attempt 4: Exhausted phantom deletes, cancels repeater
+        let handled4 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        #expect(handled4 == false)
+        #expect(documentProxy.deleteBackwardCallCount == 3)
+        #expect(haptics.emissionCount == 1)
+    }
+
+    @Test func deleteKeyIgnoresTrailingContextToBypassIOSBugs() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = ""
+        documentProxy.documentContextAfterInput = "phantom text"
+        documentProxy.hasText = true
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        // Should return true to allow deletion logic to proceed, bypassing buggy trailing contexts
+        let handled = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+
+        #expect(handled == true)
+        #expect(documentProxy.deleteBackwardCallCount == 1)
+        #expect(haptics.emissionCount == 1)
+    }
+
     @Test func abcKeyTriggersCapsResetAndInputModeAdvance() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()
@@ -350,6 +431,8 @@ struct KeyboardTextInputControllerTests {
 
 private final class KeyboardTextDocumentProxySpy: KeyboardTextDocumentProxying {
     var documentContextBeforeInput: String?
+    var documentContextAfterInput: String?
+    var hasText = false
     var selectedText: String?
     var insertedTexts: [String] = []
     var deleteBackwardCallCount = 0
