@@ -2,6 +2,8 @@ import UIKit
 
 protocol KeyboardTextDocumentProxying: AnyObject {
     var documentContextBeforeInput: String? { get }
+    var documentContextAfterInput: String? { get }
+    var hasText: Bool { get }
     var selectedText: String? { get }
     func insertText(_ text: String)
     func deleteBackward()
@@ -17,6 +19,14 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
 
     var documentContextBeforeInput: String? {
         proxyProvider()?.documentContextBeforeInput
+    }
+
+    var documentContextAfterInput: String? {
+        proxyProvider()?.documentContextAfterInput
+    }
+
+    var hasText: Bool {
+        proxyProvider()?.hasText ?? false
     }
 
     var selectedText: String? {
@@ -41,6 +51,9 @@ final class KeyboardTextInputController {
     private let emitKeypress: () -> Void
     private let shouldPreserveLeadingCapitalization: (String) -> Bool
 
+    private var emptyContextDeleteAttempts = 0
+    private var lastDeleteTimestamp: TimeInterval = 0
+
     init(
         documentProxy: any KeyboardTextDocumentProxying,
         emitKeypress: @escaping () -> Void,
@@ -64,10 +77,34 @@ final class KeyboardTextInputController {
             documentProxy.insertText(value)
             return true
         case .delete:
-            guard canDeleteBackward else { return false }
-            emitKeypress()
-            documentProxy.deleteBackward()
-            return true
+            let now = Date().timeIntervalSince1970
+            let isNewDeleteSession = now - lastDeleteTimestamp > 0.5
+            if isNewDeleteSession {
+                emptyContextDeleteAttempts = 0
+            }
+            lastDeleteTimestamp = now
+            
+            let proxySeemsEmpty = (documentProxy.documentContextBeforeInput?.isEmpty ?? true) &&
+                                  (documentProxy.selectedText?.isEmpty ?? true) &&
+                                  !documentProxy.hasText
+
+            if !proxySeemsEmpty {
+                emptyContextDeleteAttempts = 0
+                emitKeypress()
+                documentProxy.deleteBackward()
+                return true
+            } else {
+                if emptyContextDeleteAttempts < 3 {
+                    if emptyContextDeleteAttempts == 0 && isNewDeleteSession {
+                        emitKeypress()
+                    }
+                    emptyContextDeleteAttempts += 1
+                    documentProxy.deleteBackward()
+                    return true
+                } else {
+                    return false
+                }
+            }
         case .space:
             emitKeypress()
             if handleDoubleSpacePeriodInsertionIfNeeded() {
@@ -125,17 +162,6 @@ final class KeyboardTextInputController {
         }
     }
 
-    private var canDeleteBackward: Bool {
-        if let selectedText = documentProxy.selectedText, selectedText.isEmpty == false {
-            return true
-        }
-
-        guard let context = documentProxy.documentContextBeforeInput else {
-            return false
-        }
-
-        return !context.isEmpty
-    }
 
     private func handleDoubleSpacePeriodInsertionIfNeeded() -> Bool {
         guard let context = documentProxy.documentContextBeforeInput else {
