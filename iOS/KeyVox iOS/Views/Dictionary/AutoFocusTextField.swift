@@ -18,7 +18,7 @@ struct AutoFocusTextField: UIViewRepresentable {
         textField.backgroundColor = .clear
         textField.placeholder = placeholder
         textField.returnKeyType = .done
-        textField.autocapitalizationType = .words
+        textField.autocapitalizationType = .sentences
         textField.autocorrectionType = .no
         textField.font = resolvedFont(size: 16)
         textField.text = text
