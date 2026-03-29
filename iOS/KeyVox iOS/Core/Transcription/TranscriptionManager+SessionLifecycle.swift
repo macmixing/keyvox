@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 
 extension TranscriptionManager {
     func handleRecorderInterruptedCapture(_ stoppedCapture: StoppedCapture) async {

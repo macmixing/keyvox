@@ -23,7 +23,7 @@ final class TranscriptionManager: ObservableObject {
     @Published var isReturnToHostViewPresented = false
 
     let recorder: any AudioRecording
-    let transcriptionService: any DictationService
+    let transcriptionService: any DictationProvider
     let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
@@ -68,7 +68,7 @@ final class TranscriptionManager: ObservableObject {
 
     init(
         recorder: any AudioRecording,
-        transcriptionService: any DictationService,
+        transcriptionService: any DictationProvider,
         dictionaryStore: DictionaryStore,
         weeklyWordStatsStore: WeeklyWordStatsStore,
         postProcessor: TranscriptionPostProcessor,

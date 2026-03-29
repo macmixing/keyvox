@@ -3,7 +3,7 @@ import KeyVoxWhisper
 import Combine
 
 @MainActor
-public class WhisperService: ObservableObject {
+public class WhisperService: ObservableObject, DictationProvider {
     @Published public internal(set) var isTranscribing = false
     @Published public internal(set) var transcriptionText = ""
     @Published public internal(set) var lastResultWasLikelyNoSpeech = false
@@ -30,6 +30,15 @@ public class WhisperService: ObservableObject {
 
     public init(modelPathResolver: @escaping () -> String? = { nil }) {
         self.modelPathResolver = modelPathResolver
+    }
+
+    public var isModelReady: Bool {
+        guard let modelPath = resolvedModelPath()?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !modelPath.isEmpty else {
+            return false
+        }
+
+        return FileManager.default.fileExists(atPath: modelPath)
     }
 
     public func cancelTranscription() {
@@ -130,6 +139,6 @@ public class WhisperService: ObservableObject {
             usedDictionaryHintPrompt: usedDictionaryHintPrompt
         )
         lastResultWasLikelyNoSpeech = false
-        completion(nil)
+            completion(nil)
     }
 }

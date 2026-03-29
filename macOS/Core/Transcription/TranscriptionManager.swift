@@ -21,12 +21,12 @@ class TranscriptionManager: ObservableObject {
     private let appSettings: AppSettingsStore
     private let modelDownloader: ModelDownloader
     private let audioRecorder: AudioRecorder
-    private let whisperService: WhisperService
+    private let provider: any DictationProvider
     private let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
     private lazy var dictationPipeline = DictationPipeline(
-        transcriptionProvider: whisperService,
+        transcriptionProvider: provider,
         postProcessor: postProcessor,
         dictionaryEntriesProvider: { [weak self] in
             self?.dictionaryStore.entries ?? []
@@ -80,13 +80,13 @@ class TranscriptionManager: ObservableObject {
         self.appSettings = appSettings
         self.modelDownloader = modelDownloader
         self.audioRecorder = audioRecorder
-        self.whisperService = serviceRegistry.whisperService
+        self.provider = serviceRegistry.dictationProvider
         self.dictionaryStore = serviceRegistry.dictionaryStore
         self.weeklyWordStatsStore = serviceRegistry.weeklyWordStatsStore
         self.postProcessor = postProcessor
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()
-        whisperService.warmup()
+        provider.warmup()
     }
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
@@ -125,7 +125,7 @@ class TranscriptionManager: ObservableObject {
                 guard let self else { return }
                 self.postProcessor.updateDictionaryEntries(self.dictionaryStore.entries)
                 let hintPrompt = self.dictionaryStore.whisperHintPrompt()
-                self.whisperService.updateDictionaryHintPrompt(hintPrompt)
+                self.provider.updateDictionaryHintPrompt(hintPrompt)
             }
             .store(in: &cancellables)
 
@@ -137,10 +137,10 @@ class TranscriptionManager: ObservableObject {
                 if isReady {
                     // If the model was downloaded after app startup, pre-warm immediately
                     // so the next hotkey transcription path avoids cold-start latency.
-                    self.whisperService.warmup()
+                    self.provider.warmup()
                 } else {
                     // Keep memory state aligned with on-disk model lifecycle.
-                    self.whisperService.unloadModel()
+                    self.provider.unloadModel()
                 }
             }
             .store(in: &cancellables)
@@ -155,7 +155,7 @@ class TranscriptionManager: ObservableObject {
         
         playSound(named: "Bottle") // Cancel sound
         audioRecorder.stopRecording { _ in }
-        whisperService.cancelTranscription()
+        provider.cancelTranscription()
         isLocked = false
         updateOverlayHandsFreeVisualState()
         OverlayManager.shared.hide()
@@ -300,7 +300,7 @@ class TranscriptionManager: ObservableObject {
             ) { pipelineResult in
                 let transcribeDuration = pipelineResult.inferenceDuration
                 #if DEBUG
-                print("2. Whisper inference: \(String(format: "%.3f", transcribeDuration))s")
+                print("2. Provider inference: \(String(format: "%.3f", transcribeDuration))s")
                 #endif
                 
                 DispatchQueue.main.async {

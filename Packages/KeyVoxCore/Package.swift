@@ -15,12 +15,14 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../KeyVoxWhisper"),
+        .package(path: "../KeyVoxParakeet"),
     ],
     targets: [
         .target(
             name: "KeyVoxCore",
             dependencies: [
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
+                .product(name: "KeyVoxParakeet", package: "KeyVoxParakeet"),
             ],
             resources: [
                 .process("Resources"),
