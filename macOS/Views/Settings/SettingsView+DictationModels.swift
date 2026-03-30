@@ -14,19 +14,6 @@ private struct DictationModelsCard: View {
     @ObservedObject var appSettings: AppSettingsStore
     @ObservedObject var downloader: ModelDownloader
 
-    private let modelRows: [DictationModelCardConfiguration] = [
-        DictationModelCardConfiguration(
-            modelID: .whisperBase,
-            title: "OpenAI Whisper Base",
-            subtitle: "Locally powered multi-lingual model."
-        ),
-        DictationModelCardConfiguration(
-            modelID: .parakeetTdtV3,
-            title: "Parakeet TDT v3",
-            subtitle: "Locally powered transducer model."
-        )
-    ]
-
     var body: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 12) {
@@ -104,13 +91,35 @@ private struct DictationModelsCard: View {
     }
 
     private var selectableProviders: [AppSettingsStore.ActiveDictationProvider] {
-        AppSettingsStore.ActiveDictationProvider.allCases.filter(isProviderSelectable)
+        AppSettingsStore.ActiveDictationProvider.supportedCases().filter(isProviderSelectable)
     }
 
     private func enforceSelectableActiveProvider() {
         guard !isProviderSelectable(appSettings.activeDictationProvider) else { return }
-        guard let fallback = AppSettingsStore.ActiveDictationProvider.allCases.first(where: isProviderSelectable) else { return }
+        guard let fallback = AppSettingsStore.ActiveDictationProvider.supportedCases().first(where: isProviderSelectable) else { return }
         appSettings.activeDictationProvider = fallback
+    }
+
+    private var modelRows: [DictationModelCardConfiguration] {
+        var rows = [
+            DictationModelCardConfiguration(
+                modelID: .whisperBase,
+                title: "OpenAI Whisper Base",
+                subtitle: "Locally powered multi-lingual model."
+            )
+        ]
+
+        if AppSettingsStore.ActiveDictationProvider.parakeet.isSupported() {
+            rows.append(
+                DictationModelCardConfiguration(
+                    modelID: .parakeetTdtV3,
+                    title: "Parakeet TDT v3",
+                    subtitle: "Locally powered transducer model."
+                )
+            )
+        }
+
+        return rows
     }
 }
 
