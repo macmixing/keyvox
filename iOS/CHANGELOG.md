@@ -6,6 +6,32 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.0] Build 7 - TestFlight - 2026-03-30
+
+Adds model-managed Parakeet support to the iOS beta, including active model selection, per-model downloads, and a refreshed settings flow for managing on-device dictation models.
+
+### Added
+
+- On-device Parakeet TDT v3 as an installable dictation model alongside Whisper Base.
+- A new `Active Model` settings section for choosing the installed dictation model and managing model downloads directly in the app.
+- Model-aware iOS download, repair, and removal flows for Whisper Base and Parakeet TDT v3.
+- Local active-model persistence so iPhone dictation can reopen with the user’s selected installed model.
+- iOS migration support for moving existing Whisper installs into the new rooted `Models/whisper` layout.
+
+### Changed
+
+- Refactored iOS model management around model IDs instead of a single Whisper-only install path.
+- Updated iOS transcription routing to follow the selected active dictation model while keeping onboarding Whisper-first.
+- Replaced the previous debug-only model controls in Settings with the new release-facing model management UI.
+- Updated keyboard model availability checks to follow the rooted model layout and active installed model state.
+
+### Fixed
+
+- Restored compatibility for older iOS model install manifests during app upgrades.
+- Tightened installed-model validation so incomplete Whisper installs are no longer treated as ready.
+- Prevented model delete, repair, and download flows from racing active background download jobs or starting a second model install mid-download.
+- Improved first-use Parakeet loading behavior so model selection stays responsive and heavy preload work no longer blocks the settings interaction.
+
 ## [1.0.0] Build 6 - TestFlight - 2026-03-26
 
 Polishes the iOS keyboard release with newline-aware capitalization, a unified keyboard geometry system, steadier delete behavior in single-line fields, and more natural dictionary entry capitalization.
