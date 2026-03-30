@@ -53,11 +53,15 @@ class ModelDownloader: ObservableObject {
     }
 
     var coreMLZipURL: URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc.zip")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip", isDirectory: false)
     }
 
     var coreMLModelDirURL: URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
     }
 
     init(

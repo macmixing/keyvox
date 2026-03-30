@@ -454,11 +454,15 @@ final class ModelDownloaderTests: XCTestCase {
     }
 
     private func coreMLZipURL(for modelURL: URL) -> URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc.zip")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip", isDirectory: false)
     }
 
     private func coreMLDirURL(for modelURL: URL) -> URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
     }
 
     private func writeBytes(count: Int, to url: URL) throws {
