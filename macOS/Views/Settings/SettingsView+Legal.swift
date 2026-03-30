@@ -120,6 +120,20 @@ extension SettingsView {
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     """
                             )
+
+                            LicenseGroup(
+                                title: "NVIDIA Parakeet Model",
+                                copyright: "NVIDIA, with Apple-platform Core ML distribution via FluidInference",
+                                license: """
+    KeyVox optionally downloads Core ML artifacts derived from NVIDIA's `parakeet-tdt-0.6b-v3` multilingual automatic speech recognition model.
+
+    Governing license: CC BY 4.0
+    Upstream model: https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
+    Core ML distribution used by KeyVox: https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml
+
+    The bundled Third-Party Notices section below is the authoritative attribution record for downloaded model artifacts.
+    """
+                            )
                             
                             LicenseGroup(
                                 title: "Kanit Font",

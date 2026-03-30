@@ -33,6 +33,7 @@ Notable third-party items include:
 
 - `whisper.cpp` (MIT)
 - OpenAI Whisper code/model weights (MIT)
+- NVIDIA `parakeet-tdt-0.6b-v3` model artifacts downloaded by the app (CC BY 4.0), using Apple-platform Core ML artifacts distributed via FluidInference
 - Pronunciation data derived from CMUdict (BSD-2-Clause style notice/disclaimer)
 - Pronunciation data derived from SCOWL (custom permissive notice text)
 - Kanit font (`OFL-1.1`)
