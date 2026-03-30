@@ -71,14 +71,13 @@ extension ParakeetCoreMLBackend {
         }
 
         let projectionStrides = projection.strides.map(\.intValue)
-        let destinationStride = destination.strides[1].intValue
-        let sourceBase = projection.dataPointer.bindMemory(to: Float.self, capacity: projection.count)
-        let destinationBase = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
         let hiddenStride = projectionStrides[hiddenAxis]
-
-        for hiddenIndex in 0..<Constants.decoderHiddenSize {
-            destinationBase[hiddenIndex * destinationStride] = sourceBase[hiddenIndex * hiddenStride]
-        }
+        try Self.copyNormalizedDecoderProjection(
+            projection,
+            hiddenAxis: hiddenAxis,
+            into: destination,
+            hiddenStride: hiddenStride
+        )
     }
 
     func requireMultiArray(named featureName: String, from provider: MLFeatureProvider) throws -> MLMultiArray {
@@ -86,5 +85,38 @@ extension ParakeetCoreMLBackend {
             throw ParakeetError.transcriptionFailed(code: -1, message: featureName)
         }
         return value
+    }
+
+    static func copyNormalizedDecoderProjection(
+        _ projection: MLMultiArray,
+        hiddenAxis: Int,
+        into destination: MLMultiArray,
+        hiddenStride: Int? = nil
+    ) throws {
+        guard destination.strides.count > 1 else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "invalid_decoder_destination_shape")
+        }
+
+        let resolvedHiddenStride = hiddenStride ?? projection.strides.map(\.intValue)[hiddenAxis]
+        let destinationStride = destination.strides[1].intValue
+        guard resolvedHiddenStride >= 0, destinationStride >= 0 else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "negative_decoder_stride")
+        }
+
+        let maxSourceIndex = (Constants.decoderHiddenSize - 1) * resolvedHiddenStride
+        let maxDestinationIndex = (Constants.decoderHiddenSize - 1) * destinationStride
+        guard maxSourceIndex < projection.count else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "decoder_projection_buffer_too_small")
+        }
+        guard maxDestinationIndex < destination.count else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "decoder_destination_buffer_too_small")
+        }
+
+        for hiddenIndex in 0..<Constants.decoderHiddenSize {
+            let sourceIndex = hiddenIndex * resolvedHiddenStride
+            let destinationIndex = hiddenIndex * destinationStride
+            let value = try Self.floatValue(in: projection, atLinearIndex: sourceIndex)
+            try Self.setFloatValue(value, in: destination, atLinearIndex: destinationIndex)
+        }
     }
 }

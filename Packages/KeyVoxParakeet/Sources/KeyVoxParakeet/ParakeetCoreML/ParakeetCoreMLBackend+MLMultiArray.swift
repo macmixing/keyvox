@@ -15,7 +15,7 @@ extension ParakeetCoreMLBackend {
     }
 
     func fill(_ array: MLMultiArray, with values: [Float]) {
-        for (index, value) in values.enumerated() {
+        for (index, value) in values.prefix(array.count).enumerated() {
             set(value, in: array, atLinearIndex: index)
         }
     }
@@ -44,12 +44,15 @@ extension ParakeetCoreMLBackend {
         switch array.dataType {
         case .float32:
             let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
-            pointer.initialize(repeating: 0, count: array.count)
+            pointer.update(repeating: 0, count: array.count)
+        case .float16:
+            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
+            pointer.update(repeating: 0, count: array.count)
         case .int32:
             let pointer = array.dataPointer.bindMemory(to: Int32.self, capacity: array.count)
-            pointer.initialize(repeating: 0, count: array.count)
+            pointer.update(repeating: 0, count: array.count)
         default:
-            break
+            preconditionFailure("unsupported_mlmultiarray_data_type_\(String(describing: array.dataType))")
         }
     }
 
@@ -61,5 +64,41 @@ extension ParakeetCoreMLBackend {
     func int32Value(in array: MLMultiArray, at indices: [Int]) -> Int32 {
         let pointer = array.dataPointer.bindMemory(to: Int32.self, capacity: array.count)
         return pointer[offset(in: array, indices: indices)]
+    }
+
+    static func floatValue(in array: MLMultiArray, atLinearIndex index: Int) throws -> Float {
+        try validateLinearIndex(index, in: array, message: "float_array_index_out_of_bounds")
+
+        switch array.dataType {
+        case .float32:
+            let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
+            return pointer[index]
+        case .float16:
+            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
+            return Float(pointer[index])
+        default:
+            throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
+        }
+    }
+
+    static func setFloatValue(_ value: Float, in array: MLMultiArray, atLinearIndex index: Int) throws {
+        try validateLinearIndex(index, in: array, message: "float_array_index_out_of_bounds")
+
+        switch array.dataType {
+        case .float32:
+            let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
+            pointer[index] = value
+        case .float16:
+            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
+            pointer[index] = Float16(value)
+        default:
+            throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
+        }
+    }
+
+    static func validateLinearIndex(_ index: Int, in array: MLMultiArray, message: String) throws {
+        guard index >= 0, index < array.count else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: message)
+        }
     }
 }

@@ -1,4 +1,5 @@
 import XCTest
+import CoreML
 @testable import KeyVoxParakeet
 
 final class ParakeetTests: XCTestCase {
@@ -185,6 +186,67 @@ final class ParakeetTests: XCTestCase {
         let tokenIDs = vocabulary.promptTokenIDs(from: "  Domain   vocabulary:\nexample.com  ")
 
         XCTAssertEqual(tokenIDs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    }
+
+    func testEncoderFrameAccessorCopiesFrameFromChannelMajorEncoderOutput() throws {
+        let source = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 3],
+            dataType: .float32
+        )
+        let destination = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 1],
+            dataType: .float32
+        )
+
+        let sourcePointer = source.dataPointer.bindMemory(to: Float.self, capacity: source.count)
+        let hiddenStride = source.strides[1].intValue
+        let timeStride = source.strides[2].intValue
+        let targetFrameIndex = 1
+
+        for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.encoderChannelCount {
+            sourcePointer[(hiddenIndex * hiddenStride) + (targetFrameIndex * timeStride)] = Float(hiddenIndex)
+        }
+
+        let accessor = try ParakeetCoreMLBackend.EncoderFrameAccessor(array: source, validFrameCount: 3)
+        accessor.copyFrame(at: targetFrameIndex, into: destination)
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationHiddenStride = destination.strides[1].intValue
+
+        XCTAssertEqual(destinationPointer[0], 0)
+        XCTAssertEqual(destinationPointer[1 * destinationHiddenStride], 1)
+        XCTAssertEqual(destinationPointer[255 * destinationHiddenStride], 255)
+        XCTAssertEqual(destinationPointer[1023 * destinationHiddenStride], 1023)
+    }
+
+    func testCopyNormalizedDecoderProjectionSupportsFloat16AndFloat32() throws {
+        let projection = try MLMultiArray(
+            shape: [1, 1, NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize)],
+            dataType: .float16
+        )
+        let destination = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize), 1],
+            dataType: .float32
+        )
+
+        let projectionPointer = projection.dataPointer.bindMemory(to: Float16.self, capacity: projection.count)
+        for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.decoderHiddenSize {
+            projectionPointer[hiddenIndex] = Float16(Float(hiddenIndex) / 10)
+        }
+
+        try ParakeetCoreMLBackend.copyNormalizedDecoderProjection(
+            projection,
+            hiddenAxis: 2,
+            into: destination
+        )
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationStride = destination.strides[1].intValue
+
+        XCTAssertEqual(destinationPointer[0], 0, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[1 * destinationStride], 0.1, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[255 * destinationStride], 25.5, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[639 * destinationStride], 63.9, accuracy: 0.05)
     }
 
     private func makeModelFile() throws -> URL {
