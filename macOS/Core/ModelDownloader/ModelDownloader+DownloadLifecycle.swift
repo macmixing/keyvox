@@ -100,11 +100,7 @@ extension ModelDownloader {
         let clampedProgress = min(max(newProgress, 0), 1)
 
         if let activeDownload, activeDownload.modelID == modelID {
-            let completedArtifactCount = completedTaskIDs.count
-            let totalArtifactCount = activeDownload.descriptor.artifacts.count
-            state.progress = completedArtifactCount == totalArtifactCount
-                ? min(clampedProgress, 0.99)
-                : clampedProgress
+            state.progress = min(clampedProgress, 0.99)
         } else {
             state.progress = clampedProgress
         }

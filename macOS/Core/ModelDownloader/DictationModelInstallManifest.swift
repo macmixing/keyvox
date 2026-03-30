@@ -1,6 +1,6 @@
 import Foundation
 
-struct DictationModelInstallManifest: Codable, Equatable {
+nonisolated struct DictationModelInstallManifest: Codable, Equatable {
     let version: Int
     let artifactSHA256ByRelativePath: [String: String]
 

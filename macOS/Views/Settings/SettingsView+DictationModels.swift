@@ -35,14 +35,25 @@ private struct DictationModelsCard: View {
                     title: "Active Model",
                     subtitle: "Choose the dictation backend and manage installed models."
                 ) {
-                    Picker("", selection: $appSettings.activeDictationProvider) {
-                        ForEach(AppSettingsStore.ActiveDictationProvider.allCases) { provider in
-                            Text(provider.displayName).tag(provider)
+                    if selectableProviders.isEmpty {
+                        Picker("", selection: unavailableProviderSelection) {
+                            Text("Install model")
+                                .tag(AppSettingsStore.ActiveDictationProvider?.none)
                         }
+                        .pickerStyle(.menu)
+                        .frame(width: 140)
+                        .labelsHidden()
+                        .disabled(true)
+                    } else {
+                        Picker("", selection: activeProviderSelection) {
+                            ForEach(selectableProviders) { provider in
+                                Text(provider.displayName).tag(provider)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 140)
+                        .labelsHidden()
                     }
-                    .pickerStyle(.menu)
-                    .frame(width: 140)
-                    .labelsHidden()
                 }
 
                 Divider()
@@ -63,6 +74,43 @@ private struct DictationModelsCard: View {
                 }
             }
         }
+        .onAppear {
+            enforceSelectableActiveProvider()
+        }
+        .onChange(of: selectableProviders) { _ in
+            enforceSelectableActiveProvider()
+        }
+    }
+
+    private var activeProviderSelection: Binding<AppSettingsStore.ActiveDictationProvider> {
+        Binding(
+            get: { appSettings.activeDictationProvider },
+            set: { newValue in
+                guard isProviderSelectable(newValue) else { return }
+                appSettings.activeDictationProvider = newValue
+            }
+        )
+    }
+
+    private var unavailableProviderSelection: Binding<AppSettingsStore.ActiveDictationProvider?> {
+        Binding(
+            get: { nil },
+            set: { _ in }
+        )
+    }
+
+    private func isProviderSelectable(_ provider: AppSettingsStore.ActiveDictationProvider) -> Bool {
+        downloader.isModelReady(for: provider.modelID)
+    }
+
+    private var selectableProviders: [AppSettingsStore.ActiveDictationProvider] {
+        AppSettingsStore.ActiveDictationProvider.allCases.filter(isProviderSelectable)
+    }
+
+    private func enforceSelectableActiveProvider() {
+        guard !isProviderSelectable(appSettings.activeDictationProvider) else { return }
+        guard let fallback = AppSettingsStore.ActiveDictationProvider.allCases.first(where: isProviderSelectable) else { return }
+        appSettings.activeDictationProvider = fallback
     }
 }
 
@@ -88,9 +136,17 @@ private struct DictationModelCardRow: View {
         VStack(spacing: 16) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(configuration.title)
-                        .font(.appFont(13))
-                        .foregroundColor(.primary)
+                    HStack(spacing: 6) {
+                        Text(configuration.title)
+                            .font(.appFont(13))
+                            .foregroundColor(.primary)
+
+                        if isActive {
+                            Circle()
+                                .fill(Color.yellow)
+                                .frame(width: 7, height: 7)
+                        }
+                    }
 
                     Text(configuration.subtitle)
                         .font(.appFont(12, variant: .light))
@@ -102,10 +158,6 @@ private struct DictationModelCardRow: View {
                 Spacer(minLength: 12)
 
                 HStack(spacing: 8) {
-                    if isActive {
-                        StatusBadge(title: "Active", color: .yellow)
-                    }
-
                     ZStack(alignment: .trailing) {
                         if installState.isReady && !installState.isDownloading {
                             Button(action: removeModel) {
@@ -122,12 +174,13 @@ private struct DictationModelCardRow: View {
                         } else if installState.isDownloading {
                             StatusBadge(title: "Installing", color: .yellow)
                         } else {
-                            Button("Install") {
+                            AppActionButton(
+                                title: "Install",
+                                style: .primary,
+                                minWidth: actionPillWidth
+                            ) {
                                 installModel()
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(MacAppTheme.accent)
-                            .controlSize(.small)
                         }
                     }
                 }
