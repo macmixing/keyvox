@@ -99,8 +99,8 @@ extension ParakeetCoreMLBackend {
 
         let resolvedHiddenStride = hiddenStride ?? projection.strides.map(\.intValue)[hiddenAxis]
         let destinationStride = destination.strides[1].intValue
-        guard resolvedHiddenStride >= 0, destinationStride >= 0 else {
-            throw ParakeetError.transcriptionFailed(code: -1, message: "negative_decoder_stride")
+        guard resolvedHiddenStride > 0, destinationStride > 0 else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "invalid_decoder_stride")
         }
 
         let maxSourceIndex = (Constants.decoderHiddenSize - 1) * resolvedHiddenStride

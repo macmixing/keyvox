@@ -15,8 +15,10 @@ extension ParakeetCoreMLBackend {
     }
 
     func fill(_ array: MLMultiArray, with values: [Float]) {
-        for (index, value) in values.prefix(array.count).enumerated() {
-            set(value, in: array, atLinearIndex: index)
+        do {
+            try Self.fillFloatValues(in: array, with: values)
+        } catch {
+            preconditionFailure("invalid_fill_float_values_call")
         }
     }
 
@@ -93,6 +95,12 @@ extension ParakeetCoreMLBackend {
             pointer[index] = Float16(value)
         default:
             throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
+        }
+    }
+
+    static func fillFloatValues(in array: MLMultiArray, with values: [Float]) throws {
+        for (index, value) in values.prefix(array.count).enumerated() {
+            try setFloatValue(value, in: array, atLinearIndex: index)
         }
     }
 

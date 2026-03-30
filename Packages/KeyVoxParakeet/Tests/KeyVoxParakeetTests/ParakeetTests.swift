@@ -249,6 +249,43 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(destinationPointer[639 * destinationStride], 63.9, accuracy: 0.05)
     }
 
+    func testCopyNormalizedDecoderProjectionRejectsZeroStride() throws {
+        let projection = try MLMultiArray(
+            shape: [1, 1, NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize)],
+            dataType: .float32
+        )
+        let destination = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize), 1],
+            dataType: .float32
+        )
+
+        XCTAssertThrowsError(
+            try ParakeetCoreMLBackend.copyNormalizedDecoderProjection(
+                projection,
+                hiddenAxis: 2,
+                into: destination,
+                hiddenStride: 0
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? ParakeetError,
+                .transcriptionFailed(code: -1, message: "invalid_decoder_stride")
+            )
+        }
+    }
+
+    func testFillFloatValuesSupportsFloat16Storage() throws {
+        let array = try MLMultiArray(shape: [4], dataType: .float16)
+
+        try ParakeetCoreMLBackend.fillFloatValues(in: array, with: [0.5, 1.5, 2.5, 3.5])
+
+        let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
+        XCTAssertEqual(Float(pointer[0]), 0.5, accuracy: 0.001)
+        XCTAssertEqual(Float(pointer[1]), 1.5, accuracy: 0.001)
+        XCTAssertEqual(Float(pointer[2]), 2.5, accuracy: 0.001)
+        XCTAssertEqual(Float(pointer[3]), 3.5, accuracy: 0.001)
+    }
+
     private func makeModelFile() throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("keyvox-parakeet-\(UUID().uuidString).bin")
