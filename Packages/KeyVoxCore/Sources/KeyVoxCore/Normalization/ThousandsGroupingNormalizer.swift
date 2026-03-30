@@ -252,7 +252,8 @@ public struct ThousandsGroupingNormalizer {
             )
             guard separatorRange.length >= 0 else { return false }
             let separator = line.substring(with: separatorRange)
-            guard separator.unicodeScalars.allSatisfy(\.properties.isWhitespace) else {
+            guard separatorRange.length > 0,
+                  separator.unicodeScalars.allSatisfy(\.properties.isWhitespace) else {
                 return false
             }
         }
