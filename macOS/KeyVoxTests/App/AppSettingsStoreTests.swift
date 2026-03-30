@@ -19,6 +19,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedMicrophoneUID, "")
         XCTAssertNil(store.updateAlertLastShown)
         XCTAssertNil(store.updateAlertSnoozedUntil)
+        XCTAssertEqual(store.activeDictationProvider, .whisper)
     }
 
     func testInitHydratesPersistedValuesAndClampsStoredVolume() {
@@ -36,6 +37,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set("mic-123", forKey: UserDefaultsKeys.selectedMicrophoneUID)
         defaults.set(lastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
         defaults.set(snoozedUntil, forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
+        defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
 
         let store = AppSettingsStore(defaults: defaults)
 
@@ -48,6 +50,21 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedMicrophoneUID, "mic-123")
         XCTAssertEqual(store.updateAlertLastShown, lastShown)
         XCTAssertEqual(store.updateAlertSnoozedUntil, snoozedUntil)
+        XCTAssertEqual(store.activeDictationProvider, .parakeet)
+    }
+
+    func testInitFallsBackToWhisperWhenPersistedParakeetIsUnsupportedOnCurrentOS() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+
+        let store = AppSettingsStore(
+            defaults: defaults,
+            osVersion: OperatingSystemVersion(majorVersion: 13, minorVersion: 7, patchVersion: 0)
+        )
+
+        XCTAssertEqual(store.activeDictationProvider, .whisper)
     }
 
     func testInitFallsBackToDefaultTriggerBindingForInvalidStoredValue() {
@@ -89,6 +106,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.selectedMicrophoneUID = "usb-mic"
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
+        store.activeDictationProvider = .parakeet
 
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding))
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.triggerBinding), AppSettingsStore.TriggerBinding.rightCommand.rawValue)
@@ -98,6 +116,21 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)
+    }
+
+    func testSettingUnsupportedParakeetProviderFallsBackToWhisper() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = AppSettingsStore(
+            defaults: defaults,
+            osVersion: OperatingSystemVersion(majorVersion: 13, minorVersion: 7, patchVersion: 0)
+        )
+
+        store.activeDictationProvider = .parakeet
+
+        XCTAssertEqual(store.activeDictationProvider, .whisper)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.whisper.rawValue)
     }
 
     func testRefreshSelectedMicrophoneFromDefaultsHydratesExternalDefaultWrite() {
@@ -144,6 +177,19 @@ final class AppSettingsStoreTests: XCTestCase {
 
         XCTAssertFalse(store.listFormattingEnabled)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool, false)
+    }
+
+    func testActiveDictationProviderMapsToExpectedModelID() {
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.whisper.modelID, .whisperBase)
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.parakeet.modelID, .parakeetTdtV3)
+    }
+
+    func testActiveDictationProviderSupportedCasesHideParakeetOnVentura() {
+        let ventura = OperatingSystemVersion(majorVersion: 13, minorVersion: 7, patchVersion: 0)
+        let sonoma = OperatingSystemVersion(majorVersion: 14, minorVersion: 0, patchVersion: 0)
+
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.supportedCases(osVersion: ventura), [.whisper])
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.supportedCases(osVersion: sonoma), [.whisper, .parakeet])
     }
 
     private func makeIsolatedDefaults() -> (UserDefaults, String) {

@@ -5,6 +5,10 @@ extension DictionaryMatcher {
         pattern: "[A-Za-z0-9\\-]+",
         options: []
     )
+    private static let spokenDotRegex = try! NSRegularExpression(
+        pattern: #"(?i)\bdot\b"#,
+        options: []
+    )
 
     func resolveDictionaryDomainCandidate(_ raw: String, localHint: String? = nil) -> (domain: String, overflow: String)? {
         guard let labelBundle = extractDomainLabels(from: raw) else { return nil }
@@ -37,9 +41,16 @@ extension DictionaryMatcher {
     }
 
     private func extractDomainLabels(from raw: String) -> (normalized: [String], raw: [String])? {
-        let ns = raw as NSString
+        let normalizedSeparators = Self.spokenDotRegex.stringByReplacingMatches(
+            in: raw,
+            options: [],
+            range: NSRange(location: 0, length: (raw as NSString).length),
+            withTemplate: "."
+        )
+
+        let ns = normalizedSeparators as NSString
         let range = NSRange(location: 0, length: ns.length)
-        let matches = Self.domainLabelRegex.matches(in: raw, options: [], range: range)
+        let matches = Self.domainLabelRegex.matches(in: normalizedSeparators, options: [], range: range)
         guard !matches.isEmpty else { return nil }
 
         var rawLabels: [String] = []

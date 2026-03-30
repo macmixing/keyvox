@@ -834,13 +834,14 @@ private final class StubAudioRecorder: AudioRecording {
 }
 
 @MainActor
-private final class StubDictationService: DictationService {
+private final class StubDictationService: DictationProvider {
     private var continuation: CheckedContinuation<Void, Never>?
     private var pendingResume = false
     private let shouldSuspend: Bool
 
     var isTranscribing = false
     var lastResultWasLikelyNoSpeech = false
+    var isModelReady = true
     var warmupCallCount = 0
     var cancelCallCount = 0
     var transcribeCallCount = 0
@@ -857,6 +858,8 @@ private final class StubDictationService: DictationService {
     func warmup() {
         warmupCallCount += 1
     }
+
+    func unloadModel() {}
 
     func cancelTranscription() {
         cancelCallCount += 1

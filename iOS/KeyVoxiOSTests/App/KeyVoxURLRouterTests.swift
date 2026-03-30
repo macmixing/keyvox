@@ -154,8 +154,9 @@ private final class StubAudioRecorder: AudioRecording {
 }
 
 @MainActor
-private final class StubDictationService: DictationService {
+private final class StubDictationService: DictationProvider {
     var lastResultWasLikelyNoSpeech = false
+    var isModelReady = true
 
     func transcribe(
         audioFrames: [Float],
@@ -167,6 +168,8 @@ private final class StubDictationService: DictationService {
     }
 
     func warmup() {}
+
+    func unloadModel() {}
 
     func cancelTranscription() {}
 

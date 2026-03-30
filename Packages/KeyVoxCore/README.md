@@ -71,7 +71,7 @@ That split is intentional. `KeyVoxCore` should stay focused on reusable engine b
 
 At a high level, the package is designed to support this engine flow:
 
-1. Audio frames are segmented conservatively with `WhisperAudioParagraphChunker` when paragraph-aware transcription is enabled.
+1. Audio frames are segmented conservatively with `AudioParagraphChunker` when paragraph-aware transcription is enabled.
 2. `WhisperService` runs inference through `KeyVoxWhisper`, tracks request lifecycle, and reports likely no-speech outcomes.
 3. `DictationPipeline` coordinates transcription, post-processing, word-count recording, and final text handoff to a host-provided paste boundary.
 4. `TranscriptionPostProcessor` applies ordered cleanup stages, including dictionary correction, list formatting, and targeted normalization passes.
@@ -174,7 +174,7 @@ Public supporting models such as `DetectedList`, `DetectedListItem`, and `ListRe
 
 The audio utilities in this package are intentionally narrow and reusable:
 
-- `WhisperAudioParagraphChunker` finds conservative chunk boundaries from silence windows.
+- `AudioParagraphChunker` finds conservative chunk boundaries from silence windows.
 - `AudioSignalMetrics` provides pure signal metrics such as RMS and peak values.
 - `AudioSilenceGatePolicy` defines shared silence thresholds.
 - `AudioCaptureClassifier` applies shared capture-quality heuristics.

@@ -5,6 +5,48 @@ import Combine
 final class AppSettingsStore: ObservableObject {
     static let shared = AppSettingsStore()
 
+    enum ActiveDictationProvider: String, CaseIterable, Identifiable {
+        case whisper
+        case parakeet
+
+        var id: String { rawValue }
+
+        static func supportedCases(
+            osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+        ) -> [Self] {
+            allCases.filter { $0.isSupported(osVersion: osVersion) }
+        }
+
+        func isSupported(
+            osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+        ) -> Bool {
+            switch self {
+            case .whisper:
+                return true
+            case .parakeet:
+                return osVersion.majorVersion >= 14
+            }
+        }
+
+        var modelID: DictationModelID {
+            switch self {
+            case .whisper:
+                return .whisperBase
+            case .parakeet:
+                return .parakeetTdtV3
+            }
+        }
+
+        var displayName: String {
+            switch self {
+            case .whisper:
+                return "Whisper"
+            case .parakeet:
+                return "Parakeet"
+            }
+        }
+    }
+
     enum TriggerBinding: String, CaseIterable, Identifiable {
         case rightOption
         case leftOption
@@ -100,16 +142,30 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var activeDictationProvider: ActiveDictationProvider {
+        didSet {
+            let normalized = Self.normalizedActiveDictationProvider(activeDictationProvider, osVersion: osVersion)
+            guard activeDictationProvider == normalized else {
+                activeDictationProvider = normalized
+                return
+            }
+            defaults.set(activeDictationProvider.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        }
+    }
+
     private let defaults: UserDefaults
+    private let osVersion: OperatingSystemVersion
     private let defaultSoundVolume: Double = 0.1
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
     deinit {}
 
     init(
-        defaults: UserDefaults = .standard
+        defaults: UserDefaults = .standard,
+        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
     ) {
         self.defaults = defaults
+        self.osVersion = osVersion
 
         hasCompletedOnboarding = defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding)
 
@@ -135,6 +191,12 @@ final class AppSettingsStore: ObservableObject {
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
         pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
         lastAcknowledgedUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
+        if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
+           let provider = ActiveDictationProvider(rawValue: raw) {
+            activeDictationProvider = Self.normalizedActiveDictationProvider(provider, osVersion: osVersion)
+        } else {
+            activeDictationProvider = .whisper
+        }
     }
 
     func refreshSelectedMicrophoneFromDefaults() {
@@ -156,5 +218,12 @@ final class AppSettingsStore: ObservableObject {
     func applyCloudListFormattingEnabled(_ value: Bool) {
         guard listFormattingEnabled != value else { return }
         listFormattingEnabled = value
+    }
+
+    private static func normalizedActiveDictationProvider(
+        _ provider: ActiveDictationProvider,
+        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
+    ) -> ActiveDictationProvider {
+        provider.isSupported(osVersion: osVersion) ? provider : .whisper
     }
 }

@@ -99,6 +99,18 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is dom@example.com.")
     }
+    func testNormalizesSpokenEmailWhenDomainUsesWordDot() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [DictionaryEntry(phrase: "person@example.com")]
+
+        let output = processor.process(
+            "Please email Person at example dot com.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Please email person@example.com.")
+    }
     func testNormalizesMultipleEmailAddressesInSingleSentence() {
         let processor = TranscriptionPostProcessor()
         let entries = [

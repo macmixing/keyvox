@@ -1,6 +1,6 @@
 import Foundation
 
-public struct WhisperAudioParagraphChunker {
+public struct AudioParagraphChunker {
     private static let sampleRate: Double = 16_000
 
     public struct Chunk {
@@ -31,15 +31,15 @@ public struct WhisperAudioParagraphChunker {
         public let fallbackBoundaryMinDistanceFromEdgesFrames: Int
 
         public init(
-            windowSize: Int = 1_600,               // 100ms at 16kHz
-            minChunkFrames: Int = 32_000,          // 2s
-            minSilentWindowsForSplit: Int = 15,    // 1.5s Silence before paragraph break
+            windowSize: Int = 1_600,
+            minChunkFrames: Int = 32_000,
+            minSilentWindowsForSplit: Int = 15,
             ambientFloorPercentile: Float = 0.20,
             minimumSilenceThreshold: Float = 0.0025,
             silenceThresholdMultiplier: Float = 2.2,
-            maxChunkFrames: Int = 384_000,         // 24s at 16kHz
-            fallbackBoundarySearchRadiusFrames: Int = 16_000, // 1s at 16kHz
-            fallbackBoundaryMinDistanceFromEdgesFrames: Int = 8_000 // 0.5s at 16kHz
+            maxChunkFrames: Int = 384_000,
+            fallbackBoundarySearchRadiusFrames: Int = 16_000,
+            fallbackBoundaryMinDistanceFromEdgesFrames: Int = 8_000
         ) {
             self.windowSize = windowSize
             self.minChunkFrames = minChunkFrames
@@ -265,8 +265,8 @@ public struct WhisperAudioParagraphChunker {
             }
         }
 
-        let refined = min(max(centerFrame(forWindow: bestWindow, audioFrameCount: audioFrameCount), lowerBound), upperBound)
-        return refined
+        let center = centerFrame(forWindow: bestWindow, audioFrameCount: audioFrameCount)
+        return min(max(center, lowerBound), upperBound)
     }
 
     private func centerFrame(forWindow windowIndex: Int, audioFrameCount: Int) -> Int {
@@ -277,27 +277,21 @@ public struct WhisperAudioParagraphChunker {
 
     #if DEBUG
     private func logSplitSummary(_ result: Result, totalFrames: Int) {
-        let rawDebugTextLoggingEnabled = ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
-        let loggedText: String
-        if rawDebugTextLoggingEnabled {
-            let silenceMs = result.silenceBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
-            let fallbackMs = result.fallbackBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1_000.0) }
-            let chunkSeconds = result.chunkFrameLengths.map { String(format: "%.2f", Double($0) / Self.sampleRate) }
-            let totalSeconds = Double(totalFrames) / Self.sampleRate
-            loggedText =
-                "frames=\(totalFrames) " +
-                "secs=\(String(format: "%.2f", totalSeconds)) " +
-                "windows=\(result.windowCount) " +
-                "threshold=\(String(format: "%.5f", result.silenceThreshold)) " +
-                "silenceBoundariesMs=\(silenceMs) " +
-                "fallbackBoundariesMs=\(fallbackMs) " +
-                "chunks=\(result.chunks.count) " +
-                "chunkSeconds=\(chunkSeconds)"
-        } else {
-            loggedText = "<redacted>"
-        }
-
-        print("WhisperChunker: \(loggedText)")
+        let retainedPercentage = totalFrames == 0 ? 0 : (Double(result.chunkFrameLengths.reduce(0, +)) / Double(totalFrames)) * 100
+        print(
+            "AudioParagraphChunker: frames=\(totalFrames) " +
+            "secs=\(String(format: "%.2f", Double(totalFrames) / Self.sampleRate)) " +
+            "windows=\(result.windowCount) " +
+            "threshold=\(String(format: "%.5f", result.silenceThreshold)) " +
+            "silenceBoundariesMs=\(result.silenceBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1000) }) " +
+            "fallbackBoundariesMs=\(result.fallbackBoundaryFrames.map { Int((Double($0) / Self.sampleRate) * 1000) }) " +
+            "chunks=\(result.chunks.count) " +
+            "chunkSeconds=\(result.chunkFrameLengths.map { String(format: "%.2f", Double($0) / Self.sampleRate) })"
+        )
+        print(
+            "Gap Removal: \(totalFrames) -> \(result.chunkFrameLengths.reduce(0, +)) frames " +
+            "(\(String(format: "%.1f", retainedPercentage))% retained)"
+        )
     }
     #endif
 }

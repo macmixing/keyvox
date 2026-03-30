@@ -1,0 +1,147 @@
+import Foundation
+import CryptoKit
+import XCTest
+@testable import KeyVox
+
+final class InstalledDictationModelLocatorTests: XCTestCase {
+    func testWhisperModelPathResolvesInsideWhisperFolder() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+        try FileManager.default.createDirectory(at: locator.whisperModelDirectoryURL, withIntermediateDirectories: true)
+        try Data([0x01]).write(to: locator.whisperModelURL, options: .atomic)
+
+        XCTAssertEqual(locator.whisperModelURL.lastPathComponent, "ggml-base.bin")
+        XCTAssertEqual(locator.whisperModelURL.deletingLastPathComponent(), locator.whisperModelDirectoryURL)
+        XCTAssertEqual(locator.whisperModelDirectoryURL.deletingLastPathComponent(), locator.modelsRootURL)
+        XCTAssertEqual(locator.resolvedWhisperModelPath(), locator.whisperModelURL.path)
+    }
+
+    func testWhisperMigrationMovesLegacyFilesIntoWhisperFolder() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+        try FileManager.default.createDirectory(at: locator.modelsRootURL, withIntermediateDirectories: true)
+        try Data([0x01]).write(to: locator.legacyWhisperModelURL, options: .atomic)
+        try FileManager.default.createDirectory(at: locator.legacyWhisperCoreMLModelDirectoryURL, withIntermediateDirectories: true)
+
+        XCTAssertEqual(locator.resolvedWhisperModelPath(), locator.whisperModelURL.path)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: locator.whisperModelURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: locator.whisperCoreMLModelDirectoryURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: locator.legacyWhisperModelURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: locator.legacyWhisperCoreMLModelDirectoryURL.path))
+    }
+
+    func testParakeetModelDirectoryResolvesInsideModelsFolder() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+        try writeStrictManifestInstall(for: .parakeetTdtV3, using: locator)
+
+        XCTAssertEqual(locator.parakeetModelDirectoryURL.lastPathComponent, "parakeet")
+        XCTAssertEqual(locator.parakeetModelDirectoryURL.deletingLastPathComponent(), locator.modelsRootURL)
+        XCTAssertEqual(locator.resolvedParakeetModelDirectoryURL(), locator.parakeetModelDirectoryURL)
+    }
+
+    func testParakeetResolverFailsClosedWhenManifestIsMissing() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+        try FileManager.default.createDirectory(
+            at: locator.parakeetModelDirectoryURL,
+            withIntermediateDirectories: true
+        )
+
+        for artifact in DictationModelCatalog.descriptor(for: .parakeetTdtV3).artifacts {
+            let url = locator.installedArtifactURL(for: .parakeetTdtV3, relativePath: artifact.relativePath)
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try Data([0x01]).write(to: url, options: .atomic)
+        }
+
+        XCTAssertNil(locator.resolvedParakeetModelDirectoryURL())
+    }
+
+    func testResolversFailClosedWhenArtifactsAreMissing() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+
+        XCTAssertNil(locator.resolvedWhisperModelPath())
+        XCTAssertNil(locator.resolvedParakeetModelDirectoryURL())
+    }
+
+    private func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("InstalledDictationModelLocatorTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private func removeTemporaryDirectory(_ url: URL) {
+        if FileManager.default.fileExists(atPath: url.path) {
+            try? FileManager.default.removeItem(at: url)
+        }
+    }
+
+    private func writeStrictManifestInstall(
+        for modelID: DictationModelID,
+        using locator: InstalledDictationModelLocator
+    ) throws {
+        let descriptor = locator.descriptor(for: modelID)
+        try FileManager.default.createDirectory(
+            at: locator.installRootURL(for: modelID),
+            withIntermediateDirectories: true
+        )
+
+        var hashes: [String: String] = [:]
+        for artifact in descriptor.artifacts {
+            let url = locator.installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            let data = Data(artifact.relativePath.utf8)
+            try data.write(to: url, options: .atomic)
+            hashes[artifact.relativePath] = SHA256.hash(data: data)
+                .map { String(format: "%02x", $0) }
+                .joined()
+        }
+
+        let manifest = DictationModelInstallManifest(
+            version: DictationModelInstallManifest.currentVersion,
+            artifactSHA256ByRelativePath: hashes
+        )
+        let manifestData = try JSONEncoder().encode(manifest)
+        let manifestURL = try XCTUnwrap(
+            locator.manifestURL(for: modelID),
+            "manifestURL should not be nil for \(modelID.rawValue)"
+        )
+        try manifestData.write(
+            to: manifestURL,
+            options: .atomic
+        )
+    }
+}

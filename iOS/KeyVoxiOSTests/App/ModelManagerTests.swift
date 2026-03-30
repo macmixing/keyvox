@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import KeyVoxCore
 import Testing
 @testable import KeyVox_iOS
 
@@ -276,7 +277,7 @@ struct ModelManagerTests {
             : nil
         let manager = ModelManager(
             fileManager: fileManager,
-            whisperService: whisperService,
+            providerLifecycle: whisperService,
             modelsDirectoryProvider: { modelsDirectoryURL },
             ggmlModelURLProvider: { ggmlModelURL },
             coreMLZipURLProvider: { coreMLZipURL },
@@ -472,7 +473,7 @@ private final class ModelManagerHarness {
 }
 
 @MainActor
-private final class StubWhisperLifecycle: WhisperModelLifecycle {
+private final class StubWhisperLifecycle: DictationModelLifecycleProviding {
     private(set) var warmupCallCount = 0
     private(set) var unloadCallCount = 0
 

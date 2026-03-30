@@ -1,18 +1,15 @@
 import Foundation
 import Darwin
+import CryptoKit
 
 extension ModelDownloader {
-    func validateModelFiles() -> Bool {
+    func validateWhisperModelFiles() -> Bool {
         // 1) GGML must exist and be non-trivially sized
         guard fileManager.fileExists(atPath: modelURL.path) else { return false }
         if let size = fileSizeBytes(at: modelURL), size < minGGMLBytes {
             return false
         }
 
-        // 2) CoreML directory should exist (Apple Silicon path). If it does not, we still
-        // allow running on Intel-only machines, but during download we want it complete.
-        // Treat as ready if either the directory exists OR the zip does not exist (Intel case).
-        let coreMLDirExists = fileManager.fileExists(atPath: coreMLModelDirURL.path)
         let coreMLZipExists = fileManager.fileExists(atPath: coreMLZipURL.path)
 
         if coreMLZipExists {
@@ -20,9 +17,59 @@ extension ModelDownloader {
             return false
         }
 
-        // If the app has ever downloaded CoreML, prefer the directory check.
-        // Otherwise, allow GGML-only readiness.
-        return coreMLDirExists || !coreMLDirExists
+        return true
+    }
+
+    func validateStrictManifestModel(_ modelID: DictationModelID) -> Bool {
+        let descriptor = modelLocator.descriptor(for: modelID)
+        guard descriptor.manifestFilename != nil else { return false }
+        guard let installRootURL = modelLocator.resolvedInstallRootURL(for: modelID) else {
+            return false
+        }
+
+        for artifact in descriptor.artifacts {
+            let artifactURL = modelLocator.installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
+            guard fileManager.fileExists(atPath: artifactURL.path) else {
+                return false
+            }
+
+            let artifactDirectoryURL = artifactURL
+                .deletingLastPathComponent()
+                .standardizedFileURL
+                .resolvingSymlinksInPath()
+            let standardizedInstallRootURL = installRootURL
+                .standardizedFileURL
+                .resolvingSymlinksInPath()
+
+            let installRootComponents = standardizedInstallRootURL.pathComponents
+            let artifactDirectoryComponents = artifactDirectoryURL.pathComponents
+            guard installRootComponents.count <= artifactDirectoryComponents.count else {
+                return false
+            }
+
+            if zip(installRootComponents, artifactDirectoryComponents).contains(where: { $0 != $1 }) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    func sha256Hex(forFileAt url: URL) throws -> String {
+        let digest = SHA256.hash(data: try Data(contentsOf: url, options: .mappedIfSafe))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    func writeInstallManifest(
+        _ manifest: DictationModelInstallManifest,
+        to url: URL
+    ) throws {
+        try fileManager.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let data = try JSONEncoder().encode(manifest)
+        try data.write(to: url, options: .atomic)
     }
 
     private func fileSizeBytes(at url: URL) -> Int64? {

@@ -3,7 +3,7 @@ import Foundation
 extension DictionaryMatcher {
     private static let maxStabilizationIterations = 8
     private static let spokenEmailCandidateRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: "(^|[^A-Za-z0-9._%+\\-])([A-Za-z0-9._%+'\\-]+(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)[ \\t]+at[ \\t]+([A-Za-z0-9\\-]+(?:[ \\t]*\\.[ \\t]*[A-Za-z0-9\\-]+)+)(?=$|[^A-Za-z0-9\\-])",
+        pattern: "(^|[^A-Za-z0-9._%+\\-])([A-Za-z0-9._%+'\\-]+(?:[ \\t]+[A-Za-z0-9._%+'\\-]+)*)[ \\t]+at[ \\t]+([A-Za-z0-9\\-]+(?:[ \\t]*(?:\\.|\\bdot\\b)[ \\t]*[A-Za-z0-9\\-]+)+)(?=$|[^A-Za-z0-9\\-])",
         options: [.caseInsensitive]
     )
     private static let compactSpokenEmailCandidateRegex: NSRegularExpression? = try? NSRegularExpression(

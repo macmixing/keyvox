@@ -2,6 +2,7 @@ import Foundation
 
 @MainActor
 public protocol DictationTranscriptionProviding: AnyObject {
+    /// This flag is only meaningful when the provider returns empty text for a request.
     var lastResultWasLikelyNoSpeech: Bool { get }
     func transcribe(
         audioFrames: [Float],
@@ -10,6 +11,29 @@ public protocol DictationTranscriptionProviding: AnyObject {
         completion: @escaping (TranscriptionProviderResult?) -> Void
     )
 }
+
+@MainActor
+public protocol DictationTranscriptionControlling: AnyObject {
+    func cancelTranscription()
+    func updateDictionaryHintPrompt(_ prompt: String)
+}
+
+@MainActor
+public protocol DictationModelLifecycleProviding: AnyObject {
+    func warmup()
+    func unloadModel()
+}
+
+@MainActor
+public protocol DictationModelReadinessProviding: AnyObject {
+    var isModelReady: Bool { get }
+}
+
+public typealias DictationProvider =
+    DictationTranscriptionProviding &
+    DictationTranscriptionControlling &
+    DictationModelLifecycleProviding &
+    DictationModelReadinessProviding
 
 public struct TranscriptionProviderResult: Sendable {
     public let text: String
@@ -20,8 +44,6 @@ public struct TranscriptionProviderResult: Sendable {
         self.languageCode = languageCode
     }
 }
-
-extension WhisperService: DictationTranscriptionProviding {}
 
 public struct DictationPipelineResult {
     public let rawText: String

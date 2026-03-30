@@ -56,7 +56,7 @@ final class AppServiceRegistry {
         let whisperService = WhisperService(modelPathResolver: modelPathProvider)
         let modelManager = ModelManager(
             fileManager: fileManager,
-            whisperService: whisperService,
+            providerLifecycle: whisperService,
             modelsDirectoryProvider: { SharedPaths.modelsDirectoryURL(fileManager: fileManager) },
             ggmlModelURLProvider: { SharedPaths.modelFileURL(fileManager: fileManager) },
             coreMLZipURLProvider: { SharedPaths.coreMLEncoderZipURL(fileManager: fileManager) },

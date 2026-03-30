@@ -9,6 +9,7 @@ final class ModelDownloaderTests: XCTestCase {
         try withTemporaryDirectory { dir in
             let modelURL = dir
                 .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("whisper", isDirectory: true)
                 .appendingPathComponent("ggml-base.bin")
             try writeBytes(count: 12, to: modelURL)
 
@@ -27,6 +28,7 @@ final class ModelDownloaderTests: XCTestCase {
         try withTemporaryDirectory { dir in
             let modelURL = dir
                 .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("whisper", isDirectory: true)
                 .appendingPathComponent("ggml-base.bin")
             try writeBytes(count: 12, to: modelURL)
 
@@ -87,6 +89,34 @@ final class ModelDownloaderTests: XCTestCase {
         }
     }
 
+    func testRefreshModelStatusKeepsParakeetNotReadyWhenManifestIsMissing() throws {
+        try withTemporaryDirectory { dir in
+            let downloader = makeDownloader(in: dir, minBytes: 10)
+            let descriptor = downloader.modelLocator.descriptor(for: .parakeetTdtV3)
+
+            try FileManager.default.createDirectory(
+                at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3),
+                withIntermediateDirectories: true
+            )
+
+            for artifact in descriptor.artifacts {
+                let url = downloader.modelLocator.installedArtifactURL(
+                    for: .parakeetTdtV3,
+                    relativePath: artifact.relativePath
+                )
+                try FileManager.default.createDirectory(
+                    at: url.deletingLastPathComponent(),
+                    withIntermediateDirectories: true
+                )
+                try Data([0x01]).write(to: url, options: .atomic)
+            }
+
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(downloader.isModelReady(for: .parakeetTdtV3))
+        }
+    }
+
     func testUpdateTaskProgressAggregatesAcrossTasks() async throws {
         let dir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -107,6 +137,64 @@ final class ModelDownloaderTests: XCTestCase {
             abs(downloader.progress - 0.375) < 0.0001
         }
         XCTAssertEqual(downloader.progress, 0.375, accuracy: 0.0001)
+    }
+
+    func testUpdateTaskProgressPreservesFallbackTotalWhenSessionReportsUnknownLength() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [801, 802])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+        downloader.updateTaskProgress(id: 801, written: 32, total: -1)
+
+        try await waitForCondition {
+            downloader.taskProgressSnapshot[801]?.written == 32
+        }
+
+        XCTAssertEqual(downloader.taskProgressSnapshot[801]?.written, 32)
+        XCTAssertEqual(downloader.taskProgressSnapshot[801]?.total, 140_000_000)
+    }
+
+    func testUpdateTaskProgressCapsProgressBelowOneUntilInstallFinishes() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = makeDownloader(in: dir, minBytes: 10)
+        let descriptor = downloader.modelLocator.descriptor(for: .whisperBase)
+
+        downloader.activeDownload = ModelDownloader.ActiveDownload(
+            token: UUID(),
+            modelID: .whisperBase,
+            descriptor: descriptor
+        )
+        downloader.taskTokensByID[1] = downloader.activeDownload?.token
+        downloader.taskTokensByID[2] = downloader.activeDownload?.token
+        downloader.completedTaskIDs = [1, 2]
+        downloader.taskProgress[1] = (100, 100)
+        downloader.taskProgress[2] = (100, 100)
+        downloader.updateDownloadState(
+            DictationModelInstallState(
+                isReady: false,
+                isDownloading: true,
+                progress: 0,
+                errorMessage: nil
+            ),
+            for: .whisperBase
+        )
+
+        downloader.updateTaskProgress(id: 1, written: 100, total: 100)
+
+        try await waitForCondition {
+            downloader.progress == 0.99
+        }
+
+        XCTAssertEqual(downloader.progress, 0.99, accuracy: 0.0001)
     }
 
     func testDeleteModelRemovesArtifactsAndResetsPublishedState() async throws {
@@ -135,6 +223,41 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: downloader.modelURL.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: zipURL.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: coreMLDir.path))
+    }
+
+    func testDeleteModelByIDRemovesParakeetInstallAndResetsState() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = makeDownloader(in: dir, minBytes: 10)
+        let descriptor = downloader.modelLocator.descriptor(for: .parakeetTdtV3)
+        try FileManager.default.createDirectory(
+            at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3),
+            withIntermediateDirectories: true
+        )
+        for artifact in descriptor.artifacts.prefix(1) {
+            let url = downloader.modelLocator.installedArtifactURL(
+                for: .parakeetTdtV3,
+                relativePath: artifact.relativePath
+            )
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try Data([0x01]).write(to: url, options: .atomic)
+        }
+
+        downloader.deleteModel(withID: .parakeetTdtV3)
+
+        try await waitForCondition {
+            downloader.isModelReady(for: .parakeetTdtV3) == false
+        }
+
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: downloader.modelLocator.installRootURL(for: .parakeetTdtV3).path
+            )
+        )
     }
 
     func testDownloadBaseModelInitializesTaskProgressAndResumesTasks() {
@@ -224,6 +347,7 @@ final class ModelDownloaderTests: XCTestCase {
 
         let task = URLSession(configuration: .ephemeral).dataTask(with: URL(string: "https://example.com")!)
         let error = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))
+        downloader.taskTokensByID[task.taskIdentifier] = downloader.activeDownload?.token
         downloader.handleDownloadFailure(task: task, error: error)
 
         try await waitForCondition {
@@ -284,6 +408,28 @@ final class ModelDownloaderTests: XCTestCase {
         )
     }
 
+    func testDownloadModelByIDInitializesParakeetTasks() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let taskIDs = Array(1...DictationModelCatalog.descriptor(for: .parakeetTdtV3).artifacts.count)
+        let sessionFactory = RecordingSessionFactory(taskIDs: taskIDs)
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadModel(withID: .parakeetTdtV3)
+
+        XCTAssertTrue(downloader.isDownloading(for: .parakeetTdtV3))
+        XCTAssertEqual(sessionFactory.makeCount, 1)
+        XCTAssertEqual(
+            sessionFactory.createdSession.downloadURLs.count,
+            DictationModelCatalog.descriptor(for: .parakeetTdtV3).artifacts.count
+        )
+    }
+
     private func makeDownloader(
         in directory: URL,
         minBytes: Int64,
@@ -296,6 +442,7 @@ final class ModelDownloaderTests: XCTestCase {
     ) -> ModelDownloader {
         let modelURL = directory
             .appendingPathComponent("Models", isDirectory: true)
+            .appendingPathComponent("whisper", isDirectory: true)
             .appendingPathComponent("ggml-base.bin")
 
         return ModelDownloader(
@@ -311,11 +458,15 @@ final class ModelDownloaderTests: XCTestCase {
     }
 
     private func coreMLZipURL(for modelURL: URL) -> URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc.zip")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip", isDirectory: false)
     }
 
     private func coreMLDirURL(for modelURL: URL) -> URL {
-        modelURL.deletingPathExtension().appendingPathExtension("encoder.mlmodelc")
+        modelURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
     }
 
     private func writeBytes(count: Int, to url: URL) throws {

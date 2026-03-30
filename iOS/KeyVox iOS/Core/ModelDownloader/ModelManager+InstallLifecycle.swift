@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 
 extension ModelManager {
     private func mappedProgress(for phase: ModelInstallPhase, fraction: Double) -> Double {
@@ -299,8 +300,8 @@ extension ModelManager {
         switch validation {
         case .ready:
             await applyPhaseProgress(.warmingModel, fraction: 0)
-            whisperService.unloadModel()
-            whisperService.warmup()
+            providerLifecycle.unloadModel()
+            providerLifecycle.warmup()
             await applyPhaseProgress(.warmingModel, fraction: 1)
             modelReady = true
             installState = .ready
@@ -325,7 +326,7 @@ extension ModelManager {
             return
         }
 
-        whisperService.unloadModel()
+        providerLifecycle.unloadModel()
         try? removeItemIfExists(at: paths.ggmlModelURL)
         try? removeItemIfExists(at: paths.coreMLDirectoryURL)
         try? removeItemIfExists(at: paths.coreMLZipURL)

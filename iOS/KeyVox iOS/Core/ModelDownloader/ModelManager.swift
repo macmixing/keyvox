@@ -3,14 +3,6 @@ import Foundation
 import KeyVoxCore
 
 @MainActor
-protocol WhisperModelLifecycle: AnyObject {
-    func warmup()
-    func unloadModel()
-}
-
-extension WhisperService: WhisperModelLifecycle {}
-
-@MainActor
 final class ModelManager: ObservableObject {
     typealias DownloadClosure = @Sendable (URL, @escaping @Sendable (ModelDownloadProgressSnapshot) -> Void) async throws -> URL
     typealias UnzipClosure = @Sendable (URL, URL, FileManager, @escaping @Sendable (Int64, Int64) -> Void) async throws -> Void
@@ -21,7 +13,7 @@ final class ModelManager: ObservableObject {
     @Published var errorMessage: String?
 
     let fileManager: FileManager
-    let whisperService: any WhisperModelLifecycle
+    let providerLifecycle: any DictationModelLifecycleProviding
     let modelsDirectoryProvider: () -> URL?
     let ggmlModelURLProvider: () -> URL?
     let coreMLZipURLProvider: () -> URL?
@@ -45,7 +37,7 @@ final class ModelManager: ObservableObject {
 
     init(
         fileManager: FileManager = .default,
-        whisperService: any WhisperModelLifecycle,
+        providerLifecycle: any DictationModelLifecycleProviding,
         modelsDirectoryProvider: @escaping () -> URL? = { SharedPaths.modelsDirectoryURL() },
         ggmlModelURLProvider: @escaping () -> URL? = { SharedPaths.modelFileURL() },
         coreMLZipURLProvider: @escaping () -> URL? = { SharedPaths.coreMLEncoderZipURL() },
@@ -64,7 +56,7 @@ final class ModelManager: ObservableObject {
         unzip: UnzipClosure? = nil
     ) {
         self.fileManager = fileManager
-        self.whisperService = whisperService
+        self.providerLifecycle = providerLifecycle
         self.modelsDirectoryProvider = modelsDirectoryProvider
         self.ggmlModelURLProvider = ggmlModelURLProvider
         self.coreMLZipURLProvider = coreMLZipURLProvider
