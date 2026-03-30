@@ -125,6 +125,7 @@ public struct ThousandsGroupingNormalizer {
 
             for endIndex in stride(from: upperBound, through: searchIndex + 1, by: -1) {
                 let candidateWords = Array(words[searchIndex..<endIndex])
+                guard candidateWords[0].text.lowercased() != "and" else { continue }
                 guard wordsAreWhitespaceSeparated(candidateWords, in: nsLine) else { continue }
                 guard let value = spokenQuantityValue(for: candidateWords.map(\.text), formatter: formatter),
                       value >= 1000 else {
