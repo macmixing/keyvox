@@ -11,6 +11,15 @@ final class AppSettingsStore: ObservableObject {
 
         var id: String { rawValue }
 
+        var modelID: DictationModelID {
+            switch self {
+            case .whisper:
+                return .whisperBase
+            case .parakeet:
+                return .parakeetTdtV3
+            }
+        }
+
         var displayName: String {
             switch self {
             case .whisper:

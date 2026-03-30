@@ -151,6 +151,11 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool, false)
     }
 
+    func testActiveDictationProviderMapsToExpectedModelID() {
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.whisper.modelID, .whisperBase)
+        XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.parakeet.modelID, .parakeetTdtV3)
+    }
+
     private func makeIsolatedDefaults() -> (UserDefaults, String) {
         let suiteName = "AppSettingsStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

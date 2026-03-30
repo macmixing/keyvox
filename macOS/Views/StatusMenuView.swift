@@ -38,7 +38,7 @@ struct StatusMenuView: View {
                     .frame(height: 0.5)
                 
                 // Warnings Section (Only show after onboarding is complete)
-                if appSettings.hasCompletedOnboarding && (!micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted()) {
+                if appSettings.hasCompletedOnboarding && (!micAuthorized || !activeProviderModelReady || !AXIsProcessTrusted()) {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
                             WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
@@ -46,12 +46,12 @@ struct StatusMenuView: View {
                             }
                         }
                         
-                        if !downloader.isModelDownloaded {
+                        if !activeProviderModelReady {
                             WarningRow(icon: "cpu", title: "Model missing") {
                                 dismiss()
                                 openSettings(.settings)
                                 DispatchQueue.main.async {
-                                    ModelDownloader.shared.downloadBaseModel()
+                                    ModelDownloader.shared.downloadModel(withID: appSettings.activeDictationProvider.modelID)
                                 }
                             }
                         }
@@ -104,7 +104,7 @@ struct StatusMenuView: View {
                 .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
         )
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: micAuthorized)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: downloader.isModelDownloaded)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: activeProviderModelReady)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: AXIsProcessTrusted())
         .onAppear {
             micAuthorized = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
@@ -149,7 +149,7 @@ struct StatusMenuView: View {
         }
         
         // After onboarding, check for blocking issues
-        if !micAuthorized || !downloader.isModelDownloaded || !AXIsProcessTrusted() {
+        if !micAuthorized || !activeProviderModelReady || !AXIsProcessTrusted() {
             return .issue
         }
         
@@ -159,6 +159,10 @@ struct StatusMenuView: View {
         case .transcribing: return .transcribing
         case .error(let msg): return .error(msg)
         }
+    }
+
+    private var activeProviderModelReady: Bool {
+        downloader.isModelReady(for: appSettings.activeDictationProvider.modelID)
     }
 
     private func resolveMicrophonePermission() {
