@@ -10,10 +10,6 @@ extension ModelDownloader {
             return false
         }
 
-        // 2) CoreML directory should exist (Apple Silicon path). If it does not, we still
-        // allow running on Intel-only machines, but during download we want it complete.
-        // Treat as ready if either the directory exists OR the zip does not exist (Intel case).
-        let coreMLDirExists = fileManager.fileExists(atPath: coreMLModelDirURL.path)
         let coreMLZipExists = fileManager.fileExists(atPath: coreMLZipURL.path)
 
         if coreMLZipExists {
@@ -21,9 +17,7 @@ extension ModelDownloader {
             return false
         }
 
-        // If the app has ever downloaded CoreML, prefer the directory check.
-        // Otherwise, allow GGML-only readiness.
-        return coreMLDirExists || !coreMLDirExists
+        return true
     }
 
     func validateStrictManifestModel(_ modelID: DictationModelID) -> Bool {
@@ -39,7 +33,21 @@ extension ModelDownloader {
                 return false
             }
 
-            if artifactURL.deletingLastPathComponent().path.hasPrefix(installRootURL.path) == false {
+            let artifactDirectoryURL = artifactURL
+                .deletingLastPathComponent()
+                .standardizedFileURL
+                .resolvingSymlinksInPath()
+            let standardizedInstallRootURL = installRootURL
+                .standardizedFileURL
+                .resolvingSymlinksInPath()
+
+            let installRootComponents = standardizedInstallRootURL.pathComponents
+            let artifactDirectoryComponents = artifactDirectoryURL.pathComponents
+            guard installRootComponents.count <= artifactDirectoryComponents.count else {
+                return false
+            }
+
+            if zip(installRootComponents, artifactDirectoryComponents).contains(where: { $0 != $1 }) {
                 return false
             }
         }

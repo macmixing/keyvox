@@ -15,7 +15,7 @@ final class AudioParagraphChunkerTests: XCTestCase {
         XCTAssertTrue(result.fallbackBoundaryFrames.isEmpty)
     }
 
-    func testSplitDoesNotBoundaryAtShortSilence() {
+    func testSplitDoesNotCreateBoundaryAtShortSilence() {
         let chunker = AudioParagraphChunker()
         let audio = makeSpeech(32_000) + makeSilence(8_000) + makeSpeech(32_000)
 

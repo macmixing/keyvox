@@ -104,8 +104,8 @@ private struct DictationModelsCard: View {
         var rows = [
             DictationModelCardConfiguration(
                 modelID: .whisperBase,
-                title: "OpenAI Whisper Base",
-                subtitle: "Locally powered multi-lingual model."
+                title: "Whisper Base",
+                subtitle: "Locally powered multi-lingual model from OpenAI."
             )
         ]
 
@@ -114,7 +114,7 @@ private struct DictationModelsCard: View {
                 DictationModelCardConfiguration(
                     modelID: .parakeetTdtV3,
                     title: "Parakeet TDT v3",
-                    subtitle: "Locally powered transducer model."
+                    subtitle: "Locally powered multi-lingual model from NVIDIA."
                 )
             )
         }

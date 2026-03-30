@@ -252,22 +252,46 @@ class ModelDownloader: ObservableObject {
     }
 
     func updateReadyState(_ isReady: Bool, for modelID: DictationModelID) {
-        var state = self.state(for: modelID)
-        state.isReady = isReady
-        modelStates[modelID] = state
+        let apply = {
+            var state = self.state(for: modelID)
+            state.isReady = isReady
+            self.modelStates[modelID] = state
+        }
+
+        if Thread.isMainThread {
+            apply()
+        } else {
+            DispatchQueue.main.sync(execute: apply)
+        }
     }
 
     func updateDownloadState(_ state: DictationModelInstallState, for modelID: DictationModelID) {
-        modelStates[modelID] = state
+        let apply = {
+            self.modelStates[modelID] = state
+        }
+
+        if Thread.isMainThread {
+            apply()
+        } else {
+            DispatchQueue.main.sync(execute: apply)
+        }
     }
 
     func syncLegacyWhisperState() {
-        let whisperState = state(for: .whisperBase)
-        modelReady = whisperState.isReady
-        isDownloading = whisperState.isDownloading
-        progress = whisperState.progress
-        errorMessage = whisperState.errorMessage
-        parakeetModelReady = state(for: .parakeetTdtV3).isReady
+        let apply = {
+            let whisperState = self.state(for: .whisperBase)
+            self.modelReady = whisperState.isReady
+            self.isDownloading = whisperState.isDownloading
+            self.progress = whisperState.progress
+            self.errorMessage = whisperState.errorMessage
+            self.parakeetModelReady = self.state(for: .parakeetTdtV3).isReady
+        }
+
+        if Thread.isMainThread {
+            apply()
+        } else {
+            DispatchQueue.main.sync(execute: apply)
+        }
     }
 
     func debugLog(_ message: String) {

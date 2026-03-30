@@ -12,6 +12,7 @@ public struct ParakeetSegment: Sendable, Equatable {
         confidence: Float? = nil,
         noSpeechProbability: Float? = nil
     ) {
+        precondition(endTime >= startTime, "endTime must be greater than or equal to startTime")
         self.startTime = startTime
         self.endTime = endTime
         self.text = text

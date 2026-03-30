@@ -1,4 +1,4 @@
-public final class ParakeetParams: @unchecked Sendable {
+public struct ParakeetParams: Sendable {
     public static var `default`: ParakeetParams {
         ParakeetParams()
     }

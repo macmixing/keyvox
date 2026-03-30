@@ -279,7 +279,7 @@ public struct AudioParagraphChunker {
     private func logSplitSummary(_ result: Result, totalFrames: Int) {
         let retainedPercentage = totalFrames == 0 ? 0 : (Double(result.chunkFrameLengths.reduce(0, +)) / Double(totalFrames)) * 100
         print(
-            "WhisperChunker: frames=\(totalFrames) " +
+            "AudioParagraphChunker: frames=\(totalFrames) " +
             "secs=\(String(format: "%.2f", Double(totalFrames) / Self.sampleRate)) " +
             "windows=\(result.windowCount) " +
             "threshold=\(String(format: "%.5f", result.silenceThreshold)) " +

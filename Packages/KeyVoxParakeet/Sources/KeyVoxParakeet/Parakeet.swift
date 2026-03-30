@@ -2,7 +2,7 @@ import Foundation
 
 public final class Parakeet {
     private let runtime: ParakeetRuntime
-    public let params: ParakeetParams
+    public var params: ParakeetParams
 
     public init(fromModelURL modelURL: URL, withParams params: ParakeetParams = .default) throws {
         self.params = params

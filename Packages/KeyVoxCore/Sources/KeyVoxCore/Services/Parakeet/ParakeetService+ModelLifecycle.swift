@@ -92,7 +92,7 @@ extension ParakeetService {
     }
 
     nonisolated static func makeParakeet(modelURL: URL, initialPrompt: String) throws -> Parakeet? {
-        let params = ParakeetParams.default
+        var params = ParakeetParams.default
         params.initialPrompt = initialPrompt
         return try Parakeet(fromModelURL: modelURL, withParams: params)
     }

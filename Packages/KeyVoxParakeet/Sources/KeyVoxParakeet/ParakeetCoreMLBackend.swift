@@ -153,11 +153,14 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
 
         var frameOffset = 0
         while frameOffset < audioFrames.count {
+            await Task.yield()
             try throwIfCancelled(requestID)
 
             let chunkUpperBound = min(frameOffset + Constants.chunkFrameCount, audioFrames.count)
             let chunkFrames = Array(audioFrames[frameOffset..<chunkUpperBound])
             let decodedChunk = try decodeChunk(audioFrames: chunkFrames, params: params, requestID: requestID)
+            await Task.yield()
+            try throwIfCancelled(requestID)
 
             if detectedLanguageCode == nil {
                 detectedLanguageCode = decodedChunk.detectedLanguageCode

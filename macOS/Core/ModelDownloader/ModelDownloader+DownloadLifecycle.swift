@@ -86,6 +86,8 @@ extension ModelDownloader {
     }
 
     private func calculateTotalProgress(for modelID: DictationModelID) {
+        guard let activeDownload, activeDownload.modelID == modelID else { return }
+
         let totalWritten = taskProgress.values.map { $0.written }.reduce(0, +)
         let totalExpected = taskProgress.values.map { $0.total }.reduce(0, +)
         let newProgress: Double
@@ -99,11 +101,7 @@ extension ModelDownloader {
         var state = state(for: modelID)
         let clampedProgress = min(max(newProgress, 0), 1)
 
-        if let activeDownload, activeDownload.modelID == modelID {
-            state.progress = min(clampedProgress, 0.99)
-        } else {
-            state.progress = clampedProgress
-        }
+        state.progress = min(clampedProgress, 0.99)
 
         updateDownloadState(state, for: modelID)
         syncLegacyWhisperState()
@@ -207,7 +205,15 @@ extension ModelDownloader {
         try fileManager.moveItem(at: stagingRootURL, to: installRootURL)
 
         guard validateStrictManifestModel(activeDownload.modelID) else {
-            throw NSError(domain: "ModelDownloader", code: 2004)
+            let validationError = NSError(domain: "ModelDownloader", code: 2004)
+            if fileManager.fileExists(atPath: installRootURL.path) {
+                do {
+                    try fileManager.removeItem(at: installRootURL)
+                } catch {
+                    debugLog("Failed to remove invalid install for \(activeDownload.modelID.rawValue): \(error)")
+                }
+            }
+            throw validationError
         }
         debugLog("Strict manifest validation passed for \(activeDownload.modelID.rawValue)")
     }

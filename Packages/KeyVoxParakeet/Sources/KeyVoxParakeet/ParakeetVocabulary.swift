@@ -48,7 +48,10 @@ internal struct ParakeetVocabulary {
         }
 
         self.tokensByID = tokensByID
-        self.tokenIDsByToken = Dictionary(uniqueKeysWithValues: tokensByID.map { ($0.value, $0.key) })
+        self.tokenIDsByToken = Dictionary(
+            tokensByID.map { ($0.value, $0.key) },
+            uniquingKeysWith: { first, _ in first }
+        )
         self.greedyMatchTokensByFirstCharacter = Self.makeGreedyMatchIndex(tokensByID: tokensByID)
 
 #if DEBUG
