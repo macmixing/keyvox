@@ -30,11 +30,8 @@
 		8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */; };
 		8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */; };
 		8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E4CE59E2F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
 		8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E4CE5A02F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
 		8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E4CE5A22F6B7F76009C7CE8 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */; };
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B904A2F5C6C8B00EE4F08 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
@@ -64,6 +61,10 @@
 		8E9E38DD2F5C004200EAFA72 /* AudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* AudioRecorder+Streaming.swift */; };
 		8E9E38E42F5C104200EAFA72 /* SharedPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */; };
 		8E9E38E52F5C104200EAFA72 /* DictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* DictationService.swift */; };
+		8ED2E87A2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
+		8ED2E87B2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
+		8ED2E87C2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
+		8ED2E87D2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
 		8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */; };
 		8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */; };
 		8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */; };
@@ -80,8 +81,6 @@
 		8EECEA6E2F655FB900BECF17 /* ModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */; };
 		8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5D2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift */; };
 		8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */; };
-		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
-		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
@@ -131,6 +130,8 @@
 		B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
 		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		B300000B2FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */; };
+		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
+		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -190,7 +191,6 @@
 		8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepRow.swift; sourceTree = "<group>"; };
 		8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
 		8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
@@ -215,6 +215,7 @@
 		8E9E38CC2F5C004200EAFA72 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedPaths.swift; sourceTree = "<group>"; };
 		8E9E38E22F5C104200EAFA72 /* DictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationService.swift; sourceTree = "<group>"; };
+		8ED2E8792F7ACFA900256F9E /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolbarContent.swift; sourceTree = "<group>"; };
 		8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTranscriptionCardView.swift; sourceTree = "<group>"; };
@@ -230,8 +231,6 @@
 		8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
 		8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Support.swift"; sourceTree = "<group>"; };
 		8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Validation.swift"; sourceTree = "<group>"; };
-		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
-		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
 		9B7001012FB1000100BB0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
@@ -278,6 +277,8 @@
 		B20000012FD5000100AA0001 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
 		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
+		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
+		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -423,8 +424,8 @@
 			isa = PBXGroup;
 			children = (
 				8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */,
-				8E4CE59C2F6B7F76009C7CE8 /* keyvox.icon */,
 				8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */,
+				8ED2E8792F7ACFA900256F9E /* keyvox.icon */,
 				8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */,
 				8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */,
 			);
@@ -801,9 +802,9 @@
 			files = (
 				8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */,
+				8ED2E87B2F7ACFA900256F9E /* keyvox.icon in Resources */,
 				8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */,
 				8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
-				8E4CE5A02F6B7F76009C7CE8 /* keyvox.icon in Resources */,
 				8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -812,6 +813,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8ED2E87A2F7ACFA900256F9E /* keyvox.icon in Resources */,
 				8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */,
 				8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
@@ -822,8 +824,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
-				8E4CE59E2F6B7F76009C7CE8 /* keyvox.icon in Resources */,
 				8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
+				8ED2E87D2F7ACFA900256F9E /* keyvox.icon in Resources */,
 				8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 				8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
@@ -838,7 +840,7 @@
 				8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
 				8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
 				8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
-				8E4CE5A22F6B7F76009C7CE8 /* keyvox.icon in Resources */,
+				8ED2E87C2F7ACFA900256F9E /* keyvox.icon in Resources */,
 				8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

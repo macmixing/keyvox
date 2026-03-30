@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
-		8E10F53B2F656E3800A0AA65 /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F53A2F656E3800A0AA65 /* keyvox.icon */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
@@ -43,6 +42,7 @@
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
 		8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700122F42000100C70001 /* WarningOverlayView.swift */; };
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
+		8ED2E7C72F7ACF4900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E7C62F7ACF4900256F9E /* keyvox.icon */; };
 		8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */; };
 		8EECE5B12F63AC2800BECF17 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */; };
 		8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEB112F65676100BECF17 /* Kanit-Light.ttf */; };
@@ -170,7 +170,6 @@
 
 /* Begin PBXFileReference section */
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
-		8E10F53A2F656E3800A0AA65 /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
 		8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppTheme.swift; sourceTree = "<group>"; };
@@ -204,6 +203,7 @@
 		8EC700112F42000100C70001 /* WarningKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKind.swift; sourceTree = "<group>"; };
 		8EC700122F42000100C70001 /* WarningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningOverlayView.swift; sourceTree = "<group>"; };
 		8EC700132F42000100C70001 /* WarningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningManager.swift; sourceTree = "<group>"; };
+		8ED2E7C62F7ACF4900256F9E /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
 		8EE0045A2F3BA59900BBAB30 /* KeyVox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyVox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
 		8EE602882F412B920094EC16 /* KeyVoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyVoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -410,10 +410,10 @@
 				8E927F6C2F3C7EA600C071B3 /* KeyVox.entitlements */,
 				8EECEB112F65676100BECF17 /* Kanit-Light.ttf */,
 				8E927F6A2F3C7AA000C071B3 /* Credits.rtf */,
+				8ED2E7C62F7ACF4900256F9E /* keyvox.icon */,
 				AA1000012F50000100AA0001 /* OFL.txt */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
 				8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */,
-				8E10F53A2F656E3800A0AA65 /* keyvox.icon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -835,9 +835,9 @@
 				8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */,
 				8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */,
 				AA1000112F50000100AA0001 /* OFL.txt in Resources */,
-				8E10F53B2F656E3800A0AA65 /* keyvox.icon in Resources */,
 				8E95400B2F6AA90B00B1F3B5 /* LICENSE.md in Resources */,
 				8E95400C2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md in Resources */,
+				8ED2E7C72F7ACF4900256F9E /* keyvox.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

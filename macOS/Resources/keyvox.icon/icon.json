@@ -19,12 +19,10 @@
     {
       "layers" : [
         {
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "Image.png",
-          "name" : "Image",
+          "image-name" : "Image 2.png",
+          "name" : "KeyVox",
           "position" : {
-            "scale" : 0.24,
+            "scale" : 0.195,
             "translation-in-points" : [
               0,
               0
