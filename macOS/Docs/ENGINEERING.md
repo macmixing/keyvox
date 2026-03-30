@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-19**
+**Last Updated: 2026-03-30**
 
 ## Design Philosophy
 
@@ -31,7 +31,7 @@ KeyVox is organized by responsibility:
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
-- `Core/Services/`: Paste/injection and update/checking services, while Whisper inference now lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/`.
+- `Core/Services/`: Paste/injection and update/checking services, while provider inference now lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, and generic audio-indicator timing/state driving.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
@@ -49,23 +49,55 @@ File-level ownership and locations are intentionally maintained in one place: [`
 ## Platform Compatibility
 
 - Supported macOS range: macOS 15 and newer.
+- Parakeet provider availability is additionally runtime-gated by OS support, and unsupported persisted selections normalize back to Whisper.
 
 For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
-## Inference Model
+## Inference Models
 
-- KeyVox uses Whisper's multilingual base model (`ggml-base`) for on-device transcription.
+- KeyVox supports two on-device dictation providers on macOS:
+  - `Whisper Base` (`ggml-base` + Core ML encoder bundle)
+  - `Parakeet TDT v3` (manifest-backed Core ML model directory)
+- `AppServiceRegistry` owns the host-side provider composition:
+  - `WhisperService`
+  - `ParakeetService`
+  - `SwitchableDictationProvider`
+- `AppSettingsStore.activeDictationProvider` is the local source of truth for the selected provider.
+- Unsupported provider selections fail closed back to Whisper instead of leaving the runtime in an unavailable state.
 
 ## Post-Processing Order
 
-1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperAudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
-2. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
+1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
+2. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
 4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
 5. List formatting applies numeric list rendering when confidence gates pass.
 6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
 8. Final text is inserted via the paste service, where macOS applies final insertion-time heuristics such as dictionary-aware leading-cap normalization and smart spacing based on the focused target context.
+
+## Model Management
+
+- macOS model installation is model-aware rather than provider-hard-coded.
+- `Core/ModelDownloader/DictationModelCatalog.swift` is the source of truth for:
+  - model IDs
+  - install layouts
+  - remote artifact metadata
+  - required byte estimates
+- Current install layouts:
+  - `Whisper Base` uses the legacy/rooted Whisper layout under `Models/whisper`
+  - `Parakeet TDT v3` uses a manifest-backed subdirectory layout under `Models/parakeet`
+- `Core/ModelDownloader/InstalledDictationModelLocator.swift` owns:
+  - rooted install resolution
+  - one-time legacy Whisper migration into `Models/whisper`
+  - fast readiness checks for hot paths
+  - strict manifest-backed validation for staged/promoted installs
+- `Core/ModelDownloader/ModelDownloader.swift` publishes per-model install state and enforces a single active download at a time.
+- Download completion is intentionally split:
+  - transport/delegate completion stays immediate so temporary download files can be moved before they expire
+  - heavy validation and post-install work run off the hot path
+- `App/AppServiceRegistry.swift` supplies downloader `postInstallPreparation` so Parakeet preload happens after a successful install instead of on the first trigger press.
+- `Views/Settings/SettingsView+DictationModels.swift` is the release-facing `Active Model` settings surface for install, removal, progress, and provider switching.
 
 ## Update Feed and Release Checks
 
@@ -139,6 +171,8 @@ Maintainers can override the update feed locally without changing tracked defaul
   `xcodebuild -project macOS/KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO -resultBundlePath /tmp/keyvox-tests.xcresult test`
 - Package tests:
   `swift test --package-path Packages/KeyVoxCore`
+- Parakeet package tests:
+  `swift test --package-path Packages/KeyVoxParakeet`
 - Core coverage gate:
   `Tools/Quality/check_core_coverage.sh /tmp/keyvox-tests.xcresult`
 - Coverage markdown summary:
