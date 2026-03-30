@@ -645,6 +645,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "zackmorbi@rider.com")
     }
 
+    func testMatcherNormalizesSpokenEmailWhenDomainUsesWordDot() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "person@example.com")])
+
+        let result = matcher.apply(to: "Person at example dot com.")
+        XCTAssertEqual(result.text, "person@example.com")
+    }
+
     func testMatcherPrefersExactSpokenDomainWhenItExistsInDictionary() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
