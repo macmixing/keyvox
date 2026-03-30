@@ -182,6 +182,7 @@ private struct DictationModelCardRow: View {
                                 .opacity(isReadyHovered ? 0.0 : 1.0)
                         } else if installState.isDownloading {
                             StatusBadge(title: "Installing", color: .yellow)
+                                .frame(width: actionPillWidth)
                         } else {
                             AppActionButton(
                                 title: "Install",
