@@ -59,6 +59,31 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Go ahead and send me an email next week at 2:35 PM.")
     }
+    func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Meet me there at two fifteen PM. Yeah, I'll probably get there around I don't know, three fifteen PM.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Meet me there at 2:15 PM. Yeah, I'll probably get there around I don't know, 3:15 PM.")
+    }
+    func testNormalizesSpokenHourOnlyAndHourMinuteTimesWithMeridiemAcrossQuestionsAndStatements() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Do you think we can go next week around five PM? How about we pick her up at two fifteen AM? Yeah, I think the restaurant closes at six PM. We really need to make sure that we pick up my dog from the vet at three fifteen PM.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Do you think we can go next week around 5:00 PM? How about we pick her up at 2:15 AM? Yeah, I think the restaurant closes at 6:00 PM. We really need to make sure that we pick up my dog from the vet at 3:15 PM."
+        )
+    }
     func testCapitalizesLowercaseWordAfterSentenceBoundaryPunctuation() {
         let processor = TranscriptionPostProcessor()
 
