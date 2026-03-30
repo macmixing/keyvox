@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-03-20**
+**Last Updated: 2026-03-30**
 
 ## Project Overview
 
@@ -9,7 +9,7 @@ KeyVox iOS ships as three cooperating targets:
 - The keyboard extension owns the visible custom keyboard, warm/cold app handoff, text insertion, warning-toolbar presentation, and keyboard-only interaction behavior.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, `WhisperService`, dictionary persistence primitives, and post-processing order.
+Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, and post-processing order.
 
 The current default runtime flow is:
 
@@ -29,7 +29,7 @@ The current default runtime flow is:
 - **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, URL routing, App Group storage, iCloud sync, model background downloads, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, toolbar modes, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, Whisper integration, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, iCloud sync, weekly stats, model lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
 - **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
 
@@ -92,6 +92,8 @@ iOS/
 │   │   │   ├── AudioRecorder+StopPipeline.swift
 │   │   │   └── AudioRecorder+Streaming.swift
 │   │   ├── ModelDownloader/
+│   │   │   ├── DictationModelCatalog.swift
+│   │   │   ├── InstalledDictationModelLocator.swift
 │   │   │   ├── ModelBackgroundDownloadCoordinator.swift
 │   │   │   ├── ModelBackgroundDownloadJob.swift
 │   │   │   ├── ModelBackgroundDownloadJobStore.swift
@@ -261,7 +263,7 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, Whisper, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
 
 ### Onboarding and Root Routing
 
@@ -316,17 +318,21 @@ Packages/
 ### Model Installation and Recovery
 
 - `KeyVox iOS/Core/ModelDownloader/ModelManager.swift`
-  - Observable owner of install state, user-facing download/delete/repair actions, and relaunch recovery.
+  - Observable owner of per-model install state, active-install gating, user-facing download/delete/repair actions, and relaunch recovery.
+- `KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift`
+  - iOS-local model descriptor catalog for `Whisper Base` and `Parakeet TDT v3`, including artifact metadata and rooted install layout rules.
+- `KeyVox iOS/Core/ModelDownloader/InstalledDictationModelLocator.swift`
+  - Rooted install/staging locator plus legacy Whisper migration and lightweight installed-model resolution helpers for Whisper and Parakeet.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator.swift`
   - Background `URLSession` owner for staged model artifact downloads.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJob.swift`
-  - Durable representation of per-artifact progress and finalization state.
+  - Durable representation of per-model, per-artifact progress and finalization state.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJobStore.swift`
   - Persistence seam for the background download job file.
 - `KeyVox iOS/Core/ModelDownloader/ModelManager+InstallLifecycle.swift`
-  - Finalization, extraction, manifest writes, staged-file cleanup, and Whisper warmup sequencing after downloads complete.
+  - Finalization, extraction, manifest writes, staged-file cleanup, model-specific warmup/preload sequencing, and safe delete/repair coordination after downloads complete.
 - `KeyVox iOS/Core/ModelDownloader/ModelManager+Validation.swift`
-  - Strict readiness validation for installed artifacts and the manifest.
+  - Strict readiness validation for rooted installed artifacts and install manifests.
 - `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
 
@@ -364,7 +370,7 @@ Packages/
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
-  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, and model actions.
+  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, and the release-facing `Active Model` card for provider selection plus per-model install actions.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
 
@@ -388,7 +394,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardInsertionCapitalizationHeuristics.swift`
   - Host-text capitalization preservation for direct typing and inserted dictation paths.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
-  - Lightweight installed-model gate used by the extension toolbar.
+  - Lightweight rooted-install gate used by the extension toolbar for Whisper and Parakeet availability.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
@@ -403,7 +409,7 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, settings persistence, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior.
+  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, settings persistence, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`

@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-22**
+**Last Updated: 2026-03-30**
 
 ## Design Philosophy
 
@@ -89,6 +89,8 @@ It builds and wires:
 - `OnboardingStore`
 - `WeeklyWordStatsStore`
 - `WhisperService`
+- `ParakeetService`
+- `SwitchableDictationProvider`
 - `TranscriptionPostProcessor`
 - `ModelManager`
 - `KeyVoxKeyboardBridge`
@@ -245,6 +247,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasCompletedOnboarding`
 - `KeyVox.App.HasCompletedOnboardingWelcome`
 - `KeyVox.App.HasPendingKeyboardTour`
+- `KeyVox.App.ActiveDictationProvider`
 
 ### App Group File Transport
 
@@ -275,12 +278,18 @@ Keyboard onboarding detection is deliberately split across three signals:
 
 The App Group container is the stable cross-process boundary:
 
-- `Models/ggml-base.bin`
-- `Models/ggml-base-encoder.mlmodelc/`
-- `Models/ggml-base-encoder.mlmodelc.zip` during install only
-- `Models/DownloadStaging/ggml-base.bin` during staged download only
-- `Models/DownloadStaging/ggml-base-encoder.mlmodelc.zip` during staged download only
-- `Models/model-install-manifest.json`
+- `Models/whisper/ggml-base.bin`
+- `Models/whisper/ggml-base-encoder.mlmodelc/`
+- `Models/whisper/ggml-base-encoder.mlmodelc.zip` during install only
+- `Models/whisper/install-manifest.json`
+- `Models/parakeet/config.json`
+- `Models/parakeet/parakeet_vocab.json`
+- `Models/parakeet/Encoder.mlmodelc/`
+- `Models/parakeet/Decoder.mlmodelc/`
+- `Models/parakeet/JointDecision.mlmodelc/`
+- `Models/parakeet/install-manifest.json`
+- `Models/.staging/whisper-base/` during staged Whisper download only
+- `Models/.staging/parakeet-tdt-v3/` during staged Parakeet download only
 - `Models/model-download-job.json`
 - `InterruptedCapture/pending-interrupted-capture.plist`
 - `KeyVoxCore/` for dictionary persistence
@@ -412,30 +421,50 @@ Rules:
 
 `ModelManager` is the source of truth for install lifecycle.
 
+The current iOS app treats models as rooted installs keyed by `DictationModelID`:
+
+- `.whisperBase` installs into `Models/whisper`
+- `.parakeetTdtV3` installs into `Models/parakeet`
+
+The active provider is persisted locally through `AppSettingsStore.ActiveDictationProvider`.
+It is intentionally app-local and is not synchronized through iCloud.
+
 ### Install Flow
 
-1. resolve App Group model paths
+1. resolve App Group install and staging paths for the target `DictationModelID`
 2. ensure directories and free space are available
-3. start or resume the background download job for GGML and Core ML artifacts
-4. move staged downloads into final locations
-5. SHA-256 validate both artifacts
-6. extract the Core ML bundle
-7. validate the extracted bundle
-8. remove the Core ML zip
-9. write `model-install-manifest.json`
-10. revalidate the final install
-11. unload and warm Whisper
+3. start or resume the persisted background download job for that model’s artifact set
+4. validate staged artifacts against the descriptor’s expected hashes
+5. move staged downloads into the rooted final install location
+6. run model-specific post-install work
+7. write `install-manifest.json`
+8. revalidate the final rooted install
+9. warm or preload the installed model before reporting it ready
+
+Current model-specific post-install work:
+
+- Whisper extracts `ggml-base-encoder.mlmodelc.zip`, removes the zip, and warms `WhisperService`
+- Parakeet preloads the installed Core ML directory set through `ParakeetService`
 
 ### Readiness Contract
 
 An install is only `ready` when all of the following are true:
 
+- the rooted install directory for that `DictationModelID` exists
+- `install-manifest.json` exists and uses a supported manifest version
+- manifest hashes match the expected descriptor artifact versions
+- all retained installed artifacts for that model exist
+
+Additional Whisper-specific readiness requirements:
+
 - `ggml-base.bin` exists
 - the GGML file meets the minimum size threshold
 - `ggml-base-encoder.mlmodelc/` exists and is structurally non-empty
-- the Core ML zip has been removed
-- `model-install-manifest.json` exists and is valid
-- manifest version and hashes match the expected artifact versions
+- `ggml-base-encoder.mlmodelc.zip` has been removed
+
+Additional Parakeet-specific readiness requirements:
+
+- the manifest-backed rooted Core ML artifact set is present under `Models/parakeet`
 
 Partial installs are never treated as ready.
 
@@ -445,11 +474,12 @@ Partial installs are never treated as ready.
 
 Rules:
 
-- GGML and Core ML zip downloads run as tracked artifact phases inside a persisted job
+- each model download is tracked inside a single persisted background job that carries its `modelID`
 - rediscovered background tasks are resumed on relaunch, not just relabeled
 - missing tasks are demoted back to `.pending` so the manager can restart them
 - finalization remains foreground-owned even when downloads finished in the background
 - app activation must attempt interrupted-download recovery on the first relaunch after a kill
+- only one model download/install may be active at a time on iOS
 
 Important force-quit nuance:
 
@@ -461,8 +491,9 @@ Important force-quit nuance:
 
 - user-facing model errors collapse to actionable install/repair messages
 - failed installs schedule a background repair task
-- `deleteModel()` unloads Whisper before artifact deletion
-- `repairModelIfNeeded()` clears partial state and performs a clean reinstall when validation is not ready
+- `deleteModel(withID:)` unloads the targeted lifecycle owner before artifact deletion
+- delete must cancel any active background job for the same model before clearing persisted job state and removing rooted install directories
+- `repairModelIfNeeded(for:)` clears partial state and performs a clean reinstall when validation is not ready, but must not interrupt another model’s active download/install
 
 ## Dictionary, Style, and Sync Contract
 
@@ -471,7 +502,7 @@ The containing app owns live dictionary and style state, while the dictation pip
 ### Dictionary Rules
 
 - `DictionaryStore` is created with the App Group-backed base directory
-- `TranscriptionManager` observes dictionary entries and refreshes the post-processor plus Whisper hint prompt
+- `TranscriptionManager` observes dictionary entries and refreshes the post-processor plus the currently selected provider’s hint prompt
 - hint prompts are bounded to the newest entries, up to `200` phrases and `1200` characters
 
 ### Style Rules
@@ -662,7 +693,7 @@ Current app-owned surfaces:
 - `HomeTabView`: weekly stats, last transcription, debug diagnostics
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and model actions
+- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and the release-facing `Active Model` section for provider selection plus per-model install actions
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour, customize app
 
