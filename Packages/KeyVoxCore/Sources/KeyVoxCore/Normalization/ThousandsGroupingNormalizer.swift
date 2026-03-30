@@ -9,6 +9,11 @@ public struct ThousandsGroupingNormalizer {
         let lemma: String?
     }
 
+    private struct WordToken {
+        let text: String
+        let range: NSRange
+    }
+
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\d{4}\b"#,
         options: []
@@ -24,6 +29,10 @@ public struct ThousandsGroupingNormalizer {
     private static let dateDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.date.rawValue
     )
+    private static let wordRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b\p{L}+(?:-\p{L}+)?\b"#,
+        options: []
+    )
     private static let versionRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\d+(?:\.\d+){1,}\b"#,
         options: []
@@ -37,6 +46,7 @@ public struct ThousandsGroupingNormalizer {
         options: []
     )
     private static let plausibleYearRange = 1000...2999
+    private static let maximumSpokenQuantityTokenCount = 8
     private static func makeGroupingFormatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -47,7 +57,44 @@ public struct ThousandsGroupingNormalizer {
         return formatter
     }
 
+    private static func makeSpellOutFormatter() -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .spellOut
+        return formatter
+    }
+
+    private static let subThousandSpellOutLookup: [String: Int] = {
+        let formatter = makeSpellOutFormatter()
+        var lookup: [String: Int] = [:]
+
+        for value in 0...999 {
+            guard let spelledOut = formatter.string(from: NSNumber(value: value)) else { continue }
+            lookup[normalizeSpellOutPhrase(spelledOut)] = value
+        }
+
+        return lookup
+    }()
+
+    private static func normalizeSpellOutPhrase(_ text: String) -> String {
+        text
+            .lowercased()
+            .replacingOccurrences(of: "-", with: " ")
+            .split(whereSeparator: \.isWhitespace)
+            .joined(separator: " ")
+    }
+
     public init() {}
+
+    public func normalizeSpokenQuantities(in text: String) -> String {
+        guard !text.isEmpty else { return text }
+        guard text.rangeOfCharacter(from: .letters) != nil else { return text }
+
+        let formatter = Self.makeSpellOutFormatter()
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let normalizedLines = lines.map { normalizeSpokenQuantitiesInLine($0, formatter: formatter) }
+        return normalizedLines.joined(separator: "\n")
+    }
 
     public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
@@ -57,6 +104,63 @@ public struct ThousandsGroupingNormalizer {
         let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         let normalizedLines = lines.map { normalizeLine($0, groupingFormatter: groupingFormatter) }
         return normalizedLines.joined(separator: "\n")
+    }
+
+    private func normalizeSpokenQuantitiesInLine(_ line: String, formatter: NumberFormatter) -> String {
+        guard let wordRegex = Self.wordRegex else { return line }
+
+        let nsLine = line as NSString
+        let fullRange = NSRange(location: 0, length: nsLine.length)
+        let words = wordRegex.matches(in: line, options: [], range: fullRange).map {
+            WordToken(text: nsLine.substring(with: $0.range), range: $0.range)
+        }
+        guard !words.isEmpty else { return line }
+
+        var replacements: [(range: NSRange, value: Int)] = []
+        var searchIndex = 0
+
+        while searchIndex < words.count {
+            var matchedSpan: (range: NSRange, value: Int, nextIndex: Int)?
+            let upperBound = min(words.count, searchIndex + Self.maximumSpokenQuantityTokenCount)
+
+            for endIndex in stride(from: upperBound, through: searchIndex + 1, by: -1) {
+                let candidateWords = Array(words[searchIndex..<endIndex])
+                guard wordsAreWhitespaceSeparated(candidateWords, in: nsLine) else { continue }
+                guard let value = spokenQuantityValue(for: candidateWords.map(\.text), formatter: formatter),
+                      value >= 1000 else {
+                    continue
+                }
+
+                let rangeStart = candidateWords[0].range.location
+                let rangeEnd = NSMaxRange(candidateWords[candidateWords.count - 1].range)
+                matchedSpan = (
+                    range: NSRange(location: rangeStart, length: rangeEnd - rangeStart),
+                    value: value,
+                    nextIndex: endIndex
+                )
+                break
+            }
+
+            if let matchedSpan {
+                replacements.append((matchedSpan.range, matchedSpan.value))
+                searchIndex = matchedSpan.nextIndex
+            } else {
+                searchIndex += 1
+            }
+        }
+
+        guard !replacements.isEmpty else { return line }
+
+        let mutable = NSMutableString(string: line)
+        let groupingFormatter = Self.makeGroupingFormatter()
+        for replacement in replacements.reversed() {
+            guard let replacementText = groupingFormatter.string(from: NSNumber(value: replacement.value)) else {
+                continue
+            }
+            mutable.replaceCharacters(in: replacement.range, with: replacementText)
+        }
+
+        return mutable as String
     }
 
     private func normalizeLine(_ line: String, groupingFormatter: NumberFormatter) -> String {
@@ -83,6 +187,77 @@ public struct ThousandsGroupingNormalizer {
         }
 
         return mutable as String
+    }
+
+    private func spokenQuantityValue(for words: [String], formatter: NumberFormatter) -> Int? {
+        let normalizedWords = words.map { $0.lowercased() }
+        guard normalizedWords.contains("hundred") || normalizedWords.contains("thousand") else {
+            return nil
+        }
+
+        return parseSpokenQuantity(normalizedWords, formatter: formatter)
+    }
+
+    private func parseSpokenQuantity(_ words: [String], formatter: NumberFormatter) -> Int? {
+        let filteredWords = words.filter { $0 != "and" }
+        guard !filteredWords.isEmpty else { return nil }
+
+        if let thousandIndex = filteredWords.firstIndex(of: "thousand") {
+            let thousandsWords = Array(filteredWords[..<thousandIndex])
+            let remainderWords = Array(filteredWords[(thousandIndex + 1)...])
+            guard let thousandsValue = parseSpokenChunk(thousandsWords, formatter: formatter),
+                  thousandsValue > 0 else {
+                return nil
+            }
+
+            let remainderValue = remainderWords.isEmpty
+                ? 0
+                : parseSpokenQuantity(remainderWords, formatter: formatter) ?? parseSpokenChunk(remainderWords, formatter: formatter)
+            guard let remainderValue, remainderValue < 1000 else { return nil }
+            return (thousandsValue * 1000) + remainderValue
+        }
+
+        if let hundredIndex = filteredWords.firstIndex(of: "hundred") {
+            let hundredsWords = Array(filteredWords[..<hundredIndex])
+            let remainderWords = Array(filteredWords[(hundredIndex + 1)...])
+            guard let hundredsValue = parseSpokenChunk(hundredsWords, formatter: formatter),
+                  hundredsValue > 0 else {
+                return nil
+            }
+
+            let remainderValue = remainderWords.isEmpty
+                ? 0
+                : parseSpokenChunk(remainderWords, formatter: formatter)
+            guard let remainderValue, remainderValue < 100 else { return nil }
+            return (hundredsValue * 100) + remainderValue
+        }
+
+        return parseSpokenChunk(filteredWords, formatter: formatter)
+    }
+
+    private func parseSpokenChunk(_ words: [String], formatter _: NumberFormatter) -> Int? {
+        guard !words.isEmpty else { return nil }
+
+        let normalized = Self.normalizeSpellOutPhrase(words.joined(separator: " "))
+        return Self.subThousandSpellOutLookup[normalized]
+    }
+
+    private func wordsAreWhitespaceSeparated(_ words: [WordToken], in line: NSString) -> Bool {
+        guard words.count > 1 else { return true }
+
+        for pair in zip(words, words.dropFirst()) {
+            let separatorRange = NSRange(
+                location: NSMaxRange(pair.0.range),
+                length: pair.1.range.location - NSMaxRange(pair.0.range)
+            )
+            guard separatorRange.length >= 0 else { return false }
+            let separator = line.substring(with: separatorRange)
+            guard separator.unicodeScalars.allSatisfy(\.properties.isWhitespace) else {
+                return false
+            }
+        }
+
+        return true
     }
 
     private func protectedRanges(in line: String, fullRange: NSRange) -> [NSRange] {

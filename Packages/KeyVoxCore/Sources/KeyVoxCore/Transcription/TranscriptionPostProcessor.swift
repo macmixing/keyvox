@@ -75,7 +75,11 @@ public final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("colonNormalized", colonNormalized)
         #endif
-        let mathNormalized = mathExpressionNormalizer.normalize(in: colonNormalized)
+        let spokenQuantityNormalized = thousandsGroupingNormalizer.normalizeSpokenQuantities(in: colonNormalized)
+        #if DEBUG
+        logPipelineStage("spokenQuantityNormalized", spokenQuantityNormalized)
+        #endif
+        let mathNormalized = mathExpressionNormalizer.normalize(in: spokenQuantityNormalized)
         #if DEBUG
         logPipelineStage("mathNormalized", mathNormalized)
         #endif

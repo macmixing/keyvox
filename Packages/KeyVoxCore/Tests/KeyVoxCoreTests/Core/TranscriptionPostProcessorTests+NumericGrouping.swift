@@ -138,4 +138,115 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "May 15, 1992 and 5,000 units.")
     }
+
+    func testNormalizesStandaloneSpokenThousandsQuantity() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Five thousand seven hundred and ninety one.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "5,791.")
+    }
+
+    func testNormalizesSpokenThousandsAndHundredsWithoutTriggeringListFormatting() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Three thousand seventy one.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "3,071.")
+    }
+
+    func testNormalizesSpokenThousandsWithConjunctionAndTeenTailWithoutLeavingResidualWords() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Three thousand and seventy one.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "3,071.")
+    }
+
+    func testNormalizesSpokenThousandsWithConjunctionAndUnitTailWithoutLeavingResidualWords() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Three thousand and seventy two.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "3,072.")
+    }
+
+    func testNormalizesLowercasedSpokenThousandsWithoutLeavingResidualWords() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "three thousand seventy one",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "3,071")
+    }
+
+    func testNormalizesSpokenThousandsWithFiftyOneTailWithoutLeavingResidualWords() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Five thousand fifty one.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "5,051.")
+    }
+
+    func testNormalizesSpokenHundredsOverOneThousand() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Thirty five hundred.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "3,500.")
+    }
+
+    func testNormalizesSpokenThousandWithAndRemainder() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "One thousand and five.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "1,005.")
+    }
+
+    func testNormalizesSpokenThousandsInsideSentenceWithoutTouchingDates() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I need five thousand tickets by May 15, 1992 and three thousand seventy one units after that.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "I need 5,000 tickets by May 15, 1992 and 3,071 units after that."
+        )
+    }
 }
