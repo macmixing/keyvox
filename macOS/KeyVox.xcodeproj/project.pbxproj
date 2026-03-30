@@ -120,13 +120,12 @@
 		C11000172FD5000100AA0001 /* DictationModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */; };
 		C22000012FA5000100AA0001 /* SettingsLastTranscriptionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */; };
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
-		D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */; };
+		D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
 		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
 		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
 		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
 		E18000142FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */; };
-		F19000112FD3000100AA0001 /* SettingsView+ExperimentalProviderTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19000012FD3000100AA0001 /* SettingsView+ExperimentalProviderTesting.swift */; };
 		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
 		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
 		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
@@ -284,13 +283,12 @@
 		C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelInstallManifest.swift; sourceTree = "<group>"; };
 		C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLastTranscriptionCard.swift; sourceTree = "<group>"; };
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
-		D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ModelSection.swift"; sourceTree = "<group>"; };
+		D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictationModels.swift"; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
 		E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
 		E18000052FA4000100AA0001 /* KeyVoxiCloudSyncCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinatorTests.swift; sourceTree = "<group>"; };
-		F19000012FD3000100AA0001 /* SettingsView+ExperimentalProviderTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+ExperimentalProviderTesting.swift"; sourceTree = "<group>"; };
 		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
 		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
@@ -353,8 +351,7 @@
 				8E57FB962F3E444B00935A26 /* SettingsView+Style.swift */,
 				8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */,
 				8E57FB982F3E444B00935A26 /* SettingsView+More.swift */,
-				F19000012FD3000100AA0001 /* SettingsView+ExperimentalProviderTesting.swift */,
-				D16000012FA2000100AA0001 /* SettingsView+ModelSection.swift */,
+				D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */,
 				8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */,
 				8E57FB992F3E444B00935A26 /* SettingsView+Dictionary.swift */,
 				8E57FB9A2F3E444B00935A26 /* SettingsView+Sidebar.swift */,
@@ -900,8 +897,7 @@
 				8E57FB9F2F3E444B00935A26 /* SettingsView+Dictionary.swift in Sources */,
 				8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */,
 				8E57FBA02F3E444B00935A26 /* SettingsView+More.swift in Sources */,
-				F19000112FD3000100AA0001 /* SettingsView+ExperimentalProviderTesting.swift in Sources */,
-				D16000112FA2000100AA0001 /* SettingsView+ModelSection.swift in Sources */,
+				D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Style.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
 				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,

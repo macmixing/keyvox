@@ -39,59 +39,15 @@ extension SettingsView {
                 systemSoundsCard
             }
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 15) {
                 Text("SYSTEM")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
 
-                SettingsCard {
-                    VStack(alignment: .leading, spacing: 10) {
-                        SettingsRow(
-                            icon: "person.crop.circle.badge.checkmark",
-                            title: "Launch at Login",
-                            subtitle: loginItemController.subtitle
-                        ) {
-                            Toggle(
-                                "",
-                                isOn: Binding(
-                                    get: { loginItemController.isEnabled },
-                                    set: { loginItemController.setEnabled($0) }
-                                )
-                            )
-                            .toggleStyle(.switch)
-                            .labelsHidden()
-                            .disabled(loginItemController.isUpdating)
-                        }
-
-                        if let errorMessage = loginItemController.errorMessage {
-                            Text(errorMessage)
-                                .font(.appFont(11))
-                                .foregroundColor(.orange)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-
-                        if loginItemController.shouldShowOpenSystemSettingsAction {
-                            Button("Open Login Items Settings") {
-                                loginItemController.openLoginItemsSettings()
-                            }
-                            .font(.appFont(12))
-                            .foregroundColor(MacAppTheme.accent)
-                            .buttonStyle(DepressedButtonStyle())
-                        }
-
-                        Divider()
-                            .overlay(Color.white.opacity(0.14))
-                            .padding(.vertical, 2)
-
-                        ModelSettingsRow(downloader: downloader)
-                    }
-                }
+                launchAtLoginCard
+                dictationModelsSection
             }
-
-#if DEBUG
-            experimentalProviderTestingSection
-#endif
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {
@@ -143,6 +99,45 @@ extension SettingsView {
         }
         .onAppear {
             loginItemController.refreshStatus()
+        }
+    }
+
+    private var launchAtLoginCard: some View {
+        SettingsCard {
+            VStack(alignment: .leading, spacing: 10) {
+                SettingsRow(
+                    icon: "person.crop.circle.badge.checkmark",
+                    title: "Launch at Login",
+                    subtitle: loginItemController.subtitle
+                ) {
+                    Toggle(
+                        "",
+                        isOn: Binding(
+                            get: { loginItemController.isEnabled },
+                            set: { loginItemController.setEnabled($0) }
+                        )
+                    )
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .disabled(loginItemController.isUpdating)
+                }
+
+                if let errorMessage = loginItemController.errorMessage {
+                    Text(errorMessage)
+                        .font(.appFont(11))
+                        .foregroundColor(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if loginItemController.shouldShowOpenSystemSettingsAction {
+                    Button("Open Login Items Settings") {
+                        loginItemController.openLoginItemsSettings()
+                    }
+                    .font(.appFont(12))
+                    .foregroundColor(MacAppTheme.accent)
+                    .buttonStyle(DepressedButtonStyle())
+                }
+            }
         }
     }
 
