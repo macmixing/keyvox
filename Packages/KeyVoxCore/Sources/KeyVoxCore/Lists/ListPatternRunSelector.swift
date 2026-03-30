@@ -254,7 +254,7 @@ public struct ListPatternRunSelector {
     }
 
     private func containsSentenceBoundaryPunctuation(_ text: String) -> Bool {
-        let sentenceBoundaryPattern = #"[!?]|(?:^|[^A-Z0-9])\.(?:\s|$)"#
+        let sentenceBoundaryPattern = #"[!?]|(?:^|[A-Z0-9])\.(?:\s|$)"#
         return text.range(of: sentenceBoundaryPattern, options: [.regularExpression, .caseInsensitive]) != nil
     }
 
