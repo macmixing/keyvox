@@ -323,6 +323,20 @@ extension ModelManager {
     func performRepairModelIfNeeded(for modelID: DictationModelID) async {
         defer { currentDownloadTask = nil }
 
+        let liveState = state(for: modelID)
+        switch liveState {
+        case .downloading, .installing:
+            return
+        default:
+            break
+        }
+
+        if let backgroundJob = persistedBackgroundDownloadJob(),
+           backgroundJob.modelID == modelID,
+           backgroundJob.finalizationState != .failed {
+            return
+        }
+
         switch validatedState(for: modelID) {
         case .ready:
             return
