@@ -8,8 +8,24 @@ struct InstalledDictationModelLocator {
         appSupportRootURL.appendingPathComponent("Models", isDirectory: true)
     }
 
+    var whisperModelDirectoryURL: URL {
+        modelsRootURL.appendingPathComponent("whisper", isDirectory: true)
+    }
+
     var whisperModelURL: URL {
+        whisperModelDirectoryURL.appendingPathComponent("ggml-base.bin")
+    }
+
+    var legacyWhisperModelURL: URL {
         modelsRootURL.appendingPathComponent("ggml-base.bin")
+    }
+
+    var whisperCoreMLModelDirectoryURL: URL {
+        whisperModelDirectoryURL.appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
+    }
+
+    var legacyWhisperCoreMLModelDirectoryURL: URL {
+        modelsRootURL.appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
     }
 
     var parakeetModelDirectoryURL: URL {
@@ -21,7 +37,8 @@ struct InstalledDictationModelLocator {
     }
 
     func resolvedWhisperModelPath() -> String? {
-        resolvedInstallRootURL(for: .whisperBase)?.path
+        try? migrateLegacyWhisperInstallIfNeeded()
+        return resolvedInstallRootURL(for: .whisperBase)?.path
     }
 
     func resolvedParakeetModelDirectoryURL() -> URL? {
@@ -66,6 +83,7 @@ struct InstalledDictationModelLocator {
 
         switch descriptor.installLayout {
         case .legacyWhisperBase:
+            try? migrateLegacyWhisperInstallIfNeeded()
             return fileManager.fileExists(atPath: whisperModelURL.path) ? whisperModelURL : nil
         case .subdirectory:
             let installRootURL = installRootURL(for: modelID)
@@ -92,6 +110,25 @@ struct InstalledDictationModelLocator {
             }
 
             return installRootURL
+        }
+    }
+
+    func migrateLegacyWhisperInstallIfNeeded() throws {
+        let hasLegacyBin = fileManager.fileExists(atPath: legacyWhisperModelURL.path)
+        let hasLegacyCoreML = fileManager.fileExists(atPath: legacyWhisperCoreMLModelDirectoryURL.path)
+
+        guard hasLegacyBin || hasLegacyCoreML else {
+            return
+        }
+
+        try fileManager.createDirectory(at: whisperModelDirectoryURL, withIntermediateDirectories: true)
+
+        if hasLegacyBin && !fileManager.fileExists(atPath: whisperModelURL.path) {
+            try fileManager.moveItem(at: legacyWhisperModelURL, to: whisperModelURL)
+        }
+
+        if hasLegacyCoreML && !fileManager.fileExists(atPath: whisperCoreMLModelDirectoryURL.path) {
+            try fileManager.moveItem(at: legacyWhisperCoreMLModelDirectoryURL, to: whisperCoreMLModelDirectoryURL)
         }
     }
 

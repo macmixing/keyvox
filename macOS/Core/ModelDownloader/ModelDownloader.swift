@@ -87,7 +87,8 @@ class ModelDownloader: ObservableObject {
 
         let appSupportRootURL: URL
         if let modelURLOverride {
-            let modelsRootURL = modelURLOverride.deletingLastPathComponent()
+            let whisperDirectoryURL = modelURLOverride.deletingLastPathComponent()
+            let modelsRootURL = whisperDirectoryURL.deletingLastPathComponent()
             appSupportRootURL = modelsRootURL.deletingLastPathComponent()
             self.modelURLProvider = { modelURLOverride }
         } else {
@@ -97,6 +98,7 @@ class ModelDownloader: ObservableObject {
             self.modelURLProvider = {
                 appSupportRootURL
                     .appendingPathComponent("Models", isDirectory: true)
+                    .appendingPathComponent("whisper", isDirectory: true)
                     .appendingPathComponent("ggml-base.bin", isDirectory: false)
             }
         }
@@ -105,6 +107,7 @@ class ModelDownloader: ObservableObject {
             fileManager: fileManager,
             appSupportRootURL: appSupportRootURL
         )
+        try? self.modelLocator.migrateLegacyWhisperInstallIfNeeded()
 
         if refreshOnInit {
             refreshModelStatus()
@@ -232,9 +235,15 @@ class ModelDownloader: ObservableObject {
             try? fileManager.removeItem(at: modelLocator.stagingRootURL(for: modelID))
         }
 
-        DispatchQueue.main.async {
+        let resetState = {
             self.updateDownloadState(DictationModelInstallState(), for: modelID)
             self.refreshModelStatus()
+        }
+
+        if Thread.isMainThread {
+            resetState()
+        } else {
+            DispatchQueue.main.async(execute: resetState)
         }
     }
 

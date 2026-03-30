@@ -9,6 +9,7 @@ final class ModelDownloaderTests: XCTestCase {
         try withTemporaryDirectory { dir in
             let modelURL = dir
                 .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("whisper", isDirectory: true)
                 .appendingPathComponent("ggml-base.bin")
             try writeBytes(count: 12, to: modelURL)
 
@@ -27,6 +28,7 @@ final class ModelDownloaderTests: XCTestCase {
         try withTemporaryDirectory { dir in
             let modelURL = dir
                 .appendingPathComponent("Models", isDirectory: true)
+                .appendingPathComponent("whisper", isDirectory: true)
                 .appendingPathComponent("ggml-base.bin")
             try writeBytes(count: 12, to: modelURL)
 
@@ -436,6 +438,7 @@ final class ModelDownloaderTests: XCTestCase {
     ) -> ModelDownloader {
         let modelURL = directory
             .appendingPathComponent("Models", isDirectory: true)
+            .appendingPathComponent("whisper", isDirectory: true)
             .appendingPathComponent("ggml-base.bin")
 
         return ModelDownloader(

@@ -3,7 +3,24 @@ import XCTest
 @testable import KeyVox
 
 final class InstalledDictationModelLocatorTests: XCTestCase {
-    func testWhisperModelPathPreservesExistingRootLocation() throws {
+    func testWhisperModelPathResolvesInsideWhisperFolder() throws {
+        let tempDirectoryURL = try makeTemporaryDirectory()
+        defer { removeTemporaryDirectory(tempDirectoryURL) }
+
+        let locator = InstalledDictationModelLocator(
+            fileManager: .default,
+            appSupportRootURL: tempDirectoryURL
+        )
+        try FileManager.default.createDirectory(at: locator.whisperModelDirectoryURL, withIntermediateDirectories: true)
+        try Data([0x01]).write(to: locator.whisperModelURL, options: .atomic)
+
+        XCTAssertEqual(locator.whisperModelURL.lastPathComponent, "ggml-base.bin")
+        XCTAssertEqual(locator.whisperModelURL.deletingLastPathComponent(), locator.whisperModelDirectoryURL)
+        XCTAssertEqual(locator.whisperModelDirectoryURL.deletingLastPathComponent(), locator.modelsRootURL)
+        XCTAssertEqual(locator.resolvedWhisperModelPath(), locator.whisperModelURL.path)
+    }
+
+    func testWhisperMigrationMovesLegacyFilesIntoWhisperFolder() throws {
         let tempDirectoryURL = try makeTemporaryDirectory()
         defer { removeTemporaryDirectory(tempDirectoryURL) }
 
@@ -12,11 +29,14 @@ final class InstalledDictationModelLocatorTests: XCTestCase {
             appSupportRootURL: tempDirectoryURL
         )
         try FileManager.default.createDirectory(at: locator.modelsRootURL, withIntermediateDirectories: true)
-        try Data([0x01]).write(to: locator.whisperModelURL, options: .atomic)
+        try Data([0x01]).write(to: locator.legacyWhisperModelURL, options: .atomic)
+        try FileManager.default.createDirectory(at: locator.legacyWhisperCoreMLModelDirectoryURL, withIntermediateDirectories: true)
 
-        XCTAssertEqual(locator.whisperModelURL.lastPathComponent, "ggml-base.bin")
-        XCTAssertEqual(locator.whisperModelURL.deletingLastPathComponent(), locator.modelsRootURL)
         XCTAssertEqual(locator.resolvedWhisperModelPath(), locator.whisperModelURL.path)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: locator.whisperModelURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: locator.whisperCoreMLModelDirectoryURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: locator.legacyWhisperModelURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: locator.legacyWhisperCoreMLModelDirectoryURL.path))
     }
 
     func testParakeetModelDirectoryResolvesInsideModelsFolder() throws {
