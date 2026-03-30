@@ -52,6 +52,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "42 - 7 = 35")
     }
 
+    func testNormalizesFullySpelledOutMultiplicationEquationWithCompoundResult() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Five times five equals forty five.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "5 * 5 = 45")
+    }
+
     func testNormalizesPercentEqualsAndExponentPhrases() {
         let processor = TranscriptionPostProcessor()
 

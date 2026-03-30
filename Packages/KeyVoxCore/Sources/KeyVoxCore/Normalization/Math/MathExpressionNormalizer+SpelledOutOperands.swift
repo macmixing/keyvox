@@ -240,12 +240,38 @@ extension MathExpressionNormalizer {
             return nil
         }
 
-        let doubleValue = number.doubleValue
+        let resolvedNumber = resolvedSpelledOutNumber(from: tokens, direct: number)
+        let doubleValue = resolvedNumber.doubleValue
         if doubleValue.rounded(.towardZero) == doubleValue {
-            return String(number.intValue)
+            return String(resolvedNumber.intValue)
         }
 
-        return number.stringValue
+        return resolvedNumber.stringValue
+    }
+
+    private func resolvedSpelledOutNumber(from tokens: [WordToken], direct number: NSNumber) -> NSNumber {
+        guard tokens.count == 2 else { return number }
+
+        let normalizedTokens = tokens.map {
+            $0.text
+                .lowercased()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        guard let lhs = Self.spellOutNumberParser.number(from: normalizedTokens[0]),
+              let rhs = Self.spellOutNumberParser.number(from: normalizedTokens[1]) else {
+            return number
+        }
+
+        let whole = number.intValue
+        let lhsValue = lhs.intValue
+        let rhsValue = rhs.intValue
+
+        guard whole == lhsValue * 100 + rhsValue else {
+            return number
+        }
+
+        return NSNumber(value: lhsValue + rhsValue)
     }
 
     private func existingMathOperandExistsBefore(phraseRange: NSRange, nsText: NSString) -> Bool {
