@@ -13,6 +13,15 @@ public struct ColonNormalizer {
         pattern: #"\s{2,}"#,
         options: []
     )
+    private static let newlineCodeUnit = utf16CodeUnit(for: "\n")
+    private static let periodCodeUnit = utf16CodeUnit(for: ".")
+    private static let exclamationCodeUnit = utf16CodeUnit(for: "!")
+    private static let questionCodeUnit = utf16CodeUnit(for: "?")
+
+    private static func utf16CodeUnit(for character: Character) -> unichar {
+        let text = String(character)
+        return text.utf16[text.utf16.startIndex]
+    }
 
     public init() {}
 
@@ -308,7 +317,10 @@ public struct ColonNormalizer {
 
         while index >= 0 {
             let scalar = text.character(at: index)
-            if scalar == 10 || scalar == 46 || scalar == 33 || scalar == 63 {
+            if scalar == Self.newlineCodeUnit ||
+                scalar == Self.periodCodeUnit ||
+                scalar == Self.exclamationCodeUnit ||
+                scalar == Self.questionCodeUnit {
                 return index + 1
             }
             if index == 0 { break }
@@ -324,7 +336,10 @@ public struct ColonNormalizer {
 
         while index < text.length {
             let scalar = text.character(at: index)
-            if scalar == 10 || scalar == 46 || scalar == 33 || scalar == 63 {
+            if scalar == Self.newlineCodeUnit ||
+                scalar == Self.periodCodeUnit ||
+                scalar == Self.exclamationCodeUnit ||
+                scalar == Self.questionCodeUnit {
                 return index
             }
             index += 1
