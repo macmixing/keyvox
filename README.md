@@ -57,11 +57,11 @@ https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 macOS
 - macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
-- ~190 MB+ disk space depending on the installed dictation model
+- ~190–480 MB of disk space, depending on the installed dictation model
 
 iOS
 - iOS 18.6 or later
-- ~190 MB+ disk space depending on the installed dictation model
+- ~190–480 MB of disk space, depending on the installed dictation model
 
 ### Install and Run
 
