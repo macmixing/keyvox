@@ -278,12 +278,16 @@ struct SettingsTabView: View {
                     .background(.white.opacity(0.4))
 
                 VStack(alignment: .leading, spacing: 14) {
-                    modelRow(for: .whisperBase, provider: .whisper)
-                    Divider()
-                        .background(.white.opacity(0.22))
-                        .padding(.leading, 12)
-                        .padding(.trailing, 12)
-                    modelRow(for: .parakeetTdtV3, provider: .parakeet)
+                    ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
+                        modelRow(for: modelID, provider: modelID.provider)
+
+                        if index < DictationModelID.allCases.count - 1 {
+                            Divider()
+                                .background(.white.opacity(0.22))
+                                .padding(.leading, 12)
+                                .padding(.trailing, 12)
+                        }
+                    }
                 }
             }
         }

@@ -9,21 +9,8 @@ enum KeyboardModelAvailability {
         }
 
         let modelsDirectory = containerURL.appendingPathComponent("Models", isDirectory: true)
-        let activeProvider = activeProviderRawValue()
-
-        switch activeProvider {
-        case LocalProvider.parakeet.rawValue:
-            return parakeetIsInstalled(in: modelsDirectory, fileManager: fileManager) || whisperIsInstalled(in: modelsDirectory, fileManager: fileManager)
-        case LocalProvider.whisper.rawValue:
-            return whisperIsInstalled(in: modelsDirectory, fileManager: fileManager) || parakeetIsInstalled(in: modelsDirectory, fileManager: fileManager)
-        default:
-            return whisperIsInstalled(in: modelsDirectory, fileManager: fileManager) || parakeetIsInstalled(in: modelsDirectory, fileManager: fileManager)
-        }
-    }
-
-    private static func activeProviderRawValue() -> String? {
-        UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)?
-            .string(forKey: "KeyVox.App.ActiveDictationProvider")
+        return whisperIsInstalled(in: modelsDirectory, fileManager: fileManager)
+            || parakeetIsInstalled(in: modelsDirectory, fileManager: fileManager)
     }
 
     private static func whisperIsInstalled(in modelsDirectory: URL, fileManager: FileManager) -> Bool {
@@ -50,10 +37,5 @@ enum KeyboardModelAvailability {
             && fileManager.fileExists(atPath: configURL.path)
             && fileManager.fileExists(atPath: vocabURL.path)
             && fileManager.fileExists(atPath: jointModelURL.path)
-    }
-
-    private enum LocalProvider: String {
-        case whisper
-        case parakeet
     }
 }

@@ -23,6 +23,15 @@ enum DictationModelID: String, CaseIterable, Identifiable, Codable, Sendable {
             return "Parakeet"
         }
     }
+
+    nonisolated var provider: AppSettingsStore.ActiveDictationProvider {
+        switch self {
+        case .whisperBase:
+            return .whisper
+        case .parakeetTdtV3:
+            return .parakeet
+        }
+    }
 }
 
 enum DictationModelInstallLayout: Equatable, Sendable {
