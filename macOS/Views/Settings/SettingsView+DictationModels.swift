@@ -20,7 +20,7 @@ private struct DictationModelsCard: View {
                 SettingsRow(
                     icon: "cpu",
                     title: "Active Model",
-                    subtitle: "Choose the dictation backend and manage installed models."
+                    subtitle: "Choose the active dictation model and manage installs."
                 ) {
                     if selectableProviders.isEmpty {
                         Picker("", selection: unavailableProviderSelection) {

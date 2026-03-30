@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import XCTest
 @testable import KeyVox
 
@@ -122,8 +123,11 @@ final class InstalledDictationModelLocatorTests: XCTestCase {
                 at: url.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            try Data([0x01]).write(to: url, options: .atomic)
-            hashes[artifact.relativePath] = artifact.expectedSHA256
+            let data = Data(artifact.relativePath.utf8)
+            try data.write(to: url, options: .atomic)
+            hashes[artifact.relativePath] = SHA256.hash(data: data)
+                .map { String(format: "%02x", $0) }
+                .joined()
         }
 
         let manifest = DictationModelInstallManifest(

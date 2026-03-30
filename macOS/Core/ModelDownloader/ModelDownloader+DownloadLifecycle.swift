@@ -1,8 +1,10 @@
 import Foundation
+import CryptoKit
 
 extension ModelDownloader {
     func handleDownloadCompletion(task: URLSessionDownloadTask, location: URL) {
         guard let activeDownload else { return }
+        guard taskTokensByID[task.taskIdentifier] == activeDownload.token else { return }
         guard let artifact = artifactsByTaskID[task.taskIdentifier] else { return }
         debugLog("Download finished for task \(task.taskIdentifier): \(artifact.relativePath)")
 
@@ -41,13 +43,34 @@ extension ModelDownloader {
                 "Completed \(self.completedTaskIDs.count)/\(activeDownload.descriptor.artifacts.count) artifacts for \(activeDownload.modelID.rawValue)"
             )
             if allDone {
-                do {
-                    self.debugLog("Finalizing install for \(activeDownload.modelID.rawValue)")
-                    try self.finalizeDownloadedModel(activeDownload)
-                    self.completeSuccessfulDownload(for: activeDownload.modelID)
-                } catch {
-                    self.debugLog("Finalization failed for \(activeDownload.modelID.rawValue): \(error)")
-                    self.failActiveDownload(for: activeDownload.modelID, message: Self.userFacingErrorMessage(for: error))
+                let completedDownload = activeDownload
+                let appSupportRootURL = self.modelLocator.appSupportRootURL
+                let modelURL = self.modelURL
+                let coreMLZipURL = self.coreMLZipURL
+                let minGGMLBytes = self.minGGMLBytes
+                self.debugLog("Finalizing install for \(completedDownload.modelID.rawValue)")
+
+                Task { [weak self] in
+                    guard let self else { return }
+
+                    do {
+                        try await Self.finalizeDownloadedModel(
+                            completedDownload,
+                            appSupportRootURL: appSupportRootURL,
+                            modelURL: modelURL,
+                            coreMLZipURL: coreMLZipURL,
+                            minGGMLBytes: minGGMLBytes
+                        )
+                        guard self.activeDownload?.token == completedDownload.token else { return }
+                        self.completeSuccessfulDownload(for: completedDownload.modelID)
+                    } catch {
+                        guard self.activeDownload?.token == completedDownload.token else { return }
+                        self.debugLog("Finalization failed for \(completedDownload.modelID.rawValue): \(error)")
+                        self.failActiveDownload(
+                            for: completedDownload.modelID,
+                            message: Self.userFacingErrorMessage(for: error)
+                        )
+                    }
                 }
             }
         }
@@ -57,6 +80,7 @@ extension ModelDownloader {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             guard let activeDownload = self.activeDownload else { return }
+            guard self.taskTokensByID[id] == activeDownload.token else { return }
             let previousTotal = self.taskProgress[id]?.total ?? 0
             let normalizedTotal = total > 0 ? total : max(previousTotal, 1)
             let normalizedWritten = max(written, 0)
@@ -78,6 +102,7 @@ extension ModelDownloader {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             guard let activeDownload = self.activeDownload else { return }
+            guard self.taskTokensByID[task.taskIdentifier] == activeDownload.token else { return }
             self.failActiveDownload(
                 for: activeDownload.modelID,
                 message: Self.userFacingErrorMessage(for: error)
@@ -144,18 +169,53 @@ extension ModelDownloader {
         try fileManager.moveItem(at: location, to: destinationURL)
     }
 
-    private func finalizeDownloadedModel(_ activeDownload: ActiveDownload) throws {
-        switch activeDownload.descriptor.installLayout {
-        case .legacyWhisperBase:
-            guard validateWhisperModelFiles() else {
-                throw NSError(domain: "ModelDownloader", code: 1003)
+    private static func finalizeDownloadedModel(
+        _ activeDownload: ActiveDownload,
+        appSupportRootURL: URL,
+        modelURL: URL,
+        coreMLZipURL: URL,
+        minGGMLBytes: Int64
+    ) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let fileManager = FileManager.default
+                    let modelLocator = InstalledDictationModelLocator(
+                        fileManager: fileManager,
+                        appSupportRootURL: appSupportRootURL
+                    )
+
+                    switch activeDownload.descriptor.installLayout {
+                    case .legacyWhisperBase:
+                        guard Self.validateWhisperModelFiles(
+                            fileManager: fileManager,
+                            modelURL: modelURL,
+                            coreMLZipURL: coreMLZipURL,
+                            minGGMLBytes: minGGMLBytes
+                        ) else {
+                            throw NSError(domain: "ModelDownloader", code: 1003)
+                        }
+                    case .subdirectory:
+                        try Self.finalizeStrictManifestModel(
+                            activeDownload,
+                            fileManager: fileManager,
+                            modelLocator: modelLocator
+                        )
+                    }
+
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
-        case .subdirectory:
-            try finalizeStrictManifestModel(activeDownload)
         }
     }
 
-    private func finalizeStrictManifestModel(_ activeDownload: ActiveDownload) throws {
+    private static func finalizeStrictManifestModel(
+        _ activeDownload: ActiveDownload,
+        fileManager: FileManager,
+        modelLocator: InstalledDictationModelLocator
+    ) throws {
         var hashes: [String: String] = [:]
 
         for artifact in activeDownload.descriptor.artifacts {
@@ -167,12 +227,11 @@ extension ModelDownloader {
                 throw NSError(domain: "ModelDownloader", code: 2001)
             }
 
-            let actualHash = try sha256Hex(forFileAt: stagedURL)
+            let actualHash = try Self.sha256Hex(forFileAt: stagedURL)
             guard actualHash.lowercased() == artifact.expectedSHA256.lowercased() else {
                 throw NSError(domain: "ModelDownloader", code: 2002)
             }
             hashes[artifact.relativePath] = actualHash.lowercased()
-            debugLog("Verified SHA-256 for \(artifact.relativePath)")
         }
 
         guard let manifestFilename = activeDownload.descriptor.manifestFilename else {
@@ -183,11 +242,11 @@ extension ModelDownloader {
             version: DictationModelInstallManifest.currentVersion,
             artifactSHA256ByRelativePath: hashes
         )
-        debugLog("Writing install manifest for \(activeDownload.modelID.rawValue)")
-        try writeInstallManifest(
+        try Self.writeInstallManifest(
             manifest,
             to: modelLocator.stagingRootURL(for: activeDownload.modelID)
-                .appendingPathComponent(manifestFilename, isDirectory: false)
+                .appendingPathComponent(manifestFilename, isDirectory: false),
+            using: fileManager
         )
 
         let installRootURL = modelLocator.installRootURL(for: activeDownload.modelID)
@@ -201,21 +260,49 @@ extension ModelDownloader {
             at: installRootURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        debugLog("Promoting staged install for \(activeDownload.modelID.rawValue)")
         try fileManager.moveItem(at: stagingRootURL, to: installRootURL)
 
-        guard validateStrictManifestModel(activeDownload.modelID) else {
+        guard modelLocator.strictlyValidatedInstallRootURL(for: activeDownload.modelID) != nil else {
             let validationError = NSError(domain: "ModelDownloader", code: 2004)
             if fileManager.fileExists(atPath: installRootURL.path) {
-                do {
-                    try fileManager.removeItem(at: installRootURL)
-                } catch {
-                    debugLog("Failed to remove invalid install for \(activeDownload.modelID.rawValue): \(error)")
-                }
+                try? fileManager.removeItem(at: installRootURL)
             }
             throw validationError
         }
-        debugLog("Strict manifest validation passed for \(activeDownload.modelID.rawValue)")
+    }
+
+    private static func validateWhisperModelFiles(
+        fileManager: FileManager,
+        modelURL: URL,
+        coreMLZipURL: URL,
+        minGGMLBytes: Int64
+    ) -> Bool {
+        guard fileManager.fileExists(atPath: modelURL.path) else { return false }
+        if let attributes = try? fileManager.attributesOfItem(atPath: modelURL.path),
+           let size = attributes[.size] as? Int64,
+           size < minGGMLBytes {
+            return false
+        }
+
+        return !fileManager.fileExists(atPath: coreMLZipURL.path)
+    }
+
+    private static func writeInstallManifest(
+        _ manifest: DictationModelInstallManifest,
+        to url: URL,
+        using fileManager: FileManager
+    ) throws {
+        try fileManager.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let data = try JSONEncoder().encode(manifest)
+        try data.write(to: url, options: .atomic)
+    }
+
+    private static func sha256Hex(forFileAt url: URL) throws -> String {
+        let digest = SHA256.hash(data: try Data(contentsOf: url, options: .mappedIfSafe))
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 
     private func completeSuccessfulDownload(for modelID: DictationModelID) {
@@ -279,6 +366,7 @@ extension ModelDownloader {
 
         taskProgress.removeAll()
         artifactsByTaskID.removeAll()
+        taskTokensByID.removeAll()
         completedTaskIDs.removeAll()
         activeDownloadSession = nil
         activeDownload = nil

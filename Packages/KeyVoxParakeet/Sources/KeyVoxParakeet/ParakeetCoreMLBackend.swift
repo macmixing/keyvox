@@ -309,8 +309,20 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
                 if detectedLanguageCode == nil {
                     detectedLanguageCode = languageCode
                 }
+                if currentTimeIndex == lastEmissionTimeIndex {
+                    emissionsAtCurrentTimeIndex += 1
+                } else {
+                    lastEmissionTimeIndex = currentTimeIndex
+                    emissionsAtCurrentTimeIndex = 1
+                }
             case .control("nospeech")?:
                 noSpeechProbability = max(noSpeechProbability ?? 0, decision.tokenProbability)
+                if currentTimeIndex == lastEmissionTimeIndex {
+                    emissionsAtCurrentTimeIndex += 1
+                } else {
+                    lastEmissionTimeIndex = currentTimeIndex
+                    emissionsAtCurrentTimeIndex = 1
+                }
             case .control("endoftext")?:
                 timeIndex = encoderFrames.frameCount
                 continue
@@ -324,7 +336,14 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
                     lastEmissionTimeIndex = currentTimeIndex
                     emissionsAtCurrentTimeIndex = 1
                 }
-            case .control?, nil:
+            case .control?:
+                if currentTimeIndex == lastEmissionTimeIndex {
+                    emissionsAtCurrentTimeIndex += 1
+                } else {
+                    lastEmissionTimeIndex = currentTimeIndex
+                    emissionsAtCurrentTimeIndex = 1
+                }
+            case nil:
                 break
             }
 

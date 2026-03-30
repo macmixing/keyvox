@@ -169,9 +169,12 @@ final class ModelDownloaderTests: XCTestCase {
         let descriptor = downloader.modelLocator.descriptor(for: .whisperBase)
 
         downloader.activeDownload = ModelDownloader.ActiveDownload(
+            token: UUID(),
             modelID: .whisperBase,
             descriptor: descriptor
         )
+        downloader.taskTokensByID[1] = downloader.activeDownload?.token
+        downloader.taskTokensByID[2] = downloader.activeDownload?.token
         downloader.completedTaskIDs = [1, 2]
         downloader.taskProgress[1] = (100, 100)
         downloader.taskProgress[2] = (100, 100)
@@ -344,6 +347,7 @@ final class ModelDownloaderTests: XCTestCase {
 
         let task = URLSession(configuration: .ephemeral).dataTask(with: URL(string: "https://example.com")!)
         let error = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))
+        downloader.taskTokensByID[task.taskIdentifier] = downloader.activeDownload?.token
         downloader.handleDownloadFailure(task: task, error: error)
 
         try await waitForCondition {

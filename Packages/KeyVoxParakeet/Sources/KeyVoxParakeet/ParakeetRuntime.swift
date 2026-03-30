@@ -53,9 +53,9 @@ internal final class ParakeetRuntime {
     }
 
     func unload() {
-        let currentBackend = currentBackend()
+        let backendToUnload = currentBackend()
         invalidateCurrentRequest()
-        currentBackend?.unload()
+        backendToUnload?.unload()
         lock.lock()
         backend = nil
         lock.unlock()

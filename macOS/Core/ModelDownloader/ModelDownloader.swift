@@ -8,7 +8,8 @@ class ModelDownloader: ObservableObject {
     typealias EnvironmentProvider = () -> [String: String]
     typealias PostInstallPreparation = (DictationModelID) async throws -> Void
 
-    struct ActiveDownload {
+    struct ActiveDownload: Sendable {
+        let token: UUID
         let modelID: DictationModelID
         let descriptor: DictationModelDescriptor
     }
@@ -38,6 +39,7 @@ class ModelDownloader: ObservableObject {
     var activeDownloadSession: ModelDownloadSessioning?
     var activeDownload: ActiveDownload?
     var artifactsByTaskID: [Int: DictationModelArtifact] = [:]
+    var taskTokensByID: [Int: UUID] = [:]
     var completedTaskIDs: Set<Int> = []
 
     static let defaultRequiredDownloadBytes: Int64 = 220_000_000
@@ -199,9 +201,11 @@ class ModelDownloader: ObservableObject {
             return
         }
 
-        activeDownload = ActiveDownload(modelID: modelID, descriptor: descriptor)
+        let downloadToken = UUID()
+        activeDownload = ActiveDownload(token: downloadToken, modelID: modelID, descriptor: descriptor)
         taskProgress.removeAll()
         artifactsByTaskID.removeAll()
+        taskTokensByID.removeAll()
         completedTaskIDs.removeAll()
         updateDownloadState(
             DictationModelInstallState(
@@ -221,6 +225,7 @@ class ModelDownloader: ObservableObject {
         for artifact in descriptor.artifacts {
             let task = session.downloadTask(with: artifact.remoteURL)
             artifactsByTaskID[task.taskIdentifier] = artifact
+            taskTokensByID[task.taskIdentifier] = downloadToken
             taskProgress[task.taskIdentifier] = (0, max(artifact.progressTotalBytes, 1))
             debugLog("Queued task \(task.taskIdentifier) for \(artifact.relativePath)")
             task.resume()

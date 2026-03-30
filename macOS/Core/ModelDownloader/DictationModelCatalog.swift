@@ -1,25 +1,25 @@
 import Foundation
 
-enum DictationModelID: String, CaseIterable, Identifiable {
+enum DictationModelID: String, CaseIterable, Identifiable, Sendable {
     case whisperBase = "whisper-base"
     case parakeetTdtV3 = "parakeet-tdt-v3"
 
     var id: String { rawValue }
 }
 
-enum DictationModelInstallLayout: Equatable {
+enum DictationModelInstallLayout: Equatable, Sendable {
     case legacyWhisperBase
     case subdirectory(String)
 }
 
-struct DictationModelArtifact: Equatable {
+struct DictationModelArtifact: Equatable, Sendable {
     let relativePath: String
     let remoteURL: URL
     let expectedSHA256: String
     let progressTotalBytes: Int64
 }
 
-struct DictationModelDescriptor: Equatable {
+struct DictationModelDescriptor: Equatable, Sendable {
     let id: DictationModelID
     let displayName: String
     let installLayout: DictationModelInstallLayout

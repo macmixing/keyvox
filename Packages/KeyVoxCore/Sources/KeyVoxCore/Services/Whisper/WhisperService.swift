@@ -139,6 +139,6 @@ public class WhisperService: ObservableObject, DictationProvider {
             usedDictionaryHintPrompt: usedDictionaryHintPrompt
         )
         lastResultWasLikelyNoSpeech = false
-            completion(nil)
+        completion(nil)
     }
 }

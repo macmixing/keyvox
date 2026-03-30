@@ -7,8 +7,7 @@ extension ParakeetService {
     }
 
     public func unloadModel() {
-        transcriptionTask?.cancel()
-        transcriptionTask = nil
+        cancelTranscription()
         warmupHandle?.task.cancel()
         warmupHandle = nil
         parakeet?.unload()
