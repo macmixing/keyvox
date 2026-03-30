@@ -135,8 +135,12 @@ final class InstalledDictationModelLocatorTests: XCTestCase {
             artifactSHA256ByRelativePath: hashes
         )
         let manifestData = try JSONEncoder().encode(manifest)
+        let manifestURL = try XCTUnwrap(
+            locator.manifestURL(for: modelID),
+            "manifestURL should not be nil for \(modelID.rawValue)"
+        )
         try manifestData.write(
-            to: locator.manifestURL(for: modelID)!,
+            to: manifestURL,
             options: .atomic
         )
     }

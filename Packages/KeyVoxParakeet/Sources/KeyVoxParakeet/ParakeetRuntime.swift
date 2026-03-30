@@ -47,18 +47,13 @@ internal final class ParakeetRuntime {
     }
 
     func cancelCurrentTranscription() {
-        let backend = currentBackend()
-        invalidateCurrentRequest()
-        backend?.cancelCurrentTranscription()
+        let backendToCancel = invalidateCurrentRequestAndCaptureBackend(clearBackend: false)
+        backendToCancel?.cancelCurrentTranscription()
     }
 
     func unload() {
-        let backendToUnload = currentBackend()
-        invalidateCurrentRequest()
+        let backendToUnload = invalidateCurrentRequestAndCaptureBackend(clearBackend: true)
         backendToUnload?.unload()
-        lock.lock()
-        backend = nil
-        lock.unlock()
     }
 
     private func failForMissingBackend(requestID: UUID) throws -> ParakeetTranscriptionResult {
@@ -80,6 +75,17 @@ internal final class ParakeetRuntime {
         lock.lock()
         activeRequestID = UUID()
         lock.unlock()
+    }
+
+    private func invalidateCurrentRequestAndCaptureBackend(clearBackend: Bool) -> (any ParakeetRuntimeBackend)? {
+        lock.lock()
+        defer { lock.unlock() }
+        activeRequestID = UUID()
+        let capturedBackend = backend
+        if clearBackend {
+            backend = nil
+        }
+        return capturedBackend
     }
 
     private func isCurrentRequest(_ requestID: UUID) -> Bool {

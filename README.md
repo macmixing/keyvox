@@ -12,9 +12,9 @@
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
 </p>
 
-KeyVox is a local-first macOS and iPhone AI-powered dictation app. 
+KeyVox is a local-first macOS and iPhone AI-powered dictation app with on-device Whisper and Parakeet transcription models. 
 
-KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe with Whisper AI on-device, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
+KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe on-device with Whisper or Parakeet, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
 
 KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into a mobile experience, with on-device transcription, post-processing,  shared dictionary via iCloud and synced preferences.
 
@@ -25,7 +25,7 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 ## Why KeyVox
 
 - 🚀 Fast local transcription (no cloud transcription path)
-- 🌍 Uses the Whisper multilingual base model (`ggml-base`)
+- 🌍 Includes on-device Whisper and Parakeet transcription models
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
@@ -56,11 +56,11 @@ https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 macOS
 - macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
-- ~190 MB disk space for the base model
+- ~190 MB+ disk space depending on the installed dictation model
 
 iOS
 - iOS 18.6 or later
-- ~190 MB disk space for the base model
+- ~190 MB+ disk space depending on the installed dictation model
 
 ### Install and Run
 
@@ -68,7 +68,7 @@ iOS
 
 1. Download the `.dmg` from the [latest release](https://github.com/macmixing/keyvox/releases/latest).
 2. Open the DMG and drag `KeyVox.app` to `Applications`.
-3. Launch KeyVox and complete onboarding (Microphone, Accessibility, model setup).
+3. Launch KeyVox and complete onboarding (Microphone, Accessibility, dictation model setup).
 
 ### Build From Source (macOS/iOS):
 
@@ -105,8 +105,8 @@ iOS
   Verify Accessibility permission in macOS System Settings or Keyboard Settings on iOS.
 - 🎤 No input audio:
   Verify microphone permission and selected input in Settings on macOS or microphone access in iOS Settings.
-- 📦 Model missing:
-  Open Settings and re-run model setup/download on macOS, reinstall on iOS.
+- 📦 Dictation model missing:
+  Open Settings and re-run dictation model setup/download on macOS, reinstall on iOS.
 
 ## Documentation
 

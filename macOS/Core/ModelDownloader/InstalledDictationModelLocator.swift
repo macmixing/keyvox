@@ -38,7 +38,6 @@ struct InstalledDictationModelLocator {
     }
 
     func resolvedWhisperModelPath() -> String? {
-        try? migrateLegacyWhisperInstallIfNeeded()
         return resolvedInstallRootURL(for: .whisperBase)?.path
     }
 
@@ -79,6 +78,9 @@ struct InstalledDictationModelLocator {
         artifactURL(rootURL: stagingRootURL(for: modelID), relativePath: relativePath)
     }
 
+    /// Fast install resolver used on hot paths such as model readiness checks.
+    /// For subdirectory installs this validates existence, manifest presence, and
+    /// manifest hash entries, but not the installed file contents themselves.
     func resolvedInstallRootURL(for modelID: DictationModelID) -> URL? {
         let descriptor = descriptor(for: modelID)
 

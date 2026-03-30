@@ -33,8 +33,7 @@ public class WhisperService: ObservableObject, DictationProvider {
     }
 
     public var isModelReady: Bool {
-        guard let modelPath = resolvedModelPath()?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !modelPath.isEmpty else {
+        guard let modelPath = resolvedModelPath() else {
             return false
         }
 
@@ -60,7 +59,13 @@ public class WhisperService: ObservableObject, DictationProvider {
     }
 
     func resolvedModelPath() -> String? {
-        modelPathResolver()
+        guard let modelPath = modelPathResolver()?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !modelPath.isEmpty else {
+            return nil
+        }
+
+        return modelPath
     }
 
     func beginTranscriptionRequest() -> UUID {
