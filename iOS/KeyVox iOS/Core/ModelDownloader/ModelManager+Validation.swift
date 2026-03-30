@@ -1,126 +1,119 @@
 import Foundation
 
 extension ModelManager {
-    func resolvedPaths() -> ResolvedPaths? {
-        guard let modelsDirectory = modelsDirectoryProvider(),
-              let ggmlModelURL = ggmlModelURLProvider(),
-              let coreMLZipURL = coreMLZipURLProvider(),
-              let coreMLDirectoryURL = coreMLDirectoryURLProvider(),
-              let manifestURL = manifestURLProvider() else {
-            return nil
+    func validatedState(for modelID: DictationModelID) -> ModelInstallState {
+        let descriptor = descriptorProvider(modelID)
+        guard let installRootURL = modelLocator.installRootURL(for: modelID),
+              let manifestURL = modelLocator.manifestURL(for: modelID) else {
+            return .failed(message: "App Group container unavailable.")
         }
 
-        return ResolvedPaths(
-            modelsDirectory: modelsDirectory,
-            ggmlModelURL: ggmlModelURL,
-            coreMLZipURL: coreMLZipURL,
-            coreMLDirectoryURL: coreMLDirectoryURL,
-            manifestURL: manifestURL
-        )
-    }
+        if modelID == .whisperBase {
+            _ = modelLocator.resolvedWhisperModelPath()
+        }
 
-    func validateInstall(paths: ResolvedPaths) -> InstallValidationResult {
-        let ggmlExists = fileManager.fileExists(atPath: paths.ggmlModelURL.path)
-        let coreMLDirectoryExists = fileManager.fileExists(atPath: paths.coreMLDirectoryURL.path)
-        let coreMLZipExists = fileManager.fileExists(atPath: paths.coreMLZipURL.path)
-        let manifestExists = fileManager.fileExists(atPath: paths.manifestURL.path)
-        let ggmlSize = fileSizeBytes(at: paths.ggmlModelURL)
-        Self.debugLog("""
-        validateInstall:
-          ggmlExists=\(ggmlExists)
-          ggmlSize=\(ggmlSize.map(String.init) ?? "nil")
-          minGGMLBytes=\(minGGMLBytes)
-          coreMLDirectoryExists=\(coreMLDirectoryExists)
-          coreMLZipExists=\(coreMLZipExists)
-          manifestExists=\(manifestExists)
-        """)
+        let installRootExists = fileManager.fileExists(atPath: installRootURL.path)
+        let manifestExists = fileManager.fileExists(atPath: manifestURL.path)
+        let artifactExistence = descriptor.artifacts.map { artifact in
+            modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath).map {
+                fileManager.fileExists(atPath: $0.path)
+            } ?? false
+        }
 
-        guard ggmlExists || coreMLDirectoryExists || coreMLZipExists || manifestExists else {
+        guard installRootExists || manifestExists || artifactExistence.contains(true) else {
             return .notInstalled
         }
 
-        guard ggmlExists else {
-            return .failed(message: "Model install is incomplete. Missing ggml-base.bin.")
-        }
-
-        guard let ggmlSize, ggmlSize >= minGGMLBytes else {
-            return .failed(message: "Model install is incomplete. ggml-base.bin is missing or undersized.")
-        }
-
-        guard coreMLDirectoryExists else {
-            return .failed(message: "Model install is incomplete. Missing ggml-base-encoder.mlmodelc.")
-        }
-
-        guard !coreMLZipExists else {
-            return .failed(message: "Model install is incomplete. Core ML zip cleanup did not finish.")
+        guard installRootExists else {
+            return .failed(message: "Model install is incomplete.")
         }
 
         guard manifestExists else {
-            return .failed(message: "Model install is incomplete. Missing install manifest.")
+            return .failed(message: "Model install is incomplete.")
         }
 
+        let manifest: DictationModelInstallManifest
         do {
-            let manifest = try readManifest(from: paths.manifestURL)
-            Self.debugLog("""
-            validateInstall: manifest
-              version=\(manifest.version)
-              ggmlSHA=\(manifest.ggmlSHA256)
-              coreMLZipSHA=\(manifest.coreMLZipSHA256)
-            """)
-            guard ModelInstallManifest.supportedVersions.contains(manifest.version) else {
-                return .failed(message: "Model install manifest version is not supported.")
-            }
-            guard manifest.ggmlSHA256 == expectedGGMLSHA256 else {
-                return .failed(message: "Model install manifest does not match the expected GGML artifact.")
-            }
-            guard manifest.coreMLZipSHA256 == expectedCoreMLZipSHA256 else {
-                return .failed(message: "Model install manifest does not match the expected Core ML archive.")
-            }
-            if let structureIssue = Self.validateExtractedCoreMLBundle(at: paths.coreMLDirectoryURL, fileManager: fileManager) {
-                return .failed(message: structureIssue)
-            }
+            manifest = try readManifest(from: manifestURL)
         } catch {
             return .failed(message: "Model install manifest is missing or unreadable.")
+        }
+
+        guard DictationModelInstallManifest.supportedVersions.contains(manifest.version) else {
+            return .failed(message: "Model install manifest version is not supported.")
+        }
+
+        for artifact in descriptor.artifacts {
+            if artifact.retainedAfterInstall {
+                guard let artifactURL = modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath),
+                      fileManager.fileExists(atPath: artifactURL.path) else {
+                    return .failed(message: "Model install is incomplete.")
+                }
+            }
+
+            guard manifest.artifactSHA256ByRelativePath[artifact.relativePath]?.lowercased() == artifact.expectedSHA256.lowercased() else {
+                return .failed(message: "Model install manifest does not match the expected artifacts.")
+            }
+        }
+
+        if modelID == .whisperBase,
+           let coreMLDirectoryURL = modelLocator.artifactURL(
+                for: .whisperBase,
+                relativePath: "ggml-base-encoder.mlmodelc"
+           ),
+           let structureIssue = Self.validateExtractedCoreMLBundle(at: coreMLDirectoryURL, fileManager: fileManager) {
+            return .failed(message: structureIssue)
         }
 
         return .ready
     }
 
-    func ensureModelsDirectoryExists(_ modelsDirectory: URL) throws {
-        if !fileManager.fileExists(atPath: modelsDirectory.path) {
-            try fileManager.createDirectory(at: modelsDirectory, withIntermediateDirectories: true)
-            Self.debugLog("ensureModelsDirectoryExists: created \(modelsDirectory.path)")
+    func ensureModelsDirectoryExists() throws {
+        guard let modelsDirectoryURL = modelLocator.modelsDirectoryURL else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
+            try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
+            Self.debugLog("ensureModelsDirectoryExists: created \(modelsDirectoryURL.path)")
         }
     }
 
-    func ensureEnoughDiskSpace(in modelsDirectory: URL) throws {
-        guard let availableBytes = freeSpaceProvider(modelsDirectory) else { return }
+    func ensureEnoughDiskSpace(for modelID: DictationModelID) throws {
+        guard let modelsDirectoryURL = modelLocator.modelsDirectoryURL,
+              let availableBytes = freeSpaceProvider(modelsDirectoryURL) else {
+            return
+        }
+
+        let requiredBytes = descriptorProvider(modelID).requiredDownloadBytes
         Self.debugLog("""
         ensureEnoughDiskSpace:
+          modelID=\(modelID.rawValue)
           available=\(availableBytes)
-          required=\(requiredDownloadBytes)
+          required=\(requiredBytes)
         """)
-        guard availableBytes >= requiredDownloadBytes else {
-            throw ModelInstallError.insufficientDiskSpace(requiredBytes: requiredDownloadBytes, availableBytes: availableBytes)
+        guard availableBytes >= requiredBytes else {
+            throw ModelInstallError.insufficientDiskSpace(requiredBytes: requiredBytes, availableBytes: availableBytes)
         }
     }
 
-    func preflightDiskSpaceErrorMessage() -> String? {
-        guard let modelsDirectory = modelsDirectoryProvider(),
-              let availableBytes = freeSpaceProvider(modelsDirectory),
-              availableBytes < requiredDownloadBytes else {
+    func preflightDiskSpaceErrorMessage(for modelID: DictationModelID) -> String? {
+        guard let modelsDirectoryURL = modelLocator.modelsDirectoryURL,
+              let availableBytes = freeSpaceProvider(modelsDirectoryURL) else {
+            return nil
+        }
+
+        let requiredBytes = descriptorProvider(modelID).requiredDownloadBytes
+        guard availableBytes < requiredBytes else {
             return nil
         }
 
         return ModelInstallError
-            .insufficientDiskSpace(
-                requiredBytes: requiredDownloadBytes,
-                availableBytes: availableBytes
-            )
+            .insufficientDiskSpace(requiredBytes: requiredBytes, availableBytes: availableBytes)
             .localizedDescription
     }
 
-    func fileSizeBytes(at url: URL) -> Int64? {
-        (try? fileManager.attributesOfItem(atPath: url.path)[.size] as? Int64) ?? nil
+    func preflightDiskSpaceErrorMessage() -> String? {
+        preflightDiskSpaceErrorMessage(for: .whisperBase)
     }
 }

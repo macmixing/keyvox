@@ -30,6 +30,8 @@ final class TranscriptionManager: ObservableObject {
     let keyboardBridge: KeyVoxKeyboardBridge
     let interruptedCaptureRecoveryStore: InterruptedCaptureRecoveryStore
     private let modelPathProvider: () -> String?
+    private let modelAvailabilityProvider: () -> Bool
+    private let missingModelMessageProvider: () -> String
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
@@ -75,6 +77,8 @@ final class TranscriptionManager: ObservableObject {
         keyboardBridge: KeyVoxKeyboardBridge,
         interruptedCaptureRecoveryStore: InterruptedCaptureRecoveryStore,
         modelPathProvider: @escaping () -> String?,
+        modelAvailabilityProvider: (() -> Bool)? = nil,
+        missingModelMessageProvider: (() -> String)? = nil,
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
         capsLockEnabledProvider: @escaping () -> Bool = { false },
@@ -90,6 +94,17 @@ final class TranscriptionManager: ObservableObject {
         self.keyboardBridge = keyboardBridge
         self.interruptedCaptureRecoveryStore = interruptedCaptureRecoveryStore
         self.modelPathProvider = modelPathProvider
+        self.modelAvailabilityProvider = modelAvailabilityProvider ?? {
+            guard let path = modelPathProvider()?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .nilIfEmpty else {
+                return false
+            }
+            return FileManager.default.fileExists(atPath: path)
+        }
+        self.missingModelMessageProvider = missingModelMessageProvider ?? {
+            "Whisper model not found in App Group container."
+        }
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
@@ -233,7 +248,7 @@ final class TranscriptionManager: ObservableObject {
 
         refreshModelAvailability()
         guard isModelAvailable else {
-            lastErrorMessage = "Whisper model not found in App Group container."
+            lastErrorMessage = missingModelMessageProvider()
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
@@ -264,7 +279,7 @@ final class TranscriptionManager: ObservableObject {
 
                 let finalText = self.pendingPipelineOutputText ?? result.finalText
                 #if DEBUG
-                print("2. Whisper inference: \(String(format: "%.3f", result.inferenceDuration))s")
+                print("2. Provider inference: \(String(format: "%.3f", result.inferenceDuration))s")
                 #endif
                 self.pendingPipelineOutputText = nil
                 self.lastErrorMessage = nil
@@ -334,13 +349,7 @@ final class TranscriptionManager: ObservableObject {
     }
 
     func refreshModelAvailability() {
-        guard let path = modelPathProvider()?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !path.isEmpty else {
-            isModelAvailable = false
-            return
-        }
-
-        isModelAvailable = FileManager.default.fileExists(atPath: path)
+        isModelAvailable = modelAvailabilityProvider()
     }
 
     private func capturePipelineOutput(_ text: String) {
@@ -372,5 +381,11 @@ final class TranscriptionManager: ObservableObject {
         }
 
         return appendedCount == 0 ? "" : prompt
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
     }
 }

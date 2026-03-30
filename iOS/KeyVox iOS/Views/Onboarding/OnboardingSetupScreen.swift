@@ -20,6 +20,7 @@ struct OnboardingSetupScreen: View {
     @State private var previousKeyboardStepCompletion: Bool?
     @State private var displaysMicrophoneStepCompletion = false
     @State private var hasPendingMicrophoneStepCompletion = false
+    private let onboardingModelID: DictationModelID = .whisperBase
 
     @MainActor
     init(
@@ -174,14 +175,14 @@ struct OnboardingSetupScreen: View {
     }
 
     private var modelStepButton: OnboardingStepButton? {
-        switch modelManager.installState {
+        switch onboardingModelState {
         case .notInstalled:
             return OnboardingStepButton(
                 title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
                 isEnabled: downloadNetworkMonitor.isOnline && preflightModelStorageError == nil,
                 action: {
                     appHaptics.light()
-                    modelManager.downloadModel()
+                    modelManager.downloadModel(withID: onboardingModelID)
                 }
             )
         case .failed:
@@ -190,7 +191,7 @@ struct OnboardingSetupScreen: View {
                 isEnabled: true,
                 action: {
                     appHaptics.light()
-                    modelManager.repairModelIfNeeded()
+                    modelManager.repairModelIfNeeded(for: onboardingModelID)
                 }
             )
         case .downloading, .installing, .ready:
@@ -199,7 +200,7 @@ struct OnboardingSetupScreen: View {
     }
 
     private var modelStepDescription: String {
-        switch modelManager.installState {
+        switch onboardingModelState {
         case .notInstalled:
             return "OpenAI Whisper Base (~190 MB)"
         case .downloading(_, let phase), .installing(_, let phase):
@@ -311,31 +312,27 @@ struct OnboardingSetupScreen: View {
     }
 
     private var shouldShowCellularModelWarning: Bool {
-        downloadNetworkMonitor.isOnCellular && modelManager.installState == .notInstalled
+        downloadNetworkMonitor.isOnCellular && onboardingModelState == .notInstalled
     }
 
     private var shouldShowOfflineModelError: Bool {
-        !downloadNetworkMonitor.isOnline && modelManager.installState == .notInstalled
+        !downloadNetworkMonitor.isOnline && onboardingModelState == .notInstalled
     }
 
     private var preflightModelStorageError: String? {
-        guard modelManager.installState == .notInstalled else {
+        guard onboardingModelState == .notInstalled else {
             return nil
         }
 
-        return modelManager.preflightDiskSpaceErrorMessage()
-    }
-
-    private var formattedDownloadSize: String {
-        Self.megabytesString(for: modelManager.requiredDownloadBytes)
+        return modelManager.preflightDiskSpaceErrorMessage(for: onboardingModelID)
     }
 
     private var isKeyboardRequirementAvailable: Bool {
-        modelManager.installState == .ready && microphonePermissionController.status == .granted
+        onboardingModelState == .ready && microphonePermissionController.status == .granted
     }
 
     private var isModelStepCompleted: Bool {
-        modelManager.installState == .ready
+        onboardingModelState == .ready
     }
 
     private var isKeyboardStepCompleted: Bool {
@@ -343,12 +340,12 @@ struct OnboardingSetupScreen: View {
     }
 
     private var currentWarningToken: String? {
-        if case .failed = modelManager.installState {
-            return "model.failed"
+        if case .failed(let message) = onboardingModelState, shouldShowOfflineModelError == false {
+            return "model.error.\(message)"
         }
 
-        if let error = modelManager.errorMessage, shouldShowOfflineModelError == false {
-            return "model.error.\(error)"
+        if case .failed = onboardingModelState {
+            return "model.failed"
         }
 
         if let storageError = preflightModelStorageError, shouldShowOfflineModelError == false {
@@ -363,7 +360,7 @@ struct OnboardingSetupScreen: View {
     }
 
     private var modelDownloadProgress: Double? {
-        switch modelManager.installState {
+        switch onboardingModelState {
         case .downloading(let progress, _),
              .installing(let progress, _):
             return progress
@@ -372,9 +369,8 @@ struct OnboardingSetupScreen: View {
         }
     }
 
-    private static func megabytesString(for byteCount: Int64) -> String {
-        let megabytes = Double(byteCount) / 1_000_000
-        return String(format: "%.1f MB", megabytes)
+    private var onboardingModelState: ModelInstallState {
+        modelManager.state(for: onboardingModelID)
     }
 
     private func emitStepCompletionHaptic(previousCompletion: inout Bool?, newValue: Bool) {

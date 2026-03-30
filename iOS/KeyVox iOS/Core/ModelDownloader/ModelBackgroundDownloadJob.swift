@@ -1,20 +1,30 @@
 import Foundation
 
-enum ModelBackgroundArtifactKind: String, Codable, CaseIterable, Sendable {
-    case ggml
-    case coreMLZip
+struct ModelBackgroundTaskDescriptor: Equatable, Sendable {
+    let modelID: DictationModelID
+    let relativePath: String
 
     var taskDescription: String {
-        rawValue
+        "\(modelID.rawValue)::\(relativePath)"
     }
 
-    var downloadURL: URL {
-        switch self {
-        case .ggml:
-            return ModelDownloadURLs.ggmlBase
-        case .coreMLZip:
-            return ModelDownloadURLs.coreMLZip
+    init(modelID: DictationModelID, relativePath: String) {
+        self.modelID = modelID
+        self.relativePath = relativePath
+    }
+
+    init?(taskDescription: String) {
+        guard let separatorRange = taskDescription.range(of: "::") else {
+            return nil
         }
+
+        let modelIDRawValue = String(taskDescription[..<separatorRange.lowerBound])
+        guard let modelID = DictationModelID(rawValue: modelIDRawValue) else {
+            return nil
+        }
+
+        self.modelID = modelID
+        self.relativePath = String(taskDescription[separatorRange.upperBound...])
     }
 }
 
@@ -66,21 +76,29 @@ struct ModelBackgroundArtifactState: Codable, Sendable {
 }
 
 struct ModelBackgroundDownloadJob: Codable, Sendable {
-    var ggml: ModelBackgroundArtifactState
-    var coreMLZip: ModelBackgroundArtifactState
+    var modelID: DictationModelID
+    var artifactStatesByRelativePath: [String: ModelBackgroundArtifactState]
     var finalizationState: ModelBackgroundFinalizationState
     var lastErrorMessage: String?
     var updatedAt: Date
 
     init(
-        ggml: ModelBackgroundArtifactState = .init(),
-        coreMLZip: ModelBackgroundArtifactState = .init(),
+        modelID: DictationModelID,
+        artifactStatesByRelativePath: [String: ModelBackgroundArtifactState]? = nil,
         finalizationState: ModelBackgroundFinalizationState = .awaitingDownloads,
         lastErrorMessage: String? = nil,
         updatedAt: Date = .now
     ) {
-        self.ggml = ggml
-        self.coreMLZip = coreMLZip
+        self.modelID = modelID
+        if let artifactStatesByRelativePath {
+            self.artifactStatesByRelativePath = artifactStatesByRelativePath
+        } else {
+            self.artifactStatesByRelativePath = Dictionary(
+                uniqueKeysWithValues: DictationModelCatalog.descriptor(for: modelID).artifacts.map { artifact in
+                    (artifact.relativePath, ModelBackgroundArtifactState())
+                }
+            )
+        }
         self.finalizationState = finalizationState
         self.lastErrorMessage = lastErrorMessage
         self.updatedAt = updatedAt
@@ -90,47 +108,42 @@ struct ModelBackgroundDownloadJob: Codable, Sendable {
         updatedAt = .now
     }
 
-    func artifactState(for kind: ModelBackgroundArtifactKind) -> ModelBackgroundArtifactState {
-        switch kind {
-        case .ggml:
-            return ggml
-        case .coreMLZip:
-            return coreMLZip
-        }
+    func artifactState(for relativePath: String) -> ModelBackgroundArtifactState {
+        artifactStatesByRelativePath[relativePath] ?? .init()
     }
 
     mutating func setArtifactState(
         _ state: ModelBackgroundArtifactState,
-        for kind: ModelBackgroundArtifactKind
+        for relativePath: String
     ) {
-        switch kind {
-        case .ggml:
-            ggml = state
-        case .coreMLZip:
-            coreMLZip = state
-        }
+        artifactStatesByRelativePath[relativePath] = state
         touch()
     }
 
     var downloadProgressFraction: Double {
-        let ggmlCompleted = min(ggml.completedBytes, ggml.expectedBytes ?? ggml.completedBytes)
-        let coreMLCompleted = min(coreMLZip.completedBytes, coreMLZip.expectedBytes ?? coreMLZip.completedBytes)
-        let knownExpected = (ggml.expectedBytes ?? 0) + (coreMLZip.expectedBytes ?? 0)
-        if knownExpected > 0 {
-            let totalCompleted = ggmlCompleted + coreMLCompleted
-            return min(max(Double(totalCompleted) / Double(knownExpected), 0), 1)
+        let descriptor = DictationModelCatalog.descriptor(for: modelID)
+        let expectedBytes = descriptor.artifacts.reduce(into: Int64(0)) { total, artifact in
+            let state = artifactState(for: artifact.relativePath)
+            total += max(state.expectedBytes ?? artifact.progressTotalBytes, artifact.progressTotalBytes)
         }
 
-        let ggmlFallback = ggml.isDownloaded ? 1.0 : 0.0
-        let coreMLFallback = coreMLZip.isDownloaded ? 1.0 : 0.0
-        return (ggmlFallback + coreMLFallback) / 2
+        guard expectedBytes > 0 else { return 0 }
+
+        let completedBytes = descriptor.artifacts.reduce(into: Int64(0)) { total, artifact in
+            let state = artifactState(for: artifact.relativePath)
+            let artifactExpected = max(state.expectedBytes ?? artifact.progressTotalBytes, artifact.progressTotalBytes)
+            total += min(state.completedBytes, artifactExpected)
+        }
+
+        return min(max(Double(completedBytes) / Double(expectedBytes), 0), 1)
     }
 
     var hasActiveDownload: Bool {
-        ggml.isActive || coreMLZip.isActive
+        artifactStatesByRelativePath.values.contains(where: \.isActive)
     }
 
     var isReadyForFinalization: Bool {
-        ggml.isDownloaded && coreMLZip.isDownloaded
+        let descriptor = DictationModelCatalog.descriptor(for: modelID)
+        return descriptor.artifacts.allSatisfy { artifactState(for: $0.relativePath).isDownloaded }
     }
 }

@@ -25,7 +25,8 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 ## Why KeyVox
 
 - 🚀 Fast local transcription (no cloud transcription path)
-- 🌍 Includes on-device Whisper and Parakeet transcription models
+- 🌍 Includes on-device Whisper and Parakeet transcription models 
+- 🖥️ Parakeet works on Sonoma and later, Whisper works on Ventura and later. Both on iOS 18.6+.
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting

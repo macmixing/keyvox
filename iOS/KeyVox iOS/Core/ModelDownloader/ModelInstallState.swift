@@ -4,10 +4,9 @@ enum ModelInstallPhase: Equatable {
     case downloadingAssets
     case resumingInstall
     case movingFiles
-    case verifyingGGML
-    case verifyingCoreMLArchive
-    case extractingCoreML
-    case validatingCoreMLBundle
+    case verifyingArtifacts
+    case extractingModelAssets
+    case validatingInstalledArtifacts
     case writingManifest
     case warmingModel
 
@@ -19,14 +18,12 @@ enum ModelInstallPhase: Equatable {
             return "Preparing model install"
         case .movingFiles:
             return "Moving downloaded files"
-        case .verifyingGGML:
-            return "Verifying GGML model"
-        case .verifyingCoreMLArchive:
-            return "Verifying Core ML archive"
-        case .extractingCoreML:
-            return "Extracting Core ML bundle"
-        case .validatingCoreMLBundle:
-            return "Validating Core ML bundle"
+        case .verifyingArtifacts:
+            return "Verifying model assets"
+        case .extractingModelAssets:
+            return "Extracting model assets"
+        case .validatingInstalledArtifacts:
+            return "Validating installed model"
         case .writingManifest:
             return "Finalizing install"
         case .warmingModel:
@@ -56,14 +53,14 @@ enum ModelInstallState: Equatable {
     var statusText: String {
         switch self {
         case .notInstalled:
-            return "Model: not installed"
+            return "Not installed"
         case .downloading(let progress, let phase),
              .installing(let progress, let phase):
-            return "Model: \(phase.statusText) \(Int(progress * 100))%"
+            return "\(phase.statusText) \(Int(progress * 100))%"
         case .ready:
-            return "Model: ready"
+            return "Ready"
         case .failed(let message):
-            return "Model: failed (\(message))"
+            return "Repair needed (\(message))"
         }
     }
 }

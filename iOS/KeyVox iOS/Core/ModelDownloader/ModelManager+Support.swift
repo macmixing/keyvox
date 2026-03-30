@@ -232,52 +232,37 @@ struct ModelDownloadProgressSnapshot: Sendable {
 }
 
 actor ModelDownloadAggregateProgress {
-    private var ggml = ModelDownloadProgressSnapshot.zero
-    private var coreML = ModelDownloadProgressSnapshot.zero
+    private let artifactsByRelativePath: [String: DictationModelArtifact]
+    private var snapshotsByRelativePath: [String: ModelDownloadProgressSnapshot]
 
-    func updateGGML(_ snapshot: ModelDownloadProgressSnapshot) {
-        ggml = snapshot
+    init(artifacts: [DictationModelArtifact]) {
+        artifactsByRelativePath = Dictionary(
+            uniqueKeysWithValues: artifacts.map { ($0.relativePath, $0) }
+        )
+        snapshotsByRelativePath = Dictionary(
+            uniqueKeysWithValues: artifacts.map { ($0.relativePath, .zero) }
+        )
     }
 
-    func updateCoreML(_ snapshot: ModelDownloadProgressSnapshot) {
-        coreML = snapshot
+    func update(_ snapshot: ModelDownloadProgressSnapshot, for relativePath: String) {
+        snapshotsByRelativePath[relativePath] = snapshot
     }
 
     func overallFraction() -> Double {
-        if let ggmlExpected = ggml.expectedBytes, ggmlExpected > 0,
-           let coreExpected = coreML.expectedBytes, coreExpected > 0 {
-            let completed = min(ggml.completedBytes, ggmlExpected) + min(coreML.completedBytes, coreExpected)
-            let expected = ggmlExpected + coreExpected
-            guard expected > 0 else { return 0 }
-            return min(max(Double(completed) / Double(expected), 0), 1)
+        let expectedBytes = artifactsByRelativePath.values.reduce(into: Int64(0)) { total, artifact in
+            let snapshot = snapshotsByRelativePath[artifact.relativePath] ?? .zero
+            total += max(snapshot.expectedBytes ?? artifact.progressTotalBytes, artifact.progressTotalBytes)
         }
 
-        return min(max((ggml.fractionCompleted + coreML.fractionCompleted) / 2, 0), 1)
-    }
-}
+        guard expectedBytes > 0 else { return 0 }
 
-struct ResolvedPaths {
-    let modelsDirectory: URL
-    let ggmlModelURL: URL
-    let coreMLZipURL: URL
-    let coreMLDirectoryURL: URL
-    let manifestURL: URL
-}
-
-enum InstallValidationResult: Equatable {
-    case notInstalled
-    case ready
-    case failed(message: String)
-
-    var debugDescription: String {
-        switch self {
-        case .notInstalled:
-            return "notInstalled"
-        case .ready:
-            return "ready"
-        case .failed(let message):
-            return "failed(\(message))"
+        let completedBytes = artifactsByRelativePath.values.reduce(into: Int64(0)) { total, artifact in
+            let snapshot = snapshotsByRelativePath[artifact.relativePath] ?? .zero
+            let artifactExpected = max(snapshot.expectedBytes ?? artifact.progressTotalBytes, artifact.progressTotalBytes)
+            total += min(snapshot.completedBytes, artifactExpected)
         }
+
+        return min(max(Double(completedBytes) / Double(expectedBytes), 0), 1)
     }
 }
 

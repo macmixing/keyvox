@@ -11,9 +11,65 @@ nonisolated enum SharedPaths {
         fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
     }
 
-    static func modelFileURL(fileManager: FileManager = .default) -> URL? {
+    static func modelDirectoryURL(
+        for modelID: DictationModelID,
+        fileManager: FileManager = .default
+    ) -> URL? {
         modelsDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("ggml-base.bin")
+            .appendingPathComponent(modelID.installDirectoryName, isDirectory: true)
+    }
+
+    static func modelArtifactURL(
+        modelID: DictationModelID,
+        relativePath: String,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        guard var url = modelDirectoryURL(for: modelID, fileManager: fileManager) else {
+            return nil
+        }
+
+        for component in relativePath.split(separator: "/") {
+            url.appendPathComponent(String(component), isDirectory: false)
+        }
+
+        return url
+    }
+
+    static func modelInstallManifestURL(
+        for modelID: DictationModelID,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        modelDirectoryURL(for: modelID, fileManager: fileManager)?
+            .appendingPathComponent(DictationModelCatalog.manifestFilename)
+    }
+
+    static func modelDownloadStagingDirectoryURL(
+        for modelID: DictationModelID,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent(".staging", isDirectory: true)
+            .appendingPathComponent(modelID.rawValue, isDirectory: true)
+    }
+
+    static func stagedArtifactURL(
+        modelID: DictationModelID,
+        relativePath: String,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        guard var url = modelDownloadStagingDirectoryURL(for: modelID, fileManager: fileManager) else {
+            return nil
+        }
+
+        for component in relativePath.split(separator: "/") {
+            url.appendPathComponent(String(component), isDirectory: false)
+        }
+
+        return url
+    }
+
+    static func modelFileURL(fileManager: FileManager = .default) -> URL? {
+        modelArtifactURL(modelID: .whisperBase, relativePath: "ggml-base.bin", fileManager: fileManager)
     }
 
     static func modelsDirectoryURL(fileManager: FileManager = .default) -> URL? {
@@ -22,33 +78,39 @@ nonisolated enum SharedPaths {
     }
 
     static func coreMLEncoderZipURL(fileManager: FileManager = .default) -> URL? {
-        modelsDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip")
+        modelArtifactURL(
+            modelID: .whisperBase,
+            relativePath: "ggml-base-encoder.mlmodelc.zip",
+            fileManager: fileManager
+        )
     }
 
     static func coreMLEncoderDirectoryURL(fileManager: FileManager = .default) -> URL? {
-        modelsDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
+        modelArtifactURL(
+            modelID: .whisperBase,
+            relativePath: "ggml-base-encoder.mlmodelc",
+            fileManager: fileManager
+        )
     }
 
     static func modelDownloadStagingDirectoryURL(fileManager: FileManager = .default) -> URL? {
-        modelsDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("DownloadStaging", isDirectory: true)
+        modelDownloadStagingDirectoryURL(for: .whisperBase, fileManager: fileManager)
     }
 
     static func stagedModelFileURL(fileManager: FileManager = .default) -> URL? {
-        modelDownloadStagingDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("ggml-base.bin")
+        stagedArtifactURL(modelID: .whisperBase, relativePath: "ggml-base.bin", fileManager: fileManager)
     }
 
     static func stagedCoreMLEncoderZipURL(fileManager: FileManager = .default) -> URL? {
-        modelDownloadStagingDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("ggml-base-encoder.mlmodelc.zip")
+        stagedArtifactURL(
+            modelID: .whisperBase,
+            relativePath: "ggml-base-encoder.mlmodelc.zip",
+            fileManager: fileManager
+        )
     }
 
     static func modelInstallManifestURL(fileManager: FileManager = .default) -> URL? {
-        modelsDirectoryURL(fileManager: fileManager)?
-            .appendingPathComponent("model-install-manifest.json")
+        modelInstallManifestURL(for: .whisperBase, fileManager: fileManager)
     }
 
     static func modelDownloadJobURL(fileManager: FileManager = .default) -> URL? {
