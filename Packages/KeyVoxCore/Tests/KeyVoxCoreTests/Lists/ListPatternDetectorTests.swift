@@ -280,14 +280,12 @@ final class ListPatternDetectorTests: XCTestCase {
         ])
     }
 
-    func testKeepsFormattingWhenSpokenNumberSkipsAhead() {
+    func testDoesNotDetectListWhenSpokenNumberSkipsAhead() {
         let detector = ListPatternDetector()
         let text = "Today one buy groceries two walk dog four call mom five charge phone"
 
         let detected = detector.detectList(in: text)
-        XCTAssertTrue(detected != nil)
-        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 4, 5])
-        XCTAssertTrue(detected?.items.map(\.content) == ["Buy groceries", "Walk dog", "Call mom", "Charge phone"])
+        XCTAssertNil(detected)
     }
 
     func testDoesNotDetectTwoItemNonConsecutiveProseNumbers() {
@@ -383,14 +381,12 @@ final class ListPatternDetectorTests: XCTestCase {
         ])
     }
 
-    func testDetectsExplicitTwoItemNonConsecutiveListMarkers() {
+    func testDoesNotDetectExplicitTwoItemNonConsecutiveListMarkers() {
         let detector = ListPatternDetector()
         let text = "1. buy groceries 3. call mom"
 
         let detected = detector.detectList(in: text)
-        XCTAssertNotNil(detected)
-        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 3])
-        XCTAssertEqual(detected?.items.map(\.content), ["Buy groceries", "Call mom"])
+        XCTAssertNil(detected)
     }
 
     func testDetectsSpokenMarkersBeyondTwelveWithoutHardCap() {
