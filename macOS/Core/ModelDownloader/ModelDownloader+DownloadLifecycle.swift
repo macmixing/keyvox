@@ -226,6 +226,7 @@ extension ModelDownloader {
                 try await self.postInstallPreparation(modelID)
                 DispatchQueue.main.async { [weak self] in
                     guard let self else { return }
+                    guard self.activeDownload?.modelID == modelID else { return }
                     self.debugLog("Download completed successfully for \(modelID.rawValue)")
                     var state = self.state(for: modelID)
                     state.isDownloading = false
