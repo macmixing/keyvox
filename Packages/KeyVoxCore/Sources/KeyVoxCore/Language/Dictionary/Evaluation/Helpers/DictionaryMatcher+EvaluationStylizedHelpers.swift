@@ -14,6 +14,37 @@ private enum EvaluationStylizedConstants {
 }
 
 extension DictionaryMatcher {
+    func isTitlecaseToken(_ token: Token) -> Bool {
+        guard let first = token.raw.unicodeScalars.first,
+              first.properties.isUppercase else {
+            return false
+        }
+
+        return token.raw.unicodeScalars.dropFirst().contains { $0.properties.isLowercase }
+    }
+
+    func hasAdjacentTitlecasePhraseContext(
+        tokenIndex: Int,
+        totalTokens: Int,
+        tokens: [Token]
+    ) -> Bool {
+        guard tokens[tokenIndex].normalized.count >= 3,
+              isTitlecaseToken(tokens[tokenIndex]) else {
+            return false
+        }
+
+        let previousIsTitlecase =
+            tokenIndex > 0
+            && tokens[tokenIndex - 1].normalized.count >= 3
+            && isTitlecaseToken(tokens[tokenIndex - 1])
+        let nextIsTitlecase =
+            tokenIndex + 1 < totalTokens
+            && tokens[tokenIndex + 1].normalized.count >= 3
+            && isTitlecaseToken(tokens[tokenIndex + 1])
+
+        return previousIsTitlecase || nextIsTitlecase
+    }
+
     func isStylizedSingleTokenEntry(_ entry: CompiledEntry) -> Bool {
         guard entry.tokens.count == 1 else { return false }
         guard !entry.phrase.contains(" ") else { return false }

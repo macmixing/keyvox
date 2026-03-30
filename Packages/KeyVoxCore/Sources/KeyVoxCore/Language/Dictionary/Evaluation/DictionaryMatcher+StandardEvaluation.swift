@@ -255,6 +255,11 @@ extension DictionaryMatcher {
                     tokenIndex: start,
                     totalTokens: tokens.count
                 )
+            let hasAdjacentTitlecaseContext = hasAdjacentTitlecasePhraseContext(
+                tokenIndex: start,
+                totalTokens: tokens.count,
+                tokens: tokens
+            )
 
             if observedHasRuntimePronunciation,
                isCommonWord,
@@ -263,6 +268,12 @@ extension DictionaryMatcher {
                 // Guard risky common-word -> brand hops unless corroborated by another
                 // independent replacement in the same utterance.
                 requiresPeerSupport = true
+            }
+
+            if stylizedSingleTokenEntry,
+               hasAdjacentTitlecaseContext {
+                stats.rejectedLowScore += 1
+                return nil
             }
 
             if stylizedSingleTokenEntry,

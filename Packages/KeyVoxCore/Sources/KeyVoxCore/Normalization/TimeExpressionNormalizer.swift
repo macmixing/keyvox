@@ -58,7 +58,7 @@ public struct TimeExpressionNormalizer {
 
         var output = text
 
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b(\#(spokenHourPattern))\s+(\#(spokenMinutePattern))[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
@@ -69,58 +69,52 @@ public struct TimeExpressionNormalizer {
                 return nil
             }
 
-            let meridiem = nsText.substring(with: match.range(at: 3))
-            return "\(hour):\(paddedMinute(minute)) \(normalizedMeridiem(meridiem))"
+            return "\(hour):\(paddedMinute(minute))"
         }
 
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b(\#(spokenHourPattern))[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hourWord = nsText.substring(with: match.range(at: 1))
             guard let hour = spokenHourValue(hourWord) else { return nil }
-            let meridiem = nsText.substring(with: match.range(at: 2))
-            return "\(hour):00 \(normalizedMeridiem(meridiem))"
+            return "\(hour):00"
         }
 
         // Normalize spaced/compact meridiem forms while preserving spoken structure.
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b([1-9]|1[0-2]):([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
             let minute = nsText.substring(with: match.range(at: 2))
-            let meridiem = nsText.substring(with: match.range(at: 3))
-            return "\(hour):\(minute) \(normalizedMeridiem(meridiem))"
+            return "\(hour):\(minute)"
         }
 
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b([1-9]|1[0-2])\s*[\.-]\s*([0-5][0-9])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
             let minute = nsText.substring(with: match.range(at: 2))
-            let meridiem = nsText.substring(with: match.range(at: 3))
-            return "\(hour):\(minute) \(normalizedMeridiem(meridiem))"
+            return "\(hour):\(minute)"
         }
 
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b([0-9]{3,4})[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let digits = nsText.substring(with: match.range(at: 1))
             guard let formatted = formattedCompactTime(digits) else { return nil }
-            let meridiem = nsText.substring(with: match.range(at: 2))
-            return "\(formatted) \(normalizedMeridiem(meridiem))"
+            return formatted
         }
 
-        output = replacingMatches(
+        output = replacingMeridiemMatches(
             pattern: #"\b([1-9]|1[0-2])[\s-]*(\#(meridiemPattern))(?=$|\s|[,;:!?\)\.])"#,
             in: output
         ) { match, nsText in
             let hour = nsText.substring(with: match.range(at: 1))
-            let meridiem = nsText.substring(with: match.range(at: 2))
-            return "\(hour):00 \(normalizedMeridiem(meridiem))"
+            return "\(hour):00"
         }
 
         // Balanced fuzzy-AM pass: map "AND" only when it behaves like a terminal meridiem token.
@@ -182,6 +176,23 @@ public struct TimeExpressionNormalizer {
         }
 
         return mutable as String
+    }
+
+    private func replacingMeridiemMatches(
+        pattern: String,
+        in text: String,
+        timeBuilder: (_ match: NSTextCheckingResult, _ nsText: NSString) -> String?
+    ) -> String {
+        replacingMatches(pattern: pattern, in: text) { match, nsText in
+            guard let time = timeBuilder(match, nsText) else { return nil }
+            let meridiemRangeIndex = match.numberOfRanges - 1
+            return formattedTime(
+                time,
+                meridiem: nsText.substring(with: match.range(at: meridiemRangeIndex)),
+                nsText: nsText,
+                matchRange: match.range
+            )
+        }
     }
 
     private func formattedCompactTime(_ digits: String) -> String? {
@@ -247,6 +258,35 @@ public struct TimeExpressionNormalizer {
         String(format: "%02d", minute)
     }
 
+    private func formattedTime(
+        hour: String,
+        minute: String,
+        meridiem: String,
+        nsText: NSString,
+        matchRange: NSRange
+    ) -> String {
+        formattedTime(
+            "\(hour):\(minute)",
+            meridiem: meridiem,
+            nsText: nsText,
+            matchRange: matchRange
+        )
+    }
+
+    private func formattedTime(
+        _ time: String,
+        meridiem: String,
+        nsText: NSString,
+        matchRange: NSRange
+    ) -> String {
+        let normalized = normalizedMeridiem(
+            meridiem,
+            preservingSentenceBoundaryIn: nsText,
+            matchRange: matchRange
+        )
+        return "\(time) \(normalized)"
+    }
+
     private static var spokenHourPattern: String {
         groupedAlternationPattern(for: Array(spokenHourValues.keys))
     }
@@ -280,14 +320,44 @@ public struct TimeExpressionNormalizer {
             .joined(separator: "|")
     }
 
-    private func normalizedMeridiem(_ value: String) -> String {
+    private func normalizedMeridiem(
+        _ value: String,
+        preservingSentenceBoundaryIn nsText: NSString,
+        matchRange: NSRange
+    ) -> String {
         let lettersOnly = value
             .lowercased()
             .replacingOccurrences(of: ".", with: "")
             .replacingOccurrences(of: "-", with: "")
             .replacingOccurrences(of: #"\s"#, with: "", options: .regularExpression)
-        if lettersOnly == "am" || lettersOnly == "an" { return "AM" }
-        if lettersOnly == "pm" { return "PM" }
-        return value
+        let normalized: String
+        if lettersOnly == "am" || lettersOnly == "an" {
+            normalized = "AM"
+        } else if lettersOnly == "pm" {
+            normalized = "PM"
+        } else {
+            normalized = value
+        }
+
+        guard value.hasSuffix("."),
+              shouldPreserveSentenceBoundaryPeriod(in: nsText, after: matchRange) else {
+            return normalized
+        }
+
+        return "\(normalized)."
+    }
+
+    private func shouldPreserveSentenceBoundaryPeriod(in nsText: NSString, after matchRange: NSRange) -> Bool {
+        let nextIndex = matchRange.location + matchRange.length
+        guard nextIndex < nsText.length else { return true }
+
+        let trailingText = nsText.substring(from: nextIndex)
+        guard let nextNonWhitespaceScalar = trailingText.unicodeScalars.first(where: {
+            !$0.properties.isWhitespace
+        }) else {
+            return true
+        }
+
+        return nextNonWhitespaceScalar.properties.isUppercase
     }
 }

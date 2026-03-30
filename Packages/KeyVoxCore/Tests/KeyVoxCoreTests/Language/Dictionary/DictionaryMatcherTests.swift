@@ -136,6 +136,18 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "This kind of thing does work pretty good to an extent.")
     }
 
+    func testDoesNotRewriteTitlecasePlaceNameTailIntoStylizedDictionaryEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
+
+        let result = matcher.apply(to: "Have you ever been to New York?")
+        XCTAssertEqual(result.text, "Have you ever been to New York?")
+    }
+
     func testCorrectsStylizedSingleTokenNearMissAndInfersPossessiveSuffix() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
