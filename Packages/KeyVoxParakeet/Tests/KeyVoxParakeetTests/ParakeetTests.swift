@@ -128,6 +128,65 @@ final class ParakeetTests: XCTestCase {
         wait(for: [secondExpectation], timeout: 1.0)
     }
 
+    func testVocabularyPromptTokenIDsGreedyTokenizePromptText() throws {
+        let modelDirectoryURL = try makeModelDirectory(
+            vocabulary: [
+                "0": "<|endoftext|>",
+                "1": "<|startofcontext|>",
+                "2": "D",
+                "3": "oma",
+                "4": "in",
+                "5": " vo",
+                "6": "ca",
+                "7": "bu",
+                "8": "lar",
+                "9": "y",
+                "10": ":",
+                "11": " ex",
+                "12": "amp",
+                "13": "le",
+                "14": ".",
+                "15": "com",
+                "16": ",",
+                "17": " dom",
+                "18": "te",
+                "19": "ch",
+            ]
+        )
+        let vocabulary = try ParakeetVocabulary(modelDirectoryURL: modelDirectoryURL)
+
+        let tokenIDs = vocabulary.promptTokenIDs(from: "Domain vocabulary: example.com, dom.tech")
+
+        XCTAssertEqual(tokenIDs, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 14, 18, 19])
+    }
+
+    func testVocabularyPromptTokenIDsNormalizeWhitespaceBeforeTokenizing() throws {
+        let modelDirectoryURL = try makeModelDirectory(
+            vocabulary: [
+                "0": "<|startofcontext|>",
+                "1": "D",
+                "2": "oma",
+                "3": "in",
+                "4": " vo",
+                "5": "ca",
+                "6": "bu",
+                "7": "lar",
+                "8": "y",
+                "9": ":",
+                "10": " ex",
+                "11": "amp",
+                "12": "le",
+                "13": ".",
+                "14": "com",
+            ]
+        )
+        let vocabulary = try ParakeetVocabulary(modelDirectoryURL: modelDirectoryURL)
+
+        let tokenIDs = vocabulary.promptTokenIDs(from: "  Domain   vocabulary:\nexample.com  ")
+
+        XCTAssertEqual(tokenIDs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    }
+
     private func makeModelFile() throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("keyvox-parakeet-\(UUID().uuidString).bin")
@@ -136,6 +195,19 @@ final class ParakeetTests: XCTestCase {
             try? FileManager.default.removeItem(at: url)
         }
         return url
+    }
+
+    private func makeModelDirectory(vocabulary: [String: String]) throws -> URL {
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("keyvox-parakeet-vocab-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        let vocabularyURL = directoryURL.appendingPathComponent("parakeet_vocab.json", isDirectory: false)
+        let data = try JSONSerialization.data(withJSONObject: vocabulary, options: [.sortedKeys])
+        try data.write(to: vocabularyURL)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: directoryURL)
+        }
+        return directoryURL
     }
 }
 

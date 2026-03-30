@@ -28,6 +28,8 @@ internal struct ParakeetVocabulary {
     ]
 
     private let tokensByID: [Int32: String]
+    private let tokenIDsByToken: [String: Int32]
+    private let greedyMatchTokensByFirstCharacter: [Character: [String]]
 
     init(modelDirectoryURL: URL) throws {
         let fileManager = FileManager.default
@@ -46,6 +48,8 @@ internal struct ParakeetVocabulary {
         }
 
         self.tokensByID = tokensByID
+        self.tokenIDsByToken = Dictionary(uniqueKeysWithValues: tokensByID.map { ($0.value, $0.key) })
+        self.greedyMatchTokensByFirstCharacter = Self.makeGreedyMatchIndex(tokensByID: tokensByID)
 
 #if DEBUG
         print("[ParakeetCoreML] loaded_vocab=\(vocabularyURL.lastPathComponent)")
@@ -58,6 +62,10 @@ internal struct ParakeetVocabulary {
 
     func token(for tokenID: Int32) -> String? {
         tokensByID[tokenID]
+    }
+
+    func tokenID(forExactToken token: String) -> Int32? {
+        tokenIDsByToken[token]
     }
 
     func kind(for tokenID: Int32) -> TokenKind? {
@@ -84,6 +92,40 @@ internal struct ParakeetVocabulary {
             ?? Locale.current.localizedString(forLanguageCode: languageCode)
     }
 
+    func promptTokenIDs(from prompt: String) -> [Int32] {
+        let normalizedPrompt = prompt
+            .split(whereSeparator: \.isWhitespace)
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedPrompt.isEmpty else { return [] }
+
+        var tokenIDs: [Int32] = []
+        tokenIDs.reserveCapacity(normalizedPrompt.count)
+
+        var currentIndex = normalizedPrompt.startIndex
+        while currentIndex < normalizedPrompt.endIndex {
+            let currentCharacter = normalizedPrompt[currentIndex]
+            guard let candidates = greedyMatchTokensByFirstCharacter[currentCharacter] else {
+                return []
+            }
+
+            var matchedToken: String?
+            for candidate in candidates where normalizedPrompt[currentIndex...].hasPrefix(candidate) {
+                matchedToken = candidate
+                break
+            }
+
+            guard let matchedToken, let tokenID = tokenIDsByToken[matchedToken] else {
+                return []
+            }
+
+            tokenIDs.append(tokenID)
+            currentIndex = normalizedPrompt.index(currentIndex, offsetBy: matchedToken.count)
+        }
+
+        return tokenIDs
+    }
+
     func decodedText(from tokenIDs: [Int32]) -> String {
         let pieces = tokenIDs.compactMap { tokenID -> String? in
             guard case let .text(token)? = kind(for: tokenID) else { return nil }
@@ -98,5 +140,28 @@ internal struct ParakeetVocabulary {
             .split(whereSeparator: \.isWhitespace)
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func makeGreedyMatchIndex(tokensByID: [Int32: String]) -> [Character: [String]] {
+        let textTokens = tokensByID.values.filter { token in
+            !(token.hasPrefix("<|") && token.hasSuffix("|>")) && !token.isEmpty
+        }
+
+        var tokensByFirstCharacter: [Character: [String]] = [:]
+        for token in textTokens {
+            guard let firstCharacter = token.first else { continue }
+            tokensByFirstCharacter[firstCharacter, default: []].append(token)
+        }
+
+        for firstCharacter in tokensByFirstCharacter.keys {
+            tokensByFirstCharacter[firstCharacter]?.sort { lhs, rhs in
+                if lhs.count == rhs.count {
+                    return lhs < rhs
+                }
+                return lhs.count > rhs.count
+            }
+        }
+
+        return tokensByFirstCharacter
     }
 }

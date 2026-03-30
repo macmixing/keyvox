@@ -225,7 +225,6 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
         params: ParakeetParams,
         requestID: UUID
     ) throws -> DecodedChunk {
-        _ = params
         try throwIfCancelled(requestID)
 
         let actualFrameCount = min(audioFrames.count, Constants.chunkFrameCount)
@@ -262,6 +261,7 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
         let encoderStepInput = try makeFloat32Array(shape: [1, Constants.encoderChannelCount, 1])
         let decoderStepInput = try makeFloat32Array(shape: [1, Constants.decoderHiddenSize, 1])
         var decoderStep = try initialDecoderStep()
+        decoderStep = try applyInitialPromptIfNeeded(params.initialPrompt, to: decoderStep)
         var emittedTokenIDs: [Int32] = []
         emittedTokenIDs.reserveCapacity(min(encoderFrames.frameCount * 2, Constants.maxTokenCountPerChunk))
 
@@ -351,6 +351,23 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
             noSpeechProbability: noSpeechProbability,
             relativeEndTimeMilliseconds: Int((Double(timeIndex) / Double(max(encoderFrames.frameCount, 1))) * Double(milliseconds(forFrameCount: actualFrameCount)))
         )
+    }
+
+    private func applyInitialPromptIfNeeded(_ prompt: String, to decoderStep: DecoderStep) throws -> DecoderStep {
+        let promptTokenIDs = vocabulary.promptTokenIDs(from: prompt)
+        guard !promptTokenIDs.isEmpty else { return decoderStep }
+
+        var primedDecoderStep = decoderStep
+        if let startOfContextTokenID = vocabulary.tokenID(forExactToken: "<|startofcontext|>") {
+            primedDecoderStep = try runDecoder(targetID: startOfContextTokenID, state: primedDecoderStep.state)
+        }
+
+        for tokenID in promptTokenIDs {
+            primedDecoderStep = try runDecoder(targetID: tokenID, state: primedDecoderStep.state)
+        }
+
+        debugLog("Applied prompt hint with \(promptTokenIDs.count) tokens")
+        return primedDecoderStep
     }
 
     private func paddedAudioFrames(from audioFrames: [Float], frameCount: Int) -> [Float] {
