@@ -16,6 +16,42 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "12 + 8")
     }
 
+    func testNormalizesFullySpelledOutAdditionEquation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Two plus two equals four.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2 + 2 = 4")
+    }
+
+    func testNormalizesSpelledOutEqualsOperandAfterBinaryNormalization() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "2 + 2 equals four.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "2 + 2 = 4")
+    }
+
+    func testNormalizesFullySpelledOutMultiwordMathEquation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Forty two minus seven equals thirty five.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "42 - 7 = 35")
+    }
+
     func testNormalizesPercentEqualsAndExponentPhrases() {
         let processor = TranscriptionPostProcessor()
 
