@@ -126,4 +126,16 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "555-1234")
     }
+
+    func testPreservesMonthLedDatesAfterDateNormalization() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "May 15, 1992 and 5000 units.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "May 15, 1992 and 5,000 units.")
+    }
 }

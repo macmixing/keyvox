@@ -7,6 +7,7 @@ public final class TranscriptionPostProcessor {
     private let laughterNormalizer = LaughterNormalizer()
     private let characterSpamNormalizer = CharacterSpamNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
+    private let dateNormalizer = DateNormalizer()
     private let mathExpressionNormalizer = MathExpressionNormalizer()
     private let thousandsGroupingNormalizer = ThousandsGroupingNormalizer()
     private let colonNormalizer = ColonNormalizer()
@@ -96,7 +97,11 @@ public final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif
-        let emailNormalizedOutput = EmailAddressNormalizer.normalize(in: timeNormalized)
+        let dateNormalized = normalizeDates(in: timeNormalized)
+        #if DEBUG
+        logPipelineStage("dateNormalized", dateNormalized)
+        #endif
+        let emailNormalizedOutput = EmailAddressNormalizer.normalize(in: dateNormalized)
         #if DEBUG
         logPipelineStage("emailNormalizedOutput", emailNormalizedOutput)
         #endif
@@ -142,6 +147,10 @@ public final class TranscriptionPostProcessor {
 
     private func normalizeTimeExpressions(in text: String) -> String {
         timeExpressionNormalizer.normalize(in: text)
+    }
+
+    private func normalizeDates(in text: String) -> String {
+        dateNormalizer.normalize(in: text)
     }
 
     private func replacingMatches(

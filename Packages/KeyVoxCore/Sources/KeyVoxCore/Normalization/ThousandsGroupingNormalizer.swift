@@ -21,6 +21,9 @@ public struct ThousandsGroupingNormalizer {
         pattern: #"\b(?:\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b"#,
         options: []
     )
+    private static let dateDetector: NSDataDetector? = try? NSDataDetector(
+        types: NSTextCheckingResult.CheckingType.date.rawValue
+    )
     private static let versionRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\d+(?:\.\d+){1,}\b"#,
         options: []
@@ -92,6 +95,10 @@ public struct ThousandsGroupingNormalizer {
         ]
         .compactMap { $0 }
         .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
+        +
+        (Self.dateDetector?.matches(in: line, options: [], range: fullRange)
+            .filter { $0.resultType == .date }
+            .map(\.range) ?? [])
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
