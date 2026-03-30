@@ -9,9 +9,7 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
 
     private let fileManager: FileManager
     private let jobStore: ModelBackgroundDownloadJobStore
-    private let modelsDirectoryURLProvider: () -> URL?
-    private let stagedGGMLURLProvider: () -> URL?
-    private let stagedCoreMLZipURLProvider: () -> URL?
+    private let modelLocator: InstalledDictationModelLocator
     private let completionHandlerLock = NSLock()
     private var backgroundSessionCompletionHandler: (() -> Void)?
     private lazy var session: URLSession = {
@@ -26,15 +24,11 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
     init(
         fileManager: FileManager = .default,
         jobStore: ModelBackgroundDownloadJobStore,
-        modelsDirectoryURLProvider: @escaping () -> URL?,
-        stagedGGMLURLProvider: @escaping () -> URL?,
-        stagedCoreMLZipURLProvider: @escaping () -> URL?
+        modelLocator: InstalledDictationModelLocator
     ) {
         self.fileManager = fileManager
         self.jobStore = jobStore
-        self.modelsDirectoryURLProvider = modelsDirectoryURLProvider
-        self.stagedGGMLURLProvider = stagedGGMLURLProvider
-        self.stagedCoreMLZipURLProvider = stagedCoreMLZipURLProvider
+        self.modelLocator = modelLocator
     }
 
     func loadJob() -> ModelBackgroundDownloadJob? {
@@ -47,59 +41,75 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
         completionHandlerLock.unlock()
     }
 
-    func startOrResumeJob() async throws -> ModelBackgroundDownloadJob {
-        try ensureStagingDirectoryExists()
-        var job = synchronizedJob()
+    func startOrResumeJob(for modelID: DictationModelID) async throws -> ModelBackgroundDownloadJob {
+        try ensureStagingDirectoryExists(for: modelID)
+
+        var job = synchronizedJob(for: modelID)
+        let descriptor = DictationModelCatalog.descriptor(for: modelID)
         let tasks = await allDownloadTasks()
-        let existingTasksByKind = Dictionary(
-            uniqueKeysWithValues: tasks.compactMap { task -> (ModelBackgroundArtifactKind, URLSessionDownloadTask)? in
+        tasks
+            .filter {
+                guard let description = $0.taskDescription,
+                      let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
+                    return false
+                }
+                return taskDescriptor.modelID != modelID
+            }
+            .forEach { $0.cancel() }
+        let existingTasksByRelativePath = Dictionary(
+            uniqueKeysWithValues: tasks.compactMap { task -> (String, URLSessionDownloadTask)? in
                 guard let description = task.taskDescription,
-                      let kind = ModelBackgroundArtifactKind(rawValue: description) else {
+                      let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description),
+                      taskDescriptor.modelID == modelID else {
                     return nil
                 }
-                return (kind, task)
+
+                return (taskDescriptor.relativePath, task)
             }
         )
 
-        for kind in ModelBackgroundArtifactKind.allCases {
-            var artifact = job.artifactState(for: kind)
-            if artifact.phase == .downloaded {
-                artifact.taskIdentifier = nil
-                artifact.errorMessage = nil
-                job.setArtifactState(artifact, for: kind)
+        for artifact in descriptor.artifacts {
+            var artifactState = job.artifactState(for: artifact.relativePath)
+            if artifactState.phase == .downloaded {
+                artifactState.taskIdentifier = nil
+                artifactState.errorMessage = nil
+                job.setArtifactState(artifactState, for: artifact.relativePath)
                 continue
             }
 
-            if let task = existingTasksByKind[kind] {
-                task.resume()
-                artifact.phase = .downloading
-                artifact.taskIdentifier = task.taskIdentifier
-                artifact.completedBytes = max(task.countOfBytesReceived, 0)
-                artifact.expectedBytes = task.countOfBytesExpectedToReceive > 0 ? task.countOfBytesExpectedToReceive : nil
-                artifact.errorMessage = nil
-                artifact.updatedAt = .now
-                job.setArtifactState(artifact, for: kind)
+            if let existingTask = existingTasksByRelativePath[artifact.relativePath] {
+                existingTask.resume()
+                artifactState.phase = .downloading
+                artifactState.taskIdentifier = existingTask.taskIdentifier
+                artifactState.completedBytes = max(existingTask.countOfBytesReceived, 0)
+                artifactState.expectedBytes = existingTask.countOfBytesExpectedToReceive > 0
+                    ? existingTask.countOfBytesExpectedToReceive
+                    : artifact.progressTotalBytes
+                artifactState.errorMessage = nil
+                artifactState.updatedAt = .now
+                job.setArtifactState(artifactState, for: artifact.relativePath)
                 continue
             }
 
-            let task = session.downloadTask(with: kind.downloadURL)
-            task.taskDescription = kind.taskDescription
+            let taskDescriptor = ModelBackgroundTaskDescriptor(
+                modelID: modelID,
+                relativePath: artifact.relativePath
+            )
+            let task = session.downloadTask(with: artifact.remoteURL)
+            task.taskDescription = taskDescriptor.taskDescription
             task.resume()
-            artifact.phase = .downloading
-            artifact.taskIdentifier = task.taskIdentifier
-            artifact.completedBytes = 0
-            artifact.expectedBytes = nil
-            artifact.errorMessage = nil
-            artifact.updatedAt = .now
-            job.setArtifactState(artifact, for: kind)
+
+            artifactState.phase = .downloading
+            artifactState.taskIdentifier = task.taskIdentifier
+            artifactState.completedBytes = 0
+            artifactState.expectedBytes = artifact.progressTotalBytes
+            artifactState.errorMessage = nil
+            artifactState.updatedAt = .now
+            job.setArtifactState(artifactState, for: artifact.relativePath)
         }
 
         job.lastErrorMessage = nil
-        if job.isReadyForFinalization {
-            job.finalizationState = .pending
-        } else {
-            job.finalizationState = .awaitingDownloads
-        }
+        job.finalizationState = job.isReadyForFinalization ? .pending : .awaitingDownloads
         try persist(job)
         return job
     }
@@ -110,37 +120,51 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
         }
 
         let tasks = await allDownloadTasks()
-        let taskDescriptions = Set(tasks.compactMap(\.taskDescription))
+        let descriptor = DictationModelCatalog.descriptor(for: job.modelID)
+        let taskDescriptors = tasks.compactMap { task -> (ModelBackgroundTaskDescriptor, URLSessionDownloadTask)? in
+            guard let description = task.taskDescription,
+                  let descriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
+                return nil
+            }
+            return (descriptor, task)
+        }
 
-        for kind in ModelBackgroundArtifactKind.allCases {
-            var artifact = job.artifactState(for: kind)
-            if artifact.phase == .downloaded {
-                artifact.taskIdentifier = nil
-                job.setArtifactState(artifact, for: kind)
+        let tasksByRelativePath = Dictionary(
+            uniqueKeysWithValues: taskDescriptors
+                .filter { $0.0.modelID == job.modelID }
+                .map { ($0.0.relativePath, $0.1) }
+        )
+        let activeRelativePaths = Set(tasksByRelativePath.keys)
+
+        for artifact in descriptor.artifacts {
+            var artifactState = job.artifactState(for: artifact.relativePath)
+            if artifactState.phase == .downloaded {
+                artifactState.taskIdentifier = nil
+                job.setArtifactState(artifactState, for: artifact.relativePath)
                 continue
             }
 
-            if let task = tasks.first(where: { $0.taskDescription == kind.taskDescription }) {
-                artifact.phase = .downloading
-                artifact.taskIdentifier = task.taskIdentifier
-                artifact.completedBytes = max(task.countOfBytesReceived, 0)
-                artifact.expectedBytes = task.countOfBytesExpectedToReceive > 0 ? task.countOfBytesExpectedToReceive : nil
-                artifact.errorMessage = nil
-                artifact.updatedAt = .now
-            } else if artifact.phase == .downloading && !taskDescriptions.contains(kind.taskDescription) {
-                artifact.phase = .pending
-                artifact.taskIdentifier = nil
-                artifact.errorMessage = nil
-                artifact.updatedAt = .now
+            if let task = tasksByRelativePath[artifact.relativePath] {
+                artifactState.phase = .downloading
+                artifactState.taskIdentifier = task.taskIdentifier
+                artifactState.completedBytes = max(task.countOfBytesReceived, 0)
+                artifactState.expectedBytes = task.countOfBytesExpectedToReceive > 0
+                    ? task.countOfBytesExpectedToReceive
+                    : artifact.progressTotalBytes
+                artifactState.errorMessage = nil
+                artifactState.updatedAt = .now
+            } else if artifactState.phase == .downloading && !activeRelativePaths.contains(artifact.relativePath) {
+                artifactState.phase = .pending
+                artifactState.taskIdentifier = nil
+                artifactState.errorMessage = nil
+                artifactState.updatedAt = .now
             }
 
-            job.setArtifactState(artifact, for: kind)
+            job.setArtifactState(artifactState, for: artifact.relativePath)
         }
 
-        if job.isReadyForFinalization {
-            if job.finalizationState != .inProgress {
-                job.finalizationState = .pending
-            }
+        if job.isReadyForFinalization, job.finalizationState != .inProgress {
+            job.finalizationState = .pending
         }
 
         do {
@@ -175,17 +199,19 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
     func clearJob() async {
         let tasks = await allDownloadTasks()
         tasks.forEach { $0.cancel() }
+        if let job = loadJob() {
+            clearStagingArtifacts(for: job.modelID)
+        }
         try? jobStore.clear()
-        clearStagingArtifacts()
         notifyStateChange(with: nil)
     }
 
-    private func synchronizedJob() -> ModelBackgroundDownloadJob {
-        if let existingJob = loadJob() {
+    private func synchronizedJob(for modelID: DictationModelID) -> ModelBackgroundDownloadJob {
+        if let existingJob = loadJob(), existingJob.modelID == modelID {
             return existingJob
         }
 
-        return ModelBackgroundDownloadJob()
+        return ModelBackgroundDownloadJob(modelID: modelID)
     }
 
     private func persist(_ job: ModelBackgroundDownloadJob) throws {
@@ -193,8 +219,8 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
         notifyStateChange(with: job)
     }
 
-    private func ensureStagingDirectoryExists() throws {
-        guard let modelsDirectoryURL = modelsDirectoryURLProvider() else {
+    private func ensureStagingDirectoryExists(for modelID: DictationModelID) throws {
+        guard let modelsDirectoryURL = modelLocator.modelsDirectoryURL else {
             throw CocoaError(.fileNoSuchFile)
         }
 
@@ -202,36 +228,22 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
             try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
         }
 
-        guard let stagingDirectoryURL = SharedPaths.modelDownloadStagingDirectoryURL(fileManager: fileManager) else {
+        guard let stagingDirectoryURL = modelLocator.stagedRootURL(for: modelID) else {
             throw CocoaError(.fileNoSuchFile)
         }
+
         if !fileManager.fileExists(atPath: stagingDirectoryURL.path) {
             try fileManager.createDirectory(at: stagingDirectoryURL, withIntermediateDirectories: true)
         }
     }
 
-    private func stagedURL(for kind: ModelBackgroundArtifactKind) -> URL? {
-        switch kind {
-        case .ggml:
-            return stagedGGMLURLProvider()
-        case .coreMLZip:
-            return stagedCoreMLZipURLProvider()
+    private func clearStagingArtifacts(for modelID: DictationModelID) {
+        guard let stagingRootURL = modelLocator.stagedRootURL(for: modelID),
+              fileManager.fileExists(atPath: stagingRootURL.path) else {
+            return
         }
-    }
 
-    private func clearStagingArtifacts() {
-        if let stagedGGMLURL = stagedGGMLURLProvider(),
-           fileManager.fileExists(atPath: stagedGGMLURL.path) {
-            try? fileManager.removeItem(at: stagedGGMLURL)
-        }
-        if let stagedCoreMLZipURL = stagedCoreMLZipURLProvider(),
-           fileManager.fileExists(atPath: stagedCoreMLZipURL.path) {
-            try? fileManager.removeItem(at: stagedCoreMLZipURL)
-        }
-        if let stagingDirectoryURL = SharedPaths.modelDownloadStagingDirectoryURL(fileManager: fileManager),
-           fileManager.fileExists(atPath: stagingDirectoryURL.path) {
-            try? fileManager.removeItem(at: stagingDirectoryURL)
-        }
+        try? fileManager.removeItem(at: stagingRootURL)
     }
 
     private func notifyStateChange(with job: ModelBackgroundDownloadJob?) {
@@ -241,8 +253,7 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
     private func allDownloadTasks() async -> [URLSessionDownloadTask] {
         await withCheckedContinuation { continuation in
             session.getAllTasks { tasks in
-                let downloadTasks = tasks.compactMap { $0 as? URLSessionDownloadTask }
-                continuation.resume(returning: downloadTasks)
+                continuation.resume(returning: tasks.compactMap { $0 as? URLSessionDownloadTask })
             }
         }
     }
@@ -256,13 +267,14 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
     }
 
     private func updateJob(
-        for kind: ModelBackgroundArtifactKind,
+        for taskDescriptor: ModelBackgroundTaskDescriptor,
         mutate: (inout ModelBackgroundDownloadJob, inout ModelBackgroundArtifactState) -> Void
     ) {
-        var job = loadJob() ?? ModelBackgroundDownloadJob()
-        var artifact = job.artifactState(for: kind)
-        mutate(&job, &artifact)
-        job.setArtifactState(artifact, for: kind)
+        var job = loadJob() ?? ModelBackgroundDownloadJob(modelID: taskDescriptor.modelID)
+        guard job.modelID == taskDescriptor.modelID else { return }
+        var artifactState = job.artifactState(for: taskDescriptor.relativePath)
+        mutate(&job, &artifactState)
+        job.setArtifactState(artifactState, for: taskDescriptor.relativePath)
         try? persist(job)
     }
 }
@@ -276,17 +288,25 @@ extension ModelBackgroundDownloadCoordinator: URLSessionDownloadDelegate {
         totalBytesExpectedToWrite: Int64
     ) {
         guard let description = downloadTask.taskDescription,
-              let kind = ModelBackgroundArtifactKind(rawValue: description) else {
+              let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
             return
         }
 
-        updateJob(for: kind) { _, artifact in
-            artifact.phase = .downloading
-            artifact.taskIdentifier = downloadTask.taskIdentifier
-            artifact.completedBytes = max(totalBytesWritten, 0)
-            artifact.expectedBytes = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : nil
-            artifact.errorMessage = nil
-            artifact.updatedAt = .now
+        let fallbackExpectedBytes = DictationModelCatalog
+            .descriptor(for: taskDescriptor.modelID)
+            .artifacts
+            .first(where: { $0.relativePath == taskDescriptor.relativePath })?
+            .progressTotalBytes
+
+        updateJob(for: taskDescriptor) { _, artifactState in
+            artifactState.phase = .downloading
+            artifactState.taskIdentifier = downloadTask.taskIdentifier
+            artifactState.completedBytes = max(totalBytesWritten, 0)
+            artifactState.expectedBytes = totalBytesExpectedToWrite > 0
+                ? totalBytesExpectedToWrite
+                : fallbackExpectedBytes
+            artifactState.errorMessage = nil
+            artifactState.updatedAt = .now
         }
     }
 
@@ -296,8 +316,11 @@ extension ModelBackgroundDownloadCoordinator: URLSessionDownloadDelegate {
         didFinishDownloadingTo location: URL
     ) {
         guard let description = downloadTask.taskDescription,
-              let kind = ModelBackgroundArtifactKind(rawValue: description),
-              let stagedURL = stagedURL(for: kind) else {
+              let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description),
+              let stagedURL = modelLocator.stagedArtifactURL(
+                for: taskDescriptor.modelID,
+                relativePath: taskDescriptor.relativePath
+              ) else {
             return
         }
 
@@ -312,24 +335,24 @@ extension ModelBackgroundDownloadCoordinator: URLSessionDownloadDelegate {
             try fileManager.moveItem(at: location, to: stagedURL)
 
             let fileSize = (try? fileManager.attributesOfItem(atPath: stagedURL.path)[.size] as? NSNumber)?.int64Value ?? 0
-            updateJob(for: kind) { job, artifact in
-                artifact.phase = .downloaded
-                artifact.taskIdentifier = nil
-                artifact.completedBytes = fileSize
-                artifact.expectedBytes = max(artifact.expectedBytes ?? 0, fileSize)
-                artifact.errorMessage = nil
-                artifact.updatedAt = .now
-                if job.ggml.isDownloaded && job.coreMLZip.isDownloaded {
+            updateJob(for: taskDescriptor) { job, artifactState in
+                artifactState.phase = .downloaded
+                artifactState.taskIdentifier = nil
+                artifactState.completedBytes = fileSize
+                artifactState.expectedBytes = max(artifactState.expectedBytes ?? 0, fileSize)
+                artifactState.errorMessage = nil
+                artifactState.updatedAt = .now
+                if job.isReadyForFinalization {
                     job.finalizationState = .pending
                     job.lastErrorMessage = nil
                 }
             }
         } catch {
-            updateJob(for: kind) { job, artifact in
-                artifact.phase = .failed
-                artifact.taskIdentifier = nil
-                artifact.errorMessage = error.localizedDescription
-                artifact.updatedAt = .now
+            updateJob(for: taskDescriptor) { job, artifactState in
+                artifactState.phase = .failed
+                artifactState.taskIdentifier = nil
+                artifactState.errorMessage = error.localizedDescription
+                artifactState.updatedAt = .now
                 job.lastErrorMessage = error.localizedDescription
                 job.finalizationState = .failed
             }
@@ -339,7 +362,7 @@ extension ModelBackgroundDownloadCoordinator: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let error,
               let description = task.taskDescription,
-              let kind = ModelBackgroundArtifactKind(rawValue: description) else {
+              let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
             return
         }
 
@@ -348,11 +371,11 @@ extension ModelBackgroundDownloadCoordinator: URLSessionDownloadDelegate {
             return
         }
 
-        updateJob(for: kind) { job, artifact in
-            artifact.phase = .failed
-            artifact.taskIdentifier = nil
-            artifact.errorMessage = error.localizedDescription
-            artifact.updatedAt = .now
+        updateJob(for: taskDescriptor) { job, artifactState in
+            artifactState.phase = .failed
+            artifactState.taskIdentifier = nil
+            artifactState.errorMessage = error.localizedDescription
+            artifactState.updatedAt = .now
             job.lastErrorMessage = error.localizedDescription
             job.finalizationState = .failed
         }

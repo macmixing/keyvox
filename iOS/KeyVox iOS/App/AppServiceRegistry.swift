@@ -12,6 +12,8 @@ final class AppServiceRegistry {
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let appHaptics: AppHaptics
     let whisperService: WhisperService
+    let parakeetService: ParakeetService
+    let activeProviderRouter: SwitchableDictationProvider
     let modelManager: ModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
@@ -20,14 +22,16 @@ final class AppServiceRegistry {
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
     let urlRouter: KeyVoxURLRouter
+    private var cancellables = Set<AnyCancellable>()
 
     private init(fileManager: FileManager = .default) {
         let dictionaryBaseDirectory = SharedPaths.dictionaryBaseDirectoryURL(fileManager: fileManager)
             ?? SharedPaths.fallbackBaseDirectoryURL(fileManager: fileManager)
         let settingsDefaults = SharedPaths.appGroupUserDefaults() ?? .standard
-        let modelPathProvider = {
-            SharedPaths.modelFileURL(fileManager: fileManager)?.path
-        }
+        let modelLocator = InstalledDictationModelLocator(
+            fileManager: fileManager,
+            modelsDirectoryURL: SharedPaths.modelsDirectoryURL(fileManager: fileManager)
+        )
         let backgroundDownloadJobStore = ModelBackgroundDownloadJobStore(
             fileManager: fileManager,
             jobURLProvider: { SharedPaths.modelDownloadJobURL(fileManager: fileManager) }
@@ -35,9 +39,7 @@ final class AppServiceRegistry {
         let backgroundDownloadCoordinator = ModelBackgroundDownloadCoordinator(
             fileManager: fileManager,
             jobStore: backgroundDownloadJobStore,
-            modelsDirectoryURLProvider: { SharedPaths.modelsDirectoryURL(fileManager: fileManager) },
-            stagedGGMLURLProvider: { SharedPaths.stagedModelFileURL(fileManager: fileManager) },
-            stagedCoreMLZipURLProvider: { SharedPaths.stagedCoreMLEncoderZipURL(fileManager: fileManager) }
+            modelLocator: modelLocator
         )
         let interruptedCaptureRecoveryStore = InterruptedCaptureRecoveryStore(
             fileManager: fileManager,
@@ -53,18 +55,21 @@ final class AppServiceRegistry {
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
         let appHaptics = AppHaptics()
-        let whisperService = WhisperService(modelPathResolver: modelPathProvider)
+        let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
+        let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
+        let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
         let modelManager = ModelManager(
             fileManager: fileManager,
-            providerLifecycle: whisperService,
-            modelsDirectoryProvider: { SharedPaths.modelsDirectoryURL(fileManager: fileManager) },
-            ggmlModelURLProvider: { SharedPaths.modelFileURL(fileManager: fileManager) },
-            coreMLZipURLProvider: { SharedPaths.coreMLEncoderZipURL(fileManager: fileManager) },
-            coreMLDirectoryURLProvider: { SharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager) },
-            manifestURLProvider: { SharedPaths.modelInstallManifestURL(fileManager: fileManager) },
-            modelDownloadJobURLProvider: { SharedPaths.modelDownloadJobURL(fileManager: fileManager) },
-            stagedGGMLURLProvider: { SharedPaths.stagedModelFileURL(fileManager: fileManager) },
-            stagedCoreMLZipURLProvider: { SharedPaths.stagedCoreMLEncoderZipURL(fileManager: fileManager) },
+            modelLocator: modelLocator,
+            backgroundJobStore: backgroundDownloadJobStore,
+            lifecycleProvider: { modelID in
+                switch modelID {
+                case .whisperBase:
+                    return whisperService
+                case .parakeetTdtV3:
+                    return parakeetService
+                }
+            },
             backgroundDownloadCoordinator: backgroundDownloadCoordinator
         )
         let postProcessor = TranscriptionPostProcessor()
@@ -84,13 +89,19 @@ final class AppServiceRegistry {
 
         let transcriptionManager = TranscriptionManager(
             recorder: recorder,
-            transcriptionService: whisperService,
+            transcriptionService: activeProviderRouter,
             dictionaryStore: dictionaryStore,
             weeklyWordStatsStore: weeklyWordStatsStore,
             postProcessor: postProcessor,
             keyboardBridge: keyboardBridge,
             interruptedCaptureRecoveryStore: interruptedCaptureRecoveryStore,
-            modelPathProvider: modelPathProvider,
+            modelPathProvider: modelLocator.resolvedWhisperModelPath,
+            modelAvailabilityProvider: { [weak activeProviderRouter] in
+                activeProviderRouter?.isModelReady ?? false
+            },
+            missingModelMessageProvider: { [weak settingsStore] in
+                settingsStore?.activeDictationProvider.missingModelMessage ?? "Required dictation model not found."
+            },
             autoParagraphsEnabledProvider: { [weak settingsStore] in
                 settingsStore?.autoParagraphsEnabled ?? true
             },
@@ -156,6 +167,8 @@ final class AppServiceRegistry {
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.appHaptics = appHaptics
         self.whisperService = whisperService
+        self.parakeetService = parakeetService
+        self.activeProviderRouter = activeProviderRouter
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
@@ -164,5 +177,56 @@ final class AppServiceRegistry {
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
         self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
+
+        settingsStore.$activeDictationProvider
+            .removeDuplicates()
+            .sink { [weak self] provider in
+                self?.applyActiveProviderSelection(provider)
+            }
+            .store(in: &cancellables)
+
+        modelManager.$modelStates
+            .sink { [weak self] _ in
+                self?.normalizeActiveProviderSelection()
+            }
+            .store(in: &cancellables)
+
+        normalizeActiveProviderSelection()
+        applyActiveProviderSelection(settingsStore.activeDictationProvider)
+    }
+
+    private func applyActiveProviderSelection(_ provider: AppSettingsStore.ActiveDictationProvider) {
+        let activeProvider: any DictationProvider = switch provider {
+        case .whisper:
+            whisperService
+        case .parakeet:
+            parakeetService
+        }
+
+        activeProviderRouter.replaceActiveProvider(
+            with: activeProvider,
+            warmNewProviderIfReady: false
+        )
+
+        if provider == .parakeet {
+            Task { [weak self] in
+                await self?.parakeetService.preloadIfNeeded()
+            }
+        }
+    }
+
+    private func normalizeActiveProviderSelection() {
+        let selectableProviders = AppSettingsStore.ActiveDictationProvider.allCases.filter {
+            modelManager.isModelReady(for: $0.modelID)
+        }
+
+        guard selectableProviders.contains(settingsStore.activeDictationProvider) else {
+            if let fallback = selectableProviders.first {
+                settingsStore.activeDictationProvider = fallback
+            } else if settingsStore.activeDictationProvider != .whisper {
+                settingsStore.activeDictationProvider = .whisper
+            }
+            return
+        }
     }
 }

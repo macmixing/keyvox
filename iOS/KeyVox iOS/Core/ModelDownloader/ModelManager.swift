@@ -7,29 +7,22 @@ final class ModelManager: ObservableObject {
     typealias DownloadClosure = @Sendable (URL, @escaping @Sendable (ModelDownloadProgressSnapshot) -> Void) async throws -> URL
     typealias UnzipClosure = @Sendable (URL, URL, FileManager, @escaping @Sendable (Int64, Int64) -> Void) async throws -> Void
     typealias FreeSpaceProvider = @Sendable (URL) -> Int64?
+    typealias LifecycleProvider = @MainActor (DictationModelID) -> (any DictationModelLifecycleProviding)?
 
+    @Published private(set) var modelStates: [DictationModelID: ModelInstallState]
     @Published var installState: ModelInstallState = .notInstalled
     @Published var modelReady = false
     @Published var errorMessage: String?
 
     let fileManager: FileManager
-    let providerLifecycle: any DictationModelLifecycleProviding
-    let modelsDirectoryProvider: () -> URL?
-    let ggmlModelURLProvider: () -> URL?
-    let coreMLZipURLProvider: () -> URL?
-    let coreMLDirectoryURLProvider: () -> URL?
-    let manifestURLProvider: () -> URL?
-    let modelDownloadJobURLProvider: () -> URL?
-    let stagedGGMLURLProvider: () -> URL?
-    let stagedCoreMLZipURLProvider: () -> URL?
+    let modelLocator: InstalledDictationModelLocator
+    let backgroundJobStoreInstance: ModelBackgroundDownloadJobStore
+    let lifecycleProvider: LifecycleProvider
+    let descriptorProvider: (DictationModelID) -> DictationModelDescriptor
     let download: DownloadClosure
     let unzip: UnzipClosure
     let freeSpaceProvider: FreeSpaceProvider
     let backgroundDownloadCoordinator: ModelBackgroundDownloadCoordinator?
-    let minGGMLBytes: Int64
-    let requiredDownloadBytes: Int64
-    let expectedGGMLSHA256: String
-    let expectedCoreMLZipSHA256: String
 
     var currentDownloadTask: Task<Void, Never>?
     var appIsActive = false
@@ -37,42 +30,30 @@ final class ModelManager: ObservableObject {
 
     init(
         fileManager: FileManager = .default,
-        providerLifecycle: any DictationModelLifecycleProviding,
-        modelsDirectoryProvider: @escaping () -> URL? = { SharedPaths.modelsDirectoryURL() },
-        ggmlModelURLProvider: @escaping () -> URL? = { SharedPaths.modelFileURL() },
-        coreMLZipURLProvider: @escaping () -> URL? = { SharedPaths.coreMLEncoderZipURL() },
-        coreMLDirectoryURLProvider: @escaping () -> URL? = { SharedPaths.coreMLEncoderDirectoryURL() },
-        manifestURLProvider: @escaping () -> URL? = { SharedPaths.modelInstallManifestURL() },
-        modelDownloadJobURLProvider: @escaping () -> URL? = { SharedPaths.modelDownloadJobURL() },
-        stagedGGMLURLProvider: @escaping () -> URL? = { SharedPaths.stagedModelFileURL() },
-        stagedCoreMLZipURLProvider: @escaping () -> URL? = { SharedPaths.stagedCoreMLEncoderZipURL() },
-        minGGMLBytes: Int64 = ModelArtifacts.minGGMLBytes,
-        requiredDownloadBytes: Int64 = 220_000_000,
-        expectedGGMLSHA256: String = ModelArtifacts.ggmlBaseSHA256,
-        expectedCoreMLZipSHA256: String = ModelArtifacts.coreMLZipSHA256,
+        modelLocator: InstalledDictationModelLocator,
+        backgroundJobStore: ModelBackgroundDownloadJobStore? = nil,
+        lifecycleProvider: @escaping LifecycleProvider,
+        descriptorProvider: @escaping (DictationModelID) -> DictationModelDescriptor = DictationModelCatalog.descriptor(for:),
         freeSpaceProvider: @escaping FreeSpaceProvider = defaultFreeSpaceProvider(at:),
         backgroundDownloadCoordinator: ModelBackgroundDownloadCoordinator? = nil,
         download: DownloadClosure? = nil,
         unzip: UnzipClosure? = nil
     ) {
         self.fileManager = fileManager
-        self.providerLifecycle = providerLifecycle
-        self.modelsDirectoryProvider = modelsDirectoryProvider
-        self.ggmlModelURLProvider = ggmlModelURLProvider
-        self.coreMLZipURLProvider = coreMLZipURLProvider
-        self.coreMLDirectoryURLProvider = coreMLDirectoryURLProvider
-        self.manifestURLProvider = manifestURLProvider
-        self.modelDownloadJobURLProvider = modelDownloadJobURLProvider
-        self.stagedGGMLURLProvider = stagedGGMLURLProvider
-        self.stagedCoreMLZipURLProvider = stagedCoreMLZipURLProvider
-        self.minGGMLBytes = minGGMLBytes
-        self.requiredDownloadBytes = requiredDownloadBytes
-        self.expectedGGMLSHA256 = expectedGGMLSHA256
-        self.expectedCoreMLZipSHA256 = expectedCoreMLZipSHA256
+        self.modelLocator = modelLocator
+        self.backgroundJobStoreInstance = backgroundJobStore ?? ModelBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: { SharedPaths.modelDownloadJobURL(fileManager: fileManager) }
+        )
+        self.lifecycleProvider = lifecycleProvider
+        self.descriptorProvider = descriptorProvider
         self.freeSpaceProvider = freeSpaceProvider
         self.backgroundDownloadCoordinator = backgroundDownloadCoordinator
         self.download = download ?? Self.defaultDownload(from:progress:)
         self.unzip = unzip ?? Self.defaultUnzip(zipURL:destinationDirectory:fileManager:progress:)
+        self.modelStates = Dictionary(
+            uniqueKeysWithValues: DictationModelID.allCases.map { ($0, .notInstalled) }
+        )
 
         Self.debugLog("Initialized model manager.")
         self.backgroundDownloadCoordinator?.stateDidChange = { [weak self] _ in
@@ -83,75 +64,70 @@ final class ModelManager: ObservableObject {
         refreshStatus()
     }
 
+    func state(for modelID: DictationModelID) -> ModelInstallState {
+        modelStates[modelID] ?? .notInstalled
+    }
+
+    func isModelReady(for modelID: DictationModelID) -> Bool {
+        if case .ready = state(for: modelID) {
+            return true
+        }
+        return false
+    }
+
     func refreshStatus() {
-        guard let paths = resolvedPaths() else {
-            Self.debugLog("refreshStatus: App Group container unavailable.")
-            modelReady = false
-            installState = .failed(message: "App Group container unavailable.")
-            errorMessage = "App Group container unavailable."
-            return
+        for modelID in DictationModelID.allCases {
+            modelStates[modelID] = validatedState(for: modelID)
         }
 
         if let backgroundJob = persistedBackgroundDownloadJob() {
             applyBackgroundJobStatus(backgroundJob)
-            return
         }
 
-        let validation = validateInstall(paths: paths)
-        Self.debugLog("""
-        refreshStatus:
-          modelsDirectory=\(paths.modelsDirectory.path)
-          ggml=\(paths.ggmlModelURL.path)
-          coreMLDir=\(paths.coreMLDirectoryURL.path)
-          coreMLZip=\(paths.coreMLZipURL.path)
-          manifest=\(paths.manifestURL.path)
-          result=\(validation.debugDescription)
-        """)
-
-        switch validation {
-        case .ready:
-            modelReady = true
-            installState = .ready
-            errorMessage = nil
-        case .notInstalled:
-            modelReady = false
-            installState = .notInstalled
-            errorMessage = nil
-        case .failed(let message):
-            modelReady = false
-            installState = .failed(message: message)
-            errorMessage = message
-        }
+        syncLegacyWhisperState()
     }
 
-    func downloadModel() {
+    func downloadModel(withID modelID: DictationModelID) {
         guard currentDownloadTask == nil else { return }
         currentDownloadTask = Task { [weak self] in
             guard let self else { return }
             if self.backgroundDownloadCoordinator == nil {
-                await self.performDownloadModel()
+                await self.performDownloadModel(withID: modelID)
             } else {
-                await self.startOrResumeDownloadJob()
+                await self.startOrResumeDownloadJob(for: modelID)
             }
         }
     }
 
-    func deleteModel() {
+    func downloadModel() {
+        downloadModel(withID: .whisperBase)
+    }
+
+    func deleteModel(withID modelID: DictationModelID) {
         currentDownloadTask?.cancel()
         currentDownloadTask = nil
-        if let backgroundDownloadCoordinator {
+        if let backgroundDownloadCoordinator,
+           backgroundDownloadCoordinator.loadJob()?.modelID == modelID {
             Task {
                 await backgroundDownloadCoordinator.clearJob()
             }
         }
-        performDeleteModel()
+        performDeleteModel(withID: modelID)
+    }
+
+    func deleteModel() {
+        deleteModel(withID: .whisperBase)
+    }
+
+    func repairModelIfNeeded(for modelID: DictationModelID) {
+        guard currentDownloadTask == nil else { return }
+        currentDownloadTask = Task { [weak self] in
+            await self?.performRepairModelIfNeeded(for: modelID)
+        }
     }
 
     func repairModelIfNeeded() {
-        guard currentDownloadTask == nil else { return }
-        currentDownloadTask = Task { [weak self] in
-            await self?.performRepairModelIfNeeded()
-        }
+        repairModelIfNeeded(for: .whisperBase)
     }
 
     func handleAppDidBecomeActive() {
@@ -189,6 +165,10 @@ final class ModelManager: ObservableObject {
         refreshStatus()
     }
 
+    func firstInstalledModelID() -> DictationModelID? {
+        DictationModelID.allCases.first(where: isModelReady(for:))
+    }
+
     private func handleBackgroundDownloadStateChanged() async {
         refreshStatus()
         await resumeForegroundFinalizationIfNeeded()
@@ -215,6 +195,22 @@ final class ModelManager: ObservableObject {
             return
         }
 
-        await startOrResumeDownloadJob()
+        await startOrResumeDownloadJob(for: synchronizedJob.modelID)
+    }
+
+    func setState(_ state: ModelInstallState, for modelID: DictationModelID) {
+        modelStates[modelID] = state
+        syncLegacyWhisperState()
+    }
+
+    private func syncLegacyWhisperState() {
+        let whisperState = state(for: .whisperBase)
+        installState = whisperState
+        modelReady = isModelReady(for: .whisperBase)
+        if case .failed(let message) = whisperState {
+            errorMessage = message
+        } else {
+            errorMessage = nil
+        }
     }
 }

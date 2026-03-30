@@ -30,6 +30,40 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
 
 @MainActor
 final class AppSettingsStore: ObservableObject {
+    enum ActiveDictationProvider: String, CaseIterable, Identifiable {
+        case whisper
+        case parakeet
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .whisper:
+                return "Whisper"
+            case .parakeet:
+                return "Parakeet"
+            }
+        }
+
+        var modelID: DictationModelID {
+            switch self {
+            case .whisper:
+                return .whisperBase
+            case .parakeet:
+                return .parakeetTdtV3
+            }
+        }
+
+        var missingModelMessage: String {
+            switch self {
+            case .whisper:
+                return "Whisper model not found."
+            case .parakeet:
+                return "Parakeet model not found."
+            }
+        }
+    }
+
     enum TriggerBinding: String, CaseIterable, Identifiable {
         case rightOption
         case leftOption
@@ -102,6 +136,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var activeDictationProvider: ActiveDictationProvider {
+        didSet {
+            defaults.set(activeDictationProvider.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
@@ -125,6 +165,13 @@ final class AppSettingsStore: ObservableObject {
             sessionDisableTiming = timing
         } else {
             sessionDisableTiming = .fiveMinutes
+        }
+
+        if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
+           let provider = ActiveDictationProvider(rawValue: raw) {
+            activeDictationProvider = provider
+        } else {
+            activeDictationProvider = .whisper
         }
     }
 

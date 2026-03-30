@@ -6,326 +6,264 @@ import Testing
 
 @MainActor
 struct ModelManagerTests {
-    @Test func refreshStatusWithoutFilesReportsNotInstalled() {
+    @Test func refreshStatusWithoutFilesReportsAllModelsNotInstalled() {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
         harness.manager.refreshStatus()
 
+        #expect(harness.manager.state(for: .whisperBase) == .notInstalled)
+        #expect(harness.manager.state(for: .parakeetTdtV3) == .notInstalled)
         #expect(harness.manager.installState == .notInstalled)
         #expect(harness.manager.modelReady == false)
-        #expect(harness.manager.errorMessage == nil)
     }
 
-    @Test func refreshStatusWithCompleteInstallReportsReady() throws {
+    @Test func legacyWhisperMigrationMovesFilesIntoWhisperFolder() throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
-        try harness.writeGGMLFile()
-        try harness.writeCoreMLDirectory()
-        try harness.writeValidManifest()
+
+        try harness.writeLegacyWhisperInstall()
 
         harness.manager.refreshStatus()
 
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperGGMLURL.path))
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperCoreMLDirectoryURL.path))
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperManifestURL.path))
+        #expect(harness.fileManager.fileExists(atPath: harness.legacyWhisperGGMLURL.path) == false)
+        #expect(harness.fileManager.fileExists(atPath: harness.legacyWhisperCoreMLDirectoryURL.path) == false)
+        #expect(harness.fileManager.fileExists(atPath: harness.legacyWhisperManifestURL.path) == false)
+        #expect(harness.manager.state(for: .whisperBase) == .ready)
+    }
+
+    @Test func refreshStatusTracksWhisperAndParakeetIndependently() throws {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        try harness.writeInstalledModel(.whisperBase)
+        try harness.writeInstalledModel(.parakeetTdtV3)
+
+        harness.manager.refreshStatus()
+
+        #expect(harness.manager.state(for: .whisperBase) == .ready)
+        #expect(harness.manager.state(for: .parakeetTdtV3) == .ready)
         #expect(harness.manager.installState == .ready)
         #expect(harness.manager.modelReady == true)
     }
 
-    @Test func refreshStatusWithOnlyGGMLReportsIncompleteInstall() throws {
-        let harness = makeHarness()
-        defer { harness.cleanup() }
-        try harness.writeGGMLFile()
-
-        harness.manager.refreshStatus()
-
-        #expect(harness.manager.modelReady == false)
-        guard case .failed(let message) = harness.manager.installState else {
-            Issue.record("Expected failed install state for incomplete model install.")
-            return
-        }
-        #expect(message.contains("ggml-base-encoder.mlmodelc"))
-    }
-
-    @Test func refreshStatusWithPersistedBackgroundDownloadReportsDownloading() throws {
+    @Test func persistedParakeetBackgroundJobOnlyMarksParakeetInstalling() throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
+        let parakeetDescriptor = harness.descriptorProvider(.parakeetTdtV3)
+        let firstArtifact = try #require(parakeetDescriptor.artifacts.first)
         try harness.writeBackgroundJob(
             ModelBackgroundDownloadJob(
-                ggml: .init(
-                    phase: .downloading,
-                    taskIdentifier: 11,
-                    completedBytes: 25,
-                    expectedBytes: 100
-                ),
-                coreMLZip: .init(
-                    phase: .pending
-                ),
+                modelID: .parakeetTdtV3,
+                artifactStatesByRelativePath: [
+                    firstArtifact.relativePath: .init(
+                        phase: .downloading,
+                        taskIdentifier: 19,
+                        completedBytes: 25,
+                        expectedBytes: 100
+                    )
+                ],
                 finalizationState: .awaitingDownloads
             )
         )
 
         harness.manager.refreshStatus()
 
-        guard case .downloading(_, let phase) = harness.manager.installState else {
-            Issue.record("Expected downloading install state for persisted background download job.")
+        guard case .downloading = harness.manager.state(for: .parakeetTdtV3) else {
+            Issue.record("Expected Parakeet to report downloading state from the persisted background job.")
             return
         }
-        #expect(phase == .downloadingAssets)
-        #expect(harness.manager.modelReady == false)
-        #expect(harness.manager.errorMessage == nil)
+        #expect(harness.manager.state(for: .whisperBase) == .notInstalled)
     }
 
-    @Test func refreshStatusWithPendingFinalizationReportsInstalling() throws {
+    @Test func successfulWhisperDownloadInstallsIntoWhisperFolderAndWarmsProvider() async throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        try harness.writeBackgroundJob(
-            ModelBackgroundDownloadJob(
-                ggml: .init(
-                    phase: .downloaded,
-                    completedBytes: 2_048,
-                    expectedBytes: 2_048
-                ),
-                coreMLZip: .init(
-                    phase: .downloaded,
-                    completedBytes: 1_024,
-                    expectedBytes: 1_024
-                ),
-                finalizationState: .pending
-            )
-        )
+        await harness.manager.performDownloadModel(withID: .whisperBase)
 
-        harness.manager.refreshStatus()
-
-        guard case .installing(_, let phase) = harness.manager.installState else {
-            Issue.record("Expected installing state when both background artifacts are downloaded.")
-            return
-        }
-        #expect(phase == .resumingInstall)
-        #expect(harness.manager.modelReady == false)
-        #expect(harness.manager.errorMessage == nil)
-    }
-
-    @Test func refreshStatusWithFailedBackgroundJobReportsFailure() throws {
-        let harness = makeHarness()
-        defer { harness.cleanup() }
-
-        try harness.writeBackgroundJob(
-            ModelBackgroundDownloadJob(
-                finalizationState: .failed,
-                lastErrorMessage: "Network died"
-            )
-        )
-
-        harness.manager.refreshStatus()
-
-        guard case .failed(let message) = harness.manager.installState else {
-            Issue.record("Expected failed install state for persisted background job failure.")
-            return
-        }
-        #expect(message == "Network died")
-        #expect(harness.manager.errorMessage == "Network died")
-        #expect(harness.manager.modelReady == false)
-    }
-
-    @Test func successfulDownloadInstallsModelAndWarmsWhisper() async throws {
-        let harness = makeHarness()
-        defer { harness.cleanup() }
-
-        await harness.manager.performDownloadModel()
-
+        #expect(harness.manager.state(for: .whisperBase) == .ready)
         #expect(harness.manager.installState == .ready)
-        #expect(harness.manager.modelReady == true)
-        #expect(harness.whisperService.unloadCallCount == 1)
-        #expect(harness.whisperService.warmupCallCount == 1)
-        #expect(harness.fileManager.fileExists(atPath: harness.ggmlModelURL.path))
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLDirectoryURL.path))
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLZipURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.manifestURL.path))
+        #expect(harness.whisperLifecycle.unloadCallCount == 1)
+        #expect(harness.whisperLifecycle.warmupCallCount == 1)
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperGGMLURL.path))
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperCoreMLDirectoryURL.path))
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperManifestURL.path))
     }
 
-    @Test func foregroundFinalizationCompletesDownloadedBackgroundJob() async throws {
-        let harness = makeHarness(includeBackgroundCoordinator: true)
-        defer { harness.cleanup() }
-
-        try harness.writeStagedGGMLFixture()
-        try harness.writeStagedCoreMLZipFixture()
-        try harness.writeBackgroundJob(
-            ModelBackgroundDownloadJob(
-                ggml: .init(
-                    phase: .downloaded,
-                    completedBytes: 2_048,
-                    expectedBytes: 2_048
-                ),
-                coreMLZip: .init(
-                    phase: .downloaded,
-                    completedBytes: 1_024,
-                    expectedBytes: 1_024
-                ),
-                finalizationState: .pending
-            )
-        )
-
-        harness.manager.appIsActive = true
-        await harness.manager.resumeForegroundFinalizationIfNeeded()
-
-        #expect(harness.manager.installState == .ready)
-        #expect(harness.manager.modelReady == true)
-        #expect(harness.whisperService.unloadCallCount == 1)
-        #expect(harness.whisperService.warmupCallCount == 1)
-        #expect(harness.fileManager.fileExists(atPath: harness.ggmlModelURL.path))
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLDirectoryURL.path))
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLZipURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.backgroundJobURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.stagedGGMLURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.stagedCoreMLZipURL.path) == false)
-    }
-
-    @Test func deleteRemovesInstalledArtifactsAndUnloadsWhisper() throws {
+    @Test func deleteWhisperRemovesInstalledArtifacts() throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
-        try harness.writeGGMLFile()
-        try harness.writeCoreMLDirectory()
-        try harness.writeValidManifest()
+        try harness.writeInstalledModel(.whisperBase)
 
-        harness.manager.deleteModel()
+        harness.manager.deleteModel(withID: .whisperBase)
 
-        #expect(harness.manager.installState == .notInstalled)
-        #expect(harness.whisperService.unloadCallCount == 1)
-        #expect(harness.fileManager.fileExists(atPath: harness.ggmlModelURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLDirectoryURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.manifestURL.path) == false)
+        #expect(harness.manager.state(for: .whisperBase) == .notInstalled)
+        #expect(harness.whisperLifecycle.unloadCallCount == 1)
+        #expect(harness.fileManager.fileExists(atPath: harness.whisperRootURL.path) == false)
     }
 
-    @Test func deleteRemovesPersistedBackgroundArtifacts() throws {
+    @Test func deleteParakeetRemovesInstalledArtifacts() throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
-        try harness.writeBackgroundJob(ModelBackgroundDownloadJob())
-        try harness.writeStagedGGMLFixture()
-        try harness.writeStagedCoreMLZipFixture()
+        try harness.writeInstalledModel(.parakeetTdtV3)
 
-        harness.manager.deleteModel()
+        harness.manager.deleteModel(withID: .parakeetTdtV3)
 
-        #expect(harness.fileManager.fileExists(atPath: harness.backgroundJobURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.stagedGGMLURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.stagedCoreMLZipURL.path) == false)
+        #expect(harness.manager.state(for: .parakeetTdtV3) == .notInstalled)
+        #expect(harness.parakeetLifecycle.unloadCallCount == 1)
+        #expect(harness.fileManager.fileExists(atPath: harness.parakeetRootURL.path) == false)
     }
 
-    @Test func repairRemovesPartialInstallAndRedownloadsModel() async throws {
+    @Test func repairingWhisperDoesNotMutateReadyParakeetInstallState() async throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
-        try harness.writeGGMLFile()
-        try harness.writeCoreMLZipFile()
+        try harness.writeInstalledModel(.parakeetTdtV3)
+        try harness.writePartialWhisperInstall()
 
-        await harness.manager.performRepairModelIfNeeded()
+        await harness.manager.performRepairModelIfNeeded(for: .whisperBase)
 
-        #expect(harness.manager.installState == .ready)
-        #expect(harness.whisperService.unloadCallCount == 1)
-        #expect(harness.whisperService.warmupCallCount == 1)
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLDirectoryURL.path))
-        #expect(harness.fileManager.fileExists(atPath: harness.coreMLZipURL.path) == false)
-        #expect(harness.fileManager.fileExists(atPath: harness.manifestURL.path))
+        #expect(harness.manager.state(for: .whisperBase) == .ready)
+        #expect(harness.manager.state(for: .parakeetTdtV3) == .ready)
+        #expect(harness.parakeetLifecycle.unloadCallCount == 0)
     }
 
-    @Test func lowDiskSpaceFailsWithoutStartingInstall() async {
-        let harness = makeHarness(freeSpace: 1_000)
-        defer { harness.cleanup() }
-
-        await harness.manager.performDownloadModel()
-
-        #expect(harness.manager.modelReady == false)
-        guard case .failed(let message) = harness.manager.installState else {
-            Issue.record("Expected failed install state for low disk space.")
-            return
-        }
-        #expect(message.contains("Not enough free disk space"))
-        #expect(harness.whisperService.warmupCallCount == 0)
-    }
-
-    private func makeHarness(
-        freeSpace: Int64 = 300_000_000,
-        includeBackgroundCoordinator: Bool = false
-    ) -> ModelManagerHarness {
+    private func makeHarness(freeSpace: Int64 = 1_000_000_000) -> ModelManagerHarness {
         let rootURL = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let fileManager = FileManager.default
         let modelsDirectoryURL = rootURL.appendingPathComponent("Models", isDirectory: true)
-        let stagingDirectoryURL = modelsDirectoryURL.appendingPathComponent("DownloadStaging", isDirectory: true)
-        let ggmlModelURL = modelsDirectoryURL.appendingPathComponent("ggml-base.bin")
-        let coreMLZipURL = modelsDirectoryURL.appendingPathComponent("ggml-base-encoder.mlmodelc.zip")
-        let coreMLDirectoryURL = modelsDirectoryURL.appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
-        let manifestURL = modelsDirectoryURL.appendingPathComponent("model-install-manifest.json")
+        let locator = InstalledDictationModelLocator(
+            fileManager: fileManager,
+            modelsDirectoryURL: modelsDirectoryURL
+        )
+        let descriptorProvider = Self.makeDescriptorProvider(rootURL: rootURL)
+        let whisperLifecycle = StubLifecycle()
+        let parakeetLifecycle = StubLifecycle()
         let backgroundJobURL = modelsDirectoryURL.appendingPathComponent("model-download-job.json")
-        let stagedGGMLURL = stagingDirectoryURL.appendingPathComponent("ggml-base.bin")
-        let stagedCoreMLZipURL = stagingDirectoryURL.appendingPathComponent("ggml-base-encoder.mlmodelc.zip")
-        let whisperService = StubWhisperLifecycle()
-
-        let fixturesDirectoryURL = rootURL.appendingPathComponent("Fixtures", isDirectory: true)
-        let ggmlFixtureURL = Self.makeTempFile(in: fixturesDirectoryURL, prefix: "ggml", size: 2_048)
-        let coreMLZipFixtureURL = Self.makeTempFile(in: fixturesDirectoryURL, prefix: "coreml", size: 1_024)
-        let backgroundDownloadCoordinator = includeBackgroundCoordinator
-            ? ModelBackgroundDownloadCoordinator(
-                fileManager: fileManager,
-                jobStore: ModelBackgroundDownloadJobStore(
-                    fileManager: fileManager,
-                    jobURLProvider: { backgroundJobURL }
-                ),
-                modelsDirectoryURLProvider: { modelsDirectoryURL },
-                stagedGGMLURLProvider: { stagedGGMLURL },
-                stagedCoreMLZipURLProvider: { stagedCoreMLZipURL }
-            )
-            : nil
+        let backgroundJobStore = ModelBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: { backgroundJobURL }
+        )
         let manager = ModelManager(
             fileManager: fileManager,
-            providerLifecycle: whisperService,
-            modelsDirectoryProvider: { modelsDirectoryURL },
-            ggmlModelURLProvider: { ggmlModelURL },
-            coreMLZipURLProvider: { coreMLZipURL },
-            coreMLDirectoryURLProvider: { coreMLDirectoryURL },
-            manifestURLProvider: { manifestURL },
-            modelDownloadJobURLProvider: { backgroundJobURL },
-            stagedGGMLURLProvider: { stagedGGMLURL },
-            stagedCoreMLZipURLProvider: { stagedCoreMLZipURL },
-            minGGMLBytes: 1_024,
-            expectedGGMLSHA256: Self.sha256Hex(forFileAt: ggmlFixtureURL),
-            expectedCoreMLZipSHA256: Self.sha256Hex(forFileAt: coreMLZipFixtureURL),
+            modelLocator: locator,
+            backgroundJobStore: backgroundJobStore,
+            lifecycleProvider: { modelID in
+                switch modelID {
+                case .whisperBase:
+                    return whisperLifecycle
+                case .parakeetTdtV3:
+                    return parakeetLifecycle
+                }
+            },
+            descriptorProvider: descriptorProvider,
             freeSpaceProvider: { _ in freeSpace },
-            backgroundDownloadCoordinator: backgroundDownloadCoordinator,
             download: { url, progress in
                 progress(.complete)
-                if url == ModelDownloadURLs.ggmlBase {
-                    return ggmlFixtureURL
-                }
-                return coreMLZipFixtureURL
+                return try Self.fixtureURL(for: url, rootURL: rootURL)
             },
-            unzip: Self.makeUnzipStub(coreMLDirectoryURL: coreMLDirectoryURL)
+            unzip: Self.makeUnzipStub()
         )
 
         return ModelManagerHarness(
             manager: manager,
-            whisperService: whisperService,
             fileManager: fileManager,
             rootURL: rootURL,
-            modelsDirectoryURL: modelsDirectoryURL,
-            ggmlModelURL: ggmlModelURL,
-            coreMLZipURL: coreMLZipURL,
-            coreMLDirectoryURL: coreMLDirectoryURL,
-            manifestURL: manifestURL,
+            locator: locator,
             backgroundJobURL: backgroundJobURL,
-            stagedGGMLURL: stagedGGMLURL,
-            stagedCoreMLZipURL: stagedCoreMLZipURL,
-            ggmlFixtureURL: ggmlFixtureURL,
-            coreMLZipFixtureURL: coreMLZipFixtureURL,
-            expectedGGMLSHA256: Self.sha256Hex(forFileAt: ggmlFixtureURL),
-            expectedCoreMLZipSHA256: Self.sha256Hex(forFileAt: coreMLZipFixtureURL)
+            descriptorProvider: descriptorProvider,
+            whisperLifecycle: whisperLifecycle,
+            parakeetLifecycle: parakeetLifecycle
         )
     }
 
-    nonisolated private static func makeTempFile(in directoryURL: URL, prefix: String, size: Int) -> URL {
+    nonisolated private static func makeDescriptorProvider(
+        rootURL: URL
+    ) -> (DictationModelID) -> DictationModelDescriptor {
+        let whisperGGMLFixtureURL = makeTempFile(in: rootURL, prefix: "whisper-ggml", data: Data(repeating: 0x5A, count: 2_048))
+        let whisperCoreMLFixtureURL = makeTempFile(in: rootURL, prefix: "whisper-coreml", data: Data(repeating: 0x6B, count: 1_024))
+        let parakeetConfigFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-config", data: Data("{}".utf8))
+        let parakeetWeightsFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-weights", data: Data(repeating: 0x4D, count: 512))
+
+        let whisperDescriptor = DictationModelDescriptor(
+            id: .whisperBase,
+            displayName: "Whisper Base",
+            installLayout: .subdirectory("whisper"),
+            artifacts: [
+                DictationModelArtifact(
+                    relativePath: "ggml-base.bin",
+                    remoteURL: URL(string: "https://example.com/test-whisper-ggml.bin")!,
+                    expectedSHA256: sha256Hex(forFileAt: whisperGGMLFixtureURL),
+                    progressTotalBytes: 2_048,
+                    retainedAfterInstall: true
+                ),
+                DictationModelArtifact(
+                    relativePath: "ggml-base-encoder.mlmodelc.zip",
+                    remoteURL: URL(string: "https://example.com/test-whisper-coreml.zip")!,
+                    expectedSHA256: sha256Hex(forFileAt: whisperCoreMLFixtureURL),
+                    progressTotalBytes: 1_024,
+                    retainedAfterInstall: false
+                )
+            ],
+            requiredDownloadBytes: 4_096
+        )
+
+        let parakeetDescriptor = DictationModelDescriptor(
+            id: .parakeetTdtV3,
+            displayName: "Parakeet TDT v3",
+            installLayout: .subdirectory("parakeet"),
+            artifacts: [
+                DictationModelArtifact(
+                    relativePath: "config.json",
+                    remoteURL: URL(string: "https://example.com/test-parakeet-config.json")!,
+                    expectedSHA256: sha256Hex(forFileAt: parakeetConfigFixtureURL),
+                    progressTotalBytes: 64,
+                    retainedAfterInstall: true
+                ),
+                DictationModelArtifact(
+                    relativePath: "Encoder.mlmodelc/weights/weight.bin",
+                    remoteURL: URL(string: "https://example.com/test-parakeet-weight.bin")!,
+                    expectedSHA256: sha256Hex(forFileAt: parakeetWeightsFixtureURL),
+                    progressTotalBytes: 512,
+                    retainedAfterInstall: true
+                )
+            ],
+            requiredDownloadBytes: 1_024
+        )
+
+        return { modelID in
+            switch modelID {
+            case .whisperBase:
+                whisperDescriptor
+            case .parakeetTdtV3:
+                parakeetDescriptor
+            }
+        }
+    }
+
+    nonisolated private static func fixtureURL(for url: URL, rootURL: URL) throws -> URL {
+        switch url.absoluteString {
+        case "https://example.com/test-whisper-ggml.bin":
+            return rootURL.appendingPathComponent("whisper-ggml")
+        case "https://example.com/test-whisper-coreml.zip":
+            return rootURL.appendingPathComponent("whisper-coreml")
+        case "https://example.com/test-parakeet-config.json":
+            return rootURL.appendingPathComponent("parakeet-config")
+        case "https://example.com/test-parakeet-weight.bin":
+            return rootURL.appendingPathComponent("parakeet-weights")
+        default:
+            throw CocoaError(.fileNoSuchFile)
+        }
+    }
+
+    nonisolated private static func makeTempFile(in directoryURL: URL, prefix: String, data: Data) -> URL {
         try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        let url = directoryURL
-            .appendingPathComponent("\(prefix)-\(UUID().uuidString)")
-        let data = Data(repeating: 0x5A, count: size)
+        let url = directoryURL.appendingPathComponent(prefix)
         try? data.write(to: url)
         return url
     }
@@ -335,9 +273,10 @@ struct ModelManagerTests {
         return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
-    nonisolated private static func makeUnzipStub(coreMLDirectoryURL: URL) -> ModelManager.UnzipClosure {
-        { _, _, fileManager, progress in
+    nonisolated private static func makeUnzipStub() -> ModelManager.UnzipClosure {
+        { _, destinationDirectory, fileManager, progress in
             progress(0, 1)
+            let coreMLDirectoryURL = destinationDirectory.appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true)
             if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
                 try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
             }
@@ -345,135 +284,121 @@ struct ModelManagerTests {
             progress(1, 1)
         }
     }
-
 }
 
 @MainActor
 private final class ModelManagerHarness {
     let manager: ModelManager
-    let whisperService: StubWhisperLifecycle
     let fileManager: FileManager
     let rootURL: URL
-    let modelsDirectoryURL: URL
-    let ggmlModelURL: URL
-    let coreMLZipURL: URL
-    let coreMLDirectoryURL: URL
-    let manifestURL: URL
+    let locator: InstalledDictationModelLocator
     let backgroundJobURL: URL
-    let stagedGGMLURL: URL
-    let stagedCoreMLZipURL: URL
-    let ggmlFixtureURL: URL
-    let coreMLZipFixtureURL: URL
-    let expectedGGMLSHA256: String
-    let expectedCoreMLZipSHA256: String
+    let descriptorProvider: (DictationModelID) -> DictationModelDescriptor
+    let whisperLifecycle: StubLifecycle
+    let parakeetLifecycle: StubLifecycle
 
     init(
         manager: ModelManager,
-        whisperService: StubWhisperLifecycle,
         fileManager: FileManager,
         rootURL: URL,
-        modelsDirectoryURL: URL,
-        ggmlModelURL: URL,
-        coreMLZipURL: URL,
-        coreMLDirectoryURL: URL,
-        manifestURL: URL,
+        locator: InstalledDictationModelLocator,
         backgroundJobURL: URL,
-        stagedGGMLURL: URL,
-        stagedCoreMLZipURL: URL,
-        ggmlFixtureURL: URL,
-        coreMLZipFixtureURL: URL,
-        expectedGGMLSHA256: String,
-        expectedCoreMLZipSHA256: String
+        descriptorProvider: @escaping (DictationModelID) -> DictationModelDescriptor,
+        whisperLifecycle: StubLifecycle,
+        parakeetLifecycle: StubLifecycle
     ) {
         self.manager = manager
-        self.whisperService = whisperService
         self.fileManager = fileManager
         self.rootURL = rootURL
-        self.modelsDirectoryURL = modelsDirectoryURL
-        self.ggmlModelURL = ggmlModelURL
-        self.coreMLZipURL = coreMLZipURL
-        self.coreMLDirectoryURL = coreMLDirectoryURL
-        self.manifestURL = manifestURL
+        self.locator = locator
         self.backgroundJobURL = backgroundJobURL
-        self.stagedGGMLURL = stagedGGMLURL
-        self.stagedCoreMLZipURL = stagedCoreMLZipURL
-        self.ggmlFixtureURL = ggmlFixtureURL
-        self.coreMLZipFixtureURL = coreMLZipFixtureURL
-        self.expectedGGMLSHA256 = expectedGGMLSHA256
-        self.expectedCoreMLZipSHA256 = expectedCoreMLZipSHA256
+        self.descriptorProvider = descriptorProvider
+        self.whisperLifecycle = whisperLifecycle
+        self.parakeetLifecycle = parakeetLifecycle
     }
+
+    var whisperRootURL: URL { locator.installRootURL(for: .whisperBase)! }
+    var whisperGGMLURL: URL { locator.artifactURL(for: .whisperBase, relativePath: "ggml-base.bin")! }
+    var whisperCoreMLDirectoryURL: URL { locator.artifactURL(for: .whisperBase, relativePath: "ggml-base-encoder.mlmodelc")! }
+    var whisperManifestURL: URL { locator.manifestURL(for: .whisperBase)! }
+    var parakeetRootURL: URL { locator.installRootURL(for: .parakeetTdtV3)! }
+    var legacyWhisperGGMLURL: URL { locator.modelsDirectoryURL!.appendingPathComponent("ggml-base.bin") }
+    var legacyWhisperCoreMLDirectoryURL: URL { locator.modelsDirectoryURL!.appendingPathComponent("ggml-base-encoder.mlmodelc", isDirectory: true) }
+    var legacyWhisperManifestURL: URL { locator.modelsDirectoryURL!.appendingPathComponent("model-install-manifest.json") }
 
     func cleanup() {
         try? fileManager.removeItem(at: rootURL)
     }
 
-    func writeGGMLFile(size: Int = 2_048) throws {
-        if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
-            try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
+    func writeInstalledModel(_ modelID: DictationModelID) throws {
+        let descriptor = descriptorProvider(modelID)
+        guard let installRootURL = locator.installRootURL(for: modelID) else {
+            throw CocoaError(.fileNoSuchFile)
         }
-        try Data(repeating: 0x5A, count: size).write(to: ggmlModelURL)
-    }
+        try fileManager.createDirectory(at: installRootURL, withIntermediateDirectories: true)
 
-    func writeCoreMLDirectory() throws {
-        if !fileManager.fileExists(atPath: coreMLDirectoryURL.path) {
-            try fileManager.createDirectory(at: coreMLDirectoryURL, withIntermediateDirectories: true)
+        for artifact in descriptor.artifacts {
+            guard let artifactURL = locator.artifactURL(for: modelID, relativePath: artifact.relativePath) else {
+                throw CocoaError(.fileNoSuchFile)
+            }
+            let parentDirectory = artifactURL.deletingLastPathComponent()
+            if !fileManager.fileExists(atPath: parentDirectory.path) {
+                try fileManager.createDirectory(at: parentDirectory, withIntermediateDirectories: true)
+            }
+            try Data("installed".utf8).write(to: artifactURL)
         }
-        try Data("coreml".utf8).write(to: coreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
-    }
 
-    func writeCoreMLZipFile() throws {
-        if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
-            try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
+        if modelID == .whisperBase {
+            try fileManager.createDirectory(at: whisperCoreMLDirectoryURL, withIntermediateDirectories: true)
+            try Data("coreml".utf8).write(to: whisperCoreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
+            guard let zipURL = locator.artifactURL(for: .whisperBase, relativePath: "ggml-base-encoder.mlmodelc.zip") else {
+                throw CocoaError(.fileNoSuchFile)
+            }
+            try? fileManager.removeItem(at: zipURL)
         }
-        try Data("zip".utf8).write(to: coreMLZipURL)
-    }
 
-    func writeValidManifest() throws {
-        if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
-            try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
-        }
-        let manifest = ModelInstallManifest(
-            version: ModelInstallManifest.currentVersion,
-            ggmlSHA256: expectedGGMLSHA256,
-            coreMLZipSHA256: expectedCoreMLZipSHA256
+        let manifest = DictationModelInstallManifest(
+            artifactSHA256ByRelativePath: Dictionary(
+                uniqueKeysWithValues: descriptor.artifacts.map { ($0.relativePath, $0.expectedSHA256) }
+            )
         )
-        let data = try JSONEncoder().encode(manifest)
-        try data.write(to: manifestURL)
+        let manifestData = try JSONEncoder().encode(manifest)
+        guard let manifestURL = locator.manifestURL(for: modelID) else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        try manifestData.write(to: manifestURL)
+    }
+
+    func writePartialWhisperInstall() throws {
+        try fileManager.createDirectory(at: whisperRootURL, withIntermediateDirectories: true)
+        try Data("partial".utf8).write(to: whisperGGMLURL)
+    }
+
+    func writeLegacyWhisperInstall() throws {
+        try fileManager.createDirectory(at: locator.modelsDirectoryURL!, withIntermediateDirectories: true)
+        try Data("legacy-whisper".utf8).write(to: legacyWhisperGGMLURL)
+        try fileManager.createDirectory(at: legacyWhisperCoreMLDirectoryURL, withIntermediateDirectories: true)
+        try Data("coreml".utf8).write(to: legacyWhisperCoreMLDirectoryURL.appendingPathComponent("Manifest.plist"))
+
+        let descriptor = descriptorProvider(.whisperBase)
+        let manifest = DictationModelInstallManifest(
+            artifactSHA256ByRelativePath: Dictionary(
+                uniqueKeysWithValues: descriptor.artifacts.map { ($0.relativePath, $0.expectedSHA256) }
+            )
+        )
+        let manifestData = try JSONEncoder().encode(manifest)
+        try manifestData.write(to: legacyWhisperManifestURL)
     }
 
     func writeBackgroundJob(_ job: ModelBackgroundDownloadJob) throws {
-        if !fileManager.fileExists(atPath: modelsDirectoryURL.path) {
-            try fileManager.createDirectory(at: modelsDirectoryURL, withIntermediateDirectories: true)
-        }
+        try fileManager.createDirectory(at: locator.modelsDirectoryURL!, withIntermediateDirectories: true)
         let data = try JSONEncoder().encode(job)
         try data.write(to: backgroundJobURL)
-    }
-
-    func writeStagedGGMLFixture() throws {
-        let directoryURL = stagedGGMLURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: directoryURL.path) {
-            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        }
-        if fileManager.fileExists(atPath: stagedGGMLURL.path) {
-            try fileManager.removeItem(at: stagedGGMLURL)
-        }
-        try fileManager.copyItem(at: ggmlFixtureURL, to: stagedGGMLURL)
-    }
-
-    func writeStagedCoreMLZipFixture() throws {
-        let directoryURL = stagedCoreMLZipURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: directoryURL.path) {
-            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        }
-        if fileManager.fileExists(atPath: stagedCoreMLZipURL.path) {
-            try fileManager.removeItem(at: stagedCoreMLZipURL)
-        }
-        try fileManager.copyItem(at: coreMLZipFixtureURL, to: stagedCoreMLZipURL)
     }
 }
 
 @MainActor
-private final class StubWhisperLifecycle: DictationModelLifecycleProviding {
+private final class StubLifecycle: DictationModelLifecycleProviding {
     private(set) var warmupCallCount = 0
     private(set) var unloadCallCount = 0
 

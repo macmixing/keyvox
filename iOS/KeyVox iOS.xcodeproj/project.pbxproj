@@ -80,6 +80,8 @@
 		8EECEA6E2F655FB900BECF17 /* ModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */; };
 		8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5D2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift */; };
 		8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */; };
+		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
+		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
@@ -228,6 +230,8 @@
 		8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
 		8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Support.swift"; sourceTree = "<group>"; };
 		8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Validation.swift"; sourceTree = "<group>"; };
+		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
+		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
 		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
 		9B7001012FB1000100BB0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
@@ -562,6 +566,8 @@
 				8EECEA5E2F655FB900BECF17 /* ModelDownloadURLs.swift */,
 				8EECEA5F2F655FB900BECF17 /* ModelInstallManifest.swift */,
 				8EECEA602F655FB900BECF17 /* ModelInstallState.swift */,
+				B91000012FF0000100AA0001 /* DictationModelCatalog.swift */,
+				B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */,
 				8EECEA612F655FB900BECF17 /* ModelManager.swift */,
 				8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */,
 				8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */,
@@ -889,6 +895,8 @@
 				8EECEA6E2F655FB900BECF17 /* ModelManager+Validation.swift in Sources */,
 				8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */,
 				8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */,
+				B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */,
+				B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */,
 				AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */,
 				AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */,
 				AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */,
