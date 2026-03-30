@@ -143,7 +143,7 @@ private struct DictationModelCardRow: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(configuration.title)
