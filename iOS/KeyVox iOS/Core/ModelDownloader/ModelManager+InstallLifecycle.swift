@@ -300,21 +300,35 @@ extension ModelManager {
         setState(validatedState(for: modelID), for: modelID)
     }
 
-    func performDeleteModel(withID modelID: DictationModelID) {
+    func performDeleteModel(withID modelID: DictationModelID) async {
+        guard modelLocator.modelsDirectoryURL != nil else {
+            setState(.failed(message: "App Group container unavailable."), for: modelID)
+            return
+        }
+
+        if let backgroundDownloadCoordinator,
+           backgroundDownloadCoordinator.loadJob()?.modelID == modelID {
+            await backgroundDownloadCoordinator.cancelJob(for: modelID)
+        }
+
+        performDeleteModelSynchronously(withID: modelID)
+    }
+
+    func performDeleteModelSynchronously(withID modelID: DictationModelID) {
         guard modelLocator.modelsDirectoryURL != nil else {
             setState(.failed(message: "App Group container unavailable."), for: modelID)
             return
         }
 
         lifecycleProvider(modelID)?.unloadModel()
+        if let backgroundJob = persistedBackgroundDownloadJob(), backgroundJob.modelID == modelID {
+            try? backgroundJobStore().clear()
+        }
         if let installRootURL = modelLocator.installRootURL(for: modelID) {
             try? removeItemIfExists(at: installRootURL)
         }
         if let stagingRootURL = modelLocator.stagedRootURL(for: modelID) {
             try? removeItemIfExists(at: stagingRootURL)
-        }
-        if let backgroundJob = persistedBackgroundDownloadJob(), backgroundJob.modelID == modelID {
-            try? backgroundJobStore().clear()
         }
 
         refreshStatus()
@@ -341,7 +355,7 @@ extension ModelManager {
         case .ready:
             return
         case .notInstalled, .failed:
-            performDeleteModel(withID: modelID)
+            await performDeleteModel(withID: modelID)
             if backgroundDownloadCoordinator != nil {
                 await startOrResumeDownloadJob(for: modelID)
             } else {

@@ -108,11 +108,12 @@ final class ModelManager: ObservableObject {
         currentDownloadTask = nil
         if let backgroundDownloadCoordinator,
            backgroundDownloadCoordinator.loadJob()?.modelID == modelID {
-            Task {
-                await backgroundDownloadCoordinator.clearJob()
+            Task { [weak self] in
+                await self?.performDeleteModel(withID: modelID)
             }
+        } else {
+            performDeleteModelSynchronously(withID: modelID)
         }
-        performDeleteModel(withID: modelID)
     }
 
     func deleteModel() {

@@ -206,6 +206,19 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
         notifyStateChange(with: nil)
     }
 
+    func cancelJob(for modelID: DictationModelID) async {
+        let tasks = await allDownloadTasks()
+        tasks
+            .filter {
+                guard let description = $0.taskDescription,
+                      let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
+                    return false
+                }
+                return taskDescriptor.modelID == modelID
+            }
+            .forEach { $0.cancel() }
+    }
+
     private func synchronizedJob(for modelID: DictationModelID) -> ModelBackgroundDownloadJob {
         if let existingJob = loadJob(), existingJob.modelID == modelID {
             return existingJob
