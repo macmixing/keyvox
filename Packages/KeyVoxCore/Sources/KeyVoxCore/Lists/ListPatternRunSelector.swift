@@ -46,14 +46,14 @@ public struct ListPatternRunSelector {
         guard !markers.isEmpty else { return nil }
         let nsText = text as NSString
 
-        // Build best monotonic subsequence ending at each marker, so we can
-        // skip noise markers (e.g. incidental "one" in prose) and still keep
-        // the intended 1->2->3 list flow.
+        // Intentionally require consecutive numbering for detected lists.
+        // Supporting skipped numbering (for example 1, 2, 4) created too many
+        // prose false positives for too little real-world value.
         var bestEndingAt = Array(repeating: [ListPatternMarker](), count: markers.count)
 
         for i in markers.indices {
             var bestForCurrent: [ListPatternMarker] = [markers[i]]
-            for j in 0..<i where markers[i].number > markers[j].number {
+            for j in 0..<i where markers[i].number == markers[j].number + 1 {
                 let previousRun = bestEndingAt[j]
                 guard !previousRun.isEmpty else { continue }
                 let candidate = previousRun + [markers[i]]
@@ -71,7 +71,7 @@ public struct ListPatternRunSelector {
 
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
-        guard isCredibleTwoItemGap(run: best, in: nsText, languageCode: languageCode) else { return nil }
+        guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText) else { return nil }
         guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
         guard hasCredibleRunCadence(run: best, in: nsText) else { return nil }
         return best
@@ -83,22 +83,6 @@ public struct ListPatternRunSelector {
         guard let first = run.first else { return false }
         guard first.number > 1 else { return true }
         return markerHasBoundaryBefore(first, in: nsText)
-    }
-
-    // Prevent prose like "one for X and three for Y" from being detected as a
-    // two-item list while still allowing explicit skipped numbering ("1. ... 3. ...").
-    private func isCredibleTwoItemGap(
-        run: [ListPatternMarker],
-        in nsText: NSString,
-        languageCode: String?
-    ) -> Bool {
-        guard run.count == 2 else { return true }
-        if run[0].number > 1 && !run.allSatisfy({ markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }) {
-            return false
-        }
-        let delta = run[1].number - run[0].number
-        guard delta > 1 else { return true }
-        return run.allSatisfy { markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode) }
     }
 
     private func hasCredibleAmbiguousTwoItemSpokenContent(
@@ -132,10 +116,39 @@ public struct ListPatternRunSelector {
             return false
         }
 
+        guard hasCredibleAmbiguousTwoItemPhraseShape(firstItemText) else {
+            return false
+        }
+
+        return true
+    }
+
+    private func hasNoCredibleTrailingSkippedMarkers(
+        after run: [ListPatternMarker],
+        from markers: [ListPatternMarker],
+        in nsText: NSString
+    ) -> Bool {
+        guard let last = run.last else { return true }
+
+        // Intentionally reject a shorter consecutive run when a nearby later
+        // marker skips ahead (for example 1, 2, 4). We no longer support
+        // skipped numbering, so a trailing skipped marker should invalidate
+        // detection instead of being silently absorbed into commentary.
+        for marker in markers where marker.markerTokenStart > last.markerTokenStart {
+            guard marker.number > last.number + 1 else { continue }
+            if isCredibleAdjacentMarkerCadence(from: last, to: marker, in: nsText) {
+                return false
+            }
+        }
+
         return true
     }
 
     private func hasCredibleAmbiguousItemOpening(_ text: String) -> Bool {
+        if looksLikeAmbiguousEmailOrDomainItem(text) {
+            return true
+        }
+
         let nsText = text as NSString
         let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
         tagger.string = text
@@ -166,6 +179,63 @@ public struct ListPatternRunSelector {
         }
 
         return sawContentToken
+    }
+
+    private func hasCredibleAmbiguousTwoItemPhraseShape(_ text: String) -> Bool {
+        guard !containsSentenceBoundaryPunctuation(text) else {
+            return false
+        }
+
+        let nsText = text as NSString
+        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        tagger.string = text
+
+        var lexicalTags: [NSLinguisticTag] = []
+        let fullRange = NSRange(location: 0, length: nsText.length)
+
+        tagger.enumerateTags(
+            in: fullRange,
+            unit: .word,
+            scheme: .lexicalClass,
+            options: [.omitWhitespace, .omitPunctuation, .joinNames]
+        ) { tag, tokenRange, _ in
+            let token = nsText.substring(with: tokenRange)
+            guard token.rangeOfCharacter(from: .letters) != nil else { return }
+            if let tag {
+                lexicalTags.append(tag)
+            }
+        }
+
+        guard lexicalTags.count > 1 else { return true }
+        return !lexicalTags.dropFirst().contains(.pronoun)
+    }
+
+    private func looksLikeAmbiguousEmailOrDomainItem(_ text: String) -> Bool {
+        let collapsed = text
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !collapsed.isEmpty else { return false }
+
+        let punctuationStripped = collapsed
+            .replacingOccurrences(
+                of: #"[\"'”’\)\]\}]*[.,;:!?…]+[\"'”’\)\]\}]*$"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let emailLikePattern =
+            #"(?i)^(?:[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|[A-Z0-9._%+'\-]+(?:\s+[A-Z0-9._%+'\-]+){0,3}\s+at\s+[A-Z0-9\-]+(?:\.[A-Z0-9\-]+)+)$"#
+        if punctuationStripped.range(of: emailLikePattern, options: .regularExpression) != nil {
+            return true
+        }
+
+        return WebsiteNormalizer.isCompactDomainToken(punctuationStripped)
+    }
+
+    private func containsSentenceBoundaryPunctuation(_ text: String) -> Bool {
+        let sentenceBoundaryPattern = #"[!?]|(?:^|[A-Z0-9])\.(?:\s|$)"#
+        return text.range(of: sentenceBoundaryPattern, options: [.regularExpression, .caseInsensitive]) != nil
     }
 
     private func lexicalClassCountsAsContent(_ tag: NSLinguisticTag?) -> Bool {
@@ -268,14 +338,12 @@ public struct ListPatternRunSelector {
             return score
         }
 
-        // Prefer naturally contiguous counting while still allowing skipped
-        // numbers (e.g. 1, 2, 4) so later markers remain list items.
+        // Intentionally favor contiguous counting only. Skipped numbering was
+        // removed because it made prose/list ambiguity much harder to control.
         for index in 1..<run.count {
             let delta = run[index].number - run[index - 1].number
             if delta == 1 {
                 score += 2
-            } else if delta == 2 {
-                score += 1
             }
         }
 
