@@ -7,7 +7,7 @@ internal protocol ParakeetRuntimeBackend: AnyObject {
 }
 
 internal final class ParakeetRuntime {
-    typealias BackendFactory = (URL) -> (any ParakeetRuntimeBackend)?
+    typealias BackendFactory = (URL) throws -> (any ParakeetRuntimeBackend)?
 
     private let lock = NSLock()
     private var activeRequestID = UUID()
@@ -22,7 +22,11 @@ internal final class ParakeetRuntime {
             throw ParakeetError.modelNotFound
         }
 
-        self.backend = backendFactory?(modelURL)
+        if let backendFactory {
+            self.backend = try backendFactory(modelURL)
+        } else {
+            self.backend = try Self.makeDefaultBackend(modelURL: modelURL)
+        }
     }
 
     func transcribe(audioFrames: [Float], params: ParakeetParams) async throws -> ParakeetTranscriptionResult {
@@ -88,5 +92,18 @@ internal final class ParakeetRuntime {
         lock.lock()
         defer { lock.unlock() }
         return backend
+    }
+
+    private static func makeDefaultBackend(modelURL: URL) throws -> (any ParakeetRuntimeBackend)? {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: modelURL.path, isDirectory: &isDirectory) else {
+            throw ParakeetError.modelNotFound
+        }
+
+        guard isDirectory.boolValue else {
+            return nil
+        }
+
+        return try ParakeetCoreMLBackend(modelDirectoryURL: modelURL)
     }
 }

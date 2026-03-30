@@ -87,6 +87,34 @@ final class ModelDownloaderTests: XCTestCase {
         }
     }
 
+    func testRefreshModelStatusKeepsParakeetNotReadyWhenManifestIsMissing() throws {
+        try withTemporaryDirectory { dir in
+            let downloader = makeDownloader(in: dir, minBytes: 10)
+            let descriptor = downloader.modelLocator.descriptor(for: .parakeetTdtV3)
+
+            try FileManager.default.createDirectory(
+                at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3),
+                withIntermediateDirectories: true
+            )
+
+            for artifact in descriptor.artifacts {
+                let url = downloader.modelLocator.installedArtifactURL(
+                    for: .parakeetTdtV3,
+                    relativePath: artifact.relativePath
+                )
+                try FileManager.default.createDirectory(
+                    at: url.deletingLastPathComponent(),
+                    withIntermediateDirectories: true
+                )
+                try Data([0x01]).write(to: url, options: .atomic)
+            }
+
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(downloader.isModelReady(for: .parakeetTdtV3))
+        }
+    }
+
     func testUpdateTaskProgressAggregatesAcrossTasks() async throws {
         let dir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -107,6 +135,28 @@ final class ModelDownloaderTests: XCTestCase {
             abs(downloader.progress - 0.375) < 0.0001
         }
         XCTAssertEqual(downloader.progress, 0.375, accuracy: 0.0001)
+    }
+
+    func testUpdateTaskProgressPreservesFallbackTotalWhenSessionReportsUnknownLength() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let sessionFactory = RecordingSessionFactory(taskIDs: [801, 802])
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadBaseModel()
+        downloader.updateTaskProgress(id: 801, written: 32, total: -1)
+
+        try await waitForCondition {
+            downloader.taskProgressSnapshot[801]?.written == 32
+        }
+
+        XCTAssertEqual(downloader.taskProgressSnapshot[801]?.written, 32)
+        XCTAssertEqual(downloader.taskProgressSnapshot[801]?.total, 140_000_000)
     }
 
     func testDeleteModelRemovesArtifactsAndResetsPublishedState() async throws {
@@ -135,6 +185,41 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: downloader.modelURL.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: zipURL.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: coreMLDir.path))
+    }
+
+    func testDeleteModelByIDRemovesParakeetInstallAndResetsState() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = makeDownloader(in: dir, minBytes: 10)
+        let descriptor = downloader.modelLocator.descriptor(for: .parakeetTdtV3)
+        try FileManager.default.createDirectory(
+            at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3),
+            withIntermediateDirectories: true
+        )
+        for artifact in descriptor.artifacts.prefix(1) {
+            let url = downloader.modelLocator.installedArtifactURL(
+                for: .parakeetTdtV3,
+                relativePath: artifact.relativePath
+            )
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try Data([0x01]).write(to: url, options: .atomic)
+        }
+
+        downloader.deleteModel(withID: .parakeetTdtV3)
+
+        try await waitForCondition {
+            downloader.isModelReady(for: .parakeetTdtV3) == false
+        }
+
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: downloader.modelLocator.installRootURL(for: .parakeetTdtV3).path
+            )
+        )
     }
 
     func testDownloadBaseModelInitializesTaskProgressAndResumesTasks() {
@@ -281,6 +366,28 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertEqual(
             downloader.errorMessage,
             "Model download failed. Check your network/storage and retry."
+        )
+    }
+
+    func testDownloadModelByIDInitializesParakeetTasks() {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let taskIDs = Array(1...DictationModelCatalog.descriptor(for: .parakeetTdtV3).artifacts.count)
+        let sessionFactory = RecordingSessionFactory(taskIDs: taskIDs)
+        let downloader = makeDownloader(
+            in: dir,
+            minBytes: 10,
+            makeDownloadSession: sessionFactory.makeSession(delegate:)
+        )
+
+        downloader.downloadModel(withID: .parakeetTdtV3)
+
+        XCTAssertTrue(downloader.isDownloading(for: .parakeetTdtV3))
+        XCTAssertEqual(sessionFactory.makeCount, 1)
+        XCTAssertEqual(
+            sessionFactory.createdSession.downloadURLs.count,
+            DictationModelCatalog.descriptor(for: .parakeetTdtV3).artifacts.count
         )
     }
 

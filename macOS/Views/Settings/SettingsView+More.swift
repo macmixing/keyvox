@@ -88,6 +88,10 @@ extension SettingsView {
                     }
                 }
             }
+
+#if DEBUG
+            experimentalProviderTestingSection
+#endif
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {

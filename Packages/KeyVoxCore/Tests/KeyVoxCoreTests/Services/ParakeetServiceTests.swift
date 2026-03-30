@@ -3,6 +3,39 @@ import XCTest
 
 @MainActor
 final class ParakeetServiceTests: XCTestCase {
+    func testStaleRequestCannotOverwriteCurrentTranscriptionState() {
+        let service = ParakeetService()
+        let staleRequestID = service.beginTranscriptionRequest()
+        let currentRequestID = service.beginTranscriptionRequest()
+
+        var staleCompletionCalled = false
+        service.finishSuccessfulRequest(
+            staleRequestID,
+            finalText: "stale",
+            likelyNoSpeech: false,
+            detectedLanguageCode: "en"
+        ) { _ in
+            staleCompletionCalled = true
+        }
+
+        XCTAssertFalse(staleCompletionCalled)
+        XCTAssertEqual(service.transcriptionText, "")
+        XCTAssertFalse(service.lastResultWasLikelyNoSpeech)
+
+        var currentCompletionText: String?
+        service.finishSuccessfulRequest(
+            currentRequestID,
+            finalText: "current",
+            likelyNoSpeech: false,
+            detectedLanguageCode: "en"
+        ) { result in
+            currentCompletionText = result?.text
+        }
+
+        XCTAssertEqual(currentCompletionText, "current")
+        XCTAssertEqual(service.transcriptionText, "current")
+    }
+
     func testIsModelReadyIsFalseWhenResolverReturnsNil() {
         let service = ParakeetService()
 
@@ -24,6 +57,14 @@ final class ParakeetServiceTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testUpdateDictionaryHintPromptTrimsWhitespace() {
+        let service = ParakeetService()
+
+        service.updateDictionaryHintPrompt("  cueboard  ")
+
+        XCTAssertEqual(service.dictionaryHintPrompt, "cueboard")
     }
 
     func testTranscribeFailsSafelyWithoutRuntimeBackend() throws {

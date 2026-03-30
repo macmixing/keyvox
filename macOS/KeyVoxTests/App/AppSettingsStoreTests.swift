@@ -19,6 +19,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedMicrophoneUID, "")
         XCTAssertNil(store.updateAlertLastShown)
         XCTAssertNil(store.updateAlertSnoozedUntil)
+        XCTAssertEqual(store.activeDictationProvider, .whisper)
     }
 
     func testInitHydratesPersistedValuesAndClampsStoredVolume() {
@@ -36,6 +37,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set("mic-123", forKey: UserDefaultsKeys.selectedMicrophoneUID)
         defaults.set(lastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
         defaults.set(snoozedUntil, forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
+        defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
 
         let store = AppSettingsStore(defaults: defaults)
 
@@ -48,6 +50,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedMicrophoneUID, "mic-123")
         XCTAssertEqual(store.updateAlertLastShown, lastShown)
         XCTAssertEqual(store.updateAlertSnoozedUntil, snoozedUntil)
+        XCTAssertEqual(store.activeDictationProvider, .parakeet)
     }
 
     func testInitFallsBackToDefaultTriggerBindingForInvalidStoredValue() {
@@ -89,6 +92,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.selectedMicrophoneUID = "usb-mic"
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
+        store.activeDictationProvider = .parakeet
 
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding))
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.triggerBinding), AppSettingsStore.TriggerBinding.rightCommand.rawValue)
@@ -98,6 +102,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)
     }
 
     func testRefreshSelectedMicrophoneFromDefaultsHydratesExternalDefaultWrite() {

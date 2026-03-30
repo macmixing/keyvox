@@ -1,8 +1,9 @@
 import Foundation
 import Darwin
+import CryptoKit
 
 extension ModelDownloader {
-    func validateModelFiles() -> Bool {
+    func validateWhisperModelFiles() -> Bool {
         // 1) GGML must exist and be non-trivially sized
         guard fileManager.fileExists(atPath: modelURL.path) else { return false }
         if let size = fileSizeBytes(at: modelURL), size < minGGMLBytes {
@@ -23,6 +24,44 @@ extension ModelDownloader {
         // If the app has ever downloaded CoreML, prefer the directory check.
         // Otherwise, allow GGML-only readiness.
         return coreMLDirExists || !coreMLDirExists
+    }
+
+    func validateStrictManifestModel(_ modelID: DictationModelID) -> Bool {
+        let descriptor = modelLocator.descriptor(for: modelID)
+        guard descriptor.manifestFilename != nil else { return false }
+        guard let installRootURL = modelLocator.resolvedInstallRootURL(for: modelID) else {
+            return false
+        }
+
+        for artifact in descriptor.artifacts {
+            let artifactURL = modelLocator.installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
+            guard fileManager.fileExists(atPath: artifactURL.path) else {
+                return false
+            }
+
+            if artifactURL.deletingLastPathComponent().path.hasPrefix(installRootURL.path) == false {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    func sha256Hex(forFileAt url: URL) throws -> String {
+        let digest = SHA256.hash(data: try Data(contentsOf: url, options: .mappedIfSafe))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    func writeInstallManifest(
+        _ manifest: DictationModelInstallManifest,
+        to url: URL
+    ) throws {
+        try fileManager.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let data = try JSONEncoder().encode(manifest)
+        try data.write(to: url, options: .atomic)
     }
 
     private func fileSizeBytes(at url: URL) -> Int64? {

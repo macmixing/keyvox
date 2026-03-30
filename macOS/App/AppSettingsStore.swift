@@ -5,6 +5,22 @@ import Combine
 final class AppSettingsStore: ObservableObject {
     static let shared = AppSettingsStore()
 
+    enum ActiveDictationProvider: String, CaseIterable, Identifiable {
+        case whisper
+        case parakeet
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .whisper:
+                return "Whisper"
+            case .parakeet:
+                return "Parakeet"
+            }
+        }
+    }
+
     enum TriggerBinding: String, CaseIterable, Identifiable {
         case rightOption
         case leftOption
@@ -100,6 +116,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var activeDictationProvider: ActiveDictationProvider {
+        didSet {
+            defaults.set(activeDictationProvider.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        }
+    }
+
     private let defaults: UserDefaults
     private let defaultSoundVolume: Double = 0.1
 
@@ -135,6 +157,12 @@ final class AppSettingsStore: ObservableObject {
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
         pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
         lastAcknowledgedUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
+        if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
+           let provider = ActiveDictationProvider(rawValue: raw) {
+            activeDictationProvider = provider
+        } else {
+            activeDictationProvider = .whisper
+        }
     }
 
     func refreshSelectedMicrophoneFromDefaults() {

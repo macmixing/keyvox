@@ -24,6 +24,7 @@ enum UserDefaultsKeys {
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let lastTranscription = "KeyVox.App.LastTranscription"
+        static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"
     }
 
     enum iCloud {

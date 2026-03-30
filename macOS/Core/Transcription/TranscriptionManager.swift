@@ -22,6 +22,8 @@ class TranscriptionManager: ObservableObject {
     private let modelDownloader: ModelDownloader
     private let audioRecorder: AudioRecorder
     private let provider: any DictationProvider
+    private let whisperService: WhisperService
+    private let parakeetService: ParakeetService
     private let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
@@ -81,6 +83,8 @@ class TranscriptionManager: ObservableObject {
         self.modelDownloader = modelDownloader
         self.audioRecorder = audioRecorder
         self.provider = serviceRegistry.dictationProvider
+        self.whisperService = serviceRegistry.whisperService
+        self.parakeetService = serviceRegistry.parakeetService
         self.dictionaryStore = serviceRegistry.dictionaryStore
         self.weeklyWordStatsStore = serviceRegistry.weeklyWordStatsStore
         self.postProcessor = postProcessor
@@ -135,12 +139,22 @@ class TranscriptionManager: ObservableObject {
             .sink { [weak self] isReady in
                 guard let self else { return }
                 if isReady {
-                    // If the model was downloaded after app startup, pre-warm immediately
-                    // so the next hotkey transcription path avoids cold-start latency.
-                    self.provider.warmup()
+                    self.whisperService.warmup()
                 } else {
-                    // Keep memory state aligned with on-disk model lifecycle.
-                    self.provider.unloadModel()
+                    self.whisperService.unloadModel()
+                }
+            }
+            .store(in: &cancellables)
+
+        modelDownloader.$parakeetModelReady
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isReady in
+                guard let self else { return }
+                if isReady {
+                    self.parakeetService.warmup()
+                } else {
+                    self.parakeetService.unloadModel()
                 }
             }
             .store(in: &cancellables)
@@ -193,7 +207,7 @@ class TranscriptionManager: ObservableObject {
     private func startRecording() {
         guard case .idle = state else { return }
         modelDownloader.refreshModelStatus()
-        guard modelDownloader.isModelDownloaded else {
+        guard provider.isModelReady else {
             OverlayManager.shared.hide()
             WarningManager.shared.show(.modelMissing)
             return
