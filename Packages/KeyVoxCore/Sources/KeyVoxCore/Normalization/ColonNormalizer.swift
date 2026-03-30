@@ -133,12 +133,14 @@ public struct ColonNormalizer {
 
         var replacementStart = tokenRange.location
         while replacementStart > sentenceStart {
-            let scalar = text.character(at: replacementStart - 1)
-            if CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(scalar)!) {
+            let codeUnitIndex = replacementStart - 1
+            let scalar = unicodeScalar(in: text, at: codeUnitIndex)
+            let codeUnit = text.character(at: codeUnitIndex)
+            if let scalar, CharacterSet.whitespacesAndNewlines.contains(scalar) {
                 replacementStart -= 1
                 continue
             }
-            if scalar == 44 {
+            if codeUnit == 44 {
                 replacementStart -= 1
             }
             break
@@ -146,12 +148,13 @@ public struct ColonNormalizer {
 
         var replacementEnd = NSMaxRange(tokenRange)
         while replacementEnd < text.length {
-            let scalar = text.character(at: replacementEnd)
-            if scalar == 44 || scalar == 46 {
+            let scalar = unicodeScalar(in: text, at: replacementEnd)
+            let codeUnit = text.character(at: replacementEnd)
+            if codeUnit == 44 || codeUnit == 46 {
                 replacementEnd += 1
                 continue
             }
-            if CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(scalar)!) {
+            if let scalar, CharacterSet.whitespacesAndNewlines.contains(scalar) {
                 replacementEnd += 1
                 continue
             }
@@ -170,6 +173,42 @@ public struct ColonNormalizer {
         guard isLikelyAssociationValue(rightSegment) else { return nil }
 
         return NSRange(location: replacementStart, length: replacementEnd - replacementStart)
+    }
+
+    private func unicodeScalar(in text: NSString, at index: Int) -> UnicodeScalar? {
+        guard index >= 0, index < text.length else { return nil }
+
+        let codeUnit = text.character(at: index)
+        if let scalar = UnicodeScalar(codeUnit) {
+            return scalar
+        }
+
+        let leadSurrogateRange: ClosedRange<unichar> = 0xD800...0xDBFF
+        let trailSurrogateRange: ClosedRange<unichar> = 0xDC00...0xDFFF
+
+        if leadSurrogateRange.contains(codeUnit) {
+            let nextIndex = index + 1
+            guard nextIndex < text.length else { return nil }
+            let trailingCodeUnit = text.character(at: nextIndex)
+            guard trailSurrogateRange.contains(trailingCodeUnit) else { return nil }
+
+            let highBits = UInt32(codeUnit) - 0xD800
+            let lowBits = UInt32(trailingCodeUnit) - 0xDC00
+            return UnicodeScalar(0x10000 + ((highBits << 10) | lowBits))
+        }
+
+        if trailSurrogateRange.contains(codeUnit) {
+            let previousIndex = index - 1
+            guard previousIndex >= 0 else { return nil }
+            let leadingCodeUnit = text.character(at: previousIndex)
+            guard leadSurrogateRange.contains(leadingCodeUnit) else { return nil }
+
+            let highBits = UInt32(leadingCodeUnit) - 0xD800
+            let lowBits = UInt32(codeUnit) - 0xDC00
+            return UnicodeScalar(0x10000 + ((highBits << 10) | lowBits))
+        }
+
+        return nil
     }
 
     private func isColonHomophone(_ token: String) -> Bool {
