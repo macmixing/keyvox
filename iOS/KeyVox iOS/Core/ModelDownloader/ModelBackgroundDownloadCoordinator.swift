@@ -56,17 +56,7 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
                 return taskDescriptor.modelID != modelID
             }
             .forEach { $0.cancel() }
-        let existingTasksByRelativePath = Dictionary(
-            uniqueKeysWithValues: tasks.compactMap { task -> (String, URLSessionDownloadTask)? in
-                guard let description = task.taskDescription,
-                      let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description),
-                      taskDescriptor.modelID == modelID else {
-                    return nil
-                }
-
-                return (taskDescriptor.relativePath, task)
-            }
-        )
+        let existingTasksByRelativePath = deduplicatedTasksByRelativePath(from: tasks, for: modelID)
 
         for artifact in descriptor.artifacts {
             var artifactState = job.artifactState(for: artifact.relativePath)
@@ -121,19 +111,7 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
 
         let tasks = await allDownloadTasks()
         let descriptor = DictationModelCatalog.descriptor(for: job.modelID)
-        let taskDescriptors = tasks.compactMap { task -> (ModelBackgroundTaskDescriptor, URLSessionDownloadTask)? in
-            guard let description = task.taskDescription,
-                  let descriptor = ModelBackgroundTaskDescriptor(taskDescription: description) else {
-                return nil
-            }
-            return (descriptor, task)
-        }
-
-        let tasksByRelativePath = Dictionary(
-            uniqueKeysWithValues: taskDescriptors
-                .filter { $0.0.modelID == job.modelID }
-                .map { ($0.0.relativePath, $0.1) }
-        )
+        let tasksByRelativePath = deduplicatedTasksByRelativePath(from: tasks, for: job.modelID)
         let activeRelativePaths = Set(tasksByRelativePath.keys)
 
         for artifact in descriptor.artifacts {
@@ -269,6 +247,29 @@ final class ModelBackgroundDownloadCoordinator: NSObject {
                 continuation.resume(returning: tasks.compactMap { $0 as? URLSessionDownloadTask })
             }
         }
+    }
+
+    private func deduplicatedTasksByRelativePath(
+        from tasks: [URLSessionDownloadTask],
+        for modelID: DictationModelID
+    ) -> [String: URLSessionDownloadTask] {
+        var tasksByRelativePath: [String: URLSessionDownloadTask] = [:]
+
+        for task in tasks {
+            guard let description = task.taskDescription,
+                  let taskDescriptor = ModelBackgroundTaskDescriptor(taskDescription: description),
+                  taskDescriptor.modelID == modelID else {
+                continue
+            }
+
+            if tasksByRelativePath[taskDescriptor.relativePath] == nil {
+                tasksByRelativePath[taskDescriptor.relativePath] = task
+            } else {
+                task.cancel()
+            }
+        }
+
+        return tasksByRelativePath
     }
 
     private func finishBackgroundSessionEventsIfNeeded() {
