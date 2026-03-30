@@ -340,12 +340,12 @@ struct OnboardingSetupScreen: View {
     }
 
     private var currentWarningToken: String? {
-        if case .failed = onboardingModelState {
-            return "model.failed"
-        }
-
         if case .failed(let message) = onboardingModelState, shouldShowOfflineModelError == false {
             return "model.error.\(message)"
+        }
+
+        if case .failed = onboardingModelState {
+            return "model.failed"
         }
 
         if let storageError = preflightModelStorageError, shouldShowOfflineModelError == false {
