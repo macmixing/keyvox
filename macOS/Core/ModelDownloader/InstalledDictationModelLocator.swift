@@ -17,7 +17,7 @@ struct InstalledDictationModelLocator {
     }
 
     var downloadStagingRootURL: URL {
-        appSupportRootURL.appendingPathComponent("ModelDownloads", isDirectory: true)
+        modelsRootURL.appendingPathComponent(".staging", isDirectory: true)
     }
 
     func resolvedWhisperModelPath() -> String? {
