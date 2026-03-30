@@ -75,6 +75,24 @@ final class ModelManager: ObservableObject {
         return false
     }
 
+    func activeInstallModelID() -> DictationModelID? {
+        for modelID in DictationModelID.allCases {
+            switch state(for: modelID) {
+            case .downloading, .installing:
+                return modelID
+            default:
+                continue
+            }
+        }
+
+        if let backgroundJob = persistedBackgroundDownloadJob(),
+           backgroundJob.finalizationState != .failed {
+            return backgroundJob.modelID
+        }
+
+        return nil
+    }
+
     func refreshStatus() {
         for modelID in DictationModelID.allCases {
             modelStates[modelID] = validatedState(for: modelID)
@@ -88,6 +106,10 @@ final class ModelManager: ObservableObject {
     }
 
     func downloadModel(withID modelID: DictationModelID) {
+        if let activeInstallModelID = activeInstallModelID(), activeInstallModelID != modelID {
+            return
+        }
+
         guard currentDownloadTask == nil else { return }
         currentDownloadTask = Task { [weak self] in
             guard let self else { return }
@@ -121,6 +143,10 @@ final class ModelManager: ObservableObject {
     }
 
     func repairModelIfNeeded(for modelID: DictationModelID) {
+        if let activeInstallModelID = activeInstallModelID(), activeInstallModelID != modelID {
+            return
+        }
+
         guard currentDownloadTask == nil else { return }
         currentDownloadTask = Task { [weak self] in
             await self?.performRepairModelIfNeeded(for: modelID)

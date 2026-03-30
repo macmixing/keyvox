@@ -339,6 +339,9 @@ struct SettingsTabView: View {
 
     @ViewBuilder
     private func actionButton(for modelID: DictationModelID, state: ModelInstallState) -> some View {
+        let isBlockedByAnotherActiveInstall =
+            modelManager.activeInstallModelID().map { $0 != modelID } ?? false
+
         switch state {
         case .notInstalled:
             AppActionButton(
@@ -346,6 +349,7 @@ struct SettingsTabView: View {
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
+                isEnabled: !isBlockedByAnotherActiveInstall,
                 action: { modelManager.downloadModel(withID: modelID) }
             )
         case .ready:
@@ -362,6 +366,7 @@ struct SettingsTabView: View {
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
+                isEnabled: !isBlockedByAnotherActiveInstall,
                 action: { modelManager.repairModelIfNeeded(for: modelID) }
             )
         case .downloading, .installing:
