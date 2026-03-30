@@ -297,6 +297,94 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Next task, Colin.")
     }
+    func testNormalizesBareColonAssociationLabel() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Event Colon Wedding reception",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Event: Wedding reception")
+    }
+    func testNormalizesCapitalizedColinAssociationLabel() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Announcement Colin, new baby.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Announcement: New baby")
+    }
+    func testKeepsLiteralColonPunctuationAssociation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Big announcement: New baby",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Big announcement: New baby")
+    }
+    func testNormalizesCapitalizedColonAssociationWithoutCommas() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Jumping Jacks Colon an amusement park",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Jumping Jacks: An amusement park")
+    }
+    func testNormalizesCapitalizedColinAssociationWithTrailingComma() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Jumping Jacks Colin, an amusement park.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Jumping Jacks: An amusement park")
+    }
+    func testNormalizesCapitalizedColonAssociationWithTrailingPeriod() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Wild Ride Colon. Nature's Adventures.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Wild Ride: Nature's Adventures")
+    }
+    func testKeepsLiteralColonAssociationTitle() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Disneyland: A new adventure",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Disneyland: A new adventure")
+    }
+    func testNormalizesCommaDelimitedCapitalizedColinAssociationLabel() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Fantastic Saturdays, Colin, another day.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Fantastic Saturdays: Another day")
+    }
     func testDoesNotRewriteSingleWordGreetingColin() {
         let processor = TranscriptionPostProcessor()
 

@@ -5,6 +5,10 @@ public struct ColonNormalizer {
         pattern: #"([,;:—\-])\s*["'“”‘’\(\[\{]*\s*([A-Za-z][A-Za-z'’\-]{2,})\s*["'“”‘’\)\]\}]*\s*([,;:—\-])"#,
         options: []
     )
+    private static let wordTokenRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"\b[A-Za-z][A-Za-z'’\-]{2,}\b"#,
+        options: []
+    )
     private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\s{2,}"#,
         options: []
@@ -14,12 +18,36 @@ public struct ColonNormalizer {
 
     public func normalize(in text: String) -> String {
         guard !text.isEmpty else { return text }
-        guard let regex = Self.delimiterWrappedTokenRegex else { return text }
+        let explicitResult = normalizeExplicitDelimiterWrappedTokens(in: text)
+        let associationResult = normalizeAssociationStyleTokens(in: explicitResult.text)
+        let replacedSpokenColon = explicitResult.replacedSpokenColon || associationResult.replacedSpokenColon
+
+        guard replacedSpokenColon, let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
+            let normalized = associationResult.text
+            return stripTerminalPunctuationForShortStandaloneAssociation(in: normalized, replacedSpokenColon: replacedSpokenColon)
+        }
+        let normalized = associationResult.text
+        let collapsedRange = NSRange(location: 0, length: (normalized as NSString).length)
+        let collapsed = collapsedWhitespaceRegex.stringByReplacingMatches(
+            in: normalized,
+            options: [],
+            range: collapsedRange,
+            withTemplate: " "
+        )
+        return stripTerminalPunctuationForShortStandaloneAssociation(in: collapsed, replacedSpokenColon: replacedSpokenColon)
+    }
+
+    private func normalizeExplicitDelimiterWrappedTokens(in text: String) -> (text: String, replacedSpokenColon: Bool) {
+        guard let regex = Self.delimiterWrappedTokenRegex else {
+            return (text, false)
+        }
 
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
         let matches = regex.matches(in: text, options: [], range: fullRange)
-        guard !matches.isEmpty else { return text }
+        guard !matches.isEmpty else {
+            return (text, false)
+        }
 
         let mutable = NSMutableString(string: text)
         var replacedSpokenColon = false
@@ -32,19 +60,35 @@ public struct ColonNormalizer {
             replacedSpokenColon = true
         }
 
-        guard replacedSpokenColon, let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
-            let normalized = mutable as String
-            return stripTerminalPunctuationForShortStandaloneAssociation(in: normalized, replacedSpokenColon: replacedSpokenColon)
+        return (mutable as String, replacedSpokenColon)
+    }
+
+    private func normalizeAssociationStyleTokens(in text: String) -> (text: String, replacedSpokenColon: Bool) {
+        guard let regex = Self.wordTokenRegex else {
+            return (text, false)
         }
-        let normalized = mutable as String
-        let collapsedRange = NSRange(location: 0, length: (normalized as NSString).length)
-        let collapsed = collapsedWhitespaceRegex.stringByReplacingMatches(
-            in: normalized,
-            options: [],
-            range: collapsedRange,
-            withTemplate: " "
-        )
-        return stripTerminalPunctuationForShortStandaloneAssociation(in: collapsed, replacedSpokenColon: replacedSpokenColon)
+
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let matches = regex.matches(in: text, options: [], range: fullRange)
+        guard !matches.isEmpty else {
+            return (text, false)
+        }
+
+        let mutable = NSMutableString(string: text)
+        var replacedSpokenColon = false
+
+        for match in matches.reversed() {
+            let tokenRange = match.range
+            guard tokenRange.location != NSNotFound, tokenRange.length > 0 else { continue }
+            let token = nsText.substring(with: tokenRange)
+            guard isColonHomophone(token) else { continue }
+            guard let replacementRange = associationReplacementRange(in: nsText, tokenRange: tokenRange) else { continue }
+            mutable.replaceCharacters(in: replacementRange, with: ": ")
+            replacedSpokenColon = true
+        }
+
+        return (mutable as String, replacedSpokenColon)
     }
 
     private func stripTerminalPunctuationForShortStandaloneAssociation(
@@ -84,6 +128,50 @@ public struct ColonNormalizer {
         return true
     }
 
+    private func associationReplacementRange(in text: NSString, tokenRange: NSRange) -> NSRange? {
+        let sentenceStart = sentenceBoundaryBefore(in: text, location: tokenRange.location)
+
+        var replacementStart = tokenRange.location
+        while replacementStart > sentenceStart {
+            let scalar = text.character(at: replacementStart - 1)
+            if CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(scalar)!) {
+                replacementStart -= 1
+                continue
+            }
+            if scalar == 44 {
+                replacementStart -= 1
+            }
+            break
+        }
+
+        var replacementEnd = NSMaxRange(tokenRange)
+        while replacementEnd < text.length {
+            let scalar = text.character(at: replacementEnd)
+            if scalar == 44 || scalar == 46 {
+                replacementEnd += 1
+                continue
+            }
+            if CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(scalar)!) {
+                replacementEnd += 1
+                continue
+            }
+            break
+        }
+
+        let sentenceEnd = sentenceBoundaryAfter(in: text, location: replacementEnd)
+
+        let leftRange = NSRange(location: sentenceStart, length: max(0, replacementStart - sentenceStart))
+        let rightRange = NSRange(location: replacementEnd, length: max(0, sentenceEnd - replacementEnd))
+
+        let leftSegment = normalizeAssociationSegment(text.substring(with: leftRange))
+        let rightSegment = normalizeAssociationSegment(text.substring(with: rightRange))
+
+        guard isLikelyAssociationLabel(leftSegment) else { return nil }
+        guard isLikelyAssociationValue(rightSegment) else { return nil }
+
+        return NSRange(location: replacementStart, length: replacementEnd - replacementStart)
+    }
+
     private func isColonHomophone(_ token: String) -> Bool {
         let letters = token.lowercased().unicodeScalars.filter { CharacterSet.letters.contains($0) }
         let simplified = String(String.UnicodeScalarView(letters))
@@ -103,6 +191,107 @@ public struct ColonNormalizer {
             return false
         }
         return !sentenceBoundaryCharacterSet.contains(previousScalar)
+    }
+
+    private func normalizeAssociationSegment(_ text: String) -> String {
+        text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: ",.;:—-")))
+    }
+
+    private func isLikelyAssociationLabel(_ text: String) -> Bool {
+        let words = wordCount(in: text)
+        guard (1...4).contains(words) else { return false }
+        guard !text.isEmpty else { return false }
+
+        let tags = lexicalTags(in: text)
+        guard !tags.contains(.pronoun) else { return false }
+        guard !tags.contains(.preposition) else { return false }
+        guard !tags.contains(.interjection) else { return false }
+
+        let verbCount = tags.filter { $0 == .verb }.count
+        if verbCount == 0 {
+            return true
+        }
+
+        return verbCount == 1 && words <= 2 && startsWithUppercaseWord(in: text)
+    }
+
+    private func isLikelyAssociationValue(_ text: String) -> Bool {
+        let words = wordCount(in: text)
+        guard (1...6).contains(words) else { return false }
+        guard !text.isEmpty else { return false }
+
+        let tags = lexicalTags(in: text)
+        guard !tags.contains(.pronoun) else { return false }
+        guard !tags.contains(.verb) else { return false }
+        guard !tags.contains(.preposition) else { return false }
+        guard !tags.contains(.interjection) else { return false }
+        return true
+    }
+
+    private func lexicalTags(in text: String) -> [NSLinguisticTag] {
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
+        tagger.string = text
+
+        var tags: [NSLinguisticTag] = []
+        tagger.enumerateTags(
+            in: fullRange,
+            unit: .word,
+            scheme: .lexicalClass,
+            options: [.omitWhitespace, .omitPunctuation, .joinNames]
+        ) { tag, tokenRange, _ in
+            let token = nsText.substring(with: tokenRange)
+            guard token.rangeOfCharacter(from: .letters) != nil else { return }
+            if let tag {
+                tags.append(tag)
+            }
+        }
+
+        return tags
+    }
+
+    private func wordCount(in text: String) -> Int {
+        text.split(whereSeparator: \.isWhitespace).count
+    }
+
+    private func startsWithUppercaseWord(in text: String) -> Bool {
+        guard let firstWord = text.split(whereSeparator: \.isWhitespace).first,
+              let firstCharacter = firstWord.first else {
+            return false
+        }
+        return firstCharacter.isUppercase
+    }
+
+    private func sentenceBoundaryBefore(in text: NSString, location: Int) -> Int {
+        guard location > 0 else { return 0 }
+        var index = location - 1
+
+        while index >= 0 {
+            let scalar = text.character(at: index)
+            if scalar == 10 || scalar == 46 || scalar == 33 || scalar == 63 {
+                return index + 1
+            }
+            if index == 0 { break }
+            index -= 1
+        }
+
+        return 0
+    }
+
+    private func sentenceBoundaryAfter(in text: NSString, location: Int) -> Int {
+        guard location < text.length else { return text.length }
+        var index = location
+
+        while index < text.length {
+            let scalar = text.character(at: index)
+            if scalar == 10 || scalar == 46 || scalar == 33 || scalar == 63 {
+                return index
+            }
+            index += 1
+        }
+
+        return text.length
     }
 
     private func previousNonWhitespaceScalar(in text: NSString, before location: Int) -> UnicodeScalar? {
