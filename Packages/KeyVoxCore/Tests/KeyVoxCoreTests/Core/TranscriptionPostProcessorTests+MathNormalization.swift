@@ -56,12 +56,12 @@ extension TranscriptionPostProcessorTests {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "Five times five equals forty five.",
+            "Nine times five equals forty five.",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "5 * 5 = 45")
+        XCTAssertEqual(output, "9 * 5 = 45")
     }
 
     func testNormalizesPercentEqualsAndExponentPhrases() {

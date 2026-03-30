@@ -17,7 +17,11 @@ extension MathExpressionNormalizer {
             let nsToken = exponentToken as NSString
             let range = NSRange(location: 0, length: nsToken.length)
             if let match = regex.firstMatch(in: exponentToken, options: [], range: range) {
-                return nsToken.substring(with: match.range(at: 1))
+                let captureRange = match.range(at: 1)
+                guard captureRange.location != NSNotFound, captureRange.length > 0 else {
+                    return nil
+                }
+                return nsToken.substring(with: captureRange)
             }
         }
 
