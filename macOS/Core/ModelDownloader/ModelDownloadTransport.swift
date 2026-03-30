@@ -63,6 +63,8 @@ class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        // Keep download completion synchronous with the delegate callback so the
+        // temporary CFNetwork file is moved before the system disposes of it.
         downloader?.handleDownloadCompletion(task: downloadTask, location: location)
     }
 

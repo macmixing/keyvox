@@ -224,14 +224,17 @@ extension ModelDownloader {
 
             do {
                 try await self.postInstallPreparation(modelID)
-                self.debugLog("Download completed successfully for \(modelID.rawValue)")
-                var state = self.state(for: modelID)
-                state.isDownloading = false
-                state.progress = 1.0
-                state.errorMessage = nil
-                self.updateDownloadState(state, for: modelID)
-                self.refreshModelStatus()
-                self.finishActiveDownload()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    self.debugLog("Download completed successfully for \(modelID.rawValue)")
+                    var state = self.state(for: modelID)
+                    state.isDownloading = false
+                    state.progress = 1.0
+                    state.errorMessage = nil
+                    self.updateDownloadState(state, for: modelID)
+                    self.refreshModelStatus()
+                    self.finishActiveDownload()
+                }
             } catch {
                 self.debugLog("Post-install preparation failed for \(modelID.rawValue): \(error)")
                 if case .subdirectory = self.modelLocator.descriptor(for: modelID).installLayout {
@@ -243,6 +246,13 @@ extension ModelDownloader {
     }
 
     private func failActiveDownload(for modelID: DictationModelID, message: String) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.failActiveDownload(for: modelID, message: message)
+            }
+            return
+        }
+
         debugLog("Download failed for \(modelID.rawValue): \(message)")
         var state = state(for: modelID)
         state.isDownloading = false
@@ -259,6 +269,13 @@ extension ModelDownloader {
     }
 
     private func finishActiveDownload() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.finishActiveDownload()
+            }
+            return
+        }
+
         taskProgress.removeAll()
         artifactsByTaskID.removeAll()
         completedTaskIDs.removeAll()

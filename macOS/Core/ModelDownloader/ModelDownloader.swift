@@ -147,6 +147,13 @@ class ModelDownloader: ObservableObject {
     }
 
     func refreshModelStatus() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.refreshModelStatus()
+            }
+            return
+        }
+
         updateReadyState(validateWhisperModelFiles(), for: .whisperBase)
         updateReadyState(validateStrictManifestModel(.parakeetTdtV3), for: .parakeetTdtV3)
         syncLegacyWhisperState()
@@ -252,6 +259,8 @@ class ModelDownloader: ObservableObject {
     }
 
     func updateReadyState(_ isReady: Bool, for modelID: DictationModelID) {
+        // These helpers are intentionally fire-and-forget. Callers that need a strict
+        // mutation sequence should dispatch the whole sequence to the main queue first.
         let apply = {
             var state = self.state(for: modelID)
             state.isReady = isReady
@@ -261,7 +270,7 @@ class ModelDownloader: ObservableObject {
         if Thread.isMainThread {
             apply()
         } else {
-            DispatchQueue.main.sync(execute: apply)
+            DispatchQueue.main.async(execute: apply)
         }
     }
 
@@ -273,7 +282,7 @@ class ModelDownloader: ObservableObject {
         if Thread.isMainThread {
             apply()
         } else {
-            DispatchQueue.main.sync(execute: apply)
+            DispatchQueue.main.async(execute: apply)
         }
     }
 
@@ -290,7 +299,7 @@ class ModelDownloader: ObservableObject {
         if Thread.isMainThread {
             apply()
         } else {
-            DispatchQueue.main.sync(execute: apply)
+            DispatchQueue.main.async(execute: apply)
         }
     }
 
