@@ -12,9 +12,7 @@ extension SettingsView {
 
             ExperimentalProviderTestingCard(
                 appSettings: appSettings,
-                downloader: downloader,
-                whisperService: AppServiceRegistry.shared.whisperService,
-                parakeetService: AppServiceRegistry.shared.parakeetService
+                downloader: downloader
             )
         }
     }
@@ -23,8 +21,6 @@ extension SettingsView {
 private struct ExperimentalProviderTestingCard: View {
     @ObservedObject var appSettings: AppSettingsStore
     @ObservedObject var downloader: ModelDownloader
-    @ObservedObject var whisperService: WhisperService
-    @ObservedObject var parakeetService: ParakeetService
 
     var body: some View {
         SettingsCard {
@@ -49,7 +45,6 @@ private struct ExperimentalProviderTestingCard: View {
 
                 providerStatusRow(
                     title: "Whisper",
-                    isReady: whisperService.isModelReady,
                     isActive: appSettings.activeDictationProvider == .whisper,
                     installState: downloader.state(for: .whisperBase),
                     allowsInstall: false
@@ -57,7 +52,6 @@ private struct ExperimentalProviderTestingCard: View {
 
                 providerStatusRow(
                     title: "Parakeet",
-                    isReady: parakeetService.isModelReady,
                     isActive: appSettings.activeDictationProvider == .parakeet,
                     installState: downloader.state(for: .parakeetTdtV3),
                     allowsInstall: true
@@ -74,7 +68,6 @@ private struct ExperimentalProviderTestingCard: View {
 
     private func providerStatusRow(
         title: String,
-        isReady: Bool,
         isActive: Bool,
         installState: DictationModelInstallState,
         allowsInstall: Bool
@@ -89,6 +82,7 @@ private struct ExperimentalProviderTestingCard: View {
                     StatusBadge(title: "Active", color: .yellow)
                 }
 
+                let isReady = installState.isReady && !installState.isDownloading
                 StatusBadge(title: isReady ? "Ready" : "Not Ready", color: isReady ? .green : .orange)
 
                 Spacer()

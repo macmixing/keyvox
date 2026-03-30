@@ -159,6 +159,39 @@ final class ModelDownloaderTests: XCTestCase {
         XCTAssertEqual(downloader.taskProgressSnapshot[801]?.total, 140_000_000)
     }
 
+    func testUpdateTaskProgressCapsProgressBelowOneUntilInstallFinishes() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = makeDownloader(in: dir, minBytes: 10)
+        let descriptor = downloader.modelLocator.descriptor(for: .whisperBase)
+
+        downloader.activeDownload = ModelDownloader.ActiveDownload(
+            modelID: .whisperBase,
+            descriptor: descriptor
+        )
+        downloader.completedTaskIDs = [1, 2]
+        downloader.taskProgress[1] = (100, 100)
+        downloader.taskProgress[2] = (100, 100)
+        downloader.updateDownloadState(
+            DictationModelInstallState(
+                isReady: false,
+                isDownloading: true,
+                progress: 0,
+                errorMessage: nil
+            ),
+            for: .whisperBase
+        )
+
+        downloader.updateTaskProgress(id: 1, written: 100, total: 100)
+
+        try await waitForCondition {
+            downloader.progress == 0.99
+        }
+
+        XCTAssertEqual(downloader.progress, 0.99, accuracy: 0.0001)
+    }
+
     func testDeleteModelRemovesArtifactsAndResetsPublishedState() async throws {
         let dir = makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }

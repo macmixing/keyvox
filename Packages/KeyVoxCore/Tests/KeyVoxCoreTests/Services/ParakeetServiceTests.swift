@@ -67,6 +67,23 @@ final class ParakeetServiceTests: XCTestCase {
         XCTAssertEqual(service.dictionaryHintPrompt, "cueboard")
     }
 
+    func testWarmupLoadsParakeetOffMainThread() throws {
+        let modelURL = try makeModelDirectory()
+        let expectation = expectation(description: "warmup loader invoked")
+        let service = ParakeetService(
+            modelURLResolver: { modelURL },
+            parakeetLoader: { _, _ in
+                XCTAssertFalse(Thread.isMainThread)
+                expectation.fulfill()
+                throw NSError(domain: "ParakeetServiceTests", code: 1)
+            }
+        )
+
+        service.warmup()
+
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testTranscribeFailsSafelyWithoutRuntimeBackend() throws {
         let modelURL = try makeModelFile()
         let service = ParakeetService(modelURLResolver: { modelURL })
@@ -89,6 +106,16 @@ final class ParakeetServiceTests: XCTestCase {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("keyvox-core-parakeet-\(UUID().uuidString).bin")
         try Data([0x01]).write(to: url)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: url)
+        }
+        return url
+    }
+
+    private func makeModelDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("keyvox-core-parakeet-dir-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         addTeardownBlock {
             try? FileManager.default.removeItem(at: url)
         }

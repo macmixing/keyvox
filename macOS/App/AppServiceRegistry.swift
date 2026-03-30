@@ -93,6 +93,11 @@ final class AppServiceRegistry {
             appSettings: appSettings,
             dictionaryStore: dictionaryStore
         )
+        ModelDownloader.shared.postInstallPreparation = { [weak parakeetService] modelID in
+            guard modelID == .parakeetTdtV3 else { return }
+            try Task.checkCancellation()
+            await parakeetService?.preloadIfNeeded()
+        }
         canSwitchActiveProvider = { true }
         currentActiveProviderSelection = .whisper
         bindActiveProviderSelection()

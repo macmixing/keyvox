@@ -6,6 +6,7 @@ class ModelDownloader: ObservableObject {
     typealias SessionFactory = (URLSessionDownloadDelegate) -> ModelDownloadSessioning
     typealias FreeSpaceProvider = (URL) -> Int64?
     typealias EnvironmentProvider = () -> [String: String]
+    typealias PostInstallPreparation = (DictationModelID) async throws -> Void
 
     struct ActiveDownload {
         let modelID: DictationModelID
@@ -32,6 +33,7 @@ class ModelDownloader: ObservableObject {
     let requiredDownloadBytes: Int64
     let minGGMLBytes: Int64
     let modelLocator: InstalledDictationModelLocator
+    var postInstallPreparation: PostInstallPreparation = { _ in }
 
     var activeDownloadSession: ModelDownloadSessioning?
     var activeDownload: ActiveDownload?

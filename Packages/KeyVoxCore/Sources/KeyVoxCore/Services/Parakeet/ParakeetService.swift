@@ -4,12 +4,21 @@ import KeyVoxParakeet
 
 @MainActor
 public final class ParakeetService: ObservableObject, DictationProvider {
+    typealias ParakeetLoader = (_ modelURL: URL, _ initialPrompt: String) throws -> Parakeet?
+
+    struct WarmupHandle {
+        let id: UUID
+        let task: Task<Parakeet?, Never>
+    }
+
     @Published public internal(set) var isTranscribing = false
     @Published public internal(set) var transcriptionText = ""
     @Published public internal(set) var lastResultWasLikelyNoSpeech = false
 
     private let modelURLResolver: () -> URL?
+    private let parakeetLoader: ParakeetLoader
     private var activeTranscriptionRequestID = UUID()
+    private var warmupHandle: WarmupHandle?
 
     var parakeet: Parakeet?
     var dictionaryHintPrompt = ""
@@ -17,6 +26,15 @@ public final class ParakeetService: ObservableObject, DictationProvider {
 
     public init(modelURLResolver: @escaping () -> URL? = { nil }) {
         self.modelURLResolver = modelURLResolver
+        self.parakeetLoader = Self.makeParakeet
+    }
+
+    init(
+        modelURLResolver: @escaping () -> URL? = { nil },
+        parakeetLoader: @escaping ParakeetLoader
+    ) {
+        self.modelURLResolver = modelURLResolver
+        self.parakeetLoader = parakeetLoader
     }
 
     public var isModelReady: Bool {
@@ -25,23 +43,14 @@ public final class ParakeetService: ObservableObject, DictationProvider {
     }
 
     public func warmup() {
-        guard parakeet == nil else { return }
-        guard let modelURL = resolvedModelURL() else { return }
-
-        do {
-            let params = ParakeetParams.default
-            params.initialPrompt = dictionaryHintPrompt
-            parakeet = try Parakeet(fromModelURL: modelURL, withParams: params)
-        } catch {
-            #if DEBUG
-            print("ParakeetService: Warmup skipped (\(error.localizedDescription)).")
-            #endif
-        }
+        _ = scheduleWarmupIfNeeded()
     }
 
     public func unloadModel() {
         transcriptionTask?.cancel()
         transcriptionTask = nil
+        warmupHandle?.task.cancel()
+        warmupHandle = nil
         parakeet?.unload()
         parakeet = nil
         isTranscribing = false
@@ -59,6 +68,12 @@ public final class ParakeetService: ObservableObject, DictationProvider {
         let cleanedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         dictionaryHintPrompt = cleanedPrompt
         parakeet?.params.initialPrompt = cleanedPrompt
+    }
+
+    public func preloadIfNeeded() async {
+        guard parakeet == nil else { return }
+        guard let handle = scheduleWarmupIfNeeded() else { return }
+        await installWarmupResultIfCurrent(handle)
     }
 
     public func transcribe(
@@ -79,23 +94,18 @@ public final class ParakeetService: ObservableObject, DictationProvider {
         isTranscribing = true
         lastResultWasLikelyNoSpeech = false
 
-        if parakeet == nil {
-            warmup()
-        }
-
-        guard let parakeet else {
-            finishFailedRequest(requestID, completion: completion)
-            return
-        }
-
-        if useDictionaryHintPrompt {
-            parakeet.params.initialPrompt = dictionaryHintPrompt
-        } else {
-            parakeet.params.initialPrompt = ""
-        }
-
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
+            guard let parakeet = await self.loadedParakeet() else {
+                self.finishFailedRequest(requestID, completion: completion)
+                return
+            }
+
+            if useDictionaryHintPrompt {
+                parakeet.params.initialPrompt = self.dictionaryHintPrompt
+            } else {
+                parakeet.params.initialPrompt = ""
+            }
 
             do {
                 let result = try await parakeet.transcribeWithMetadata(audioFrames: audioFrames)
@@ -200,5 +210,80 @@ public final class ParakeetService: ObservableObject, DictationProvider {
                 .joined(separator: "\n")
             : text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
         return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func scheduleWarmupIfNeeded() -> WarmupHandle? {
+        if let warmupHandle {
+            return warmupHandle
+        }
+
+        if parakeet != nil {
+            return nil
+        }
+
+        guard let modelURL = resolvedModelURL() else { return nil }
+
+        let warmupID = UUID()
+        let initialPrompt = dictionaryHintPrompt
+        let loader = parakeetLoader
+        let task = Task.detached(priority: .userInitiated) {
+            do {
+                return try loader(modelURL, initialPrompt)
+            } catch {
+                #if DEBUG
+                print("ParakeetService: Warmup skipped (\(error.localizedDescription)).")
+                #endif
+                return nil
+            }
+        }
+
+        let handle = WarmupHandle(id: warmupID, task: task)
+        warmupHandle = handle
+        Task { [weak self] in
+            await self?.installWarmupResultIfCurrent(handle)
+        }
+        return handle
+    }
+
+    private func loadedParakeet() async -> Parakeet? {
+        if let parakeet {
+            return parakeet
+        }
+
+        guard let handle = scheduleWarmupIfNeeded() else {
+            return parakeet
+        }
+
+        await installWarmupResultIfCurrent(handle)
+        return parakeet
+    }
+
+    private func installWarmupResultIfCurrent(_ handle: WarmupHandle) async {
+        let warmedParakeet = await handle.task.value
+
+        guard warmupHandle?.id == handle.id else {
+            if let warmedParakeet, parakeet !== warmedParakeet {
+                warmedParakeet.unload()
+            }
+            return
+        }
+
+        warmupHandle = nil
+
+        if let parakeet {
+            if let warmedParakeet, parakeet !== warmedParakeet {
+                warmedParakeet.unload()
+            }
+            return
+        }
+
+        parakeet = warmedParakeet
+        parakeet?.params.initialPrompt = dictionaryHintPrompt
+    }
+
+    nonisolated private static func makeParakeet(modelURL: URL, initialPrompt: String) throws -> Parakeet? {
+        let params = ParakeetParams.default
+        params.initialPrompt = initialPrompt
+        return try Parakeet(fromModelURL: modelURL, withParams: params)
     }
 }

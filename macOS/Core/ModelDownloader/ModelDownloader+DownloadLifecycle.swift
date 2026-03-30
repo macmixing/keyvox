@@ -97,7 +97,18 @@ extension ModelDownloader {
         }
 
         var state = state(for: modelID)
-        state.progress = newProgress
+        let clampedProgress = min(max(newProgress, 0), 1)
+
+        if let activeDownload, activeDownload.modelID == modelID {
+            let completedArtifactCount = completedTaskIDs.count
+            let totalArtifactCount = activeDownload.descriptor.artifacts.count
+            state.progress = completedArtifactCount == totalArtifactCount
+                ? min(clampedProgress, 0.99)
+                : clampedProgress
+        } else {
+            state.progress = clampedProgress
+        }
+
         updateDownloadState(state, for: modelID)
         syncLegacyWhisperState()
     }
@@ -206,14 +217,27 @@ extension ModelDownloader {
     }
 
     private func completeSuccessfulDownload(for modelID: DictationModelID) {
-        debugLog("Download completed successfully for \(modelID.rawValue)")
-        var state = state(for: modelID)
-        state.isDownloading = false
-        state.progress = 1.0
-        state.errorMessage = nil
-        updateDownloadState(state, for: modelID)
-        refreshModelStatus()
-        finishActiveDownload()
+        Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                try await self.postInstallPreparation(modelID)
+                self.debugLog("Download completed successfully for \(modelID.rawValue)")
+                var state = self.state(for: modelID)
+                state.isDownloading = false
+                state.progress = 1.0
+                state.errorMessage = nil
+                self.updateDownloadState(state, for: modelID)
+                self.refreshModelStatus()
+                self.finishActiveDownload()
+            } catch {
+                self.debugLog("Post-install preparation failed for \(modelID.rawValue): \(error)")
+                if case .subdirectory = self.modelLocator.descriptor(for: modelID).installLayout {
+                    try? self.fileManager.removeItem(at: self.modelLocator.installRootURL(for: modelID))
+                }
+                self.failActiveDownload(for: modelID, message: Self.userFacingErrorMessage(for: error))
+            }
+        }
     }
 
     private func failActiveDownload(for modelID: DictationModelID, message: String) {
