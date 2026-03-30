@@ -39,9 +39,9 @@ final class AppSettingsStore: ObservableObject {
         var displayName: String {
             switch self {
             case .whisper:
-                return "Whisper"
+                return "Whisper Base"
             case .parakeet:
-                return "Parakeet"
+                return "Parakeet TDT v3"
             }
         }
 
