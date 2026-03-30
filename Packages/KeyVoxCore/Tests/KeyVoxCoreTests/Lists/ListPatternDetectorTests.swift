@@ -298,6 +298,14 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNil(detected)
     }
 
+    func testDoesNotDetectOrdinalFractionPhraseInProse() {
+        let detector = ListPatternDetector()
+        let text = "Now the key is about one third too wide and it bleeds into the nine key next to it"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
     func testDoesNotDetectListWhenSecondMarkerArrivesAfterLongProseSpan() {
         let detector = ListPatternDetector()
         let text = """
@@ -312,6 +320,22 @@ final class ListPatternDetectorTests: XCTestCase {
     func testDoesNotDetectTwoItemSpokenNumbersInsideLongProseSentence() {
         let detector = ListPatternDetector()
         let text = "I was testing dictation with a long form YouTube video where the user said the number one initially and then later on after long prose they said the number two and they just kept going"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDoesNotDetectTwoItemSpokenNumbersAcrossSentenceBoundaryInProse() {
+        let detector = ListPatternDetector()
+        let text = "If I double click into the mirror, it only shows me the one single half. It's not two separate shapes"
+
+        let detected = detector.detectList(in: text)
+        XCTAssertNil(detected)
+    }
+
+    func testDoesNotDetectTwoItemSpokenNumbersInRequestProse() {
+        let detector = ListPatternDetector()
+        let text = "Why is it that I ask you for one pie you always bring two apples"
 
         let detected = detector.detectList(in: text)
         XCTAssertNil(detected)
