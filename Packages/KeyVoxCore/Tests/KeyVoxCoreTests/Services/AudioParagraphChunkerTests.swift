@@ -2,9 +2,9 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class WhisperAudioParagraphChunkerTests: XCTestCase {
+final class AudioParagraphChunkerTests: XCTestCase {
     func testSplitCreatesBoundaryAtLongSilence() {
-        let chunker = WhisperAudioParagraphChunker()
+        let chunker = AudioParagraphChunker()
         let audio = makeSpeech(32_000) + makeSilence(24_000) + makeSpeech(32_000)
 
         let result = chunker.split(audio)
@@ -16,7 +16,7 @@ final class WhisperAudioParagraphChunkerTests: XCTestCase {
     }
 
     func testSplitDoesNotBoundaryAtShortSilence() {
-        let chunker = WhisperAudioParagraphChunker()
+        let chunker = AudioParagraphChunker()
         let audio = makeSpeech(32_000) + makeSilence(8_000) + makeSpeech(32_000)
 
         let result = chunker.split(audio)
@@ -26,7 +26,7 @@ final class WhisperAudioParagraphChunkerTests: XCTestCase {
     }
 
     func testSplitAvoidsTinyTrailingChunk() {
-        let chunker = WhisperAudioParagraphChunker()
+        let chunker = AudioParagraphChunker()
         let audio = makeSpeech(64_000) + makeSilence(24_000) + makeSpeech(8_000)
 
         let result = chunker.split(audio)
@@ -36,7 +36,7 @@ final class WhisperAudioParagraphChunkerTests: XCTestCase {
     }
 
     func testSplitEmptyInputReturnsNoChunks() {
-        let chunker = WhisperAudioParagraphChunker()
+        let chunker = AudioParagraphChunker()
 
         let result = chunker.split([])
 
@@ -95,8 +95,8 @@ final class WhisperAudioParagraphChunkerTests: XCTestCase {
         XCTAssertTrue(result.fallbackBoundaryFrames.isEmpty)
     }
 
-    private func makeFallbackTestChunker() -> WhisperAudioParagraphChunker {
-        WhisperAudioParagraphChunker(
+    private func makeFallbackTestChunker() -> AudioParagraphChunker {
+        AudioParagraphChunker(
             config: .init(
                 maxChunkFrames: 64_000,
                 fallbackBoundarySearchRadiusFrames: 8_000,
