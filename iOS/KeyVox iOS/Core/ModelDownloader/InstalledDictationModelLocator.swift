@@ -58,7 +58,16 @@ struct InstalledDictationModelLocator {
         }
 
         let modelURL = installRootURL.appendingPathComponent("ggml-base.bin")
-        return fileManager.fileExists(atPath: modelURL.path) ? modelURL.path : nil
+        let encoderBundleURL = installRootURL.appendingPathComponent(
+            "ggml-base-encoder.mlmodelc",
+            isDirectory: true
+        )
+        guard fileManager.fileExists(atPath: modelURL.path),
+              fileManager.fileExists(atPath: encoderBundleURL.path) else {
+            return nil
+        }
+
+        return modelURL.path
     }
 
     func resolvedParakeetModelDirectoryURL() -> URL? {
