@@ -84,6 +84,20 @@ extension TranscriptionPostProcessorTests {
             "Do you think we can go next week around 5:00 PM? How about we pick her up at 2:15 AM? Yeah, I think the restaurant closes at 6:00 PM. We really need to make sure that we pick up my dog from the vet at 3:15 PM."
         )
     }
+    func testNormalizesSpokenHyphenatedAndSpacedMinuteTimesWithMeridiem() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Let's meet at two twenty-five PM, swing by again at two oh-five PM, and keep the backup for two twenty five PM.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Let's meet at 2:25 PM, swing by again at 2:05 PM, and keep the backup for 2:25 PM."
+        )
+    }
     func testCapitalizesLowercaseWordAfterSentenceBoundaryPunctuation() {
         let processor = TranscriptionPostProcessor()
 

@@ -220,17 +220,18 @@ public struct TimeExpressionNormalizer {
 
     private func spokenMinuteValue(_ value: String) -> Int? {
         let normalized = normalizedSpokenNumberToken(value)
+        let parts = spokenNumberParts(value)
 
-        if normalized.hasPrefix("oh ") {
-            let unitToken = String(normalized.dropFirst(3))
-            return Self.spokenUnitValues[unitToken]
+        if parts.count == 2,
+           parts[0] == "oh",
+           let unitValue = Self.spokenUnitValues[parts[1]] {
+            return unitValue
         }
 
         if let teenValue = Self.spokenTeenValues[normalized] {
             return teenValue
         }
 
-        let parts = normalized.split(separator: " ").map(String.init)
         guard !parts.isEmpty else { return nil }
 
         if parts.count == 1 {
@@ -249,9 +250,15 @@ public struct TimeExpressionNormalizer {
     private func normalizedSpokenNumberToken(_ value: String) -> String {
         value
             .lowercased()
-            .replacingOccurrences(of: "-", with: " ")
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func spokenNumberParts(_ value: String) -> [String] {
+        value
+            .lowercased()
+            .split(whereSeparator: { $0.isWhitespace || $0 == "-" })
+            .map(String.init)
     }
 
     private func paddedMinute(_ minute: Int) -> String {
@@ -292,15 +299,16 @@ public struct TimeExpressionNormalizer {
     }
 
     private static var spokenMinutePattern: String {
-        let unitPattern = alternationPattern(for: Array(spokenUnitValues.keys))
-        let teenPattern = alternationPattern(for: Array(spokenTeenValues.keys))
-        let tensPattern = alternationPattern(for: Array(spokenTensValues.keys))
+        let unitPattern = groupedAlternationPattern(for: Array(spokenUnitValues.keys))
+        let teenPattern = groupedAlternationPattern(for: Array(spokenTeenValues.keys))
+        let tensPattern = groupedAlternationPattern(for: Array(spokenTensValues.keys))
+        let separatorPattern = "[\\s-]+"
 
         return groupedAlternationPattern(
             for: [
-                "oh\\s+(?:\(unitPattern))",
+                "oh\(separatorPattern)\(unitPattern)",
                 teenPattern,
-                "\(tensPattern)(?:\\s+(?:\(unitPattern)))?",
+                "\(tensPattern)(?:\(separatorPattern)\(unitPattern))?",
             ]
         )
     }
