@@ -166,7 +166,23 @@ public struct ListPatternTrailingSplitter {
         guard let split = firstRegexSplit(text, pattern: #"(?i)^(.+?[.!?])\s+(.+)$"#) else {
             return nil
         }
-        return makeCandidate(item: split.0, trailing: split.1, score: 100, languageCode: languageCode)
+
+        if let candidate = makeCandidate(item: split.0, trailing: split.1, score: 100, languageCode: languageCode) {
+            return candidate
+        }
+
+        let shortNominalItem = looksLikeShortNominalItem(split.0)
+        let sentenceLikeTrailing = looksLikeSentenceStyleCommentary(split.1)
+        let supportsShortNominalSplit = shortNominalItem && (sentenceLikeTrailing || looksLikeContinuationStart(split.1))
+        guard supportsShortNominalSplit else { return nil }
+
+        return makeCandidate(
+            item: split.0,
+            trailing: split.1,
+            score: 100,
+            minItemWords: 1,
+            languageCode: languageCode
+        )
     }
 
     private func paragraphBoundaryCandidate(
