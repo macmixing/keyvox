@@ -66,6 +66,17 @@ final class ListFormattingEngineTests: XCTestCase {
         )
     }
 
+    func testFormatsSpokenListBeforeTimePhraseTrailingSentence() {
+        let engine = ListFormattingEngine()
+        let text = "Please help me pick up a couple of things from the party store. One, party hats, two, kazoos, three, gift bags, and bring them to my house by about 5:00 PM tomorrow."
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(
+            output,
+            "Please help me pick up a couple of things from the party store:\n\n1. Party hats\n2. Kazoos\n3. Gift bags\n\nAnd bring them to my house by about 5:00 PM tomorrow."
+        )
+    }
+
     func testPreservesTerminalPunctuationOnlyForLongerListItems() {
         let engine = ListFormattingEngine()
         let text = """

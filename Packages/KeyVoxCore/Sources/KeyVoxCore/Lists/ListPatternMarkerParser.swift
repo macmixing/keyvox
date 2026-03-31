@@ -2,6 +2,7 @@ import Foundation
 
 struct ListPatternMarkerParser {
     private static let markerTokenPattern = #"(?:\d+|[\p{L}]+(?:-[\p{L}]+)?)"#
+    private static let meridiemPattern = #"(?i)^(?:a\.?m\.?|p\.?m\.?)\b"#
 
     private static let leadingMarkerRegex: NSRegularExpression = {
         let pattern = "(?i)^\\s*(\(markerTokenPattern))"
@@ -157,6 +158,9 @@ struct ListPatternMarkerParser {
             if resolved.isDigitToken && isLikelyTimeComponent(at: resolved.markerTokenStart, in: nsText) {
                 return nil
             }
+            if isLikelySimpleHourClockTime(number: resolved.number, contentStart: resolved.contentStart, in: nsText) {
+                return nil
+            }
             if resolved.isDigitToken && isLikelyCompactClockTime(token: resolved.token, contentStart: resolved.contentStart, in: nsText) {
                 return nil
             }
@@ -176,6 +180,9 @@ struct ListPatternMarkerParser {
             let tokenRange = match.range(at: 1)
             guard tokenRange.location != NSNotFound else { return nil }
             guard let resolved = resolvedMarker(in: nsText, tokenRange: tokenRange, languageCode: languageCode) else {
+                return nil
+            }
+            if isLikelySimpleHourClockTime(number: resolved.number, contentStart: resolved.contentStart, in: nsText) {
                 return nil
             }
             if resolved.isDigitToken && isLikelyCompactClockTime(token: resolved.token, contentStart: resolved.contentStart, in: nsText) {
@@ -400,11 +407,20 @@ struct ListPatternMarkerParser {
             minute = Int(token.suffix(2)) ?? -1
         }
         guard (1...12).contains(hour), (0...59).contains(minute) else { return false }
+        return previewStartsWithMeridiem(from: contentStart, in: nsText)
+    }
+
+    private func isLikelySimpleHourClockTime(number: Int, contentStart: Int, in nsText: NSString) -> Bool {
+        guard (1...12).contains(number) else { return false }
+        return previewStartsWithMeridiem(from: contentStart, in: nsText)
+    }
+
+    private func previewStartsWithMeridiem(from contentStart: Int, in nsText: NSString) -> Bool {
         guard contentStart < nsText.length else { return false }
 
         let previewLength = min(12, nsText.length - contentStart)
         let preview = nsText.substring(with: NSRange(location: contentStart, length: previewLength))
-        return preview.range(of: #"(?i)^(?:a\.?m\.?|p\.?m\.?)\b"#, options: .regularExpression) != nil
+        return preview.range(of: Self.meridiemPattern, options: .regularExpression) != nil
     }
 
     private static func leadingMarker(in text: String, languageCode: String?) -> (value: Int, tokenRange: NSRange)? {
