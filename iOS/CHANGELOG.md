@@ -6,6 +6,28 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.0] Build 8 - TestFlight - 2026-03-30
+
+Improves iPhone dictation accuracy and reliability with better spoken-number, date, list, colon, math, and Parakeet runtime handling across the shared package layer used by the beta.
+
+### Changed
+
+- Improved spoken large-number normalization so thousand-scale quantities are cleaned up earlier in post-processing and read more naturally in sentence context.
+- Improved month-led date normalization and protected spoken years from being regrouped into large-number output.
+- Refined colon association handling for title-and-subtitle style dictation phrases such as labels, announcements, and headings.
+- Tightened list detection so ordinary prose is less likely to be reformatted as a numbered list, while genuine dictated lists continue to format more reliably.
+- Improved list trailing-text splitting so reminder-style sentences after a list item break out more naturally instead of being folded into the last item.
+- Improved Parakeet runtime tensor handling and decoder projection normalization for steadier Core ML transcription behavior in the shared runtime layer.
+- Hardened half-precision Parakeet tensor storage handling in the shared runtime package.
+
+### Fixed
+
+- Fixed false list formatting for spoken prose patterns that contained incidental number words but were not intended to be lists.
+- Fixed cases where spoken time phrases such as `five PM` could interfere with list detection.
+- Fixed cases where short final list items could fail to split cleanly before trailing commentary or reminder text.
+- Fixed a regression where conjunctions such as `and` could be dropped before normalized thousand-scale quantities.
+- Fixed several spoken math-equation normalization regressions involving compound numbers and exponent phrasing.
+
 ## [1.0.0] Build 7 - TestFlight - 2026-03-30
 
 Adds model-managed Parakeet support to the iOS beta, including active model selection, per-model downloads, and a refreshed settings flow for managing on-device dictation models.
