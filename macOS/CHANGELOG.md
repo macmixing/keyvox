@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.5] - 2026-03-30
+
+### Added
+
+- Added model-managed Parakeet support on macOS as a new on-device dictation option alongside Whisper.
+- Added an `Active Model` settings experience for macOS so installed dictation models can be managed in one place.
+- Added per-model install handling for macOS dictation models, including staged validation before a model is made available to the app.
+
+### Changed
+
+- Updated the macOS status menu and readiness flow to follow the currently active dictation model.
+- Preserved capitalization at new line starts on macOS so pasted transcriptions better match the surrounding text context.
+
+### Fixed
+
+- Improved macOS model download and install reliability for local dictation assets, including activation and cleanup edge cases.
+
 ## [1.0.4] - 2026-03-19
 
 ### Added
