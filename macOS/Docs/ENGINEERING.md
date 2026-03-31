@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-30**
+**Last Updated: 2026-03-31**
 
 ## Design Philosophy
 
@@ -26,7 +26,7 @@ Convenience must never come at the cost of trust.
 KeyVox is organized by responsibility:
 
 - `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `WeeklyWordStatsStore`).
-- `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` remains focused on dictionary/settings sync, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
+- `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
 - `Core/Transcription/`: Runtime state machine and macOS host-side orchestration (`TranscriptionManager`), with the reusable transcribe -> post-process -> paste boundary extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host also persists the most recent successful transcription for Home-tab display after relaunch.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
@@ -48,8 +48,9 @@ File-level ownership and locations are intentionally maintained in one place: [`
 
 ## Platform Compatibility
 
-- Supported macOS range: macOS 15 and newer.
-- Parakeet provider availability is additionally runtime-gated by OS support, and unsupported persisted selections normalize back to Whisper.
+- Supported macOS range: macOS 13.5 and newer.
+- KeyVox uses accessory activation policy on Ventura/Sonoma and early Sequoia builds (`< 15.6`) to avoid menu bar collision/regression behavior.
+- Parakeet provider availability is additionally runtime-gated by OS support (`macOS 14+`), and unsupported persisted selections normalize back to Whisper.
 
 For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
@@ -63,6 +64,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `ParakeetService`
   - `SwitchableDictationProvider`
 - `AppSettingsStore.activeDictationProvider` is the local source of truth for the selected provider.
+- `AppSettingsStore.ActiveDictationProvider.supportedCases()` is the UI/runtime gate for which providers can be selected on the current OS.
 - Unsupported provider selections fail closed back to Whisper instead of leaving the runtime in an unavailable state.
 
 ## Post-Processing Order
@@ -98,6 +100,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - heavy validation and post-install work run off the hot path
 - `App/AppServiceRegistry.swift` supplies downloader `postInstallPreparation` so Parakeet preload happens after a successful install instead of on the first trigger press.
 - `Views/Settings/SettingsView+DictationModels.swift` is the release-facing `Active Model` settings surface for install, removal, progress, and provider switching.
+- `Core/Transcription/TranscriptionManager.swift` persists the last successful final transcription to `UserDefaultsKeys.App.lastTranscription` for the Settings Home tab.
 
 ## Update Feed and Release Checks
 
@@ -135,7 +138,7 @@ The updater is intentionally separated by concern:
 - `Views/UpdatePromptOverlay.swift`
   lightweight update-available prompt window
 - `Views/Updates/`
-  dedicated updater window and post-update notice UI
+  dedicated updater window, release-notes card, and post-update notice UI
 - `App/WindowManager+Updates.swift`
   updater/post-update window lifecycle, centering, and floating-window presentation
 
@@ -171,6 +174,8 @@ Maintainers can override the update feed locally without changing tracked defaul
   `xcodebuild -project macOS/KeyVox.xcodeproj -scheme "KeyVox DEBUG" -configuration Debug -destination 'platform=macOS' -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO -resultBundlePath /tmp/keyvox-tests.xcresult test`
 - Package tests:
   `swift test --package-path Packages/KeyVoxCore`
+- Whisper package tests:
+  `swift test --package-path Packages/KeyVoxWhisper`
 - Parakeet package tests:
   `swift test --package-path Packages/KeyVoxParakeet`
 - Core coverage gate:
@@ -231,6 +236,7 @@ These remain integration/manual-test territory by design.
 - Do not route `Views/StatusMenuView.swift` or `Views/Warnings/*` through `MacAppTheme` unless the product explicitly wants those surfaces visually unified with the main app windows.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
+- Keep the macOS iCloud settings sync split intact: `KeyVoxiCloudSyncCoordinator` owns dictionary/settings convergence, while `WeeklyWordStatsCloudSync` owns weekly usage only.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
 

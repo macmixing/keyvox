@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-30**
+**Last Updated: 2026-03-31**
 
 ## Project Overview
 
@@ -7,7 +7,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 ## Architecture
 
-- **App**: app entry point, window lifecycle, shared settings/defaults ownership
+- **App**: app entry point, window lifecycle, shared settings/defaults ownership, and macOS-side iCloud sync wiring
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, provider-aware host integration, paste/update host integration
 - **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
@@ -40,7 +40,8 @@ KeyVox/
 │   ├── AppServiceRegistry.swift
 │   ├── LoginItemController.swift
 │   ├── WeeklyWordStatsStore.swift
-│   └── UserDefaultsKeys.swift
+│   ├── UserDefaultsKeys.swift
+│   └── iCloud/
 ├── Core/
 │   ├── KeyboardMonitor.swift
 │   ├── Audio/
@@ -59,7 +60,8 @@ KeyVox/
 ├── Views/
 │   ├── Components/
 │   │   ├── LogoBarView.swift
-│   │   └── MacAppTheme.swift
+│   │   ├── MacAppTheme.swift
+│   │   └── ConfirmDeletePromptView.swift
 │   ├── StatusMenuView.swift
 │   ├── OnboardingView.swift
 │   ├── RecordingOverlay.swift
@@ -82,8 +84,9 @@ KeyVox/
 │   ├── KeyVoxWhisper/
 │   └── KeyVoxParakeet/
 ├── Tools/
+├── build/
 ├── KeyVoxTests/
-└── Docs/
+└── macOS/Docs/
     ├── CODEMAP.md
     └── ENGINEERING.md
 ```
@@ -118,7 +121,7 @@ KeyVox/
   - Applies updater-specific floating-window centering and stoplight hiding.
   - Keeps update-related window policy out of the primary settings/onboarding window code.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
@@ -132,6 +135,9 @@ KeyVox/
 - `App/iCloud/WeeklyWordStatsCloudSync.swift`
   - Dedicated iCloud KVS sync helper for weekly word stats only.
   - Merges same-week per-device totals deterministically and keeps `KeyVoxiCloudSyncCoordinator` focused on dictionary/settings sync.
+- `App/iCloud/KeyVoxiCloudSyncCoordinator.swift`
+  - Owns macOS iCloud KVS convergence for dictionary entries plus `triggerBinding`, `autoParagraphsEnabled`, and `listFormattingEnabled`.
+  - Uses per-setting modified-at timestamps so newer local/remote values win deterministically during bootstrap and live sync.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
 - `Views/OnboardingView.swift`
@@ -160,6 +166,11 @@ KeyVox/
 - `Views/Settings/SettingsView+DictationModels.swift`
   - User-facing `Active Model` settings card for provider selection plus install/remove/progress/error state per model.
   - Falls back to the first ready provider when the persisted active selection is no longer installable/selectable.
+  - Only surfaces Parakeet on supported systems; unsupported selections normalize back to Whisper in `AppSettingsStore`.
+- `Views/Settings/SettingsView+Legal.swift`
+  - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
+- `Views/Components/ConfirmDeletePromptView.swift`
+  - Reusable destructive confirmation sheet currently used for dictionary-entry deletion.
 
 ### Core Managers
 
@@ -170,6 +181,7 @@ KeyVox/
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
   - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
+  - Persists the most recent successful final transcription for the Settings Home tab card.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
@@ -226,6 +238,10 @@ KeyVox/
   - Owns one active download at a time, per-model state publication, and post-install preparation hooks.
 - `Core/ModelDownloader/DictationModelCatalog.swift`
   - Source of truth for model IDs, install layouts, remote artifact metadata, and progress byte accounting.
+- `Core/ModelDownloader/DictationModelInstallManifest.swift`
+  - Decodable manifest model used by strict staged-install validation for manifest-backed providers.
+- `Core/ModelDownloader/ModelDownloadTransport.swift`
+  - Small transport/progress abstractions used to keep downloader execution and tests isolated from direct `URLSession` coupling.
 - `Core/ModelDownloader/InstalledDictationModelLocator.swift`
   - Resolves rooted install locations, performs legacy Whisper migration, and separates fast readiness checks from strict manifest-backed validation.
 - `Core/ModelDownloader/ModelDownloader+DownloadLifecycle.swift`
@@ -260,6 +276,8 @@ KeyVox/
   - Canonical updater release and manifest metadata models.
 - `Core/Services/AppUpdate/AppUpdateCoordinator.swift`
   - UI-facing updater state machine for release refresh, download, verification, install handoff, and post-update notice state.
+- `Core/Services/AppUpdate/AppUpdateState.swift`
+  - Canonical updater state/error modeling shared by the coordinator and updater views.
 - `Core/Services/AppUpdate/AppUpdateManifestLoader.swift`
   - Downloads and decodes the manifest asset referenced by the selected release.
 - `Core/Services/AppUpdate/AppUpdateDownloadService.swift`
@@ -406,6 +424,8 @@ KeyVox/
   - Current version / target version / state summary card for the updater window.
 - `Views/Updates/UpdateProgressCard.swift`
   - Download/install progress card and byte-count presentation.
+- `Views/Updates/UpdateReleaseNotesCard.swift`
+  - Scrollable release-notes card used when the fetched release exposes summary/body text.
 - `Views/Updates/UpdateApplicationsRequirementCard.swift`
   - `/Applications` prerequisite card shown before self-move and relaunch.
 - `Views/Updates/UpdateFailureCard.swift`
@@ -525,10 +545,10 @@ KeyVox/
   - Dictionary management UI plus A-Z/Recently Added list sort toggle (hidden when no entries exist).
   - Dictionary description includes custom words, email addresses, and short phrases.
   - Primary add action is surfaced as a floating corner button from `Views/Components/DictionaryFloatingAddButton.swift`.
-- `Views/Settings/SettingsView+ModelSection.swift`
-  - Model install/remove row UI (`ModelSettingsRow`).
+- `Views/Settings/SettingsView+DictationModels.swift`
+  - Dictation provider selection plus install/remove/progress/error UI for model-backed providers.
 - `Views/Settings/SettingsView+Style.swift`
-  - Style tab with standalone Lists and Paragraphs cards.
+  - Style tab with standalone Lists and Paragraphs cards backed by persisted `listFormattingEnabled` and `autoParagraphsEnabled`.
 - `Views/Settings/SettingsView+More.swift`
   - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
 - `Views/Warnings/*`
@@ -550,12 +570,16 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, active dictation provider
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
 - Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
+- List formatting preference key: `KeyVox.ListFormattingEnabled`
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
+- Last transcription cache key: `KeyVox.App.LastTranscription`
+- Active provider key: `KeyVox.App.ActiveDictationProvider`
+- Resume-after-self-move updater key: `KeyVox.App.ResumeUpdaterAfterApplicationsMove`
 - Weekly word stats owner: `App/WeeklyWordStatsStore.swift`
   - persists a stable installation identifier plus the current-week usage snapshot and local rollover behavior
 - Weekly word stats iCloud sync: `App/iCloud/WeeklyWordStatsCloudSync.swift`
@@ -567,10 +591,15 @@ KeyVox/
   - preferred display key: `KeyVox.RecordingOverlayPreferredDisplayKey`
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`
   - legacy read-only migration key: `KeyVox.RecordingOverlayOrigin`
+- iCloud per-setting modified-at keys:
+  - `KeyVox.iCloud.TriggerBindingLastModifiedAt`
+  - `KeyVox.iCloud.AutoParagraphsLastModifiedAt`
+  - `KeyVox.iCloud.ListFormattingLastModifiedAt`
 
 ## System / Build Facts
 
 - Compatibility target: **macOS Ventura (13.5) and newer**
+- Parakeet provider availability: **runtime-gated to macOS 14 and newer**
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
 - Local packages:

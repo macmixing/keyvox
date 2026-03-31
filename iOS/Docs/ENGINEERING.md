@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-30**
+**Last Updated: 2026-03-31**
 
 ## Design Philosophy
 
@@ -26,6 +26,7 @@ Convenience matters, but not more than predictable behavior.
 The containing app owns:
 
 - onboarding state and routing
+- app-owned haptics
 - settings and iCloud sync
 - model installation, validation, and recovery
 - microphone capture and session warmth
@@ -88,6 +89,7 @@ It builds and wires:
 - `AppSettingsStore`
 - `OnboardingStore`
 - `WeeklyWordStatsStore`
+- `AppHaptics`
 - `WhisperService`
 - `ParakeetService`
 - `SwitchableDictationProvider`
@@ -105,6 +107,7 @@ Service ownership rules:
 - Managers own runtime state.
 - Views present state and call actions, but do not become alternate sources of truth.
 - IPC contracts remain centralized in `KeyVoxIPCBridge`.
+- Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
 
 ## Root Routing and Onboarding Contract
 
@@ -113,8 +116,9 @@ Service ownership rules:
 Current root behavior:
 
 - hold on a neutral background until the initial launch context is resolved
-- show onboarding when `OnboardingStore.shouldShowOnboarding` is `true`
-- otherwise show the main tab shell
+- show `ReturnToHostView` only when onboarding is not being suppressed and a cold start route or explicit return-to-host presentation is active
+- keep the main tab shell mounted whenever the app is in the onboarding-or-main path
+- layer onboarding on top of the main shell when `OnboardingStore.shouldShowOnboarding` is `true`
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 - a cold `keyvoxios://record/start` launch may preselect `ReturnToHostView` before the first real SwiftUI route render
 
@@ -158,7 +162,6 @@ Current onboarding order is:
 1. welcome
 2. setup
 3. keyboard tour
-4. customize app
 
 ### Setup Screen Contract
 
@@ -186,18 +189,9 @@ Rules:
 - it autofocuses a text field so the KeyVox keyboard can appear immediately
 - it uses `KeyboardObserver` height to pin the input above the keyboard
 - it is driven by `OnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
-- `Next` is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
+- the final completion action is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
 - stale old keyboard-ready state must not be enough to finish onboarding
-- completing the keyboard tour clears the pending keyboard-tour handoff, but onboarding itself finishes on the following customize-app screen
-
-### Customize-App Contract
-
-The customize-app screen is the final onboarding step.
-
-Rules:
-
-- it appears only after the keyboard tour completes during the current launch
-- its `Finish` action marks onboarding complete
+- completing the keyboard tour clears the pending keyboard-tour handoff and completes onboarding directly
 - `ReturnToHostView` remains suppressed for the rest of that launch after onboarding completion
 
 ### Keyboard Access Detection
@@ -681,6 +675,7 @@ The keyboard extension locally owns:
 - Caps Lock latch
 - haptics preference
 - dictionary casing preservation helpers
+- interaction-haptics execution
 
 These remain extension-facing conveniences, not app-owned business logic.
 
@@ -695,7 +690,9 @@ Current app-owned surfaces:
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and the release-facing `Active Model` section for provider selection plus per-model install actions
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
-- onboarding screens: welcome, setup, keyboard tour, customize app
+- onboarding screens: welcome, setup, keyboard tour
+
+`AppHaptics` is the app-owned feedback bridge for these surfaces, while `AppHapticsDecisions` keeps the trigger rules deterministic and testable.
 
 Views may surface manager state, but runtime ownership stays in the managers and services.
 
@@ -711,6 +708,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - onboarding keyboard-tour state transitions
 - onboarding microphone permission refresh behavior
 - onboarding setup-state gating
+- app haptics decision rules
 - shared path construction
 - settings persistence
 - iCloud sync coordination
@@ -719,6 +717,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - model manager validation and repair behavior
 - stop-time capture processing
 - keyboard dictation controller behavior
+- keyboard interaction haptics
 - keyboard text input helpers
 - keyboard cursor-trackpad support
 - transcription manager lifecycle and interruption handling

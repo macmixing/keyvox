@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-03-30**
+**Last Updated: 2026-03-31**
 
 ## Project Overview
 
@@ -16,8 +16,8 @@ The current default runtime flow is:
 1. On first launch, the app routes through onboarding instead of dropping directly into tabs.
 2. The setup screen lets the user work through model download and microphone access in parallel, but keeps keyboard setup gated until both prerequisites are complete.
 3. When the user leaves setup for Settings, the app records a pending keyboard-tour handoff and later resumes into the keyboard tour after reactivation.
-4. The keyboard tour autofocuses a text field, waits for the KeyVox keyboard to be shown, and advances only after the first non-empty tour transcription completes.
-5. After the keyboard tour, onboarding finishes on the customize-app screen rather than ending inside the tour itself.
+4. The keyboard tour autofocuses a text field, waits for the KeyVox keyboard to be shown, and only enables completion after the first non-empty tour transcription completes.
+5. Finishing the keyboard tour completes onboarding directly; there is no separate customize-app screen on the current branch.
 6. After onboarding, the main app shell owns ongoing model management, style/settings changes, weekly usage, and session controls.
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
@@ -26,7 +26,7 @@ The current default runtime flow is:
 
 ## Architecture
 
-- **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, URL routing, App Group storage, iCloud sync, model background downloads, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
+- **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, toolbar modes, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
@@ -55,6 +55,8 @@ iOS/
 ├── KeyVox iOS.xctestplan
 ├── KeyVox iOS/
 │   ├── App/
+│   │   ├── AppHaptics.swift
+│   │   ├── AppHapticsDecisions.swift
 │   │   ├── AppLaunchRouteStore.swift
 │   │   ├── AppDelegate.swift
 │   │   ├── AppSceneDelegate.swift
@@ -119,8 +121,7 @@ iOS/
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── ReturnToHost.mov
-│   │   ├── ReturnToHostPlaceholder.png
-│   │   └── ReturnToHost_FullRange.mov
+│   │   └── keyvox.icon/
 │   ├── Views/
 │   │   ├── AppRootView.swift
 │   │   ├── ContainingAppTab.swift
@@ -142,7 +143,8 @@ iOS/
 │   │   │   ├── LastTranscriptionCardView.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── ModelDownloadProgress.swift
-│   │   │   └── OnboardingStepRow.swift
+│   │   │   ├── OnboardingStepRow.swift
+│   │   │   └── SettingsRow.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
@@ -152,16 +154,16 @@ iOS/
 │   │   │   ├── DictionaryWordEditorView.swift
 │   │   │   └── KeyboardObserver.swift
 │   │   └── Onboarding/
-│   │       ├── OnboardingCustomizeAppScreen.swift
 │   │       ├── OnboardingFlowView.swift
+│   │       ├── OnboardingLogoPopInSequence.swift
 │   │       ├── OnboardingSetupScreen.swift
 │   │       ├── OnboardingWelcomeScreen.swift
 │   │       └── Tour/
 │   │           ├── OnboardingKeyboardTourSceneAView.swift
 │   │           ├── OnboardingKeyboardTourSceneBView.swift
 │   │           ├── OnboardingKeyboardTourSceneCView.swift
-│   │           └── OnboardingKeyboardTourScreen.swift
-│   └── keyvox.icon/
+│   │           ├── OnboardingKeyboardTourScreen.swift
+│   │           └── KeyboardMenuSequence.swift
 ├── KeyVox Keyboard/
 │   ├── App/
 │   │   ├── KeyboardContainingAppLauncher.swift
@@ -174,6 +176,7 @@ iOS/
 │   │   ├── KeyboardDictationController.swift
 │   │   ├── KeyboardDictionaryCasingStore.swift
 │   │   ├── KeyboardHapticsSettingsStore.swift
+│   │   ├── KeyboardInteractionHaptics.swift
 │   │   ├── KeyboardIPCManager.swift
 │   │   ├── KeyboardInsertionCapitalizationHeuristics.swift
 │   │   ├── KeyboardInsertionSpacingHeuristics.swift
@@ -211,19 +214,22 @@ iOS/
 │   └── KeyVox_WidgetLiveActivity.swift
 ├── KeyVoxiOSTests/
 │   ├── App/
-│   │   ├── KeyVoxSessionLiveActivityCoordinatorTests.swift
-│   │   ├── KeyVoxURLRouteTests.swift
+│   │   ├── AppHapticsDecisionTests.swift
 │   │   ├── AppSettingsStoreTests.swift
+│   │   ├── CloudSyncCoordinatorTests.swift
+│   │   ├── KeyVoxSessionLiveActivityCoordinatorTests.swift
+│   │   ├── KeyVoxURLRouterTests.swift
+│   │   ├── KeyVoxURLRouteTests.swift
 │   │   ├── ModelManagerTests.swift
 │   │   ├── OnboardingKeyboardAccessProbeTests.swift
 │   │   ├── OnboardingKeyboardTourStateTests.swift
 │   │   ├── OnboardingMicrophonePermissionControllerTests.swift
+│   │   ├── OnboardingDownloadNetworkMonitorTests.swift
 │   │   ├── OnboardingSetupStateTests.swift
 │   │   ├── OnboardingStoreTests.swift
 │   │   ├── SharedPathsTests.swift
 │   │   ├── WeeklyWordStatsCloudSyncTests.swift
-│   │   ├── WeeklyWordStatsStoreTests.swift
-│   │   └── CloudSyncCoordinatorTests.swift
+│   │   └── WeeklyWordStatsStoreTests.swift
 │   ├── Core/
 │   │   ├── Audio/
 │   │   │   ├── AudioInputPreferenceResolverTests.swift
@@ -231,6 +237,7 @@ iOS/
 │   │   ├── Keyboard/
 │   │   │   ├── KeyboardCursorTrackpadSupportTests.swift
 │   │   │   ├── KeyboardDictationControllerTests.swift
+│   │   │   ├── KeyboardInteractionHapticsTests.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
 │   │   │   └── KeyboardTextInputControllerTests.swift
 │   │   └── Transcription/
@@ -263,21 +270,28 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
+  - Normalizes the persisted active provider back to a ready model when install state changes.
+- `KeyVox iOS/App/AppHaptics.swift`
+  - App-owned UIKit haptic emitter injected through the SwiftUI environment.
+- `KeyVox iOS/App/AppHapticsDecisions.swift`
+  - Pure decision helpers for onboarding step completion, tab selection, edge-swipe, session-toggle, and dictionary-save haptics.
 
 ### Onboarding and Root Routing
 
 - `KeyVox iOS/Views/AppRootView.swift`
-  - Root router for onboarding vs main app, with a temporary launch-resolution hold so cold URL launches do not flash the lower UI.
+  - Root router for launch hold vs return-to-host vs onboarding overlay vs main app.
+  - Keeps `MainTabView` mounted under the onboarding overlay so onboarding can fade into the live shell without re-rooting the scene tree.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
   - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
 - `KeyVox iOS/Views/Onboarding/OnboardingFlowView.swift`
-  - Ordered onboarding router: welcome -> setup -> keyboard tour -> customize app.
+  - Ordered onboarding router: welcome -> setup -> keyboard tour.
 - `KeyVox iOS/Views/Onboarding/OnboardingSetupScreen.swift`
   - Model download, microphone permission, and keyboard-settings handoff screen.
   - Gates keyboard setup until both the model is ready and microphone access has been granted, while allowing those two setup tasks to proceed in parallel.
+  - Records the pending keyboard-tour handoff before opening Settings and uses app-owned haptics for warning/success step feedback.
 - `KeyVox iOS/Views/Components/OnboardingStepRow.swift`
   - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
@@ -285,12 +299,10 @@ Packages/
   - Reusable onboarding download progress bar with the app accent styling and an optional percent label.
 - `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourScreen.swift`
   - Full-screen post-Settings handoff screen that autofocuses a text field and keeps the input pinned above the keyboard.
-  - Advances through three tour scenes and enables `Next` only after the KeyVox keyboard has been shown and a first non-empty transcription has completed.
+  - Advances through three tour scenes (`a`, `b`, `c`) and only enables the final completion action after the KeyVox keyboard has been shown and a first non-empty transcription has completed.
+  - Completes onboarding directly when the final `Finish` action runs.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourState.swift`
   - Small state machine that drives tour scene A/B/C progression and completion gating.
-- `KeyVox iOS/Views/Onboarding/OnboardingCustomizeAppScreen.swift`
-  - Final onboarding step.
-  - Owns the explicit `Finish` action that completes onboarding.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardAccessProbe.swift`
   - App-side probe for keyboard enablement, keyboard presentation, and keyboard-reported Full Access confirmation.
 - `KeyVox iOS/App/Onboarding/OnboardingMicrophonePermissionController.swift`
@@ -319,6 +331,7 @@ Packages/
 
 - `KeyVox iOS/Core/ModelDownloader/ModelManager.swift`
   - Observable owner of per-model install state, active-install gating, user-facing download/delete/repair actions, and relaunch recovery.
+  - Enforces one active download/install at a time and keeps provider selection persistence outside the model manager.
 - `KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift`
   - iOS-local model descriptor catalog for `Whisper Base` and `Parakeet TDT v3`, including artifact metadata and rooted install layout rules.
 - `KeyVox iOS/Core/ModelDownloader/InstalledDictationModelLocator.swift`
@@ -383,6 +396,8 @@ Packages/
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
 - `KeyVox Keyboard/Core/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
+- `KeyVox Keyboard/Core/KeyboardInteractionHaptics.swift`
+  - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
 - `KeyVox Keyboard/Core/KeyboardIPCManager.swift`
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
 - `KeyVox Keyboard/Core/KeyboardTextInputController.swift`
@@ -409,11 +424,11 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, settings persistence, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
+  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`
-  - Keyboard dictation control, toolbar warning precedence, text insertion behavior, and cursor-trackpad helpers.
+  - Keyboard dictation control, toolbar warning precedence, interaction haptics, text insertion behavior, and cursor-trackpad helpers.
 - `KeyVoxiOSTests/Core/Transcription/`
   - Transcription/session lifecycle and interrupted-capture recovery behavior.
 
