@@ -59,6 +59,27 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertEqual(detected?.trailingText, "and honestly I don't think you're going to pick wrong")
     }
 
+    func testSplitsSingleWordLastItemFromSentenceStyleCommentaryAfterExplicitListMarker() {
+        let detector = ListPatternDetector()
+        let text = """
+        I'm going out of town next week and I need to buy a few things from Walmart:
+
+        1. Socks
+        2. Razor blades
+        3. Soda. And remind me to buy an extra bottle of shampoo for my suitcase before I leave on my flight tomorrow at 10:00 AM.
+        """
+
+        let detected = detector.detectList(in: text)
+
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Socks", "Razor blades", "Soda"])
+        XCTAssertEqual(
+            detected?.trailingText,
+            "And remind me to buy an extra bottle of shampoo for my suitcase before I leave on my flight tomorrow at 10:00 AM."
+        )
+    }
+
     func testPreservesCausalTransitionWhenSplittingLastItem() {
         let detector = ListPatternDetector()
         let text = "Today one get dog food two charge phone three call mom because we leave early"
