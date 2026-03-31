@@ -229,9 +229,9 @@ final class ParakeetTests: XCTestCase {
             dataType: .float32
         )
 
-        let projectionPointer = projection.dataPointer.bindMemory(to: Float16.self, capacity: projection.count)
+        let projectionPointer = projection.dataPointer.bindMemory(to: UInt16.self, capacity: projection.count)
         for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.decoderHiddenSize {
-            projectionPointer[hiddenIndex] = Float16(Float(hiddenIndex) / 10)
+            projectionPointer[hiddenIndex] = ParakeetFloat16Storage.bitPattern(from: Float(hiddenIndex) / 10)
         }
 
         try ParakeetCoreMLBackend.copyNormalizedDecoderProjection(
@@ -279,11 +279,11 @@ final class ParakeetTests: XCTestCase {
 
         try ParakeetCoreMLBackend.fillFloatValues(in: array, with: [0.5, 1.5, 2.5, 3.5])
 
-        let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
-        XCTAssertEqual(Float(pointer[0]), 0.5, accuracy: 0.001)
-        XCTAssertEqual(Float(pointer[1]), 1.5, accuracy: 0.001)
-        XCTAssertEqual(Float(pointer[2]), 2.5, accuracy: 0.001)
-        XCTAssertEqual(Float(pointer[3]), 3.5, accuracy: 0.001)
+        let pointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: array.count)
+        XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[0]), 0.5, accuracy: 0.001)
+        XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[1]), 1.5, accuracy: 0.001)
+        XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[2]), 2.5, accuracy: 0.001)
+        XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[3]), 3.5, accuracy: 0.001)
     }
 
     private func makeModelFile() throws -> URL {

@@ -48,7 +48,7 @@ extension ParakeetCoreMLBackend {
             let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
             pointer.update(repeating: 0, count: array.count)
         case .float16:
-            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
+            let pointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: array.count)
             pointer.update(repeating: 0, count: array.count)
         case .int32:
             let pointer = array.dataPointer.bindMemory(to: Int32.self, capacity: array.count)
@@ -76,8 +76,8 @@ extension ParakeetCoreMLBackend {
             let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
             return pointer[index]
         case .float16:
-            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
-            return Float(pointer[index])
+            let pointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: array.count)
+            return ParakeetFloat16Storage.float(from: pointer[index])
         default:
             throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
         }
@@ -91,8 +91,8 @@ extension ParakeetCoreMLBackend {
             let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
             pointer[index] = value
         case .float16:
-            let pointer = array.dataPointer.bindMemory(to: Float16.self, capacity: array.count)
-            pointer[index] = Float16(value)
+            let pointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: array.count)
+            pointer[index] = ParakeetFloat16Storage.bitPattern(from: value)
         default:
             throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
         }
