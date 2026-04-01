@@ -18,6 +18,7 @@
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
 		8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464E2F6013ED007E720D /* DictionaryTabView.swift */; };
 		8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546512F6013ED007E720D /* SettingsTabView.swift */; };
+		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
 		8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
@@ -182,6 +183,7 @@
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
 		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
+		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
 		8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourState.swift; sourceTree = "<group>"; };
 		8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneAView.swift; sourceTree = "<group>"; };
 		8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneBView.swift; sourceTree = "<group>"; };
@@ -527,6 +529,7 @@
 				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
 				8E2546502F6013ED007E720D /* MainTabView.swift */,
 				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
+				B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */,
 				8E2546522F6013ED007E720D /* StyleTabView.swift */,
 				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
 			);
@@ -962,6 +965,7 @@
 				8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */,
 				8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */,
 				8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */,
+				B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
