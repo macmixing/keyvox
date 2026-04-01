@@ -2,18 +2,18 @@ import AVFoundation
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
-    private let ipcManager = KeyboardIPCManager()
-    private let capsLockStateStore = KeyboardCapsLockStateStore()
-    private let keypressHaptics = KeyboardKeypressHaptics()
-    private let interactionHaptics = KeyboardInteractionHaptics()
-    private let indicatorDriver = AudioIndicatorDriver()
-    private let startRecordingURL = URL(string: "keyvoxios://record/start")
-    private let dictionaryCasingStore = KeyboardDictionaryCasingStore()
-    private let callObserver =  KeyboardCallObserver()
-    private lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
+    let ipcManager = KeyboardIPCManager()
+    let capsLockStateStore = KeyboardCapsLockStateStore()
+    let keypressHaptics = KeyboardKeypressHaptics()
+    let interactionHaptics = KeyboardInteractionHaptics()
+    let indicatorDriver = AudioIndicatorDriver()
+    let startRecordingURL = URL(string: "keyvoxios://record/start")
+    let dictionaryCasingStore = KeyboardDictionaryCasingStore()
+    let callObserver =  KeyboardCallObserver()
+    lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
     })
-    private lazy var textInputController = KeyboardTextInputController(
+    lazy var textInputController = KeyboardTextInputController(
         documentProxy: KeyboardTextDocumentProxyAdapter(proxyProvider: { [weak self] in
             self?.textDocumentProxy
         }),
@@ -24,7 +24,7 @@ final class KeyboardViewController: UIInputViewController {
             self?.dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: text) ?? false
         }
     )
-    private lazy var dictationController = KeyboardDictationController(
+    lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
         scheduleAction: keyboardMainQueueScheduler,
         openContainingApp: { [weak self] url in
@@ -32,31 +32,33 @@ final class KeyboardViewController: UIInputViewController {
         },
         startRecordingURL: startRecordingURL
     )
-    private var primaryHeightConstraint: NSLayoutConstraint?
-    private var keyboardState: KeyboardState = .idle {
+    var primaryHeightConstraint: NSLayoutConstraint?
+    var keyboardState: KeyboardState = .idle {
         didSet {
             updateUI()
         }
     }
-    private var symbolPage: KeyboardSymbolPage = .primary {
+    var symbolPage: KeyboardSymbolPage = .primary {
         didSet {
             updateUI()
         }
     }
-    private var isCapsLockEnabled = false {
+    var isCapsLockEnabled = false {
         didSet {
             updateUI()
         }
     }
 
-    private var rootContainerView: KeyboardRootView!
-    private let popupOverlayView = UIView()
-    private var fullAccessView: FullAccessView?
-    private var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
-    private var isTrackpadModeActive = false
-    private var extensionHostIsActive = true
-    private var hostWillResignActiveObserver: NSObjectProtocol?
-    private var hostDidBecomeActiveObserver: NSObjectProtocol?
+    var rootContainerView: KeyboardRootView?
+    var popupOverlayView: UIView?
+    var fullAccessView: FullAccessView?
+    var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
+    var isTrackpadModeActive = false
+    var extensionHostIsActive = true
+    var hostWillResignActiveObserver: NSObjectProtocol?
+    var hostDidBecomeActiveObserver: NSObjectProtocol?
+    var hasConfiguredControllerBindings = false
+    var isPresentationBound = false
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -70,15 +72,12 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         view.backgroundColor = .clear
         view.clipsToBounds = true
-        configureRootView()
         configureTraitChangeObservation()
-        configureIndicatorDriver()
-        configureDictationController()
         configureHostLifecycleObservers()
-        configureCallObserver()
+        configureControllerBindingsIfNeeded()
+        KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         syncCapsLockState()
         dictationController.syncStateFromSharedState()
         updateUI()
@@ -86,6 +85,8 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        extensionHostIsActive = true
+        preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
         callObserver.refreshState()
@@ -102,83 +103,31 @@ final class KeyboardViewController: UIInputViewController {
         KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard extensionHostIsActive else { return }
+        tearDownPresentation()
+    }
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         rootContainerView?.keyGridView.resetInteractionState()
-        indicatorDriver.stop()
         if extensionHostIsActive {
             resetCapsLockStateIfNeeded()
+            tearDownPresentation()
         }
     }
 
     deinit {
-        indicatorDriver.stop()
-        if let hostWillResignActiveObserver {
-            NotificationCenter.default.removeObserver(hostWillResignActiveObserver)
-        }
-        if let hostDidBecomeActiveObserver {
-            NotificationCenter.default.removeObserver(hostDidBecomeActiveObserver)
-        }
-        dictationController.unregisterObservers()
+        tearDownPresentation()
+        removeHostLifecycleObservers()
     }
 
     private func configureDictationBehavior() {
         hasDictationKey = true
     }
 
-    private func configureRootView() {
-        if rootContainerView == nil {
-            view.backgroundColor = .clear
-            view.clipsToBounds = true
-
-            let rootView = KeyboardRootView()
-            rootView.translatesAutoresizingMaskIntoConstraints = false
-            rootContainerView = rootView
-
-            popupOverlayView.translatesAutoresizingMaskIntoConstraints = false
-            popupOverlayView.backgroundColor = .clear
-            popupOverlayView.isUserInteractionEnabled = false
-            popupOverlayView.clipsToBounds = false
-
-            view.addSubview(rootView)
-            view.addSubview(popupOverlayView)
-
-            NSLayoutConstraint.activate([
-                rootView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                rootView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                rootView.topAnchor.constraint(equalTo: view.topAnchor),
-                rootView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-                popupOverlayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                popupOverlayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                popupOverlayView.topAnchor.constraint(equalTo: view.topAnchor),
-                popupOverlayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
-
-        rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
-        rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
-        rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
-        rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
-        rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
-            self?.handleKeyActivation(kind) ?? false
-        }
-        rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
-            self?.handleSpaceTrackpadEvent(event)
-        }
-        rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
-    }
-
-    private func configureIndicatorDriver() {
-        indicatorDriver.sampleProvider = { [weak self] in
-            self?.ipcManager.currentAudioIndicatorSample()
-        }
-        indicatorDriver.onUpdate = { [weak self] timelineState in
-            self?.rootContainerView?.logoBarView.applyTimelineState(timelineState)
-        }
-    }
-
-    private func configurePrimaryViewHeight() {
+    func configurePrimaryViewHeight() {
         primaryHeightConstraint?.isActive = false
         primaryHeightConstraint = nil
 
@@ -198,47 +147,22 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func configureDictationController() {
+    private func configureControllerBindingsIfNeeded() {
+        guard hasConfiguredControllerBindings == false else { return }
+        hasConfiguredControllerBindings = true
+
         dictationController.onStateChange = { [weak self] state in
             self?.keyboardState = state
         }
         dictationController.onTranscriptionReady = { [weak self] text in
             self?.handleTranscriptionReady(text)
         }
-        dictationController.registerObservers()
-    }
-
-    private func configureCallObserver() {
         callObserver.onCallStateChange = { [weak self] in
             self?.updateUI()
         }
     }
 
-    private func configureHostLifecycleObservers() {
-        guard hostWillResignActiveObserver == nil, hostDidBecomeActiveObserver == nil else { return }
-
-        hostWillResignActiveObserver = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name.NSExtensionHostWillResignActive,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.extensionHostIsActive = false
-        }
-
-        hostDidBecomeActiveObserver = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name.NSExtensionHostDidBecomeActive,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.extensionHostIsActive = true
-            guard let self else { return }
-            KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
-            KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
-            self.updateUI()
-        }
-    }
-
-    private func updateUI() {
+    func updateUI() {
         let toolbarMode = currentToolbarMode()
         rootContainerView?.apply(
             state: keyboardState,
@@ -262,7 +186,7 @@ final class KeyboardViewController: UIInputViewController {
         )
     }
 
-    private func ensureFullAccessView() -> FullAccessView {
+    func ensureFullAccessView() -> FullAccessView {
         if let fullAccessView {
             return fullAccessView
         }
@@ -297,41 +221,41 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func setFullAccessInstructionsPresented(_ isPresented: Bool) {
+    func setFullAccessInstructionsPresented(_ isPresented: Bool) {
         if isPresented {
             ensureFullAccessView().isHidden = false
         } else {
             fullAccessView?.isHidden = true
         }
         rootContainerView?.isHidden = isPresented
-        popupOverlayView.isHidden = isPresented
+        popupOverlayView?.isHidden = isPresented
     }
 
     @objc
-    private func handleCancelTap() {
+    func handleCancelTap() {
         interactionHaptics.emitWarningIfEnabled()
         dictationController.handleCancelTap()
     }
 
     @objc
-    private func handleCapsLockTap() {
+    func handleCapsLockTap() {
         isCapsLockEnabled = capsLockStateStore.toggle()
         interactionHaptics.emitLightIfEnabled()
     }
 
     @objc
-    private func handleMicTap() {
+    func handleMicTap() {
         interactionHaptics.emitMediumIfEnabled()
         dictationController.handleMicTap()
     }
 
     @objc
-    private func handleFullAccessInfoTap() {
+    func handleFullAccessInfoTap() {
         setFullAccessInstructionsPresented(true)
     }
 
     @discardableResult
-    private func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+    func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
         textInputController.handleKeyActivation(
             kind,
             symbolPage: &symbolPage,
@@ -344,7 +268,7 @@ final class KeyboardViewController: UIInputViewController {
         )
     }
 
-    private func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
+    func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
         switch event {
         case .began:
             isTrackpadModeActive = true
@@ -364,7 +288,7 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    private func syncCapsLockState() {
+    func syncCapsLockState() {
         isCapsLockEnabled = capsLockStateStore.isEnabled
     }
 

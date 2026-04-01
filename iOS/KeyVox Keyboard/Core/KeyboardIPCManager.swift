@@ -17,6 +17,12 @@ final class KeyboardIPCManager {
 
     private var isRegistered = false
 
+#if DEBUG
+    var debugIsRegistered: Bool {
+        isRegistered
+    }
+#endif
+
     func registerObservers() {
         guard !isRegistered else { return }
         isRegistered = true

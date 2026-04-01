@@ -287,6 +287,8 @@
 			membershipExceptions = (
 				App/KeyboardContainingAppLauncher.swift,
 				App/KeyboardViewController.swift,
+				"App/KeyboardViewController+Debug.swift",
+				"App/KeyboardViewController+PresentationLifecycle.swift",
 				Core/AudioIndicatorDriver.swift,
 				Core/KeyboardCallObserver.swift,
 				Core/KeyboardCapsLockStateStore.swift,

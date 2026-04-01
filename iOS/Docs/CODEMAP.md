@@ -27,7 +27,7 @@ The current default runtime flow is:
 ## Architecture
 
 - **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
-- **`KeyVox Keyboard/`**: custom keyboard controller, toolbar modes, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
+- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, iCloud sync, weekly stats, model lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
@@ -167,6 +167,8 @@ iOS/
 ├── KeyVox Keyboard/
 │   ├── App/
 │   │   ├── KeyboardContainingAppLauncher.swift
+│   │   ├── KeyboardViewController+Debug.swift
+│   │   ├── KeyboardViewController+PresentationLifecycle.swift
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
 │   │   ├── AudioIndicatorDriver.swift
@@ -239,7 +241,8 @@ iOS/
 │   │   │   ├── KeyboardDictationControllerTests.swift
 │   │   │   ├── KeyboardInteractionHapticsTests.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
-│   │   │   └── KeyboardTextInputControllerTests.swift
+│   │   │   ├── KeyboardTextInputControllerTests.swift
+│   │   │   └── KeyboardViewControllerTests.swift
 │   │   └── Transcription/
 │   │       └── TranscriptionManagerTests.swift
 │   └── KeyVoxiOSTests.swift
@@ -392,6 +395,12 @@ Packages/
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
   - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, symbol page, trackpad mode, and insertion.
+- `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
+  - Presentation-tree creation, per-presentation binding, teardown, and extension-host lifecycle observation.
+  - Pauses the active presentation during host backgrounding, refreshes it on host foregrounding, and tears the tree down only for real dismissal and globe-key presentation swaps.
+  - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
+- `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
+  - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
 - `KeyVox Keyboard/Core/KeyboardDictationController.swift`
@@ -428,7 +437,7 @@ Packages/
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`
-  - Keyboard dictation control, toolbar warning precedence, interaction haptics, text insertion behavior, and cursor-trackpad helpers.
+  - Keyboard dictation control, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, and cursor-trackpad helpers.
 - `KeyVoxiOSTests/Core/Transcription/`
   - Transcription/session lifecycle and interrupted-capture recovery behavior.
 
