@@ -41,6 +41,7 @@ The containing app owns:
 The keyboard extension owns:
 
 - visible keyboard UI
+- presentation-scoped keyboard view-tree lifecycle
 - toolbar mode selection and warning presentation
 - warm/cold launch handoff into the containing app
 - text insertion into host apps
@@ -570,6 +571,7 @@ The extension is a transport and insertion surface, not the transcription owner.
 `KeyboardViewController` should own only:
 
 - UI event handling
+- presentation lifecycle coordination
 - toolbar mode switching
 - call-state observation for warning presentation
 - full-access instructions presentation
@@ -578,6 +580,27 @@ The extension is a transport and insertion surface, not the transcription owner.
 - cancel flow
 - host-text insertion
 - cursor movement and key-repeat interactions
+
+### Keyboard Presentation Lifecycle Rules
+
+The keyboard presentation tree is intentionally disposable.
+
+Rules:
+
+- `KeyboardViewController` may be preloaded before the keyboard is actually shown, so it must **not** build the presentation tree in `viewDidLoad`
+- the keyboard presentation tree is created only on the appearance path
+- teardown must run on real keyboard dismissal and presentation-swap boundaries while the extension host is active, including `viewWillDisappear`
+- extension-host resign-active notifications must pause the active presentation without destroying the current tree so host app background/foreground does not blank the keyboard
+- `deinit` is not a safe ownership boundary for keyboard cleanup
+- teardown must remove the presentation tree, popup overlay, full-access overlay, IPC observers, and indicator callbacks
+- host lifecycle observers are controller-scoped and remain installed until controller teardown
+- rebuild must preserve the same visuals, toolbar behavior, warning precedence, haptics, and insertion rules as a fresh keyboard presentation
+
+Implementation split:
+
+- `KeyboardViewController.swift` owns the controller-facing event and state surface
+- `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
+- `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 
 ### Toolbar and Layout Rules
 
@@ -718,6 +741,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - stop-time capture processing
 - keyboard dictation controller behavior
 - keyboard interaction haptics
+- keyboard controller presentation teardown and rebuild behavior
 - keyboard text input helpers
 - keyboard cursor-trackpad support
 - transcription manager lifecycle and interruption handling

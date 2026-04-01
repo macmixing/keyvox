@@ -59,7 +59,7 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
-    func setPopupContainerView(_ view: UIView) {
+    func setPopupContainerView(_ view: UIView?) {
         popupContainerView = view
     }
 
