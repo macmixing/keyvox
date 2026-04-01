@@ -318,7 +318,7 @@ struct SettingsTabView: View {
                 actionButton(for: modelID, state: state)
             }
 
-            Text(state.statusText)
+            Text(modelStatusText(for: modelID, state: state))
                 .font(.appFont(14, variant: .light))
                 .foregroundStyle(.white.opacity(0.7))
 
@@ -371,6 +371,24 @@ struct SettingsTabView: View {
             )
         case .downloading, .installing:
             EmptyView()
+        }
+    }
+
+    private func modelStatusText(for modelID: DictationModelID, state: ModelInstallState) -> String {
+        guard case .notInstalled = state,
+              let approximateSizeText = notInstalledApproximateSizeText(for: modelID) else {
+            return state.statusText
+        }
+
+        return "\(state.statusText) (\(approximateSizeText))"
+    }
+
+    private func notInstalledApproximateSizeText(for modelID: DictationModelID) -> String? {
+        switch modelID {
+        case .whisperBase:
+            return "~190 MB"
+        case .parakeetTdtV3:
+            return "~480 MB"
         }
     }
 
