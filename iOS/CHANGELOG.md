@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.0] Build 9 - TestFlight - 2026-03-31
+
+Stabilizes the iOS keyboard presentation lifecycle so repeated globe-key swaps no longer accumulate retained keyboard trees, while preserving the active keyboard when the host app backgrounds and returns.
+
+### Changed
+
+- Refactored the iOS keyboard controller so presentation-tree creation, teardown, and host lifecycle handling are owned by dedicated presentation lifecycle helpers instead of being spread across the main controller file.
+- Updated the keyboard lifecycle to create its presentation tree only on the real appearance path instead of during controller preload.
+- Added controller-scoped debug lifecycle counters and regression seams for validating keyboard presentation creation and teardown behavior.
+- Updated the iOS engineering notes and codemap to document the keyboard’s presentation-scoped lifecycle rules and host background/foreground behavior.
+
+### Fixed
+
+- Fixed a keyboard extension memory leak where repeated globe-key hide/show cycles could retain full keyboard presentation trees and steadily increase extension memory usage.
+- Fixed retained keyboard key-grid, blur-view, and controller accumulation during repeated presentation swaps in the iOS keyboard extension.
+- Fixed a regression where backgrounding the host app with the keyboard visible could leave the keyboard blank when returning to the foreground until the user cycled input modes again.
+
 ## [1.0.0] Build 8 - TestFlight - 2026-03-30
 
 Improves iPhone dictation accuracy and reliability with better spoken-number, date, list, colon, math, and Parakeet runtime handling across the shared package layer used by the beta.
