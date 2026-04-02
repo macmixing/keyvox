@@ -46,7 +46,7 @@ struct OnboardingKeyboardTourScreen: View {
                 }
                 .overlay(alignment: .bottom) {
                     if isInputBarVisible {
-                        inputBar
+                        inputBar(for: geometry)
                             .padding(.horizontal, AppTheme.screenPadding)
                             .padding(.bottom, Metrics.inputBarBottomSpacing)
                             .offset(y: -keyboardLift(for: geometry))
@@ -171,15 +171,17 @@ struct OnboardingKeyboardTourScreen: View {
         }
     }
 
-    private var inputBar: some View {
+    private func inputBar(for geometry: GeometryProxy) -> some View {
         AppCard {
             AutoFocusTextField(
                 text: $text,
                 placeholder: "",
                 onSubmit: {}
             )
+            .frame(maxWidth: .infinity)
             .frame(height: 44)
         }
+        .frame(width: max(0, geometry.size.width - (AppTheme.screenPadding * 2)))
     }
 
     private func keyboardLift(for geometry: GeometryProxy) -> CGFloat {

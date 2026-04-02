@@ -22,6 +22,8 @@ struct AutoFocusTextField: UIViewRepresentable {
         textField.autocorrectionType = .no
         textField.font = resolvedFont(size: 16)
         textField.text = text
+        textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         textField.addTarget(
             context.coordinator,
             action: #selector(Coordinator.textDidChange(_:)),
@@ -49,6 +51,16 @@ struct AutoFocusTextField: UIViewRepresentable {
 extension AutoFocusTextField {
     final class FocusAwareTextField: UITextField {
         private var hasAutoFocused = false
+
+        override var intrinsicContentSize: CGSize {
+            let size = super.intrinsicContentSize
+            return CGSize(width: UIView.noIntrinsicMetric, height: size.height)
+        }
+
+        override func sizeThatFits(_ size: CGSize) -> CGSize {
+            let fittedSize = super.sizeThatFits(size)
+            return CGSize(width: size.width, height: fittedSize.height)
+        }
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
