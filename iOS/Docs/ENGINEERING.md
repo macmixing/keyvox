@@ -711,7 +711,8 @@ Current app-owned surfaces:
 - `HomeTabView`: weekly stats, last transcription, debug diagnostics
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, and the release-facing `Active Model` section for provider selection plus per-model install actions
+- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, App Store review, support link, and version footer
+- `SettingsTabView+Models`: release-facing `Active Model` section for provider selection plus per-model install actions and uninstalled model size display
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour
 

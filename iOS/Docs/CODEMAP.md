@@ -130,6 +130,7 @@ iOS/
 │   │   ├── MainTabView.swift
 │   │   ├── ReturnToHostView.swift
 │   │   ├── SettingsTabView.swift
+│   │   ├── SettingsTabView+Models.swift
 │   │   ├── StyleTabView.swift
 │   │   ├── Components/
 │   │   │   ├── LoopingVideoPlayer.swift
@@ -386,7 +387,9 @@ Packages/
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
-  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, and the release-facing `Active Model` card for provider selection plus per-model install actions.
+  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, and version footer.
+- `KeyVox iOS/Views/SettingsTabView+Models.swift`
+  - Release-facing `Active Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
 

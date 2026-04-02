@@ -18,7 +18,6 @@
 		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
 		8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464E2F6013ED007E720D /* DictionaryTabView.swift */; };
 		8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546512F6013ED007E720D /* SettingsTabView.swift */; };
-		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
 		8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
 		8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
@@ -131,6 +130,7 @@
 		B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
 		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		B300000B2FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */; };
+		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
 		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
 		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
 /* End PBXBuildFile section */
@@ -183,7 +183,6 @@
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
 		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
-		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
 		8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourState.swift; sourceTree = "<group>"; };
 		8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneAView.swift; sourceTree = "<group>"; };
 		8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneBView.swift; sourceTree = "<group>"; };
@@ -279,6 +278,7 @@
 		B20000012FD5000100AA0001 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
 		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
+		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
 		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
 		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1006,7 +1006,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -1040,7 +1040,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -1077,7 +1077,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -1114,7 +1114,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -1274,7 +1274,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1319,7 +1319,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

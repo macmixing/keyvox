@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.0] Build 10 - TestFlight - 2026-04-01
+
+Refines the iOS onboarding and settings experience by keeping the keyboard tour input anchored to the screen width, surfacing clearer model download sizes, and splitting model-management UI into a dedicated settings extension.
+
+### Changed
+
+- Extracted the release-facing `Active Model` settings section into `SettingsTabView+Models.swift` to keep `SettingsTabView` lighter and easier to maintain.
+- Added approximate uninstalled model size labels in Settings for Whisper Base and Parakeet TDT v3.
+- Updated the iOS code map and engineering notes to reflect the extracted settings model-management surface.
+
+### Fixed
+
+- Fixed the onboarding keyboard tour input bar so long dictated text no longer expands the field beyond the screen width.
+- Fixed `AutoFocusTextField` sizing behavior in SwiftUI layouts by removing unwanted horizontal intrinsic-width pressure.
+
 ## [1.0.0] Build 9 - TestFlight - 2026-03-31
 
 Stabilizes the iOS keyboard presentation lifecycle so repeated globe-key swaps no longer accumulate retained keyboard trees, while preserving the active keyboard when the host app backgrounds and returns.
