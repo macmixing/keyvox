@@ -26,17 +26,20 @@ final class KeyboardLogoBarView: UIControl {
     private let ringLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
+    private let microphoneBaseImage = UIImage(named: "microphone-icon")
 
     private var indicatorPhase: AudioIndicatorPhase = .idle
     private var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
     private var isAnimatingActivationTransition = false
+    private var lastRasterizedMicrophonePixelSize = CGSize.zero
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureView()
         configureSizeConstraints()
         configureLayers()
+        observeAppearanceChanges()
         bringSubviewToFront(microphoneImageView)
         configureInitialPresentation()
         updateAccessibility()
@@ -50,9 +53,24 @@ final class KeyboardLogoBarView: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         let micSide = min(bounds.width, bounds.height) * Metrics.micSymbolSizeRatio
+        updateMicrophoneImageIfNeeded(for: CGSize(width: micSide, height: micSide))
         microphoneImageView.bounds = CGRect(x: 0, y: 0, width: micSide, height: micSide)
         microphoneImageView.center = CGPoint(x: bounds.midX, y: bounds.midY)
         updateLayerFrames()
+    }
+
+    private func observeAppearanceChanges() {
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.refreshMicrophoneImageForCurrentTraits()
+        }
+    }
+
+    private func refreshMicrophoneImageForCurrentTraits() {
+        lastRasterizedMicrophonePixelSize = .zero
+        if bounds.width > 0, bounds.height > 0 {
+            let micSide = min(bounds.width, bounds.height) * Metrics.micSymbolSizeRatio
+            updateMicrophoneImageIfNeeded(for: CGSize(width: micSide, height: micSide))
+        }
     }
 
     override var isHighlighted: Bool {
@@ -76,8 +94,8 @@ final class KeyboardLogoBarView: UIControl {
 
         microphoneImageView.translatesAutoresizingMaskIntoConstraints = false
         microphoneImageView.contentMode = .scaleAspectFit
-        microphoneImageView.tintColor = UIColor.systemIndigo.withAlphaComponent(0.85)
-        microphoneImageView.image = UIImage(named: "microphone-icon")
+        microphoneImageView.tintColor = nil
+        microphoneImageView.image = microphoneBaseImage?.withRenderingMode(.alwaysOriginal)
         addSubview(microphoneImageView)
     }
 
@@ -318,6 +336,33 @@ final class KeyboardLogoBarView: UIControl {
                 cornerRadius: barLayer.cornerRadius
             ).cgPath
         }
+    }
+
+    private func updateMicrophoneImageIfNeeded(for size: CGSize) {
+        guard size.width > 0, size.height > 0 else { return }
+        guard let microphoneBaseImage else { return }
+
+        let scale = window?.screen.scale ?? UIScreen.main.scale
+        let pixelSize = CGSize(width: (size.width * scale).rounded(), height: (size.height * scale).rounded())
+        guard pixelSize != lastRasterizedMicrophonePixelSize else { return }
+
+        let rendererFormat = UIGraphicsImageRendererFormat(for: traitCollection)
+        rendererFormat.opaque = false
+        rendererFormat.scale = scale
+
+        let tintColor = UIColor.systemIndigo
+            .withAlphaComponent(0.85)
+            .resolvedColor(with: traitCollection)
+
+        let rasterizedImage = UIGraphicsImageRenderer(size: size, format: rendererFormat).image { _ in
+            let rect = CGRect(origin: .zero, size: size)
+            microphoneBaseImage.withRenderingMode(.alwaysOriginal).draw(in: rect)
+            tintColor.setFill()
+            UIRectFillUsingBlendMode(rect, .sourceIn)
+        }
+
+        lastRasterizedMicrophonePixelSize = pixelSize
+        microphoneImageView.image = rasterizedImage.withRenderingMode(.alwaysOriginal)
     }
 
     private func barHeight(for index: Int, scale: CGFloat) -> CGFloat {
