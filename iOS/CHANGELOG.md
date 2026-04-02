@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.0] Build 11 - TestFlight - 2026-04-01
+
+Improves iOS keyboard launch stability by removing a crash-prone microphone logo rendering path that could prevent the keyboard from appearing for some users.
+
+### Changed
+
+- Updated the branded keyboard logo bar to rasterize its microphone asset before display instead of relying on live vector template styling during keyboard layout.
+- Switched the keyboard logo bar appearance refresh path to the iOS 17 trait change registration API.
+
+### Fixed
+
+- Fixed a keyboard extension crash in `KeyboardLogoBarView` triggered while rendering the toolbar microphone image during layout.
+- Fixed a failure mode where affected users could not bring up the KeyVox keyboard because the extension crashed before presentation completed.
+
 ## [1.0.0] Build 10 - TestFlight - 2026-04-01
 
 Refines the iOS onboarding and settings experience by keeping the keyboard tour input anchored to the screen width, surfacing clearer model download sizes, and splitting model-management UI into a dedicated settings extension.
