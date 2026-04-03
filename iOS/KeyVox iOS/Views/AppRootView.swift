@@ -27,8 +27,7 @@ struct AppRootView: View {
             return .launchHold
         }
 
-        if ttsManager.isPlaybackPreparationViewPresented
-            || appLaunchRouteStore.initialURLRoute == .startTTS {
+        if ttsManager.isPlaybackPreparationViewPresented {
             return .playbackPreparation
         }
 

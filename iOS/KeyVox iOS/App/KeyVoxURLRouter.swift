@@ -27,8 +27,14 @@ final class KeyVoxURLRouter {
         case .stopRecording:
             transcriptionManager.handleStopRecordingCommand()
         case .startTTS:
-            ttsManager.isPlaybackPreparationViewPresented = shouldPresentReturnToHost
-            audioModeCoordinator.handleStartTTSFromPendingRequest()
+            if let request = KeyVoxIPCBridge.readTTSRequest(),
+               request.trimmedText.isEmpty == false {
+                ttsManager.isPlaybackPreparationViewPresented = shouldPresentReturnToHost
+                audioModeCoordinator.handleStartTTSFromPendingRequest()
+            } else {
+                ttsManager.isPlaybackPreparationViewPresented = false
+                audioModeCoordinator.handleSpeakClipboardFromApp()
+            }
         }
     }
 

@@ -130,15 +130,6 @@ struct KeyVoxApp: App {
             appLaunchRouteStore.clearInitialPresentationRoute()
         }
 
-        if route == .startTTS, shouldPresentReturnToHost {
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                ttsManager.isPlaybackPreparationViewPresented = true
-            }
-            appLaunchRouteStore.clearInitialPresentationRoute()
-        }
-
         urlRouter.handle(route: route, shouldPresentReturnToHost: shouldPresentReturnToHost)
     }
 
