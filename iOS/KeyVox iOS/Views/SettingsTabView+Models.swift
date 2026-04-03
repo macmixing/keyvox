@@ -176,7 +176,7 @@ extension SettingsTabView {
                 style: .destructive,
                 size: .compact,
                 fontSize: 15,
-                action: { modelManager.deleteModel(withID: modelID) }
+                action: { pendingDeletionConfirmation = .dictationModel(modelID) }
             )
         case .failed:
             AppActionButton(

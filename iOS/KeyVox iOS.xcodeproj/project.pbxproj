@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8E0ECBF62F807CC200B7731A /* SettingsDeletionConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */; };
 		8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */; };
 		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
 		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
@@ -191,6 +192,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDeletionConfirmation.swift; sourceTree = "<group>"; };
 		8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnToHostView.swift; sourceTree = "<group>"; };
 		8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
 		8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = ReturnToHost.mov; sourceTree = "<group>"; };
@@ -653,6 +655,7 @@
 		AA3000012F70000100000001 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */,
 				8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */,
 				8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */,
 				8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */,
@@ -966,6 +969,7 @@
 				8ED2F1122F7F4F1C00256F9E /* PocketTTSAssetLocator.swift in Sources */,
 				8ED2F1132F7F4F1C00256F9E /* PocketTTSEngine.swift in Sources */,
 				8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */,
+				8E0ECBF62F807CC200B7731A /* SettingsDeletionConfirmation.swift in Sources */,
 				8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */,
 				8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */,
 				A1C000062FEB000100AA0001 /* TTSReplayCache.swift in Sources */,

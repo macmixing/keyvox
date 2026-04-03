@@ -243,7 +243,7 @@ extension SettingsTabView {
                 size: .compact,
                 fontSize: 15,
                 isEnabled: !pocketTTSModelManager.isBusyInstallingAnotherTarget(sharedModel: true),
-                action: { pocketTTSModelManager.deleteSharedModel() }
+                action: { pendingDeletionConfirmation = .sharedTTSModel }
             )
         case .failed:
             AppActionButton(
@@ -280,7 +280,7 @@ extension SettingsTabView {
                 size: .compact,
                 fontSize: 15,
                 isEnabled: !isBlockedByAnotherActiveInstall,
-                action: { pocketTTSModelManager.deleteVoice(voice) }
+                action: { pendingDeletionConfirmation = .ttsVoice(voice) }
             )
         case .failed:
             AppActionButton(
