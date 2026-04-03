@@ -39,7 +39,8 @@ enum PocketTTSChunkPlanner {
     static func chunk(_ text: String, tokenizer: SentencePieceTokenizer) -> [String] {
         let trimmed = sanitize(text).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
-        if tokenizer.encode(trimmed).count <= PocketTTSConstants.maxTokensPerChunk {
+        let chunkTokenLimit = maxTokensPerChunk(for: trimmed, tokenizer: tokenizer)
+        if tokenizer.encode(trimmed).count <= chunkTokenLimit {
             return [trimmed]
         }
 
@@ -54,15 +55,15 @@ enum PocketTTSChunkPlanner {
 
             let sentences = splitSentences(in: normalizedParagraph)
             if sentences.isEmpty {
-                sentencePieces.append(contentsOf: splitOversizedSentence(normalizedParagraph, tokenizer: tokenizer))
+                sentencePieces.append(contentsOf: splitOversizedSentence(normalizedParagraph, tokenizer: tokenizer, chunkTokenLimit: chunkTokenLimit))
                 continue
             }
 
             sentencePieces.append(contentsOf: sentences.flatMap { sentence in
-                if tokenizer.encode(sentence).count <= PocketTTSConstants.maxTokensPerChunk {
+                if tokenizer.encode(sentence).count <= chunkTokenLimit {
                     return [sentence]
                 }
-                return splitOversizedSentence(sentence, tokenizer: tokenizer)
+                return splitOversizedSentence(sentence, tokenizer: tokenizer, chunkTokenLimit: chunkTokenLimit)
             })
         }
 
@@ -75,7 +76,8 @@ enum PocketTTSChunkPlanner {
                 piece,
                 to: currentChunk,
                 candidate: candidate,
-                tokenizer: tokenizer
+                tokenizer: tokenizer,
+                chunkTokenLimit: chunkTokenLimit
             ) {
                 currentChunk = candidate
             } else {
@@ -96,13 +98,14 @@ enum PocketTTSChunkPlanner {
         _ piece: String,
         to currentChunk: String,
         candidate: String,
-        tokenizer: SentencePieceTokenizer
+        tokenizer: SentencePieceTokenizer,
+        chunkTokenLimit: Int
     ) -> Bool {
         guard !currentChunk.isEmpty else {
-            return tokenizer.encode(candidate).count <= PocketTTSConstants.maxTokensPerChunk
+            return tokenizer.encode(candidate).count <= chunkTokenLimit
         }
 
-        guard tokenizer.encode(candidate).count <= PocketTTSConstants.maxTokensPerChunk else {
+        guard tokenizer.encode(candidate).count <= chunkTokenLimit else {
             return false
         }
 
@@ -117,16 +120,20 @@ enum PocketTTSChunkPlanner {
             return true
         }
 
-        return tokenizer.encode(candidate).count <= (PocketTTSConstants.maxTokensPerChunk - 8)
+        return tokenizer.encode(candidate).count <= (chunkTokenLimit - 8)
     }
 
-    private static func splitOversizedSentence(_ sentence: String, tokenizer: SentencePieceTokenizer) -> [String] {
+    private static func splitOversizedSentence(
+        _ sentence: String,
+        tokenizer: SentencePieceTokenizer,
+        chunkTokenLimit: Int
+    ) -> [String] {
         var pieces: [String] = []
         var current = ""
 
         for clause in splitClauses(in: sentence) {
             let candidate = current.isEmpty ? clause : current + " " + clause
-            if tokenizer.encode(candidate).count <= PocketTTSConstants.maxTokensPerChunk {
+            if tokenizer.encode(candidate).count <= chunkTokenLimit {
                 current = candidate
                 continue
             }
@@ -136,10 +143,10 @@ enum PocketTTSChunkPlanner {
                 current = ""
             }
 
-            if tokenizer.encode(clause).count <= PocketTTSConstants.maxTokensPerChunk {
+            if tokenizer.encode(clause).count <= chunkTokenLimit {
                 current = clause
             } else {
-                pieces.append(contentsOf: splitAtWordBoundaries(clause, tokenizer: tokenizer))
+                pieces.append(contentsOf: splitAtWordBoundaries(clause, tokenizer: tokenizer, chunkTokenLimit: chunkTokenLimit))
             }
         }
 
@@ -179,7 +186,11 @@ enum PocketTTSChunkPlanner {
         return parts
     }
 
-    private static func splitAtWordBoundaries(_ text: String, tokenizer: SentencePieceTokenizer) -> [String] {
+    private static func splitAtWordBoundaries(
+        _ text: String,
+        tokenizer: SentencePieceTokenizer,
+        chunkTokenLimit: Int
+    ) -> [String] {
         let words = text.split(separator: " ").map(String.init)
         guard words.count > 1 else { return [text] }
 
@@ -188,7 +199,7 @@ enum PocketTTSChunkPlanner {
 
         for word in words {
             let candidate = (currentWords + [word]).joined(separator: " ")
-            if tokenizer.encode(candidate).count <= PocketTTSConstants.maxTokensPerChunk || currentWords.isEmpty {
+            if tokenizer.encode(candidate).count <= chunkTokenLimit || currentWords.isEmpty {
                 currentWords.append(word)
             } else {
                 chunks.append(currentWords.joined(separator: " "))
@@ -200,6 +211,22 @@ enum PocketTTSChunkPlanner {
             chunks.append(currentWords.joined(separator: " "))
         }
         return chunks
+    }
+
+    private static func maxTokensPerChunk(
+        for text: String,
+        tokenizer: SentencePieceTokenizer
+    ) -> Int {
+        let totalTokenCount = tokenizer.encode(text).count
+
+        switch totalTokenCount {
+        case (PocketTTSConstants.longFormTokenThreshold + 1)...:
+            return PocketTTSConstants.longFormMaxTokensPerChunk
+        case (PocketTTSConstants.mediumFormTokenThreshold + 1)...:
+            return PocketTTSConstants.mediumFormMaxTokensPerChunk
+        default:
+            return PocketTTSConstants.maxTokensPerChunk
+        }
     }
 
     private static func splitParagraphs(in text: String) -> [String] {

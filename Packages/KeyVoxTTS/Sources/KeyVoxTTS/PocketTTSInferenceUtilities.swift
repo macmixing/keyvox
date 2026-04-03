@@ -46,9 +46,10 @@ enum PocketTTSInferenceUtilities {
         }
     }
 
-    static func estimateMaxFrameCount(for text: String) -> Int {
-        let wordCount = text.split(separator: " ").count
-        return Int((Double(wordCount) + 2.0) * 12.5)
+    static func estimateMaxFrameCount(forTokenCount tokenCount: Int) -> Int {
+        let estimatedFrames = (Double(tokenCount) * PocketTTSConstants.estimatedFramesPerToken)
+            + Double(PocketTTSConstants.estimatedFrameBasePadding)
+        return max(PocketTTSConstants.estimatedFrameBasePadding, Int(estimatedFrames.rounded(.up)))
     }
 
     static func readFloats(from array: MLMultiArray, count: Int) -> [Float] {

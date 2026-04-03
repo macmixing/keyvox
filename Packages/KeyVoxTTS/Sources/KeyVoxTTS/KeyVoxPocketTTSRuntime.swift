@@ -193,7 +193,10 @@ private actor StreamGenerator {
 
     private struct ChunkPlan {
         let rawText: String
+        let tokenCount: Int
         let estimatedFrameCount: Int
+        let debugID: String
+        let debugPreview: String
     }
 
     private let chunkPlans: [ChunkPlan]
@@ -206,6 +209,9 @@ private actor StreamGenerator {
     private let voiceKVSnapshot: PocketTTSInferenceTypes.KVCacheState
     private let computeModeController: ComputeModeController
     private var randomNumberGenerator: SeededRandomNumberGenerator
+    private let totalEstimatedSampleCount: Int
+    private var observedFrameCount = 0
+    private var observedEstimatedFrameCount = 0
 
     init(
         chunks: [String],
@@ -224,10 +230,20 @@ private actor StreamGenerator {
         }
 
         let chunkPlans = chunks.map { chunk in
-            let estimatedFrameCount = PocketTTSInferenceUtilities.estimateMaxFrameCount(for: chunk)
+            let normalizedChunk = PocketTTSChunkPlanner.normalize(chunk)
+            let tokenCount = constants.tokenizer.encode(normalizedChunk.text).count
+            let estimatedFrameCount = PocketTTSInferenceUtilities.estimateMaxFrameCount(forTokenCount: tokenCount)
+            let normalizedPreview = chunk
+                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let debugPreview = String(normalizedPreview.prefix(80))
+            let debugID = Self.chunkDebugID(for: chunk)
             return ChunkPlan(
                 rawText: chunk,
-                estimatedFrameCount: estimatedFrameCount
+                tokenCount: tokenCount,
+                estimatedFrameCount: estimatedFrameCount,
+                debugID: debugID,
+                debugPreview: debugPreview
             )
         }
 
@@ -241,13 +257,21 @@ private actor StreamGenerator {
         self.voiceKVSnapshot = voiceKVSnapshot
         self.computeModeController = computeModeController
         self.randomNumberGenerator = SeededRandomNumberGenerator(seed: seed)
+        self.totalEstimatedSampleCount = chunkPlans.reduce(0) { partialResult, chunkPlan in
+            partialResult + (chunkPlan.estimatedFrameCount * PocketTTSConstants.samplesPerFrame)
+        }
     }
 
     func generate(into continuation: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>.Continuation) async {
         do {
+            var emittedSampleCount = 0
+
             for (chunkIndex, chunkPlan) in chunkPlans.enumerated() {
                 if Task.isCancelled { break }
                 let chunkStart = CFAbsoluteTimeGetCurrent()
+                Self.log(
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) start id=\(chunkPlan.debugID) preview=\"\(chunkPlan.debugPreview)\""
+                )
 
                 let normalizedChunk = PocketTTSChunkPlanner.normalize(chunkPlan.rawText)
                 let tokenIDs = constants.tokenizer.encode(normalizedChunk.text)
@@ -261,7 +285,7 @@ private actor StreamGenerator {
                     model: prefillModels.condStepModel
                 )
                 Self.log(
-                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) text prefill: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - textPrefillStart))s, chars=\(chunkPlan.rawText.count), tokens=\(tokenIDs.count)"
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) text prefill: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - textPrefillStart))s, id=\(chunkPlan.debugID), chars=\(chunkPlan.rawText.count), tokens=\(tokenIDs.count), estimatedFrames=\(chunkPlan.estimatedFrameCount)"
                 )
 
                 let maximumFrameCount = chunkPlan.estimatedFrameCount
@@ -313,7 +337,9 @@ private actor StreamGenerator {
                             frameIndex: frameIndex,
                             chunkIndex: chunkIndex,
                             chunkCount: chunkPlans.count,
+                            chunkDebugID: chunkPlan.debugID,
                             isChunkFinalBatch: false,
+                            emittedSampleCount: &emittedSampleCount,
                             continuation: continuation
                         )
                     }
@@ -326,12 +352,16 @@ private actor StreamGenerator {
                     frameIndex: maximumFrameCount - 1,
                     chunkIndex: chunkIndex,
                     chunkCount: chunkPlans.count,
+                    chunkDebugID: chunkPlan.debugID,
                     isChunkFinalBatch: true,
+                    emittedSampleCount: &emittedSampleCount,
                     continuation: continuation
                 )
                 Self.log(
-                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) generated \(generatedFrames) frames in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - chunkStart))s"
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) generated \(generatedFrames) frames in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - chunkStart))s id=\(chunkPlan.debugID)"
                 )
+                observedFrameCount += generatedFrames
+                observedEstimatedFrameCount += chunkPlan.estimatedFrameCount
             }
 
             continuation.finish()
@@ -378,11 +408,15 @@ private actor StreamGenerator {
         frameIndex: Int,
         chunkIndex: Int,
         chunkCount: Int,
+        chunkDebugID: String,
         isChunkFinalBatch: Bool,
+        emittedSampleCount: inout Int,
         continuation: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>.Continuation
     ) {
         guard !samples.isEmpty else { return }
         let batchedSampleCount = samples.count
+        let nextEmittedSampleCount = emittedSampleCount + batchedSampleCount
+        let estimatedRemainingSampleCount = max(0, correctedRemainingSampleCount(afterEmittingSampleCount: nextEmittedSampleCount))
 
         continuation.yield(
             KeyVoxTTSAudioFrame(
@@ -390,13 +424,38 @@ private actor StreamGenerator {
                 frameIndex: max(batchStartFrameIndex, frameIndex),
                 chunkIndex: chunkIndex,
                 chunkCount: chunkCount,
-                isChunkFinalBatch: isChunkFinalBatch
+                isChunkFinalBatch: isChunkFinalBatch,
+                chunkDebugID: chunkDebugID,
+                estimatedRemainingSampleCount: estimatedRemainingSampleCount
             )
         )
+        emittedSampleCount = nextEmittedSampleCount
         Self.log(
-            "Chunk \(chunkIndex + 1)/\(chunkCount) yielded batch samples=\(batchedSampleCount) frames=\(max(1, batchedSampleCount / PocketTTSConstants.samplesPerFrame)) finalBatch=\(isChunkFinalBatch)"
+            "Chunk \(chunkIndex + 1)/\(chunkCount) yielded batch id=\(chunkDebugID) samples=\(batchedSampleCount) frames=\(max(1, batchedSampleCount / PocketTTSConstants.samplesPerFrame)) remainingEstimatedSamples=\(estimatedRemainingSampleCount) finalBatch=\(isChunkFinalBatch)"
         )
         samples.removeAll(keepingCapacity: true)
+    }
+
+    private func correctedRemainingSampleCount(afterEmittingSampleCount emittedSampleCount: Int) -> Int {
+        let rawRemainingSampleCount = max(0, totalEstimatedSampleCount - emittedSampleCount)
+        guard observedEstimatedFrameCount > 0 else {
+            return rawRemainingSampleCount
+        }
+
+        let observedRatio = Double(observedFrameCount) / Double(observedEstimatedFrameCount)
+        let clampedRatio = min(1.2, max(0.75, observedRatio))
+        let correctedRemainingSampleCount = Double(rawRemainingSampleCount) * clampedRatio
+        return Int(correctedRemainingSampleCount.rounded(.up))
+    }
+
+    private static func chunkDebugID(for text: String) -> String {
+        let scalars = text.unicodeScalars.map(\.value)
+        var hash: UInt64 = 14_695_981_039_346_656_037
+        for scalar in scalars {
+            hash ^= UInt64(scalar)
+            hash &*= 1_099_511_628_211
+        }
+        return String(hash, radix: 16, uppercase: false)
     }
 
     private static func log(_ message: String) {

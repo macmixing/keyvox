@@ -42,6 +42,20 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertEqual(chunks, ["Version 2.5 is ready. Ship it."])
     }
 
+    func testChunkPlannerUsesSaferChunkLimitForLongFormText() throws {
+        let tokenizer = try SentencePieceTokenizer(modelData: fixtureSentencePieceModel())
+        let longText = Array(repeating: "Dr. Smith arrived. The meeting started.", count: 40).joined(separator: " ")
+        let chunks = PocketTTSChunkPlanner.chunk(longText, tokenizer: tokenizer)
+
+        XCTAssertGreaterThan(chunks.count, 1)
+        for chunk in chunks {
+            XCTAssertLessThanOrEqual(
+                tokenizer.encode(chunk).count,
+                PocketTTSConstants.longFormMaxTokensPerChunk
+            )
+        }
+    }
+
     private func fixtureSentencePieceModel() throws -> Data {
         func varint(_ value: Int) -> [UInt8] {
             var remaining = UInt64(value)

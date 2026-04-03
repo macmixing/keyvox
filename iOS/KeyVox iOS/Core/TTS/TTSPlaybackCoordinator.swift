@@ -8,6 +8,9 @@ final class TTSPlaybackCoordinator {
         static let singleChunkStartBufferedSeconds: Double = 0.45
         static let multiChunkMinimumRunwaySeconds: Double = 1.2
         static let returnToHostRunwaySeconds: Double = 6.0
+        static let conservativeBackgroundRealtimeFactor: Double = 0.58
+        static let remainingWorkSafetyMarginSeconds: Double = 2.5
+        static let maximumDeterministicRunwaySeconds: Double = 90.0
     }
 
     private enum MeterPolicy {
@@ -185,7 +188,10 @@ final class TTSPlaybackCoordinator {
 
             let requiredBufferedSamples = requiredStartSampleCount(for: frame.chunkCount)
             activeRequiredStartSampleCount = requiredBufferedSamples
-            activeSilentStartSampleCount = silentStartSampleCount(for: frame.chunkCount)
+            activeSilentStartSampleCount = silentStartSampleCount(
+                for: frame.chunkCount,
+                remainingEstimatedSamples: frame.estimatedRemainingSampleCount
+            )
             let requiredBufferedSeconds = Double(requiredBufferedSamples) / playbackFormat.sampleRate
             let hasEnoughBufferedAudio = queuedSampleCount >= activeSilentStartSampleCount
             let hasObservedChunkRunway = frame.chunkCount == 1
@@ -197,7 +203,7 @@ final class TTSPlaybackCoordinator {
                 false
             )
             Self.log(
-                "Prebuffering chunk=\(frame.chunkIndex + 1)/\(frame.chunkCount) frameIndex=\(frame.frameIndex) queuedSamples=\(queuedSampleCount) requiredSamples=\(requiredBufferedSamples) silentStartSamples=\(activeSilentStartSampleCount) requiredSeconds=\(String(format: "%.3f", requiredBufferedSeconds))"
+                "Prebuffering chunk=\(frame.chunkIndex + 1)/\(frame.chunkCount) chunkID=\(frame.chunkDebugID) frameIndex=\(frame.frameIndex) queuedSamples=\(queuedSampleCount) requiredSamples=\(requiredBufferedSamples) silentStartSamples=\(activeSilentStartSampleCount) remainingEstimatedSamples=\(frame.estimatedRemainingSampleCount) requiredSeconds=\(String(format: "%.3f", requiredBufferedSeconds))"
             )
             if hasObservedChunkRunway || (isLastChunk && frame.isChunkFinalBatch) {
                 flushPendingStartBuffers()
@@ -205,7 +211,7 @@ final class TTSPlaybackCoordinator {
             return
         }
 
-        scheduleBuffer(buffer, samples: frame.samples)
+        scheduleBuffer(buffer, samples: frame.samples, chunkDebugID: frame.chunkDebugID, chunkIndex: frame.chunkIndex)
     }
 
     private func makeBuffer(from samples: [Float]) -> AVAudioPCMBuffer? {
@@ -259,7 +265,13 @@ final class TTSPlaybackCoordinator {
 
         for buffer in buffered {
             let samples = copySamples(from: buffer)
-            scheduleBuffer(buffer, samples: samples, startDelay: startDelay)
+            scheduleBuffer(
+                buffer,
+                samples: samples,
+                chunkDebugID: "startup-buffer",
+                chunkIndex: nil,
+                startDelay: startDelay
+            )
             startDelay += TimeInterval(buffer.frameLength) / playbackFormat.sampleRate
         }
 
@@ -273,6 +285,8 @@ final class TTSPlaybackCoordinator {
     private func scheduleBuffer(
         _ buffer: AVAudioPCMBuffer,
         samples: [Float],
+        chunkDebugID: String,
+        chunkIndex: Int?,
         startDelay: TimeInterval? = nil
     ) {
         let sampleCount = Int(buffer.frameLength)
@@ -283,7 +297,7 @@ final class TTSPlaybackCoordinator {
         let queuedSeconds = Double(queuedSampleCount) / playbackFormat.sampleRate
         if queuedBufferCount == 1 || queuedSeconds < 0.25 {
             Self.log(
-                "Scheduling buffer sampleCount=\(sampleCount) queuedBuffers=\(queuedBufferCount) queuedSeconds=\(String(format: "%.3f", queuedSeconds))"
+                "Scheduling buffer chunk=\(chunkIndex.map { String($0 + 1) } ?? "-") chunkID=\(chunkDebugID) sampleCount=\(sampleCount) queuedBuffers=\(queuedBufferCount) queuedSeconds=\(String(format: "%.3f", queuedSeconds))"
             )
         }
         playerNode.scheduleBuffer(buffer) { [weak self] in
@@ -294,7 +308,7 @@ final class TTSPlaybackCoordinator {
                 let remainingSeconds = Double(self.queuedSampleCount) / self.playbackFormat.sampleRate
                 if self.queuedBufferCount == 0 || remainingSeconds < 0.25 {
                     Self.log(
-                        "Buffer completed sampleCount=\(sampleCount) remainingBuffers=\(self.queuedBufferCount) remainingSeconds=\(String(format: "%.3f", remainingSeconds))"
+                        "Buffer completed chunk=\(chunkIndex.map { String($0 + 1) } ?? "-") chunkID=\(chunkDebugID) sampleCount=\(sampleCount) remainingBuffers=\(self.queuedBufferCount) remainingSeconds=\(String(format: "%.3f", remainingSeconds))"
                     )
                 }
                 self.finishIfPossible()
@@ -366,9 +380,22 @@ final class TTSPlaybackCoordinator {
         return Int(playbackFormat.sampleRate * seconds)
     }
 
-    private func silentStartSampleCount(for chunkCount: Int) -> Int {
-        let returnRunwaySamples = Int(playbackFormat.sampleRate * BufferPolicy.returnToHostRunwaySeconds)
-        return max(requiredStartSampleCount(for: chunkCount), returnRunwaySamples)
+    private func silentStartSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
+        let minimumReturnRunwaySamples = Int(playbackFormat.sampleRate * BufferPolicy.returnToHostRunwaySeconds)
+        let realtimeFactor = BufferPolicy.conservativeBackgroundRealtimeFactor
+        let deficitFactor = max(0, (1.0 / realtimeFactor) - 1.0)
+        let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
+        let requiredDeficitSeconds = min(
+            BufferPolicy.maximumDeterministicRunwaySeconds,
+            (remainingEstimatedSeconds * deficitFactor) + BufferPolicy.remainingWorkSafetyMarginSeconds
+        )
+        let deterministicRunwaySamples = Int(requiredDeficitSeconds * playbackFormat.sampleRate)
+
+        return max(
+            requiredStartSampleCount(for: chunkCount),
+            minimumReturnRunwaySamples,
+            deterministicRunwaySamples
+        )
     }
 
     private static func log(_ message: String) {
