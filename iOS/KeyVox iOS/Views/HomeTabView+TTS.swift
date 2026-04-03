@@ -190,7 +190,15 @@ extension HomeTabView {
     }
 
     var ttsErrorText: String? {
-        ttsManager.lastErrorMessage
+        guard let lastErrorMessage = ttsManager.lastErrorMessage else { return nil }
+
+        if lastErrorMessage.localizedCaseInsensitiveContains("unable to compute the prediction using a neural network model")
+            || lastErrorMessage.localizedCaseInsensitiveContains("broken/unsupported model")
+            || lastErrorMessage.localizedCaseInsensitiveContains("error code -1") {
+            return "Playback could not continue after the app moved to the background."
+        }
+
+        return lastErrorMessage
     }
 
     var showsTTSPreparationProgress: Bool {
