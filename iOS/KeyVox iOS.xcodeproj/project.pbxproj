@@ -11,6 +11,7 @@
 		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
 		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
 		8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
+		A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */; };
 		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
 		8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E10F65E2F66862000A0AA65 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
@@ -194,6 +195,7 @@
 		8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = ReturnToHost.mov; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
+		A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeTabView+TTS.swift"; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
 		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
@@ -558,6 +560,7 @@
 				8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */,
 				C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */,
 				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
+				A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */,
 				8E2546502F6013ED007E720D /* MainTabView.swift */,
 				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
 				B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */,
@@ -1020,6 +1023,7 @@
 				B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,
 				B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */,
 				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
+				A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */,
 				8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */,
 				8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */,
 				8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */,
