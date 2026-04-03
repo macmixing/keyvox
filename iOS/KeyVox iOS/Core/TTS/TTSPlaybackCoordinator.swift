@@ -14,8 +14,8 @@ final class TTSPlaybackCoordinator {
     }
 
     private enum MeterPolicy {
-        static let windowSampleCount = 480
-        static let windowStepCount = 240
+        static let windowSampleCount = 192
+        static let windowStepCount = 96
         static let minimumUpdateLevel: Float = 0.015
     }
 
@@ -364,8 +364,8 @@ final class TTSPlaybackCoordinator {
         } / Float(samples.count)
 
         let rms = sqrt(meanSquare)
-        let rmsDriven = rms * 10.0
-        let peakDriven = peak * 2.4
+        let rmsDriven = rms * 8.8
+        let peakDriven = peak * 2.1
         return min(max(max(rmsDriven, peakDriven), 0), 1)
     }
 
