@@ -49,22 +49,66 @@ extension SettingsTabView {
                 }
 
                 Divider()
-                    .background(.white.opacity(0.4))
+                    .background(.white.opacity(0.22))
 
-                VStack(alignment: .leading, spacing: 14) {
-                    ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
-                        modelRow(for: modelID, provider: modelID.provider)
+                HStack(alignment: .center, spacing: 12) {
+                    Text(textModelDescriptionText)
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                        if index < DictationModelID.allCases.count - 1 {
-                            Divider()
-                                .background(.white.opacity(0.22))
-                                .padding(.leading, 12)
-                                .padding(.trailing, 12)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            isModelSectionExpanded.toggle()
+                        }
+                    } label: {
+                        Image(systemName: isModelSectionExpanded ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 28, weight: .heavy))
+                            .foregroundStyle(.yellow)
+                            .frame(width: 56, height: 56)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Divider()
+                        .background(.white.opacity(0.4))
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
+                            modelRow(for: modelID, provider: modelID.provider)
+
+                            if index < DictationModelID.allCases.count - 1 {
+                                Divider()
+                                    .background(.white.opacity(0.22))
+                                    .padding(.leading, 12)
+                                    .padding(.trailing, 12)
+                            }
                         }
                     }
                 }
+                .background(
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                updateModelExpandedContentHeight(geometry.size.height)
+                            }
+                            .onChange(of: geometry.size.height) { _, newHeight in
+                                updateModelExpandedContentHeight(newHeight)
+                            }
+                    }
+                )
+                .frame(height: shouldShowExpandedModelContent ? modelExpandedContentHeight : 0, alignment: .top)
+                .clipped()
+                .opacity(isModelExpandedContentVisible ? 1 : 0)
+                .allowsHitTesting(isModelExpandedContentVisible)
+                .accessibilityHidden(!isModelExpandedContentVisible)
             }
         }
+        .animation(.easeOut(duration: 0.18), value: isModelExpandedContentVisible)
+        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedModelContent)
+        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: modelExpandedContentHeight)
     }
 
     @ViewBuilder
@@ -180,5 +224,33 @@ extension SettingsTabView {
                 settingsStore.activeDictationProvider = newValue
             }
         )
+    }
+
+    var textModelDescriptionText: String {
+        if selectableProviders.isEmpty {
+            return "Install a text model to let KeyVox transcribe speech on this device."
+        }
+        return "Choose which installed model KeyVox uses when transcribing speech on this device."
+    }
+
+    var shouldShowExpandedModelContent: Bool {
+        isModelSectionExpanded
+    }
+
+    func syncModelDisclosurePresentation() {
+        isModelExpandedContentVisible = shouldShowExpandedModelContent
+    }
+
+    func updateModelDisclosurePresentation() {
+        withAnimation(.easeOut(duration: 0.18)) {
+            isModelExpandedContentVisible = shouldShowExpandedModelContent
+        }
+    }
+
+    func updateModelExpandedContentHeight(_ newHeight: CGFloat) {
+        guard newHeight > 0 else { return }
+        if abs(modelExpandedContentHeight - newHeight) > 0.5 {
+            modelExpandedContentHeight = newHeight
+        }
     }
 }

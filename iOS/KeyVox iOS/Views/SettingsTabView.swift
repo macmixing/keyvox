@@ -7,6 +7,9 @@ struct SettingsTabView: View {
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @State var isModelSectionExpanded = false
+    @State var isModelExpandedContentVisible = false
+    @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
     @State var isTTSExpandedContentVisible = false
     @State var ttsExpandedContentHeight: CGFloat = 0
@@ -42,6 +45,7 @@ struct SettingsTabView: View {
             pocketTTSModelManager.refreshStatus()
         }
         .onAppear {
+            syncModelDisclosurePresentation()
             syncTTSDisclosurePresentation()
         }
         .onDisappear {
@@ -54,6 +58,9 @@ struct SettingsTabView: View {
         }
         .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
             updateTTSDisclosurePresentation()
+        }
+        .onChange(of: shouldShowExpandedModelContent, initial: true) { _, _ in
+            updateModelDisclosurePresentation()
         }
     }
 
