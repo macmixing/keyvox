@@ -19,8 +19,10 @@ enum PocketTTSConstants {
     static let maxTokensPerChunk = 96
     static let mediumFormTokenThreshold = 256
     static let longFormTokenThreshold = 512
+    static let ultraLongFormTokenThreshold = 1_536
     static let mediumFormMaxTokensPerChunk = 80
     static let longFormMaxTokensPerChunk = 64
+    static let ultraLongFormMaxTokensPerChunk = 48
     static let kvCacheLayers = 6
     static let kvCacheMaxLength = 512
     static let maxVoicePromptFrames = 250

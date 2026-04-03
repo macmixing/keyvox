@@ -15,7 +15,11 @@ final class TTSPlaybackCoordinator {
         static let returnToHostRunwaySeconds: Double = 6.0
         static let conservativeBackgroundRealtimeFactor: Double = 0.58
         static let remainingWorkSafetyMarginSeconds: Double = 2.5
-        static let maximumDeterministicRunwaySeconds: Double = 90.0
+        static let longFormChunkThreshold = 24
+        static let ultraLongFormChunkThreshold = 64
+        static let longFormBackgroundRealtimeFactor: Double = 0.52
+        static let ultraLongFormBackgroundRealtimeFactor: Double = 0.42
+        static let maximumBaseDeterministicRunwaySeconds: Double = 90.0
         static let preparationCompletionDelaySeconds: Double = 0.5
     }
 
@@ -443,13 +447,21 @@ final class TTSPlaybackCoordinator {
             return max(requiredStartSampleCount(for: chunkCount), remainingEstimatedSamples)
         }
 
-        let realtimeFactor = BufferPolicy.conservativeBackgroundRealtimeFactor
+        let realtimeFactor = backgroundRealtimeFactor(for: chunkCount)
         let deficitFactor = max(0, (1.0 / realtimeFactor) - 1.0)
         let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
-        let requiredDeficitSeconds = min(
-            BufferPolicy.maximumDeterministicRunwaySeconds,
-            (remainingEstimatedSeconds * deficitFactor) + BufferPolicy.remainingWorkSafetyMarginSeconds
-        )
+        let uncappedRequiredDeficitSeconds = (remainingEstimatedSeconds * deficitFactor)
+            + BufferPolicy.remainingWorkSafetyMarginSeconds
+        let requiredDeficitSeconds: Double
+        if chunkCount > BufferPolicy.ultraLongFormChunkThreshold,
+           uncappedRequiredDeficitSeconds >= remainingEstimatedSeconds {
+            requiredDeficitSeconds = remainingEstimatedSeconds
+        } else {
+            requiredDeficitSeconds = min(
+                maximumDeterministicRunwaySeconds(for: chunkCount),
+                uncappedRequiredDeficitSeconds
+            )
+        }
         let deterministicRunwaySamples = Int(requiredDeficitSeconds * playbackFormat.sampleRate)
 
         return max(
@@ -457,6 +469,21 @@ final class TTSPlaybackCoordinator {
             minimumReturnRunwaySamples,
             deterministicRunwaySamples
         )
+    }
+
+    private func backgroundRealtimeFactor(for chunkCount: Int) -> Double {
+        switch chunkCount {
+        case (BufferPolicy.ultraLongFormChunkThreshold + 1)...:
+            return BufferPolicy.ultraLongFormBackgroundRealtimeFactor
+        case (BufferPolicy.longFormChunkThreshold + 1)...:
+            return BufferPolicy.longFormBackgroundRealtimeFactor
+        default:
+            return BufferPolicy.conservativeBackgroundRealtimeFactor
+        }
+    }
+
+    private func maximumDeterministicRunwaySeconds(for chunkCount: Int) -> Double {
+        BufferPolicy.maximumBaseDeterministicRunwaySeconds
     }
 
     private static func log(_ message: String) {

@@ -11,8 +11,6 @@
 		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
 		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
 		8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
-		A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */; };
-		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
 		8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E10F65E2F66862000A0AA65 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
 		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
@@ -74,7 +72,6 @@
 		8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */; };
 		8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */; };
 		8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */; };
-		A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */; };
 		8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */; };
 		8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */; };
 		8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */; };
@@ -120,6 +117,9 @@
 		A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */; };
 		A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000042FD5000100AA0001 /* AppSceneDelegate.swift */; };
 		A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */; };
+		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
+		A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */; };
+		A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */; };
 		AA1000012F70000100000001 /* AppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* AppTypography.swift */; };
 		AA1000022F70000100000001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* AppTheme.swift */; };
 		AA1000032F70000100000001 /* AppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* AppCard.swift */; };
@@ -195,7 +195,6 @@
 		8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = ReturnToHost.mov; sourceTree = "<group>"; };
 		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
 		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
-		A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeTabView+TTS.swift"; sourceTree = "<group>"; };
 		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
 		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
@@ -282,6 +281,7 @@
 		A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHapticsDecisions.swift; sourceTree = "<group>"; };
 		A1C000002FEA000100AA0001 /* TTSVoicePreviews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TTSVoicePreviews; sourceTree = "<group>"; };
 		A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSVoicePreviewPlayer.swift; sourceTree = "<group>"; };
+		A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeTabView+TTS.swift"; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* AppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* AppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCard.swift; sourceTree = "<group>"; };

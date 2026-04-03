@@ -220,6 +220,8 @@ enum PocketTTSChunkPlanner {
         let totalTokenCount = tokenizer.encode(text).count
 
         switch totalTokenCount {
+        case (PocketTTSConstants.ultraLongFormTokenThreshold + 1)...:
+            return PocketTTSConstants.ultraLongFormMaxTokensPerChunk
         case (PocketTTSConstants.longFormTokenThreshold + 1)...:
             return PocketTTSConstants.longFormMaxTokensPerChunk
         case (PocketTTSConstants.mediumFormTokenThreshold + 1)...:
