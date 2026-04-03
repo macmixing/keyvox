@@ -195,6 +195,7 @@ private actor StreamGenerator {
         let rawText: String
         let tokenCount: Int
         let estimatedFrameCount: Int
+        let generationFrameLimit: Int
         let debugID: String
         let debugPreview: String
     }
@@ -233,6 +234,7 @@ private actor StreamGenerator {
             let normalizedChunk = PocketTTSChunkPlanner.normalize(chunk)
             let tokenCount = constants.tokenizer.encode(normalizedChunk.text).count
             let estimatedFrameCount = PocketTTSInferenceUtilities.estimateMaxFrameCount(forTokenCount: tokenCount)
+            let generationFrameLimit = PocketTTSInferenceUtilities.estimateGenerationFrameLimit(for: chunk)
             let normalizedPreview = chunk
                 .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -242,6 +244,7 @@ private actor StreamGenerator {
                 rawText: chunk,
                 tokenCount: tokenCount,
                 estimatedFrameCount: estimatedFrameCount,
+                generationFrameLimit: generationFrameLimit,
                 debugID: debugID,
                 debugPreview: debugPreview
             )
@@ -285,10 +288,10 @@ private actor StreamGenerator {
                     model: prefillModels.condStepModel
                 )
                 Self.log(
-                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) text prefill: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - textPrefillStart))s, id=\(chunkPlan.debugID), chars=\(chunkPlan.rawText.count), tokens=\(tokenIDs.count), estimatedFrames=\(chunkPlan.estimatedFrameCount)"
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) text prefill: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - textPrefillStart))s, id=\(chunkPlan.debugID), chars=\(chunkPlan.rawText.count), tokens=\(tokenIDs.count), estimatedFrames=\(chunkPlan.estimatedFrameCount), generationLimit=\(chunkPlan.generationFrameLimit)"
                 )
 
-                let maximumFrameCount = chunkPlan.estimatedFrameCount
+                let maximumFrameCount = max(chunkPlan.estimatedFrameCount, chunkPlan.generationFrameLimit)
                 let minimumFramesAfterEOS = normalizedChunk.framesAfterEOS + PocketTTSConstants.extraFramesAfterDetection
                 var detectedEOSFrame: Int?
                 var sequence = try PocketTTSInferenceUtilities.createNaNSequence()
@@ -310,8 +313,14 @@ private actor StreamGenerator {
 
                     if step.eosLogit > PocketTTSConstants.eosThreshold, detectedEOSFrame == nil {
                         detectedEOSFrame = frameIndex
+                        Self.log(
+                            "Chunk \(chunkIndex + 1)/\(chunkPlans.count) detected EOS id=\(chunkPlan.debugID) frame=\(frameIndex) eosLogit=\(String(format: "%.3f", step.eosLogit)) minimumFramesAfterEOS=\(minimumFramesAfterEOS)"
+                        )
                     }
                     if let detectedEOSFrame, frameIndex >= detectedEOSFrame + minimumFramesAfterEOS {
+                        Self.log(
+                            "Chunk \(chunkIndex + 1)/\(chunkPlans.count) stopping after EOS id=\(chunkPlan.debugID) stopFrame=\(frameIndex) generatedFrames=\(generatedFrames)"
+                        )
                         break
                     }
 
@@ -358,14 +367,16 @@ private actor StreamGenerator {
                     continuation: continuation
                 )
                 Self.log(
-                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) generated \(generatedFrames) frames in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - chunkStart))s id=\(chunkPlan.debugID)"
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) generated \(generatedFrames) frames in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - chunkStart))s id=\(chunkPlan.debugID) tokenCount=\(chunkPlan.tokenCount) generationLimit=\(chunkPlan.generationFrameLimit)"
                 )
                 observedFrameCount += generatedFrames
                 observedEstimatedFrameCount += chunkPlan.estimatedFrameCount
             }
 
+            Self.log("Stream generation completed normally.")
             continuation.finish()
         } catch {
+            Self.log("Stream generation failed: \(error.localizedDescription)")
             continuation.finish(throwing: error)
         }
     }

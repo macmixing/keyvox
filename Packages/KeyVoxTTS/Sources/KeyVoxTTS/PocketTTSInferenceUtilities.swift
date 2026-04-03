@@ -52,6 +52,12 @@ enum PocketTTSInferenceUtilities {
         return max(PocketTTSConstants.estimatedFrameBasePadding, Int(estimatedFrames.rounded(.up)))
     }
 
+    static func estimateGenerationFrameLimit(for text: String) -> Int {
+        let wordCount = text.split(separator: " ").count
+        let estimatedSeconds = Double(wordCount) + 2.0
+        return Int((estimatedSeconds * 12.5).rounded(.up))
+    }
+
     static func readFloats(from array: MLMultiArray, count: Int) -> [Float] {
         if array.dataType == .float16 {
             return (0..<count).map { array[$0].floatValue }

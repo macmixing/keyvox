@@ -129,6 +129,9 @@ final class TTSManager: ObservableObject {
             await stopPlayback()
         }
 
+        Self.log(
+            "Starting request id=\(request.id.uuidString) voice=\(request.voiceID) source=\(request.sourceSurface.rawValue) textLength=\(request.trimmedText.count) showPreparationView=\(showPreparationView)"
+        )
         activeRequest = request
         hasStartedPlaybackForActiveRequest = false
         lastErrorMessage = nil
@@ -157,6 +160,11 @@ final class TTSManager: ObservableObject {
     }
 
     func stopPlayback() async {
+        if let activeRequest {
+            Self.log("Stop requested for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+        } else {
+            Self.log("Stop requested with no active request.")
+        }
         playbackCoordinator.stop()
         KeyVoxIPCBridge.clearTTSRequest()
         keyboardBridge.publishTTSStopped()
@@ -164,11 +172,21 @@ final class TTSManager: ObservableObject {
     }
 
     private func finishPlayback() {
+        if let activeRequest {
+            Self.log("Playback finished for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+        } else {
+            Self.log("Playback finished with no active request.")
+        }
         keyboardBridge.publishTTSFinished()
         clearActiveRequest()
     }
 
     private func handleError(_ message: String) {
+        if let activeRequest {
+            Self.log("Playback failed for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID) error=\(message)")
+        } else {
+            Self.log("Playback failed with no active request. error=\(message)")
+        }
         lastErrorMessage = message
         updateState(.error)
         keyboardBridge.publishTTSFailed(message: message)
@@ -234,6 +252,9 @@ final class TTSManager: ObservableObject {
     }
 
     private func handlePlaybackStarted() {
+        if let activeRequest {
+            Self.log("Playback started for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+        }
         hasStartedPlaybackForActiveRequest = true
         updateState(.playing)
     }
@@ -263,5 +284,9 @@ final class TTSManager: ObservableObject {
         if hasStartedPlayback, normalized >= 1 {
             playbackPreparationPhase = .readyToReturn
         }
+    }
+
+    private static func log(_ message: String) {
+        NSLog("[TTSManager] %@", message)
     }
 }
