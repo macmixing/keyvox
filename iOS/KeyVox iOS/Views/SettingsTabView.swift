@@ -2,7 +2,7 @@ import SwiftUI
 import StoreKit
 
 struct SettingsTabView: View {
-    @Environment(\.appHaptics) private var appHaptics
+    @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer

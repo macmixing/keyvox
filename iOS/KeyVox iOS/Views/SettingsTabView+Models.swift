@@ -58,6 +58,7 @@ extension SettingsTabView {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Button {
+                        appHaptics.light()
                         withAnimation(.easeInOut(duration: 0.18)) {
                             isModelSectionExpanded.toggle()
                         }

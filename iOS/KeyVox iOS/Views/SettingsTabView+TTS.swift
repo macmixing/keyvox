@@ -62,6 +62,7 @@ extension SettingsTabView {
 
                     if supportsTTSExpansion {
                         Button {
+                            appHaptics.light()
                             withAnimation(.easeInOut(duration: 0.18)) {
                                 isTTSSectionExpanded.toggle()
                             }
