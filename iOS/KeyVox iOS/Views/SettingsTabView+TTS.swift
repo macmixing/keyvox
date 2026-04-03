@@ -329,7 +329,11 @@ extension SettingsTabView {
             return "Install PocketTTS CoreML before downloading voices."
         }
 
-        return "Not installed"
+        let formattedSize = ByteCountFormatter.string(
+            fromByteCount: PocketTTSModelCatalog.approximateVoiceDownloadBytes(for: voice),
+            countStyle: .file
+        )
+        return "Not installed (~\(formattedSize))"
     }
 
     var installedPlaybackVoices: [AppSettingsStore.TTSVoice] {

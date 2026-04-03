@@ -24,6 +24,16 @@ private struct PocketTTSRemoteTreeEntry: Decodable, Sendable {
 enum PocketTTSModelCatalog {
     static let repositoryID = "FluidInference/pocket-tts-coreml"
     static let displayName = "PocketTTS CoreML"
+    private static let approximateVoiceDownloadBytesByID: [AppSettingsStore.TTSVoice: Int64] = [
+        .alba: 19_000_000,
+        .azelma: 17_000_000,
+        .cosette: 18_000_000,
+        .eponine: 18_000_000,
+        .fantine: 18_000_000,
+        .javert: 19_000_000,
+        .jean: 19_000_000,
+        .marius: 18_000_000,
+    ]
 
     private static let modelDirectories = [
         "cond_step.mlmodelc",
@@ -42,6 +52,10 @@ enum PocketTTSModelCatalog {
     private static let supportedVoiceIDs: Set<String> = Set(
         AppSettingsStore.TTSVoice.allCases.map(\.rawValue)
     )
+
+    static func approximateVoiceDownloadBytes(for voice: AppSettingsStore.TTSVoice) -> Int64 {
+        approximateVoiceDownloadBytesByID[voice] ?? 18_000_000
+    }
 
     static func fetchSharedModelDescriptor(session: URLSession = .shared) async throws -> PocketTTSDescriptor {
         var artifacts: [PocketTTSArtifact] = []
