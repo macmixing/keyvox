@@ -27,25 +27,42 @@ extension SettingsTabView {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if installedPlaybackVoices.isEmpty {
-                        Text("Install voice")
-                            .font(.appFont(14))
-                            .foregroundStyle(.white.opacity(0.5))
-                            .padding(.top, 2)
-                    } else {
-                        Menu {
-                            Picker("", selection: installedVoiceSelection) {
-                                ForEach(installedPlaybackVoices) { voice in
-                                    Text(voice.displayName).tag(voice)
+                    VStack(alignment: .trailing, spacing: 10) {
+                        if installedPlaybackVoices.isEmpty {
+                            Text("Install voice")
+                                .font(.appFont(14))
+                                .foregroundStyle(.white.opacity(0.5))
+                                .padding(.top, 2)
+                        } else {
+                            Menu {
+                                Picker("", selection: installedVoiceSelection) {
+                                    ForEach(installedPlaybackVoices) { voice in
+                                        Text(voice.displayName).tag(voice)
+                                    }
                                 }
+                                .pickerStyle(.inline)
+                            } label: {
+                                Text("Change")
+                                    .font(.appFont(16))
+                                    .foregroundColor(.yellow)
                             }
-                            .pickerStyle(.inline)
-                        } label: {
-                            Text("Change")
-                                .font(.appFont(16))
-                                .foregroundColor(.yellow)
+                            .padding(.top, 2)
                         }
-                        .padding(.top, 2)
+
+                        if supportsTTSExpansion {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.18)) {
+                                    isTTSSectionExpanded.toggle()
+                                }
+                            } label: {
+                                Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.white.opacity(0.68))
+                                    .frame(width: 28, height: 28)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
 
@@ -53,26 +70,28 @@ extension SettingsTabView {
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
 
-                Divider()
-                    .background(.white.opacity(0.4))
-
-                ttsSharedModelRow
-
-                if pocketTTSModelManager.isSharedModelReady() {
+                if shouldShowExpandedTTSContent {
                     Divider()
-                        .background(.white.opacity(0.22))
-                        .padding(.leading, 12)
-                        .padding(.trailing, 12)
+                        .background(.white.opacity(0.4))
 
-                    VStack(alignment: .leading, spacing: 14) {
-                        ForEach(Array(AppSettingsStore.TTSVoice.allCases.enumerated()), id: \.element) { index, voice in
-                            ttsVoiceRow(for: voice)
+                    ttsSharedModelRow
 
-                            if index < AppSettingsStore.TTSVoice.allCases.count - 1 {
-                                Divider()
-                                    .background(.white.opacity(0.22))
-                                    .padding(.leading, 12)
-                                    .padding(.trailing, 12)
+                    if pocketTTSModelManager.isSharedModelReady() {
+                        Divider()
+                            .background(.white.opacity(0.22))
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+
+                        VStack(alignment: .leading, spacing: 14) {
+                            ForEach(Array(AppSettingsStore.TTSVoice.allCases.enumerated()), id: \.element) { index, voice in
+                                ttsVoiceRow(for: voice)
+
+                                if index < AppSettingsStore.TTSVoice.allCases.count - 1 {
+                                    Divider()
+                                        .background(.white.opacity(0.22))
+                                        .padding(.leading, 12)
+                                        .padding(.trailing, 12)
+                                }
                             }
                         }
                     }
@@ -298,5 +317,16 @@ extension SettingsTabView {
             return "Download a playback voice to let KeyVox read copied text aloud."
         }
         return "Choose which installed PocketTTS voice KeyVox uses when reading copied text aloud."
+    }
+
+    private var supportsTTSExpansion: Bool {
+        pocketTTSModelManager.isSharedModelReady()
+    }
+
+    private var shouldShowExpandedTTSContent: Bool {
+        if pocketTTSModelManager.isSharedModelReady() == false {
+            return true
+        }
+        return isTTSSectionExpanded
     }
 }

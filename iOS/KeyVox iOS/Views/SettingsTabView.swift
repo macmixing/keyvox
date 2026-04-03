@@ -6,6 +6,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @State var isTTSSectionExpanded = false
     
     private var appVersionBuildText: String? {
         guard
