@@ -30,6 +30,7 @@ enum KeyboardLayoutGeometry {
         private var speakButtonWidthConstraint: NSLayoutConstraint?
         private var speakButtonHeightConstraint: NSLayoutConstraint?
         private weak var speakReferenceView: UIView?
+        private var speakButtonUsesLandscapeHeight = false
 
         init(
             cancelButton: UIView,
@@ -64,7 +65,7 @@ enum KeyboardLayoutGeometry {
 
             if let speakButton,
                let currentSpeakReferenceView = keyGridView.topRowKeyView(for: .nine),
-               speakReferenceView !== currentSpeakReferenceView {
+               speakReferenceView !== currentSpeakReferenceView || speakButtonUsesLandscapeHeight != isLandscape {
                 NSLayoutConstraint.deactivate([
                     speakButtonCenterXConstraint,
                     speakButtonBottomConstraint,
@@ -78,8 +79,11 @@ enum KeyboardLayoutGeometry {
                     constant: -KeyboardStyle.keyboardRowSpacing
                 )
                 speakButtonWidthConstraint = speakButton.widthAnchor.constraint(equalTo: currentSpeakReferenceView.widthAnchor)
-                speakButtonHeightConstraint = speakButton.heightAnchor.constraint(equalTo: currentSpeakReferenceView.widthAnchor)
+                speakButtonHeightConstraint = isLandscape
+                    ? speakButton.heightAnchor.constraint(equalTo: currentSpeakReferenceView.heightAnchor)
+                    : speakButton.heightAnchor.constraint(equalTo: currentSpeakReferenceView.widthAnchor)
                 speakReferenceView = currentSpeakReferenceView
+                speakButtonUsesLandscapeHeight = isLandscape
 
                 NSLayoutConstraint.activate([
                     speakButtonCenterXConstraint!,
