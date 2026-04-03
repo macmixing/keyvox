@@ -179,11 +179,8 @@ final class PocketTTSModelManager: ObservableObject {
         installTask = nil
         activeInstallTarget = nil
 
-        if let modelRootURL = SharedPaths.pocketTTSModelDirectoryURL(fileManager: fileManager) {
-            try? fileManager.removeItem(at: modelRootURL)
-        }
-        if let manifestURL = assetLocator.sharedModelManifestURL() {
-            try? fileManager.removeItem(at: manifestURL)
+        if let rootURL = SharedPaths.pocketTTSRootDirectoryURL(fileManager: fileManager) {
+            try? fileManager.removeItem(at: rootURL)
         }
         refreshStatus()
     }
