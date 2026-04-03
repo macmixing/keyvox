@@ -48,27 +48,33 @@ extension SettingsTabView {
                             }
                             .padding(.top, 2)
                         }
-
-                        if supportsTTSExpansion {
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.18)) {
-                                    isTTSSectionExpanded.toggle()
-                                }
-                            } label: {
-                                Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
-                                    .font(.system(size: 14, weight: .heavy))
-                                    .foregroundStyle(.white.opacity(0.68))
-                                    .frame(width: 28, height: 28)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                        }
                     }
                 }
 
-                Text(playbackVoiceDescriptionText)
-                    .font(.appFont(15, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
+                Divider()
+                    .background(.white.opacity(0.22))
+
+                HStack(alignment: .center, spacing: 12) {
+                    Text(playbackVoiceDescriptionText)
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if supportsTTSExpansion {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.18)) {
+                                isTTSSectionExpanded.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
+                                .font(.system(size: 14, weight: .heavy))
+                                .foregroundStyle(.white.opacity(0.68))
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 16) {
                     Divider()
