@@ -29,6 +29,7 @@ final class KeyboardRootView: UIView {
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
+    private var speakButtonVisibilityTarget = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -98,6 +99,7 @@ final class KeyboardRootView: UIView {
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
+        let shouldShowSpeak = showsBrandedToolbar && !state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
@@ -124,6 +126,32 @@ final class KeyboardRootView: UIView {
                 }
             }
         }
+
+        if shouldShowSpeak != speakButtonVisibilityTarget {
+            speakButtonVisibilityTarget = shouldShowSpeak
+            speakButton.layer.removeAllAnimations()
+
+            if shouldShowSpeak {
+                speakButton.alpha = 0
+                speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                speakButton.isHidden = false
+
+                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                    self.speakButton.alpha = 1
+                    self.speakButton.transform = .identity
+                })
+            } else {
+                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                    self.speakButton.alpha = 0
+                    self.speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                }) { _ in
+                    guard !self.speakButtonVisibilityTarget else { return }
+                    self.speakButton.isHidden = true
+                    self.speakButton.alpha = 1
+                    self.speakButton.transform = .identity
+                }
+            }
+        }
         
         cancelButton.isEnabled = shouldShowCancel && !isTrackpadModeActive
         cancelButton.isTrackpadModeActive = isTrackpadModeActive
@@ -133,8 +161,7 @@ final class KeyboardRootView: UIView {
         capsLockButton.isHidden = !showsBrandedToolbar
         speakButton.isSpeaking = state == .speaking
         speakButton.isTrackpadModeActive = isTrackpadModeActive
-        speakButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        speakButton.isHidden = !showsBrandedToolbar
+        speakButton.isEnabled = shouldShowSpeak && !isTrackpadModeActive
 
         // Keep the toolbar row containers visible even when the toolbar content is hidden.
         // Hiding the arranged containers causes the top row to collapse and the key grid to
@@ -167,6 +194,8 @@ final class KeyboardRootView: UIView {
         cancelButton.alpha = 1
         cancelButton.transform = .identity
         speakButton.isHidden = true
+        speakButton.alpha = 1
+        speakButton.transform = .identity
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
         speakButton.translatesAutoresizingMaskIntoConstraints = false
 
