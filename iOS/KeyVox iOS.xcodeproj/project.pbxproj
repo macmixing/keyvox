@@ -343,6 +343,7 @@
 				Core/KeyboardSymbolLayout.swift,
 				Core/KeyboardTextInputController.swift,
 				Core/KeyboardToolbarMode.swift,
+				Core/KeyboardTTSController.swift,
 				Core/KeyboardTypography.swift,
 				Views/Components/KeyboardCancelButton.swift,
 				Views/Components/KeyboardCapsLockButton.swift,
@@ -352,7 +353,9 @@
 				Views/Components/KeyboardKeyView.swift,
 				Views/Components/KeyboardLogoBarView.swift,
 				Views/Components/KeyboardRoundedBorderRenderer.swift,
+				Views/Components/KeyboardSpeakButton.swift,
 				Views/FullAccessView.swift,
+				Views/KeyboardInputHostView.swift,
 				Views/KeyboardLayoutGeometry.swift,
 				Views/KeyboardRootView.swift,
 			);
