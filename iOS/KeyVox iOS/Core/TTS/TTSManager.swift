@@ -60,6 +60,9 @@ final class TTSManager: ObservableObject {
         playbackCoordinator.onPlaybackFailed = { [weak self] error in
             self?.handleError(error.localizedDescription)
         }
+        playbackCoordinator.onPlaybackMeterLevel = { [weak self] level in
+            self?.keyboardBridge.publishPlaybackMeter(level: level)
+        }
         playbackCoordinator.onPreparationProgress = { [weak self] bufferedSamples, requiredSamples, hasStartedPlayback in
             self?.updatePlaybackPreparationProgress(
                 bufferedSamples: bufferedSamples,

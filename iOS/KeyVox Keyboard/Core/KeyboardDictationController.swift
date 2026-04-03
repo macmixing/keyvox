@@ -156,7 +156,7 @@ final class KeyboardDictationController {
             } else {
                 openContainingApp(startRecordingURL)
             }
-        case .waitingForApp, .transcribing:
+        case .waitingForApp, .preparingPlayback, .transcribing:
             break
         }
     }

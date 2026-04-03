@@ -39,9 +39,13 @@ final class AudioIndicatorDriver {
         static let processingPhaseStep: Double = 0.1
         static let lowActivityPhaseStep: Double = 0.06
         static let phaseWrapPeriod: Double = .pi * 2
-        static let meterPollInterval: CFTimeInterval = 1.0 / 30.0
+        static let listeningMeterPollInterval: CFTimeInterval = 1.0 / 30.0
+        static let speakingMeterPollInterval: CFTimeInterval = 1.0 / 60.0
         static let sampleFreshnessWindow: TimeInterval = 0.35
-        static let smoothingRate: CGFloat = 16
+        static let speakingSampleFreshnessWindow: TimeInterval = 0.35
+        static let listeningSmoothingRate: CGFloat = 16
+        static let speakingAttackSmoothingRate: CGFloat = 34
+        static let speakingDecaySmoothingRate: CGFloat = 18
     }
 
     var sampleProvider: (() -> AudioIndicatorSample?)?
@@ -50,7 +54,7 @@ final class AudioIndicatorDriver {
     var phase: AudioIndicatorPhase = .idle {
         didSet {
             guard oldValue != phase else { return }
-            if phase != .listening {
+            if phase != .listening && phase != .speaking {
                 targetLevel = 0
                 signalState = .inactive
             }
@@ -94,27 +98,47 @@ final class AudioIndicatorDriver {
 
         refreshSampleIfNeeded(at: displayLink.timestamp)
 
-        let smoothing = CGFloat(min(delta * Double(Metrics.smoothingRate), 1))
+        let smoothingRate: CGFloat
+        if phase == .speaking {
+            smoothingRate = targetLevel > displayedLevel
+                ? Metrics.speakingAttackSmoothingRate
+                : Metrics.speakingDecaySmoothingRate
+        } else {
+            smoothingRate = Metrics.listeningSmoothingRate
+        }
+
+        let smoothing = CGFloat(min(delta * Double(smoothingRate), 1))
         displayedLevel += (targetLevel - displayedLevel) * smoothing
 
         publishState()
     }
 
     private func refreshSampleIfNeeded(at timestamp: CFTimeInterval) {
-        guard phase == .listening else {
+        guard phase == .listening || phase == .speaking else {
             targetLevel = 0
             signalState = .inactive
             return
         }
 
-        guard lastMeterPollTimestamp == nil || timestamp - (lastMeterPollTimestamp ?? 0) >= Metrics.meterPollInterval else {
+        let meterPollInterval = phase == .speaking
+            ? Metrics.speakingMeterPollInterval
+            : Metrics.listeningMeterPollInterval
+
+        guard lastMeterPollTimestamp == nil || timestamp - (lastMeterPollTimestamp ?? 0) >= meterPollInterval else {
             return
         }
 
         lastMeterPollTimestamp = timestamp
 
+        let freshnessWindow = phase == .speaking
+            ? Metrics.speakingSampleFreshnessWindow
+            : Metrics.sampleFreshnessWindow
+
         guard let sample = sampleProvider?(),
-              Date().timeIntervalSince1970 - sample.timestamp <= Metrics.sampleFreshnessWindow else {
+              Date().timeIntervalSince1970 - sample.timestamp <= freshnessWindow else {
+            if phase == .speaking {
+                Self.log("Speaking sample missing or stale.")
+            }
             targetLevel = 0
             signalState = .inactive
             return
@@ -122,6 +146,11 @@ final class AudioIndicatorDriver {
 
         targetLevel = CGFloat(min(max(sample.level, 0), 1))
         signalState = sample.signalState
+        if phase == .speaking {
+            Self.log(
+                "Speaking sample level=\(String(format: "%.4f", sample.level)) signalState=\(signalState.logName)"
+            )
+        }
     }
 
     private func wrappedPhase(_ value: Double) -> Double {
@@ -141,5 +170,22 @@ final class AudioIndicatorDriver {
                 processingPhase: processingPhase
             )
         )
+    }
+
+    private static func log(_ message: String) {
+        NSLog("[AudioIndicatorDriver] %@", message)
+    }
+}
+
+private extension AudioIndicatorSignalState {
+    var logName: String {
+        switch self {
+        case .inactive:
+            return "inactive"
+        case .lowActivity:
+            return "lowActivity"
+        case .active:
+            return "active"
+        }
     }
 }

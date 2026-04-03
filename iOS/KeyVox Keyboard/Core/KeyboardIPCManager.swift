@@ -75,7 +75,15 @@ final class KeyboardIPCManager {
     }
 
     func currentAudioIndicatorSample() -> AudioIndicatorSample? {
-        guard let snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot() else { return nil }
+        let snapshot: KeyVoxIPCLiveMeterSnapshot?
+        switch KeyVoxIPCBridge.currentTTSState() {
+        case .playing:
+            snapshot = KeyVoxIPCBridge.currentTTSPlaybackMeterSnapshot() ?? KeyVoxIPCBridge.currentLiveMeterSnapshot()
+        case .idle, .preparing, .generating, .finished, .error:
+            snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot()
+        }
+
+        guard let snapshot else { return nil }
 
         return AudioIndicatorSample(
             level: snapshot.level,
@@ -95,7 +103,7 @@ final class KeyboardIPCManager {
     func currentKeyboardState() -> KeyboardState {
         switch KeyVoxIPCBridge.currentTTSState() {
         case .preparing, .generating:
-            return .waitingForApp
+            return .preparingPlayback
         case .playing:
             return .speaking
         case .finished, .error, .idle:
@@ -133,7 +141,14 @@ final class KeyboardIPCManager {
             if !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
                 KeyVoxIPCBridge.clearTTSState()
             } else {
-                return ttsState == .playing ? .speaking : .waitingForApp
+                switch ttsState {
+                case .playing:
+                    return .speaking
+                case .preparing, .generating:
+                    return .preparingPlayback
+                case .finished, .error, .idle:
+                    break
+                }
             }
         case .finished, .error:
             if let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {

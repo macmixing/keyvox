@@ -10,11 +10,18 @@ final class TTSPlaybackCoordinator {
         static let returnToHostRunwaySeconds: Double = 6.0
     }
 
+    private enum MeterPolicy {
+        static let windowSampleCount = 480
+        static let windowStepCount = 240
+        static let minimumUpdateLevel: Float = 0.015
+    }
+
     var onPlaybackStarted: (() -> Void)?
     var onPlaybackFinished: (() -> Void)?
     var onPlaybackCancelled: (() -> Void)?
     var onPlaybackFailed: ((Error) -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
+    var onPlaybackMeterLevel: ((Float) -> Void)?
 
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
@@ -36,6 +43,7 @@ final class TTSPlaybackCoordinator {
     private var hasBufferedIntoNextChunk = false
     private var activeRequiredStartSampleCount = 0
     private var activeSilentStartSampleCount = 0
+    private var scheduledMeterUpdates: [DispatchWorkItem] = []
 
     init() {
         audioEngine.attach(playerNode)
@@ -92,6 +100,7 @@ final class TTSPlaybackCoordinator {
         isBackgroundTransitionArmed = false
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
+        cancelScheduledMeterUpdates()
 
         playbackTask = Task { [weak self] in
             guard let self else { return }
@@ -138,6 +147,7 @@ final class TTSPlaybackCoordinator {
         isBackgroundTransitionArmed = false
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
+        cancelScheduledMeterUpdates()
 
         if playerNode.isPlaying {
             playerNode.stop()
@@ -195,7 +205,7 @@ final class TTSPlaybackCoordinator {
             return
         }
 
-        scheduleBuffer(buffer, sampleCount: frame.sampleCount)
+        scheduleBuffer(buffer, samples: frame.samples)
     }
 
     private func makeBuffer(from samples: [Float]) -> AVAudioPCMBuffer? {
@@ -245,9 +255,12 @@ final class TTSPlaybackCoordinator {
         pendingStartBuffers.removeAll(keepingCapacity: true)
         queuedSampleCount = 0
         let bufferedSamples = buffered.reduce(0) { $0 + Int($1.frameLength) }
+        var startDelay: TimeInterval = 0
 
         for buffer in buffered {
-            scheduleBuffer(buffer, sampleCount: Int(buffer.frameLength))
+            let samples = copySamples(from: buffer)
+            scheduleBuffer(buffer, samples: samples, startDelay: startDelay)
+            startDelay += TimeInterval(buffer.frameLength) / playbackFormat.sampleRate
         }
 
         didStartPlayback = true
@@ -257,9 +270,16 @@ final class TTSPlaybackCoordinator {
         onPlaybackStarted?()
     }
 
-    private func scheduleBuffer(_ buffer: AVAudioPCMBuffer, sampleCount: Int) {
+    private func scheduleBuffer(
+        _ buffer: AVAudioPCMBuffer,
+        samples: [Float],
+        startDelay: TimeInterval? = nil
+    ) {
+        let sampleCount = Int(buffer.frameLength)
+        let bufferStartDelay = startDelay ?? (Double(queuedSampleCount) / playbackFormat.sampleRate)
         queuedBufferCount += 1
         queuedSampleCount += sampleCount
+        scheduleMeterUpdates(for: samples, startDelay: bufferStartDelay)
         let queuedSeconds = Double(queuedSampleCount) / playbackFormat.sampleRate
         if queuedBufferCount == 1 || queuedSeconds < 0.25 {
             Self.log(
@@ -280,6 +300,59 @@ final class TTSPlaybackCoordinator {
                 self.finishIfPossible()
             }
         }
+    }
+
+    private func scheduleMeterUpdates(for samples: [Float], startDelay: TimeInterval) {
+        guard !samples.isEmpty else { return }
+
+        let sampleRate = playbackFormat.sampleRate
+        let now = DispatchTime.now()
+        var windowStart = 0
+
+        while windowStart < samples.count {
+            let windowEnd = min(windowStart + MeterPolicy.windowSampleCount, samples.count)
+            let windowSamples = Array(samples[windowStart..<windowEnd])
+            let meterLevel = max(playbackMeterLevel(for: windowSamples), MeterPolicy.minimumUpdateLevel)
+            let windowOffset = TimeInterval(windowStart) / sampleRate
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.onPlaybackMeterLevel?(meterLevel)
+            }
+            scheduledMeterUpdates.append(workItem)
+            DispatchQueue.main.asyncAfter(deadline: now + startDelay + windowOffset, execute: workItem)
+
+            if windowEnd == samples.count {
+                break
+            }
+
+            windowStart += MeterPolicy.windowStepCount
+        }
+    }
+
+    private func cancelScheduledMeterUpdates() {
+        scheduledMeterUpdates.forEach { $0.cancel() }
+        scheduledMeterUpdates.removeAll(keepingCapacity: false)
+    }
+
+    private func copySamples(from buffer: AVAudioPCMBuffer) -> [Float] {
+        guard let channel = buffer.floatChannelData?.pointee else { return [] }
+        let frameLength = Int(buffer.frameLength)
+        return Array(UnsafeBufferPointer(start: channel, count: frameLength))
+    }
+
+    private func playbackMeterLevel(for samples: [Float]) -> Float {
+        guard !samples.isEmpty else { return 0 }
+
+        var peak: Float = 0
+        let meanSquare = samples.reduce(Float.zero) { partialResult, sample in
+            let magnitude = abs(sample)
+            peak = max(peak, magnitude)
+            return partialResult + (sample * sample)
+        } / Float(samples.count)
+
+        let rms = sqrt(meanSquare)
+        let rmsDriven = rms * 10.0
+        let peakDriven = peak * 2.4
+        return min(max(max(rmsDriven, peakDriven), 0), 1)
     }
 
     private var bufferedSeconds: Double {

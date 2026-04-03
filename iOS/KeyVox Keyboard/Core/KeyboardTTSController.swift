@@ -67,7 +67,7 @@ final class KeyboardTTSController {
     func syncStateFromSharedState() {
         cancelWaitingTimeout()
         state = ipcManager.reconcileKeyboardStateIfNeeded()
-        if state == .waitingForApp {
+        if state == .preparingPlayback {
             scheduleWaitingTimeout()
         }
     }
@@ -80,15 +80,17 @@ final class KeyboardTTSController {
             cancelPendingWork()
             ipcManager.sendStopTTSCommand()
             state = .idle
-        case .waitingForApp:
+        case .preparingPlayback:
             break
         case .idle, .recording, .transcribing:
             guard let request = makeClipboardRequest() else { return }
             requestWriter(request)
 
-            state = .waitingForApp
+            state = .preparingPlayback
             scheduleWaitingTimeout()
             openContainingApp(startTTSURL)
+        case .waitingForApp:
+            break
         }
     }
 
@@ -129,7 +131,7 @@ final class KeyboardTTSController {
     }
 
     private func handleTTSPreparing() {
-        state = .waitingForApp
+        state = .preparingPlayback
     }
 
     private func handleTTSPlaying() {
@@ -150,7 +152,7 @@ final class KeyboardTTSController {
     private func scheduleWaitingTimeout() {
         cancelWaitingTimeout()
         waitingForAppTimeoutAction = scheduleAction(waitingTimeoutDuration) { [weak self] in
-            guard let self, self.state == .waitingForApp else { return }
+            guard let self, self.state == .preparingPlayback else { return }
             self.state = .idle
         }
     }
