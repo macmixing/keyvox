@@ -7,6 +7,8 @@ struct SettingsTabView: View {
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var settingsStore: AppSettingsStore
     @State var isTTSSectionExpanded = false
+    @State var isTTSExpandedContentVisible = false
+    @State var ttsExpandedContentHeight: CGFloat = 0
     
     private var appVersionBuildText: String? {
         guard
@@ -27,8 +29,8 @@ struct SettingsTabView: View {
                 sessionSection
                 keyboardSection
                 audioSection
-                ttsSection
                 activeModelSection
+                ttsSection
                 rateAndReviewSection
                 supportSection
                 versionFooter
@@ -37,6 +39,12 @@ struct SettingsTabView: View {
         .task {
             modelManager.refreshStatus()
             pocketTTSModelManager.refreshStatus()
+        }
+        .onAppear {
+            syncTTSDisclosurePresentation()
+        }
+        .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
+            updateTTSDisclosurePresentation()
         }
     }
 
