@@ -6,24 +6,20 @@ extension HomeTabView {
         AppCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .center, spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.accent.opacity(0.2))
-                            .frame(width: 32, height: 32)
-
-                        Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.yellow)
-                    }
-
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Speak Copied Text")
-                            .font(.appFont(18))
+                            .font(.appFont(17))
                             .foregroundStyle(.white)
 
-                        Text(settingsStore.ttsVoice.displayName)
-                            .font(.appFont(15, variant: .light))
-                            .foregroundStyle(.yellow)
+                        HStack(alignment: .center, spacing: 6) {
+                            Image(systemName: "waveform")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.yellow)
+
+                            Text(settingsStore.ttsVoice.displayName)
+                                .font(.appFont(15, variant: .light))
+                                .foregroundStyle(.yellow)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
