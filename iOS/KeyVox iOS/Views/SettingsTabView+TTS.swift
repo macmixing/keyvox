@@ -17,7 +17,7 @@ extension SettingsTabView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Playback Voice")
+                        Text("Playback Model")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
@@ -56,7 +56,7 @@ extension SettingsTabView {
                                 }
                             } label: {
                                 Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.system(size: 14, weight: .heavy))
                                     .foregroundStyle(.white.opacity(0.68))
                                     .frame(width: 28, height: 28)
                                     .contentShape(Rectangle())

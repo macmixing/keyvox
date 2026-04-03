@@ -17,7 +17,7 @@ extension SettingsTabView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Active Model")
+                        Text("Text Model")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
