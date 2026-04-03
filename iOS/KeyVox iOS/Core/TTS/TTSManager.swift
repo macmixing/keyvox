@@ -26,6 +26,7 @@ final class TTSManager: ObservableObject {
     private let playbackCoordinator: TTSPlaybackCoordinator
     private var activeRequest: KeyVoxTTSRequest?
     private var hasStartedPlaybackForActiveRequest = false
+    private var didEmitPreparationCompletionForActiveRequest = false
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private var backgroundTaskReleaseTask: Task<Void, Never>?
     var onWillTeardownPlayback: (() async -> Void)?
@@ -108,7 +109,7 @@ final class TTSManager: ObservableObject {
 
     func handleAppDidEnterBackground() {
         Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid)")
-        dismissPlaybackPreparationView()
+        isPlaybackPreparationViewPresented = false
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.didEnterBackground()
     }
@@ -134,7 +135,8 @@ final class TTSManager: ObservableObject {
     func startPlaybackFromPendingRequest() async {
         guard let request = KeyVoxIPCBridge.readTTSRequest(),
               request.trimmedText.isEmpty == false else {
-            dismissPlaybackPreparationView()
+            isPlaybackPreparationViewPresented = false
+            resetPlaybackPreparationState()
             return
         }
 
@@ -151,11 +153,13 @@ final class TTSManager: ObservableObject {
         )
         activeRequest = request
         hasStartedPlaybackForActiveRequest = false
+        didEmitPreparationCompletionForActiveRequest = false
         lastErrorMessage = nil
+        resetPlaybackPreparationState()
         if showPreparationView {
-            presentPlaybackPreparationView()
+            isPlaybackPreparationViewPresented = true
         } else {
-            dismissPlaybackPreparationView()
+            isPlaybackPreparationViewPresented = false
         }
         playbackCoordinator.setPreparationCompletionDelay(enabled: showPreparationView)
         beginBackgroundTaskIfNeeded()
@@ -246,8 +250,10 @@ final class TTSManager: ObservableObject {
     private func clearActiveRequest(clearPublishedState: Bool = true) {
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
+        didEmitPreparationCompletionForActiveRequest = false
         KeyVoxIPCBridge.clearTTSRequest()
-        dismissPlaybackPreparationView()
+        isPlaybackPreparationViewPresented = false
+        resetPlaybackPreparationState()
         playbackCoordinator.setPreparationCompletionDelay(enabled: false)
         endBackgroundTaskIfNeeded()
 
@@ -300,22 +306,11 @@ final class TTSManager: ObservableObject {
     }
 
     private func handlePreparationCompleted() {
-        guard isPlaybackPreparationViewPresented else { return }
         playbackPreparationProgress = 1
         playbackPreparationPhase = .readyToReturn
+        guard didEmitPreparationCompletionForActiveRequest == false else { return }
+        didEmitPreparationCompletionForActiveRequest = true
         appHaptics.success()
-    }
-
-    private func presentPlaybackPreparationView() {
-        isPlaybackPreparationViewPresented = true
-        playbackPreparationProgress = 0
-        playbackPreparationPhase = .preparing
-    }
-
-    private func dismissPlaybackPreparationView() {
-        isPlaybackPreparationViewPresented = false
-        playbackPreparationProgress = 0
-        playbackPreparationPhase = .preparing
     }
 
     private func updatePlaybackPreparationProgress(
@@ -323,7 +318,6 @@ final class TTSManager: ObservableObject {
         requiredSamples: Int,
         hasStartedPlayback: Bool
     ) {
-        guard isPlaybackPreparationViewPresented else { return }
         guard requiredSamples > 0 else { return }
 
         let normalized = min(1, max(0, Double(bufferedSamples) / Double(requiredSamples)))
@@ -331,6 +325,11 @@ final class TTSManager: ObservableObject {
         if hasStartedPlayback && playbackPreparationProgress >= 1 {
             playbackPreparationPhase = .readyToReturn
         }
+    }
+
+    private func resetPlaybackPreparationState() {
+        playbackPreparationProgress = 0
+        playbackPreparationPhase = .preparing
     }
 
     private static func log(_ message: String) {

@@ -7,6 +7,9 @@ struct HomeTabView: View {
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @State private var showsTTSPreparationSlot = false
+    @State private var isTTSPreparationVisible = false
+    @State private var ttsPreparationCollapseTask: Task<Void, Never>?
 
     var body: some View {
         AppScrollScreen {
@@ -21,6 +24,13 @@ struct HomeTabView: View {
         }
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
+            syncTTSPreparationPresentation()
+        }
+        .onChange(of: showsTTSPreparationProgress, initial: true) { _, _ in
+            updateTTSPreparationPresentation()
+        }
+        .onDisappear {
+            ttsPreparationCollapseTask?.cancel()
         }
     }
 
@@ -84,6 +94,21 @@ struct HomeTabView: View {
                     .font(.appFont(14, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
 
+                if showsTTSPreparationSlot {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ProgressView(value: ttsManager.playbackPreparationProgress)
+                            .progressViewStyle(KeyVoxProgressStyle())
+                            .frame(height: 12)
+
+                        Text(ttsPreparationProgressLabel)
+                            .font(.appFont(13, variant: .medium))
+                            .foregroundStyle(ttsPreparationProgressAccent)
+                    }
+                    .opacity(isTTSPreparationVisible ? 1 : 0)
+                    .allowsHitTesting(isTTSPreparationVisible)
+                    .accessibilityHidden(!isTTSPreparationVisible)
+                }
+
                 if let error = ttsManager.lastErrorMessage {
                     Text(error)
                         .font(.appFont(12))
@@ -91,6 +116,9 @@ struct HomeTabView: View {
                 }
             }
         }
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: ttsManager.playbackPreparationProgress)
+        .animation(.easeOut(duration: 0.14), value: isTTSPreparationVisible)
+        .animation(.easeInOut(duration: 0.52), value: showsTTSPreparationSlot)
     }
 
     @ViewBuilder
@@ -190,13 +218,65 @@ struct HomeTabView: View {
         case .preparing:
             return "Preparing playback..."
         case .generating:
-            return "Generating speech..."
+            return "Rendering startup audio..."
         case .playing:
             return "Speaking copied text."
         case .finished:
             return "Finished speaking."
         case .error:
             return "Playback failed."
+        }
+    }
+
+    private var showsTTSPreparationProgress: Bool {
+        switch ttsManager.state {
+        case .preparing, .generating:
+            return true
+        case .idle, .playing, .finished, .error:
+            return false
+        }
+    }
+
+    private var ttsPreparationProgressLabel: String {
+        "\(Int(ttsManager.playbackPreparationProgress * 100))%"
+    }
+
+    private var ttsPreparationProgressAccent: Color {
+        ttsManager.playbackPreparationProgress >= 1 ? .yellow : AppTheme.accent
+    }
+
+    private func syncTTSPreparationPresentation() {
+        showsTTSPreparationSlot = showsTTSPreparationProgress
+        isTTSPreparationVisible = showsTTSPreparationProgress
+    }
+
+    private func updateTTSPreparationPresentation() {
+        ttsPreparationCollapseTask?.cancel()
+
+        if showsTTSPreparationProgress {
+            if showsTTSPreparationSlot == false {
+                showsTTSPreparationSlot = true
+            }
+
+            withAnimation(.easeOut(duration: 0.14)) {
+                isTTSPreparationVisible = true
+            }
+            return
+        }
+
+        guard showsTTSPreparationSlot else { return }
+
+        withAnimation(.easeOut(duration: 0.14)) {
+            isTTSPreparationVisible = false
+        }
+
+        ttsPreparationCollapseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 240_000_000)
+            guard Task.isCancelled == false else { return }
+
+            withAnimation(.easeInOut(duration: 0.52)) {
+                showsTTSPreparationSlot = false
+            }
         }
     }
 
