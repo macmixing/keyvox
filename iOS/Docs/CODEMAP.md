@@ -1,12 +1,12 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-03-31**
+**Last Updated: 2026-04-03**
 
 ## Project Overview
 
 KeyVox iOS ships as three cooperating targets:
 
-- The containing app owns onboarding, settings, model lifecycle, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
-- The keyboard extension owns the visible custom keyboard, warm/cold app handoff, text insertion, warning-toolbar presentation, and keyboard-only interaction behavior.
+- The containing app owns onboarding, settings, model lifecycle, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
+- The keyboard extension owns the visible custom keyboard, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, and keyboard-only interaction behavior.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
 Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, and post-processing order.
@@ -22,12 +22,13 @@ The current default runtime flow is:
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-10. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
+10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, deterministic playback preparation, replay caching, and return-to-host readiness.
+11. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
 ## Architecture
 
-- **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
-- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
+- **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, PocketTTS install/runtime ownership, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
+- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, iCloud sync, weekly stats, model lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
@@ -107,6 +108,18 @@ iOS/
 │   │   │   ├── ModelManager+InstallLifecycle.swift
 │   │   │   ├── ModelManager+Support.swift
 │   │   │   └── ModelManager+Validation.swift
+│   │   ├── TTS/
+│   │   │   ├── AudioModeCoordinator.swift
+│   │   │   ├── PocketTTSAssetLocator.swift
+│   │   │   ├── PocketTTSEngine.swift
+│   │   │   ├── PocketTTSInstallManifest.swift
+│   │   │   ├── PocketTTSModelCatalog.swift
+│   │   │   ├── PocketTTSModelManager.swift
+│   │   │   ├── TTSEngine.swift
+│   │   │   ├── TTSManager.swift
+│   │   │   ├── TTSPlaybackCoordinator.swift
+│   │   │   ├── TTSReplayCache.swift
+│   │   │   └── TTSVoicePreviewPlayer.swift
 │   │   └── Transcription/
 │   │       ├── DictationService.swift
 │   │       ├── InterruptedCaptureRecovery.swift
@@ -121,16 +134,20 @@ iOS/
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── ReturnToHost.mov
+│   │   ├── TTSVoicePreviews/
 │   │   └── keyvox.icon/
 │   ├── Views/
 │   │   ├── AppRootView.swift
 │   │   ├── ContainingAppTab.swift
 │   │   ├── DictionaryTabView.swift
+│   │   ├── HomeTabView+TTS.swift
 │   │   ├── HomeTabView.swift
 │   │   ├── MainTabView.swift
+│   │   ├── PlaybackPreparationView.swift
 │   │   ├── ReturnToHostView.swift
-│   │   ├── SettingsTabView.swift
 │   │   ├── SettingsTabView+Models.swift
+│   │   ├── SettingsTabView+TTS.swift
+│   │   ├── SettingsTabView.swift
 │   │   ├── StyleTabView.swift
 │   │   ├── Components/
 │   │   │   ├── LoopingVideoPlayer.swift
@@ -145,6 +162,7 @@ iOS/
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── ModelDownloadProgress.swift
 │   │   │   ├── OnboardingStepRow.swift
+│   │   │   ├── SettingsDeletionConfirmation.swift
 │   │   │   └── SettingsRow.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
@@ -189,6 +207,7 @@ iOS/
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
 │   │   ├── KeyboardSymbolLayout.swift
+│   │   ├── KeyboardTTSController.swift
 │   │   ├── KeyboardTextInputController.swift
 │   │   ├── KeyboardToolbarMode.swift
 │   │   └── KeyboardTypography.swift
@@ -207,7 +226,8 @@ iOS/
 │           ├── KeyboardKeyPopupView.swift
 │           ├── KeyboardKeyView.swift
 │           ├── KeyboardLogoBarView.swift
-│           └── KeyboardRoundedBorderRenderer.swift
+│           ├── KeyboardRoundedBorderRenderer.swift
+│           └── KeyboardSpeakButton.swift
 ├── KeyVox Widget/
 │   ├── AppIntent.swift
 │   ├── Assets.xcassets/
@@ -274,7 +294,7 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
 - `KeyVox iOS/App/AppHaptics.swift`
   - App-owned UIKit haptic emitter injected through the SwiftUI environment.
@@ -319,7 +339,7 @@ Packages/
 ### Shared State, IPC, and Session Surfaces
 
 - `KeyVox iOS/App/KeyVoxIPCBridge.swift`
-  - Source of truth for App Group defaults keys, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
+  - Source of truth for App Group defaults keys, TTS playback state and request state, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
 - `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
 - `KeyVox iOS/App/KeyVoxSessionLiveActivityCoordinator.swift`
@@ -353,6 +373,27 @@ Packages/
 - `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
 
+### Copied Text Playback and PocketTTS
+
+- `KeyVox iOS/Core/TTS/PocketTTSModelCatalog.swift`
+  - PocketTTS shared-runtime and per-voice artifact metadata plus approximate voice download sizes used by settings.
+- `KeyVox iOS/Core/TTS/PocketTTSModelManager.swift`
+  - Observable owner of shared PocketTTS Core ML install state and independent per-voice install state.
+- `KeyVox iOS/Core/TTS/PocketTTSEngine.swift`
+  - App-owned streaming TTS engine wrapper around the local PocketTTS runtime.
+- `KeyVox iOS/Core/TTS/TTSPlaybackCoordinator.swift`
+  - Audio-engine playback owner for deterministic startup runway, background-safe continuation, playback metering, replay capture, and pause/resume.
+- `KeyVox iOS/Core/TTS/TTSManager.swift`
+  - High-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, and App Group TTS state publishing.
+- `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
+  - Persistence layer for the last replayable rendered playback and paused replay sample offsets.
+- `KeyVox iOS/Core/TTS/TTSVoicePreviewPlayer.swift`
+  - Bundled voice-preview playback owner used by the Voice Model settings section.
+- `KeyVox iOS/Core/TTS/AudioModeCoordinator.swift`
+  - Single arbitration surface for dictation-versus-TTS transitions, including pause/resume/replay transport.
+- `KeyVox iOS/Views/PlaybackPreparationView.swift`
+  - Cold-launch playback-preparation screen shown before returning to the host app.
+
 ### Audio and Transcription Runtime
 
 - `KeyVox iOS/Core/Audio/AudioRecorder.swift`
@@ -382,14 +423,20 @@ Packages/
   - Source of truth for app-tab ordering, titles, and previous/next navigation.
 - `KeyVox iOS/Views/HomeTabView.swift`
   - Weekly stats, last transcription card, and debug-only diagnostics.
+- `KeyVox iOS/Views/HomeTabView+TTS.swift`
+  - Copied-text playback card, primary speak action, replay/pause/resume transport, and PocketTTS install-state messaging.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
-  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, and version footer.
+  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, version footer, and shared destructive-confirmation coordination.
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
-  - Release-facing `Active Model` section, provider selection, per-model install actions, and not-installed size labels.
+  - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
+- `KeyVox iOS/Views/SettingsTabView+TTS.swift`
+  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, and playback voice selection.
+- `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
+  - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
 
@@ -408,6 +455,8 @@ Packages/
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
 - `KeyVox Keyboard/Core/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
+- `KeyVox Keyboard/Core/KeyboardTTSController.swift`
+  - Keyboard-local copied-text playback transport owner that stages TTS requests and reacts to shared TTS state.
 - `KeyVox Keyboard/Core/KeyboardInteractionHaptics.swift`
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
 - `KeyVox Keyboard/Core/KeyboardIPCManager.swift`
@@ -425,6 +474,8 @@ Packages/
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
+- `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
+  - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/KeyboardLayoutGeometry.swift`
   - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
