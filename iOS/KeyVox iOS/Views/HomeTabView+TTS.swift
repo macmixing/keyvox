@@ -282,6 +282,7 @@ extension HomeTabView {
         case .downloading, .installing:
             break
         case .ready:
+            appHaptics.light()
             audioModeCoordinator.handleSpeakClipboardFromApp()
         }
     }

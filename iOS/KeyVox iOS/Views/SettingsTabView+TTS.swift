@@ -373,7 +373,7 @@ extension SettingsTabView {
         if installedPlaybackVoices.isEmpty {
             return "Download a playback voice to let KeyVox read copied text aloud."
         }
-        return "Choose which installed PocketTTS voice KeyVox uses when reading copied text aloud."
+        return "Choose which installed PocketTTS voice KeyVox uses when speaking copied text."
     }
 
     var supportsTTSExpansion: Bool {

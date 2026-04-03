@@ -11,7 +11,7 @@ extension SettingsTabView {
                             .fill(AppTheme.accent.opacity(0.2))
                             .frame(width: 32, height: 32)
 
-                        Image(systemName: "cpu")
+                        Image(systemName: "character.cursor.ibeam")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.yellow)
                     }

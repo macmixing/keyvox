@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeTabView: View {
+    @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var audioModeCoordinator: AudioModeCoordinator
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @EnvironmentObject var ttsManager: TTSManager
