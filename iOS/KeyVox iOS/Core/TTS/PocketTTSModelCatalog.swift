@@ -39,14 +39,13 @@ enum PocketTTSModelCatalog {
         "tokenizer.model",
     ]
 
-    private static let supportedVoiceIDs: Set<String> = [
-        AppSettingsStore.TTSVoice.azelma.rawValue,
-        AppSettingsStore.TTSVoice.javert.rawValue,
-    ]
+    private static let supportedVoiceIDs: Set<String> = Set(
+        AppSettingsStore.TTSVoice.allCases.map(\.rawValue)
+    )
 
-    static func fetchDescriptor(session: URLSession = .shared) async throws -> PocketTTSDescriptor {
+    static func fetchSharedModelDescriptor(session: URLSession = .shared) async throws -> PocketTTSDescriptor {
         var artifacts: [PocketTTSArtifact] = []
-        log("Fetching PocketTTS descriptor from \(repositoryID).")
+        log("Fetching shared PocketTTS descriptor from \(repositoryID).")
 
         for directory in modelDirectories {
             let entries = try await fetchTreeEntries(
@@ -95,23 +94,51 @@ enum PocketTTSModelCatalog {
                 continue
             }
 
-            if filename.hasSuffix("_audio_prompt.bin") {
-                let voiceID = filename.replacingOccurrences(of: "_audio_prompt.bin", with: "")
-                guard supportedVoiceIDs.contains(voiceID) else { continue }
-
-                artifacts.append(
-                    PocketTTSArtifact(
-                        relativePath: "Voices/\(voiceID)/audio_prompt.bin",
-                        remoteURL: remoteURL(for: path),
-                        expectedByteCount: entry.size
-                    )
-                )
-            }
         }
 
         return PocketTTSDescriptor(
             displayName: displayName,
             artifacts: artifacts.sorted { $0.relativePath < $1.relativePath }
+        )
+    }
+
+    static func fetchVoiceDescriptor(
+        for voice: AppSettingsStore.TTSVoice,
+        session: URLSession = .shared
+    ) async throws -> PocketTTSDescriptor {
+        log("Fetching PocketTTS voice descriptor for \(voice.rawValue).")
+        guard supportedVoiceIDs.contains(voice.rawValue) else {
+            throw NSError(
+                domain: "PocketTTSModelCatalog",
+                code: 6,
+                userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) is not a supported PocketTTS voice."]
+            )
+        }
+
+        let constantsEntries = try await fetchTreeEntries(
+            for: "constants_bin",
+            recursive: true,
+            session: session
+        )
+
+        let filename = "\(voice.rawValue)_audio_prompt.bin"
+        guard let entry = constantsEntries.first(where: { $0.type == "file" && $0.path.hasSuffix("/\(filename)") }) else {
+            throw NSError(
+                domain: "PocketTTSModelCatalog",
+                code: 7,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to locate the \(voice.displayName) voice asset."]
+            )
+        }
+
+        return PocketTTSDescriptor(
+            displayName: voice.displayName,
+            artifacts: [
+                PocketTTSArtifact(
+                    relativePath: "Voices/\(voice.rawValue)/audio_prompt.bin",
+                    remoteURL: remoteURL(for: entry.path),
+                    expectedByteCount: entry.size
+                )
+            ]
         )
     }
 

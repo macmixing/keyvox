@@ -141,6 +141,7 @@
 		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		B300000B2FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */; };
 		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
+		B50000032FE0000200AA0001 /* SettingsTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */; };
 		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
 		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		C10000012FF1000100AA0001 /* PlaybackPreparationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */; };
@@ -299,6 +300,7 @@
 		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
 		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
 		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
+		B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+TTS.swift"; sourceTree = "<group>"; };
 		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
 		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPreparationView.swift; sourceTree = "<group>"; };
@@ -554,6 +556,7 @@
 				8E2546502F6013ED007E720D /* MainTabView.swift */,
 				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
 				B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */,
+				B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */,
 				8E2546522F6013ED007E720D /* StyleTabView.swift */,
 				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
 			);
@@ -1018,6 +1021,7 @@
 				8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */,
 				8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */,
 				B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */,
+				B50000032FE0000200AA0001 /* SettingsTabView+TTS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

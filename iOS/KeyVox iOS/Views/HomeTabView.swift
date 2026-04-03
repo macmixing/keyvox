@@ -139,7 +139,11 @@ struct HomeTabView: View {
     }
 
     private var ttsButtonTitle: String {
-        switch pocketTTSModelManager.installState {
+        if pocketTTSModelManager.isSharedModelReady() == false {
+            return "Install"
+        }
+
+        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
         case .notInstalled:
             return "Install"
         case .downloading, .installing:
@@ -152,15 +156,30 @@ struct HomeTabView: View {
     }
 
     private var ttsStatusText: String {
-        switch pocketTTSModelManager.installState {
+        if pocketTTSModelManager.isSharedModelReady() == false {
+            switch pocketTTSModelManager.sharedModelInstallState {
+            case .notInstalled:
+                return "Install PocketTTS CoreML to read copied text aloud."
+            case .downloading:
+                return "Downloading PocketTTS CoreML..."
+            case .installing:
+                return "Installing PocketTTS CoreML..."
+            case .failed:
+                return "PocketTTS CoreML install failed."
+            case .ready:
+                break
+            }
+        }
+
+        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
         case .notInstalled:
-            return "Install the playback model to read copied text aloud."
+            return "Install the \(settingsStore.ttsVoice.displayName) voice to read copied text aloud."
         case .downloading:
-            return "Downloading playback model..."
+            return "Downloading the \(settingsStore.ttsVoice.displayName) voice..."
         case .installing:
-            return "Installing playback model..."
+            return "Installing the \(settingsStore.ttsVoice.displayName) voice..."
         case .failed:
-            return "Playback model install failed."
+            return "\(settingsStore.ttsVoice.displayName) voice install failed."
         case .ready:
             break
         }
@@ -182,7 +201,14 @@ struct HomeTabView: View {
     }
 
     private var isTTSButtonEnabled: Bool {
-        switch pocketTTSModelManager.installState {
+        switch pocketTTSModelManager.sharedModelInstallState {
+        case .downloading, .installing:
+            return false
+        case .notInstalled, .failed, .ready:
+            break
+        }
+
+        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
         case .downloading, .installing:
             return false
         case .notInstalled, .failed, .ready:
@@ -191,11 +217,23 @@ struct HomeTabView: View {
     }
 
     private func handlePrimaryTTSAction() {
-        switch pocketTTSModelManager.installState {
+        if pocketTTSModelManager.isSharedModelReady() == false {
+            switch pocketTTSModelManager.sharedModelInstallState {
+            case .notInstalled:
+                pocketTTSModelManager.downloadSharedModel()
+            case .failed:
+                pocketTTSModelManager.repairSharedModelIfNeeded()
+            case .downloading, .installing, .ready:
+                break
+            }
+            return
+        }
+
+        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
         case .notInstalled:
-            pocketTTSModelManager.downloadModel()
+            pocketTTSModelManager.downloadVoice(settingsStore.ttsVoice)
         case .failed:
-            pocketTTSModelManager.repairModelIfNeeded()
+            pocketTTSModelManager.repairVoiceIfNeeded(settingsStore.ttsVoice)
         case .downloading, .installing:
             break
         case .ready:

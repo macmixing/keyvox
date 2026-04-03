@@ -51,7 +51,7 @@ final class PocketTTSEngine: TTSEngine {
     }
 
     private func runtimeForInstalledAssets() throws -> KeyVoxPocketTTSRuntime {
-        guard assetLocator.isInstalled(),
+        guard assetLocator.isSharedModelInstalled(),
               let assetLayout = assetLocator.assetLayout() else {
             Self.log("Runtime request failed because assets are not installed.")
             throw KeyVoxTTSError.missingAsset("PocketTTS assets are not installed.")
