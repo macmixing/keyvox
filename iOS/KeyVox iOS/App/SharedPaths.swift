@@ -159,6 +159,16 @@ nonisolated enum SharedPaths {
             .appendingPathComponent("request.json", isDirectory: false)
     }
 
+    static func lastTTSReplayMetadataURL(fileManager: FileManager = .default) -> URL? {
+        ttsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("last-replay.json", isDirectory: false)
+    }
+
+    static func lastTTSReplayAudioURL(fileManager: FileManager = .default) -> URL? {
+        ttsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("last-replay.pcm", isDirectory: false)
+    }
+
     static func fallbackBaseDirectoryURL(fileManager: FileManager = .default) -> URL {
         let appSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory

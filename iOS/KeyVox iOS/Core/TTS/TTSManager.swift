@@ -18,13 +18,18 @@ final class TTSManager: ObservableObject {
     @Published var isPlaybackPreparationViewPresented = false
     @Published private(set) var playbackPreparationProgress: Double = 0
     @Published private(set) var playbackPreparationPhase: PlaybackPreparationPhase = .preparing
+    @Published private(set) var isPlaybackPaused = false
+    @Published private(set) var hasReplayablePlayback = false
 
     private let settingsStore: AppSettingsStore
     private let appHaptics: AppHapticsEmitting
     private let keyboardBridge: KeyVoxKeyboardBridge
     private let engine: any TTSEngine
     private let playbackCoordinator: TTSPlaybackCoordinator
+    private let replayCache: TTSReplayCache
     private var activeRequest: KeyVoxTTSRequest?
+    private var lastReplayableRequest: KeyVoxTTSRequest?
+    private var pausedReplaySampleOffset: Int?
     private var hasStartedPlaybackForActiveRequest = false
     private var didEmitPreparationCompletionForActiveRequest = false
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
@@ -45,19 +50,27 @@ final class TTSManager: ObservableObject {
         appHaptics: AppHapticsEmitting,
         keyboardBridge: KeyVoxKeyboardBridge,
         engine: any TTSEngine,
-        playbackCoordinator: TTSPlaybackCoordinator
+        playbackCoordinator: TTSPlaybackCoordinator,
+        replayCache: TTSReplayCache? = nil
     ) {
         self.settingsStore = settingsStore
         self.appHaptics = appHaptics
         self.keyboardBridge = keyboardBridge
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
+        self.replayCache = replayCache ?? TTSReplayCache()
 
         playbackCoordinator.onPlaybackStarted = { [weak self] in
             self?.handlePlaybackStarted()
         }
         playbackCoordinator.onPreparationCompleted = { [weak self] in
             self?.handlePreparationCompleted()
+        }
+        playbackCoordinator.onPlaybackPaused = { [weak self] in
+            self?.handlePlaybackPaused()
+        }
+        playbackCoordinator.onPlaybackResumed = { [weak self] in
+            self?.handlePlaybackResumed()
         }
         playbackCoordinator.onPlaybackFinished = { [weak self] in
             self?.finishPlayback()
@@ -78,6 +91,8 @@ final class TTSManager: ObservableObject {
                 hasStartedPlayback: hasStartedPlayback
             )
         }
+
+        restoreReplayablePlaybackIfNeeded()
     }
 
     func handleAppDidBecomeActive() {
@@ -154,6 +169,7 @@ final class TTSManager: ObservableObject {
         activeRequest = request
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
+        isPlaybackPaused = false
         lastErrorMessage = nil
         resetPlaybackPreparationState()
         if showPreparationView {
@@ -185,6 +201,47 @@ final class TTSManager: ObservableObject {
         playbackCoordinator.setAudioSessionMode(mode)
     }
 
+    func pausePlayback() {
+        playbackCoordinator.pause()
+    }
+
+    func resumePlayback() {
+        if playbackCoordinator.canResumePlayback == false,
+           let pausedReplaySampleOffset,
+           hasReplayablePlayback,
+           let lastReplayableRequest {
+            activeRequest = lastReplayableRequest
+            hasStartedPlaybackForActiveRequest = true
+            didEmitPreparationCompletionForActiveRequest = true
+            isPlaybackPaused = false
+            lastErrorMessage = nil
+            resetPlaybackPreparationState()
+            isPlaybackPreparationViewPresented = false
+            beginBackgroundTaskIfNeeded()
+            playbackCoordinator.replayLastPlayback(startingAtSample: pausedReplaySampleOffset)
+            return
+        }
+
+        playbackCoordinator.resume()
+    }
+
+    func replayLastPlayback() {
+        guard hasReplayablePlayback else { return }
+
+        if let lastReplayableRequest {
+            activeRequest = lastReplayableRequest
+        }
+        hasStartedPlaybackForActiveRequest = false
+        didEmitPreparationCompletionForActiveRequest = true
+        isPlaybackPaused = false
+        pausedReplaySampleOffset = nil
+        lastErrorMessage = nil
+        resetPlaybackPreparationState()
+        isPlaybackPreparationViewPresented = false
+        beginBackgroundTaskIfNeeded()
+        playbackCoordinator.replayLastPlayback()
+    }
+
     func stopPlayback() async {
         if let activeRequest {
             Self.log("Stop requested for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
@@ -195,6 +252,9 @@ final class TTSManager: ObservableObject {
         await onWillTeardownPlayback?()
         KeyVoxIPCBridge.clearTTSRequest()
         keyboardBridge.publishTTSStopped()
+        if let lastReplayableRequest {
+            persistReplayablePlaybackIfNeeded(for: lastReplayableRequest)
+        }
         clearActiveRequest()
     }
 
@@ -203,9 +263,14 @@ final class TTSManager: ObservableObject {
             guard let self else { return }
             if let activeRequest {
                 Self.log("Playback finished for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+                self.lastReplayableRequest = activeRequest
+                self.persistReplayablePlaybackIfNeeded(for: activeRequest)
             } else {
                 Self.log("Playback finished with no active request.")
             }
+            self.hasReplayablePlayback = self.playbackCoordinator.hasReplayablePlayback
+            self.isPlaybackPaused = false
+            self.pausedReplaySampleOffset = nil
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.keyboardBridge.publishTTSFinished()
@@ -222,6 +287,8 @@ final class TTSManager: ObservableObject {
                 Self.log("Playback failed with no active request. error=\(message)")
             }
             self.lastErrorMessage = message
+            self.isPlaybackPaused = false
+            self.pausedReplaySampleOffset = nil
             self.updateState(.error)
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
@@ -251,6 +318,9 @@ final class TTSManager: ObservableObject {
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
+        isPlaybackPaused = false
+        pausedReplaySampleOffset = nil
+        hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         KeyVoxIPCBridge.clearTTSRequest()
         isPlaybackPreparationViewPresented = false
         resetPlaybackPreparationState()
@@ -298,6 +368,9 @@ final class TTSManager: ObservableObject {
             Self.log("Playback started for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
         }
         hasStartedPlaybackForActiveRequest = true
+        isPlaybackPaused = false
+        pausedReplaySampleOffset = nil
+        hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         updateState(.playing)
         if isPlaybackPreparationViewPresented {
             playbackPreparationProgress = 1
@@ -311,6 +384,35 @@ final class TTSManager: ObservableObject {
         guard didEmitPreparationCompletionForActiveRequest == false else { return }
         didEmitPreparationCompletionForActiveRequest = true
         appHaptics.success()
+    }
+
+    private func handlePlaybackPaused() {
+        Self.log("Playback paused.")
+        isPlaybackPaused = true
+        if let offset = playbackCoordinator.replayPausedSampleOffsetSnapshot(),
+           let request = lastReplayableRequest ?? activeRequest,
+           let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
+            pausedReplaySampleOffset = offset
+            replayCache.updatePauseState(
+                request: request,
+                sampleCount: samples.count,
+                pausedSampleOffset: offset
+            )
+        }
+    }
+
+    private func handlePlaybackResumed() {
+        Self.log("Playback resumed.")
+        isPlaybackPaused = false
+        pausedReplaySampleOffset = nil
+        if let request = lastReplayableRequest ?? activeRequest,
+           let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
+            replayCache.updatePauseState(
+                request: request,
+                sampleCount: samples.count,
+                pausedSampleOffset: nil
+            )
+        }
     }
 
     private func updatePlaybackPreparationProgress(
@@ -330,6 +432,33 @@ final class TTSManager: ObservableObject {
     private func resetPlaybackPreparationState() {
         playbackPreparationProgress = 0
         playbackPreparationPhase = .preparing
+    }
+
+    private func restoreReplayablePlaybackIfNeeded() {
+        guard let snapshot = replayCache.load() else {
+            hasReplayablePlayback = false
+            return
+        }
+
+        lastReplayableRequest = snapshot.request
+        playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
+        hasReplayablePlayback = true
+        if let pausedSampleOffset = snapshot.pausedSampleOffset,
+           pausedSampleOffset > 0,
+           pausedSampleOffset < snapshot.samples.count {
+            pausedReplaySampleOffset = pausedSampleOffset
+            activeRequest = snapshot.request
+            hasStartedPlaybackForActiveRequest = true
+            isPlaybackPaused = true
+            state = .playing
+        } else {
+            pausedReplaySampleOffset = nil
+        }
+    }
+
+    private func persistReplayablePlaybackIfNeeded(for request: KeyVoxTTSRequest) {
+        guard let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() else { return }
+        replayCache.save(request: request, samples: samples, pausedSampleOffset: nil)
     }
 
     private static func log(_ message: String) {

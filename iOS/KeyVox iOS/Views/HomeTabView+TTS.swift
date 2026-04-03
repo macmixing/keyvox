@@ -27,14 +27,50 @@ extension HomeTabView {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    AppActionButton(
-                        title: ttsButtonTitle,
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 15,
-                        isEnabled: isTTSButtonEnabled,
-                        action: handlePrimaryTTSAction
-                    )
+                    HStack(spacing: 8) {
+                        if showsTTSTransportButton {
+                            Button(action: handleSecondaryTTSAction) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.yellow)
+
+                                    Image(systemName: ttsTransportSymbolName)
+                                        .font(.system(size: 22, weight: ttsTransportSymbolWeight))
+                                        .foregroundStyle(.black)
+                                }
+                                .frame(width: 44, height: 44)
+                                .shadow(color: .yellow.opacity(0.3), radius: 10)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if ttsManager.isActive {
+                            Button(action: handlePrimaryTTSAction) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.yellow)
+
+                                    Image(systemName: "stop.fill")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundStyle(.black)
+                                }
+                                .frame(width: 44, height: 44)
+                                .shadow(color: .yellow.opacity(0.3), radius: 10)
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.scale.combined(with: .opacity))
+                        } else {
+                            AppActionButton(
+                                title: ttsButtonTitle,
+                                style: .primary,
+                                size: .compact,
+                                fontSize: 15,
+                                isEnabled: isTTSButtonEnabled,
+                                action: handlePrimaryTTSAction
+                            )
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                    }
                 }
 
                 Text(ttsStatusText)
@@ -94,6 +130,24 @@ extension HomeTabView {
         }
     }
 
+    var showsTTSTransportButton: Bool {
+        ttsManager.isActive || ttsManager.hasReplayablePlayback
+    }
+
+    var ttsTransportSymbolName: String {
+        if ttsManager.isPlaybackPaused {
+            return "play.fill"
+        }
+        if ttsManager.state == .playing {
+            return "pause.fill"
+        }
+        return "repeat"
+    }
+
+    var ttsTransportSymbolWeight: Font.Weight {
+        .medium
+    }
+
     var ttsStatusText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
@@ -131,7 +185,7 @@ extension HomeTabView {
         case .generating:
             return "Rendering startup audio..."
         case .playing:
-            return "Speaking copied text."
+            return ttsManager.isPlaybackPaused ? "Playback paused." : "Speaking copied text."
         case .finished:
             return "Finished speaking."
         case .error:
@@ -234,5 +288,19 @@ extension HomeTabView {
         case .ready:
             audioModeCoordinator.handleSpeakClipboardFromApp()
         }
+    }
+
+    func handleSecondaryTTSAction() {
+        if ttsManager.isPlaybackPaused {
+            audioModeCoordinator.handleResumeTTS()
+            return
+        }
+
+        if ttsManager.state == .playing {
+            audioModeCoordinator.handlePauseTTS()
+            return
+        }
+
+        audioModeCoordinator.handleReplayLastTTS()
     }
 }

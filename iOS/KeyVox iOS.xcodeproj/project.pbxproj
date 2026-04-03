@@ -120,6 +120,7 @@
 		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
 		A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */; };
 		A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */; };
+		A1C000062FEB000100AA0001 /* TTSReplayCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000072FEB000100AA0001 /* TTSReplayCache.swift */; };
 		AA1000012F70000100000001 /* AppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* AppTypography.swift */; };
 		AA1000022F70000100000001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* AppTheme.swift */; };
 		AA1000032F70000100000001 /* AppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* AppCard.swift */; };
@@ -282,6 +283,7 @@
 		A1C000002FEA000100AA0001 /* TTSVoicePreviews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TTSVoicePreviews; sourceTree = "<group>"; };
 		A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSVoicePreviewPlayer.swift; sourceTree = "<group>"; };
 		A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeTabView+TTS.swift"; sourceTree = "<group>"; };
+		A1C000072FEB000100AA0001 /* TTSReplayCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSReplayCache.swift; sourceTree = "<group>"; };
 		AA2000012F70000100000001 /* AppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypography.swift; sourceTree = "<group>"; };
 		AA2000022F70000100000001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		AA2000032F70000100000001 /* AppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCard.swift; sourceTree = "<group>"; };
@@ -609,6 +611,7 @@
 				8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */,
 				8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */,
 				8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */,
+				A1C000072FEB000100AA0001 /* TTSReplayCache.swift */,
 				A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */,
 			);
 			path = TTS;
@@ -965,6 +968,7 @@
 				8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */,
 				8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */,
 				8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */,
+				A1C000062FEB000100AA0001 /* TTSReplayCache.swift in Sources */,
 				A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */,
 				8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */,
 				8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */,

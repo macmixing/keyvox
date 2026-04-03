@@ -107,6 +107,18 @@ final class AudioModeCoordinator: ObservableObject {
         }
     }
 
+    func handlePauseTTS() {
+        ttsManager.pausePlayback()
+    }
+
+    func handleResumeTTS() {
+        ttsManager.resumePlayback()
+    }
+
+    func handleReplayLastTTS() {
+        ttsManager.replayLastPlayback()
+    }
+
     private func repairMonitoringAfterTTSIfNeeded() async {
         guard shouldRepairMonitoringAfterTTS else { return }
         shouldRepairMonitoringAfterTTS = false

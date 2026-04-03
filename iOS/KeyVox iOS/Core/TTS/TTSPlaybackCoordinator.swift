@@ -33,6 +33,8 @@ final class TTSPlaybackCoordinator {
     var onPlaybackFinished: (() -> Void)?
     var onPlaybackCancelled: (() -> Void)?
     var onPlaybackFailed: ((Error) -> Void)?
+    var onPlaybackPaused: (() -> Void)?
+    var onPlaybackResumed: (() -> Void)?
     var onPreparationCompleted: (() -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
     var onPlaybackMeterLevel: ((Float) -> Void)?
@@ -60,6 +62,41 @@ final class TTSPlaybackCoordinator {
     private var scheduledMeterUpdates: [DispatchWorkItem] = []
     private var audioSessionMode: AudioSessionMode = .playback
     private var preparationCompletionDelaySeconds: Double = 0
+    private var isPaused = false
+    private var activePlaybackSamples: [Float] = []
+    private var replayablePlaybackSamples: [Float] = []
+    private var isReplayingCachedAudio = false
+    private var replayStartSampleOffset = 0
+    private var replayPausedSampleOffset = 0
+
+    var hasReplayablePlayback: Bool {
+        !replayablePlaybackSamples.isEmpty
+    }
+
+    var canPausePlayback: Bool {
+        didStartPlayback && playerNode.isPlaying && !isPaused
+    }
+
+    var canResumePlayback: Bool {
+        didStartPlayback && isPaused
+    }
+
+    func restoreReplayablePlayback(samples: [Float]) {
+        replayablePlaybackSamples = samples
+    }
+
+    func replayablePlaybackSamplesSnapshot() -> [Float]? {
+        guard !replayablePlaybackSamples.isEmpty else { return nil }
+        return replayablePlaybackSamples
+    }
+
+    func replayPausedSampleOffsetSnapshot() -> Int? {
+        guard !replayablePlaybackSamples.isEmpty else { return nil }
+        guard replayPausedSampleOffset > 0, replayPausedSampleOffset < replayablePlaybackSamples.count else {
+            return nil
+        }
+        return replayPausedSampleOffset
+    }
 
     init() {
         audioEngine.attach(playerNode)
@@ -126,6 +163,11 @@ final class TTSPlaybackCoordinator {
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
         cancelScheduledMeterUpdates()
+        isPaused = false
+        activePlaybackSamples = []
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
 
         playbackTask = Task { [weak self] in
             guard let self else { return }
@@ -156,6 +198,90 @@ final class TTSPlaybackCoordinator {
         stop(emitCallback: true)
     }
 
+    func pause() {
+        guard canPausePlayback else { return }
+        if isReplayingCachedAudio {
+            replayPausedSampleOffset = currentReplaySampleOffset()
+        }
+        playerNode.pause()
+        isPaused = true
+        cancelScheduledMeterUpdates()
+        Self.log("Playback paused.")
+        onPlaybackPaused?()
+    }
+
+    func resume() {
+        guard canResumePlayback else { return }
+        playerNode.play()
+        isPaused = false
+        if isReplayingCachedAudio {
+            replayPausedSampleOffset = 0
+        }
+        Self.log("Playback resumed.")
+        onPlaybackResumed?()
+    }
+
+    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0) {
+        guard !replayablePlaybackSamples.isEmpty else { return }
+
+        stop(emitCallback: false)
+        let safeStartSampleOffset = min(max(0, startSampleOffset), max(0, replayablePlaybackSamples.count - 1))
+        Self.log("Replaying cached playback samples=\(replayablePlaybackSamples.count) startOffset=\(safeStartSampleOffset)")
+
+        do {
+            try configureAudioSession()
+            if audioEngine.isRunning == false {
+                try audioEngine.start()
+            }
+        } catch {
+            Self.log("Replay setup failed: \(error.localizedDescription)")
+            onPlaybackFailed?(error)
+            return
+        }
+
+        queuedBufferCount = 0
+        queuedSampleCount = 0
+        isFinishing = false
+        didStartPlayback = true
+        isPaused = false
+        pendingStartBuffers = []
+        completedChunkCountBeforeStart = 0
+        hasBufferedIntoNextChunk = false
+        isBackgroundTransitionArmed = false
+        activeRequiredStartSampleCount = 0
+        activeSilentStartSampleCount = 0
+        cancelScheduledMeterUpdates()
+        activePlaybackSamples = replayablePlaybackSamples
+        isReplayingCachedAudio = true
+        replayStartSampleOffset = safeStartSampleOffset
+        replayPausedSampleOffset = 0
+
+        let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
+        var startDelay: TimeInterval = 0
+        var cursor = safeStartSampleOffset
+        while cursor < replayablePlaybackSamples.count {
+            let end = min(cursor + bufferSampleCount, replayablePlaybackSamples.count)
+            let slice = Array(replayablePlaybackSamples[cursor..<end])
+            guard let buffer = makeBuffer(from: slice) else {
+                handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS replay buffer creation failed."))
+                return
+            }
+            scheduleBuffer(
+                buffer,
+                samples: slice,
+                chunkDebugID: "cached-replay",
+                chunkIndex: nil,
+                startDelay: startDelay
+            )
+            startDelay += TimeInterval(slice.count) / playbackFormat.sampleRate
+            cursor = end
+        }
+
+        isFinishing = true
+        playerNode.play()
+        onPlaybackStarted?()
+    }
+
     private func stop(emitCallback: Bool) {
         let hadPlayback = playbackTask != nil || playerNode.isPlaying || queuedBufferCount > 0
         Self.log("Stopping playback. hadPlayback=\(hadPlayback) queuedBuffers=\(queuedBufferCount) queuedSamples=\(queuedSampleCount)")
@@ -173,6 +299,11 @@ final class TTSPlaybackCoordinator {
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
         cancelScheduledMeterUpdates()
+        isPaused = false
+        activePlaybackSamples = []
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
 
         if playerNode.isPlaying {
             playerNode.stop()
@@ -204,6 +335,7 @@ final class TTSPlaybackCoordinator {
     }
 
     private func schedule(_ frame: KeyVoxTTSAudioFrame) {
+        activePlaybackSamples.append(contentsOf: frame.samples)
         guard let buffer = makeBuffer(from: frame.samples) else {
             handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS produced an invalid audio frame."))
             return
@@ -274,6 +406,12 @@ final class TTSPlaybackCoordinator {
         Self.log("Playback finished.")
 
         playbackTask = nil
+        replayablePlaybackSamples = activePlaybackSamples
+        activePlaybackSamples = []
+        isPaused = false
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
         if playerNode.isPlaying {
             playerNode.stop()
         }
@@ -428,6 +566,17 @@ final class TTSPlaybackCoordinator {
         let rmsDriven = rms * 8.8
         let peakDriven = peak * 2.1
         return min(max(max(rmsDriven, peakDriven), 0), 1)
+    }
+
+    private func currentReplaySampleOffset() -> Int {
+        guard isReplayingCachedAudio else { return 0 }
+        guard let renderTime = playerNode.lastRenderTime,
+              let playerTime = playerNode.playerTime(forNodeTime: renderTime) else {
+            return replayPausedSampleOffset
+        }
+
+        let currentOffset = replayStartSampleOffset + Int(playerTime.sampleTime)
+        return min(max(0, currentOffset), replayablePlaybackSamples.count)
     }
 
     private var bufferedSeconds: Double {
