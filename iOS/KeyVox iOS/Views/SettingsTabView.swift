@@ -5,6 +5,7 @@ struct SettingsTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @State var isTTSSectionExpanded = false
     @State var isTTSExpandedContentVisible = false
@@ -42,6 +43,14 @@ struct SettingsTabView: View {
         }
         .onAppear {
             syncTTSDisclosurePresentation()
+        }
+        .onDisappear {
+            ttsVoicePreviewPlayer.stop()
+        }
+        .onChange(of: isTTSSectionExpanded) { _, isExpanded in
+            if isExpanded == false {
+                ttsVoicePreviewPlayer.stop()
+            }
         }
         .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
             updateTTSDisclosurePresentation()
@@ -244,5 +253,6 @@ struct SettingsTabView: View {
     SettingsTabView()
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

@@ -156,41 +156,66 @@ extension SettingsTabView {
     private func ttsVoiceRow(for voice: AppSettingsStore.TTSVoice) -> some View {
         let state = pocketTTSModelManager.installState(for: voice)
 
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 12) {
-                HStack(alignment: .center, spacing: 8) {
-                    Text(voice.displayName)
-                        .font(.appFont(17))
-                        .foregroundStyle(.white)
+        HStack(alignment: .center, spacing: 12) {
+            ttsVoicePreviewButton(for: voice)
 
-                    if settingsStore.ttsVoice == voice && pocketTTSModelManager.isReady(for: voice) {
-                        Circle()
-                            .fill(.yellow)
-                            .frame(width: 8, height: 8)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .center, spacing: 12) {
+                    HStack(alignment: .center, spacing: 8) {
+                        Text(voice.displayName)
+                            .font(.appFont(17))
+                            .foregroundStyle(.white)
+
+                        if settingsStore.ttsVoice == voice && pocketTTSModelManager.isReady(for: voice) {
+                            Circle()
+                                .fill(.yellow)
+                                .frame(width: 8, height: 8)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    ttsVoiceActionButton(for: voice, state: state)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-                ttsVoiceActionButton(for: voice, state: state)
-            }
+                Text(ttsVoiceStatusText(for: voice, state: state))
+                    .font(.appFont(14, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
 
-            Text(ttsVoiceStatusText(for: voice, state: state))
-                .font(.appFont(14, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
+                if case .failed(let message) = state {
+                    Text(message)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
+                }
 
-            if case .failed(let message) = state {
-                Text(message)
-                    .font(.appFont(12))
-                    .foregroundStyle(.red)
-            }
-
-            switch state {
-            case .downloading(let progress), .installing(let progress):
-                ModelDownloadProgress(progress: progress, showLabel: false)
-            case .notInstalled, .ready, .failed:
-                EmptyView()
+                switch state {
+                case .downloading(let progress), .installing(let progress):
+                    ModelDownloadProgress(progress: progress, showLabel: false)
+                case .notInstalled, .ready, .failed:
+                    EmptyView()
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private func ttsVoicePreviewButton(for voice: AppSettingsStore.TTSVoice) -> some View {
+        let isActive = ttsVoicePreviewPlayer.isActive(for: voice)
+        let isPlaying = isActive && ttsVoicePreviewPlayer.isPlaying
+        let symbolName = isPlaying ? "pause.circle" : "play.circle"
+        let canPlayPreview = ttsVoicePreviewPlayer.hasPreview(for: voice)
+
+        Button {
+            ttsVoicePreviewPlayer.togglePlayback(for: voice)
+        } label: {
+            Image(systemName: symbolName)
+                .font(.system(size: 26, weight: .regular))
+                .foregroundStyle(canPlayPreview ? .yellow : .white.opacity(0.28))
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!canPlayPreview)
+        .accessibilityLabel(isPlaying ? "Pause \(voice.displayName) preview" : "Play \(voice.displayName) preview")
     }
 
     @ViewBuilder

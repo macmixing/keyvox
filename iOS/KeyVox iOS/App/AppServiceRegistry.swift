@@ -12,6 +12,7 @@ final class AppServiceRegistry {
     let onboardingStore: OnboardingStore
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let appHaptics: AppHaptics
+    let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
     let activeProviderRouter: SwitchableDictationProvider
@@ -59,6 +60,7 @@ final class AppServiceRegistry {
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
         let appHaptics = AppHaptics()
+        let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -195,6 +197,7 @@ final class AppServiceRegistry {
         self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.appHaptics = appHaptics
+        self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService
         self.activeProviderRouter = activeProviderRouter
