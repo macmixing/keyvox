@@ -134,6 +134,10 @@ final class KeyboardIPCManager {
         return KeyVoxIPCBridge.isSessionWarm()
     }
 
+    func hadRecentTTSPlayback() -> Bool {
+        KeyVoxIPCBridge.hadRecentTTSPlayback()
+    }
+
     func reconcileKeyboardStateIfNeeded() -> KeyboardState {
         let ttsState = KeyVoxIPCBridge.currentTTSState()
         switch ttsState {

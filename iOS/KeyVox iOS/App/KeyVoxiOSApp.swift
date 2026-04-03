@@ -68,6 +68,7 @@ struct KeyVoxApp: App {
                 .environmentObject(weeklyWordStatsStore)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
+                    NSLog("[KeyVoxApp] scenePhase=%@", String(describing: newPhase))
                     switch newPhase {
                     case .active:
                         if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
@@ -94,6 +95,12 @@ struct KeyVoxApp: App {
                 }
                 .onOpenURL { url in
                     if let route = KeyVoxURLRoute(url: url) {
+                        NSLog(
+                            "[KeyVoxApp] onOpenURL route=%@ shouldPresentReturnToHost=%@ scenePhase=%@",
+                            String(describing: route),
+                            String(scenePhase != .active),
+                            String(describing: scenePhase)
+                        )
                         handle(
                             route: route,
                             shouldPresentReturnToHost: scenePhase != .active
@@ -106,6 +113,11 @@ struct KeyVoxApp: App {
     }
 
     private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
+        NSLog(
+            "[KeyVoxApp] handle route=%@ shouldPresentReturnToHost=%@",
+            String(describing: route),
+            String(shouldPresentReturnToHost)
+        )
         if route == .startRecording, shouldPresentReturnToHost {
             var transaction = Transaction()
             transaction.disablesAnimations = true

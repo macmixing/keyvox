@@ -31,6 +31,7 @@ protocol KeyboardDictationIPCManaging: AnyObject {
     func currentRecordingState() -> KeyboardState
     func reconciledRecordingStateIfNeeded() -> KeyboardState
     func isSessionWarm() -> Bool
+    func hadRecentTTSPlayback() -> Bool
 }
 
 extension KeyboardIPCManager: KeyboardDictationIPCManaging {
@@ -68,6 +69,7 @@ final class KeyboardDictationController {
     private let startRecordingURL: URL?
     private let waitingTimeoutDuration: TimeInterval
     private let warmSessionGracePeriod: TimeInterval
+    private let warmSessionGracePeriodAfterTTSPlayback: TimeInterval
 
     private var waitingForAppTimeoutAction: KeyboardScheduledAction?
     private var gracePeriodAction: KeyboardScheduledAction?
@@ -84,7 +86,8 @@ final class KeyboardDictationController {
         openContainingApp: @escaping (URL?) -> Void,
         startRecordingURL: URL?,
         waitingTimeoutDuration: TimeInterval = 5,
-        warmSessionGracePeriod: TimeInterval = 0.5
+        warmSessionGracePeriod: TimeInterval = 0.5,
+        warmSessionGracePeriodAfterTTSPlayback: TimeInterval = 0.5
     ) {
         self.ipcManager = ipcManager
         self.scheduleAction = scheduleAction
@@ -92,6 +95,7 @@ final class KeyboardDictationController {
         self.startRecordingURL = startRecordingURL
         self.waitingTimeoutDuration = waitingTimeoutDuration
         self.warmSessionGracePeriod = warmSessionGracePeriod
+        self.warmSessionGracePeriodAfterTTSPlayback = warmSessionGracePeriodAfterTTSPlayback
         configureIPC()
     }
 
@@ -139,7 +143,11 @@ final class KeyboardDictationController {
 
             if ipcManager.isSessionWarm() {
                 ipcManager.sendStartCommand()
-                scheduleWarmSessionGracePeriod()
+                scheduleWarmSessionGracePeriod(
+                    after: ipcManager.hadRecentTTSPlayback()
+                        ? warmSessionGracePeriodAfterTTSPlayback
+                        : warmSessionGracePeriod
+                )
             } else {
                 openContainingApp(startRecordingURL)
             }
@@ -152,7 +160,11 @@ final class KeyboardDictationController {
 
             if ipcManager.isSessionWarm() {
                 ipcManager.sendStartCommand()
-                scheduleWarmSessionGracePeriod()
+                scheduleWarmSessionGracePeriod(
+                    after: ipcManager.hadRecentTTSPlayback()
+                        ? warmSessionGracePeriodAfterTTSPlayback
+                        : warmSessionGracePeriod
+                )
             } else {
                 openContainingApp(startRecordingURL)
             }
@@ -219,9 +231,9 @@ final class KeyboardDictationController {
         cancelGracePeriod()
     }
 
-    private func scheduleWarmSessionGracePeriod() {
+    private func scheduleWarmSessionGracePeriod(after delay: TimeInterval) {
         cancelGracePeriod()
-        gracePeriodAction = scheduleAction(warmSessionGracePeriod) { [weak self] in
+        gracePeriodAction = scheduleAction(delay) { [weak self] in
             guard let self, self.state == .waitingForApp else { return }
             guard self.ipcManager.currentRecordingState() != .recording else { return }
             self.openContainingApp(self.startRecordingURL)

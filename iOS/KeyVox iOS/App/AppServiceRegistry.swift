@@ -125,6 +125,7 @@ final class AppServiceRegistry {
         let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)
         let ttsManager = TTSManager(
             settingsStore: settingsStore,
+            appHaptics: appHaptics,
             keyboardBridge: keyboardBridge,
             engine: ttsEngine,
             playbackCoordinator: ttsPlaybackCoordinator

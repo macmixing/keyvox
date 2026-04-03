@@ -20,6 +20,7 @@ final class TTSManager: ObservableObject {
     @Published private(set) var playbackPreparationPhase: PlaybackPreparationPhase = .preparing
 
     private let settingsStore: AppSettingsStore
+    private let appHaptics: AppHapticsEmitting
     private let keyboardBridge: KeyVoxKeyboardBridge
     private let engine: any TTSEngine
     private let playbackCoordinator: TTSPlaybackCoordinator
@@ -27,6 +28,7 @@ final class TTSManager: ObservableObject {
     private var hasStartedPlaybackForActiveRequest = false
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private var backgroundTaskReleaseTask: Task<Void, Never>?
+    var onWillTeardownPlayback: (() async -> Void)?
 
     var isActive: Bool {
         switch state {
@@ -39,17 +41,22 @@ final class TTSManager: ObservableObject {
 
     init(
         settingsStore: AppSettingsStore,
+        appHaptics: AppHapticsEmitting,
         keyboardBridge: KeyVoxKeyboardBridge,
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator
     ) {
         self.settingsStore = settingsStore
+        self.appHaptics = appHaptics
         self.keyboardBridge = keyboardBridge
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
 
         playbackCoordinator.onPlaybackStarted = { [weak self] in
             self?.handlePlaybackStarted()
+        }
+        playbackCoordinator.onPreparationCompleted = { [weak self] in
+            self?.handlePreparationCompleted()
         }
         playbackCoordinator.onPlaybackFinished = { [weak self] in
             self?.finishPlayback()
@@ -73,6 +80,7 @@ final class TTSManager: ObservableObject {
     }
 
     func handleAppDidBecomeActive() {
+        Self.log("handleAppDidBecomeActive state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid)")
         KeyVoxIPCBridge.touchHeartbeat()
         Task {
             await engine.prepareForForegroundSynthesis()
@@ -82,15 +90,24 @@ final class TTSManager: ObservableObject {
     }
 
     func handleAppWillResignActive() {
+        Self.log("handleAppWillResignActive state=\(state.rawValue) hasStartedPlayback=\(hasStartedPlaybackForActiveRequest)")
         guard isActive, hasStartedPlaybackForActiveRequest else { return }
         beginBackgroundTaskIfNeeded()
-        Task {
-            await engine.prepareForBackgroundContinuation()
+
+        let shouldPreserveForegroundSynthesisDuringTransition =
+            activeRequest?.sourceSurface == .keyboard && playbackPreparationPhase != .readyToReturn
+        if shouldPreserveForegroundSynthesisDuringTransition {
+            Self.log("Delaying background-safe synthesis switch until playback is ready to return.")
+        } else {
+            Task {
+                await engine.prepareForBackgroundContinuation()
+            }
         }
         playbackCoordinator.prepareForBackgroundTransition()
     }
 
     func handleAppDidEnterBackground() {
+        Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid)")
         dismissPlaybackPreparationView()
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.didEnterBackground()
@@ -140,6 +157,7 @@ final class TTSManager: ObservableObject {
         } else {
             dismissPlaybackPreparationView()
         }
+        playbackCoordinator.setPreparationCompletionDelay(enabled: showPreparationView)
         beginBackgroundTaskIfNeeded()
         await engine.prepareForForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
@@ -159,6 +177,10 @@ final class TTSManager: ObservableObject {
         }
     }
 
+    func setPlaybackAudioSessionMode(_ mode: TTSPlaybackCoordinator.AudioSessionMode) {
+        playbackCoordinator.setAudioSessionMode(mode)
+    }
+
     func stopPlayback() async {
         if let activeRequest {
             Self.log("Stop requested for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
@@ -166,31 +188,42 @@ final class TTSManager: ObservableObject {
             Self.log("Stop requested with no active request.")
         }
         playbackCoordinator.stop()
+        await onWillTeardownPlayback?()
         KeyVoxIPCBridge.clearTTSRequest()
         keyboardBridge.publishTTSStopped()
         clearActiveRequest()
     }
 
     private func finishPlayback() {
-        if let activeRequest {
-            Self.log("Playback finished for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
-        } else {
-            Self.log("Playback finished with no active request.")
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            if let activeRequest {
+                Self.log("Playback finished for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+            } else {
+                Self.log("Playback finished with no active request.")
+            }
+            await self.onWillTeardownPlayback?()
+            KeyVoxIPCBridge.markRecentTTSPlayback()
+            self.keyboardBridge.publishTTSFinished()
+            self.clearActiveRequest()
         }
-        keyboardBridge.publishTTSFinished()
-        clearActiveRequest()
     }
 
     private func handleError(_ message: String) {
-        if let activeRequest {
-            Self.log("Playback failed for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID) error=\(message)")
-        } else {
-            Self.log("Playback failed with no active request. error=\(message)")
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            if let activeRequest {
+                Self.log("Playback failed for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID) error=\(message)")
+            } else {
+                Self.log("Playback failed with no active request. error=\(message)")
+            }
+            self.lastErrorMessage = message
+            self.updateState(.error)
+            await self.onWillTeardownPlayback?()
+            KeyVoxIPCBridge.markRecentTTSPlayback()
+            self.keyboardBridge.publishTTSFailed(message: message)
+            self.clearActiveRequest(clearPublishedState: false)
         }
-        lastErrorMessage = message
-        updateState(.error)
-        keyboardBridge.publishTTSFailed(message: message)
-        clearActiveRequest(clearPublishedState: false)
     }
 
     private func updateState(_ newState: KeyVoxTTSState) {
@@ -215,6 +248,7 @@ final class TTSManager: ObservableObject {
         hasStartedPlaybackForActiveRequest = false
         KeyVoxIPCBridge.clearTTSRequest()
         dismissPlaybackPreparationView()
+        playbackCoordinator.setPreparationCompletionDelay(enabled: false)
         endBackgroundTaskIfNeeded()
 
         if clearPublishedState {
@@ -232,11 +266,13 @@ final class TTSManager: ObservableObject {
                 self?.endBackgroundTaskIfNeeded()
             }
         }
+        Self.log("beginBackgroundTask id=\(backgroundTaskID.rawValue)")
         scheduleBackgroundTaskRelease()
     }
 
     private func endBackgroundTaskIfNeeded() {
         guard backgroundTaskID != .invalid else { return }
+        Self.log("endBackgroundTask id=\(backgroundTaskID.rawValue)")
         backgroundTaskReleaseTask?.cancel()
         backgroundTaskReleaseTask = nil
         UIApplication.shared.endBackgroundTask(backgroundTaskID)
@@ -257,6 +293,17 @@ final class TTSManager: ObservableObject {
         }
         hasStartedPlaybackForActiveRequest = true
         updateState(.playing)
+        if isPlaybackPreparationViewPresented {
+            playbackPreparationProgress = 1
+            playbackPreparationPhase = .readyToReturn
+        }
+    }
+
+    private func handlePreparationCompleted() {
+        guard isPlaybackPreparationViewPresented else { return }
+        playbackPreparationProgress = 1
+        playbackPreparationPhase = .readyToReturn
+        appHaptics.success()
     }
 
     private func presentPlaybackPreparationView() {
@@ -281,7 +328,7 @@ final class TTSManager: ObservableObject {
 
         let normalized = min(1, max(0, Double(bufferedSamples) / Double(requiredSamples)))
         playbackPreparationProgress = max(playbackPreparationProgress, normalized)
-        if hasStartedPlayback, normalized >= 1 {
+        if hasStartedPlayback && playbackPreparationProgress >= 1 {
             playbackPreparationPhase = .readyToReturn
         }
     }

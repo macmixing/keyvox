@@ -4,6 +4,11 @@ import KeyVoxTTS
 
 @MainActor
 final class TTSPlaybackCoordinator {
+    enum AudioSessionMode {
+        case playback
+        case playbackWhilePreservingRecording
+    }
+
     private enum BufferPolicy {
         static let singleChunkStartBufferedSeconds: Double = 0.45
         static let multiChunkMinimumRunwaySeconds: Double = 1.2
@@ -11,6 +16,7 @@ final class TTSPlaybackCoordinator {
         static let conservativeBackgroundRealtimeFactor: Double = 0.58
         static let remainingWorkSafetyMarginSeconds: Double = 2.5
         static let maximumDeterministicRunwaySeconds: Double = 90.0
+        static let preparationCompletionDelaySeconds: Double = 0.18
     }
 
     private enum MeterPolicy {
@@ -23,6 +29,7 @@ final class TTSPlaybackCoordinator {
     var onPlaybackFinished: (() -> Void)?
     var onPlaybackCancelled: (() -> Void)?
     var onPlaybackFailed: ((Error) -> Void)?
+    var onPreparationCompleted: (() -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
     var onPlaybackMeterLevel: ((Float) -> Void)?
 
@@ -47,6 +54,8 @@ final class TTSPlaybackCoordinator {
     private var activeRequiredStartSampleCount = 0
     private var activeSilentStartSampleCount = 0
     private var scheduledMeterUpdates: [DispatchWorkItem] = []
+    private var audioSessionMode: AudioSessionMode = .playback
+    private var preparationCompletionDelaySeconds: Double = 0
 
     init() {
         audioEngine.attach(playerNode)
@@ -56,6 +65,15 @@ final class TTSPlaybackCoordinator {
     func prepareForForegroundPlayback() {
         isBackgroundTransitionArmed = false
         Self.log("Foreground playback mode armed.")
+    }
+
+    func setPreparationCompletionDelay(enabled: Bool) {
+        preparationCompletionDelaySeconds = enabled ? BufferPolicy.preparationCompletionDelaySeconds : 0
+    }
+
+    func setAudioSessionMode(_ mode: AudioSessionMode) {
+        audioSessionMode = mode
+        Self.log("Audio session mode set to \(String(describing: mode)).")
     }
 
     func prepareForBackgroundTransition() {
@@ -156,7 +174,7 @@ final class TTSPlaybackCoordinator {
             playerNode.stop()
         }
         audioEngine.stop()
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        deactivateAudioSessionIfNeeded()
 
         if emitCallback, hadPlayback {
             onPlaybackCancelled?()
@@ -165,7 +183,19 @@ final class TTSPlaybackCoordinator {
 
     private func configureAudioSession() throws {
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        switch audioSessionMode {
+        case .playback:
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try? session.overrideOutputAudioPort(.none)
+        case .playbackWhilePreservingRecording:
+            try session.setCategory(
+                .playAndRecord,
+                mode: .default,
+                options: [.defaultToSpeaker, .allowBluetoothHFP, .allowBluetoothA2DP]
+            )
+            let isUsingBuiltInReceiver = session.currentRoute.outputs.contains { $0.portType == .builtInReceiver }
+            try? session.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+        }
         try session.setActive(true)
     }
 
@@ -188,10 +218,11 @@ final class TTSPlaybackCoordinator {
 
             let requiredBufferedSamples = requiredStartSampleCount(for: frame.chunkCount)
             activeRequiredStartSampleCount = requiredBufferedSamples
-            activeSilentStartSampleCount = silentStartSampleCount(
+            let silentStartSampleCount = silentStartSampleCount(
                 for: frame.chunkCount,
                 remainingEstimatedSamples: frame.estimatedRemainingSampleCount
             )
+            activeSilentStartSampleCount = max(activeSilentStartSampleCount, silentStartSampleCount)
             let requiredBufferedSeconds = Double(requiredBufferedSamples) / playbackFormat.sampleRate
             let hasEnoughBufferedAudio = queuedSampleCount >= activeSilentStartSampleCount
             let hasObservedChunkRunway = frame.chunkCount == 1
@@ -243,8 +274,17 @@ final class TTSPlaybackCoordinator {
             playerNode.stop()
         }
         audioEngine.stop()
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        deactivateAudioSessionIfNeeded()
         onPlaybackFinished?()
+    }
+
+    private func deactivateAudioSessionIfNeeded() {
+        guard audioSessionMode == .playback else {
+            Self.log("Preserving active audio session after playback finish.")
+            return
+        }
+
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     private func handleFailure(_ error: Error) {
@@ -276,10 +316,27 @@ final class TTSPlaybackCoordinator {
         }
 
         didStartPlayback = true
-        playerNode.play()
-        onPreparationProgress?(activeSilentStartSampleCount, activeSilentStartSampleCount, true)
-        Self.log("Playback started with bufferedSamples=\(bufferedSamples) queuedBuffers=\(queuedBufferCount)")
-        onPlaybackStarted?()
+        onPreparationProgress?(activeSilentStartSampleCount, activeSilentStartSampleCount, false)
+        onPreparationCompleted?()
+
+        let startPlayback = { [weak self] in
+            guard let self else { return }
+            self.playerNode.play()
+            self.onPreparationProgress?(self.activeSilentStartSampleCount, self.activeSilentStartSampleCount, true)
+            Self.log("Playback started with bufferedSamples=\(bufferedSamples) queuedBuffers=\(self.queuedBufferCount)")
+            self.onPlaybackStarted?()
+        }
+
+        if preparationCompletionDelaySeconds > 0 {
+            Self.log(
+                "Preparation reached 100%; delaying playback start by \(String(format: "%.3f", preparationCompletionDelaySeconds))s"
+            )
+            DispatchQueue.main.asyncAfter(deadline: .now() + preparationCompletionDelaySeconds) {
+                startPlayback()
+            }
+        } else {
+            startPlayback()
+        }
     }
 
     private func scheduleBuffer(

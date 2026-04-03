@@ -54,6 +54,7 @@ enum KeyVoxIPCBridge {
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
+        static let recentTTSPlaybackTimestamp = "recentTTSPlayback_timestamp"
         static let ttsState = "ttsState"
         static let ttsStateTimestamp = "ttsState_timestamp"
         static let ttsErrorMessage = "ttsErrorMessage"
@@ -90,6 +91,7 @@ enum KeyVoxIPCBridge {
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
+    static let recentTTSWarmStartWindow: TimeInterval = 8
     
     private static var defaults: UserDefaults? {
         let d = UserDefaults(suiteName: appGroupID)
@@ -103,12 +105,15 @@ enum KeyVoxIPCBridge {
     
     static func setSessionActive() {
         let d = defaults
-        d?.set(Date().timeIntervalSince1970, forKey: Key.sessionTimestamp)
+        let timestamp = Date().timeIntervalSince1970
+        d?.set(timestamp, forKey: Key.sessionTimestamp)
+        NSLog("[KeyVoxIPCBridge] setSessionActive ts=%.3f", timestamp)
     }
 
     static func clearSessionActive() {
         let d = defaults
         d?.removeObject(forKey: Key.sessionTimestamp)
+        NSLog("[KeyVoxIPCBridge] clearSessionActive")
     }
     
     static func setRecordingState(_ state: String) {
@@ -153,6 +158,14 @@ enum KeyVoxIPCBridge {
         defaults?.removeObject(forKey: Key.ttsStateTimestamp)
         defaults?.removeObject(forKey: Key.ttsErrorMessage)
         clearTTSPlaybackMeter()
+    }
+
+    static func markRecentTTSPlayback() {
+        defaults?.set(Date().timeIntervalSince1970, forKey: Key.recentTTSPlaybackTimestamp)
+    }
+
+    static func clearRecentTTSPlayback() {
+        defaults?.removeObject(forKey: Key.recentTTSPlaybackTimestamp)
     }
 
     static func writeTTSRequest(_ request: KeyVoxTTSRequest, fileManager: FileManager = .default) {
@@ -317,6 +330,14 @@ enum KeyVoxIPCBridge {
         }
 
         return Date().timeIntervalSince1970 - timestamp
+    }
+
+    static func hadRecentTTSPlayback() -> Bool {
+        guard let timestamp = defaults?.object(forKey: Key.recentTTSPlaybackTimestamp) as? TimeInterval else {
+            return false
+        }
+
+        return Date().timeIntervalSince1970 - timestamp < recentTTSWarmStartWindow
     }
 
     static func currentTTSErrorMessage() -> String? {
