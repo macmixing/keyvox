@@ -14,6 +14,9 @@ final class AppServiceRegistry {
     let whisperService: WhisperService
     let parakeetService: ParakeetService
     let activeProviderRouter: SwitchableDictationProvider
+    let ttsManager: TTSManager
+    let pocketTTSModelManager: PocketTTSModelManager
+    let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
@@ -117,6 +120,19 @@ final class AppServiceRegistry {
             sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
         )
+        let ttsPlaybackCoordinator = TTSPlaybackCoordinator()
+        let ttsEngine = PocketTTSEngine(fileManager: fileManager)
+        let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)
+        let ttsManager = TTSManager(
+            settingsStore: settingsStore,
+            keyboardBridge: keyboardBridge,
+            engine: ttsEngine,
+            playbackCoordinator: ttsPlaybackCoordinator
+        )
+        let audioModeCoordinator = AudioModeCoordinator(
+            transcriptionManager: transcriptionManager,
+            ttsManager: ttsManager
+        )
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
             dictionaryStore: dictionaryStore,
@@ -138,7 +154,7 @@ final class AppServiceRegistry {
                 .eraseToAnyPublisher()
         )
         keyboardBridge.onStartRecordingCommand = {
-            transcriptionManager.handleStartRecordingCommand()
+            audioModeCoordinator.handleStartRecordingCommand()
         }
         keyboardBridge.onStopRecordingCommand = {
             transcriptionManager.handleStopRecordingCommand()
@@ -148,6 +164,12 @@ final class AppServiceRegistry {
         }
         keyboardBridge.onDisableSessionCommand = {
             transcriptionManager.handleDisableSessionCommand()
+        }
+        keyboardBridge.onStartTTSCommand = {
+            audioModeCoordinator.handleStartTTSFromPendingRequest()
+        }
+        keyboardBridge.onStopTTSCommand = {
+            audioModeCoordinator.handleStopTTS()
         }
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
@@ -169,6 +191,9 @@ final class AppServiceRegistry {
         self.whisperService = whisperService
         self.parakeetService = parakeetService
         self.activeProviderRouter = activeProviderRouter
+        self.ttsManager = ttsManager
+        self.pocketTTSModelManager = pocketTTSModelManager
+        self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
@@ -176,7 +201,11 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
-        self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
+        self.urlRouter = KeyVoxURLRouter(
+            transcriptionManager: transcriptionManager,
+            ttsManager: ttsManager,
+            audioModeCoordinator: audioModeCoordinator
+        )
 
         settingsStore.$activeDictationProvider
             .removeDuplicates()

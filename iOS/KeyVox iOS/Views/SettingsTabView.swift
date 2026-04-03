@@ -4,6 +4,7 @@ import StoreKit
 struct SettingsTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
+    @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var settingsStore: AppSettingsStore
     
     private var appVersionBuildText: String? {
@@ -25,6 +26,7 @@ struct SettingsTabView: View {
                 sessionSection
                 keyboardSection
                 audioSection
+                ttsSection
                 activeModelSection
                 rateAndReviewSection
                 supportSection
@@ -33,6 +35,7 @@ struct SettingsTabView: View {
         }
         .task {
             modelManager.refreshStatus()
+            pocketTTSModelManager.refreshStatus()
         }
     }
 
@@ -119,6 +122,126 @@ struct SettingsTabView: View {
                     : "KeyVox will use the currently connected input device.",
                 isOn: $settingsStore.preferBuiltInMicrophone
             )
+        }
+    }
+
+    @ViewBuilder
+    private var ttsSection: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.accent.opacity(0.4))
+                            .frame(width: 32, height: 32)
+
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.yellow)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Playback Voice")
+                            .font(.appFont(18))
+                            .foregroundStyle(.white)
+
+                        Text(settingsStore.ttsVoice.displayName)
+                            .font(.appFont(17))
+                            .foregroundStyle(.yellow)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Menu {
+                        Picker("", selection: $settingsStore.ttsVoice) {
+                            ForEach(AppSettingsStore.TTSVoice.allCases) { voice in
+                                Text(voice.displayName).tag(voice)
+                            }
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        Text("Change")
+                            .font(.appFont(16))
+                            .foregroundColor(.yellow)
+                    }
+                    .padding(.top, 2)
+                }
+
+                Text("Choose the voice KeyVox uses when reading copied text aloud.")
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+
+                Divider()
+                    .background(.white.opacity(0.4))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .center, spacing: 12) {
+                        Text("PocketTTS CoreML")
+                            .font(.appFont(17))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        ttsActionButton
+                    }
+
+                    Text(ttsModelStatusText)
+                        .font(.appFont(14, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+
+                    if case .failed(let message) = pocketTTSModelManager.installState {
+                        Text(message)
+                            .font(.appFont(12))
+                            .foregroundStyle(.red)
+                    }
+
+                    switch pocketTTSModelManager.installState {
+                    case .downloading(let progress), .installing(let progress):
+                        ModelDownloadProgress(progress: progress, showLabel: false)
+                    case .notInstalled, .ready, .failed:
+                        EmptyView()
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var ttsActionButton: some View {
+        switch pocketTTSModelManager.installState {
+        case .notInstalled:
+            AppActionButton(
+                title: "Install",
+                style: .primary,
+                size: .compact,
+                fontSize: 15,
+                action: { pocketTTSModelManager.downloadModel() }
+            )
+        case .ready:
+            AppActionButton(
+                title: "Remove",
+                style: .destructive,
+                size: .compact,
+                fontSize: 15,
+                action: { pocketTTSModelManager.deleteModel() }
+            )
+        case .failed:
+            AppActionButton(
+                title: "Repair",
+                style: .primary,
+                size: .compact,
+                fontSize: 15,
+                action: { pocketTTSModelManager.repairModelIfNeeded() }
+            )
+        case .downloading, .installing:
+            EmptyView()
+        }
+    }
+
+    private var ttsModelStatusText: String {
+        switch pocketTTSModelManager.installState {
+        case .notInstalled:
+            return "Not installed (~643 MB)"
+        case .downloading, .installing, .ready, .failed:
+            return pocketTTSModelManager.installState.statusText
         }
     }
 
@@ -231,5 +354,6 @@ struct SettingsTabView: View {
 #Preview {
     SettingsTabView()
         .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

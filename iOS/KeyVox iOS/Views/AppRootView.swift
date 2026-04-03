@@ -4,6 +4,7 @@ struct AppRootView: View {
     private enum RootDestination: Equatable {
         case launchHold
         case returnToHost
+        case playbackPreparation
         case onboarding
         case main
     }
@@ -16,6 +17,7 @@ struct AppRootView: View {
     @EnvironmentObject private var appLaunchRouteStore: AppLaunchRouteStore
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
+    @EnvironmentObject private var ttsManager: TTSManager
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
     @State private var onboardingOverlayOpacity = 1.0
@@ -23,6 +25,11 @@ struct AppRootView: View {
     private var destination: RootDestination {
         if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
             return .launchHold
+        }
+
+        if ttsManager.isPlaybackPreparationViewPresented
+            || appLaunchRouteStore.initialURLRoute == .startTTS {
+            return .playbackPreparation
         }
 
         if !onboardingStore.shouldSuppressReturnToHostView
@@ -53,6 +60,9 @@ struct AppRootView: View {
                         .transition(rootTransition)
                 case .returnToHost:
                     ReturnToHostView()
+                        .transition(rootTransition)
+                case .playbackPreparation:
+                    PlaybackPreparationView()
                         .transition(rootTransition)
                 case .onboarding, .main:
                     EmptyView()
@@ -102,12 +112,15 @@ struct AppRootView: View {
         previousDestination == .launchHold
             && (destination == .onboarding || destination == .main)
     }
+
 }
 
 #Preview {
     AppRootView()
         .environmentObject(AppLaunchRouteStore.shared)
+        .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)

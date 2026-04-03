@@ -13,6 +13,37 @@ struct KeyVoxIPCLiveMeterSnapshot: Equatable {
     let timestamp: TimeInterval
 }
 
+enum KeyVoxTTSState: String, Codable, Equatable {
+    case idle
+    case preparing
+    case generating
+    case playing
+    case finished
+    case error
+}
+
+enum KeyVoxTTSRequestSourceSurface: String, Codable, Equatable {
+    case keyboard
+    case app
+}
+
+enum KeyVoxTTSRequestKind: String, Codable, Equatable {
+    case speakClipboardText
+}
+
+struct KeyVoxTTSRequest: Codable, Equatable {
+    let id: UUID
+    let text: String
+    let createdAt: TimeInterval
+    let sourceSurface: KeyVoxTTSRequestSourceSurface
+    let voiceID: String
+    let kind: KeyVoxTTSRequestKind
+
+    var trimmedText: String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
 enum KeyVoxIPCBridge {
     static let appGroupID = "group.com.cueit.keyvox"
     static let keyboardBundleIdentifier = "com.cueit.keyvox.ios.keyboard"
@@ -23,6 +54,9 @@ enum KeyVoxIPCBridge {
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
         static let sessionTimestamp = "session_timestamp"
+        static let ttsState = "ttsState"
+        static let ttsStateTimestamp = "ttsState_timestamp"
+        static let ttsErrorMessage = "ttsErrorMessage"
         static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
@@ -44,6 +78,12 @@ enum KeyVoxIPCBridge {
         static let transcribingStarted = "com.cueit.keyvox.transcribingStarted"
         static let transcriptionReady = "com.cueit.keyvox.transcriptionReady"
         static let noSpeech = "com.cueit.keyvox.noSpeech"
+        static let startTTS = "com.cueit.keyvox.startTTS"
+        static let stopTTS = "com.cueit.keyvox.stopTTS"
+        static let ttsPreparing = "com.cueit.keyvox.ttsPreparing"
+        static let ttsPlaying = "com.cueit.keyvox.ttsPlaying"
+        static let ttsFinished = "com.cueit.keyvox.ttsFinished"
+        static let ttsFailed = "com.cueit.keyvox.ttsFailed"
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
@@ -94,6 +134,49 @@ enum KeyVoxIPCBridge {
         clearLiveMeter()
     }
 
+    static func setTTSState(_ state: KeyVoxTTSState, errorMessage: String? = nil) {
+        defaults?.set(state.rawValue, forKey: Key.ttsState)
+        defaults?.set(Date().timeIntervalSince1970, forKey: Key.ttsStateTimestamp)
+
+        if let errorMessage, !errorMessage.isEmpty {
+            defaults?.set(errorMessage, forKey: Key.ttsErrorMessage)
+        } else {
+            defaults?.removeObject(forKey: Key.ttsErrorMessage)
+        }
+    }
+
+    static func clearTTSState() {
+        defaults?.removeObject(forKey: Key.ttsState)
+        defaults?.removeObject(forKey: Key.ttsStateTimestamp)
+        defaults?.removeObject(forKey: Key.ttsErrorMessage)
+    }
+
+    static func writeTTSRequest(_ request: KeyVoxTTSRequest, fileManager: FileManager = .default) {
+        guard let requestURL = ttsRequestURL(fileManager: fileManager) else { return }
+        try? fileManager.createDirectory(
+            at: requestURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        guard let data = try? JSONEncoder().encode(request) else { return }
+        try? data.write(to: requestURL, options: .atomic)
+    }
+
+    static func readTTSRequest(fileManager: FileManager = .default) -> KeyVoxTTSRequest? {
+        guard let requestURL = ttsRequestURL(fileManager: fileManager),
+              let data = try? Data(contentsOf: requestURL) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(KeyVoxTTSRequest.self, from: data)
+    }
+
+    static func clearTTSRequest(fileManager: FileManager = .default) {
+        guard let requestURL = ttsRequestURL(fileManager: fileManager) else { return }
+        try? fileManager.removeItem(at: requestURL)
+    }
+
     static func writeLiveMeter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState) {
         guard let url = liveMeterFileURL() else { return }
 
@@ -119,6 +202,16 @@ enum KeyVoxIPCBridge {
     }
     
     private static var lastHeartbeatUpdateTime: TimeInterval = 0
+
+    private static func ttsRequestURL(fileManager: FileManager) -> URL? {
+        guard let containerURL = fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            return nil
+        }
+
+        return containerURL
+            .appendingPathComponent("TTS", isDirectory: true)
+            .appendingPathComponent("request.json", isDirectory: false)
+    }
     
     static func touchHeartbeat() {
         let now = Date().timeIntervalSince1970
@@ -175,6 +268,27 @@ enum KeyVoxIPCBridge {
         let d = defaults
         
         return d?.string(forKey: Key.transcription)
+    }
+
+    static func currentTTSState() -> KeyVoxTTSState {
+        guard let rawValue = defaults?.string(forKey: Key.ttsState),
+              let state = KeyVoxTTSState(rawValue: rawValue) else {
+            return .idle
+        }
+
+        return state
+    }
+
+    static func currentTTSStateAge() -> TimeInterval? {
+        guard let timestamp = defaults?.object(forKey: Key.ttsStateTimestamp) as? TimeInterval else {
+            return nil
+        }
+
+        return Date().timeIntervalSince1970 - timestamp
+    }
+
+    static func currentTTSErrorMessage() -> String? {
+        defaults?.string(forKey: Key.ttsErrorMessage)
     }
 
     static func keyboardOnboardingAccessTimestamp() -> TimeInterval? {

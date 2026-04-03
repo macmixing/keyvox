@@ -5,6 +5,7 @@ enum KeyboardState: Equatable {
     case waitingForApp
     case recording
     case transcribing
+    case speaking
 
     var indicatorPhase: AudioIndicatorPhase {
         switch self {
@@ -16,12 +17,14 @@ enum KeyboardState: Equatable {
             return .listening
         case .transcribing:
             return .processing
+        case .speaking:
+            return .speaking
         }
     }
 
     var isIndicatorEnabled: Bool {
         switch self {
-        case .idle, .recording, .transcribing:
+        case .idle, .recording, .transcribing, .speaking:
             return true
         case .waitingForApp:
             return false
@@ -32,7 +35,7 @@ enum KeyboardState: Equatable {
         switch self {
         case .idle:
             return false
-        case .waitingForApp, .recording, .transcribing:
+        case .waitingForApp, .recording, .transcribing, .speaking:
             return true
         }
     }

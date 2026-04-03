@@ -35,15 +35,15 @@ protocol KeyboardDictationIPCManaging: AnyObject {
 
 extension KeyboardIPCManager: KeyboardDictationIPCManaging {
     func currentRecordingState() -> KeyboardState {
-        currentSharedRecordingState().keyboardState
+        currentKeyboardState()
     }
 
     func reconciledRecordingStateIfNeeded() -> KeyboardState {
-        reconcileStaleSharedStateIfNeeded().keyboardState
+        reconcileKeyboardStateIfNeeded()
     }
 }
 
-private extension KeyboardIPCManager.SharedRecordingState {
+extension KeyboardIPCManager.SharedRecordingState {
     var keyboardState: KeyboardState {
         switch self {
         case .idle:
@@ -146,6 +146,16 @@ final class KeyboardDictationController {
         case .recording:
             state = .transcribing
             ipcManager.sendStopCommand()
+        case .speaking:
+            state = .waitingForApp
+            scheduleWaitingTimeout()
+
+            if ipcManager.isSessionWarm() {
+                ipcManager.sendStartCommand()
+                scheduleWarmSessionGracePeriod()
+            } else {
+                openContainingApp(startRecordingURL)
+            }
         case .waitingForApp, .transcribing:
             break
         }

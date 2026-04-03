@@ -5,6 +5,7 @@ enum AudioIndicatorPhase: Equatable {
     case waiting
     case listening
     case processing
+    case speaking
 }
 
 enum AudioIndicatorSignalState: Equatable {

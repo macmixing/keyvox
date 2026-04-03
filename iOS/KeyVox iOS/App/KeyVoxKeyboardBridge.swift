@@ -8,6 +8,8 @@ final class KeyVoxKeyboardBridge {
     var onStopRecordingCommand: (() -> Void)?
     var onCancelRecordingCommand: (() -> Void)?
     var onDisableSessionCommand: (() -> Void)?
+    var onStartTTSCommand: (() -> Void)?
+    var onStopTTSCommand: (() -> Void)?
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
@@ -20,8 +22,11 @@ final class KeyVoxKeyboardBridge {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.cancelRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.disableSession)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.startTTS)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopTTS)
         
         touchHeartbeat()
+        startHeartbeatTimer()
     }
 
     func unregisterObservers() {
@@ -30,6 +35,8 @@ final class KeyVoxKeyboardBridge {
 
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
+        heartbeatTimer?.invalidate()
+        heartbeatTimer = nil
     }
 
     func publishRecordingStarted() {
@@ -70,6 +77,40 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
+    func publishTTSPreparing() {
+        KeyVoxIPCBridge.setTTSState(.preparing)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPreparing)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSPlaying() {
+        KeyVoxIPCBridge.setTTSState(.playing)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPlaying)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSFinished() {
+        KeyVoxIPCBridge.setTTSState(.finished)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
+        KeyVoxIPCBridge.touchHeartbeat()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            KeyVoxIPCBridge.clearTTSState()
+        }
+    }
+
+    func publishTTSFailed(message: String?) {
+        KeyVoxIPCBridge.setTTSState(.error, errorMessage: message)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFailed)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSStopped() {
+        KeyVoxIPCBridge.clearTTSState()
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
     func publishLiveMeter(level: Float, signalState: LiveInputSignalState) {
         KeyVoxIPCBridge.writeLiveMeter(level: level, signalState: signalState.ipcSignalState)
     }
@@ -107,9 +148,20 @@ final class KeyVoxKeyboardBridge {
                 self.onCancelRecordingCommand?()
             case KeyVoxIPCBridge.Notification.disableSession:
                 self.onDisableSessionCommand?()
+            case KeyVoxIPCBridge.Notification.startTTS:
+                self.onStartTTSCommand?()
+            case KeyVoxIPCBridge.Notification.stopTTS:
+                self.onStopTTSCommand?()
             default:
                 break
             }
+        }
+    }
+
+    private func startHeartbeatTimer() {
+        heartbeatTimer?.invalidate()
+        heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            self?.touchHeartbeat()
         }
     }
 

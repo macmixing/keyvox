@@ -133,6 +133,32 @@ nonisolated enum SharedPaths {
             .appendingPathComponent("pending-interrupted-capture.plist")
     }
 
+    static func ttsDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        containerURL(fileManager: fileManager)?
+            .appendingPathComponent("TTS", isDirectory: true)
+    }
+
+    static func pocketTTSRootDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("tts", isDirectory: true)
+            .appendingPathComponent("pockettts", isDirectory: true)
+    }
+
+    static func pocketTTSModelDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        pocketTTSRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("Model", isDirectory: true)
+    }
+
+    static func pocketTTSVoiceDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        pocketTTSRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("Voices", isDirectory: true)
+    }
+
+    static func ttsRequestURL(fileManager: FileManager = .default) -> URL? {
+        ttsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("request.json", isDirectory: false)
+    }
+
     static func fallbackBaseDirectoryURL(fileManager: FileManager = .default) -> URL {
         let appSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory

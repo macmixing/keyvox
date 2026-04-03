@@ -7,7 +7,10 @@ struct KeyVoxApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var appLaunchRouteStore: AppLaunchRouteStore
+    @StateObject private var audioModeCoordinator: AudioModeCoordinator
     @StateObject private var transcriptionManager: TranscriptionManager
+    @StateObject private var ttsManager: TTSManager
+    @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
@@ -19,7 +22,10 @@ struct KeyVoxApp: App {
     init() {
         let services = AppServiceRegistry.shared
         _appLaunchRouteStore = StateObject(wrappedValue: AppLaunchRouteStore.shared)
+        _audioModeCoordinator = StateObject(wrappedValue: services.audioModeCoordinator)
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
+        _ttsManager = StateObject(wrappedValue: services.ttsManager)
+        _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
@@ -52,7 +58,10 @@ struct KeyVoxApp: App {
             AppRootView()
                 .environment(\.appHaptics, appHaptics)
                 .environmentObject(appLaunchRouteStore)
+                .environmentObject(audioModeCoordinator)
                 .environmentObject(transcriptionManager)
+                .environmentObject(ttsManager)
+                .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)
@@ -65,16 +74,20 @@ struct KeyVoxApp: App {
                             handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
+                        ttsManager.handleAppDidBecomeActive()
+                        pocketTTSModelManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
+                        ttsManager.handleAppDidEnterBackground()
+                        pocketTTSModelManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()
                         onboardingStore.handleAppDidEnterBackground()
                     case .inactive:
-                        break
+                        ttsManager.handleAppWillResignActive()
                     @unknown default:
                         break
                     }
@@ -98,6 +111,15 @@ struct KeyVoxApp: App {
             transaction.disablesAnimations = true
             withTransaction(transaction) {
                 transcriptionManager.isReturnToHostViewPresented = true
+            }
+            appLaunchRouteStore.clearInitialPresentationRoute()
+        }
+
+        if route == .startTTS, shouldPresentReturnToHost {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                ttsManager.isPlaybackPreparationViewPresented = true
             }
             appLaunchRouteStore.clearInitialPresentationRoute()
         }

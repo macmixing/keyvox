@@ -30,6 +30,22 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
 
 @MainActor
 final class AppSettingsStore: ObservableObject {
+    enum TTSVoice: String, CaseIterable, Identifiable, Codable {
+        case azelma
+        case javert
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .azelma:
+                return "Azelma"
+            case .javert:
+                return "Javert"
+            }
+        }
+    }
+
     enum ActiveDictationProvider: String, CaseIterable, Identifiable {
         case whisper
         case parakeet
@@ -136,6 +152,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var ttsVoice: TTSVoice {
+        didSet {
+            defaults.set(ttsVoice.rawValue, forKey: UserDefaultsKeys.ttsVoice)
+        }
+    }
+
     @Published var activeDictationProvider: ActiveDictationProvider {
         didSet {
             defaults.set(activeDictationProvider.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
@@ -165,6 +187,13 @@ final class AppSettingsStore: ObservableObject {
             sessionDisableTiming = timing
         } else {
             sessionDisableTiming = .fiveMinutes
+        }
+
+        if let raw = defaults.string(forKey: UserDefaultsKeys.ttsVoice),
+           let voice = TTSVoice(rawValue: raw) {
+            ttsVoice = voice
+        } else {
+            ttsVoice = .azelma
         }
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),

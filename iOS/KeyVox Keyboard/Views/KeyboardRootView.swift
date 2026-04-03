@@ -9,6 +9,7 @@ final class KeyboardRootView: UIView {
 
     let cancelButton = KeyboardCancelButton()
     let capsLockButton = KeyboardCapsLockButton()
+    let speakButton = KeyboardSpeakButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
     let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
@@ -130,6 +131,10 @@ final class KeyboardRootView: UIView {
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar
+        speakButton.isSpeaking = state == .speaking
+        speakButton.isTrackpadModeActive = isTrackpadModeActive
+        speakButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
+        speakButton.isHidden = !showsBrandedToolbar
 
         // Keep the toolbar row containers visible even when the toolbar content is hidden.
         // Hiding the arranged containers causes the top row to collapse and the key grid to
@@ -161,7 +166,9 @@ final class KeyboardRootView: UIView {
         cancelButton.isHidden = true
         cancelButton.alpha = 1
         cancelButton.transform = .identity
+        speakButton.isHidden = true
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
+        speakButton.translatesAutoresizingMaskIntoConstraints = false
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -210,6 +217,7 @@ final class KeyboardRootView: UIView {
         mainStack.clipsToBounds = false
 
         addSubview(mainStack)
+        addSubview(speakButton)
 
         addSubview(fullAccessWarningContainer)
         
@@ -315,6 +323,7 @@ final class KeyboardRootView: UIView {
             topRowAccessoryLayoutGeometry = KeyboardLayoutGeometry.TopRowAccessoryLayout(
                 cancelButton: cancelButton,
                 capsLockButton: capsLockButton,
+                speakButton: speakButton,
                 keyGridView: keyGridView,
                 cancelButtonLeadingConstraint: cancelButtonLeadingConstraint,
                 capsLockButtonTrailingConstraint: capsLockButtonTrailingConstraint,

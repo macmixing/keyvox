@@ -65,6 +65,16 @@
 		8ED2E87B2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
 		8ED2E87C2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
 		8ED2E87D2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
+		8ED2F10A2F7F4F1C00256F9E /* KeyVoxTTS in Frameworks */ = {isa = PBXBuildFile; productRef = 8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */; };
+		8ED2F1112F7F4F1C00256F9E /* AudioModeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */; };
+		8ED2F1122F7F4F1C00256F9E /* PocketTTSAssetLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */; };
+		8ED2F1132F7F4F1C00256F9E /* PocketTTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */; };
+		8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */; };
+		8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */; };
+		8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */; };
+		8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */; };
+		8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */; };
+		8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */; };
 		8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */; };
 		8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */; };
 		8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */; };
@@ -133,6 +143,7 @@
 		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
 		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
 		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
+		C10000012FF1000100AA0001 /* PlaybackPreparationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -217,6 +228,15 @@
 		8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedPaths.swift; sourceTree = "<group>"; };
 		8E9E38E22F5C104200EAFA72 /* DictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationService.swift; sourceTree = "<group>"; };
 		8ED2E8792F7ACFA900256F9E /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
+		8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioModeCoordinator.swift; sourceTree = "<group>"; };
+		8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSAssetLocator.swift; sourceTree = "<group>"; };
+		8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSEngine.swift; sourceTree = "<group>"; };
+		8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSEngine.swift; sourceTree = "<group>"; };
+		8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSManager.swift; sourceTree = "<group>"; };
+		8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSPlaybackCoordinator.swift; sourceTree = "<group>"; };
+		8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSInstallManifest.swift; sourceTree = "<group>"; };
+		8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelCatalog.swift; sourceTree = "<group>"; };
+		8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelManager.swift; sourceTree = "<group>"; };
 		8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolbarContent.swift; sourceTree = "<group>"; };
 		8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTranscriptionCardView.swift; sourceTree = "<group>"; };
@@ -281,6 +301,7 @@
 		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
 		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
 		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
+		C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPreparationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -399,6 +420,7 @@
 			files = (
 				9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */,
 				8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */,
+				8ED2F10A2F7F4F1C00256F9E /* KeyVoxTTS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,6 +534,7 @@
 			children = (
 				8EECEA652F655FB900BECF17 /* ModelDownloader */,
 				8E9E38CB2F5C004200EAFA72 /* Audio */,
+				8ED2F1002F7F4F1C00256F9E /* TTS */,
 				8E9E38CD2F5C004200EAFA72 /* Transcription */,
 			);
 			path = Core;
@@ -526,6 +549,7 @@
 				AA20000C2F70000100000001 /* ContainingAppTab.swift */,
 				8E25464E2F6013ED007E720D /* DictionaryTabView.swift */,
 				8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */,
+				C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */,
 				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
 				8E2546502F6013ED007E720D /* MainTabView.swift */,
 				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
@@ -560,6 +584,22 @@
 				9C7001022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		8ED2F1002F7F4F1C00256F9E /* TTS */ = {
+			isa = PBXGroup;
+			children = (
+				8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */,
+				8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */,
+				8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */,
+				8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */,
+				8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */,
+				8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */,
+				8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */,
+				8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */,
+				8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */,
+			);
+			path = TTS;
 			sourceTree = "<group>";
 		};
 		8EECEA652F655FB900BECF17 /* ModelDownloader */ = {
@@ -720,6 +760,7 @@
 			name = "KeyVox iOS";
 			packageProductDependencies = (
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
+				8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */,
 				9A7000022FA6000100AA0001 /* ZIPFoundation */,
 			);
 			productName = KeyVox;
@@ -786,6 +827,7 @@
 			packageReferences = (
 				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8E9E38532F5BF1F000EAFA72 /* Products */;
@@ -904,6 +946,15 @@
 				8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */,
 				B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */,
 				B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */,
+				8ED2F1112F7F4F1C00256F9E /* AudioModeCoordinator.swift in Sources */,
+				8ED2F1122F7F4F1C00256F9E /* PocketTTSAssetLocator.swift in Sources */,
+				8ED2F1132F7F4F1C00256F9E /* PocketTTSEngine.swift in Sources */,
+				8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */,
+				8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */,
+				8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */,
+				8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */,
+				8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */,
+				8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */,
 				AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */,
 				AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */,
 				AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */,
@@ -915,6 +966,7 @@
 				9B7000152FB1000100BB0001 /* CloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */,
 				8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */,
+				C10000012FF1000100AA0001 /* PlaybackPreparationView.swift in Sources */,
 				A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */,
 				A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */,
 				A13000012FD2000100EE0001 /* AppDelegate.swift in Sources */,
@@ -1463,6 +1515,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
 		};
+		8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTTS;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1480,6 +1536,11 @@
 		8E9E38952F5BF56600EAFA72 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
+		};
+		8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */;
+			productName = KeyVoxTTS;
 		};
 		9A7000022FA6000100AA0001 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
