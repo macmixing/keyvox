@@ -136,7 +136,10 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.writeLiveMeter(level: level, signalState: signalState.ipcSignalState)
     }
 
-    func touchHeartbeat() {
+    func touchHeartbeat(sessionHasBluetoothAudioRoute: Bool? = nil) {
+        if let sessionHasBluetoothAudioRoute {
+            KeyVoxIPCBridge.setSessionHasBluetoothAudioRoute(sessionHasBluetoothAudioRoute)
+        }
         KeyVoxIPCBridge.touchHeartbeat()
     }
 

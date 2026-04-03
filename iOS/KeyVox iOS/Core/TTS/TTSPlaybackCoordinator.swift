@@ -16,7 +16,7 @@ final class TTSPlaybackCoordinator {
         static let conservativeBackgroundRealtimeFactor: Double = 0.58
         static let remainingWorkSafetyMarginSeconds: Double = 2.5
         static let maximumDeterministicRunwaySeconds: Double = 90.0
-        static let preparationCompletionDelaySeconds: Double = 0.18
+        static let preparationCompletionDelaySeconds: Double = 0.5
     }
 
     private enum MeterPolicy {

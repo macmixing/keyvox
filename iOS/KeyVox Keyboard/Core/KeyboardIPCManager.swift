@@ -134,6 +134,10 @@ final class KeyboardIPCManager {
         return KeyVoxIPCBridge.isSessionWarm()
     }
 
+    func hasBluetoothAudioRoute() -> Bool {
+        KeyVoxIPCBridge.sessionHasBluetoothAudioRoute()
+    }
+
     func hadRecentTTSPlayback() -> Bool {
         KeyVoxIPCBridge.hadRecentTTSPlayback()
     }

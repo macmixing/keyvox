@@ -1,3 +1,4 @@
+import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
@@ -83,8 +84,13 @@ final class AppServiceRegistry {
             }
         )
         
-        recorder.heartbeatCallback = { [weak keyboardBridge] in
-            keyboardBridge?.touchHeartbeat()
+        recorder.heartbeatCallback = { [weak keyboardBridge, weak recorder] in
+            let hasBluetoothAudioRoute = recorder?.audioSession.currentRoute.inputs.contains(where: {
+                $0.portType == .bluetoothHFP || $0.portType == .bluetoothLE
+            }) == true || recorder?.audioSession.currentRoute.outputs.contains(where: {
+                $0.portType == .bluetoothA2DP || $0.portType == .bluetoothHFP || $0.portType == .bluetoothLE
+            }) == true
+            keyboardBridge?.touchHeartbeat(sessionHasBluetoothAudioRoute: hasBluetoothAudioRoute)
         }
         recorder.liveMeterUpdateHandler = { [weak keyboardBridge] level, signalState in
             keyboardBridge?.publishLiveMeter(level: level, signalState: signalState)
