@@ -32,11 +32,21 @@ struct PocketTTSAssetLocator {
 
     func isSharedModelInstalled() -> Bool {
         guard let layout = assetLayout(),
-              let manifestURL = sharedModelManifestURL(),
-              fileManager.fileExists(atPath: manifestURL.path),
-              let manifest = readManifest(from: manifestURL),
-              manifest.version == PocketTTSInstallManifest.currentVersion else {
-            log("Shared install validation failed before file checks.")
+              let manifestURL = sharedModelManifestURL() else {
+            return false
+        }
+
+        guard fileManager.fileExists(atPath: manifestURL.path) else {
+            return false
+        }
+
+        guard let manifest = readManifest(from: manifestURL) else {
+            log("Shared install manifest is unreadable.")
+            return false
+        }
+
+        guard manifest.version == PocketTTSInstallManifest.currentVersion else {
+            log("Shared install manifest version \(manifest.version) is unsupported.")
             return false
         }
 
@@ -87,11 +97,21 @@ struct PocketTTSAssetLocator {
 
     func isVoiceInstalled(_ voice: AppSettingsStore.TTSVoice) -> Bool {
         guard let layout = assetLayout(),
-              let manifestURL = voiceManifestURL(for: voice),
-              fileManager.fileExists(atPath: manifestURL.path),
-              let manifest = readManifest(from: manifestURL),
-              manifest.version == PocketTTSInstallManifest.currentVersion else {
-            log("Voice install validation failed before file checks for \(voice.rawValue).")
+              let manifestURL = voiceManifestURL(for: voice) else {
+            return false
+        }
+
+        guard fileManager.fileExists(atPath: manifestURL.path) else {
+            return false
+        }
+
+        guard let manifest = readManifest(from: manifestURL) else {
+            log("Voice install manifest is unreadable for \(voice.rawValue).")
+            return false
+        }
+
+        guard manifest.version == PocketTTSInstallManifest.currentVersion else {
+            log("Voice install manifest version \(manifest.version) is unsupported for \(voice.rawValue).")
             return false
         }
 
