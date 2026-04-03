@@ -382,6 +382,10 @@ final class TTSPlaybackCoordinator {
 
     private func silentStartSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
         let minimumReturnRunwaySamples = Int(playbackFormat.sampleRate * BufferPolicy.returnToHostRunwaySeconds)
+        if remainingEstimatedSamples <= minimumReturnRunwaySamples {
+            return max(requiredStartSampleCount(for: chunkCount), remainingEstimatedSamples)
+        }
+
         let realtimeFactor = BufferPolicy.conservativeBackgroundRealtimeFactor
         let deficitFactor = max(0, (1.0 / realtimeFactor) - 1.0)
         let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
