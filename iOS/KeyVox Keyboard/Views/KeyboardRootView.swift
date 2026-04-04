@@ -129,26 +129,35 @@ final class KeyboardRootView: UIView {
 
         if shouldShowSpeak != speakButtonVisibilityTarget {
             speakButtonVisibilityTarget = shouldShowSpeak
-            speakButton.layer.removeAllAnimations()
-
-            if shouldShowSpeak {
-                speakButton.alpha = 0
-                speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                speakButton.isHidden = false
-
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.speakButton.alpha = 1
-                    self.speakButton.transform = .identity
-                })
+            
+            if speakButton.isHidden && speakButton.alpha == 1 && speakButton.transform == .identity {
+                if shouldShowSpeak {
+                    speakButton.isHidden = false
+                } else {
+                    speakButton.isHidden = true
+                }
             } else {
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.speakButton.alpha = 0
-                    self.speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                }) { _ in
-                    guard !self.speakButtonVisibilityTarget else { return }
-                    self.speakButton.isHidden = true
-                    self.speakButton.alpha = 1
-                    self.speakButton.transform = .identity
+                speakButton.layer.removeAllAnimations()
+
+                if shouldShowSpeak {
+                    speakButton.alpha = 0
+                    speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    speakButton.isHidden = false
+
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.speakButton.alpha = 1
+                        self.speakButton.transform = .identity
+                    })
+                } else {
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.speakButton.alpha = 0
+                        self.speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    }) { _ in
+                        guard !self.speakButtonVisibilityTarget else { return }
+                        self.speakButton.isHidden = true
+                        self.speakButton.alpha = 1
+                        self.speakButton.transform = .identity
+                    }
                 }
             }
         }
