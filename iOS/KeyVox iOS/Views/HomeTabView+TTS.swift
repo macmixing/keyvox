@@ -30,15 +30,26 @@ extension HomeTabView {
                                     Circle()
                                         .fill(Color.yellow)
 
+                                    Circle()
+                                        .trim(from: 0, to: ttsTransportPlaybackProgress)
+                                        .stroke(
+                                            Color.indigo,
+                                            style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                                        )
+                                        .rotationEffect(.degrees(-90))
+                                        .padding(2)
+                                        .opacity(showsTTSTransportProgressRing ? 1 : 0)
+
                                     Image(systemName: ttsTransportSymbolName)
                                         .font(.system(size: 22, weight: ttsTransportSymbolWeight))
                                         .foregroundStyle(.black)
-
+                                }
+                                .overlay(alignment: .topTrailing) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundStyle(.green)
                                         .background(Circle().fill(Color.black))
-                                        .offset(x: 16, y: -16)
+                                        .offset(x: 3, y: -1)
                                         .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
                                         .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
                                 }
@@ -151,7 +162,16 @@ extension HomeTabView {
     var showsFastModeBackgroundSafetyCheckmark: Bool {
         settingsStore.fastPlaybackModeEnabled
             && ttsManager.state == .playing
+            && !ttsManager.isReplayingCachedPlayback
             && ttsManager.isFastModeBackgroundSafe
+    }
+
+    var showsTTSTransportProgressRing: Bool {
+        ttsManager.state == .playing
+    }
+
+    var ttsTransportPlaybackProgress: CGFloat {
+        CGFloat(min(1, max(0, ttsManager.playbackProgress)))
     }
 
     var ttsTransportSymbolName: String {

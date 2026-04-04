@@ -48,6 +48,7 @@ final class TTSPlaybackCoordinator {
     var onPreparationCompleted: (() -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
     var onPlaybackMeterLevel: ((Float) -> Void)?
+    var onPlaybackProgressChanged: ((Double) -> Void)?
     var onFastModeBackgroundSafetyChanged: ((Double, Bool) -> Void)?
 
     private let audioEngine = AVAudioEngine()
@@ -82,15 +83,22 @@ final class TTSPlaybackCoordinator {
     private var isWaitingForResumeBuffer = false
     private var lastObservedChunkCount = 1
     private var lastObservedRemainingEstimatedSamples = 0
+    private var totalScheduledSampleCount = 0
+    private var totalEstimatedPlaybackSampleCount = 0
     private var isPaused = false
     private var activePlaybackSamples: [Float] = []
     private var replayablePlaybackSamples: [Float] = []
     private var isReplayingCachedAudio = false
     private var replayStartSampleOffset = 0
     private var replayPausedSampleOffset = 0
+    private var playbackProgressDisplayLink: CADisplayLink?
 
     var hasReplayablePlayback: Bool {
         !replayablePlaybackSamples.isEmpty
+    }
+
+    var isReplayingCachedPlayback: Bool {
+        isReplayingCachedAudio
     }
 
     var canContinueBackgroundPlaybackInFastMode: Bool {
@@ -210,7 +218,10 @@ final class TTSPlaybackCoordinator {
         isWaitingForResumeBuffer = false
         lastObservedChunkCount = 1
         lastObservedRemainingEstimatedSamples = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
         cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
         isPaused = false
         activePlaybackSamples = []
         isReplayingCachedAudio = false
@@ -256,6 +267,7 @@ final class TTSPlaybackCoordinator {
         playerNode.pause()
         isPaused = true
         cancelScheduledMeterUpdates()
+        emitPlaybackProgress()
         Self.log("Playback paused.")
         notifyFastModeBackgroundSafetyChanged()
         onPlaybackPaused?()
@@ -282,6 +294,8 @@ final class TTSPlaybackCoordinator {
         if isReplayingCachedAudio {
             replayPausedSampleOffset = 0
         }
+        startPlaybackProgressTimer()
+        emitPlaybackProgress()
         Self.log("Playback resumed.")
         notifyFastModeBackgroundSafetyChanged()
         onPlaybackResumed?()
@@ -316,8 +330,12 @@ final class TTSPlaybackCoordinator {
         isBackgroundTransitionArmed = false
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
         cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
         activePlaybackSamples = replayablePlaybackSamples
+        totalEstimatedPlaybackSampleCount = replayablePlaybackSamples.count
         isReplayingCachedAudio = true
         replayStartSampleOffset = safeStartSampleOffset
         replayPausedSampleOffset = 0
@@ -345,6 +363,8 @@ final class TTSPlaybackCoordinator {
 
         isFinishing = true
         playerNode.play()
+        startPlaybackProgressTimer()
+        emitPlaybackProgress()
         onPlaybackStarted?()
     }
 
@@ -371,7 +391,10 @@ final class TTSPlaybackCoordinator {
         isWaitingForResumeBuffer = false
         lastObservedChunkCount = 1
         lastObservedRemainingEstimatedSamples = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
         cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
         isPaused = false
         activePlaybackSamples = []
         isReplayingCachedAudio = false
@@ -388,6 +411,7 @@ final class TTSPlaybackCoordinator {
             onPlaybackCancelled?()
         }
         notifyFastModeBackgroundSafetyChanged()
+        emitPlaybackProgress()
     }
 
     private func configureAudioSession() throws {
@@ -412,10 +436,14 @@ final class TTSPlaybackCoordinator {
         lastObservedChunkCount = frame.chunkCount
         lastObservedRemainingEstimatedSamples = frame.estimatedRemainingSampleCount
         recordCompletedFastModeSegmentIfNeeded(from: frame)
+        if totalEstimatedPlaybackSampleCount == 0 {
+            totalEstimatedPlaybackSampleCount = totalGeneratedSampleCount + frame.sampleCount + frame.estimatedRemainingSampleCount
+        }
 
         if frame.samples.isEmpty {
             handleChunkBoundary(frame)
             resumeIfBufferedEnough()
+            emitPlaybackProgress()
             notifyFastModeBackgroundSafetyChanged()
             return
         }
@@ -479,6 +507,7 @@ final class TTSPlaybackCoordinator {
 
         scheduleBuffer(buffer, samples: frame.samples, chunkDebugID: frame.chunkDebugID, chunkIndex: frame.chunkIndex)
         resumeIfBufferedEnough()
+        emitPlaybackProgress()
         notifyFastModeBackgroundSafetyChanged()
     }
 
@@ -567,6 +596,8 @@ final class TTSPlaybackCoordinator {
         }
         audioEngine.stop()
         cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
+        emitPlaybackProgress(1)
         deactivateAudioSessionIfNeeded()
         onPlaybackFinished?()
     }
@@ -616,8 +647,10 @@ final class TTSPlaybackCoordinator {
         let startPlayback = { [weak self] in
             guard let self else { return }
             self.playerNode.play()
+            self.startPlaybackProgressTimer()
             self.onPreparationProgress?(self.activeSilentStartSampleCount, self.activeSilentStartSampleCount, true)
             Self.log("Playback started with bufferedSamples=\(bufferedSamples) queuedBuffers=\(self.queuedBufferCount)")
+            self.emitPlaybackProgress()
             self.notifyFastModeBackgroundSafetyChanged()
             self.onPlaybackStarted?()
         }
@@ -645,6 +678,7 @@ final class TTSPlaybackCoordinator {
         let bufferStartDelay = startDelay ?? (Double(queuedSampleCount) / playbackFormat.sampleRate)
         queuedBufferCount += 1
         queuedSampleCount += sampleCount
+        totalScheduledSampleCount += sampleCount
         scheduleMeterUpdates(for: samples, startDelay: bufferStartDelay)
         let queuedSeconds = Double(queuedSampleCount) / playbackFormat.sampleRate
         if queuedBufferCount == 1 || queuedSeconds < 0.25 {
@@ -663,6 +697,7 @@ final class TTSPlaybackCoordinator {
                         "Buffer completed chunk=\(chunkIndex.map { String($0 + 1) } ?? "-") chunkID=\(chunkDebugID) sampleCount=\(sampleCount) remainingBuffers=\(self.queuedBufferCount) remainingSeconds=\(String(format: "%.3f", remainingSeconds))"
                     )
                 }
+                self.emitPlaybackProgress()
                 self.notifyFastModeBackgroundSafetyChanged()
                 self.finishIfPossible()
             }
@@ -797,11 +832,66 @@ final class TTSPlaybackCoordinator {
         if isReplayingCachedAudio {
             replayPausedSampleOffset = 0
         }
+        startPlaybackProgressTimer()
+        emitPlaybackProgress()
         Self.log(
             "Playback resumed after buffer refill. queuedSeconds=\(String(format: "%.3f", bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / playbackFormat.sampleRate)) observedGeneratedSeconds=\(String(format: "%.3f", Double(totalGeneratedSampleCount) / playbackFormat.sampleRate))"
         )
         notifyFastModeBackgroundSafetyChanged()
         onPlaybackResumed?()
+    }
+
+    private func startPlaybackProgressTimer() {
+        guard playbackProgressDisplayLink == nil else { return }
+        let displayLink = CADisplayLink(target: self, selector: #selector(handlePlaybackProgressDisplayLinkTick))
+        if #available(iOS 15.0, *) {
+            displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        } else {
+            displayLink.preferredFramesPerSecond = 60
+        }
+        playbackProgressDisplayLink = displayLink
+        displayLink.add(to: .main, forMode: .common)
+    }
+
+    private func stopPlaybackProgressTimer() {
+        playbackProgressDisplayLink?.invalidate()
+        playbackProgressDisplayLink = nil
+    }
+
+    @objc
+    private func handlePlaybackProgressDisplayLinkTick() {
+        emitPlaybackProgress()
+    }
+
+    private func emitPlaybackProgress(_ overrideProgress: Double? = nil) {
+        let progress = overrideProgress ?? currentPlaybackProgress
+        onPlaybackProgressChanged?(min(1, max(0, progress)))
+    }
+
+    private var currentPlaybackProgress: Double {
+        let denominator = currentPlaybackProgressDenominator
+        guard denominator > 0 else { return 0 }
+        return Double(currentPlaybackSampleOffset) / Double(denominator)
+    }
+
+    private var currentPlaybackProgressDenominator: Int {
+        if isReplayingCachedAudio {
+            return replayablePlaybackSamples.count
+        }
+        return max(totalEstimatedPlaybackSampleCount, totalScheduledSampleCount)
+    }
+
+    private var currentPlaybackSampleOffset: Int {
+        if isReplayingCachedAudio {
+            return currentReplaySampleOffset()
+        }
+        guard let renderTime = playerNode.lastRenderTime,
+              let playerTime = playerNode.playerTime(forNodeTime: renderTime) else {
+            let playedSamples = max(0, totalScheduledSampleCount - queuedSampleCount)
+            return min(playedSamples, currentPlaybackProgressDenominator)
+        }
+        let playedSamples = max(0, Int(playerTime.sampleTime))
+        return min(playedSamples, currentPlaybackProgressDenominator)
     }
 
     private func notifyFastModeBackgroundSafetyChanged() {
