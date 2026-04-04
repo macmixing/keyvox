@@ -81,11 +81,10 @@
 		8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */; };
 		8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */; };
 		8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */; };
-		A17000012FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */; };
-		A17000022FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */; };
-		A17000032FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */; };
-		A17000042FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */; };
-		A17000052FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */; };
+		A18000012FEB000100AA0001 /* TTSManager+AppLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */; };
+		A18000022FEB000100AA0001 /* TTSManager+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000072FEB000100AA0001 /* TTSManager+Playback.swift */; };
+		A18000032FEB000100AA0001 /* TTSManager+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000082FEB000100AA0001 /* TTSManager+State.swift */; };
+		A18000042FEB000100AA0001 /* TTSManagerPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */; };
 		8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */; };
 		8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */; };
 		8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */; };
@@ -126,7 +125,12 @@
 		A16000012FD4000100AA0001 /* KeyboardMenuSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */; };
 		A16000032FD4000100AA0001 /* OnboardingLogoPopInSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */; };
 		A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */; };
+		A17000012FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */; };
+		A17000022FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */; };
 		A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000042FD5000100AA0001 /* AppSceneDelegate.swift */; };
+		A17000032FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */; };
+		A17000042FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */; };
+		A17000052FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */; };
 		A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */; };
 		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
 		A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */; };
@@ -263,11 +267,10 @@
 		8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSInstallManifest.swift; sourceTree = "<group>"; };
 		8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelCatalog.swift; sourceTree = "<group>"; };
 		8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelManager.swift; sourceTree = "<group>"; };
-		A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Lifecycle.swift"; sourceTree = "<group>"; };
-		A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Scheduling.swift"; sourceTree = "<group>"; };
-		A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Metering.swift"; sourceTree = "<group>"; };
-		A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Progress.swift"; sourceTree = "<group>"; };
-		A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSPlaybackCoordinatorBufferingPolicy.swift; sourceTree = "<group>"; };
+		A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+AppLifecycle.swift"; sourceTree = "<group>"; };
+		A18000072FEB000100AA0001 /* TTSManager+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+Playback.swift"; sourceTree = "<group>"; };
+		A18000082FEB000100AA0001 /* TTSManager+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+State.swift"; sourceTree = "<group>"; };
+		A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSManagerPolicy.swift; sourceTree = "<group>"; };
 		8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolbarContent.swift; sourceTree = "<group>"; };
 		8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTranscriptionCardView.swift; sourceTree = "<group>"; };
@@ -304,6 +307,11 @@
 		A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLogoPopInSequence.swift; sourceTree = "<group>"; };
 		A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchRouteStore.swift; sourceTree = "<group>"; };
 		A17000042FD5000100AA0001 /* AppSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSceneDelegate.swift; sourceTree = "<group>"; };
+		A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Lifecycle.swift"; sourceTree = "<group>"; };
+		A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Scheduling.swift"; sourceTree = "<group>"; };
+		A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Metering.swift"; sourceTree = "<group>"; };
+		A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Progress.swift"; sourceTree = "<group>"; };
+		A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSPlaybackCoordinatorBufferingPolicy.swift; sourceTree = "<group>"; };
 		A18000012FDE000100AA0001 /* AppHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHaptics.swift; sourceTree = "<group>"; };
 		A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHapticsDecisions.swift; sourceTree = "<group>"; };
 		A1C000002FEA000100AA0001 /* TTSVoicePreviews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TTSVoicePreviews; sourceTree = "<group>"; };
@@ -663,7 +671,7 @@
 				8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */,
 				8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */,
 				8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */,
-				8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */,
+				A18000052FEB000100AA0001 /* TTSManager */,
 				A17000062FEB000100AA0001 /* TTSPlaybackCoordinator */,
 				A1C000072FEB000100AA0001 /* TTSReplayCache.swift */,
 				A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */,
@@ -671,17 +679,16 @@
 			path = TTS;
 			sourceTree = "<group>";
 		};
-		A17000062FEB000100AA0001 /* TTSPlaybackCoordinator */ = {
+		A18000052FEB000100AA0001 /* TTSManager */ = {
 			isa = PBXGroup;
 			children = (
-				8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */,
-				A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */,
-				A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */,
-				A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */,
-				A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */,
-				A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */,
+				8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */,
+				A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */,
+				A18000072FEB000100AA0001 /* TTSManager+Playback.swift */,
+				A18000082FEB000100AA0001 /* TTSManager+State.swift */,
+				A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */,
 			);
-			path = TTSPlaybackCoordinator;
+			path = TTSManager;
 			sourceTree = "<group>";
 		};
 		8EECEA652F655FB900BECF17 /* ModelDownloader */ = {
@@ -715,6 +722,19 @@
 				A12000122FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift */,
 			);
 			path = iCloud;
+			sourceTree = "<group>";
+		};
+		A17000062FEB000100AA0001 /* TTSPlaybackCoordinator */ = {
+			isa = PBXGroup;
+			children = (
+				8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */,
+				A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */,
+				A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */,
+				A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */,
+				A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */,
+				A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */,
+			);
+			path = TTSPlaybackCoordinator;
 			sourceTree = "<group>";
 		};
 		AA3000012F70000100000001 /* Components */ = {
@@ -1082,6 +1102,10 @@
 				8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */,
 				8E0ECBF62F807CC200B7731A /* SettingsDeletionConfirmation.swift in Sources */,
 				8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */,
+				A18000012FEB000100AA0001 /* TTSManager+AppLifecycle.swift in Sources */,
+				A18000022FEB000100AA0001 /* TTSManager+Playback.swift in Sources */,
+				A18000032FEB000100AA0001 /* TTSManager+State.swift in Sources */,
+				A18000042FEB000100AA0001 /* TTSManagerPolicy.swift in Sources */,
 				8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */,
 				A17000012FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift in Sources */,
 				A17000022FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift in Sources */,
