@@ -1172,7 +1172,7 @@
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Share";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1203,7 +1203,7 @@
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "KeyVox Share";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
