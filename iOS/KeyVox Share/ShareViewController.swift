@@ -31,14 +31,14 @@ final class ShareViewController: UIViewController {
 
         Task { @MainActor in
             NSLog("[KeyVoxShare] Beginning share processing.")
+            showFeedback()
+            
             let extractedText = await KeyVoxShareContentExtractor.extractText(from: extensionContext)
             let sharedText = extractedText
 
             if let sharedText, sharedText.isEmpty == false {
                 NSLog("[KeyVoxShare] Extracted share text length=%d", sharedText.count)
                 KeyVoxShareBridge.writeTTSRequest(sharedText)
-                
-                showFeedback()
                 
                 try? await Task.sleep(nanoseconds: 800_000_000)
                 

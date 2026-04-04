@@ -131,6 +131,9 @@ enum KeyVoxShareImageItemLoader {
 
         if let url = item as? URL {
             let persistentURL = try makePersistentCopy(of: url)
+            defer {
+                try? FileManager.default.removeItem(at: persistentURL)
+            }
             KeyVoxShareContentExtractorDiagnostics.log("Recognizing text from generic item URL \(persistentURL.path).")
             return try KeyVoxShareOCRPipeline.recognizeText(at: persistentURL)
         }
