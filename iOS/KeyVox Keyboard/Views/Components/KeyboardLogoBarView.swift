@@ -383,7 +383,7 @@ final class KeyboardLogoBarView: UIControl {
             return max(minHeight, speakingFloor + dynamicHeight)
         }
 
-        guard indicatorPhase == .listening || indicatorPhase == .speaking else {
+        guard indicatorPhase == .listening else {
             return flatHeight
         }
 
