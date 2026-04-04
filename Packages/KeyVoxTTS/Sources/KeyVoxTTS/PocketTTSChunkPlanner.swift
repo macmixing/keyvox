@@ -31,7 +31,7 @@ enum PocketTTSChunkPlanner {
         return (normalized, PocketTTSConstants.longTextExtraFrames)
     }
 
-    static func chunk(_ text: String, tokenizer: SentencePieceTokenizer) -> [String] {
+    static func chunk(_ text: String, tokenizer: SentencePieceTokenizer, fastModeEnabled: Bool = false) -> [String] {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
         
@@ -90,7 +90,72 @@ enum PocketTTSChunkPlanner {
         if !currentChunk.isEmpty {
             chunks.append(currentChunk)
         }
-        return chunks.isEmpty ? [sanitizedText] : chunks
+
+        let finalizedChunks = chunks.isEmpty ? [sanitizedText] : chunks
+        guard fastModeEnabled, let initialChunk = finalizedChunks.first else {
+            return finalizedChunks
+        }
+
+        let fastModeInitialChunks = rechunk(
+            initialChunk,
+            tokenizer: tokenizer,
+            chunkTokenLimit: PocketTTSConstants.fastModeInitialMaxTokensPerChunk
+        )
+        guard fastModeInitialChunks.isEmpty == false else {
+            return finalizedChunks
+        }
+
+        return fastModeInitialChunks + finalizedChunks.dropFirst()
+    }
+
+    private static func rechunk(
+        _ text: String,
+        tokenizer: SentencePieceTokenizer,
+        chunkTokenLimit: Int
+    ) -> [String] {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return [] }
+        guard tokenizer.encode(trimmed).count > chunkTokenLimit else { return [trimmed] }
+
+        let sentences = splitSentences(in: trimmed)
+        let pieces: [String]
+        if sentences.isEmpty {
+            pieces = splitOversizedSentence(trimmed, tokenizer: tokenizer, chunkTokenLimit: chunkTokenLimit)
+        } else {
+            pieces = sentences.flatMap { sentence in
+                if tokenizer.encode(sentence).count <= chunkTokenLimit {
+                    return [sentence]
+                }
+                return splitOversizedSentence(sentence, tokenizer: tokenizer, chunkTokenLimit: chunkTokenLimit)
+            }
+        }
+
+        var chunks: [String] = []
+        var currentChunk = ""
+
+        for piece in pieces {
+            let candidate = currentChunk.isEmpty ? piece : currentChunk + " " + piece
+            if shouldAppend(
+                piece,
+                to: currentChunk,
+                candidate: candidate,
+                tokenizer: tokenizer,
+                chunkTokenLimit: chunkTokenLimit
+            ) {
+                currentChunk = candidate
+            } else {
+                if !currentChunk.isEmpty {
+                    chunks.append(currentChunk)
+                }
+                currentChunk = piece
+            }
+        }
+
+        if !currentChunk.isEmpty {
+            chunks.append(currentChunk)
+        }
+
+        return chunks.isEmpty ? [trimmed] : chunks
     }
 
     private static func shouldAppend(

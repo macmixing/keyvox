@@ -33,11 +33,20 @@ extension HomeTabView {
                                     Image(systemName: ttsTransportSymbolName)
                                         .font(.system(size: 22, weight: ttsTransportSymbolWeight))
                                         .foregroundStyle(.black)
+
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundStyle(.green)
+                                        .background(Circle().fill(Color.black))
+                                        .offset(x: 16, y: -16)
+                                        .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
+                                        .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
                                 }
                                 .frame(width: 44, height: 44)
                                 .shadow(color: .yellow.opacity(0.3), radius: 10)
                             }
                             .buttonStyle(.plain)
+                            .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
                         }
 
                         if ttsManager.isActive {
@@ -137,6 +146,12 @@ extension HomeTabView {
         }
 
         return ttsManager.isActive || ttsManager.hasReplayablePlayback
+    }
+
+    var showsFastModeBackgroundSafetyCheckmark: Bool {
+        settingsStore.fastPlaybackModeEnabled
+            && ttsManager.state == .playing
+            && ttsManager.isFastModeBackgroundSafe
     }
 
     var ttsTransportSymbolName: String {

@@ -12,9 +12,19 @@ final class TTSPlaybackCoordinator {
     private enum BufferPolicy {
         static let singleChunkStartBufferedSeconds: Double = 0.45
         static let multiChunkMinimumRunwaySeconds: Double = 1.2
+        static let fastModeSingleChunkStartBufferedSeconds: Double = 0.30
+        static let fastModeMultiChunkMinimumRunwaySeconds: Double = 0.60
+        static let fastModeSingleChunkCoverageFraction: Double = 0.45
+        static let fastModeSingleChunkMinimumCoverageSeconds: Double = 1.8
+        static let fastModeSingleChunkMaximumCoverageSeconds: Double = 3.4
+        static let fastModeMinimumCoverageSeconds: Double = 1.35
+        static let conservativeForegroundRealtimeFactor: Double = 0.88
+        static let longFormForegroundRealtimeFactor: Double = 0.80
+        static let ultraLongFormForegroundRealtimeFactor: Double = 0.72
         static let returnToHostRunwaySeconds: Double = 6.0
         static let conservativeBackgroundRealtimeFactor: Double = 0.58
         static let remainingWorkSafetyMarginSeconds: Double = 2.5
+        static let fastModeRemainingWorkSafetyMarginSeconds: Double = 0.35
         static let longFormChunkThreshold = 24
         static let ultraLongFormChunkThreshold = 64
         static let longFormBackgroundRealtimeFactor: Double = 0.52
@@ -38,6 +48,7 @@ final class TTSPlaybackCoordinator {
     var onPreparationCompleted: (() -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
     var onPlaybackMeterLevel: ((Float) -> Void)?
+    var onFastModeBackgroundSafetyChanged: ((Double, Bool) -> Void)?
 
     private let audioEngine = AVAudioEngine()
     private let playerNode = AVAudioPlayerNode()
@@ -55,13 +66,22 @@ final class TTSPlaybackCoordinator {
     private var didStartPlayback = false
     private var pendingStartBuffers: [AVAudioPCMBuffer] = []
     private var isBackgroundTransitionArmed = false
+    private var totalGeneratedSampleCount = 0
+    private var completedFastModeSegmentCount = 0
+    private var completedFastModeSegmentSampleCount = 0
+    private var completedFastModeSegmentGenerationSeconds = 0.0
     private var completedChunkCountBeforeStart = 0
     private var hasBufferedIntoNextChunk = false
     private var activeRequiredStartSampleCount = 0
     private var activeSilentStartSampleCount = 0
+    private var playbackRequestStartTime: CFAbsoluteTime = 0
     private var scheduledMeterUpdates: [DispatchWorkItem] = []
     private var audioSessionMode: AudioSessionMode = .playback
     private var preparationCompletionDelaySeconds: Double = 0
+    private var fastModeEnabled = false
+    private var isWaitingForResumeBuffer = false
+    private var lastObservedChunkCount = 1
+    private var lastObservedRemainingEstimatedSamples = 0
     private var isPaused = false
     private var activePlaybackSamples: [Float] = []
     private var replayablePlaybackSamples: [Float] = []
@@ -71,6 +91,25 @@ final class TTSPlaybackCoordinator {
 
     var hasReplayablePlayback: Bool {
         !replayablePlaybackSamples.isEmpty
+    }
+
+    var canContinueBackgroundPlaybackInFastMode: Bool {
+        guard fastModeEnabled, didStartPlayback else { return false }
+        let requiredSamples = backgroundContinuationBufferedSampleCount(
+            for: lastObservedChunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+        return queuedSampleCount >= requiredSamples
+    }
+
+    var fastModeBackgroundSafetyProgress: Double {
+        guard fastModeEnabled, didStartPlayback else { return 0 }
+        let requiredSamples = backgroundContinuationBufferedSampleCount(
+            for: lastObservedChunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+        guard requiredSamples > 0 else { return 0 }
+        return min(1, max(0, Double(queuedSampleCount) / Double(requiredSamples)))
     }
 
     var canPausePlayback: Bool {
@@ -106,6 +145,7 @@ final class TTSPlaybackCoordinator {
     func prepareForForegroundPlayback() {
         isBackgroundTransitionArmed = false
         Self.log("Foreground playback mode armed.")
+        notifyFastModeBackgroundSafetyChanged()
     }
 
     func setPreparationCompletionDelay(enabled: Bool) {
@@ -137,9 +177,9 @@ final class TTSPlaybackCoordinator {
         )
     }
 
-    func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>) {
+    func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>, fastModeEnabled: Bool = false) {
         stop(emitCallback: false)
-        Self.log("Playback requested.")
+        Self.log("Playback requested. fastMode=\(fastModeEnabled)")
 
         do {
             try configureAudioSession()
@@ -157,17 +197,27 @@ final class TTSPlaybackCoordinator {
         isFinishing = false
         didStartPlayback = false
         pendingStartBuffers = []
+        totalGeneratedSampleCount = 0
+        completedFastModeSegmentCount = 0
+        completedFastModeSegmentSampleCount = 0
+        completedFastModeSegmentGenerationSeconds = 0
         completedChunkCountBeforeStart = 0
         hasBufferedIntoNextChunk = false
         isBackgroundTransitionArmed = false
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
+        playbackRequestStartTime = CFAbsoluteTimeGetCurrent()
+        isWaitingForResumeBuffer = false
+        lastObservedChunkCount = 1
+        lastObservedRemainingEstimatedSamples = 0
         cancelScheduledMeterUpdates()
         isPaused = false
         activePlaybackSamples = []
         isReplayingCachedAudio = false
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
+        self.fastModeEnabled = fastModeEnabled
+        notifyFastModeBackgroundSafetyChanged()
 
         playbackTask = Task { [weak self] in
             guard let self else { return }
@@ -207,17 +257,33 @@ final class TTSPlaybackCoordinator {
         isPaused = true
         cancelScheduledMeterUpdates()
         Self.log("Playback paused.")
+        notifyFastModeBackgroundSafetyChanged()
         onPlaybackPaused?()
     }
 
     func resume() {
         guard canResumePlayback else { return }
+        if shouldDelayResumeUntilBuffered() {
+            isWaitingForResumeBuffer = true
+            let requiredSamples = deterministicFastModeBufferedSampleCount(
+                for: lastObservedChunkCount,
+                remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+            )
+            Self.log(
+                "Delaying playback resume for buffer refill. queuedSeconds=\(String(format: "%.3f", bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / playbackFormat.sampleRate)) observedGeneratedSeconds=\(String(format: "%.3f", Double(totalGeneratedSampleCount) / playbackFormat.sampleRate))"
+            )
+            resumeIfBufferedEnough()
+            return
+        }
+
         playerNode.play()
         isPaused = false
+        isWaitingForResumeBuffer = false
         if isReplayingCachedAudio {
             replayPausedSampleOffset = 0
         }
         Self.log("Playback resumed.")
+        notifyFastModeBackgroundSafetyChanged()
         onPlaybackResumed?()
     }
 
@@ -293,11 +359,18 @@ final class TTSPlaybackCoordinator {
         isFinishing = false
         didStartPlayback = false
         pendingStartBuffers.removeAll(keepingCapacity: false)
+        totalGeneratedSampleCount = 0
+        completedFastModeSegmentCount = 0
+        completedFastModeSegmentSampleCount = 0
+        completedFastModeSegmentGenerationSeconds = 0
         completedChunkCountBeforeStart = 0
         hasBufferedIntoNextChunk = false
         isBackgroundTransitionArmed = false
         activeRequiredStartSampleCount = 0
         activeSilentStartSampleCount = 0
+        isWaitingForResumeBuffer = false
+        lastObservedChunkCount = 1
+        lastObservedRemainingEstimatedSamples = 0
         cancelScheduledMeterUpdates()
         isPaused = false
         activePlaybackSamples = []
@@ -314,6 +387,7 @@ final class TTSPlaybackCoordinator {
         if emitCallback, hadPlayback {
             onPlaybackCancelled?()
         }
+        notifyFastModeBackgroundSafetyChanged()
     }
 
     private func configureAudioSession() throws {
@@ -335,6 +409,18 @@ final class TTSPlaybackCoordinator {
     }
 
     private func schedule(_ frame: KeyVoxTTSAudioFrame) {
+        lastObservedChunkCount = frame.chunkCount
+        lastObservedRemainingEstimatedSamples = frame.estimatedRemainingSampleCount
+        recordCompletedFastModeSegmentIfNeeded(from: frame)
+
+        if frame.samples.isEmpty {
+            handleChunkBoundary(frame)
+            resumeIfBufferedEnough()
+            notifyFastModeBackgroundSafetyChanged()
+            return
+        }
+
+        totalGeneratedSampleCount += frame.sampleCount
         activePlaybackSamples.append(contentsOf: frame.samples)
         guard let buffer = makeBuffer(from: frame.samples) else {
             handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS produced an invalid audio frame."))
@@ -352,18 +438,31 @@ final class TTSPlaybackCoordinator {
                 hasBufferedIntoNextChunk = true
             }
 
-            let requiredBufferedSamples = requiredStartSampleCount(for: frame.chunkCount)
+            let requiredBufferedSamples = fastModeEnabled
+                ? fastModeRequiredStartSampleCount(for: frame.chunkCount)
+                : normalModeRequiredStartSampleCount(for: frame.chunkCount)
             activeRequiredStartSampleCount = requiredBufferedSamples
-            let silentStartSampleCount = silentStartSampleCount(
-                for: frame.chunkCount,
-                remainingEstimatedSamples: frame.estimatedRemainingSampleCount
-            )
-            activeSilentStartSampleCount = max(activeSilentStartSampleCount, silentStartSampleCount)
+            let silentStartRequirement = fastModeEnabled
+                ? deterministicFastModeBufferedSampleCount(
+                    for: frame.chunkCount,
+                    remainingEstimatedSamples: frame.estimatedRemainingSampleCount
+                )
+                : normalModeBufferedSampleCount(
+                    for: frame.chunkCount,
+                    remainingEstimatedSamples: frame.estimatedRemainingSampleCount,
+                    requiredStartSamples: requiredBufferedSamples,
+                    minimumCoverageSeconds: BufferPolicy.returnToHostRunwaySeconds,
+                    realtimeFactor: backgroundRealtimeFactor(for: frame.chunkCount),
+                    remainingWorkSafetyMarginSeconds: BufferPolicy.remainingWorkSafetyMarginSeconds,
+                    allowFullRemainingDeficit: false
+                )
+            activeSilentStartSampleCount = max(activeSilentStartSampleCount, silentStartRequirement)
             let requiredBufferedSeconds = Double(requiredBufferedSamples) / playbackFormat.sampleRate
             let hasEnoughBufferedAudio = queuedSampleCount >= activeSilentStartSampleCount
-            let hasObservedChunkRunway = frame.chunkCount == 1
-                ? hasEnoughBufferedAudio
-                : completedChunkCountBeforeStart >= 1 && hasBufferedIntoNextChunk && hasEnoughBufferedAudio
+            let hasObservedChunkRunway = canStartFastModeSegmentedPlayback(
+                chunkCount: frame.chunkCount,
+                hasEnoughBufferedAudio: hasEnoughBufferedAudio
+            )
             onPreparationProgress?(
                 min(queuedSampleCount, activeSilentStartSampleCount),
                 activeSilentStartSampleCount,
@@ -379,6 +478,57 @@ final class TTSPlaybackCoordinator {
         }
 
         scheduleBuffer(buffer, samples: frame.samples, chunkDebugID: frame.chunkDebugID, chunkIndex: frame.chunkIndex)
+        resumeIfBufferedEnough()
+        notifyFastModeBackgroundSafetyChanged()
+    }
+
+    private func handleChunkBoundary(_ frame: KeyVoxTTSAudioFrame) {
+        let isLastChunk = frame.chunkIndex == frame.chunkCount - 1
+
+        if didStartPlayback == false {
+            if frame.isChunkFinalBatch {
+                completedChunkCountBeforeStart += 1
+            } else if frame.chunkIndex > 0 {
+                hasBufferedIntoNextChunk = true
+            }
+
+            let requiredBufferedSamples = fastModeEnabled
+                ? fastModeRequiredStartSampleCount(for: frame.chunkCount)
+                : normalModeRequiredStartSampleCount(for: frame.chunkCount)
+            activeRequiredStartSampleCount = requiredBufferedSamples
+            let silentStartRequirement = fastModeEnabled
+                ? deterministicFastModeBufferedSampleCount(
+                    for: frame.chunkCount,
+                    remainingEstimatedSamples: frame.estimatedRemainingSampleCount
+                )
+                : normalModeBufferedSampleCount(
+                    for: frame.chunkCount,
+                    remainingEstimatedSamples: frame.estimatedRemainingSampleCount,
+                    requiredStartSamples: requiredBufferedSamples,
+                    minimumCoverageSeconds: BufferPolicy.returnToHostRunwaySeconds,
+                    realtimeFactor: backgroundRealtimeFactor(for: frame.chunkCount),
+                    remainingWorkSafetyMarginSeconds: BufferPolicy.remainingWorkSafetyMarginSeconds,
+                    allowFullRemainingDeficit: false
+                )
+            activeSilentStartSampleCount = max(activeSilentStartSampleCount, silentStartRequirement)
+            let requiredBufferedSeconds = Double(requiredBufferedSamples) / playbackFormat.sampleRate
+            let hasEnoughBufferedAudio = queuedSampleCount >= activeSilentStartSampleCount
+            let hasObservedChunkRunway = canStartFastModeSegmentedPlayback(
+                chunkCount: frame.chunkCount,
+                hasEnoughBufferedAudio: hasEnoughBufferedAudio
+            )
+            onPreparationProgress?(
+                min(queuedSampleCount, activeSilentStartSampleCount),
+                activeSilentStartSampleCount,
+                false
+            )
+            Self.log(
+                "Prebuffering chunk=\(frame.chunkIndex + 1)/\(frame.chunkCount) chunkID=\(frame.chunkDebugID) frameIndex=\(frame.frameIndex) queuedSamples=\(queuedSampleCount) requiredSamples=\(requiredBufferedSamples) silentStartSamples=\(activeSilentStartSampleCount) remainingEstimatedSamples=\(frame.estimatedRemainingSampleCount) requiredSeconds=\(String(format: "%.3f", requiredBufferedSeconds))"
+            )
+            if hasObservedChunkRunway || (isLastChunk && frame.isChunkFinalBatch) {
+                flushPendingStartBuffers()
+            }
+        }
     }
 
     private func makeBuffer(from samples: [Float]) -> AVAudioPCMBuffer? {
@@ -461,12 +611,14 @@ final class TTSPlaybackCoordinator {
         didStartPlayback = true
         onPreparationProgress?(activeSilentStartSampleCount, activeSilentStartSampleCount, false)
         onPreparationCompleted?()
+        notifyFastModeBackgroundSafetyChanged()
 
         let startPlayback = { [weak self] in
             guard let self else { return }
             self.playerNode.play()
             self.onPreparationProgress?(self.activeSilentStartSampleCount, self.activeSilentStartSampleCount, true)
             Self.log("Playback started with bufferedSamples=\(bufferedSamples) queuedBuffers=\(self.queuedBufferCount)")
+            self.notifyFastModeBackgroundSafetyChanged()
             self.onPlaybackStarted?()
         }
 
@@ -511,6 +663,7 @@ final class TTSPlaybackCoordinator {
                         "Buffer completed chunk=\(chunkIndex.map { String($0 + 1) } ?? "-") chunkID=\(chunkDebugID) sampleCount=\(sampleCount) remainingBuffers=\(self.queuedBufferCount) remainingSeconds=\(String(format: "%.3f", remainingSeconds))"
                     )
                 }
+                self.notifyFastModeBackgroundSafetyChanged()
                 self.finishIfPossible()
             }
         }
@@ -584,27 +737,159 @@ final class TTSPlaybackCoordinator {
         Double(queuedSampleCount) / playbackFormat.sampleRate
     }
 
-    private func requiredStartSampleCount(for chunkCount: Int) -> Int {
+    private func recordCompletedFastModeSegmentIfNeeded(from frame: KeyVoxTTSAudioFrame) {
+        guard fastModeEnabled, frame.isChunkFinalBatch else { return }
+        guard let chunkGeneratedSampleCount = frame.chunkGeneratedSampleCount,
+              let chunkGenerationDurationSeconds = frame.chunkGenerationDurationSeconds,
+              chunkGeneratedSampleCount > 0,
+              chunkGenerationDurationSeconds > 0 else {
+            return
+        }
+
+        completedFastModeSegmentCount += 1
+        completedFastModeSegmentSampleCount += chunkGeneratedSampleCount
+        completedFastModeSegmentGenerationSeconds += chunkGenerationDurationSeconds
+    }
+
+    private func canStartFastModeSegmentedPlayback(chunkCount: Int, hasEnoughBufferedAudio: Bool) -> Bool {
+        guard hasEnoughBufferedAudio else { return false }
+        guard fastModeEnabled, chunkCount > 1 else {
+            return chunkCount == 1
+                ? hasEnoughBufferedAudio
+                : completedChunkCountBeforeStart >= 1 && hasBufferedIntoNextChunk && hasEnoughBufferedAudio
+        }
+
+        let requiredLeadSamples = deterministicFastModeBufferedSampleCount(
+            for: chunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+        let averageCompletedSegmentSampleCount = completedFastModeSegmentCount > 0
+            ? Double(completedFastModeSegmentSampleCount) / Double(completedFastModeSegmentCount)
+            : 0
+        let requiredCompletedSegments = averageCompletedSegmentSampleCount > 0
+            ? Int(ceil(Double(requiredLeadSamples) / averageCompletedSegmentSampleCount))
+            : Int.max
+
+        return completedFastModeSegmentCount >= requiredCompletedSegments
+            && completedChunkCountBeforeStart >= requiredCompletedSegments
+            && hasBufferedIntoNextChunk
+    }
+
+    private func shouldDelayResumeUntilBuffered() -> Bool {
+        guard fastModeEnabled, !isReplayingCachedAudio else { return false }
+        return queuedSampleCount < deterministicFastModeBufferedSampleCount(
+            for: lastObservedChunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+    }
+
+    private func resumeIfBufferedEnough() {
+        guard isWaitingForResumeBuffer else { return }
+        let requiredSamples = deterministicFastModeBufferedSampleCount(
+            for: lastObservedChunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+        guard queuedSampleCount >= requiredSamples || (isFinishing && queuedSampleCount > 0) else { return }
+
+        playerNode.play()
+        isPaused = false
+        isWaitingForResumeBuffer = false
+        if isReplayingCachedAudio {
+            replayPausedSampleOffset = 0
+        }
+        Self.log(
+            "Playback resumed after buffer refill. queuedSeconds=\(String(format: "%.3f", bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / playbackFormat.sampleRate)) observedGeneratedSeconds=\(String(format: "%.3f", Double(totalGeneratedSampleCount) / playbackFormat.sampleRate))"
+        )
+        notifyFastModeBackgroundSafetyChanged()
+        onPlaybackResumed?()
+    }
+
+    private func notifyFastModeBackgroundSafetyChanged() {
+        onFastModeBackgroundSafetyChanged?(
+            fastModeBackgroundSafetyProgress,
+            canContinueBackgroundPlaybackInFastMode
+        )
+    }
+
+    private func deterministicFastModeBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
+        let requiredStartSamples = fastModeRequiredStartSampleCount(for: chunkCount)
+        if let observedRunwaySamples = observedFastModeSegmentRunwaySampleCount(
+            chunkCount: chunkCount,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: requiredStartSamples
+        ) {
+            return observedRunwaySamples
+        }
+
+        if let observedRunwaySamples = observedFastModeRunwaySampleCount(
+            chunkCount: chunkCount,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: requiredStartSamples,
+            generatedSamples: totalGeneratedSampleCount
+        ) {
+            return observedRunwaySamples
+        }
+
+        return normalModeBufferedSampleCount(
+            for: chunkCount,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: requiredStartSamples,
+            minimumCoverageSeconds: BufferPolicy.fastModeMinimumCoverageSeconds,
+            realtimeFactor: foregroundRealtimeFactor(for: chunkCount),
+            remainingWorkSafetyMarginSeconds: BufferPolicy.fastModeRemainingWorkSafetyMarginSeconds,
+            allowFullRemainingDeficit: true
+        )
+    }
+
+    private func backgroundContinuationBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
+        normalModeBufferedSampleCount(
+            for: chunkCount,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: normalModeRequiredStartSampleCount(for: chunkCount),
+            minimumCoverageSeconds: BufferPolicy.returnToHostRunwaySeconds,
+            realtimeFactor: backgroundRealtimeFactor(for: chunkCount),
+            remainingWorkSafetyMarginSeconds: BufferPolicy.remainingWorkSafetyMarginSeconds,
+            allowFullRemainingDeficit: false
+        )
+    }
+
+    private func normalModeRequiredStartSampleCount(for chunkCount: Int) -> Int {
         let seconds = chunkCount == 1
             ? BufferPolicy.singleChunkStartBufferedSeconds
             : BufferPolicy.multiChunkMinimumRunwaySeconds
         return Int(playbackFormat.sampleRate * seconds)
     }
 
-    private func silentStartSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
-        let minimumReturnRunwaySamples = Int(playbackFormat.sampleRate * BufferPolicy.returnToHostRunwaySeconds)
-        if remainingEstimatedSamples <= minimumReturnRunwaySamples {
-            return max(requiredStartSampleCount(for: chunkCount), remainingEstimatedSamples)
+    private func fastModeRequiredStartSampleCount(for chunkCount: Int) -> Int {
+        let seconds = chunkCount == 1
+            ? BufferPolicy.fastModeSingleChunkStartBufferedSeconds
+            : BufferPolicy.fastModeMultiChunkMinimumRunwaySeconds
+        return Int(playbackFormat.sampleRate * seconds)
+    }
+
+    private func normalModeBufferedSampleCount(
+        for chunkCount: Int,
+        remainingEstimatedSamples: Int,
+        requiredStartSamples: Int,
+        minimumCoverageSeconds: Double,
+        realtimeFactor: Double,
+        remainingWorkSafetyMarginSeconds: Double,
+        allowFullRemainingDeficit: Bool
+    ) -> Int {
+        let minimumCoverageSamples = Int(playbackFormat.sampleRate * minimumCoverageSeconds)
+        if remainingEstimatedSamples <= minimumCoverageSamples {
+            return max(requiredStartSamples, remainingEstimatedSamples)
         }
 
-        let realtimeFactor = backgroundRealtimeFactor(for: chunkCount)
         let deficitFactor = max(0, (1.0 / realtimeFactor) - 1.0)
         let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
         let uncappedRequiredDeficitSeconds = (remainingEstimatedSeconds * deficitFactor)
-            + BufferPolicy.remainingWorkSafetyMarginSeconds
+            + remainingWorkSafetyMarginSeconds
         let requiredDeficitSeconds: Double
-        if chunkCount > BufferPolicy.ultraLongFormChunkThreshold,
-           uncappedRequiredDeficitSeconds >= remainingEstimatedSeconds {
+        if allowFullRemainingDeficit {
+            requiredDeficitSeconds = min(remainingEstimatedSeconds, uncappedRequiredDeficitSeconds)
+        } else if chunkCount > BufferPolicy.ultraLongFormChunkThreshold,
+                  uncappedRequiredDeficitSeconds >= remainingEstimatedSeconds {
             requiredDeficitSeconds = remainingEstimatedSeconds
         } else {
             requiredDeficitSeconds = min(
@@ -615,10 +900,91 @@ final class TTSPlaybackCoordinator {
         let deterministicRunwaySamples = Int(requiredDeficitSeconds * playbackFormat.sampleRate)
 
         return max(
-            requiredStartSampleCount(for: chunkCount),
-            minimumReturnRunwaySamples,
+            requiredStartSamples,
+            minimumCoverageSamples,
             deterministicRunwaySamples
         )
+    }
+
+    private func observedFastModeRunwaySampleCount(
+        chunkCount: Int,
+        remainingEstimatedSamples: Int,
+        requiredStartSamples: Int,
+        generatedSamples: Int
+    ) -> Int? {
+        guard playbackRequestStartTime > 0 else { return nil }
+
+        let elapsedSeconds = max(0, CFAbsoluteTimeGetCurrent() - playbackRequestStartTime)
+        guard elapsedSeconds >= 0.12 else { return nil }
+
+        guard generatedSamples >= requiredStartSamples else { return nil }
+
+        let observedGenerationRate = Double(generatedSamples) / elapsedSeconds
+        let observedRealtimeFactor = observedGenerationRate / playbackFormat.sampleRate
+        let staticRealtimeFactor = foregroundRealtimeFactor(for: chunkCount)
+        let effectiveRealtimeFactor = min(
+            1.2,
+            max(staticRealtimeFactor, min(observedRealtimeFactor, 1.05))
+        )
+        let deficitFactor = max(0, (1.0 / effectiveRealtimeFactor) - 1.0)
+        let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
+        let requiredDeficitSeconds = min(
+            remainingEstimatedSeconds,
+            (remainingEstimatedSeconds * deficitFactor) + BufferPolicy.fastModeRemainingWorkSafetyMarginSeconds
+        )
+        let deterministicRunwaySamples = Int(requiredDeficitSeconds * playbackFormat.sampleRate)
+        let minimumCoverageSamples = Int(playbackFormat.sampleRate * BufferPolicy.fastModeMinimumCoverageSeconds)
+        if chunkCount == 1 {
+            let estimatedTotalSamples = queuedSampleCount + remainingEstimatedSamples
+            let coverageFractionSamples = Int(
+                Double(estimatedTotalSamples) * BufferPolicy.fastModeSingleChunkCoverageFraction
+            )
+            let minimumSingleChunkCoverageSamples = Int(
+                playbackFormat.sampleRate * BufferPolicy.fastModeSingleChunkMinimumCoverageSeconds
+            )
+            let maximumSingleChunkCoverageSamples = Int(
+                playbackFormat.sampleRate * BufferPolicy.fastModeSingleChunkMaximumCoverageSeconds
+            )
+            let boundedSingleChunkCoverageSamples = min(
+                maximumSingleChunkCoverageSamples,
+                max(coverageFractionSamples, minimumSingleChunkCoverageSamples)
+            )
+            return max(requiredStartSamples, deterministicRunwaySamples, boundedSingleChunkCoverageSamples)
+        }
+
+        if remainingEstimatedSamples <= minimumCoverageSamples {
+            return max(requiredStartSamples, min(remainingEstimatedSamples, deterministicRunwaySamples))
+        }
+
+        return max(requiredStartSamples, deterministicRunwaySamples)
+    }
+
+    private func observedFastModeSegmentRunwaySampleCount(
+        chunkCount: Int,
+        remainingEstimatedSamples: Int,
+        requiredStartSamples: Int
+    ) -> Int? {
+        guard completedFastModeSegmentCount > 0 else { return nil }
+        guard completedFastModeSegmentSampleCount >= requiredStartSamples else { return nil }
+        guard completedFastModeSegmentGenerationSeconds > 0 else { return nil }
+
+        let observedGenerationRate = Double(completedFastModeSegmentSampleCount) / completedFastModeSegmentGenerationSeconds
+        let observedRealtimeFactor = observedGenerationRate / playbackFormat.sampleRate
+        let staticRealtimeFactor = foregroundRealtimeFactor(for: chunkCount)
+        let effectiveRealtimeFactor = min(
+            1.2,
+            max(staticRealtimeFactor, min(observedRealtimeFactor, 1.05))
+        )
+        let deficitFactor = max(0, (1.0 / effectiveRealtimeFactor) - 1.0)
+        let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / playbackFormat.sampleRate
+        let requiredDeficitSeconds = min(
+            remainingEstimatedSeconds,
+            (remainingEstimatedSeconds * deficitFactor) + BufferPolicy.fastModeRemainingWorkSafetyMarginSeconds
+        )
+        let deterministicRunwaySamples = Int(requiredDeficitSeconds * playbackFormat.sampleRate)
+        let minimumCoverageSamples = Int(playbackFormat.sampleRate * BufferPolicy.fastModeMinimumCoverageSeconds)
+
+        return max(requiredStartSamples, minimumCoverageSamples, deterministicRunwaySamples)
     }
 
     private func backgroundRealtimeFactor(for chunkCount: Int) -> Double {
@@ -629,6 +995,17 @@ final class TTSPlaybackCoordinator {
             return BufferPolicy.longFormBackgroundRealtimeFactor
         default:
             return BufferPolicy.conservativeBackgroundRealtimeFactor
+        }
+    }
+
+    private func foregroundRealtimeFactor(for chunkCount: Int) -> Double {
+        switch chunkCount {
+        case (BufferPolicy.ultraLongFormChunkThreshold + 1)...:
+            return BufferPolicy.ultraLongFormForegroundRealtimeFactor
+        case (BufferPolicy.longFormChunkThreshold + 1)...:
+            return BufferPolicy.longFormForegroundRealtimeFactor
+        default:
+            return BufferPolicy.conservativeForegroundRealtimeFactor
         }
     }
 

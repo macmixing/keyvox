@@ -20,6 +20,8 @@ final class TTSManager: ObservableObject {
     @Published private(set) var playbackPreparationPhase: PlaybackPreparationPhase = .preparing
     @Published private(set) var isPlaybackPaused = false
     @Published private(set) var hasReplayablePlayback = false
+    @Published private(set) var fastModeBackgroundSafetyProgress: Double = 0
+    @Published private(set) var isFastModeBackgroundSafe = false
 
     private let settingsStore: AppSettingsStore
     private let appHaptics: AppHapticsEmitting
@@ -36,6 +38,17 @@ final class TTSManager: ObservableObject {
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private var backgroundTaskReleaseTask: Task<Void, Never>?
     var onWillTeardownPlayback: (() async -> Void)?
+
+    private var shouldPreventIdleSleep: Bool {
+        switch state {
+        case .preparing, .generating:
+            return true
+        case .playing:
+            return isPlaybackPaused == false
+        case .idle, .finished, .error:
+            return false
+        }
+    }
 
     var isActive: Bool {
         switch state {
@@ -94,8 +107,13 @@ final class TTSManager: ObservableObject {
                 hasStartedPlayback: hasStartedPlayback
             )
         }
+        playbackCoordinator.onFastModeBackgroundSafetyChanged = { [weak self] progress, isSafe in
+            self?.fastModeBackgroundSafetyProgress = progress
+            self?.isFastModeBackgroundSafe = isSafe
+        }
 
         restoreReplayablePlaybackIfNeeded()
+        updateIdleSleepPrevention()
     }
 
     func handleAppDidBecomeActive() {
@@ -109,8 +127,30 @@ final class TTSManager: ObservableObject {
     }
 
     func handleAppWillResignActive() {
-        Self.log("handleAppWillResignActive state=\(state.rawValue) hasStartedPlayback=\(hasStartedPlaybackForActiveRequest)")
+        Self.log("handleAppWillResignActive state=\(state.rawValue) hasStartedPlayback=\(hasStartedPlaybackForActiveRequest) fastMode=\(settingsStore.fastPlaybackModeEnabled)")
         guard isActive, (hasStartedPlaybackForActiveRequest || playbackPreparationPhase == .readyToReturn) else { return }
+        
+        if settingsStore.fastPlaybackModeEnabled {
+            if hasStartedPlaybackForActiveRequest {
+                beginBackgroundTaskIfNeeded(force: true)
+                Task {
+                    await engine.prepareForBackgroundContinuation()
+                }
+                playbackCoordinator.prepareForBackgroundTransition()
+            } else {
+                endBackgroundTaskIfNeeded()
+            }
+            if playbackCoordinator.canContinueBackgroundPlaybackInFastMode {
+                Self.log("Fast Mode enabled: continuing playback in background with sufficient queued runway")
+            } else if playbackCoordinator.canPausePlayback {
+                Self.log("Fast Mode enabled: pausing active playback because queued runway is insufficient for background continuation")
+                pausePlayback()
+            } else {
+                Self.log("Fast Mode enabled: skipping background handoff before playback start")
+            }
+            return
+        }
+        
         beginBackgroundTaskIfNeeded()
 
         let shouldPreserveForegroundSynthesisDuringTransition =
@@ -126,8 +166,16 @@ final class TTSManager: ObservableObject {
     }
 
     func handleAppDidEnterBackground() {
-        Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid)")
+        Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid) fastMode=\(settingsStore.fastPlaybackModeEnabled)")
         isPlaybackPreparationViewPresented = false
+        guard settingsStore.fastPlaybackModeEnabled == false else {
+            if hasStartedPlaybackForActiveRequest {
+                playbackCoordinator.didEnterBackground()
+            } else {
+                endBackgroundTaskIfNeeded()
+            }
+            return
+        }
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.didEnterBackground()
     }
@@ -173,7 +221,11 @@ final class TTSManager: ObservableObject {
             )
         }
 
-        await startPlayback(normalizedRequest, showPreparationView: showPreparationView)
+        let effectiveShowPreparationView = showPreparationView && !(
+            settingsStore.fastPlaybackModeEnabled && normalizedRequest.sourceSurface == .keyboard
+        )
+
+        await startPlayback(normalizedRequest, showPreparationView: effectiveShowPreparationView)
     }
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
@@ -195,7 +247,9 @@ final class TTSManager: ObservableObject {
         } else {
             isPlaybackPreparationViewPresented = false
         }
-        playbackCoordinator.setPreparationCompletionDelay(enabled: showPreparationView)
+        playbackCoordinator.setPreparationCompletionDelay(
+            enabled: showPreparationView && settingsStore.fastPlaybackModeEnabled == false
+        )
         beginBackgroundTaskIfNeeded()
         await engine.prepareForForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
@@ -207,9 +261,10 @@ final class TTSManager: ObservableObject {
 
             let stream = try await engine.makeAudioStream(
                 for: request.trimmedText,
-                voiceID: request.voiceID
+                voiceID: request.voiceID,
+                fastModeEnabled: settingsStore.fastPlaybackModeEnabled
             )
-            playbackCoordinator.play(stream)
+            playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
         } catch {
             handleError(error.localizedDescription)
         }
@@ -317,6 +372,7 @@ final class TTSManager: ObservableObject {
 
     private func updateState(_ newState: KeyVoxTTSState) {
         state = newState
+        updateIdleSleepPrevention()
 
         switch newState {
         case .idle:
@@ -339,6 +395,8 @@ final class TTSManager: ObservableObject {
         isPlaybackPaused = false
         pausedReplaySampleOffset = nil
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
+        fastModeBackgroundSafetyProgress = 0
+        isFastModeBackgroundSafe = false
         KeyVoxIPCBridge.clearTTSRequest()
         isPlaybackPreparationViewPresented = false
         resetPlaybackPreparationState()
@@ -347,11 +405,16 @@ final class TTSManager: ObservableObject {
 
         if clearPublishedState {
             state = .idle
+            updateIdleSleepPrevention()
             KeyVoxIPCBridge.clearTTSState()
         }
     }
 
-    private func beginBackgroundTaskIfNeeded() {
+    private func beginBackgroundTaskIfNeeded(force: Bool = false) {
+        guard force || settingsStore.fastPlaybackModeEnabled == false else {
+            Self.log("Skipping background task because Fast Mode is enabled.")
+            return
+        }
         guard backgroundTaskID == .invalid else { return }
         guard isActive else { return }
 
@@ -407,6 +470,7 @@ final class TTSManager: ObservableObject {
     private func handlePlaybackPaused() {
         Self.log("Playback paused.")
         isPlaybackPaused = true
+        updateIdleSleepPrevention()
         if let offset = playbackCoordinator.replayPausedSampleOffsetSnapshot(),
            let request = lastReplayableRequest ?? activeRequest,
            let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
@@ -423,6 +487,7 @@ final class TTSManager: ObservableObject {
         Self.log("Playback resumed.")
         isPlaybackPaused = false
         pausedReplaySampleOffset = nil
+        updateIdleSleepPrevention()
         if let request = lastReplayableRequest ?? activeRequest,
            let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
             replayCache.updatePauseState(
@@ -477,6 +542,10 @@ final class TTSManager: ObservableObject {
     private func persistReplayablePlaybackIfNeeded(for request: KeyVoxTTSRequest) {
         guard let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() else { return }
         replayCache.save(request: request, samples: samples, pausedSampleOffset: nil)
+    }
+
+    private func updateIdleSleepPrevention() {
+        UIApplication.shared.isIdleTimerDisabled = shouldPreventIdleSleep
     }
 
     private static func log(_ message: String) {

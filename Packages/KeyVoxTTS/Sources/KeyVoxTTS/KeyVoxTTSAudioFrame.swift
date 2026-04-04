@@ -8,6 +8,8 @@ public struct KeyVoxTTSAudioFrame: Sendable {
     public let isChunkFinalBatch: Bool
     public let chunkDebugID: String
     public let estimatedRemainingSampleCount: Int
+    public let chunkGeneratedSampleCount: Int?
+    public let chunkGenerationDurationSeconds: Double?
 
     public init(
         samples: [Float],
@@ -16,7 +18,9 @@ public struct KeyVoxTTSAudioFrame: Sendable {
         chunkCount: Int,
         isChunkFinalBatch: Bool,
         chunkDebugID: String,
-        estimatedRemainingSampleCount: Int
+        estimatedRemainingSampleCount: Int,
+        chunkGeneratedSampleCount: Int? = nil,
+        chunkGenerationDurationSeconds: Double? = nil
     ) {
         self.samples = samples
         self.frameIndex = frameIndex
@@ -25,6 +29,8 @@ public struct KeyVoxTTSAudioFrame: Sendable {
         self.isChunkFinalBatch = isChunkFinalBatch
         self.chunkDebugID = chunkDebugID
         self.estimatedRemainingSampleCount = estimatedRemainingSampleCount
+        self.chunkGeneratedSampleCount = chunkGeneratedSampleCount
+        self.chunkGenerationDurationSeconds = chunkGenerationDurationSeconds
     }
 
     public var sampleCount: Int {

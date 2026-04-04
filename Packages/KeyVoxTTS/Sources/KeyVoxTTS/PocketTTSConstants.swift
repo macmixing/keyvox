@@ -17,6 +17,9 @@ enum PocketTTSConstants {
     static let estimatedFramesPerToken = 2.15
     static let estimatedFrameBasePadding = 10
     static let maxTokensPerChunk = 96
+    static let fastModeInitialMaxTokensPerChunk = 24
+    static let fastModeInitialBatchedFrameCount = 4
+    static let fastModeSteadyStateBatchedFrameCount = 12
     static let mediumFormTokenThreshold = 256
     static let longFormTokenThreshold = 512
     static let ultraLongFormTokenThreshold = 1_536

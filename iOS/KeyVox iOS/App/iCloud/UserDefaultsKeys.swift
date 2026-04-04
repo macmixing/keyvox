@@ -10,6 +10,7 @@ nonisolated enum UserDefaultsKeys {
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
     static let ttsVoice = "KeyVox.TTSVoice"
+    static let fastPlaybackModeEnabled = "KeyVox.FastPlaybackModeEnabled"
 
     enum App {
         static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"

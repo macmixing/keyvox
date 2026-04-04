@@ -7,6 +7,7 @@ protocol TTSEngine {
     func prepareForBackgroundContinuation() async
     func makeAudioStream(
         for text: String,
-        voiceID: String
+        voiceID: String,
+        fastModeEnabled: Bool
     ) async throws -> AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>
 }

@@ -54,6 +54,7 @@ public actor KeyVoxPocketTTSRuntime {
     public func synthesizeStreaming(
         text: String,
         voice: KeyVoxTTSVoice,
+        fastModeEnabled: Bool = false,
         seed: UInt64? = nil
     ) async throws -> AsyncThrowingStream<KeyVoxTTSAudioFrame, Error> {
         try await prepareIfNeeded()
@@ -76,12 +77,17 @@ public actor KeyVoxPocketTTSRuntime {
             voiceConditioning: voiceConditioning,
             model: prefillModel
         )
-        let chunks = PocketTTSChunkPlanner.chunk(trimmedText, tokenizer: constants.tokenizer)
+        let chunks = PocketTTSChunkPlanner.chunk(
+            trimmedText,
+            tokenizer: constants.tokenizer,
+            fastModeEnabled: fastModeEnabled
+        )
         Self.log(
             "Voice prefill completed in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - voicePrefillStart))s. Chunks: \(chunks.count)"
         )
         let generator = try StreamGenerator(
             chunks: chunks,
+            fastModeEnabled: fastModeEnabled,
             constants: constants,
             voiceConditioning: voiceConditioning,
             foregroundModels: try modelSet(foregroundModels, modeName: "foreground"),
@@ -197,7 +203,7 @@ public actor KeyVoxPocketTTSRuntime {
 
 private actor StreamGenerator {
     private enum StreamingPolicy {
-        static let batchedFrameCount = 8
+        static let defaultBatchedFrameCount = 8
     }
 
     private struct ChunkPlan {
@@ -210,6 +216,7 @@ private actor StreamGenerator {
     }
 
     private let chunkPlans: [ChunkPlan]
+    private let fastModeEnabled: Bool
     private let constants: PocketTTSConstantsBundle
     private let voiceConditioning: PocketTTSVoiceConditioning
     private let foregroundModels: KeyVoxPocketTTSRuntime.ModelSet
@@ -225,6 +232,7 @@ private actor StreamGenerator {
 
     init(
         chunks: [String],
+        fastModeEnabled: Bool,
         constants: PocketTTSConstantsBundle,
         voiceConditioning: PocketTTSVoiceConditioning,
         foregroundModels: KeyVoxPocketTTSRuntime.ModelSet,
@@ -260,6 +268,7 @@ private actor StreamGenerator {
         }
 
         self.chunkPlans = chunkPlans
+        self.fastModeEnabled = fastModeEnabled
         self.constants = constants
         self.voiceConditioning = voiceConditioning
         self.foregroundModels = foregroundModels
@@ -305,7 +314,9 @@ private actor StreamGenerator {
                 var detectedEOSFrame: Int?
                 var sequence = try PocketTTSInferenceUtilities.createNaNSequence()
                 var batchedSamples: [Float] = []
-                batchedSamples.reserveCapacity(PocketTTSConstants.samplesPerFrame * StreamingPolicy.batchedFrameCount)
+                batchedSamples.reserveCapacity(
+                    PocketTTSConstants.samplesPerFrame * batchedFrameCount(for: chunkIndex)
+                )
                 var batchStartFrameIndex = 0
                 var generatedFrames = 0
 
@@ -347,7 +358,7 @@ private actor StreamGenerator {
                     batchedSamples.append(contentsOf: samples)
                     generatedFrames += 1
 
-                    let reachedBatchSize = (frameIndex - batchStartFrameIndex + 1) >= StreamingPolicy.batchedFrameCount
+                    let reachedBatchSize = (frameIndex - batchStartFrameIndex + 1) >= batchedFrameCount(for: chunkIndex)
                     if reachedBatchSize {
                         flushBatch(
                             samples: &batchedSamples,
@@ -375,6 +386,8 @@ private actor StreamGenerator {
                         chunkCount: chunkPlans.count,
                         chunkDebugID: chunkPlan.debugID,
                         isChunkFinalBatch: true,
+                        chunkGeneratedSampleCount: generatedFrames * PocketTTSConstants.samplesPerFrame,
+                        chunkGenerationDurationSeconds: CFAbsoluteTimeGetCurrent() - chunkStart,
                         emittedSampleCount: &emittedSampleCount,
                         continuation: continuation
                     )
@@ -387,6 +400,8 @@ private actor StreamGenerator {
                         chunkCount: chunkPlans.count,
                         chunkDebugID: chunkPlan.debugID,
                         isChunkFinalBatch: true,
+                        chunkGeneratedSampleCount: generatedFrames * PocketTTSConstants.samplesPerFrame,
+                        chunkGenerationDurationSeconds: CFAbsoluteTimeGetCurrent() - chunkStart,
                         emittedSampleCount: &emittedSampleCount,
                         continuation: continuation
                     )
@@ -446,28 +461,36 @@ private actor StreamGenerator {
         chunkCount: Int,
         chunkDebugID: String,
         isChunkFinalBatch: Bool,
+        chunkGeneratedSampleCount: Int? = nil,
+        chunkGenerationDurationSeconds: Double? = nil,
         emittedSampleCount: inout Int,
         continuation: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>.Continuation
     ) {
-        guard !samples.isEmpty else { return }
-        let batchedSampleCount = samples.count
+        guard !samples.isEmpty || isChunkFinalBatch else { return }
+        let emittedSamples = samples
+        let batchedSampleCount = emittedSamples.count
         let nextEmittedSampleCount = emittedSampleCount + batchedSampleCount
         let estimatedRemainingSampleCount = max(0, correctedRemainingSampleCount(afterEmittingSampleCount: nextEmittedSampleCount))
 
         continuation.yield(
             KeyVoxTTSAudioFrame(
-                samples: samples,
+                samples: emittedSamples,
                 frameIndex: max(batchStartFrameIndex, frameIndex),
                 chunkIndex: chunkIndex,
                 chunkCount: chunkCount,
                 isChunkFinalBatch: isChunkFinalBatch,
                 chunkDebugID: chunkDebugID,
-                estimatedRemainingSampleCount: estimatedRemainingSampleCount
+                estimatedRemainingSampleCount: estimatedRemainingSampleCount,
+                chunkGeneratedSampleCount: chunkGeneratedSampleCount,
+                chunkGenerationDurationSeconds: chunkGenerationDurationSeconds
             )
         )
         emittedSampleCount = nextEmittedSampleCount
+        let emittedFrameCount = batchedSampleCount == 0
+            ? 0
+            : max(1, batchedSampleCount / PocketTTSConstants.samplesPerFrame)
         Self.log(
-            "Chunk \(chunkIndex + 1)/\(chunkCount) yielded batch id=\(chunkDebugID) samples=\(batchedSampleCount) frames=\(max(1, batchedSampleCount / PocketTTSConstants.samplesPerFrame)) remainingEstimatedSamples=\(estimatedRemainingSampleCount) finalBatch=\(isChunkFinalBatch)"
+            "Chunk \(chunkIndex + 1)/\(chunkCount) yielded batch id=\(chunkDebugID) samples=\(batchedSampleCount) frames=\(emittedFrameCount) remainingEstimatedSamples=\(estimatedRemainingSampleCount) finalBatch=\(isChunkFinalBatch)"
         )
         samples.removeAll(keepingCapacity: true)
     }
@@ -482,6 +505,16 @@ private actor StreamGenerator {
         let clampedRatio = min(1.2, max(0.75, observedRatio))
         let correctedRemainingSampleCount = Double(rawRemainingSampleCount) * clampedRatio
         return Int(correctedRemainingSampleCount.rounded(.up))
+    }
+
+    private func batchedFrameCount(for chunkIndex: Int) -> Int {
+        guard fastModeEnabled else {
+            return StreamingPolicy.defaultBatchedFrameCount
+        }
+        if chunkIndex == 0 {
+            return PocketTTSConstants.fastModeInitialBatchedFrameCount
+        }
+        return PocketTTSConstants.fastModeSteadyStateBatchedFrameCount
     }
 
     private static func chunkDebugID(for text: String) -> String {

@@ -182,6 +182,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var fastPlaybackModeEnabled: Bool {
+        didSet {
+            defaults.set(fastPlaybackModeEnabled, forKey: UserDefaultsKeys.fastPlaybackModeEnabled)
+        }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
@@ -220,6 +226,8 @@ final class AppSettingsStore: ObservableObject {
         } else {
             activeDictationProvider = .whisper
         }
+
+        fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

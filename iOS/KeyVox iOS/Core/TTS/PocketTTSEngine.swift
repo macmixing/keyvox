@@ -43,7 +43,8 @@ final class PocketTTSEngine: TTSEngine {
 
     func makeAudioStream(
         for text: String,
-        voiceID: String
+        voiceID: String,
+        fastModeEnabled: Bool
     ) async throws -> AsyncThrowingStream<KeyVoxTTSAudioFrame, Error> {
         Self.log("Creating audio stream for voice \(voiceID).")
         let runtime = try runtimeForInstalledAssets()
@@ -51,7 +52,11 @@ final class PocketTTSEngine: TTSEngine {
             throw KeyVoxTTSError.invalidVoice("PocketTTS voice \(voiceID) is not supported.")
         }
 
-        return try await runtime.synthesizeStreaming(text: text, voice: voice)
+        return try await runtime.synthesizeStreaming(
+            text: text,
+            voice: voice,
+            fastModeEnabled: fastModeEnabled
+        )
     }
 
     private func runtimeForInstalledAssets() throws -> KeyVoxPocketTTSRuntime {
