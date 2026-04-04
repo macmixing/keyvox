@@ -42,7 +42,7 @@ final class AudioModeCoordinator: ObservableObject {
         }
     }
 
-    func handleStartTTSFromPendingRequest() {
+    func handleStartTTSFromPendingRequest(showPreparationView: Bool = true) {
         Task { @MainActor in
             guard !isTransitioning else { return }
             isTransitioning = true
@@ -64,7 +64,7 @@ final class AudioModeCoordinator: ObservableObject {
                 await transcriptionManager.performCancelCurrentUtterance()
             }
 
-            await ttsManager.startPlaybackFromPendingRequest()
+            await ttsManager.startPlaybackFromPendingRequest(showPreparationView: showPreparationView)
         }
     }
 

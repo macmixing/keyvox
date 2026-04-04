@@ -1,0 +1,314 @@
+a4a3f95 2026-04-03 Dom Esposito
+feat(settings): show yellow install percentages beside download details
+- update `SettingsTabView+Models.swift` so text model download and install rows render a dedicated yellow percentage on the trailing side of the details line above the progress bar
+- strip the embedded percentage back out of the gray text-model status copy during active download and install phases so the percent is only shown once
+- update `SettingsTabView+TTS.swift` so PocketTTS CoreML and individual voice download rows render the same trailing yellow percentage treatment above their progress bars
+- keep the existing not-installed size copy, failure messages, and progress bars intact while aligning the active-download details layout across text and voice model sections
+
+---
+bbd5e3a 2026-04-03 Dom Esposito
+feat(ios-tts): normalize home playback voice fallback and auto-expand voice installs
+- add TTS voice selection normalization in `AppServiceRegistry.swift` so changes to PocketTTS shared-model and voice install state automatically repair a stale `settingsStore.ttsVoice` selection to an installed fallback when possible
+- inject an `effectiveVoiceProvider` into `TTSManager.swift` and use it when building clipboard playback requests so home playback never targets an unavailable persisted voice when another installed voice can be used
+- update `HomeTabView+TTS.swift` to render the voice label, install status copy, button title, enabled state, and primary action routing from an `effectiveTTSVoice` fallback instead of blindly trusting the raw stored selection
+- expand the Voice Model section automatically in `SettingsTabView.swift` when PocketTTS CoreML finishes installing so voice download rows are surfaced immediately after the shared runtime becomes ready
+
+---
+0d51e7b 2026-04-03 Dom Esposito
+feat(ios-settings): move delete confirmation above the tab shell
+- replace the old system alert in `SettingsDeletionConfirmation.swift` with a custom translucent confirmation overlay that keeps the underlying app visible while presenting explicit `Cancel` and `Delete` actions
+- stop allowing outside-tap dismissal on the delete confirmation overlay so destructive prompts can only be dismissed through the explicit buttons
+- move pending deletion confirmation ownership from `SettingsTabView.swift` up into `MainTabView.swift` so the exact same delete prompt is rendered above the full tab shell and naturally blocks tab-bar interaction while it is visible
+- move final delete execution into `MainTabView.swift`, keeping `SettingsTabView.swift` focused on requesting confirmations instead of owning destructive model and voice deletion side effects
+- update `SettingsTabView+Models.swift` and `SettingsTabView+TTS.swift` so all destructive actions consistently say `Delete` instead of `Remove`
+
+---
+d331871 2026-04-03 Dom Esposito
+fix(ios-models): remove successful Core ML bundle validation log spam
+- remove the success-path `validateExtractedCoreMLBundle` debug log from `ModelManager+Support.swift`
+- keep Whisper Core ML bundle validation behavior unchanged while silencing the repeated `regularFileCount` console noise during normal model-state refreshes
+- preserve the real failure path so missing or empty extracted Core ML bundles still return actionable validation errors
+
+---
+145cedc 2026-04-03 Dom Esposito
+fix(ios-tts): stop logging missing voice installs as validation failures
+- update `PocketTTSAssetLocator.isSharedModelInstalled()` to treat a missing shared install manifest as a normal not-installed state instead of logging a validation failure on every refresh
+- update `PocketTTSAssetLocator.isVoiceInstalled(_:)` to treat missing per-voice manifests as a normal not-installed state so uninstalled voices no longer spam the console during app launch and status refreshes
+- keep logging for genuinely broken install states by emitting focused messages only when a shared or voice manifest is unreadable or uses an unsupported manifest version
+- preserve the existing detailed logging for real partial-install problems such as missing installed assets and artifact size mismatches
+
+---
+9d8cefb 2026-04-03 Dom Esposito
+feat(ios-home): soften home playback background failure copy
+- intercept the raw TTS error string in `HomeTabView+TTS.swift` before the Speak card renders it to the user
+- map the Core ML background-generation failure variants (`unable to compute the prediction`, `broken/unsupported model`, and `error code -1`) to a friendlier message about playback not continuing after the app moved to the background
+- leave all other TTS errors unchanged so the home card only softens this specific background-playback failure path
+
+---
+fcb354e 2026-04-03 Dom Esposito
+feat(ios-tts): make the tts URL scheme start clipboard playback from home
+- update `KeyVoxURLRouter.swift` so `keyvoxios://tts/start` now branches on whether a valid pending TTS request already exists
+- preserve the existing keyboard preparation flow when a staged pending request is present by continuing into `handleStartTTSFromPendingRequest()`
+- treat standalone `.startTTS` URL launches as a clipboard speak action when no pending request exists by routing into `handleSpeakClipboardFromApp()`
+- stop force-presenting the playback preparation view for every `.startTTS` cold launch in `KeyVoxiOSApp.swift` so the router owns the decision instead of the app shell
+- remove the `AppRootView.swift` special case that sent any initial `.startTTS` route straight to `PlaybackPreparationView`, allowing shortcut-driven TTS launches to land on the normal Home flow
+
+---
+367d149 2026-04-03 Dom Esposito
+chore(tests-ci): add KeyVoxTTS to package tests
+
+---
+752ee99 2026-04-03 Dom Esposito
+chore(ios-docs): update codemap and engineering
+
+---
+1ad29fc 2026-04-03 Dom Esposito
+feat(ios-home): add speak tap haptic and tighten voice model copy
+- add the shared `appHaptics` environment to `HomeTabView.swift` so the home speak card can use the same centralized haptics service as the rest of the app
+- emit a light haptic in `HomeTabView+TTS.swift` when the user taps Speak and the selected PocketTTS voice is ready to start clipboard playback
+- leave install and repair flows untouched so the new haptic only fires for the actual home-tab speak action
+- update the Voice Model description copy in `SettingsTabView+TTS.swift` to say KeyVox uses the selected voice when speaking copied text
+- update the Text Model icon to character.cursor.ibeam
+
+---
+684f757 2026-04-03 Dom Esposito
+fix(ios-tests): repair iOS test target wiring and protocol conformance
+- remove stale assumptions in `KeyVoxURLRouterTests.swift` by constructing `KeyVoxURLRouter` with the current `TranscriptionManager`, `TTSManager`, and `AudioModeCoordinator` dependency graph
+- add a minimal `StubTTSEngine` and `KeyVoxTTS` import in `KeyVoxURLRouterTests.swift` so the router harness can satisfy the modern TTS stack without pulling in real synthesis behavior
+- update the `StubAudioRecorder` test doubles in both `KeyVoxURLRouterTests.swift` and `TranscriptionManagerTests.swift` to conform to the current `AudioRecording` protocol by implementing `repairMonitoringAfterPlayback()`
+- update `KeyboardDictationControllerTests.swift` so the IPC spy conforms to the current `KeyboardDictationIPCManaging` protocol by exposing Bluetooth-route and recent-TTS state accessors
+- carry the related `project.pbxproj` file-system-synchronized membership updates that surfaced in the branch alongside these iOS test-target fixes
+
+---
+8c02094 2026-04-03 Dom Esposito
+feat(ios-settings): add light haptics to model disclosure chevrons
+- make `appHaptics` accessible from the split settings extension files by loosening the environment property visibility in `SettingsTabView.swift`
+- emit a light haptic when the Text Model disclosure chevron is tapped in `SettingsTabView+Models.swift`
+- emit a light haptic when the Voice Model disclosure chevron is tapped in `SettingsTabView+TTS.swift`
+
+---
+cb6f0e9 2026-04-03 Dom Esposito
+feat(ios-tts): show approximate voice download sizes in settings
+- add approximate per-voice PocketTTS download byte counts to `PocketTTSModelCatalog.swift` so voice size metadata stays with the TTS catalog instead of being embedded in the settings view
+- expose a small `approximateVoiceDownloadBytes(for:)` helper from the TTS catalog for settings presentation code to consume
+- update `SettingsTabView+TTS.swift` so each not-installed voice row shows `Not installed (~size)` once the shared PocketTTS runtime is ready
+- keep the existing “Install PocketTTS CoreML before downloading voices.” guidance unchanged when the shared runtime has not been installed yet
+
+---
+2fba3a8 2026-04-03 Dom Esposito
+feat(ios-settings): extract model deletion confirmation into a shared component
+- add `SettingsDeletionConfirmation.swift` as a dedicated settings component that owns the shared pending-deletion enum and reusable alert presentation helper
+- move deletion confirmation state and final delete routing into `SettingsTabView.swift` so the settings screen coordinates confirmations centrally instead of each section deleting directly
+- update `SettingsTabView+Models.swift` so text model removal first stages a `.dictationModel` confirmation instead of deleting immediately
+- update `SettingsTabView+TTS.swift` so both shared voice runtime deletion and individual voice deletion flow through the same shared confirmation component
+- register the new settings deletion confirmation component in the iOS Xcode project sources and components group
+
+---
+ce80bb5 2026-04-03 Dom Esposito
+feat(ios-settings): add disclosure treatment to text model card
+- mirror the Voice Model card structure in `SettingsTabView+Models.swift` by adding a details row, a large yellow disclosure chevron, and an expandable content region for the installed text model rows
+- move the Text Model install rows into a measured, clipped container so the card expands and collapses with the same polished spring animation treatment used by the Voice Model card
+- add text-model-specific description copy so the collapsed state still explains what the active dictation provider controls before the user expands the section
+- add dedicated Text Model disclosure state and visibility tracking in `SettingsTabView.swift`, and sync that presentation on appear and section state changes just like the Voice Model disclosure flow
+
+---
+25cc3a4 2026-04-03 Dom Esposito
+feat(ios-settings): rename playback card to voice model
+- rename the settings card title from `Playback Model` to `Voice Model` to better reflect that the section controls the selected playback voice
+- enlarge the disclosure chevron substantially so the expand/collapse affordance is easier to see and tap
+- change the disclosure chevron tint to yellow so it matches the interactive accent language already used in the card
+
+---
+3477b2b 2026-04-03 Dom Esposito
+feat(ios-home): polish speak card header styling
+- remove the large leading speaker icon from the Speak Copied Text card header
+- match the Speak Copied Text title size to the Latest Transcription card by changing it to `appFont(17)`
+- add a small inline yellow `waveform` symbol next to the active voice label so the selected voice still has lightweight visual identity without the old oversized icon
+
+---
+de38c0b 2026-04-03 Dom Esposito
+feat(ios-tts): add replay transport and persisted paused playback state
+- add home-card transport controls in `HomeTabView+TTS.swift` so TTS now has a dedicated circular replay / pause / resume button and an active circular stop control instead of only a text CTA
+- route the new home playback transport actions through `AudioModeCoordinator` so pause, resume, and replay stay separate from fresh clipboard generation
+- extend `TTSPlaybackCoordinator` with true pause / resume support, exact rendered-audio replay, replay progress tracking, and paused replay sample offsets so cached playback can restart from the right position
+- extend `TTSManager` with published replay and pause state, replay restoration on launch, persisted paused replay resume, and exact last-request tracking without tying replay to the current clipboard contents
+- add `TTSReplayCache.swift` as a dedicated persistence layer for the last completed TTS render, including raw PCM audio, request metadata, and paused sample offsets
+- add stable replay cache file locations in `SharedPaths.swift` so persisted playback lives under the existing shared TTS storage instead of being mixed into unrelated paths
+- wire the new replay cache into the Xcode project so the TTS persistence layer is built as a separate TTS concern
+
+---
+33f58dd 2026-04-03 Dom Esposito
+feat(ios-settings): polish playback model details row layout
+- add a separator line above the playback model details paragraph so the card reads more clearly beneath the title and action controls
+- move the playback model disclosure chevron into the details row and vertically center it alongside the descriptive copy instead of the header row
+- keep the existing heavy right/down chevron treatment while making the disclosure control feel more aligned with the expandable content it governs
+- carry the related project version bump updates in the Xcode project file
+
+---
+6cab6c1 2026-04-03 Dom Esposito
+feat(ios-keyboard): animate speak key visibility like cancel during dictation
+- add dedicated speak-button visibility state to `KeyboardRootView` so the playback control can participate in the same show/hide choreography as other top-row controls
+- hide the Speak key whenever the keyboard enters a dictation state that shows the cancel button, instead of leaving both controls visible at once
+- mirror the cancel button’s spring fade-and-scale animation one-for-one for the Speak key when it appears and disappears
+- keep the Speak key enabled only when its slot is actually visible so the dictation and playback controls behave as a clean inverse pair
+- initialize the Speak key’s alpha and transform alongside the cancel button so repeated state transitions animate predictably without snapping
+
+---
+3dfe6b3 2026-04-03 Dom Esposito
+feat(ios-tts): make ultra-long playback runway fully deterministic
+- add an ultra-long PocketTTS chunking tier so extremely large playback requests split into smaller 48-token chunks before synthesis
+- update the chunk planner to route very large token counts into the new ultra-long chunk cap instead of reusing the ordinary long-form limit
+- tighten the playback coordinator’s ultra-long background continuation model by using a more pessimistic background-safe realtime factor
+- stop hiding ultra-long requests behind a fixed runway ceiling when the computed continuation deficit is larger than the remaining audio itself
+- keep the existing capped deterministic runway behavior for normal and long-form playback while allowing monster requests to prerender as much as needed to guarantee continuity
+- carry the related Xcode project file ordering updates that accompanied this round of TTS integration changes
+
+---
+ee10426 2026-04-03 Dom Esposito
+feat(ios-keyboard): match landscape speak key height to caps lock
+- update `KeyboardLayoutGeometry.TopRowAccessoryLayout` so the Speak key only switches to top-row key height matching when the keyboard is in landscape
+- preserve the existing portrait behavior by continuing to size the Speak key as a square in portrait mode
+- refresh the Speak key constraints when orientation changes so the landscape height rule does not leak back into portrait
+
+---
+c593056 2026-04-03 Dom Esposito
+feat(ios-home): split home tab tts card logic into its own file
+- move the Home tab TTS card UI, progress presentation, install/action handling, and error-message policy out of `HomeTabView.swift`
+- add `HomeTabView+TTS.swift` to keep the TTS-specific home card behavior separate from the screen’s core layout and diagnostics sections
+- reduce `HomeTabView.swift` back to screen composition and shared top-level state needed by the TTS extension
+- wire the new `HomeTabView+TTS.swift` file into the iOS Xcode target so the split builds cleanly
+
+---
+4a7822d 2026-04-03 Dom Esposito
+feat(ios-tts): add bundled playback voice previews in settings
+- add a dedicated `TTSVoicePreviewPlayer` so playback voice previews use a shared app-owned audio controller instead of mixing AVAudio state into the SwiftUI settings view
+- register the preview player in `AppServiceRegistry` and inject it through `KeyVoxApp` so the playback model section can coordinate one active preview at a time
+- update the playback model voice rows to place a preview control on the left side of the name and detail stack, centered vertically, using the non-filled `play.circle` and `pause.circle` SF Symbols
+- play a light haptic when a voice preview starts and support pause/resume on the currently active preview
+- stop any active preview when the settings screen disappears or when the playback model disclosure collapses so preview audio does not linger offscreen
+- add the bundled `TTSVoicePreviews` resource folder to the iOS app target and ship the converted `.m4a` preview clips for alba, azelma, cosette, eponine, fantine, javert, jean, and marius
+
+---
+0b02374 2026-04-03 Dom Esposito
+feat(ios-settings): reorder playback model settings and polish disclosure animation
+- move the `Playback Model` card below the `Text Model` card in the settings tab so the playback controls follow the primary dictation model controls
+- replace the playback model section’s snap open/close behavior with a measured, clipped disclosure container that animates card height and content visibility together
+- animate the expanded playback model content with a spring-based resize and a coordinated fade so opening and closing feel more deliberate and polished
+- add shared disclosure helpers and measured content height state across `SettingsTabView` and `SettingsTabView+TTS` so the split files can coordinate the animation cleanly
+
+---
+354da19 2026-04-03 Dom Esposito
+feat(ios-tts): add animated home playback preparation progress
+- promote TTS preparation progress and phase updates to all playback requests so the in-app speak flow can reuse the same real startup-runway state as the keyboard preparation flow
+- reset preparation state explicitly at request start, pending-request failure, background hide, and request teardown so the home card stays deterministic across repeated playback
+- emit the playback-preparation success haptic only once per active request when preparation truly completes
+- add a real indigo preparation progress bar and percent label to the home tab speak card while TTS is preparing or generating
+- update the home tab status copy to reflect startup rendering instead of generic speech generation
+- animate the home tab progress section with the same staged slot growth and fade behavior used by onboarding rows so the card expands intentionally instead of snapping
+
+---
+3c8c92d 2026-04-03 Dom Esposito
+feat(ios-audio): tune return-to-host startup timing and bluetooth warm starts
+- increase the intentional playback-preparation completion delay to 0.5 seconds so the success haptic and 100% state land before audible playback begins
+- add bluetooth-route awareness to the shared warm-session IPC state so the keyboard can distinguish normal warm starts from slower bluetooth audio route transitions
+- publish the recorder’s current bluetooth route state through the app heartbeat path from `AppServiceRegistry` and `KeyVoxKeyboardBridge`
+- expose bluetooth route presence through `KeyboardIPCManager` and update `KeyboardDictationController` to use a longer warm grace period only for bluetooth warm sessions
+- keep the normal warm dictation and recent-TTS warm grace periods at 0.5 seconds so non-bluetooth starts stay fast
+- add the required `AVFAudio` import in `AppServiceRegistry` for route and port inspection
+
+---
+f37fdc7 2026-04-03 Dom Esposito
+feat(ios-audio): stabilize tts-to-dictation handoff and gate return-to-host playback
+- add deeper iOS-target logging across the app, TTS manager, audio mode coordinator, IPC bridge, and recorder startup path so post-TTS handoff failures can be traced from scene transition through RemoteIO bring-up
+- harden recorder recovery by adding a dedicated post-playback monitoring repair path with retries, and route transcription session repair through that path instead of a single immediate monitor restart
+- preserve the active audio session after playback when TTS is running in recording-preserving mode so warm dictation repair no longer starts from a deactivated background session
+- add a recording-preserving TTS playback session mode and wire it through the audio mode coordinator so warm dictation sessions can hand off into playback without tearing down the session contract
+- keep recent TTS playback state in shared IPC and let the keyboard dictation controller use a dedicated warm fallback window, now reduced back to 0.5s
+- make playback preparation deterministic by latching the highest startup target, delaying audible playback briefly after preparation reaches 100%, and firing the success haptic exactly at preparation completion before audio starts
+- improve the playback-preparation UX by keeping the keyboard cold-launch path on foreground synthesis until the screen is truly ready to return
+- restore Bluetooth playback routing in the recording-preserving TTS path by allowing A2DP/HFP output and only forcing speaker when the current route is the built-in receiver
+
+---
+8f8b23b 2026-04-03 Dom Esposito
+feat(ios-tts): refine playback indicator update density and amplitude
+- reduce the playback meter window size and step size in `TTSPlaybackCoordinator` so speaking indicator updates track synthesized audio more frequently
+- keep the existing playback meter model but lower the RMS and peak multipliers slightly so the keyboard bars do not read quite as loud during speech
+- preserve the current speaking indicator behavior while softening the overall amplitude response instead of reworking the indicator pipeline again
+
+---
+8636696 2026-04-03 Dom Esposito
+feat(ios-settings): rename model sections and strengthen playback disclosure icon
+- rename the dictation settings section from `Active Model` to `Text Model` for clearer separation from playback controls
+- rename the TTS settings section from `Playback Voice` to `Playback Model` so it better matches the install and disclosure behavior in that card
+- increase the playback model disclosure chevron weight to `.heavy` so the collapse affordance reads more clearly in the settings UI
+
+---
+64b7470 2026-04-03 Dom Esposito
+feat(ios-tts): remove all PocketTTS assets with core runtime delete
+- update `PocketTTSModelManager.deleteSharedModel()` to remove the entire PocketTTS root directory instead of deleting only the shared model files
+- ensure downloaded voice prompts and the shared install manifest are cleared whenever the user removes PocketTTS CoreML
+- keep PocketTTS cleanup consistent so no orphaned voice assets linger after the core runtime is deleted
+
+---
+c3aefb7 2026-04-03 Dom Esposito
+feat(ios-tts): collapse playback voice settings section
+- add local disclosure state to `SettingsTabView` so the playback voice area can expand and collapse without introducing persisted settings
+- update `SettingsTabView+TTS` to show a right/down chevron disclosure control next to the voice actions once PocketTTS CoreML is installed
+- keep the TTS details collapsed by default after the shared runtime is installed so the settings screen stays compact
+- continue showing the PocketTTS CoreML install row when nothing is installed so first-time setup is still immediately visible
+
+---
+5783273 2026-04-03 Dom Esposito
+feat(ios-tts): split PocketTTS voices into separate installs
+- expand the supported PocketTTS voice list across the package and app settings so KeyVox can target every currently exposed voice on the card
+- separate PocketTTS install management into a shared CoreML runtime install plus per-voice prompt installs, with distinct catalog fetches, manifests, validation, and readiness checks
+- move the TTS settings UI out of `SettingsTabView.swift` into a dedicated `SettingsTabView+TTS.swift` file to keep the settings screen maintainable and TTS concerns isolated
+- update the settings experience so PocketTTS CoreML installs first, voice rows appear after the shared runtime is ready, and only installed voices appear in the playback voice picker
+- replace vague playback-model messaging with explicit PocketTTS CoreML and per-voice status text so the install flow is easier to understand
+- update the home tab speak action to handle shared runtime installs and selected-voice installs separately before allowing playback
+- fix the post-install gray-button bug by publishing the active TTS install target so the settings UI re-enables voice actions immediately when a shared install completes
+
+---
+c5138ef 2026-04-03 Dom Esposito
+feat(ios-tts): fix short javert cutoffs and add stop-cause logging
+- separate the hard PocketTTS generation frame limit from the tighter runway estimator so short utterances no longer stop early just because the startup estimate is too small
+- restore a more generous reference-style generation cap for synthesis while keeping the smarter remaining-work estimate for playback runway decisions
+- add runtime logging for EOS detection, EOS-triggered stop frames, generation completion, and generation failure to pinpoint future short-utterance cutoffs
+- add TTS manager request lifecycle logging for start, playback start, explicit stop, finish, and failure so button-state changes can be traced back to the exact stop cause
+
+---
+c54ff82 2026-04-03 Dom Esposito
+feat(ios-tts): speed up short-message playback startup
+- let short utterances bypass the heavier long-form silent-start runway logic when their remaining estimated audio is already below the return-to-host runway
+- keep the deterministic remaining-work deficit model in place for longer requests so the long-form background-safe behavior stays protected
+- preserve the existing minimum startup guardrails so short playback starts faster without reintroducing immediate underruns
+
+---
+696c2e2 2026-04-03 Dom Esposito
+feat(ios-tts): harden long-form playback runway estimation
+- add chunk-level debug identifiers and previews to the PocketTTS runtime so long-form playback, chunk emission, and buffer scheduling can be traced end to end
+- carry estimated remaining sample counts through `KeyVoxTTSAudioFrame` and use them in `TTSPlaybackCoordinator` to gate playback on a remaining-work deficit model instead of a simple chunk-count heuristic
+- replace the old inflated word-based frame estimator with a token-based estimate and runtime correction factor so startup runway stays safer without forcing the previous extreme overbuffer
+- make long-form chunking adaptive by tightening per-chunk token limits for medium and large requests to reduce background-hostile dense chunks
+- expand chunk planner coverage with a long-form regression test and verify the package with a clean scratch-path `swift test` run
+
+---
+99cdc31 2026-04-03 Dom Esposito
+feat(keyboard): separate TTS prep visuals from dictation state
+- add a dedicated keyboard `preparingPlayback` state so Speak startup no longer flashes dictation cancel/transcribing UI
+- route TTS preparation through its own IPC/state mapping while keeping dictation waiting behavior unchanged
+- improve playback meter realism by publishing a dedicated TTS meter feed and driving the keyboard indicator with denser timed envelope updates
+- tune the speaking indicator to react more naturally to synthesized audio with faster polling, speaking-specific smoothing, and output-oriented bar behavior
+- keep the microphone indicator passive during playback while preserving the active Speak key state
+
+---
+5b8ecf1 2026-04-02 Dom Esposito
+feat(ios-tts): add offline PocketTTS playback across iOS app and keyboard
+- add the new `KeyVoxTTS` package with first-party PocketTTS runtime, tokenizer, chunk planning, Core ML inference stages, and package tests
+- add an iOS-owned TTS stack for model install/readiness, audio mode coordination, playback buffering, request lifecycle management, and keyboard/app IPC
+- integrate offline playback into the app with voice selection, model download/install UI, app-side “Speak Copied Text”, and dedicated TTS settings/state
+- add keyboard-side TTS support with a separate controller, shared-state wiring, speaking state, reversed logo-bar behavior, and the new special Speak key above `9`
+- split dictation and TTS cold-start UX by adding `PlaybackPreparationView`, real preparation progress, and a TTS-specific return-to-host flow
+- improve PocketTTS startup and long-form playback behavior with foreground/background compute handoff, runway buffering, chunk reuse, and text sanitization for problematic clipboard content
+
+---

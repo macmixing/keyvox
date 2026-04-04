@@ -150,7 +150,7 @@ final class TTSManager: ObservableObject {
         await startPlayback(request, showPreparationView: false)
     }
 
-    func startPlaybackFromPendingRequest() async {
+    func startPlaybackFromPendingRequest(showPreparationView: Bool = false) async {
         guard let request = KeyVoxIPCBridge.readTTSRequest(),
               request.trimmedText.isEmpty == false else {
             isPlaybackPreparationViewPresented = false
@@ -158,7 +158,22 @@ final class TTSManager: ObservableObject {
             return
         }
 
-        await startPlayback(request, showPreparationView: true)
+        let effectiveVoiceID = effectiveVoiceProvider().rawValue
+        let normalizedRequest: KeyVoxTTSRequest
+        if request.voiceID == effectiveVoiceID {
+            normalizedRequest = request
+        } else {
+            normalizedRequest = KeyVoxTTSRequest(
+                id: request.id,
+                text: request.text,
+                createdAt: request.createdAt,
+                sourceSurface: request.sourceSurface,
+                voiceID: effectiveVoiceID,
+                kind: request.kind
+            )
+        }
+
+        await startPlayback(normalizedRequest, showPreparationView: showPreparationView)
     }
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
