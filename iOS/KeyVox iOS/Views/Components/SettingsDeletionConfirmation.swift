@@ -44,15 +44,78 @@ extension View {
         _ confirmation: Binding<SettingsPendingDeletionConfirmation?>,
         onConfirm: @escaping (SettingsPendingDeletionConfirmation) -> Void
     ) -> some View {
-        alert(item: confirmation) { pendingConfirmation in
-            Alert(
-                title: Text(pendingConfirmation.title),
-                message: Text(pendingConfirmation.message),
-                primaryButton: .destructive(Text("Delete")) {
-                    onConfirm(pendingConfirmation)
-                },
-                secondaryButton: .cancel()
+        modifier(
+            SettingsDeletionConfirmationModifier(
+                confirmation: confirmation,
+                onConfirm: onConfirm
             )
-        }
+        )
+    }
+}
+
+private struct SettingsDeletionConfirmationModifier: ViewModifier {
+    @Binding var confirmation: SettingsPendingDeletionConfirmation?
+    let onConfirm: (SettingsPendingDeletionConfirmation) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if let confirmation {
+                    ZStack {
+                        Color.black.opacity(0.6)
+                            .ignoresSafeArea()
+                            .contentShape(Rectangle())
+
+                        VStack(alignment: .leading, spacing: 18) {
+                            Text(confirmation.title)
+                                .font(.appFont(22))
+                                .foregroundStyle(.white)
+
+                            Text(confirmation.message)
+                                .font(.appFont(15, variant: .light))
+                                .foregroundStyle(.white.opacity(0.78))
+
+                            HStack(spacing: 12) {
+                                AppActionButton(
+                                    title: "Cancel",
+                                    style: .secondary,
+                                    fillsWidth: true,
+                                    size: .regular,
+                                    fontSize: 16,
+                                    action: {
+                                        self.confirmation = nil
+                                    }
+                                )
+
+                                AppActionButton(
+                                    title: "Delete",
+                                    style: .destructive,
+                                    fillsWidth: true,
+                                    size: .regular,
+                                    fontSize: 16,
+                                    action: {
+                                        let activeConfirmation = confirmation
+                                        self.confirmation = nil
+                                        onConfirm(activeConfirmation)
+                                    }
+                                )
+                            }
+                        }
+                        .padding(22)
+                        .frame(maxWidth: 420, alignment: .leading)
+                        .background(AppTheme.screenBackground)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .stroke(Color.yellow.opacity(0.9), lineWidth: 1.5)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                        .shadow(color: .black.opacity(0.25), radius: 26, y: 12)
+                        .padding(.horizontal, 24)
+                    }
+                    .transition(.opacity)
+                    .zIndex(10)
+                }
+            }
+            .animation(.easeInOut(duration: 0.18), value: confirmation != nil)
     }
 }

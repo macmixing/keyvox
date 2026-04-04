@@ -173,7 +173,7 @@ extension SettingsTabView {
             )
         case .ready:
             AppActionButton(
-                title: "Remove",
+                title: "Delete",
                 style: .destructive,
                 size: .compact,
                 fontSize: 15,

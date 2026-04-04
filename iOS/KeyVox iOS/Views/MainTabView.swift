@@ -13,7 +13,10 @@ struct MainTabView: View {
     }
 
     @Environment(\.appHaptics) private var appHaptics
+    @EnvironmentObject var modelManager: ModelManager
+    @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @State private var selectedTab: ContainingAppTab = .home
+    @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
 
     var body: some View {
         NavigationStack {
@@ -33,6 +36,7 @@ struct MainTabView: View {
                 AppToolbarContent(selectedTab: selectedTab)
             }
         }
+        .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
@@ -60,7 +64,7 @@ struct MainTabView: View {
                 }
                 .tag(ContainingAppTab.style)
 
-            SettingsTabView()
+            SettingsTabView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
@@ -111,12 +115,24 @@ struct MainTabView: View {
         }
     }
 
+    private func performDeletionConfirmation(_ confirmation: SettingsPendingDeletionConfirmation) {
+        switch confirmation {
+        case .dictationModel(let modelID):
+            modelManager.deleteModel(withID: modelID)
+        case .sharedTTSModel:
+            pocketTTSModelManager.deleteSharedModel()
+        case .ttsVoice(let voice):
+            pocketTTSModelManager.deleteVoice(voice)
+        }
+    }
+
 }
 
 #Preview {
     MainTabView()
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)

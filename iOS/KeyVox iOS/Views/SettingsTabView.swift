@@ -7,7 +7,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
-    @State var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State var isModelSectionExpanded = false
     @State var isModelExpandedContentVisible = false
     @State var modelExpandedContentHeight: CGFloat = 0
@@ -63,7 +63,6 @@ struct SettingsTabView: View {
         .onChange(of: shouldShowExpandedModelContent, initial: true) { _, _ in
             updateModelDisclosurePresentation()
         }
-        .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
     }
 
     @ViewBuilder
@@ -245,17 +244,6 @@ struct SettingsTabView: View {
         }
     }
 
-    func performDeletionConfirmation(_ confirmation: SettingsPendingDeletionConfirmation) {
-        switch confirmation {
-        case .dictationModel(let modelID):
-            modelManager.deleteModel(withID: modelID)
-        case .sharedTTSModel:
-            pocketTTSModelManager.deleteSharedModel()
-        case .ttsVoice(let voice):
-            pocketTTSModelManager.deleteVoice(voice)
-        }
-    }
-    
     @ViewBuilder
     private var versionFooter: some View {
         if let appVersionBuildText {
@@ -270,7 +258,7 @@ struct SettingsTabView: View {
 }
 
 #Preview {
-    SettingsTabView()
+    SettingsTabView(pendingDeletionConfirmation: .constant(nil))
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
