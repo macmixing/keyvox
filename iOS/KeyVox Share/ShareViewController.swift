@@ -6,29 +6,21 @@
 //
 
 import UIKit
-import Social
 
-final class ShareViewController: SLComposeServiceViewController {
+final class ShareViewController: UIViewController {
     private lazy var appLauncher = KeyVoxShareAppLauncher(responderProvider: { [weak self] in
         self
     })
     private var hasStartedProcessing = false
 
-    override func isContentValid() -> Bool {
-        return true
+    override func loadView() {
+        self.view = UIView()
+        self.view.backgroundColor = .clear
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewDidLoad() {
+        super.viewDidLoad()
         beginProcessingIfNeeded()
-    }
-
-    override func didSelectPost() {
-        beginProcessingIfNeeded()
-    }
-
-    override func configurationItems() -> [Any]! {
-        return []
     }
 
     private func beginProcessingIfNeeded() {
@@ -38,8 +30,7 @@ final class ShareViewController: SLComposeServiceViewController {
         Task { @MainActor in
             NSLog("[KeyVoxShare] Beginning share processing.")
             let extractedText = await KeyVoxShareContentExtractor.extractText(from: extensionContext)
-            let fallbackText = contentText?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let sharedText = extractedText?.isEmpty == false ? extractedText : fallbackText
+            let sharedText = extractedText
 
             if let sharedText, sharedText.isEmpty == false {
                 NSLog("[KeyVoxShare] Extracted share text length=%d", sharedText.count)
