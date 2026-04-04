@@ -113,7 +113,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.clearTTSState()
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         KeyVoxIPCBridge.clearTTSPlaybackMeter()
-        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsStopped)
         KeyVoxIPCBridge.touchHeartbeat()
     }
 

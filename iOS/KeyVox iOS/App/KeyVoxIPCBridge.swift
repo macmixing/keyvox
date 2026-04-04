@@ -88,6 +88,7 @@ enum KeyVoxIPCBridge {
         static let ttsPreparing = "com.cueit.keyvox.ttsPreparing"
         static let ttsPlaying = "com.cueit.keyvox.ttsPlaying"
         static let ttsFinished = "com.cueit.keyvox.ttsFinished"
+        static let ttsStopped = "com.cueit.keyvox.ttsStopped"
         static let ttsFailed = "com.cueit.keyvox.ttsFailed"
     }
     
