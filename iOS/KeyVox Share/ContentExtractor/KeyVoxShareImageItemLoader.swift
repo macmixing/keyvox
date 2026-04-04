@@ -27,14 +27,20 @@ enum KeyVoxShareImageItemLoader {
             }
 
             KeyVoxShareContentExtractorDiagnostics.log("Attempting file-backed image OCR load.")
-            if let fileURL = try await loadFileRepresentation(from: provider, typeIdentifier: UTType.image.identifier) {
-                KeyVoxShareContentExtractorDiagnostics.log("Loaded file-backed image at \(fileURL.path).")
-                return try KeyVoxShareOCRPipeline.recognizeText(at: fileURL)
+            do {
+                if let fileURL = try await loadFileRepresentation(from: provider, typeIdentifier: UTType.image.identifier) {
+                    KeyVoxShareContentExtractorDiagnostics.log("Loaded file-backed image at \(fileURL.path).")
+                    return try KeyVoxShareOCRPipeline.recognizeText(at: fileURL)
+                }
+                KeyVoxShareContentExtractorDiagnostics.log(
+                    "File-backed image load returned nil URL; falling back to data representation."
+                )
+            } catch {
+                KeyVoxShareContentExtractorDiagnostics.log(
+                    "File-backed image load failed: \(error.localizedDescription); falling back to data representation."
+                )
             }
 
-            KeyVoxShareContentExtractorDiagnostics.log(
-                "File-backed image load returned nil URL; falling back to data representation."
-            )
             let data = try await loadDataRepresentation(from: provider, typeIdentifier: UTType.image.identifier)
             KeyVoxShareContentExtractorDiagnostics.log("Loaded in-memory image data bytes=\(data.count).")
             return try KeyVoxShareOCRPipeline.recognizeText(in: data)
