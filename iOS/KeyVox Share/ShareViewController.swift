@@ -36,13 +36,17 @@ final class ShareViewController: SLComposeServiceViewController {
         hasStartedProcessing = true
 
         Task { @MainActor in
+            NSLog("[KeyVoxShare] Beginning share processing.")
             let extractedText = await KeyVoxShareContentExtractor.extractText(from: extensionContext)
             let fallbackText = contentText?.trimmingCharacters(in: .whitespacesAndNewlines)
             let sharedText = extractedText?.isEmpty == false ? extractedText : fallbackText
 
             if let sharedText, sharedText.isEmpty == false {
+                NSLog("[KeyVoxShare] Extracted share text length=%d", sharedText.count)
                 KeyVoxShareBridge.writeTTSRequest(sharedText)
                 appLauncher.open(KeyVoxShareBridge.startTTSURL)
+            } else {
+                NSLog("[KeyVoxShare] No share text could be extracted.")
             }
 
             extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
