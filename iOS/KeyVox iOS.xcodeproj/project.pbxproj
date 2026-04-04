@@ -42,6 +42,9 @@
 		8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E7DB28E2F80FBE0009E3576 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 8E7DB28D2F80FBE0009E3576 /* SwiftSoup */; };
+		8E7DB2922F81014D009E3576 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
+		8E7DB2932F81014D009E3576 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
+		8E7DB2942F810260009E3576 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
 		8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E97944B2F66B54A009A691D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944A2F66B549009A691D /* WidgetKit.framework */; };
 		8E97944D2F66B54A009A691D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944C2F66B54A009A691D /* SwiftUI.framework */; };
@@ -933,6 +936,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E7DB2922F81014D009E3576 /* Kanit-Light.ttf in Resources */,
+				8E7DB2932F81014D009E3576 /* Kanit-Medium.ttf in Resources */,
+				8E7DB2942F810260009E3576 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

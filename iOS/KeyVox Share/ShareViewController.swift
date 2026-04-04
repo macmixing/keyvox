@@ -6,12 +6,14 @@
 //
 
 import UIKit
+import SwiftUI
 
 final class ShareViewController: UIViewController {
     private lazy var appLauncher = KeyVoxShareAppLauncher(responderProvider: { [weak self] in
         self
     })
     private var hasStartedProcessing = false
+    private var feedbackHostingController: UIHostingController<ShareFeedbackView>?
 
     override func loadView() {
         self.view = UIView()
@@ -35,12 +37,39 @@ final class ShareViewController: UIViewController {
             if let sharedText, sharedText.isEmpty == false {
                 NSLog("[KeyVoxShare] Extracted share text length=%d", sharedText.count)
                 KeyVoxShareBridge.writeTTSRequest(sharedText)
+                
+                showFeedback()
+                
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                
                 appLauncher.open(KeyVoxShareBridge.startTTSURL)
+                
+                try? await Task.sleep(nanoseconds: 200_000_000)
             } else {
                 NSLog("[KeyVoxShare] No share text could be extracted.")
             }
 
             extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
         }
+    }
+    
+    private func showFeedback() {
+        let feedbackView = ShareFeedbackView()
+        let hostingController = UIHostingController(rootView: feedbackView)
+        hostingController.view.backgroundColor = .clear
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        hostingController.didMove(toParent: self)
+        feedbackHostingController = hostingController
     }
 }
