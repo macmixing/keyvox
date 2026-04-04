@@ -136,4 +136,6 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
+        .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
+        .environmentObject(AppServiceRegistry.shared.ttsManager)
 }
