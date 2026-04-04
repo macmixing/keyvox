@@ -116,7 +116,29 @@ final class AudioModeCoordinator: ObservableObject {
     }
 
     func handleReplayLastTTS() {
-        ttsManager.replayLastPlayback()
+        Task { @MainActor in
+            guard !isTransitioning else { return }
+            isTransitioning = true
+            defer { isTransitioning = false }
+
+            NSLog(
+                "[AudioModeCoordinator] handleReplayLastTTS transcriptionState=%@ isSessionActive=%@",
+                String(describing: transcriptionManager.state),
+                String(transcriptionManager.isSessionActive)
+            )
+            shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
+            ttsManager.setPlaybackAudioSessionMode(
+                transcriptionManager.isSessionActive
+                ? .playbackWhilePreservingRecording
+                : .playback
+            )
+
+            if transcriptionManager.state != .idle {
+                await transcriptionManager.performCancelCurrentUtterance()
+            }
+
+            ttsManager.replayLastPlayback()
+        }
     }
 
     private func repairMonitoringAfterTTSIfNeeded() async {
