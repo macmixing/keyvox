@@ -136,8 +136,14 @@ enum KeyVoxShareImageItemLoader {
         }
 
         if let data = item as? Data {
-            if let recognizedText = try KeyVoxShareOCRPipeline.recognizeText(in: data) {
-                return recognizedText
+            do {
+                if let recognizedText = try KeyVoxShareOCRPipeline.recognizeText(in: data) {
+                    return recognizedText
+                }
+            } catch {
+                KeyVoxShareContentExtractorDiagnostics.log(
+                    "Data-backed OCR failed: \(error.localizedDescription); attempting property-list fallback."
+                )
             }
 
             if let plistPayloadText = try recognizeTextFromPropertyListData(data) {
