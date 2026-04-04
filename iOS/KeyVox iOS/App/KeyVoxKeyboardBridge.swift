@@ -13,6 +13,7 @@ final class KeyVoxKeyboardBridge {
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
+    private var pendingClearWorkItem: DispatchWorkItem?
 
     func registerObservers() {
         guard !isRegistered else { return }
@@ -78,12 +79,16 @@ final class KeyVoxKeyboardBridge {
     }
 
     func publishTTSPreparing() {
+        pendingClearWorkItem?.cancel()
+        pendingClearWorkItem = nil
         KeyVoxIPCBridge.setTTSState(.preparing)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPreparing)
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
     func publishTTSPlaying() {
+        pendingClearWorkItem?.cancel()
+        pendingClearWorkItem = nil
         KeyVoxIPCBridge.setTTSState(.playing)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPlaying)
         KeyVoxIPCBridge.touchHeartbeat()
@@ -96,9 +101,13 @@ final class KeyVoxKeyboardBridge {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
         KeyVoxIPCBridge.touchHeartbeat()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        pendingClearWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
             KeyVoxIPCBridge.clearTTSState()
+            self?.pendingClearWorkItem = nil
         }
+        pendingClearWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
     }
 
     func publishTTSFailed(message: String?) {
