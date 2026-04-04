@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum SettingsPendingDeletionConfirmation: Identifiable {
+enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     case dictationModel(DictationModelID)
     case sharedTTSModel
     case ttsVoice(AppSettingsStore.TTSVoice)
@@ -56,9 +56,11 @@ extension View {
 private struct SettingsDeletionConfirmationModifier: ViewModifier {
     @Binding var confirmation: SettingsPendingDeletionConfirmation?
     let onConfirm: (SettingsPendingDeletionConfirmation) -> Void
+    @AccessibilityFocusState private var isConfirmFocused: Bool
 
     func body(content: Content) -> some View {
         content
+            .accessibilityHidden(confirmation != nil)
             .overlay {
                 if let confirmation {
                     ZStack {
@@ -86,6 +88,7 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                                         self.confirmation = nil
                                     }
                                 )
+                                .accessibilityFocused($isConfirmFocused)
 
                                 AppActionButton(
                                     title: "Delete",
@@ -112,10 +115,19 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                         .shadow(color: .black.opacity(0.25), radius: 26, y: 12)
                         .padding(.horizontal, 24)
                     }
+                    .accessibility(addTraits: .isModal)
                     .transition(.opacity)
                     .zIndex(10)
+                    .onAppear {
+                        isConfirmFocused = true
+                    }
                 }
             }
             .animation(.easeInOut(duration: 0.18), value: confirmation != nil)
+            .onChange(of: confirmation) { _, newValue in
+                if newValue != nil {
+                    isConfirmFocused = true
+                }
+            }
     }
 }
