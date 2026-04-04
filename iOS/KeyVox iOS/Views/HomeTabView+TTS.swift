@@ -69,19 +69,24 @@ extension HomeTabView {
                     }
                 }
 
-                Text(ttsStatusText)
-                    .font(.appFont(14, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
+                HStack(alignment: .center, spacing: 12) {
+                    Text(ttsStatusText)
+                        .font(.appFont(14, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if let preparationPercentageText = ttsPreparationPercentageText {
+                        Text(preparationPercentageText)
+                            .font(.appFont(14, variant: .medium))
+                            .foregroundStyle(.yellow)
+                    }
+                }
 
                 if showsTTSPreparationSlot {
                     VStack(alignment: .leading, spacing: 8) {
                         ProgressView(value: ttsManager.playbackPreparationProgress)
                             .progressViewStyle(KeyVoxProgressStyle())
                             .frame(height: 12)
-
-                        Text(ttsPreparationProgressLabel)
-                            .font(.appFont(13, variant: .medium))
-                            .foregroundStyle(ttsPreparationProgressAccent)
                     }
                     .opacity(isTTSPreparationVisible ? 1 : 0)
                     .allowsHitTesting(isTTSPreparationVisible)
@@ -214,8 +219,8 @@ extension HomeTabView {
         "\(Int(ttsManager.playbackPreparationProgress * 100))%"
     }
 
-    var ttsPreparationProgressAccent: Color {
-        ttsManager.playbackPreparationProgress >= 1 ? .yellow : AppTheme.accent
+    var ttsPreparationPercentageText: String? {
+        showsTTSPreparationProgress ? ttsPreparationProgressLabel : nil
     }
 
     func syncTTSPreparationPresentation() {
