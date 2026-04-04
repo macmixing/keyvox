@@ -25,6 +25,7 @@ enum KeyVoxTTSState: String, Codable, Equatable {
 enum KeyVoxTTSRequestSourceSurface: String, Codable, Equatable {
     case keyboard
     case app
+    case shareExtension = "share_extension"
 }
 
 enum KeyVoxTTSRequestKind: String, Codable, Equatable {
