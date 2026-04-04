@@ -137,9 +137,18 @@ extension SettingsTabView {
                 actionButton(for: modelID, state: state)
             }
 
-            Text(modelStatusText(for: modelID, state: state))
-                .font(.appFont(14, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
+            HStack(alignment: .center, spacing: 12) {
+                Text(modelStatusText(for: modelID, state: state))
+                    .font(.appFont(14, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let percentageText = modelProgressPercentageText(for: state) {
+                    Text(percentageText)
+                        .font(.appFont(14, variant: .medium))
+                        .foregroundStyle(.yellow)
+                }
+            }
 
             if case .failed(let message) = state {
                 Text(message)
@@ -194,12 +203,31 @@ extension SettingsTabView {
     }
 
     func modelStatusText(for modelID: DictationModelID, state: ModelInstallState) -> String {
+        switch state {
+        case .downloading(_, let phase), .installing(_, let phase):
+            return phase.statusText
+        case .ready, .failed, .notInstalled:
+            break
+        }
+
         guard case .notInstalled = state,
               let approximateSizeText = notInstalledApproximateSizeText(for: modelID) else {
             return state.statusText
         }
 
         return "\(state.statusText) (\(approximateSizeText))"
+    }
+
+    func modelProgressPercentageText(for state: ModelInstallState) -> String? {
+        let progress: Double
+        switch state {
+        case .downloading(let currentProgress, _), .installing(let currentProgress, _):
+            progress = currentProgress
+        case .notInstalled, .ready, .failed:
+            return nil
+        }
+
+        return "\(Int((progress * 100).rounded()))%"
     }
 
     func notInstalledApproximateSizeText(for modelID: DictationModelID) -> String? {

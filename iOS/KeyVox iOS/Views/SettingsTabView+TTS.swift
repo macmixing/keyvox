@@ -140,9 +140,18 @@ extension SettingsTabView {
                 ttsSharedModelActionButton
             }
 
-            Text(ttsSharedModelStatusText)
-                .font(.appFont(14, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
+            HStack(alignment: .center, spacing: 12) {
+                Text(ttsSharedModelStatusText)
+                    .font(.appFont(14, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let percentageText = ttsProgressPercentageText(for: pocketTTSModelManager.sharedModelInstallState) {
+                    Text(percentageText)
+                        .font(.appFont(14, variant: .medium))
+                        .foregroundStyle(.yellow)
+                }
+            }
 
             if case .failed(let message) = pocketTTSModelManager.sharedModelInstallState {
                 Text(message)
@@ -184,9 +193,18 @@ extension SettingsTabView {
                     ttsVoiceActionButton(for: voice, state: state)
                 }
 
-                Text(ttsVoiceStatusText(for: voice, state: state))
-                    .font(.appFont(14, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
+                HStack(alignment: .center, spacing: 12) {
+                    Text(ttsVoiceStatusText(for: voice, state: state))
+                        .font(.appFont(14, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if let percentageText = ttsProgressPercentageText(for: state) {
+                        Text(percentageText)
+                            .font(.appFont(14, variant: .medium))
+                            .foregroundStyle(.yellow)
+                    }
+                }
 
                 if case .failed(let message) = state {
                     Text(message)
@@ -335,6 +353,18 @@ extension SettingsTabView {
             countStyle: .file
         )
         return "Not installed (~\(formattedSize))"
+    }
+
+    private func ttsProgressPercentageText(for state: PocketTTSInstallState) -> String? {
+        let progress: Double
+        switch state {
+        case .downloading(let currentProgress), .installing(let currentProgress):
+            progress = currentProgress
+        case .notInstalled, .ready, .failed:
+            return nil
+        }
+
+        return "\(Int((progress * 100).rounded()))%"
     }
 
     var installedPlaybackVoices: [AppSettingsStore.TTSVoice] {
