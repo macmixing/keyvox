@@ -31,7 +31,7 @@ enum KeyVoxShareBridge {
             id: UUID(),
             text: trimmedText,
             createdAt: Date().timeIntervalSince1970,
-            sourceSurface: "app",
+            sourceSurface: "share_extension",
             voiceID: selectedVoiceID(),
             kind: "speakClipboardText"
         )
