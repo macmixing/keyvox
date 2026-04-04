@@ -57,6 +57,20 @@ struct SettingsTabView: View {
                 ttsVoicePreviewPlayer.stop()
             }
         }
+        .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
+            let wasReady = {
+                if case .ready = oldValue { return true }
+                return false
+            }()
+            let isReady = {
+                if case .ready = newValue { return true }
+                return false
+            }()
+
+            if wasReady == false && isReady {
+                isTTSSectionExpanded = true
+            }
+        }
         .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
             updateTTSDisclosurePresentation()
         }

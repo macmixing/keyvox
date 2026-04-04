@@ -16,7 +16,7 @@ extension HomeTabView {
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(.yellow)
 
-                            Text(settingsStore.ttsVoice.displayName)
+                            Text(effectiveTTSVoice.displayName)
                                 .font(.appFont(15, variant: .light))
                                 .foregroundStyle(.yellow)
                         }
@@ -114,7 +114,7 @@ extension HomeTabView {
             return "Install"
         }
 
-        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
+        switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
             return "Install"
         case .downloading, .installing:
@@ -160,15 +160,15 @@ extension HomeTabView {
             }
         }
 
-        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
+        switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Install the \(settingsStore.ttsVoice.displayName) voice to read copied text aloud."
+            return "Install the \(effectiveTTSVoice.displayName) voice to read copied text aloud."
         case .downloading:
-            return "Downloading the \(settingsStore.ttsVoice.displayName) voice..."
+            return "Downloading the \(effectiveTTSVoice.displayName) voice..."
         case .installing:
-            return "Installing the \(settingsStore.ttsVoice.displayName) voice..."
+            return "Installing the \(effectiveTTSVoice.displayName) voice..."
         case .failed:
-            return "\(settingsStore.ttsVoice.displayName) voice install failed."
+            return "\(effectiveTTSVoice.displayName) voice install failed."
         case .ready:
             break
         }
@@ -261,12 +261,20 @@ extension HomeTabView {
             break
         }
 
-        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
+        switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .downloading, .installing:
             return false
         case .notInstalled, .failed, .ready:
             return true
         }
+    }
+
+    var effectiveTTSVoice: AppSettingsStore.TTSVoice {
+        if pocketTTSModelManager.isVoiceReady(settingsStore.ttsVoice) {
+            return settingsStore.ttsVoice
+        }
+
+        return pocketTTSModelManager.installedVoices().first ?? settingsStore.ttsVoice
     }
 
     func handlePrimaryTTSAction() {
@@ -282,11 +290,11 @@ extension HomeTabView {
             return
         }
 
-        switch pocketTTSModelManager.installState(for: settingsStore.ttsVoice) {
+        switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            pocketTTSModelManager.downloadVoice(settingsStore.ttsVoice)
+            pocketTTSModelManager.downloadVoice(effectiveTTSVoice)
         case .failed:
-            pocketTTSModelManager.repairVoiceIfNeeded(settingsStore.ttsVoice)
+            pocketTTSModelManager.repairVoiceIfNeeded(effectiveTTSVoice)
         case .downloading, .installing:
             break
         case .ready:

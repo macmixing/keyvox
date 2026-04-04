@@ -136,7 +136,15 @@ final class AppServiceRegistry {
             appHaptics: appHaptics,
             keyboardBridge: keyboardBridge,
             engine: ttsEngine,
-            playbackCoordinator: ttsPlaybackCoordinator
+            playbackCoordinator: ttsPlaybackCoordinator,
+            effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
+                guard let settingsStore else { return .azelma }
+                guard let pocketTTSModelManager else { return settingsStore.ttsVoice }
+                return Self.resolvedTTSVoiceSelection(
+                    selectedVoice: settingsStore.ttsVoice,
+                    pocketTTSModelManager: pocketTTSModelManager
+                )
+            }
         )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
@@ -230,7 +238,20 @@ final class AppServiceRegistry {
             }
             .store(in: &cancellables)
 
+        pocketTTSModelManager.$voiceInstallStates
+            .sink { [weak self] _ in
+                self?.normalizeTTSVoiceSelection()
+            }
+            .store(in: &cancellables)
+
+        pocketTTSModelManager.$sharedModelInstallState
+            .sink { [weak self] _ in
+                self?.normalizeTTSVoiceSelection()
+            }
+            .store(in: &cancellables)
+
         normalizeActiveProviderSelection()
+        normalizeTTSVoiceSelection()
         applyActiveProviderSelection(settingsStore.activeDictationProvider)
     }
 
@@ -267,5 +288,25 @@ final class AppServiceRegistry {
             }
             return
         }
+    }
+
+    private func normalizeTTSVoiceSelection() {
+        let resolvedVoice = Self.resolvedTTSVoiceSelection(
+            selectedVoice: settingsStore.ttsVoice,
+            pocketTTSModelManager: pocketTTSModelManager
+        )
+        guard settingsStore.ttsVoice != resolvedVoice else { return }
+        settingsStore.ttsVoice = resolvedVoice
+    }
+
+    private static func resolvedTTSVoiceSelection(
+        selectedVoice: AppSettingsStore.TTSVoice,
+        pocketTTSModelManager: PocketTTSModelManager
+    ) -> AppSettingsStore.TTSVoice {
+        if pocketTTSModelManager.isVoiceReady(selectedVoice) {
+            return selectedVoice
+        }
+
+        return pocketTTSModelManager.installedVoices().first ?? selectedVoice
     }
 }

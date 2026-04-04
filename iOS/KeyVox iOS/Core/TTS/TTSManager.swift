@@ -27,6 +27,7 @@ final class TTSManager: ObservableObject {
     private let engine: any TTSEngine
     private let playbackCoordinator: TTSPlaybackCoordinator
     private let replayCache: TTSReplayCache
+    private let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
     private var activeRequest: KeyVoxTTSRequest?
     private var lastReplayableRequest: KeyVoxTTSRequest?
     private var pausedReplaySampleOffset: Int?
@@ -51,7 +52,8 @@ final class TTSManager: ObservableObject {
         keyboardBridge: KeyVoxKeyboardBridge,
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator,
-        replayCache: TTSReplayCache? = nil
+        replayCache: TTSReplayCache? = nil,
+        effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil
     ) {
         self.settingsStore = settingsStore
         self.appHaptics = appHaptics
@@ -59,6 +61,7 @@ final class TTSManager: ObservableObject {
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
         self.replayCache = replayCache ?? TTSReplayCache()
+        self.effectiveVoiceProvider = effectiveVoiceProvider ?? { settingsStore.ttsVoice }
 
         playbackCoordinator.onPlaybackStarted = { [weak self] in
             self?.handlePlaybackStarted()
@@ -140,7 +143,7 @@ final class TTSManager: ObservableObject {
             text: text,
             createdAt: Date().timeIntervalSince1970,
             sourceSurface: .app,
-            voiceID: settingsStore.ttsVoice.rawValue,
+            voiceID: effectiveVoiceProvider().rawValue,
             kind: .speakClipboardText
         )
         KeyVoxIPCBridge.writeTTSRequest(request)
