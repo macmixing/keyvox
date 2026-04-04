@@ -1,0 +1,301 @@
+import AVFoundation
+import Foundation
+import KeyVoxTTS
+
+extension TTSPlaybackCoordinator {
+    func restoreReplayablePlayback(samples: [Float]) {
+        replayablePlaybackSamples = samples
+    }
+
+    func replayablePlaybackSamplesSnapshot() -> [Float]? {
+        guard !replayablePlaybackSamples.isEmpty else { return nil }
+        return replayablePlaybackSamples
+    }
+
+    func replayPausedSampleOffsetSnapshot() -> Int? {
+        guard !replayablePlaybackSamples.isEmpty else { return nil }
+        guard replayPausedSampleOffset > 0, replayPausedSampleOffset < replayablePlaybackSamples.count else {
+            return nil
+        }
+        return replayPausedSampleOffset
+    }
+
+    func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>, fastModeEnabled: Bool = false) {
+        stop(emitCallback: false)
+        Self.log("Playback requested. fastMode=\(fastModeEnabled)")
+
+        do {
+            try configureAudioSession()
+            if audioEngine.isRunning == false {
+                try audioEngine.start()
+            }
+        } catch {
+            Self.log("Playback setup failed: \(error.localizedDescription)")
+            onPlaybackFailed?(error)
+            return
+        }
+
+        queuedBufferCount = 0
+        queuedSampleCount = 0
+        isFinishing = false
+        didStartPlayback = false
+        pendingStartBuffers = []
+        totalGeneratedSampleCount = 0
+        completedFastModeSegmentCount = 0
+        completedChunkCountBeforeStart = 0
+        hasBufferedIntoNextChunk = false
+        isBackgroundTransitionArmed = false
+        activeRequiredStartSampleCount = 0
+        activeSilentStartSampleCount = 0
+        isWaitingForResumeBuffer = false
+        lastObservedChunkCount = 1
+        lastObservedRemainingEstimatedSamples = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
+        cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
+        isPaused = false
+        activePlaybackSamples = []
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
+        self.fastModeEnabled = fastModeEnabled
+        notifyFastModeBackgroundSafetyChanged()
+
+        playbackTask = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                for try await frame in stream {
+                    guard Task.isCancelled == false else { return }
+                    await MainActor.run {
+                        self.schedule(frame)
+                    }
+                }
+
+                await MainActor.run {
+                    self.isFinishing = true
+                    Self.log("Playback stream finished. queuedBuffers=\(self.queuedBufferCount) queuedSamples=\(self.queuedSampleCount)")
+                    self.finishIfPossible()
+                }
+            } catch {
+                await MainActor.run {
+                    Self.log("Playback stream failed: \(error.localizedDescription)")
+                    self.handleFailure(error)
+                }
+            }
+        }
+    }
+
+    func stop() {
+        stop(emitCallback: true)
+    }
+
+    func pause() {
+        guard canPausePlayback else { return }
+        if isReplayingCachedAudio {
+            replayPausedSampleOffset = currentReplaySampleOffset()
+        }
+        playerNode.pause()
+        isPaused = true
+        cancelScheduledMeterUpdates()
+        emitPlaybackProgress()
+        Self.log("Playback paused.")
+        notifyFastModeBackgroundSafetyChanged()
+        onPlaybackPaused?()
+    }
+
+    func resume() {
+        guard canResumePlayback else { return }
+        if shouldDelayResumeUntilBuffered() {
+            isWaitingForResumeBuffer = true
+            let requiredSamples = deterministicFastModeBufferedSampleCount(
+                for: lastObservedChunkCount,
+                remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+            )
+            Self.log(
+                "Delaying playback resume for buffer refill. queuedSeconds=\(String(format: "%.3f", bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / playbackFormat.sampleRate)) generatedSeconds=\(String(format: "%.3f", Double(totalGeneratedSampleCount) / playbackFormat.sampleRate))"
+            )
+            resumeIfBufferedEnough()
+            return
+        }
+
+        playerNode.play()
+        isPaused = false
+        isWaitingForResumeBuffer = false
+        if isReplayingCachedAudio {
+            replayPausedSampleOffset = 0
+        }
+        startPlaybackProgressTimer()
+        emitPlaybackProgress()
+        Self.log("Playback resumed.")
+        notifyFastModeBackgroundSafetyChanged()
+        onPlaybackResumed?()
+    }
+
+    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0) {
+        guard !replayablePlaybackSamples.isEmpty else { return }
+
+        stop(emitCallback: false)
+        let safeStartSampleOffset = min(max(0, startSampleOffset), max(0, replayablePlaybackSamples.count - 1))
+        Self.log("Replaying cached playback samples=\(replayablePlaybackSamples.count) startOffset=\(safeStartSampleOffset)")
+
+        do {
+            try configureAudioSession()
+            if audioEngine.isRunning == false {
+                try audioEngine.start()
+            }
+        } catch {
+            Self.log("Replay setup failed: \(error.localizedDescription)")
+            onPlaybackFailed?(error)
+            return
+        }
+
+        queuedBufferCount = 0
+        queuedSampleCount = 0
+        isFinishing = false
+        didStartPlayback = true
+        isPaused = false
+        pendingStartBuffers = []
+        completedChunkCountBeforeStart = 0
+        hasBufferedIntoNextChunk = false
+        isBackgroundTransitionArmed = false
+        activeRequiredStartSampleCount = 0
+        activeSilentStartSampleCount = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
+        cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
+        activePlaybackSamples = replayablePlaybackSamples
+        totalEstimatedPlaybackSampleCount = replayablePlaybackSamples.count
+        isReplayingCachedAudio = true
+        replayStartSampleOffset = safeStartSampleOffset
+        replayPausedSampleOffset = 0
+
+        let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
+        var startDelay: TimeInterval = 0
+        var cursor = safeStartSampleOffset
+        while cursor < replayablePlaybackSamples.count {
+            let end = min(cursor + bufferSampleCount, replayablePlaybackSamples.count)
+            let slice = Array(replayablePlaybackSamples[cursor..<end])
+            guard let buffer = makeBuffer(from: slice) else {
+                handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS replay buffer creation failed."))
+                return
+            }
+            scheduleBuffer(
+                buffer,
+                samples: slice,
+                chunkDebugID: "cached-replay",
+                chunkIndex: nil,
+                startDelay: startDelay
+            )
+            startDelay += TimeInterval(slice.count) / playbackFormat.sampleRate
+            cursor = end
+        }
+
+        isFinishing = true
+        playerNode.play()
+        startPlaybackProgressTimer()
+        emitPlaybackProgress()
+        onPlaybackStarted?()
+    }
+
+    func stop(emitCallback: Bool) {
+        let hadPlayback = playbackTask != nil || playerNode.isPlaying || queuedBufferCount > 0
+        Self.log("Stopping playback. hadPlayback=\(hadPlayback) queuedBuffers=\(queuedBufferCount) queuedSamples=\(queuedSampleCount)")
+
+        playbackTask?.cancel()
+        playbackTask = nil
+        queuedBufferCount = 0
+        queuedSampleCount = 0
+        isFinishing = false
+        didStartPlayback = false
+        pendingStartBuffers.removeAll(keepingCapacity: false)
+        totalGeneratedSampleCount = 0
+        completedFastModeSegmentCount = 0
+        completedChunkCountBeforeStart = 0
+        hasBufferedIntoNextChunk = false
+        isBackgroundTransitionArmed = false
+        activeRequiredStartSampleCount = 0
+        activeSilentStartSampleCount = 0
+        isWaitingForResumeBuffer = false
+        lastObservedChunkCount = 1
+        lastObservedRemainingEstimatedSamples = 0
+        totalScheduledSampleCount = 0
+        totalEstimatedPlaybackSampleCount = 0
+        cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
+        isPaused = false
+        activePlaybackSamples = []
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
+
+        if playerNode.isPlaying {
+            playerNode.stop()
+        }
+        audioEngine.stop()
+        deactivateAudioSessionIfNeeded()
+
+        if emitCallback, hadPlayback {
+            onPlaybackCancelled?()
+        }
+        notifyFastModeBackgroundSafetyChanged()
+        emitPlaybackProgress()
+    }
+
+    func configureAudioSession() throws {
+        let session = AVAudioSession.sharedInstance()
+        switch audioSessionMode {
+        case .playback:
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try? session.overrideOutputAudioPort(.none)
+        case .playbackWhilePreservingRecording:
+            try session.setCategory(
+                .playAndRecord,
+                mode: .default,
+                options: [.defaultToSpeaker, .allowBluetoothHFP, .allowBluetoothA2DP]
+            )
+            let isUsingBuiltInReceiver = session.currentRoute.outputs.contains { $0.portType == .builtInReceiver }
+            try? session.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+        }
+        try session.setActive(true)
+    }
+
+    func finishIfPossible() {
+        guard isFinishing, queuedBufferCount == 0, pendingStartBuffers.isEmpty else { return }
+        Self.log("Playback finished.")
+
+        playbackTask = nil
+        replayablePlaybackSamples = activePlaybackSamples
+        activePlaybackSamples = []
+        isPaused = false
+        isReplayingCachedAudio = false
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = 0
+        if playerNode.isPlaying {
+            playerNode.stop()
+        }
+        audioEngine.stop()
+        cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
+        emitPlaybackProgress(1)
+        deactivateAudioSessionIfNeeded()
+        onPlaybackFinished?()
+    }
+
+    func deactivateAudioSessionIfNeeded() {
+        guard audioSessionMode == .playback else {
+            Self.log("Preserving active audio session after playback finish.")
+            return
+        }
+
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    }
+
+    func handleFailure(_ error: Error) {
+        Self.log("Playback failure: \(error.localizedDescription)")
+        stop(emitCallback: false)
+        onPlaybackFailed?(error)
+    }
+}
