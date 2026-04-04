@@ -1,12 +1,7 @@
 import Foundation
+import NaturalLanguage
 
 enum PocketTTSChunkPlanner {
-    private static let abbreviations: Set<String> = [
-        "dr", "mr", "mrs", "ms", "prof", "sr", "jr", "st", "vs", "etc",
-        "inc", "ltd", "co", "corp", "dept", "univ", "govt", "approx",
-        "avg", "est", "gen", "gov", "hon", "sgt", "cpl", "pvt", "capt",
-        "lt", "col", "maj", "cmdr", "adm", "rev", "sen", "rep",
-    ]
     private static let hardBreakPattern = #"\n\s*\n+"#
     private static let softBreakPattern = #"\s*\n\s*"#
     private static let repeatedChevronPattern = #">\s*>\s*>+"#
@@ -37,20 +32,24 @@ enum PocketTTSChunkPlanner {
     }
 
     static func chunk(_ text: String, tokenizer: SentencePieceTokenizer) -> [String] {
-        let trimmed = sanitize(text).trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
-        let chunkTokenLimit = maxTokensPerChunk(for: trimmed, tokenizer: tokenizer)
-        if tokenizer.encode(trimmed).count <= chunkTokenLimit {
-            return [trimmed]
+        
+        let rawParagraphs = splitParagraphs(in: trimmed)
+        let sanitizedParagraphs = rawParagraphs.map { sanitize($0) }
+        let sanitizedText = sanitizedParagraphs.joined(separator: " ")
+        
+        let chunkTokenLimit = maxTokensPerChunk(for: sanitizedText, tokenizer: tokenizer)
+        if tokenizer.encode(sanitizedText).count <= chunkTokenLimit {
+            return [sanitizedText]
         }
 
-        let paragraphPieces = splitParagraphs(in: trimmed)
         var sentencePieces: [String] = []
 
-        for paragraph in paragraphPieces {
+        for paragraph in sanitizedParagraphs {
             let normalizedParagraph = paragraph
-                .replacingOccurrences(of: softBreakPattern, with: " ", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: softBreakPattern, with: " ", options: String.CompareOptions.regularExpression)
+                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             guard !normalizedParagraph.isEmpty else { continue }
 
             let sentences = splitSentences(in: normalizedParagraph)
@@ -91,7 +90,7 @@ enum PocketTTSChunkPlanner {
         if !currentChunk.isEmpty {
             chunks.append(currentChunk)
         }
-        return chunks.isEmpty ? [trimmed] : chunks
+        return chunks.isEmpty ? [sanitizedText] : chunks
     }
 
     private static func shouldAppend(
@@ -282,7 +281,7 @@ enum PocketTTSChunkPlanner {
                 let trimmed = current.trimmingCharacters(in: .whitespaces)
                 let stem = String(trimmed.dropLast())
                 let lastWord = stem.split(separator: " ").last.map(String.init) ?? stem
-                if abbreviations.contains(lastWord.lowercased()) {
+                if shouldSuppressSentenceBoundary(for: lastWord, in: stem) {
                     index += 1
                     continue
                 }
@@ -332,6 +331,43 @@ enum PocketTTSChunkPlanner {
         try! NSRegularExpression(pattern: pattern)
     }
 
+    private static func shouldSuppressSentenceBoundary(for word: String, in context: String) -> Bool {
+        let tagger = NLTagger(tagSchemes: [.lexicalClass, .nameType])
+        tagger.string = context
+        
+        let range = (context as NSString).range(of: word, options: .backwards)
+        guard range.location != NSNotFound else { return false }
+        
+        let stringIndex = context.index(context.startIndex, offsetBy: range.location)
+        
+        let (tag, _) = tagger.tag(at: stringIndex, unit: .word, scheme: .lexicalClass)
+        if let tag = tag {
+            if tag == .determiner || tag == .preposition {
+                return false
+            }
+        }
+        
+        let (nameTag, _) = tagger.tag(at: stringIndex, unit: .word, scheme: .nameType)
+        if let nameTag = nameTag {
+            if nameTag == .personalName || nameTag == .organizationName {
+                let words = context.split(separator: " ")
+                if words.count >= 2 {
+                    let secondToLast = words.dropLast().last.map(String.init) ?? ""
+                    if secondToLast.first?.isUppercase == true {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        let lowercased = word.lowercased()
+        if lowercased.count <= 4 && word.first?.isUppercase == true {
+            return true
+        }
+        
+        return false
+    }
+
     private static func sanitize(_ text: String) -> String {
         var sanitized = text
 
@@ -355,11 +391,11 @@ enum PocketTTSChunkPlanner {
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
-            of: #"[^A-Za-z0-9\s\.,!\?;:'"\(\)\[\]\/\-\n]"#,
+            of: #"[^\p{L}\p{N}\s\.,!\?;:'"\(\)\[\]\/\-\n]"#,
             with: " ",
             options: .regularExpression
         )
-        sanitized = sanitized.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+        sanitized = sanitized.replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
 
         return sanitized
     }

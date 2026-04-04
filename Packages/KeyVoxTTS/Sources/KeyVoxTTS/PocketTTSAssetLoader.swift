@@ -46,6 +46,9 @@ enum PocketTTSAssetLoader {
         }
 
         let data = try Data(contentsOf: promptURL)
+        guard data.count % MemoryLayout<Float>.size == 0 else {
+            throw KeyVoxTTSError.invalidAssetData("PocketTTS voice prompt for \(voice.rawValue) has misaligned byte count.")
+        }
         let floatCount = data.count / MemoryLayout<Float>.size
         guard floatCount > 0, floatCount % PocketTTSConstants.embeddingDimension == 0 else {
             throw KeyVoxTTSError.invalidAssetData("PocketTTS voice prompt for \(voice.rawValue) has an invalid size.")
@@ -68,6 +71,9 @@ enum PocketTTSAssetLoader {
         }
 
         let data = try Data(contentsOf: url)
+        guard data.count % MemoryLayout<Float>.size == 0 else {
+            throw KeyVoxTTSError.invalidAssetData("PocketTTS asset \(assetName) has misaligned byte count.")
+        }
         let actualCount = data.count / MemoryLayout<Float>.size
         guard actualCount == expectedCount else {
             throw KeyVoxTTSError.invalidAssetData("PocketTTS asset \(assetName) has an unexpected size.")

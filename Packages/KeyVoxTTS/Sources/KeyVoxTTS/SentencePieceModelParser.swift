@@ -18,20 +18,22 @@ enum SentencePieceModelParser {
         var pieces: [Piece] = []
 
         while cursor < bytes.count {
-            let tag = try readVarint(from: bytes, cursor: &cursor)
+            let tag = try readVarint(from: bytes, cursor: &cursor, limit: bytes.count)
             let fieldNumber = Int(tag >> 3)
             let wireType = Int(tag & 0x07)
 
             switch wireType {
             case 0:
-                _ = try readVarint(from: bytes, cursor: &cursor)
+                _ = try readVarint(from: bytes, cursor: &cursor, limit: bytes.count)
             case 1:
                 cursor += 8
                 guard cursor <= bytes.count else { throw ParserError.truncatedData }
             case 2:
-                let length = Int(try readVarint(from: bytes, cursor: &cursor))
-                let end = cursor + length
-                guard end <= bytes.count else { throw ParserError.truncatedData }
+                let lengthVarint = try readVarint(from: bytes, cursor: &cursor, limit: bytes.count)
+                guard lengthVarint <= UInt64(Int.max) else { throw ParserError.invalidData }
+                let length = Int(lengthVarint)
+                let (end, overflow) = cursor.addingReportingOverflow(length)
+                guard !overflow, end <= bytes.count else { throw ParserError.truncatedData }
                 if fieldNumber == 1 {
                     pieces.append(try parsePiece(bytes, start: cursor, end: end))
                 }
@@ -53,20 +55,22 @@ enum SentencePieceModelParser {
         var score: Float = 0
 
         while cursor < end {
-            let tag = try readVarint(from: bytes, cursor: &cursor)
+            let tag = try readVarint(from: bytes, cursor: &cursor, limit: end)
             let fieldNumber = Int(tag >> 3)
             let wireType = Int(tag & 0x07)
 
             switch wireType {
             case 0:
-                _ = try readVarint(from: bytes, cursor: &cursor)
+                _ = try readVarint(from: bytes, cursor: &cursor, limit: end)
             case 1:
                 cursor += 8
                 guard cursor <= end else { throw ParserError.truncatedData }
             case 2:
-                let length = Int(try readVarint(from: bytes, cursor: &cursor))
-                let fieldEnd = cursor + length
-                guard fieldEnd <= end else { throw ParserError.truncatedData }
+                let lengthVarint = try readVarint(from: bytes, cursor: &cursor, limit: end)
+                guard lengthVarint <= UInt64(Int.max) else { throw ParserError.invalidData }
+                let length = Int(lengthVarint)
+                let (fieldEnd, overflow) = cursor.addingReportingOverflow(length)
+                guard !overflow, fieldEnd <= end else { throw ParserError.truncatedData }
                 if fieldNumber == 1 {
                     guard let value = String(bytes: bytes[cursor..<fieldEnd], encoding: .utf8) else {
                         throw ParserError.invalidUTF8
@@ -88,11 +92,11 @@ enum SentencePieceModelParser {
         return Piece(token: token, score: score)
     }
 
-    private static func readVarint(from bytes: [UInt8], cursor: inout Int) throws -> UInt64 {
+    private static func readVarint(from bytes: [UInt8], cursor: inout Int, limit: Int) throws -> UInt64 {
         var shift: UInt64 = 0
         var value: UInt64 = 0
 
-        while cursor < bytes.count {
+        while cursor < limit {
             let byte = bytes[cursor]
             cursor += 1
             value |= UInt64(byte & 0x7F) << shift

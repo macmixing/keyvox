@@ -32,13 +32,18 @@ public actor KeyVoxPocketTTSRuntime {
         try validateAssetLayout()
         let loadStart = CFAbsoluteTimeGetCurrent()
 
-        foregroundModels = try loadModelSet(computeUnits: .cpuAndGPU)
+        let newForegroundModels = try loadModelSet(computeUnits: .cpuAndGPU)
         Self.log("Loaded foreground PocketTTS models with cpuAndGPU in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - loadStart))s")
 
         let backgroundLoadStart = CFAbsoluteTimeGetCurrent()
-        backgroundModels = try loadModelSet(computeUnits: .cpuOnly)
+        let newBackgroundModels = try loadModelSet(computeUnits: .cpuOnly)
         Self.log("Loaded background PocketTTS models with cpuOnly in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - backgroundLoadStart))s")
-        constantsBundle = try PocketTTSAssetLoader.loadConstants(from: assetLayout)
+        
+        let newConstantsBundle = try PocketTTSAssetLoader.loadConstants(from: assetLayout)
+        
+        foregroundModels = newForegroundModels
+        backgroundModels = newBackgroundModels
+        constantsBundle = newConstantsBundle
     }
 
     public func setPreferredComputeMode(_ mode: KeyVoxTTSComputeMode) async {

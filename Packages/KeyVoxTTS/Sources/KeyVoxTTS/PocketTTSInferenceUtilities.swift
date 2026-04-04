@@ -3,6 +3,9 @@ import Foundation
 
 enum PocketTTSInferenceUtilities {
     static func createBeginningOfSequenceEmbedding(_ values: [Float]) throws -> MLMultiArray {
+        guard values.count >= PocketTTSConstants.latentDimension else {
+            throw KeyVoxTTSError.invalidAssetData("BOS embedding has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(values.count)")
+        }
         let array = try MLMultiArray(shape: [NSNumber(value: PocketTTSConstants.latentDimension)], dataType: .float32)
         let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: PocketTTSConstants.latentDimension)
         values.withUnsafeBufferPointer { buffer in
@@ -25,6 +28,9 @@ enum PocketTTSInferenceUtilities {
     }
 
     static func createSequence(from latent: [Float]) throws -> MLMultiArray {
+        guard latent.count >= PocketTTSConstants.latentDimension else {
+            throw KeyVoxTTSError.invalidAssetData("Latent sequence has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(latent.count)")
+        }
         let array = try MLMultiArray(
             shape: [1, 1, NSNumber(value: PocketTTSConstants.latentDimension)],
             dataType: .float32
