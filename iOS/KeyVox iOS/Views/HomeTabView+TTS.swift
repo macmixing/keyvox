@@ -132,7 +132,11 @@ extension HomeTabView {
     }
 
     var showsTTSTransportButton: Bool {
-        ttsManager.isActive || ttsManager.hasReplayablePlayback
+        if ttsManager.state == .preparing || ttsManager.state == .generating {
+            return false
+        }
+
+        return ttsManager.isActive || ttsManager.hasReplayablePlayback
     }
 
     var ttsTransportSymbolName: String {
