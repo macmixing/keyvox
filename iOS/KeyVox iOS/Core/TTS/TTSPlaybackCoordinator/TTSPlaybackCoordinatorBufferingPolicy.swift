@@ -16,6 +16,7 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     static let conservativeBackgroundRealtimeFactor: Double = 0.58
     static let remainingWorkSafetyMarginSeconds: Double = 2.5
     static let fastModeRemainingWorkSafetyMarginSeconds: Double = 0.35
+    static let fastModeMinimumLeadRatio: Double = 0.10
     static let longFormChunkThreshold = 24
     static let ultraLongFormChunkThreshold = 64
     static let longFormBackgroundRealtimeFactor: Double = 0.52
@@ -75,6 +76,19 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
             minimumCoverageSamples,
             deterministicRunwaySamples
         )
+    }
+
+    static func leadProtectedBufferedSampleCount(
+        remainingEstimatedSamples: Int,
+        realtimeFactor: Double,
+        minimumLeadRatio: Double
+    ) -> Int {
+        guard remainingEstimatedSamples > 0 else { return 0 }
+        let leadProtectionFactor = max(
+            0,
+            (1.0 - realtimeFactor) + (minimumLeadRatio / max(0.0001, 1.0 - minimumLeadRatio))
+        )
+        return Int(ceil(Double(remainingEstimatedSamples) * leadProtectionFactor))
     }
 
     static func fastModeMinimumCoverageSeconds(for chunkCount: Int) -> Double {

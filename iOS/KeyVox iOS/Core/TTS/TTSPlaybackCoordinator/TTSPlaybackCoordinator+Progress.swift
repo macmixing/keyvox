@@ -136,7 +136,7 @@ extension TTSPlaybackCoordinator {
 
     func deterministicFastModeBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
         let requiredStartSamples = fastModeRequiredStartSampleCount(for: chunkCount)
-        return normalModeBufferedSampleCount(
+        let deterministicRunwaySamples = normalModeBufferedSampleCount(
             for: chunkCount,
             remainingEstimatedSamples: remainingEstimatedSamples,
             requiredStartSamples: requiredStartSamples,
@@ -145,6 +145,12 @@ extension TTSPlaybackCoordinator {
             remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.fastModeRemainingWorkSafetyMarginSeconds,
             allowFullRemainingDeficit: true
         )
+        let leadProtectedSamples = TTSPlaybackCoordinatorBufferingPolicy.leadProtectedBufferedSampleCount(
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            realtimeFactor: foregroundRealtimeFactor(for: chunkCount),
+            minimumLeadRatio: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumLeadRatio
+        )
+        return max(deterministicRunwaySamples, leadProtectedSamples)
     }
 
     func backgroundContinuationBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
