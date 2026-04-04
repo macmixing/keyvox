@@ -67,10 +67,14 @@ public actor KeyVoxPocketTTSRuntime {
         let constants = try constants()
         let voiceConditioning = try loadVoiceConditioning(voice)
         let voicePrefillStart = CFAbsoluteTimeGetCurrent()
+        let currentMode = await computeModeController.mode()
+        let prefillModel = currentMode == .backgroundSafe 
+            ? try modelSet(backgroundModels, modeName: "background").condStepModel
+            : try modelSet(foregroundModels, modeName: "foreground").condStepModel
         let voiceKVSnapshot = try await loadVoiceKVSnapshot(
             for: voice,
             voiceConditioning: voiceConditioning,
-            model: try modelSet(foregroundModels, modeName: "foreground").condStepModel
+            model: prefillModel
         )
         let chunks = PocketTTSChunkPlanner.chunk(trimmedText, tokenizer: constants.tokenizer)
         Self.log(
@@ -278,7 +282,7 @@ private actor StreamGenerator {
                 if Task.isCancelled { break }
                 let chunkStart = CFAbsoluteTimeGetCurrent()
                 Self.log(
-                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) start id=\(chunkPlan.debugID) preview=\"\(chunkPlan.debugPreview)\""
+                    "Chunk \(chunkIndex + 1)/\(chunkPlans.count) start id=\(chunkPlan.debugID)"
                 )
 
                 let normalizedChunk = PocketTTSChunkPlanner.normalize(chunkPlan.rawText)
@@ -360,19 +364,33 @@ private actor StreamGenerator {
                     sequence = try PocketTTSInferenceUtilities.createSequence(from: latent)
                 }
 
-                let numberOfFrames = (batchedSamples.count + PocketTTSConstants.samplesPerFrame - 1) / PocketTTSConstants.samplesPerFrame
-                let finalFrameIndex = batchStartFrameIndex + numberOfFrames - 1
-                flushBatch(
-                    samples: &batchedSamples,
-                    batchStartFrameIndex: batchStartFrameIndex,
-                    frameIndex: finalFrameIndex,
-                    chunkIndex: chunkIndex,
-                    chunkCount: chunkPlans.count,
-                    chunkDebugID: chunkPlan.debugID,
-                    isChunkFinalBatch: true,
-                    emittedSampleCount: &emittedSampleCount,
-                    continuation: continuation
-                )
+                if batchedSamples.isEmpty == false {
+                    let numberOfFrames = (batchedSamples.count + PocketTTSConstants.samplesPerFrame - 1) / PocketTTSConstants.samplesPerFrame
+                    let finalFrameIndex = batchStartFrameIndex + numberOfFrames - 1
+                    flushBatch(
+                        samples: &batchedSamples,
+                        batchStartFrameIndex: batchStartFrameIndex,
+                        frameIndex: finalFrameIndex,
+                        chunkIndex: chunkIndex,
+                        chunkCount: chunkPlans.count,
+                        chunkDebugID: chunkPlan.debugID,
+                        isChunkFinalBatch: true,
+                        emittedSampleCount: &emittedSampleCount,
+                        continuation: continuation
+                    )
+                } else {
+                    flushBatch(
+                        samples: &batchedSamples,
+                        batchStartFrameIndex: batchStartFrameIndex,
+                        frameIndex: batchStartFrameIndex,
+                        chunkIndex: chunkIndex,
+                        chunkCount: chunkPlans.count,
+                        chunkDebugID: chunkPlan.debugID,
+                        isChunkFinalBatch: true,
+                        emittedSampleCount: &emittedSampleCount,
+                        continuation: continuation
+                    )
+                }
                 Self.log(
                     "Chunk \(chunkIndex + 1)/\(chunkPlans.count) generated \(generatedFrames) frames in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - chunkStart))s id=\(chunkPlan.debugID) tokenCount=\(chunkPlan.tokenCount) generationLimit=\(chunkPlan.generationFrameLimit)"
                 )
