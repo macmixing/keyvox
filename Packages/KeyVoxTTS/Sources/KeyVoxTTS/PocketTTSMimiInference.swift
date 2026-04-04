@@ -47,6 +47,10 @@ enum PocketTTSMimiInference {
         state: inout PocketTTSInferenceTypes.MimiState,
         model: MLModel
     ) async throws -> [Float] {
+        guard latent.count >= PocketTTSConstants.latentDimension else {
+            throw KeyVoxTTSError.invalidAssetData("Latent vector has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(latent.count)")
+        }
+        
         let latentArray = try MLMultiArray(shape: [1, NSNumber(value: PocketTTSConstants.latentDimension)], dataType: .float32)
         let latentPointer = latentArray.dataPointer.bindMemory(to: Float.self, capacity: PocketTTSConstants.latentDimension)
         latent.withUnsafeBufferPointer { buffer in
