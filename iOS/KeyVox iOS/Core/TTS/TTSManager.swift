@@ -110,7 +110,7 @@ final class TTSManager: ObservableObject {
 
     func handleAppWillResignActive() {
         Self.log("handleAppWillResignActive state=\(state.rawValue) hasStartedPlayback=\(hasStartedPlaybackForActiveRequest)")
-        guard isActive, hasStartedPlaybackForActiveRequest else { return }
+        guard isActive, (hasStartedPlaybackForActiveRequest || playbackPreparationPhase == .readyToReturn) else { return }
         beginBackgroundTaskIfNeeded()
 
         let shouldPreserveForegroundSynthesisDuringTransition =

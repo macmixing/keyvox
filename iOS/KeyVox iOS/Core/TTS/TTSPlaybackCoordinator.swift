@@ -416,6 +416,7 @@ final class TTSPlaybackCoordinator {
             playerNode.stop()
         }
         audioEngine.stop()
+        cancelScheduledMeterUpdates()
         deactivateAudioSessionIfNeeded()
         onPlaybackFinished?()
     }

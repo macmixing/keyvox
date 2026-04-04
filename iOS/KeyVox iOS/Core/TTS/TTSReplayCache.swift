@@ -30,8 +30,13 @@ struct TTSReplayCache {
             return nil
         }
 
+        guard entry.sampleCount > 0,
+              entry.sampleCount <= Int.max / MemoryLayout<Float>.stride else {
+            return nil
+        }
+        
         let expectedByteCount = entry.sampleCount * MemoryLayout<Float>.stride
-        guard entry.sampleCount > 0, audioData.count == expectedByteCount else {
+        guard audioData.count == expectedByteCount else {
             return nil
         }
 

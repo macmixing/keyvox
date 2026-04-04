@@ -5,6 +5,7 @@ final class PocketTTSEngine: TTSEngine {
     private let assetLocator: PocketTTSAssetLocator
     private var runtime: KeyVoxPocketTTSRuntime?
     private var loadedRootDirectoryURL: URL?
+    private var loadedAssetFingerprint: String?
 
     init(fileManager: FileManager = .default) {
         self.assetLocator = PocketTTSAssetLocator(fileManager: fileManager)
@@ -57,12 +58,37 @@ final class PocketTTSEngine: TTSEngine {
             throw KeyVoxTTSError.missingAsset("PocketTTS assets are not installed.")
         }
 
-        if runtime == nil || loadedRootDirectoryURL != assetLayout.rootDirectoryURL {
+        let currentFingerprint = computeAssetFingerprint(for: assetLayout)
+        let needsRecreate = runtime == nil || 
+                           loadedRootDirectoryURL != assetLayout.rootDirectoryURL ||
+                           loadedAssetFingerprint != currentFingerprint
+        
+        if needsRecreate {
             Self.log("Creating runtime for installed assets at \(assetLayout.rootDirectoryURL.path).")
             runtime = KeyVoxPocketTTSRuntime(assetLayout: assetLayout)
             loadedRootDirectoryURL = assetLayout.rootDirectoryURL
+            loadedAssetFingerprint = currentFingerprint
         }
         return runtime!
+    }
+    
+    private func computeAssetFingerprint(for assetLayout: KeyVoxTTSAssetLayout) -> String {
+        let fileManager = FileManager.default
+        var components: [String] = []
+        
+        components.append(assetLayout.rootDirectoryURL.path)
+        
+        if let attrs = try? fileManager.attributesOfItem(atPath: assetLayout.modelDirectoryURL.path),
+           let modDate = attrs[.modificationDate] as? Date {
+            components.append(String(modDate.timeIntervalSince1970))
+        }
+        
+        if let attrs = try? fileManager.attributesOfItem(atPath: assetLayout.constantsDirectoryURL.path),
+           let modDate = attrs[.modificationDate] as? Date {
+            components.append(String(modDate.timeIntervalSince1970))
+        }
+        
+        return components.joined(separator: "|")
     }
 
     private static func log(_ message: String) {
