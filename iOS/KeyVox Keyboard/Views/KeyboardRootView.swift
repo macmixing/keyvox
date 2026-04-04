@@ -30,6 +30,7 @@ final class KeyboardRootView: UIView {
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
     private var speakButtonVisibilityTarget = false
+    private var hasAppliedInitialSpeakVisibility = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -129,8 +130,9 @@ final class KeyboardRootView: UIView {
 
         if shouldShowSpeak != speakButtonVisibilityTarget {
             speakButtonVisibilityTarget = shouldShowSpeak
-            
-            if speakButton.isHidden && speakButton.alpha == 1 && speakButton.transform == .identity {
+
+            if hasAppliedInitialSpeakVisibility == false {
+                hasAppliedInitialSpeakVisibility = true
                 if shouldShowSpeak {
                     speakButton.isHidden = false
                 } else {
