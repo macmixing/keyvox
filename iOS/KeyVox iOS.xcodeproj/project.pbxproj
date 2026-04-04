@@ -41,6 +41,7 @@
 		8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8E7DB28E2F80FBE0009E3576 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 8E7DB28D2F80FBE0009E3576 /* SwiftSoup */; };
 		8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E97944B2F66B54A009A691D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944A2F66B549009A691D /* WidgetKit.framework */; };
 		8E97944D2F66B54A009A691D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944C2F66B54A009A691D /* SwiftUI.framework */; };
@@ -442,6 +443,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E7DB28E2F80FBE0009E3576 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -770,6 +772,7 @@
 			);
 			name = "KeyVox Share";
 			packageProductDependencies = (
+				8E7DB28D2F80FBE0009E3576 /* SwiftSoup */,
 			);
 			productName = "KeyVox Share";
 			productReference = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */;
@@ -909,6 +912,7 @@
 				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */,
+				8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8E9E38532F5BF1F000EAFA72 /* Products */;
@@ -1700,6 +1704,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.13.4;
+			};
+		};
 		9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
@@ -1711,6 +1723,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		8E7DB28D2F80FBE0009E3576 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
+		};
 		8E9E38952F5BF56600EAFA72 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
