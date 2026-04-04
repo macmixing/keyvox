@@ -34,7 +34,7 @@ final class ShareViewController: UIViewController {
             showFeedback()
             
             let extractedText = await KeyVoxShareContentExtractor.extractText(from: extensionContext)
-            let sharedText = extractedText
+            let sharedText = extractedText?.trimmingCharacters(in: .whitespacesAndNewlines)
 
             if let sharedText, sharedText.isEmpty == false {
                 NSLog("[KeyVoxShare] Extracted share text length=%d", sharedText.count)

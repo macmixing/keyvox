@@ -229,6 +229,20 @@ iOS/
 │           ├── KeyboardLogoBarView.swift
 │           ├── KeyboardRoundedBorderRenderer.swift
 │           └── KeyboardSpeakButton.swift
+├── KeyVox Share/
+│   ├── ContentExtractor/
+│   │   ├── KeyVoxShareContentExtractor.swift
+│   │   ├── KeyVoxShareContentExtractorDiagnostics.swift
+│   │   ├── KeyVoxShareImageItemLoader.swift
+│   │   ├── KeyVoxShareOCRPipeline.swift
+│   │   └── KeyVoxShareTextSupport.swift
+│   ├── Views/
+│   │   └── ShareFeedbackView.swift
+│   ├── Info.plist
+│   ├── KeyVoxShare.entitlements
+│   ├── KeyVoxShareAppLauncher.swift
+│   ├── KeyVoxShareBridge.swift
+│   └── ShareViewController.swift
 ├── KeyVox Widget/
 │   ├── AppIntent.swift
 │   ├── Assets.xcassets/

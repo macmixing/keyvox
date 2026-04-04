@@ -7,7 +7,10 @@ final class PocketTTSEngine: TTSEngine {
     private var loadedRootDirectoryURL: URL?
     private var loadedAssetFingerprint: String?
 
+    private let fileManager: FileManager
+    
     init(fileManager: FileManager = .default) {
+        self.fileManager = fileManager
         self.assetLocator = PocketTTSAssetLocator(fileManager: fileManager)
     }
 
@@ -73,7 +76,6 @@ final class PocketTTSEngine: TTSEngine {
     }
     
     private func computeAssetFingerprint(for assetLayout: KeyVoxTTSAssetLayout) -> String {
-        let fileManager = FileManager.default
         var components: [String] = []
         
         components.append(assetLayout.rootDirectoryURL.path)
@@ -84,6 +86,11 @@ final class PocketTTSEngine: TTSEngine {
         }
         
         if let attrs = try? fileManager.attributesOfItem(atPath: assetLayout.constantsDirectoryURL.path),
+           let modDate = attrs[.modificationDate] as? Date {
+            components.append(String(modDate.timeIntervalSince1970))
+        }
+        
+        if let attrs = try? fileManager.attributesOfItem(atPath: assetLayout.voiceDirectoryURL.path),
            let modDate = attrs[.modificationDate] as? Date {
             components.append(String(modDate.timeIntervalSince1970))
         }

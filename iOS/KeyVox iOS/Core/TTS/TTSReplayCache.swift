@@ -82,8 +82,22 @@ struct TTSReplayCache {
             Data(buffer: bufferPointer)
         }
 
-        try? metadataData.write(to: metadataURL, options: .atomic)
-        try? audioData.write(to: audioURL, options: .atomic)
+        let metadataTempURL = metadataURL.appendingPathExtension("tmp")
+        let audioTempURL = audioURL.appendingPathExtension("tmp")
+        
+        do {
+            try metadataData.write(to: metadataTempURL, options: .atomic)
+            try audioData.write(to: audioTempURL, options: .atomic)
+            
+            try? fileManager.removeItem(at: metadataURL)
+            try? fileManager.removeItem(at: audioURL)
+            
+            try fileManager.moveItem(at: metadataTempURL, to: metadataURL)
+            try fileManager.moveItem(at: audioTempURL, to: audioURL)
+        } catch {
+            try? fileManager.removeItem(at: metadataTempURL)
+            try? fileManager.removeItem(at: audioTempURL)
+        }
     }
 
     func updatePauseState(

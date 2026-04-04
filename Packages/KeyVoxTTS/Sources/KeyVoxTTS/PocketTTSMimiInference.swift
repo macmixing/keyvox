@@ -23,11 +23,18 @@ enum PocketTTSMimiInference {
             let array = try MLMultiArray(shape: shape.map(NSNumber.init(value:)), dataType: .float32)
             if byteCount > 0 && !shape.contains(0) {
                 let data = try Data(contentsOf: stateDirectoryURL.appendingPathComponent(name + ".bin", isDirectory: false))
-                let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: byteCount / MemoryLayout<Float>.size)
+                
+                let expectedBytes = shape.reduce(1, *) * MemoryLayout<Float>.size
+                guard data.count >= expectedBytes else {
+                    throw KeyVoxTTSError.invalidAssetData("PocketTTS Mimi state tensor \(name) has insufficient data: expected \(expectedBytes) bytes, got \(data.count)")
+                }
+                
+                let copyCount = expectedBytes / MemoryLayout<Float>.size
+                let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: copyCount)
                 data.withUnsafeBytes { rawBuffer in
                     let source = rawBuffer.bindMemory(to: Float.self)
                     guard let baseAddress = source.baseAddress else { return }
-                    pointer.update(from: baseAddress, count: byteCount / MemoryLayout<Float>.size)
+                    pointer.update(from: baseAddress, count: copyCount)
                 }
             }
             tensors[name] = array

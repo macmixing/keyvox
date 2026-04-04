@@ -191,7 +191,30 @@ enum PocketTTSChunkPlanner {
         chunkTokenLimit: Int
     ) -> [String] {
         let words = text.split(separator: " ").map(String.init)
-        guard words.count > 1 else { return [text] }
+        guard words.count > 1 else {
+            let tokenCount = tokenizer.encode(text).count
+            if tokenCount <= chunkTokenLimit {
+                return [text]
+            }
+            
+            var chunks: [String] = []
+            var currentText = ""
+            for char in text {
+                let candidate = currentText + String(char)
+                if tokenizer.encode(candidate).count <= chunkTokenLimit {
+                    currentText = candidate
+                } else {
+                    if !currentText.isEmpty {
+                        chunks.append(currentText)
+                    }
+                    currentText = String(char)
+                }
+            }
+            if !currentText.isEmpty {
+                chunks.append(currentText)
+            }
+            return chunks.isEmpty ? [text] : chunks
+        }
 
         var chunks: [String] = []
         var currentWords: [String] = []
@@ -336,9 +359,10 @@ enum PocketTTSChunkPlanner {
         tagger.string = context
         
         let range = (context as NSString).range(of: word, options: .backwards)
-        guard range.location != NSNotFound else { return false }
+        guard range.location != NSNotFound,
+              let swiftRange = Range(range, in: context) else { return false }
         
-        let stringIndex = context.index(context.startIndex, offsetBy: range.location)
+        let stringIndex = swiftRange.lowerBound
         
         let (tag, _) = tagger.tag(at: stringIndex, unit: .word, scheme: .lexicalClass)
         if let tag = tag {
@@ -361,7 +385,13 @@ enum PocketTTSChunkPlanner {
         }
         
         let lowercased = word.lowercased()
-        if lowercased.count <= 4 && word.first?.isUppercase == true {
+        let commonAbbreviations: Set<String> = ["mr", "mrs", "ms", "dr", "st", "jr", "sr", "vs", "etc"]
+        
+        if commonAbbreviations.contains(lowercased) {
+            return true
+        }
+        
+        if word.uppercased() == word && word.count <= 4 {
             return true
         }
         

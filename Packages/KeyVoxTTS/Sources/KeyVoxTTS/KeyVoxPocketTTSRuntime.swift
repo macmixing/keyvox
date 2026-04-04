@@ -360,10 +360,11 @@ private actor StreamGenerator {
                     sequence = try PocketTTSInferenceUtilities.createSequence(from: latent)
                 }
 
+                let finalFrameIndex = batchStartFrameIndex + batchedSamples.count - 1
                 flushBatch(
                     samples: &batchedSamples,
                     batchStartFrameIndex: batchStartFrameIndex,
-                    frameIndex: maximumFrameCount - 1,
+                    frameIndex: finalFrameIndex,
                     chunkIndex: chunkIndex,
                     chunkCount: chunkPlans.count,
                     chunkDebugID: chunkPlan.debugID,
