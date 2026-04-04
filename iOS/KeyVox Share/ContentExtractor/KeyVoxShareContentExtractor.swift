@@ -3,6 +3,7 @@ import Foundation
 enum KeyVoxShareContentExtractor {
     enum ExtractionSource: String {
         case direct
+        case web
         case ocr
     }
 
@@ -19,6 +20,13 @@ enum KeyVoxShareContentExtractor {
             KeyVoxShareContentExtractorDiagnostics.log("Using directly shared text length=\(directText.count).")
             KeyVoxShareContentExtractorDiagnostics.logExtractionSummary(for: directText, source: .direct)
             return directText
+        }
+
+        let webText = await KeyVoxShareWebExtractor.extractText(from: items)
+        if webText.isEmpty == false {
+            KeyVoxShareContentExtractorDiagnostics.log("Using web parsed text length=\(webText.count).")
+            KeyVoxShareContentExtractorDiagnostics.logExtractionSummary(for: webText, source: .web)
+            return webText
         }
 
         let recognizedText = await KeyVoxShareImageOCRExtractor.extractText(from: items)
