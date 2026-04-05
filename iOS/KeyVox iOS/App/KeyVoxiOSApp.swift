@@ -11,6 +11,7 @@ struct KeyVoxApp: App {
     @StateObject private var transcriptionManager: TranscriptionManager
     @StateObject private var ttsManager: TTSManager
     @StateObject private var ttsPurchaseController: TTSPurchaseController
+    @StateObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     @StateObject private var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
@@ -29,6 +30,7 @@ struct KeyVoxApp: App {
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
         _ttsManager = StateObject(wrappedValue: services.ttsManager)
         _ttsPurchaseController = StateObject(wrappedValue: services.ttsPurchaseController)
+        _keyVoxSpeakIntroController = StateObject(wrappedValue: services.keyVoxSpeakIntroController)
         _ttsVoicePreviewPlayer = StateObject(wrappedValue: services.ttsVoicePreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
@@ -68,6 +70,7 @@ struct KeyVoxApp: App {
                 .environmentObject(transcriptionManager)
                 .environmentObject(ttsManager)
                 .environmentObject(ttsPurchaseController)
+                .environmentObject(keyVoxSpeakIntroController)
                 .environmentObject(ttsVoicePreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
@@ -90,6 +93,7 @@ struct KeyVoxApp: App {
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
+                        keyVoxSpeakIntroController.handleAppDidBecomeActive(onboardingStore: onboardingStore)
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         ttsManager.handleAppDidEnterBackground()

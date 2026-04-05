@@ -47,14 +47,6 @@ extension SettingsTabView {
                     }
                 }
 
-                Divider()
-                    .background(.white.opacity(0.22))
-
-                ttsUnlockRow
-
-                Divider()
-                    .background(.white.opacity(0.22))
-
                 HStack(alignment: .center, spacing: 12) {
                     Text(playbackVoiceDescriptionText)
                         .font(.appFont(15, variant: .light))
@@ -122,6 +114,11 @@ extension SettingsTabView {
                 .opacity(isTTSExpandedContentVisible ? 1 : 0)
                 .allowsHitTesting(isTTSExpandedContentVisible)
                 .accessibilityHidden(!isTTSExpandedContentVisible)
+
+                Divider()
+                    .background(.white.opacity(0.22))
+
+                ttsUnlockRow
             }
         }
         .animation(.easeOut(duration: 0.18), value: isTTSExpandedContentVisible)
@@ -133,7 +130,7 @@ extension SettingsTabView {
     private var ttsUnlockRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                Text("TTS Access")
+                Text("KeyVox Speak Access")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -160,22 +157,6 @@ extension SettingsTabView {
                 .font(.appFont(14, variant: .light))
                 .foregroundStyle(.white.opacity(0.7))
                 .frame(maxWidth: .infinity, alignment: .leading)
-
-            if ttsPurchaseController.isTTSUnlocked == false {
-                AppActionButton(
-                    title: "Restore Purchases",
-                    style: .secondary,
-                    size: .compact,
-                    fontSize: 14,
-                    isEnabled: ttsPurchaseController.isStoreActionInFlight == false,
-                    action: {
-                        appHaptics.light()
-                        Task {
-                            await ttsPurchaseController.restorePurchases()
-                        }
-                    }
-                )
-            }
         }
     }
 

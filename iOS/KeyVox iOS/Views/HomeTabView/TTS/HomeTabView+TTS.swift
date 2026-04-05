@@ -86,10 +86,6 @@ extension HomeTabView {
                     }
                 }
 
-                if showsExpandedTTSTranscript {
-                    ttsTranscriptPanel
-                }
-
                 if showsTTSPreparationSlot {
                     VStack(alignment: .leading, spacing: 8) {
                         ProgressView(value: ttsManager.playbackPreparationProgress)
@@ -99,6 +95,10 @@ extension HomeTabView {
                     .opacity(isTTSPreparationVisible ? 1 : 0)
                     .allowsHitTesting(isTTSPreparationVisible)
                     .accessibilityHidden(!isTTSPreparationVisible)
+                }
+
+                if showsExpandedTTSTranscript {
+                    ttsTranscriptPanel
                 }
 
                 if let ttsErrorText {

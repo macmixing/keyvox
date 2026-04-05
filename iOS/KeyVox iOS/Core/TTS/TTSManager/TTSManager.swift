@@ -30,6 +30,7 @@ final class TTSManager: ObservableObject {
     let purchaseGate: any TTSPurchaseGating
     let replayCache: TTSReplayCache
     let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
+    let onNewGenerationPlaybackStarted: @MainActor () -> Void
     var activeRequest: KeyVoxTTSRequest?
     var lastReplayableRequest: KeyVoxTTSRequest?
     var pausedReplaySampleOffset: Int?
@@ -81,7 +82,8 @@ final class TTSManager: ObservableObject {
         playbackCoordinator: TTSPlaybackCoordinator,
         purchaseGate: any TTSPurchaseGating,
         replayCache: TTSReplayCache? = nil,
-        effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil
+        effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil,
+        onNewGenerationPlaybackStarted: (@MainActor () -> Void)? = nil
     ) {
         self.settingsStore = settingsStore
         self.appHaptics = appHaptics
@@ -91,6 +93,7 @@ final class TTSManager: ObservableObject {
         self.purchaseGate = purchaseGate
         self.replayCache = replayCache ?? TTSReplayCache()
         self.effectiveVoiceProvider = effectiveVoiceProvider ?? { settingsStore.ttsVoice }
+        self.onNewGenerationPlaybackStarted = onNewGenerationPlaybackStarted ?? {}
 
         playbackCoordinator.onPlaybackStarted = { [weak self] in
             self?.handlePlaybackStarted()
