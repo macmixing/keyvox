@@ -78,7 +78,7 @@ struct DictionaryTabView: View {
                     }
                 }
 
-                Text("Custom dictionary correction is currently supported for English only.")
+                Text("Custom dictionary correction is currently supported for English dictation only.")
                     .font(.appFont(11))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)

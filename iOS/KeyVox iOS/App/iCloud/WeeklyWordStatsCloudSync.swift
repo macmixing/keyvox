@@ -138,7 +138,9 @@ final class WeeklyWordStatsCloudSync {
             ubiquitousStore.set(snapshot.modifiedAt, forKey: KeyVoxiCloudKeys.weeklyWordStatsModifiedAt)
             _ = ubiquitousStore.synchronize()
         } catch {
+            #if DEBUG
             print("[WeeklyWordStatsCloudSync] Failed to encode weekly word stats payload: \(error)")
+            #endif
         }
     }
 
@@ -150,7 +152,9 @@ final class WeeklyWordStatsCloudSync {
         do {
             return try JSONDecoder().decode(WeeklyWordStatsPayload.self, from: data).sanitized()
         } catch {
+            #if DEBUG
             print("[WeeklyWordStatsCloudSync] Failed to decode weekly word stats payload: \(error)")
+            #endif
             return nil
         }
     }

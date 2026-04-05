@@ -14,7 +14,11 @@ struct KeyVoxSpeakSheetView: View {
 
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @State private var selectedScene = Scene.a
+    @State private var buttonOpacity: Double = 0
+    @State private var tabViewOpacity: Double = 0
+    @State private var animationTask: Task<Void, Never>?
 
     let mode: Mode
 
@@ -25,6 +29,12 @@ struct KeyVoxSpeakSheetView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
                     TabView(selection: $selectedScene) {
                         ForEach(Scene.allCases, id: \.self) { scene in
                             sceneView(for: scene)
@@ -32,6 +42,7 @@ struct KeyVoxSpeakSheetView: View {
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .always))
+                    .opacity(tabViewOpacity)
 
                     VStack(spacing: 8) {
                         Divider()
@@ -71,18 +82,21 @@ struct KeyVoxSpeakSheetView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
                     .background(AppTheme.screenBackground)
+                    .opacity(buttonOpacity)
                 }
             }
             .navigationTitle("")
-            .toolbar {
-                if case .unlock(let onDismiss) = mode {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") {
-                            onDismiss()
-                        }
-                        .foregroundStyle(.yellow)
-                    }
-                }
+        }
+        .onAppear {
+            startButtonAnimation()
+        }
+        .onDisappear {
+            ttsPreviewPlayer.stop()
+            animationTask?.cancel()
+            animationTask = nil
+            
+            if case .unlock(let onDismiss) = mode {
+                onDismiss()
             }
         }
     }
@@ -119,7 +133,8 @@ struct KeyVoxSpeakSheetView: View {
         case .c:
             KeyVoxSpeakSceneCView(
                 showsUnlockDetails: showsUnlockDetails,
-                purchaseSummaryText: ttsPurchaseSummaryText
+                purchaseSummaryText: ttsPurchaseSummaryText,
+                isVisible: selectedScene == .c
             )
         }
     }
@@ -145,6 +160,28 @@ struct KeyVoxSpeakSheetView: View {
         appHaptics.light()
         Task {
             await ttsPurchaseController.restorePurchases()
+        }
+    }
+
+    private func startButtonAnimation() {
+        buttonOpacity = 0
+        tabViewOpacity = 0
+        animationTask?.cancel()
+
+        animationTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.2))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeIn(duration: 0.4)) {
+                tabViewOpacity = 1.0
+            }
+
+            try? await Task.sleep(for: .seconds(0.5))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeIn(duration: 0.4)) {
+                buttonOpacity = 1.0
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ final class AppServiceRegistry {
     let appHaptics: AppHaptics
     let ttsPurchaseController: TTSPurchaseController
     let keyVoxSpeakIntroController: KeyVoxSpeakIntroController
-    let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    let ttsPreviewPlayer: TTSPreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
     let activeProviderRouter: SwitchableDictationProvider
@@ -72,7 +72,7 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxSpeakIntro
         )
-        let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
+        let ttsPreviewPlayer = TTSPreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -151,7 +151,7 @@ final class AppServiceRegistry {
             playbackCoordinator: ttsPlaybackCoordinator,
             purchaseGate: ttsPurchaseController,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
-                guard let settingsStore else { return .azelma }
+                guard let settingsStore else { return .alba }
                 guard let pocketTTSModelManager else { return settingsStore.ttsVoice }
                 return Self.resolvedTTSVoiceSelection(
                     selectedVoice: settingsStore.ttsVoice,
@@ -226,7 +226,7 @@ final class AppServiceRegistry {
         self.appHaptics = appHaptics
         self.ttsPurchaseController = ttsPurchaseController
         self.keyVoxSpeakIntroController = keyVoxSpeakIntroController
-        self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
+        self.ttsPreviewPlayer = ttsPreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService
         self.activeProviderRouter = activeProviderRouter

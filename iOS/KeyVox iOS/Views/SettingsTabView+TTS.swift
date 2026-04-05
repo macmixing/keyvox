@@ -56,9 +56,7 @@ extension SettingsTabView {
                     if supportsTTSExpansion {
                         Button {
                             appHaptics.light()
-                            withAnimation(.easeInOut(duration: 0.18)) {
-                                isTTSSectionExpanded.toggle()
-                            }
+                            isTTSSectionExpanded.toggle()
                         } label: {
                             Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
                                 .font(.system(size: 28, weight: .heavy))
@@ -70,50 +68,17 @@ extension SettingsTabView {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 16) {
-                    Divider()
-                        .background(.white.opacity(0.4))
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        ttsSharedModelRow
-
-                        if pocketTTSModelManager.isSharedModelReady() {
-                            Divider()
-                                .background(.white.opacity(0.22))
-                                .padding(.leading, 12)
-                                .padding(.trailing, 12)
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                ForEach(Array(AppSettingsStore.TTSVoice.allCases.enumerated()), id: \.element) { index, voice in
-                                    ttsVoiceRow(for: voice)
-
-                                    if index < AppSettingsStore.TTSVoice.allCases.count - 1 {
-                                        Divider()
-                                            .background(.white.opacity(0.22))
-                                            .padding(.leading, 12)
-                                            .padding(.trailing, 12)
-                                    }
-                                }
-                            }
+                ttsExpandedContent
+                    .frame(height: shouldShowExpandedTTSContent ? ttsExpandedContentHeight : 0, alignment: .top)
+                    .clipped()
+                    .opacity(shouldShowExpandedTTSContent ? 1 : 0)
+                    .allowsHitTesting(shouldShowExpandedTTSContent)
+                    .accessibilityHidden(!shouldShowExpandedTTSContent)
+                    .background(alignment: .top) {
+                        if shouldShowExpandedTTSContent || ttsExpandedContentHeight == 0 {
+                            ttsExpandedContentMeasurement
                         }
                     }
-                }
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                updateTTSExpandedContentHeight(geometry.size.height)
-                            }
-                            .onChange(of: geometry.size.height) { _, newHeight in
-                                updateTTSExpandedContentHeight(newHeight)
-                            }
-                    }
-                )
-                .frame(height: shouldShowExpandedTTSContent ? ttsExpandedContentHeight : 0, alignment: .top)
-                .clipped()
-                .opacity(isTTSExpandedContentVisible ? 1 : 0)
-                .allowsHitTesting(isTTSExpandedContentVisible)
-                .accessibilityHidden(!isTTSExpandedContentVisible)
 
                 Divider()
                     .background(.white.opacity(0.22))
@@ -121,9 +86,59 @@ extension SettingsTabView {
                 ttsUnlockRow
             }
         }
-        .animation(.easeOut(duration: 0.18), value: isTTSExpandedContentVisible)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedTTSContent)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: ttsExpandedContentHeight)
+    }
+
+    @ViewBuilder
+    private var ttsExpandedContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Divider()
+                .background(.white.opacity(0.4))
+
+            VStack(alignment: .leading, spacing: 16) {
+                ttsSharedModelRow
+
+                if pocketTTSModelManager.isSharedModelReady() {
+                    Divider()
+                        .background(.white.opacity(0.22))
+                        .padding(.leading, 12)
+                        .padding(.trailing, 12)
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(Array(AppSettingsStore.TTSVoice.allCases.enumerated()), id: \.element) { index, voice in
+                            ttsVoiceRow(for: voice)
+
+                            if index < AppSettingsStore.TTSVoice.allCases.count - 1 {
+                                Divider()
+                                    .background(.white.opacity(0.22))
+                                    .padding(.leading, 12)
+                                    .padding(.trailing, 12)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var ttsExpandedContentMeasurement: some View {
+        ttsExpandedContent
+            .fixedSize(horizontal: false, vertical: true)
+            .hidden()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            updateTTSExpandedContentHeight(geometry.size.height)
+                        }
+                        .onChange(of: geometry.size.height) { _, newHeight in
+                            updateTTSExpandedContentHeight(newHeight)
+                        }
+                }
+            )
     }
 
     @ViewBuilder
@@ -256,13 +271,13 @@ extension SettingsTabView {
 
     @ViewBuilder
     private func ttsVoicePreviewButton(for voice: AppSettingsStore.TTSVoice) -> some View {
-        let isActive = ttsVoicePreviewPlayer.isActive(for: voice)
-        let isPlaying = isActive && ttsVoicePreviewPlayer.isPlaying
+        let isActive = ttsPreviewPlayer.isActive(for: voice)
+        let isPlaying = isActive && ttsPreviewPlayer.isPlaying
         let symbolName = isPlaying ? "pause.circle" : "play.circle"
-        let canPlayPreview = ttsVoicePreviewPlayer.hasPreview(for: voice)
+        let canPlayPreview = ttsPreviewPlayer.hasPreview(for: voice)
 
         Button {
-            ttsVoicePreviewPlayer.togglePlayback(for: voice)
+            ttsPreviewPlayer.togglePlayback(for: voice)
         } label: {
             Image(systemName: symbolName)
                 .font(.system(size: 26, weight: .regular))
@@ -457,16 +472,6 @@ extension SettingsTabView {
             return true
         }
         return isTTSSectionExpanded
-    }
-
-    func syncTTSDisclosurePresentation() {
-        isTTSExpandedContentVisible = shouldShowExpandedTTSContent
-    }
-
-    func updateTTSDisclosurePresentation() {
-        withAnimation(.easeOut(duration: 0.18)) {
-            isTTSExpandedContentVisible = shouldShowExpandedTTSContent
-        }
     }
 
     func updateTTSExpandedContentHeight(_ newHeight: CGFloat) {

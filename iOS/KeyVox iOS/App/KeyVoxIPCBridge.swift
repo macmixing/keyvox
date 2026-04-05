@@ -111,7 +111,7 @@ enum KeyVoxIPCBridge {
         let d = defaults
         let timestamp = Date().timeIntervalSince1970
         d?.set(timestamp, forKey: Key.sessionTimestamp)
-        NSLog("[KeyVoxIPCBridge] setSessionActive ts=%.3f", timestamp)
+        log("setSessionActive ts=\(String(format: "%.3f", timestamp))")
     }
 
     static func setSessionHasBluetoothAudioRoute(_ hasBluetoothAudioRoute: Bool) {
@@ -122,7 +122,7 @@ enum KeyVoxIPCBridge {
         let d = defaults
         d?.removeObject(forKey: Key.sessionTimestamp)
         d?.removeObject(forKey: Key.sessionHasBluetoothAudioRoute)
-        NSLog("[KeyVoxIPCBridge] clearSessionActive")
+        log("clearSessionActive")
     }
     
     static func setRecordingState(_ state: String) {
@@ -160,6 +160,12 @@ enum KeyVoxIPCBridge {
         } else {
             defaults?.removeObject(forKey: Key.ttsErrorMessage)
         }
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[KeyVoxIPCBridge] %@", message)
+        #endif
     }
 
     static func clearTTSState() {

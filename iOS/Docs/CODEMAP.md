@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-06**
+**Last Updated: 2026-04-05**
 
 ## Project Overview
 
@@ -85,6 +85,9 @@ iOS/
 │   │   │   ├── OnboardingSetupState.swift
 │   │   │   ├── OnboardingStore.swift
 │   │   │   └── RuntimeFlags.swift
+│   │   ├── Shortcuts/
+│   │   │   ├── KeyVoxSpeakShortcutIntent.swift
+│   │   │   └── KeyVoxSpeakShortcutsProvider.swift
 │   │   └── iCloud/
 │   │       ├── AppSettingsStore.swift
 │   │       ├── UserDefaultsKeys.swift
@@ -122,8 +125,8 @@ iOS/
 │   │   │   ├── PocketTTSModelCatalog.swift
 │   │   │   ├── PocketTTSModelManager.swift
 │   │   │   ├── TTSEngine.swift
+│   │   │   ├── TTSPreviewPlayer.swift
 │   │   │   ├── TTSReplayCache.swift
-│   │   │   └── TTSVoicePreviewPlayer.swift
 │   │   │   ├── TTSManager/
 │   │   │   │   ├── TTSManager.swift
 │   │   │   │   ├── TTSManager+AppLifecycle.swift
@@ -182,6 +185,7 @@ iOS/
 │   │   │   ├── SettingsRow.swift
 │   │   │   └── KeyVoxSpeak/
 │   │   │       ├── KeyVoxSpeakIntroSheetView.swift
+│   │   │       ├── KeyVoxSpeakInstallCardView.swift
 │   │   │       ├── KeyVoxSpeakSceneAView.swift
 │   │   │       ├── KeyVoxSpeakSceneBView.swift
 │   │   │       ├── KeyVoxSpeakSceneCView.swift
@@ -362,8 +366,13 @@ Packages/
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
-  - Handles scene activation/background callbacks for transcription recovery, model recovery, and onboarding keyboard-tour arming.
+  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, and shortcut-route consumption.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
+- `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutIntent.swift`
+  - App-owned `Speak Copied Text` App Intent for the official KeyVox Speak shortcut.
+  - Stages the existing `keyvoxios://tts/start` route into shared app-group state and relies on the containing app to consume and route it on activation.
+- `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
+  - Registers the KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/AppDelegate.swift`
   - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
 - `KeyVox iOS/App/AppSceneDelegate.swift`
@@ -427,7 +436,7 @@ Packages/
 ### Shared State, IPC, and Session Surfaces
 
 - `KeyVox iOS/App/KeyVoxIPCBridge.swift`
-  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
+  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, and the delayed eligible-open counter.
@@ -478,8 +487,8 @@ Packages/
   - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
   - Persistence layer for the last replayable rendered playback and paused replay sample offsets.
-- `KeyVox iOS/Core/TTS/TTSVoicePreviewPlayer.swift`
-  - Bundled voice-preview playback owner used by the Voice Model settings section.
+- `KeyVox iOS/Core/TTS/TTSPreviewPlayer.swift`
+  - Shared bundled-preview playback owner used by both the Voice Model settings section and the KeyVox Speak intro demo.
 - `KeyVox iOS/Core/TTS/AudioModeCoordinator.swift`
   - Single arbitration surface for dictation-versus-TTS transitions, including pause/resume/replay transport.
   - Also enforces the copied-text playback entitlement gate for every new TTS start path before playback begins.
@@ -531,6 +540,7 @@ Packages/
   - Dedicated feature folder for the shared KeyVox Speak presentation surface.
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern.
+  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, Alba install, progress, and repair actions.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/DictionaryTabView.swift`

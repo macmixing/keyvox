@@ -110,11 +110,8 @@ extension AudioRecorder {
                 break
             } catch {
                 lastError = error
-                NSLog(
-                    "[AudioRecorder] repairMonitoring attempt=%@ failed error=%@ retryable=%@",
-                    String(attemptIndex + 1),
-                    error.localizedDescription,
-                    String(shouldRetryRecordingStartAfterRouteTransition(for: error))
+                Self.log(
+                    "repairMonitoring attempt=\(String(attemptIndex + 1)) failed error=\(error.localizedDescription) retryable=\(String(shouldRetryRecordingStartAfterRouteTransition(for: error)))"
                 )
                 guard shouldRetryRecordingStartAfterRouteTransition(for: error),
                       attemptIndex < recoveryDelays.count - 1 else {
@@ -138,32 +135,24 @@ extension AudioRecorder {
             .map { $0.portType.rawValue }
             .joined(separator: ",")
 
-        NSLog(
-            "[AudioRecorder] ensureEngineRunning begin isMonitoring=%@ engineExists=%@ engineRunning=%@ routeInputs=%@ routeOutputs=%@ category=%@ mode=%@ otherAudioPlaying=%@",
-            String(isMonitoring),
-            String(audioEngine != nil),
-            String(audioEngine?.isRunning == true),
-            routeInputPorts,
-            routeOutputPorts,
-            audioSession.category.rawValue,
-            audioSession.mode.rawValue,
-            String(audioSession.isOtherAudioPlaying)
+        Self.log(
+            "ensureEngineRunning begin isMonitoring=\(String(isMonitoring)) engineExists=\(String(audioEngine != nil)) engineRunning=\(String(audioEngine?.isRunning == true)) routeInputs=\(routeInputPorts) routeOutputs=\(routeOutputPorts) category=\(audioSession.category.rawValue) mode=\(audioSession.mode.rawValue) otherAudioPlaying=\(String(audioSession.isOtherAudioPlaying))"
         )
 
         // Set up audio session for background persistence
         do {
             try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
-            NSLog("[AudioRecorder] setCategory(playAndRecord) succeeded")
+            Self.log("setCategory(playAndRecord) succeeded")
         } catch {
-            NSLog("[AudioRecorder] setCategory(playAndRecord) failed error=%@", error.localizedDescription)
+            Self.log("setCategory(playAndRecord) failed error=\(error.localizedDescription)")
             throw error
         }
 
         do {
             try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
-            NSLog("[AudioRecorder] setAllowHapticsAndSystemSoundsDuringRecording(true) succeeded")
+            Self.log("setAllowHapticsAndSystemSoundsDuringRecording(true) succeeded")
         } catch {
-            NSLog("[AudioRecorder] setAllowHapticsAndSystemSoundsDuringRecording(true) failed error=%@", error.localizedDescription)
+            Self.log("setAllowHapticsAndSystemSoundsDuringRecording(true) failed error=\(error.localizedDescription)")
             throw error
         }
         // Keep the hardware route's native sample rate. Bluetooth HFP routes can reject
@@ -177,26 +166,21 @@ extension AudioRecorder {
             let activeRouteOutputPorts = audioSession.currentRoute.outputs
                 .map { $0.portType.rawValue }
                 .joined(separator: ",")
-            NSLog(
-                "[AudioRecorder] setActive(true) succeeded routeInputs=%@ routeOutputs=%@ sampleRate=%@",
-                activeRouteInputPorts,
-                activeRouteOutputPorts,
-                String(audioSession.sampleRate)
+            Self.log(
+                "setActive(true) succeeded routeInputs=\(activeRouteInputPorts) routeOutputs=\(activeRouteOutputPorts) sampleRate=\(String(audioSession.sampleRate))"
             )
         } catch {
-            NSLog("[AudioRecorder] setActive(true) failed error=%@", error.localizedDescription)
+            Self.log("setActive(true) failed error=\(error.localizedDescription)")
             throw error
         }
 
         do {
             try applyInputPreference()
-            NSLog(
-                "[AudioRecorder] applyInputPreference succeeded currentInput=%@ preferredInput=%@",
-                String(describing: audioSession.currentRoute.inputs.first?.portType.rawValue),
-                String(describing: audioSession.preferredInput?.portType.rawValue)
+            Self.log(
+                "applyInputPreference succeeded currentInput=\(String(describing: audioSession.currentRoute.inputs.first?.portType.rawValue)) preferredInput=\(String(describing: audioSession.preferredInput?.portType.rawValue))"
             )
         } catch {
-            NSLog("[AudioRecorder] applyInputPreference failed error=%@", error.localizedDescription)
+            Self.log("applyInputPreference failed error=\(error.localizedDescription)")
             throw error
         }
 
@@ -312,11 +296,8 @@ extension AudioRecorder {
                 break
             } catch {
                 lastError = error
-                NSLog(
-                    "[AudioRecorder] startRecording attempt=%@ failed error=%@ retryable=%@",
-                    String(attemptIndex + 1),
-                    error.localizedDescription,
-                    String(shouldRetryRecordingStartAfterRouteTransition(for: error))
+                Self.log(
+                    "startRecording attempt=\(String(attemptIndex + 1)) failed error=\(error.localizedDescription) retryable=\(String(shouldRetryRecordingStartAfterRouteTransition(for: error)))"
                 )
                 guard shouldRetryRecordingStartAfterRouteTransition(for: error),
                       attemptIndex < recoveryDelays.count - 1 else {
@@ -444,11 +425,8 @@ extension AudioRecorder {
             return
         }
 
-        NSLog(
-            "[AudioRecorder] audioSessionInterruption type=%@ isRecording=%@ isMonitoring=%@",
-            String(describing: interruptionType.rawValue),
-            String(isRecording),
-            String(isMonitoring)
+        Self.log(
+            "audioSessionInterruption type=\(String(describing: interruptionType.rawValue)) isRecording=\(String(isRecording)) isMonitoring=\(String(isMonitoring))"
         )
 
         switch interruptionType {
@@ -466,10 +444,8 @@ extension AudioRecorder {
     }
 
     private func handleMonitoringInterruption() {
-        NSLog(
-            "[AudioRecorder] handleMonitoringInterruption routeInputs=%@ engineRunning=%@",
-            String(audioSession.currentRoute.inputs.count),
-            String(audioEngine?.isRunning == true)
+        Self.log(
+            "handleMonitoringInterruption routeInputs=\(String(audioSession.currentRoute.inputs.count)) engineRunning=\(String(audioEngine?.isRunning == true))"
         )
         invalidateAudioEngine(clearSessionActive: true)
         deactivateAudioSessionForRouteRecovery()
@@ -480,10 +456,8 @@ extension AudioRecorder {
     private func handleActiveRecordingInterruption() {
         guard isRecording else { return }
 
-        NSLog(
-            "[AudioRecorder] handleActiveRecordingInterruption routeInputs=%@ engineRunning=%@",
-            String(audioSession.currentRoute.inputs.count),
-            String(audioEngine?.isRunning == true)
+        Self.log(
+            "handleActiveRecordingInterruption routeInputs=\(String(audioSession.currentRoute.inputs.count)) engineRunning=\(String(audioEngine?.isRunning == true))"
         )
 
         let snapshot = streamingState.snapshot()
@@ -512,7 +486,7 @@ extension AudioRecorder {
     private func deactivateAudioSessionForRouteRecovery() {
         // The session may already be transitioning during a route change, but recovery
         // should continue with a fresh engine either way.
-        NSLog("[AudioRecorder] deactivateAudioSessionForRouteRecovery")
+        Self.log("deactivateAudioSessionForRouteRecovery")
         try? audioSession.setActive(false)
     }
 
@@ -551,6 +525,12 @@ extension AudioRecorder {
     func refreshCurrentCaptureDeviceName() {
         let portName = audioSession.currentRoute.inputs.first?.portName ?? "iPhone Microphone"
         currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName(portName)
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[AudioRecorder] %@", message)
+        #endif
     }
 }
 

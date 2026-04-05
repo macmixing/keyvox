@@ -6,14 +6,12 @@ struct SettingsTabView: View {
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
-    @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State var isModelSectionExpanded = false
-    @State var isModelExpandedContentVisible = false
     @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
-    @State var isTTSExpandedContentVisible = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     
     private var appVersionBuildText: String? {
@@ -47,16 +45,12 @@ struct SettingsTabView: View {
             modelManager.refreshStatus()
             pocketTTSModelManager.refreshStatus()
         }
-        .onAppear {
-            syncModelDisclosurePresentation()
-            syncTTSDisclosurePresentation()
-        }
         .onDisappear {
-            ttsVoicePreviewPlayer.stop()
+            ttsPreviewPlayer.stop()
         }
         .onChange(of: isTTSSectionExpanded) { _, isExpanded in
             if isExpanded == false {
-                ttsVoicePreviewPlayer.stop()
+                ttsPreviewPlayer.stop()
             }
         }
         .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
@@ -72,12 +66,6 @@ struct SettingsTabView: View {
             if wasReady == false && isReady {
                 isTTSSectionExpanded = true
             }
-        }
-        .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
-            updateTTSDisclosurePresentation()
-        }
-        .onChange(of: shouldShowExpandedModelContent, initial: true) { _, _ in
-            updateModelDisclosurePresentation()
         }
     }
 
@@ -322,6 +310,6 @@ struct SettingsTabView: View {
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
-        .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
+        .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

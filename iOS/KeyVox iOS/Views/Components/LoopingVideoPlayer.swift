@@ -29,7 +29,9 @@ private class LoopingVideoUIView: UIView {
         super.init(frame: .zero)
 
         guard let fileURL = Bundle.main.url(forResource: videoName, withExtension: videoType) else {
+            #if DEBUG
             print("Error: Could not find video file \(videoName).\(videoType)")
+            #endif
             return
         }
 

@@ -109,9 +109,11 @@ final class WeeklyWordStatsStore: ObservableObject {
             let data = try JSONEncoder().encode(snapshot)
             defaults.set(data, forKey: UserDefaultsKeys.App.weeklyWordStatsPayload)
         } catch {
+            #if DEBUG
             print(
                 "[WeeklyWordStatsStore] Failed to encode weekly word stats payload for key \(UserDefaultsKeys.App.weeklyWordStatsPayload): \(error)"
             )
+            #endif
         }
     }
 

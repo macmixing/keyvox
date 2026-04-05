@@ -430,6 +430,8 @@ final class PocketTTSModelManager: ObservableObject {
     }
 
     private static func log(_ message: String) {
+        #if DEBUG
         NSLog("[PocketTTSModelManager] %@", message)
+        #endif
     }
 }

@@ -110,6 +110,8 @@ public actor KeyVoxPocketTTSRuntime {
     }
 
     static func log(_ message: String) {
+        #if DEBUG
         NSLog("[KeyVoxPocketTTSRuntime] %@", message)
+        #endif
     }
 }

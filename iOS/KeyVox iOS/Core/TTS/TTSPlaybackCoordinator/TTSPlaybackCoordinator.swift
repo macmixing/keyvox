@@ -148,6 +148,8 @@ final class TTSPlaybackCoordinator {
     }
 
     static func log(_ message: String) {
+        #if DEBUG
         NSLog("[TTSPlaybackCoordinator] %@", message)
+        #endif
     }
 }

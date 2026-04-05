@@ -104,6 +104,8 @@ final class PocketTTSEngine: TTSEngine {
     }
 
     private static func log(_ message: String) {
+        #if DEBUG
         NSLog("[PocketTTSEngine] %@", message)
+        #endif
     }
 }

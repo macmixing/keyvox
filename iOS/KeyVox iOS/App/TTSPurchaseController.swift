@@ -81,7 +81,7 @@ protocol TTSPurchaseGating {
 
 @MainActor
 final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
-    nonisolated static let unlockProductID = "com.cueit.keyvox.tts.unlock"
+    nonisolated static let unlockProductID = "com.cueit.keyvox.speak.unlock"
     nonisolated static let dailyFreeSpeakLimit = 2
 
     @Published private(set) var isTTSUnlocked: Bool
@@ -95,7 +95,8 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     private let store: any TTSUnlockStore
     private let now: () -> Date
     private let calendar: Calendar
-    private let bypassFreeSpeakLimit: Bool
+    private let bypassFreeSpeakLimitInDebug: Bool
+    private let bypassFreeSpeakLimitInAllDebugBuilds: Bool
     private var storeRefreshGeneration: UInt64 = 0
 
     init(
@@ -103,13 +104,15 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         store: any TTSUnlockStore,
         now: @escaping () -> Date = Date.init,
         calendar: Calendar = .current,
-        bypassFreeSpeakLimit: Bool = false
+        bypassFreeSpeakLimit: Bool = false,
+        bypassFreeSpeakLimitInAllDebugBuilds: Bool = true
     ) {
         self.defaults = defaults
         self.store = store
         self.now = now
         self.calendar = calendar
-        self.bypassFreeSpeakLimit = bypassFreeSpeakLimit
+        self.bypassFreeSpeakLimitInDebug = bypassFreeSpeakLimit
+        self.bypassFreeSpeakLimitInAllDebugBuilds = bypassFreeSpeakLimitInAllDebugBuilds
         self.isTTSUnlocked = defaults.bool(forKey: UserDefaultsKeys.App.isTTSUnlocked)
         refreshUsageState()
 
@@ -122,19 +125,21 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         defaults: UserDefaults,
         now: @escaping () -> Date = Date.init,
         calendar: Calendar = .current,
-        bypassFreeSpeakLimit: Bool = false
+        bypassFreeSpeakLimit: Bool = false,
+        bypassFreeSpeakLimitInAllDebugBuilds: Bool = true
     ) {
         self.init(
             defaults: defaults,
             store: AppStoreTTSUnlockStore(),
             now: now,
             calendar: calendar,
-            bypassFreeSpeakLimit: bypassFreeSpeakLimit
+            bypassFreeSpeakLimit: bypassFreeSpeakLimit,
+            bypassFreeSpeakLimitInAllDebugBuilds: bypassFreeSpeakLimitInAllDebugBuilds
         )
     }
 
     var canStartNewTTSSpeak: Bool {
-        if bypassFreeSpeakLimit {
+        if isFreeSpeakLimitBypassedForCurrentBuild {
             return true
         }
         return isTTSUnlocked || currentRemainingFreeSpeakCount > 0
@@ -213,7 +218,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     }
 
     func consumeFreeTTSSpeakIfNeeded() {
-        guard bypassFreeSpeakLimit == false else { return }
+        guard isFreeSpeakLimitBypassedForCurrentBuild == false else { return }
         refreshUsageState()
         guard isTTSUnlocked == false else { return }
         guard remainingFreeTTSSpeaksToday > 0 else { return }
@@ -236,7 +241,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     }
 
     private var currentRemainingFreeSpeakCount: Int {
-        if bypassFreeSpeakLimit {
+        if isFreeSpeakLimitBypassedForCurrentBuild {
             return Self.dailyFreeSpeakLimit
         }
 
@@ -246,6 +251,14 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
         let usedCount = storedUsageDayStart == currentUsageDayStart ? usedFreeSpeaksToday : 0
         return max(0, Self.dailyFreeSpeakLimit - usedCount)
+    }
+
+    private var isFreeSpeakLimitBypassedForCurrentBuild: Bool {
+        #if DEBUG
+        bypassFreeSpeakLimitInAllDebugBuilds || bypassFreeSpeakLimitInDebug
+        #else
+        bypassFreeSpeakLimitInDebug
+        #endif
     }
 
     private func refreshUsageState() {

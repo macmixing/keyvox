@@ -12,7 +12,7 @@ struct KeyVoxApp: App {
     @StateObject private var ttsManager: TTSManager
     @StateObject private var ttsPurchaseController: TTSPurchaseController
     @StateObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
-    @StateObject private var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    @StateObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
@@ -31,7 +31,7 @@ struct KeyVoxApp: App {
         _ttsManager = StateObject(wrappedValue: services.ttsManager)
         _ttsPurchaseController = StateObject(wrappedValue: services.ttsPurchaseController)
         _keyVoxSpeakIntroController = StateObject(wrappedValue: services.keyVoxSpeakIntroController)
-        _ttsVoicePreviewPlayer = StateObject(wrappedValue: services.ttsVoicePreviewPlayer)
+        _ttsPreviewPlayer = StateObject(wrappedValue: services.ttsPreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
@@ -71,7 +71,7 @@ struct KeyVoxApp: App {
                 .environmentObject(ttsManager)
                 .environmentObject(ttsPurchaseController)
                 .environmentObject(keyVoxSpeakIntroController)
-                .environmentObject(ttsVoicePreviewPlayer)
+                .environmentObject(ttsPreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
@@ -80,7 +80,7 @@ struct KeyVoxApp: App {
                 .environmentObject(appTabRouter)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
-                    NSLog("[KeyVoxApp] scenePhase=%@", String(describing: newPhase))
+                    Self.log("scenePhase=\(String(describing: newPhase))")
                     switch newPhase {
                     case .active:
                         let initialRoute = appLaunchRouteStore.consumeInitialURLRoute()
@@ -110,11 +110,8 @@ struct KeyVoxApp: App {
                 }
                 .onOpenURL { url in
                     if let route = KeyVoxURLRoute(url: url) {
-                        NSLog(
-                            "[KeyVoxApp] onOpenURL route=%@ shouldPresentReturnToHost=%@ scenePhase=%@",
-                            String(describing: route),
-                            String(scenePhase != .active),
-                            String(describing: scenePhase)
+                        Self.log(
+                            "onOpenURL route=\(String(describing: route)) shouldPresentReturnToHost=\(String(scenePhase != .active)) scenePhase=\(String(describing: scenePhase))"
                         )
                         handle(
                             route: route,
@@ -128,10 +125,8 @@ struct KeyVoxApp: App {
     }
 
     private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
-        NSLog(
-            "[KeyVoxApp] handle route=%@ shouldPresentReturnToHost=%@",
-            String(describing: route),
-            String(shouldPresentReturnToHost)
+        Self.log(
+            "handle route=\(String(describing: route)) shouldPresentReturnToHost=\(String(shouldPresentReturnToHost))"
         )
         if route == .startRecording, shouldPresentReturnToHost {
             var transaction = Transaction()
@@ -162,5 +157,11 @@ struct KeyVoxApp: App {
         navigationBar.standardAppearance = navigationBarAppearance
         navigationBar.scrollEdgeAppearance = navigationBarAppearance
         navigationBar.compactAppearance = navigationBarAppearance
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[KeyVoxApp] %@", message)
+        #endif
     }
 }

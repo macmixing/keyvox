@@ -164,6 +164,8 @@ final class TTSManager: ObservableObject {
     }
 
     static func log(_ message: String) {
+        #if DEBUG
         NSLog("[TTSManager] %@", message)
+        #endif
     }
 }
