@@ -27,6 +27,7 @@ final class TTSManager: ObservableObject {
     let keyboardBridge: KeyVoxKeyboardBridge
     let engine: any TTSEngine
     let playbackCoordinator: TTSPlaybackCoordinator
+    let purchaseGate: any TTSPurchaseGating
     let replayCache: TTSReplayCache
     let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
     var activeRequest: KeyVoxTTSRequest?
@@ -77,6 +78,7 @@ final class TTSManager: ObservableObject {
         keyboardBridge: KeyVoxKeyboardBridge,
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator,
+        purchaseGate: any TTSPurchaseGating,
         replayCache: TTSReplayCache? = nil,
         effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil
     ) {
@@ -85,6 +87,7 @@ final class TTSManager: ObservableObject {
         self.keyboardBridge = keyboardBridge
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
+        self.purchaseGate = purchaseGate
         self.replayCache = replayCache ?? TTSReplayCache()
         self.effectiveVoiceProvider = effectiveVoiceProvider ?? { settingsStore.ttsVoice }
 

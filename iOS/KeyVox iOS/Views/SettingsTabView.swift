@@ -5,6 +5,7 @@ struct SettingsTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
@@ -275,6 +276,7 @@ struct SettingsTabView: View {
     SettingsTabView(pendingDeletionConfirmation: .constant(nil))
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

@@ -71,6 +71,9 @@ extension HomeTabView {
         case .failed:
             return "Repair"
         case .ready:
+            if ttsManager.isActive == false && ttsPurchaseController.canStartNewTTSSpeak == false {
+                return "Unlock"
+            }
             return ttsManager.isActive ? "Stop" : "Speak"
         }
     }

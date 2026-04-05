@@ -10,6 +10,7 @@ struct KeyVoxApp: App {
     @StateObject private var audioModeCoordinator: AudioModeCoordinator
     @StateObject private var transcriptionManager: TranscriptionManager
     @StateObject private var ttsManager: TTSManager
+    @StateObject private var ttsPurchaseController: TTSPurchaseController
     @StateObject private var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
@@ -27,6 +28,7 @@ struct KeyVoxApp: App {
         _audioModeCoordinator = StateObject(wrappedValue: services.audioModeCoordinator)
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
         _ttsManager = StateObject(wrappedValue: services.ttsManager)
+        _ttsPurchaseController = StateObject(wrappedValue: services.ttsPurchaseController)
         _ttsVoicePreviewPlayer = StateObject(wrappedValue: services.ttsVoicePreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
@@ -65,6 +67,7 @@ struct KeyVoxApp: App {
                 .environmentObject(audioModeCoordinator)
                 .environmentObject(transcriptionManager)
                 .environmentObject(ttsManager)
+                .environmentObject(ttsPurchaseController)
                 .environmentObject(ttsVoicePreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)

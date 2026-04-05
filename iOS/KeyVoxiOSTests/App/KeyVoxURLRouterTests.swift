@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import KeyVoxCore
 import KeyVoxTTS
 import Testing
@@ -40,7 +41,29 @@ struct KeyVoxURLRouterTests {
         #expect(harness.manager.state == .recording)
     }
 
-    private func makeHarness() throws -> Harness {
+    @Test func startTTSRoutePresentsUnlockWhenDailyLimitIsExhausted() async throws {
+        let harness = try makeHarness(isTTSUnlocked: false, remainingFreeTTSSpeaksToday: 0)
+        defer { harness.cleanup() }
+
+        UIPasteboard.general.string = "Test clipboard speech"
+
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator
+        )
+
+        router.handle(route: .startTTS, shouldPresentReturnToHost: false)
+        await settleAsyncWork()
+
+        #expect(harness.purchaseGate.presentUnlockSheetCallCount == 1)
+        #expect(harness.ttsManager.state == .idle)
+    }
+
+    private func makeHarness(
+        isTTSUnlocked: Bool = false,
+        remainingFreeTTSSpeaksToday: Int = TTSPurchaseController.dailyFreeSpeakLimit
+    ) throws -> Harness {
         let tempRootURL = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("KeyVoxURLRouterTests.\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempRootURL, withIntermediateDirectories: true)
@@ -79,23 +102,30 @@ struct KeyVoxURLRouterTests {
             ),
             modelPathProvider: { modelURL.path }
         )
+        let purchaseGate = StubTTSPurchaseGate(
+            isTTSUnlocked: isTTSUnlocked,
+            remainingFreeTTSSpeaksToday: remainingFreeTTSSpeaksToday
+        )
         let ttsManager = TTSManager(
             settingsStore: settingsStore,
             appHaptics: AppHaptics(),
             keyboardBridge: KeyVoxKeyboardBridge(),
             engine: StubTTSEngine(),
-            playbackCoordinator: TTSPlaybackCoordinator()
+            playbackCoordinator: TTSPlaybackCoordinator(),
+            purchaseGate: purchaseGate
         )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: manager,
             ttsManager: ttsManager,
-            appTabRouter: AppTabRouter()
+            appTabRouter: AppTabRouter(),
+            ttsPurchaseGate: purchaseGate
         )
 
         return Harness(
             manager: manager,
             ttsManager: ttsManager,
             audioModeCoordinator: audioModeCoordinator,
+            purchaseGate: purchaseGate,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
         )
@@ -113,6 +143,7 @@ private final class Harness {
     let manager: TranscriptionManager
     let ttsManager: TTSManager
     let audioModeCoordinator: AudioModeCoordinator
+    let purchaseGate: StubTTSPurchaseGate
     private let tempRootURL: URL
     private let defaultsSuiteName: String
 
@@ -120,12 +151,14 @@ private final class Harness {
         manager: TranscriptionManager,
         ttsManager: TTSManager,
         audioModeCoordinator: AudioModeCoordinator,
+        purchaseGate: StubTTSPurchaseGate,
         tempRootURL: URL,
         defaultsSuiteName: String
     ) {
         self.manager = manager
         self.ttsManager = ttsManager
         self.audioModeCoordinator = audioModeCoordinator
+        self.purchaseGate = purchaseGate
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName
     }
@@ -230,4 +263,28 @@ private struct StubTTSEngine: TTSEngine {
             continuation.finish()
         }
     }
+}
+
+@MainActor
+private final class StubTTSPurchaseGate: TTSPurchaseGating {
+    let isTTSUnlocked: Bool
+    let remainingFreeTTSSpeaksToday: Int
+    private(set) var presentUnlockSheetCallCount = 0
+
+    init(isTTSUnlocked: Bool, remainingFreeTTSSpeaksToday: Int) {
+        self.isTTSUnlocked = isTTSUnlocked
+        self.remainingFreeTTSSpeaksToday = remainingFreeTTSSpeaksToday
+    }
+
+    var canStartNewTTSSpeak: Bool {
+        isTTSUnlocked || remainingFreeTTSSpeaksToday > 0
+    }
+
+    func presentUnlockSheet() {
+        presentUnlockSheetCallCount += 1
+    }
+
+    func dismissUnlockSheet() {}
+
+    func consumeFreeTTSSpeakIfNeeded() {}
 }

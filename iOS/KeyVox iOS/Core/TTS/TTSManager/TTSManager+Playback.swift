@@ -89,6 +89,7 @@ extension TTSManager {
                 voiceID: request.voiceID,
                 fastModeEnabled: settingsStore.fastPlaybackModeEnabled
             )
+            purchaseGate.consumeFreeTTSSpeakIfNeeded()
             playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
         } catch {
             handleError(error.localizedDescription)
