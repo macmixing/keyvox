@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct KeyVoxSpeakSheetView: View {
-    private struct IntroPage: Identifiable {
-        let id: Int
-        let title: String
-        let body: String
+    private enum Scene: Int, CaseIterable {
+        case a
+        case b
+        case c
     }
 
     enum Mode {
@@ -14,27 +14,9 @@ struct KeyVoxSpeakSheetView: View {
 
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
-    @State private var selectedPage = 0
+    @State private var selectedScene = Scene.a
 
     let mode: Mode
-
-    private let pages = [
-        IntroPage(
-            id: 0,
-            title: "KeyVox Speak",
-            body: "A new copied-text playback feature is now available in KeyVox."
-        ),
-        IntroPage(
-            id: 1,
-            title: "Listen Anywhere",
-            body: "Speak copied text from the app and jump back into replay whenever you want to hear it again."
-        ),
-        IntroPage(
-            id: 2,
-            title: "Designed To Grow",
-            body: "This intro is intentionally lightweight for now while the final KeyVox Speak presentation is still being designed."
-        )
-    ]
 
     var body: some View {
         NavigationStack {
@@ -43,35 +25,10 @@ struct KeyVoxSpeakSheetView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    TabView(selection: $selectedPage) {
-                        ForEach(pages) { page in
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text(page.title)
-                                    .font(.appFont(26))
-                                    .foregroundStyle(.white)
-
-                                Text(page.body)
-                                    .font(.appFont(16, variant: .light))
-                                    .foregroundStyle(.white.opacity(0.78))
-
-                                if case .unlock = mode {
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        Text("Two free speaks per day")
-                                        Text("Replay stays free for anything already generated")
-                                        Text(ttsPurchaseSummaryText)
-                                    }
-                                    .font(.appFont(14, variant: .light))
-                                    .foregroundStyle(.white.opacity(0.7))
-                                    .padding(.top, 8)
-                                }
-
-                                Spacer(minLength: 0)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                            .padding(.horizontal, 24)
-                            .padding(.top, 24)
-                            .padding(.bottom, 24)
-                            .tag(page.id)
+                    TabView(selection: $selectedScene) {
+                        ForEach(Scene.allCases, id: \.self) { scene in
+                            sceneView(for: scene)
+                                .tag(scene)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .always))
@@ -150,6 +107,29 @@ struct KeyVoxSpeakSheetView: View {
         let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
         let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
         return "\(remainingFreeSpeaks) free \(noun) left today"
+    }
+
+    @ViewBuilder
+    private func sceneView(for scene: Scene) -> some View {
+        switch scene {
+        case .a:
+            KeyVoxSpeakSceneAView()
+        case .b:
+            KeyVoxSpeakSceneBView()
+        case .c:
+            KeyVoxSpeakSceneCView(
+                showsUnlockDetails: showsUnlockDetails,
+                purchaseSummaryText: ttsPurchaseSummaryText
+            )
+        }
+    }
+
+    private var showsUnlockDetails: Bool {
+        if case .unlock = mode {
+            return true
+        }
+
+        return false
     }
 
     private func purchaseUnlock() {
