@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-06**
+**Last Updated: 2026-04-07**
 
 ## Design Philosophy
 
@@ -128,7 +128,7 @@ It builds and wires:
 - `ModelManager`
 - `KeyVoxKeyboardBridge`
 - `TranscriptionManager`
-- `TTSVoicePreviewPlayer`
+- `TTSPreviewPlayer`
 - `PocketTTSEngine`
 - `PocketTTSModelManager`
 - `TTSPurchaseController`
@@ -632,6 +632,7 @@ Primary owners:
 ### Playback Rules
 
 - copied-text playback requests are serialized through `KeyVoxTTSRequest`
+- the official iOS `Speak Copied Text` App Shortcut stages the existing `keyvoxios://tts/start` route in shared app-group state and still routes through the containing app as the single playback owner
 - keyboard-initiated playback stages the request in shared storage and uses the containing app as the synthesis owner
 - share-extension initiated playback also stages the request in shared storage and uses the containing app as the synthesis owner
 - phase-one monetization allows two free new copied-text playback generations per local calendar day before the one-time unlock is required
@@ -661,7 +662,7 @@ Primary owners:
 
 - TTS starts coming from the keyboard or URL routes must move the containing app back to the Home tab before the copied-text playback UI becomes active
 - `AppTabRouter` is the shared tab-selection source of truth for that behavior
-- the same coordinator path must enforce the copied-text playback gate for Home, keyboard, URL, and share-driven TTS starts so shortcuts cannot bypass the daily limit
+- the same coordinator path must enforce the copied-text playback gate for Home, keyboard, URL, App Shortcut, and share-driven TTS starts so shortcuts cannot bypass the daily limit
 
 ### Background Download Rules
 
@@ -931,7 +932,8 @@ Current app-owned surfaces:
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
 - `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
-- `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/Components/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the post-onboarding intro wrapper, and the unlock wrapper
+- `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
+- `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/Components/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination

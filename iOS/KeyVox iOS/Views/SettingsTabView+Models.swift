@@ -59,9 +59,7 @@ extension SettingsTabView {
 
                     Button {
                         appHaptics.light()
-                        withAnimation(.easeInOut(duration: 0.18)) {
-                            isModelSectionExpanded.toggle()
-                        }
+                        isModelSectionExpanded.toggle()
                     } label: {
                         Image(systemName: isModelSectionExpanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: 28, weight: .heavy))
@@ -72,44 +70,61 @@ extension SettingsTabView {
                     .buttonStyle(.plain)
                 }
 
-                VStack(alignment: .leading, spacing: 16) {
-                    Divider()
-                        .background(.white.opacity(0.4))
-
-                    VStack(alignment: .leading, spacing: 14) {
-                        ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
-                            modelRow(for: modelID, provider: modelID.provider)
-
-                            if index < DictationModelID.allCases.count - 1 {
-                                Divider()
-                                    .background(.white.opacity(0.22))
-                                    .padding(.leading, 12)
-                                    .padding(.trailing, 12)
-                            }
+                modelExpandedContent
+                    .frame(height: shouldShowExpandedModelContent ? modelExpandedContentHeight : 0, alignment: .top)
+                    .clipped()
+                    .opacity(shouldShowExpandedModelContent ? 1 : 0)
+                    .allowsHitTesting(shouldShowExpandedModelContent)
+                    .accessibilityHidden(!shouldShowExpandedModelContent)
+                    .background(alignment: .top) {
+                        if shouldShowExpandedModelContent || modelExpandedContentHeight == 0 {
+                            modelExpandedContentMeasurement
                         }
                     }
-                }
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                updateModelExpandedContentHeight(geometry.size.height)
-                            }
-                            .onChange(of: geometry.size.height) { _, newHeight in
-                                updateModelExpandedContentHeight(newHeight)
-                            }
-                    }
-                )
-                .frame(height: shouldShowExpandedModelContent ? modelExpandedContentHeight : 0, alignment: .top)
-                .clipped()
-                .opacity(isModelExpandedContentVisible ? 1 : 0)
-                .allowsHitTesting(isModelExpandedContentVisible)
-                .accessibilityHidden(!isModelExpandedContentVisible)
             }
         }
-        .animation(.easeOut(duration: 0.18), value: isModelExpandedContentVisible)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedModelContent)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: modelExpandedContentHeight)
+    }
+
+    @ViewBuilder
+    private var modelExpandedContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Divider()
+                .background(.white.opacity(0.4))
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
+                    modelRow(for: modelID, provider: modelID.provider)
+
+                    if index < DictationModelID.allCases.count - 1 {
+                        Divider()
+                            .background(.white.opacity(0.22))
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                    }
+                }
+            }
+        }
+    }
+
+    private var modelExpandedContentMeasurement: some View {
+        modelExpandedContent
+            .fixedSize(horizontal: false, vertical: true)
+            .hidden()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            updateModelExpandedContentHeight(geometry.size.height)
+                        }
+                        .onChange(of: geometry.size.height) { _, newHeight in
+                            updateModelExpandedContentHeight(newHeight)
+                        }
+                }
+            )
     }
 
     @ViewBuilder
@@ -264,16 +279,6 @@ extension SettingsTabView {
 
     var shouldShowExpandedModelContent: Bool {
         isModelSectionExpanded
-    }
-
-    func syncModelDisclosurePresentation() {
-        isModelExpandedContentVisible = shouldShowExpandedModelContent
-    }
-
-    func updateModelDisclosurePresentation() {
-        withAnimation(.easeOut(duration: 0.18)) {
-            isModelExpandedContentVisible = shouldShowExpandedModelContent
-        }
     }
 
     func updateModelExpandedContentHeight(_ newHeight: CGFloat) {

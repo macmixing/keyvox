@@ -10,10 +10,8 @@ struct SettingsTabView: View {
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State var isModelSectionExpanded = false
-    @State var isModelExpandedContentVisible = false
     @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
-    @State var isTTSExpandedContentVisible = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     
     private var appVersionBuildText: String? {
@@ -47,10 +45,6 @@ struct SettingsTabView: View {
             modelManager.refreshStatus()
             pocketTTSModelManager.refreshStatus()
         }
-        .onAppear {
-            syncModelDisclosurePresentation()
-            syncTTSDisclosurePresentation()
-        }
         .onDisappear {
             ttsPreviewPlayer.stop()
         }
@@ -72,12 +66,6 @@ struct SettingsTabView: View {
             if wasReady == false && isReady {
                 isTTSSectionExpanded = true
             }
-        }
-        .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
-            updateTTSDisclosurePresentation()
-        }
-        .onChange(of: shouldShowExpandedModelContent, initial: true) { _, _ in
-            updateModelDisclosurePresentation()
         }
     }
 
