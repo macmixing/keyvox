@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-04-05
+
+Parakeet no-speech confirmation gate for short low-confidence one-shot output.
+
+### Includes
+
+- Added shared Parakeet utterance-gating behavior so brief low-confidence one-shot output is treated as likely no-speech before it reaches the dictation pipeline.
+- Updated `ParakeetService` to apply the new gate using transcribed segment confidence and captured audio duration instead of trusting every non-empty Parakeet decode.
+- Added shared-engine regression coverage for the `Yeah.`-style short low-confidence result shape while preserving higher-confidence short speech.
+
+### Notes
+
+- `1.0.1` bumps the tracked engine version for `KeyVoxCore` to cover the shared Parakeet no-speech confirmation behavior used by both app clients.
+
 ## [1.0.0] - 2026-03-30
 
 Baseline tracked release of the shared KeyVox engine package.

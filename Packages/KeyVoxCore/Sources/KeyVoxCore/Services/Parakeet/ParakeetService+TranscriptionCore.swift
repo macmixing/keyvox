@@ -44,6 +44,7 @@ extension ParakeetService {
                 let chunkResult = paragraphChunker.split(audioFrames)
                 var transcribedChunks: [TranscribedChunk] = []
                 transcribedChunks.reserveCapacity(chunkResult.chunks.count)
+                var transcribedSegments: [ParakeetSegment] = []
                 var detectedLanguageCode: String?
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
@@ -59,6 +60,7 @@ extension ParakeetService {
                     if detectedLanguageCode == nil {
                         detectedLanguageCode = result.detectedLanguageCode
                     }
+                    transcribedSegments.append(contentsOf: result.segments)
 
                     let chunkText = result.segments
                         .map(\.text)
@@ -89,10 +91,27 @@ extension ParakeetService {
                     assembledText,
                     preservingNewlines: enableAutoParagraphs
                 )
-                let likelyNoSpeech = finalText.isEmpty
+                let likelyNoSpeech = finalText.isEmpty || self.isLikelyNoSpeech(
+                    transcribedSegments: transcribedSegments,
+                    detectedLanguageCode: detectedLanguageCode,
+                    audioFrameCount: audioFrames.count
+                )
+                #if DEBUG
+                let averageConfidence: Float = transcribedSegments.isEmpty
+                    ? 0
+                    : transcribedSegments.compactMap(\.confidence).reduce(0, +) / Float(max(transcribedSegments.compactMap(\.confidence).count, 1))
+                print(
+                    "ParakeetService final decode: chunks=\(chunkResult.chunks.count) " +
+                    "segments=\(transcribedSegments.count) " +
+                    "audioSeconds=\(String(format: "%.2f", Double(audioFrames.count) / 16_000.0)) " +
+                    "avgConfidence=\(String(format: "%.3f", averageConfidence)) " +
+                    "likelyNoSpeech=\(likelyNoSpeech) " +
+                    "finalChars=\(finalText.count)"
+                )
+                #endif
                 self.finishSuccessfulRequest(
                     requestID,
-                    finalText: finalText,
+                    finalText: likelyNoSpeech ? "" : finalText,
                     likelyNoSpeech: likelyNoSpeech,
                     detectedLanguageCode: detectedLanguageCode,
                     completion: completion
@@ -159,7 +178,22 @@ extension ParakeetService {
                 String(line)
                     .replacingOccurrences(of: "[\\t ]+", with: " ", options: .regularExpression)
                     .trimmingCharacters(in: .whitespaces)
-            }
+        }
         return normalizedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func isLikelyNoSpeech(
+        transcribedSegments: [ParakeetSegment],
+        detectedLanguageCode: String?,
+        audioFrameCount: Int
+    ) -> Bool {
+        ParakeetUtteranceGate.isLikelyNoSpeech(
+            result: ParakeetTranscriptionResult(
+                segments: transcribedSegments,
+                detectedLanguageCode: detectedLanguageCode,
+                detectedLanguageName: nil
+            ),
+            audioFrameCount: audioFrameCount
+        )
     }
 }
