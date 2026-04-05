@@ -486,10 +486,27 @@ enum PocketTTSChunkPlanner {
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
+            of: #"\s*[\(\[]\s*"#,
+            with: ", ",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #"\s*[\)\]]\s*"#,
+            with: ", ",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #"(?<=\p{L}|\p{N})\-(?=\p{L}|\p{N})"#,
+            with: " ",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
             of: #"[^\p{L}\p{N}\s\.,!\?;:'"\(\)\[\]\/\-\n]"#,
             with: " ",
             options: .regularExpression
         )
+        sanitized = sanitized.replacingOccurrences(of: #"\s*,\s*,+"#, with: ", ", options: .regularExpression)
+        sanitized = sanitized.replacingOccurrences(of: #"\s+,([.!?])"#, with: "$1", options: .regularExpression)
         sanitized = sanitized.replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
 
         return sanitized

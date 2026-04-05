@@ -24,6 +24,16 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.contains("Require voter ID"))
     }
 
+    func testNormalizeReplacesParenthesesWithCommaAsides() {
+        let normalized = PocketTTSChunkPlanner.normalize("Hello (world) today")
+        XCTAssertTrue(normalized.text.hasSuffix("Hello, world, today."))
+    }
+
+    func testNormalizeSplitsHyphenatedWordsIntoSeparateWords() {
+        let normalized = PocketTTSChunkPlanner.normalize("time-to-first audio")
+        XCTAssertTrue(normalized.text.hasSuffix("Time to first audio."))
+    }
+
     func testChunkPlannerKeepsShortTextInSingleChunk() throws {
         let tokenizer = try SentencePieceTokenizer(modelData: fixtureSentencePieceModel())
         let chunks = PocketTTSChunkPlanner.chunk("Dr. Smith arrived. The meeting started.", tokenizer: tokenizer)
