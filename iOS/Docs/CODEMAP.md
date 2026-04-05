@@ -154,8 +154,6 @@ iOS/
 │   │   ├── AppRootView.swift
 │   │   ├── ContainingAppTab.swift
 │   │   ├── DictionaryTabView.swift
-│   │   ├── HomeTabView+TTS.swift
-│   │   ├── HomeTabView.swift
 │   │   ├── MainTabView.swift
 │   │   ├── PlaybackPreparationView.swift
 │   │   ├── ReturnToHostView.swift
@@ -186,6 +184,14 @@ iOS/
 │   │   │   ├── DictionaryWordEditorMode.swift
 │   │   │   ├── DictionaryWordEditorView.swift
 │   │   │   └── KeyboardObserver.swift
+│   │   ├── HomeTabView/
+│   │   │   ├── HomeTabView.swift
+│   │   │   └── TTS/
+│   │   │       ├── HomeTabView+TTS.swift
+│   │   │       ├── HomeTabView+TTSPresentation.swift
+│   │   │       ├── HomeTabView+TTSTranscript.swift
+│   │   │       ├── HomeTabView+TTSTransport.swift
+│   │   │       └── TTSReplayScrubber.swift
 │   │   └── Onboarding/
 │   │       ├── OnboardingFlowView.swift
 │   │       ├── OnboardingLogoPopInSequence.swift
@@ -481,10 +487,14 @@ Packages/
   - Adds edge-swipe tab navigation on top of `TabView`.
 - `KeyVox iOS/Views/ContainingAppTab.swift`
   - Source of truth for app-tab ordering, titles, and previous/next navigation.
-- `KeyVox iOS/Views/HomeTabView.swift`
-  - Weekly stats, last transcription card, and debug-only diagnostics.
-- `KeyVox iOS/Views/HomeTabView+TTS.swift`
-  - Copied-text playback card, primary speak action, live transport ring, replay scrubber, replay and pause and resume transport, and PocketTTS install-state messaging.
+- `KeyVox iOS/Views/HomeTabView/`
+  - Filesystem-grouped Home feature surface.
+  - `HomeTabView.swift` owns the weekly stats card, last transcription card, Home-level state, and debug-only diagnostics.
+  - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout.
+  - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, and idle transcript dismissal.
+  - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, and playback error presentation.
+  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, voice resolution, and Home-scoped TTS actions.
+  - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`

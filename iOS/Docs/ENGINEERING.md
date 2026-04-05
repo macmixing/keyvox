@@ -879,7 +879,7 @@ The containing app is intentionally thin, but it is no longer a minimal debug sh
 
 Current app-owned surfaces:
 
-- `HomeTabView`: weekly stats, copied-text playback card, replay transport, last transcription, debug diagnostics
+- `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination
