@@ -12,7 +12,7 @@ struct KeyVoxApp: App {
     @StateObject private var ttsManager: TTSManager
     @StateObject private var ttsPurchaseController: TTSPurchaseController
     @StateObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
-    @StateObject private var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    @StateObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
@@ -31,7 +31,7 @@ struct KeyVoxApp: App {
         _ttsManager = StateObject(wrappedValue: services.ttsManager)
         _ttsPurchaseController = StateObject(wrappedValue: services.ttsPurchaseController)
         _keyVoxSpeakIntroController = StateObject(wrappedValue: services.keyVoxSpeakIntroController)
-        _ttsVoicePreviewPlayer = StateObject(wrappedValue: services.ttsVoicePreviewPlayer)
+        _ttsPreviewPlayer = StateObject(wrappedValue: services.ttsPreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
@@ -71,7 +71,7 @@ struct KeyVoxApp: App {
                 .environmentObject(ttsManager)
                 .environmentObject(ttsPurchaseController)
                 .environmentObject(keyVoxSpeakIntroController)
-                .environmentObject(ttsVoicePreviewPlayer)
+                .environmentObject(ttsPreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)

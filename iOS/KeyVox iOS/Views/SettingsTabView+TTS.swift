@@ -256,13 +256,13 @@ extension SettingsTabView {
 
     @ViewBuilder
     private func ttsVoicePreviewButton(for voice: AppSettingsStore.TTSVoice) -> some View {
-        let isActive = ttsVoicePreviewPlayer.isActive(for: voice)
-        let isPlaying = isActive && ttsVoicePreviewPlayer.isPlaying
+        let isActive = ttsPreviewPlayer.isActive(for: voice)
+        let isPlaying = isActive && ttsPreviewPlayer.isPlaying
         let symbolName = isPlaying ? "pause.circle" : "play.circle"
-        let canPlayPreview = ttsVoicePreviewPlayer.hasPreview(for: voice)
+        let canPlayPreview = ttsPreviewPlayer.hasPreview(for: voice)
 
         Button {
-            ttsVoicePreviewPlayer.togglePlayback(for: voice)
+            ttsPreviewPlayer.togglePlayback(for: voice)
         } label: {
             Image(systemName: symbolName)
                 .font(.system(size: 26, weight: .regular))

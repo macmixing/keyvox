@@ -14,6 +14,7 @@ struct KeyVoxSpeakSheetView: View {
 
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @State private var selectedScene = Scene.a
 
     let mode: Mode
@@ -84,6 +85,9 @@ struct KeyVoxSpeakSheetView: View {
                     }
                 }
             }
+        }
+        .onDisappear {
+            ttsPreviewPlayer.stop()
         }
     }
 

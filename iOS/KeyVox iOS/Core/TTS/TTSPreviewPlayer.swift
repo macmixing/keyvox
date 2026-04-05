@@ -3,8 +3,8 @@ import Combine
 import Foundation
 
 @MainActor
-final class TTSVoicePreviewPlayer: NSObject, ObservableObject {
-    @Published private(set) var activeVoice: AppSettingsStore.TTSVoice?
+final class TTSPreviewPlayer: NSObject, ObservableObject {
+    @Published private(set) var activePreviewResourceName: String?
     @Published private(set) var isPlaying = false
 
     private let appHaptics: AppHapticsEmitting
@@ -15,28 +15,40 @@ final class TTSVoicePreviewPlayer: NSObject, ObservableObject {
         super.init()
     }
 
-    func togglePlayback(for voice: AppSettingsStore.TTSVoice) {
-        if activeVoice == voice {
+    func togglePlayback(resourceName: String) {
+        if activePreviewResourceName == resourceName {
             toggleCurrentPlayback()
             return
         }
 
-        startPlayback(for: voice)
+        startPlayback(resourceName: resourceName)
+    }
+
+    func togglePlayback(for voice: AppSettingsStore.TTSVoice) {
+        togglePlayback(resourceName: previewResourceName(for: voice))
+    }
+
+    func isActive(resourceName: String) -> Bool {
+        activePreviewResourceName == resourceName
     }
 
     func isActive(for voice: AppSettingsStore.TTSVoice) -> Bool {
-        activeVoice == voice
+        isActive(resourceName: previewResourceName(for: voice))
     }
 
     func stop() {
         player?.stop()
         player = nil
-        activeVoice = nil
+        activePreviewResourceName = nil
         isPlaying = false
     }
 
+    func hasPreview(resourceName: String) -> Bool {
+        previewURL(resourceName: resourceName) != nil
+    }
+
     func hasPreview(for voice: AppSettingsStore.TTSVoice) -> Bool {
-        previewURL(for: voice) != nil
+        hasPreview(resourceName: previewResourceName(for: voice))
     }
 
     private func toggleCurrentPlayback() {
@@ -52,8 +64,8 @@ final class TTSVoicePreviewPlayer: NSObject, ObservableObject {
         }
     }
 
-    private func startPlayback(for voice: AppSettingsStore.TTSVoice) {
-        guard let url = previewURL(for: voice) else {
+    private func startPlayback(resourceName: String) {
+        guard let url = previewURL(resourceName: resourceName) else {
             stop()
             return
         }
@@ -63,30 +75,34 @@ final class TTSVoicePreviewPlayer: NSObject, ObservableObject {
             player.delegate = self
             player.prepareToPlay()
             self.player = player
-            activeVoice = voice
+            activePreviewResourceName = resourceName
             appHaptics.light()
             player.play()
             isPlaying = true
         } catch {
             NSLog(
-                "[TTSVoicePreviewPlayer] Failed to play preview for %@: %@",
-                voice.rawValue,
+                "[TTSPreviewPlayer] Failed to play preview for %@: %@",
+                resourceName,
                 String(describing: error)
             )
             stop()
         }
     }
 
-    private func previewURL(for voice: AppSettingsStore.TTSVoice) -> URL? {
+    private func previewResourceName(for voice: AppSettingsStore.TTSVoice) -> String {
+        "\(voice.rawValue)-preview"
+    }
+
+    private func previewURL(resourceName: String) -> URL? {
         Bundle.main.url(
-            forResource: "\(voice.rawValue)-preview",
+            forResource: resourceName,
             withExtension: "m4a",
             subdirectory: "TTSVoicePreviews"
         )
     }
 }
 
-extension TTSVoicePreviewPlayer: AVAudioPlayerDelegate {
+extension TTSPreviewPlayer: AVAudioPlayerDelegate {
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         Task { @MainActor [weak self] in
             guard self?.player === player else { return }
@@ -97,7 +113,7 @@ extension TTSVoicePreviewPlayer: AVAudioPlayerDelegate {
     nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
         Task { @MainActor [weak self] in
             NSLog(
-                "[TTSVoicePreviewPlayer] Decode error: %@",
+                "[TTSPreviewPlayer] Decode error: %@",
                 String(describing: error)
             )
             guard self?.player === player else { return }

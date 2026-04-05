@@ -6,7 +6,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
-    @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State var isModelSectionExpanded = false
@@ -52,11 +52,11 @@ struct SettingsTabView: View {
             syncTTSDisclosurePresentation()
         }
         .onDisappear {
-            ttsVoicePreviewPlayer.stop()
+            ttsPreviewPlayer.stop()
         }
         .onChange(of: isTTSSectionExpanded) { _, isExpanded in
             if isExpanded == false {
-                ttsVoicePreviewPlayer.stop()
+                ttsPreviewPlayer.stop()
             }
         }
         .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
@@ -322,6 +322,6 @@ struct SettingsTabView: View {
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
-        .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
+        .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }
