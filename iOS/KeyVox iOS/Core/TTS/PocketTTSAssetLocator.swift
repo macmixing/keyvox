@@ -176,6 +176,8 @@ struct PocketTTSAssetLocator {
     }
 
     private func log(_ message: String) {
+        #if DEBUG
         NSLog("[PocketTTSAssetLocator] %@", message)
+        #endif
     }
 }

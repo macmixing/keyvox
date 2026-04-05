@@ -85,11 +85,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             player.play()
             isPlaying = true
         } catch {
-            NSLog(
-                "[TTSPreviewPlayer] Failed to play preview for %@: %@",
-                resourceName,
-                String(describing: error)
-            )
+            Self.log("Failed to play preview for \(resourceName): \(String(describing: error))")
             stop()
         }
     }
@@ -103,10 +99,8 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             player.play()
             isPlaying = true
         } catch {
-            NSLog(
-                "[TTSPreviewPlayer] Failed to resume preview for %@: %@",
-                activePreviewResourceName ?? "unknown",
-                String(describing: error)
+            Self.log(
+                "Failed to resume preview for \(activePreviewResourceName ?? "unknown"): \(String(describing: error))"
             )
             stop()
         }
@@ -120,6 +114,12 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
 
     private func deactivateAudioSessionIfNeeded() {
         try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[TTSPreviewPlayer] %@", message)
+        #endif
     }
 
     private func previewResourceName(for voice: AppSettingsStore.TTSVoice) -> String {
@@ -145,10 +145,7 @@ extension TTSPreviewPlayer: AVAudioPlayerDelegate {
 
     nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
         Task { @MainActor [weak self] in
-            NSLog(
-                "[TTSPreviewPlayer] Decode error: %@",
-                String(describing: error)
-            )
+            Self.log("Decode error: \(String(describing: error))")
             guard self?.player === player else { return }
             self?.stop()
         }

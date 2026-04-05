@@ -188,6 +188,8 @@ enum PocketTTSModelCatalog {
     }
 
     private static func log(_ message: String) {
+        #if DEBUG
         NSLog("[PocketTTSModelCatalog] %@", message)
+        #endif
     }
 }

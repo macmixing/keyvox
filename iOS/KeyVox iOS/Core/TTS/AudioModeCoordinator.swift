@@ -31,12 +31,8 @@ final class AudioModeCoordinator: ObservableObject {
             isTransitioning = true
             defer { isTransitioning = false }
 
-            NSLog(
-                "[AudioModeCoordinator] handleStartRecordingCommand isFromURL=%@ transcriptionState=%@ isSessionActive=%@ ttsActive=%@",
-                String(isFromURL),
-                String(describing: transcriptionManager.state),
-                String(transcriptionManager.isSessionActive),
-                String(ttsManager.isActive)
+            Self.log(
+                "handleStartRecordingCommand isFromURL=\(String(isFromURL)) transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive)) ttsActive=\(String(ttsManager.isActive))"
             )
             KeyVoxIPCBridge.clearRecentTTSPlayback()
 
@@ -54,10 +50,8 @@ final class AudioModeCoordinator: ObservableObject {
             isTransitioning = true
             defer { isTransitioning = false }
 
-            NSLog(
-                "[AudioModeCoordinator] handleStartTTSFromPendingRequest transcriptionState=%@ isSessionActive=%@",
-                String(describing: transcriptionManager.state),
-                String(transcriptionManager.isSessionActive)
+            Self.log(
+                "handleStartTTSFromPendingRequest transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive))"
             )
             guard ttsPurchaseGate.canStartNewTTSSpeak else {
                 ttsManager.isPlaybackPreparationViewPresented = false
@@ -86,11 +80,8 @@ final class AudioModeCoordinator: ObservableObject {
             isTransitioning = true
             defer { isTransitioning = false }
 
-            NSLog(
-                "[AudioModeCoordinator] handleSpeakClipboardFromApp transcriptionState=%@ isSessionActive=%@ ttsActive=%@",
-                String(describing: transcriptionManager.state),
-                String(transcriptionManager.isSessionActive),
-                String(ttsManager.isActive)
+            Self.log(
+                "handleSpeakClipboardFromApp transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive)) ttsActive=\(String(ttsManager.isActive))"
             )
 
             if ttsManager.isActive {
@@ -139,10 +130,8 @@ final class AudioModeCoordinator: ObservableObject {
             isTransitioning = true
             defer { isTransitioning = false }
 
-            NSLog(
-                "[AudioModeCoordinator] handleReplayLastTTS transcriptionState=%@ isSessionActive=%@",
-                String(describing: transcriptionManager.state),
-                String(transcriptionManager.isSessionActive)
+            Self.log(
+                "handleReplayLastTTS transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive))"
             )
             shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
             ttsManager.setPlaybackAudioSessionMode(
@@ -163,5 +152,11 @@ final class AudioModeCoordinator: ObservableObject {
         guard shouldRepairMonitoringAfterTTS else { return }
         shouldRepairMonitoringAfterTTS = false
         await transcriptionManager.repairMonitoringSessionIfNeeded()
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[AudioModeCoordinator] %@", message)
+        #endif
     }
 }

@@ -326,6 +326,8 @@ actor KeyVoxPocketTTSStreamGenerator {
     }
 
     private static func log(_ message: String) {
+        #if DEBUG
         NSLog("[KeyVoxPocketTTSStream] %@", message)
+        #endif
     }
 }
