@@ -96,10 +96,16 @@ struct KeyVoxSpeakSceneAView: View {
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(NoOpacityButtonStyle())
         .disabled(!canPlayPreview)
         .animation(.easeInOut(duration: 0.3), value: isPlaying)
         .accessibilityLabel(isPlaying ? "Pause KeyVox Speak demo" : "Play KeyVox Speak demo")
+    }
+    
+    private struct NoOpacityButtonStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+        }
     }
 
     private var waveformIndicator: some View {
