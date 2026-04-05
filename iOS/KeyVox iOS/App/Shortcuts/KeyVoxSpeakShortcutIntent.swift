@@ -21,7 +21,9 @@ struct KeyVoxSpeakShortcutIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        KeyVoxIPCBridge.writePendingURLRoute(Self.launchURL.absoluteString)
+        await MainActor.run {
+            KeyVoxIPCBridge.writePendingURLRoute(Self.launchURL.absoluteString)
+        }
         return .result()
     }
 }
