@@ -57,6 +57,11 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
         #expect(bufferedSampleCount >= Int(sampleRate * TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormMinimumCoverageSeconds))
     }
 
+    @Test func longFormForegroundRealtimeFactorMatchesTheMeasuredFastModeEnvelope() {
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.foregroundRealtimeFactor(for: 42) == 0.62)
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.foregroundRealtimeFactor(for: 80) == 0.56)
+    }
+
     @Test func fastModeBackgroundSafetyRequiresFullThresholdBeforeEnteringSafeState() {
         #expect(
             TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
@@ -91,5 +96,70 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
                 wasSafe: true
             ) == false
         )
+    }
+
+    @Test func backgroundContinuationSampleCountDoesNotCapLongFormRemainingWorkAtNinetySeconds() {
+        let sampleRate = 24_000.0
+        let remainingEstimatedSamples = 4_667_520
+
+        let bufferedSampleCount =
+            TTSPlaybackCoordinatorBufferingPolicy.deterministicBackgroundContinuationSampleCount(
+                sampleRate: sampleRate,
+                chunkCount: 42,
+                remainingEstimatedSamples: remainingEstimatedSamples,
+                minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.returnToHostRunwaySeconds,
+                realtimeFactor: TTSPlaybackCoordinatorBufferingPolicy.backgroundRealtimeFactor(for: 42),
+                remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds,
+                minimumLeadRatio: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumLeadRatio
+            )
+
+        #expect(bufferedSampleCount > Int(sampleRate * 90.0))
+    }
+
+    @Test func backgroundContinuationSampleCountMatchesFullRemainingWorkDeficitForLongForm() {
+        let sampleRate = 24_000.0
+        let remainingEstimatedSamples = 4_667_520
+        let realtimeFactor = TTSPlaybackCoordinatorBufferingPolicy.backgroundRealtimeFactor(for: 42)
+        let remainingEstimatedSeconds = Double(remainingEstimatedSamples) / sampleRate
+        let expectedRequiredSeconds = min(
+            remainingEstimatedSeconds,
+            (remainingEstimatedSeconds * ((1.0 / realtimeFactor) - 1.0))
+                + TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds
+        )
+
+        let bufferedSampleCount =
+            TTSPlaybackCoordinatorBufferingPolicy.deterministicBackgroundContinuationSampleCount(
+                sampleRate: sampleRate,
+                chunkCount: 42,
+                remainingEstimatedSamples: remainingEstimatedSamples,
+                minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.returnToHostRunwaySeconds,
+                realtimeFactor: realtimeFactor,
+                remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds,
+                minimumLeadRatio: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumLeadRatio
+            )
+
+        #expect(bufferedSampleCount == Int(expectedRequiredSeconds * sampleRate))
+    }
+
+    @Test func fastModeForegroundBufferedSampleCountExceedsTheOldFortyTwoChunkStartupThreshold() {
+        let sampleRate = 24_000.0
+        let remainingEstimatedSamples = 6_533_760
+        let requiredStartSamples = TTSPlaybackCoordinatorBufferingPolicy.fastModeRequiredStartSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 42
+        )
+
+        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.normalModeBufferedSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 42,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: requiredStartSamples,
+            minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumCoverageSeconds(for: 42),
+            realtimeFactor: TTSPlaybackCoordinatorBufferingPolicy.foregroundRealtimeFactor(for: 42),
+            remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.fastModeRemainingWorkSafetyMarginSeconds,
+            allowFullRemainingDeficit: true
+        )
+
+        #expect(bufferedSampleCount > 2_272_256)
     }
 }

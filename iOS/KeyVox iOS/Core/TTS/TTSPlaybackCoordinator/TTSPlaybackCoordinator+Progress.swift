@@ -182,14 +182,14 @@ extension TTSPlaybackCoordinator {
     }
 
     func backgroundContinuationBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
-        normalModeBufferedSampleCount(
-            for: chunkCount,
+        TTSPlaybackCoordinatorBufferingPolicy.deterministicBackgroundContinuationSampleCount(
+            sampleRate: playbackFormat.sampleRate,
+            chunkCount: chunkCount,
             remainingEstimatedSamples: remainingEstimatedSamples,
-            requiredStartSamples: normalModeRequiredStartSampleCount(for: chunkCount),
             minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.returnToHostRunwaySeconds,
             realtimeFactor: backgroundRealtimeFactor(for: chunkCount),
             remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds,
-            allowFullRemainingDeficit: false
+            minimumLeadRatio: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumLeadRatio
         )
     }
 
