@@ -99,6 +99,40 @@ iOS
 - Custom Dictionary entries can be added on either platform and will sync across devices via iCloud.
 - Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
 
+## KeyVox Speak (iOS)
+
+KeyVox Speak brings local AI text-to-speech to iPhone, letting you copy text and hear it spoken aloud with natural-sounding voices powered by on-device PocketTTS.
+
+### What is KeyVox Speak?
+
+**Copy text. Hear it speak.** KeyVox Speak is a text-to-speech feature that runs entirely on your device using local AI voices. No cloud processing, no data sent anywhere—just fast, private playback of any text you copy.
+
+### How to Access Speak
+
+KeyVox Speak is available from multiple places on iPhone:
+
+- **Home Tab**: Tap the Speak button from the main screen
+- **Keyboard Shortcut**: Trigger directly from the KeyVox keyboard
+- **Share to Speak**: Share text, URLs, or images with text from any app
+- **Shortcuts & Actions**: Map to Action Button or Control Center for quick access
+
+### Fast Mode
+
+Fast Mode starts speaking ~50% faster by skipping the initial voice warm-up. Toggle Fast Mode in the Speak toolbar when you need instant playback.
+
+### Free to Start
+
+KeyVox Speak is free to try with 2 speaks per day. Install the Alba voice (~19 MB) and start speaking right away. You can download up to 8 total voices in Settings.
+
+To unlock unlimited speaks, purchase KeyVox Speak access once and use it across all your devices on the same Apple account.
+
+### Requirements
+
+- **PocketTTS CoreML** (~642 MB): The shared AI engine that powers all voices
+- **Voice files** (~17-19 MB each): Individual voice models like Alba, Azelma, Cosette, and more
+
+Both components install on-device and run locally with no internet connection required for playback.
+
 
 ## Troubleshooting
 
