@@ -50,6 +50,11 @@ extension SettingsTabView {
                 Divider()
                     .background(.white.opacity(0.22))
 
+                ttsUnlockRow
+
+                Divider()
+                    .background(.white.opacity(0.22))
+
                 HStack(alignment: .center, spacing: 12) {
                     Text(playbackVoiceDescriptionText)
                         .font(.appFont(15, variant: .light))
@@ -122,6 +127,56 @@ extension SettingsTabView {
         .animation(.easeOut(duration: 0.18), value: isTTSExpandedContentVisible)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedTTSContent)
         .animation(.spring(response: 0.42, dampingFraction: 0.84), value: ttsExpandedContentHeight)
+    }
+
+    @ViewBuilder
+    private var ttsUnlockRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 12) {
+                Text("TTS Access")
+                    .font(.appFont(17))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if ttsPurchaseController.isTTSUnlocked {
+                    Text("Unlocked")
+                        .font(.appFont(15))
+                        .foregroundStyle(.yellow)
+                } else {
+                    AppActionButton(
+                        title: "Unlock",
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 15,
+                        action: {
+                            appHaptics.light()
+                            ttsPurchaseController.presentUnlockSheet()
+                        }
+                    )
+                }
+            }
+
+            Text(ttsUnlockStatusText)
+                .font(.appFont(14, variant: .light))
+                .foregroundStyle(.white.opacity(0.7))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if ttsPurchaseController.isTTSUnlocked == false {
+                AppActionButton(
+                    title: "Restore Purchases",
+                    style: .secondary,
+                    size: .compact,
+                    fontSize: 14,
+                    isEnabled: ttsPurchaseController.isStoreActionInFlight == false,
+                    action: {
+                        appHaptics.light()
+                        Task {
+                            await ttsPurchaseController.restorePurchases()
+                        }
+                    }
+                )
+            }
+        }
     }
 
     @ViewBuilder
@@ -400,6 +455,16 @@ extension SettingsTabView {
             return "Download a playback voice to let KeyVox read copied text aloud."
         }
         return "Choose which installed PocketTTS voice KeyVox uses when speaking copied text."
+    }
+
+    var ttsUnlockStatusText: String {
+        if ttsPurchaseController.isTTSUnlocked {
+            return "Unlimited copied-text playback is enabled on this Apple account."
+        }
+
+        let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
+        let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
+        return "\(remainingFreeSpeaks) free \(noun) left today. Replay stays free for anything already generated."
     }
 
     var supportsTTSExpansion: Bool {

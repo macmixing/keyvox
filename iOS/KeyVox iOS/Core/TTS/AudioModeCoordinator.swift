@@ -6,17 +6,20 @@ final class AudioModeCoordinator: ObservableObject {
     private let transcriptionManager: TranscriptionManager
     private let ttsManager: TTSManager
     private let appTabRouter: AppTabRouter
+    private let ttsPurchaseGate: any TTSPurchaseGating
     private var isTransitioning = false
     private var shouldRepairMonitoringAfterTTS = false
 
     init(
         transcriptionManager: TranscriptionManager,
         ttsManager: TTSManager,
-        appTabRouter: AppTabRouter
+        appTabRouter: AppTabRouter,
+        ttsPurchaseGate: any TTSPurchaseGating
     ) {
         self.transcriptionManager = transcriptionManager
         self.ttsManager = ttsManager
         self.appTabRouter = appTabRouter
+        self.ttsPurchaseGate = ttsPurchaseGate
         self.ttsManager.onWillTeardownPlayback = { [weak self] in
             await self?.repairMonitoringAfterTTSIfNeeded()
         }
@@ -56,6 +59,11 @@ final class AudioModeCoordinator: ObservableObject {
                 String(describing: transcriptionManager.state),
                 String(transcriptionManager.isSessionActive)
             )
+            guard ttsPurchaseGate.canStartNewTTSSpeak else {
+                ttsManager.isPlaybackPreparationViewPresented = false
+                ttsPurchaseGate.presentUnlockSheet()
+                return
+            }
             appTabRouter.selectedTab = .home
             shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
             ttsManager.setPlaybackAudioSessionMode(
@@ -84,13 +92,18 @@ final class AudioModeCoordinator: ObservableObject {
                 String(transcriptionManager.isSessionActive),
                 String(ttsManager.isActive)
             )
-            appTabRouter.selectedTab = .home
 
             if ttsManager.isActive {
                 await ttsManager.stopPlayback()
                 return
             }
 
+            guard ttsPurchaseGate.canStartNewTTSSpeak else {
+                ttsPurchaseGate.presentUnlockSheet()
+                return
+            }
+
+            appTabRouter.selectedTab = .home
             shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
             ttsManager.setPlaybackAudioSessionMode(
                 transcriptionManager.isSessionActive

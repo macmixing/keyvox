@@ -74,6 +74,7 @@ iOS/
 │   │   ├── KeyVoxURLRouter.swift
 │   │   ├── KeyVoxiOSApp.swift
 │   │   ├── SharedPaths.swift
+│   │   ├── TTSPurchaseController.swift
 │   │   ├── WeeklyWordStatsStore.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingDownloadNetworkMonitor.swift
@@ -177,7 +178,8 @@ iOS/
 │   │   │   ├── OnboardingStepRow.swift
 │   │   │   ├── PlaybackVoicePickerMenu.swift
 │   │   │   ├── SettingsDeletionConfirmation.swift
-│   │   │   └── SettingsRow.swift
+│   │   │   ├── SettingsRow.swift
+│   │   │   └── TTSUnlockSheetView.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
@@ -288,6 +290,7 @@ iOS/
 │   │   ├── OnboardingSetupStateTests.swift
 │   │   ├── OnboardingStoreTests.swift
 │   │   ├── SharedPathsTests.swift
+│   │   ├── TTSPurchaseControllerTests.swift
 │   │   ├── WeeklyWordStatsCloudSyncTests.swift
 │   │   └── WeeklyWordStatsStoreTests.swift
 │   ├── Core/
@@ -362,8 +365,11 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
+- `KeyVox iOS/App/TTSPurchaseController.swift`
+  - App-owned one-time unlock and daily-usage owner for copied-text playback.
+  - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
 - `KeyVox iOS/App/AppHaptics.swift`
   - App-owned UIKit haptic emitter injected through the SwiftUI environment.
 - `KeyVox iOS/App/AppHapticsDecisions.swift`
@@ -389,6 +395,9 @@ Packages/
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
 - `KeyVox iOS/Views/Components/ModelDownloadProgress.swift`
   - Reusable onboarding download progress bar with the app accent styling and an optional percent label.
+- `KeyVox iOS/Views/Components/TTSUnlockSheetView.swift`
+  - Intentionally plain placeholder unlock sheet for the copied-text playback monetization proof path.
+  - Surfaces the one-time unlock CTA, restore action, and the current remaining-free-speaks summary without trying to be a polished paywall yet.
 - `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourScreen.swift`
   - Full-screen post-Settings handoff screen that autofocuses a text field and keeps the input pinned above the keyboard.
   - Advances through three tour scenes (`a`, `b`, `c`) and only enables the final completion action after the KeyVox keyboard has been shown and a first non-empty transcription has completed.
@@ -408,6 +417,8 @@ Packages/
 
 - `KeyVox iOS/App/KeyVoxIPCBridge.swift`
   - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
+- `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
+  - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
 - `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
 - `KeyVox iOS/App/KeyVoxSessionLiveActivityCoordinator.swift`
@@ -452,13 +463,14 @@ Packages/
 - `KeyVox iOS/Core/TTS/TTSPlaybackCoordinator/`
   - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, and playback scheduling.
 - `KeyVox iOS/Core/TTS/TTSManager/`
-  - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, and App Group TTS state publishing.
+  - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
   - Persistence layer for the last replayable rendered playback and paused replay sample offsets.
 - `KeyVox iOS/Core/TTS/TTSVoicePreviewPlayer.swift`
   - Bundled voice-preview playback owner used by the Voice Model settings section.
 - `KeyVox iOS/Core/TTS/AudioModeCoordinator.swift`
   - Single arbitration surface for dictation-versus-TTS transitions, including pause/resume/replay transport.
+  - Also enforces the copied-text playback entitlement gate for every new TTS start path before playback begins.
 - `KeyVox iOS/Views/PlaybackPreparationView.swift`
   - Cold-launch playback-preparation screen shown before returning to the host app.
 
@@ -494,8 +506,8 @@ Packages/
   - `HomeTabView.swift` owns the weekly stats card, last transcription card, Home-level state, and debug-only diagnostics.
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout.
   - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, transcript copy affordance, and idle transcript dismissal.
-  - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, and playback error presentation.
-  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, and Home-scoped TTS actions.
+  - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, playback error presentation, and the idle monetization messaging for remaining free speaks or locked state.
+  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
 - `KeyVox iOS/App/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
@@ -503,6 +515,8 @@ Packages/
   - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
   - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
+- `KeyVox iOS/Views/Components/TTSUnlockSheetView.swift`
+  - Placeholder copied-text playback unlock sheet used by Home and Settings when the user needs to purchase or restore the one-time TTS unlock.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
@@ -512,7 +526,7 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
   - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
-  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, and playback voice selection, including the shared installed-voice picker menu.
+  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the placeholder `TTS Access` unlock row, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
@@ -566,6 +580,8 @@ Packages/
 
 - `KeyVoxiOSTests/App/`
   - Onboarding state, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
+- `KeyVoxiOSTests/App/TTSPurchaseControllerTests.swift`
+  - Deterministic copied-text playback monetization coverage for cached unlock state, two-free-speaks-per-day accounting, local day resets, and purchase or restore state transitions through the placeholder store abstraction.
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`

@@ -131,6 +131,17 @@ extension HomeTabView {
 
         switch ttsManager.state {
         case .idle:
+            if ttsPurchaseController.canStartNewTTSSpeak == false {
+                if ttsPurchaseController.remainingFreeTTSSpeaksToday == 0 {
+                    return "Unlock TTS to keep speaking copied text."
+                }
+            }
+
+            if ttsPurchaseController.isTTSUnlocked == false {
+                let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
+                let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
+                return "\(remainingFreeSpeaks) free \(noun) left today."
+            }
             return "Read copied text aloud using your selected voice."
         case .preparing:
             return "Getting ready..."

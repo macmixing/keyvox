@@ -13,6 +13,7 @@ final class AppServiceRegistry {
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let appTabRouter: AppTabRouter
     let appHaptics: AppHaptics
+    let ttsPurchaseController: TTSPurchaseController
     let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
@@ -62,6 +63,10 @@ final class AppServiceRegistry {
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
         let appTabRouter = AppTabRouter()
         let appHaptics = AppHaptics()
+        let ttsPurchaseController = TTSPurchaseController(
+            defaults: settingsDefaults,
+            bypassFreeSpeakLimit: runtimeFlags.bypassTTSFreeSpeakLimit
+        )
         let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
@@ -139,6 +144,7 @@ final class AppServiceRegistry {
             keyboardBridge: keyboardBridge,
             engine: ttsEngine,
             playbackCoordinator: ttsPlaybackCoordinator,
+            purchaseGate: ttsPurchaseController,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
                 guard let settingsStore else { return .azelma }
                 guard let pocketTTSModelManager else { return settingsStore.ttsVoice }
@@ -151,7 +157,8 @@ final class AppServiceRegistry {
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
-            appTabRouter: appTabRouter
+            appTabRouter: appTabRouter,
+            ttsPurchaseGate: ttsPurchaseController
         )
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
@@ -209,6 +216,7 @@ final class AppServiceRegistry {
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.appTabRouter = appTabRouter
         self.appHaptics = appHaptics
+        self.ttsPurchaseController = ttsPurchaseController
         self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService

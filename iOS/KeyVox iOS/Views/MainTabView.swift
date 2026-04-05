@@ -15,6 +15,7 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
 
@@ -37,6 +38,19 @@ struct MainTabView: View {
             }
         }
         .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
+        .sheet(
+            isPresented: Binding(
+                get: { ttsPurchaseController.isUnlockSheetPresented },
+                set: { isPresented in
+                    if isPresented == false {
+                        ttsPurchaseController.dismissUnlockSheet()
+                    }
+                }
+            )
+        ) {
+            TTSUnlockSheetView()
+                .environmentObject(ttsPurchaseController)
+        }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
@@ -143,4 +157,5 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
+        .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
 }

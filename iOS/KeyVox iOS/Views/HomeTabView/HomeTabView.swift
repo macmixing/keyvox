@@ -6,6 +6,7 @@ struct HomeTabView: View {
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @EnvironmentObject var ttsManager: TTSManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @State var showsTTSPreparationSlot = false
@@ -115,6 +116,7 @@ struct HomeTabView: View {
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
 }

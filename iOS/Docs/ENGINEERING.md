@@ -131,6 +131,7 @@ It builds and wires:
 - `TTSVoicePreviewPlayer`
 - `PocketTTSEngine`
 - `PocketTTSModelManager`
+- `TTSPurchaseController`
 - `TTSPlaybackCoordinator`
 - `TTSManager`
 - `AudioModeCoordinator`
@@ -173,11 +174,12 @@ Current root behavior:
 - `isIgnoringPersistedPendingKeyboardTourThisLaunch`
 - `hasCompletedOnboardingThisLaunch`
 
-### Force-Onboarding Runtime Flag
+### Runtime Flags
 
-The only supported runtime flag is:
+The supported runtime flags are:
 
 - `KEYVOX_FORCE_ONBOARDING`
+- `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`
 
 Accepted truthy values:
 
@@ -191,6 +193,21 @@ Behavior:
 - the flag must still allow in-launch progression through the flow
 - persisted onboarding completion must not block the forced flow
 - stale persisted keyboard-tour handoff state must not skip setup during a forced run
+
+### TTS Free-Speak Bypass Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- the flag bypasses the phase-one limit of two free new copied-text playback generations per local calendar day
+- the flag is for development and testing only and must not change production monetization policy
+- the flag only applies to new PocketTTS generation gating and does not change replay behavior
+- `TTSManager` still consumes a free speak only after a new PocketTTS generation has actually started, but no use is consumed while the bypass flag is enabled
 
 ### Onboarding Screen Order
 
@@ -289,6 +306,9 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasCompletedOnboardingWelcome`
 - `KeyVox.App.HasPendingKeyboardTour`
 - `KeyVox.App.ActiveDictationProvider`
+- `KeyVox.App.IsTTSUnlocked`
+- `KeyVox.App.TTSFreeSpeakUsageDayStart`
+- `KeyVox.App.TTSFreeSpeakUsageCount`
 
 ### App Group File Transport
 
@@ -559,9 +579,10 @@ Primary owners:
 - `PocketTTSModelManager` owns shared PocketTTS Core ML runtime install state plus per-voice install state.
 - `PocketTTSModelCatalog` owns shared-runtime artifact metadata plus approximate per-voice download size metadata used by settings.
 - `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
+- `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
 - `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, playback metering, replayable-audio capture, replay seeking, and pause/resume.
-- `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, and App Group TTS state publishing.
-- `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions.
+- `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
+- `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
 
 ### PocketTTS Install Rules
 
@@ -593,11 +614,17 @@ Primary owners:
 - copied-text playback requests are serialized through `KeyVoxTTSRequest`
 - keyboard-initiated playback stages the request in shared storage and uses the containing app as the synthesis owner
 - share-extension initiated playback also stages the request in shared storage and uses the containing app as the synthesis owner
+- phase-one monetization allows two free new copied-text playback generations per local calendar day before the one-time unlock is required
+- `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT` bypasses that daily-generation gate for development and testing only
+- replay remains free for already generated playback and must not consume daily free uses
+- only new copied-text playback generations are gated; replay, pause, resume, scrubbing, replay restore, and transcript viewing remain outside the monetization gate
 - playback-preparation progress is deterministic and gates the return-to-host path before audio starts
 - the success haptic for playback preparation completion must fire before the intentional pre-playback delay begins
 - the last completed rendered playback is cached independently of the clipboard and may be replayed later from the Home tab
 - paused replay state, including sample offset, is durable across app relaunches
 - replay transport uses a dedicated scrubber while cached replay is active
+- `TTSManager` consumes a free daily speak only after the new PocketTTS generation has successfully begun, not on button tap alone
+- no free speak is consumed while the TTS free-speak bypass runtime flag is enabled
 - `AudioModeCoordinator` must remain the transition owner for:
   - start dictation
   - start copied-text playback
@@ -614,6 +641,7 @@ Primary owners:
 
 - TTS starts coming from the keyboard or URL routes must move the containing app back to the Home tab before the copied-text playback UI becomes active
 - `AppTabRouter` is the shared tab-selection source of truth for that behavior
+- the same coordinator path must enforce the copied-text playback gate for Home, keyboard, URL, and share-driven TTS starts so shortcuts cannot bypass the daily limit
 
 ### Background Download Rules
 
@@ -882,11 +910,12 @@ Current app-owned surfaces:
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
+- `TTSUnlockSheetView`: intentionally plain placeholder unlock sheet for the phase-one copied-text playback monetization proof path
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination
 - `SettingsTabView+Models`: release-facing `Text Model` section for provider selection plus per-model install actions and uninstalled model size display
-- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, and voice selection
+- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the placeholder `TTS Access` unlock row
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour
