@@ -93,7 +93,6 @@ extension ParakeetService {
                 )
                 let likelyNoSpeech = finalText.isEmpty || self.isLikelyNoSpeech(
                     transcribedSegments: transcribedSegments,
-                    detectedLanguageCode: detectedLanguageCode,
                     audioFrameCount: audioFrames.count
                 )
                 #if DEBUG
@@ -184,13 +183,12 @@ extension ParakeetService {
 
     func isLikelyNoSpeech(
         transcribedSegments: [ParakeetSegment],
-        detectedLanguageCode: String?,
         audioFrameCount: Int
     ) -> Bool {
         ParakeetUtteranceGate.isLikelyNoSpeech(
             result: ParakeetTranscriptionResult(
                 segments: transcribedSegments,
-                detectedLanguageCode: detectedLanguageCode,
+                detectedLanguageCode: nil,
                 detectedLanguageName: nil
             ),
             audioFrameCount: audioFrameCount
