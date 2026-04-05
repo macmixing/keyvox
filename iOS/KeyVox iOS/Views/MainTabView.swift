@@ -15,7 +15,7 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
-    @State private var selectedTab: ContainingAppTab = .home
+    @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
 
     var body: some View {
@@ -45,7 +45,7 @@ struct MainTabView: View {
     }
 
     private var tabContent: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $appTabRouter.selectedTab) {
             HomeTabView()
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
@@ -101,11 +101,11 @@ struct MainTabView: View {
         if edge == .trailing,
            horizontalDistance <= -Swipe.threshold,
            let nextTab = selectedTab.next {
-            selectedTab = nextTab
+            appTabRouter.selectedTab = nextTab
         } else if edge == .leading,
                   horizontalDistance >= Swipe.threshold,
                   let previousTab = selectedTab.previous {
-            selectedTab = previousTab
+            appTabRouter.selectedTab = previousTab
         } else if let event = MainTabHapticsDecision.eventForEdgeSwipeAttempt(
             currentTab: selectedTab,
             edge: edge,
@@ -126,6 +126,10 @@ struct MainTabView: View {
         }
     }
 
+    private var selectedTab: ContainingAppTab {
+        appTabRouter.selectedTab
+    }
+
 }
 
 #Preview {
@@ -133,6 +137,7 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)

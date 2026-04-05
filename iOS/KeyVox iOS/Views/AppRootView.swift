@@ -118,6 +118,7 @@ struct AppRootView: View {
     AppRootView()
         .environmentObject(AppLaunchRouteStore.shared)
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
+        .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)

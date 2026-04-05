@@ -11,6 +11,7 @@ final class AppServiceRegistry {
     let settingsStore: AppSettingsStore
     let onboardingStore: OnboardingStore
     let weeklyWordStatsStore: WeeklyWordStatsStore
+    let appTabRouter: AppTabRouter
     let appHaptics: AppHaptics
     let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     let whisperService: WhisperService
@@ -59,6 +60,7 @@ final class AppServiceRegistry {
         let settingsStore = AppSettingsStore(defaults: settingsDefaults)
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
+        let appTabRouter = AppTabRouter()
         let appHaptics = AppHaptics()
         let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
@@ -148,7 +150,8 @@ final class AppServiceRegistry {
         )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
-            ttsManager: ttsManager
+            ttsManager: ttsManager,
+            appTabRouter: appTabRouter
         )
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
@@ -204,6 +207,7 @@ final class AppServiceRegistry {
         self.settingsStore = settingsStore
         self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.appTabRouter = appTabRouter
         self.appHaptics = appHaptics
         self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
         self.whisperService = whisperService

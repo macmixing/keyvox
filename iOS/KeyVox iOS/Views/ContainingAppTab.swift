@@ -48,3 +48,8 @@ enum ContainingAppTab: Hashable {
         return Self.orderedTabs[nextIndex]
     }
 }
+
+@MainActor
+final class AppTabRouter: ObservableObject {
+    @Published var selectedTab: ContainingAppTab = .home
+}

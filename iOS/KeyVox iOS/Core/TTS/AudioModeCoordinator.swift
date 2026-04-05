@@ -5,15 +5,18 @@ import Foundation
 final class AudioModeCoordinator: ObservableObject {
     private let transcriptionManager: TranscriptionManager
     private let ttsManager: TTSManager
+    private let appTabRouter: AppTabRouter
     private var isTransitioning = false
     private var shouldRepairMonitoringAfterTTS = false
 
     init(
         transcriptionManager: TranscriptionManager,
-        ttsManager: TTSManager
+        ttsManager: TTSManager,
+        appTabRouter: AppTabRouter
     ) {
         self.transcriptionManager = transcriptionManager
         self.ttsManager = ttsManager
+        self.appTabRouter = appTabRouter
         self.ttsManager.onWillTeardownPlayback = { [weak self] in
             await self?.repairMonitoringAfterTTSIfNeeded()
         }
@@ -53,6 +56,7 @@ final class AudioModeCoordinator: ObservableObject {
                 String(describing: transcriptionManager.state),
                 String(transcriptionManager.isSessionActive)
             )
+            appTabRouter.selectedTab = .home
             shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
             ttsManager.setPlaybackAudioSessionMode(
                 transcriptionManager.isSessionActive
@@ -80,6 +84,7 @@ final class AudioModeCoordinator: ObservableObject {
                 String(transcriptionManager.isSessionActive),
                 String(ttsManager.isActive)
             )
+            appTabRouter.selectedTab = .home
 
             if ttsManager.isActive {
                 await ttsManager.stopPlayback()
