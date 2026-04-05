@@ -11,6 +11,10 @@ struct HomeTabView: View {
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationVisible = false
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
+    @AppStorage(
+        UserDefaultsKeys.App.isTTSTranscriptExpanded,
+        store: SharedPaths.appGroupUserDefaults()
+    ) var isTTSTranscriptExpanded = false
 
     var body: some View {
         AppScrollScreen {

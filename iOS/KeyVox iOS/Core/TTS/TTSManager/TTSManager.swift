@@ -59,6 +59,18 @@ final class TTSManager: ObservableObject {
         return hasReplayablePlayback && activeRequest.id == lastReplayableRequest.id
     }
 
+    var currentPlaybackDisplayText: String? {
+        if let activeRequest, activeRequest.trimmedText.isEmpty == false {
+            return activeRequest.trimmedText
+        }
+        if hasReplayablePlayback,
+           let lastReplayableRequest,
+           lastReplayableRequest.trimmedText.isEmpty == false {
+            return lastReplayableRequest.trimmedText
+        }
+        return nil
+    }
+
     init(
         settingsStore: AppSettingsStore,
         appHaptics: AppHapticsEmitting,
