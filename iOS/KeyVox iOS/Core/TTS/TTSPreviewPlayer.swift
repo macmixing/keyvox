@@ -8,10 +8,15 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     @Published private(set) var isPlaying = false
 
     private let appHaptics: AppHapticsEmitting
+    private let audioSession: AVAudioSession
     private var player: AVAudioPlayer?
 
-    init(appHaptics: AppHapticsEmitting) {
+    init(
+        appHaptics: AppHapticsEmitting,
+        audioSession: AVAudioSession = .sharedInstance()
+    ) {
         self.appHaptics = appHaptics
+        self.audioSession = audioSession
         super.init()
     }
 
@@ -41,6 +46,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
         player = nil
         activePreviewResourceName = nil
         isPlaying = false
+        deactivateAudioSessionIfNeeded()
     }
 
     func hasPreview(resourceName: String) -> Bool {
@@ -58,9 +64,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             player.pause()
             isPlaying = false
         } else {
-            appHaptics.light()
-            player.play()
-            isPlaying = true
+            resumeCurrentPlayback()
         }
     }
 
@@ -71,6 +75,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
         }
 
         do {
+            try configureAudioSession()
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
             player.prepareToPlay()
@@ -87,6 +92,34 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             )
             stop()
         }
+    }
+
+    private func resumeCurrentPlayback() {
+        guard let player else { return }
+
+        do {
+            try configureAudioSession()
+            appHaptics.light()
+            player.play()
+            isPlaying = true
+        } catch {
+            NSLog(
+                "[TTSPreviewPlayer] Failed to resume preview for %@: %@",
+                activePreviewResourceName ?? "unknown",
+                String(describing: error)
+            )
+            stop()
+        }
+    }
+
+    private func configureAudioSession() throws {
+        try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? audioSession.overrideOutputAudioPort(.none)
+        try audioSession.setActive(true)
+    }
+
+    private func deactivateAudioSessionIfNeeded() {
+        try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     private func previewResourceName(for voice: AppSettingsStore.TTSVoice) -> String {
