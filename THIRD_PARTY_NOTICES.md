@@ -37,7 +37,7 @@ Attribution: Based on NVIDIA's `parakeet-tdt-0.6b-v3` multilingual automatic spe
 
 Attribution: Based on Kyutai's `pocket-tts` text-to-speech model. The Apple-platform Core ML conversion and distribution source used by KeyVox is FluidInference.
 
-### MIT License (applies to the two components above)
+### MIT License (applies to `whisper.cpp` and OpenAI Whisper above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
