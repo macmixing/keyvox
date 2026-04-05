@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import UIKit
 
@@ -113,5 +114,112 @@ extension TTSManager {
 
     func updateIdleSleepPrevention() {
         UIApplication.shared.isIdleTimerDisabled = shouldPreventIdleSleep
+    }
+
+    @objc
+    func handleAudioSessionInterruptionNotification(_ notification: Notification) {
+        let typeDescription: String
+        if let userInfo = notification.userInfo,
+           let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+           let interruptionType = AVAudioSession.InterruptionType(rawValue: typeValue) {
+            switch interruptionType {
+            case .began:
+                typeDescription = "began"
+            case .ended:
+                typeDescription = "ended"
+            @unknown default:
+                typeDescription = "unknown(\(typeValue))"
+            }
+        } else {
+            typeDescription = "missing"
+        }
+
+        let optionsDescription: String
+        if let userInfo = notification.userInfo,
+           let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+            optionsDescription = String(optionsValue)
+        } else {
+            optionsDescription = "nil"
+        }
+
+        Self.log(
+            "Audio session interruption type=\(typeDescription) options=\(optionsDescription) state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback) pausedOffset=\(pausedReplaySampleOffset.map(String.init) ?? "nil")"
+        )
+    }
+
+    @objc
+    func handleAudioSessionRouteChangeNotification(_ notification: Notification) {
+        let reasonDescription: String
+        let routeChangeReason: AVAudioSession.RouteChangeReason?
+        if let userInfo = notification.userInfo,
+           let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+           let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) {
+            routeChangeReason = reason
+            switch reason {
+            case .newDeviceAvailable:
+                reasonDescription = "newDeviceAvailable"
+            case .oldDeviceUnavailable:
+                reasonDescription = "oldDeviceUnavailable"
+            case .categoryChange:
+                reasonDescription = "categoryChange"
+            case .override:
+                reasonDescription = "override"
+            case .wakeFromSleep:
+                reasonDescription = "wakeFromSleep"
+            case .noSuitableRouteForCategory:
+                reasonDescription = "noSuitableRouteForCategory"
+            case .routeConfigurationChange:
+                reasonDescription = "routeConfigurationChange"
+            case .unknown:
+                reasonDescription = "unknown"
+            @unknown default:
+                reasonDescription = "unknown(\(reasonValue))"
+            }
+        } else {
+            routeChangeReason = nil
+            reasonDescription = "missing"
+        }
+
+        Self.log(
+            "Audio session route change reason=\(reasonDescription) state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback) pausedOffset=\(pausedReplaySampleOffset.map(String.init) ?? "nil") backgroundTaskActive=\(backgroundTaskID != .invalid)"
+        )
+
+        guard isReplayingCachedPlayback, isPlaybackPaused == false else { return }
+        guard let routeChangeReason else { return }
+
+        switch routeChangeReason {
+        case .newDeviceAvailable, .oldDeviceUnavailable, .routeConfigurationChange:
+            let renderTimeAvailable = playbackCoordinator.playerNode.lastRenderTime != nil
+            let playerSampleTimeDescription: String
+            if let renderTime = playbackCoordinator.playerNode.lastRenderTime,
+               let playerTime = playbackCoordinator.playerNode.playerTime(forNodeTime: renderTime) {
+                playerSampleTimeDescription = String(playerTime.sampleTime)
+            } else {
+                playerSampleTimeDescription = "nil"
+            }
+            Self.log(
+                "Replay route-change snapshot currentPlaybackOffset=\(playbackCoordinator.currentPlaybackSampleOffset) currentReplayOffset=\(playbackCoordinator.currentReplaySampleOffset()) replayStartOffset=\(playbackCoordinator.replayStartSampleOffset) replayPausedOffset=\(playbackCoordinator.replayPausedSampleOffset) queuedBuffers=\(playbackCoordinator.queuedBufferCount) queuedSamples=\(playbackCoordinator.queuedSampleCount) renderTimeAvailable=\(renderTimeAvailable) playerSampleTime=\(playerSampleTimeDescription)"
+            )
+            let liveReplayOffset = playbackCoordinator.currentReplaySampleOffset()
+            let resumeBaseOffset = liveReplayOffset > 0
+                ? liveReplayOffset
+                : playbackCoordinator.replayStartSampleOffset
+            let resumeOffset = min(
+                max(0, resumeBaseOffset),
+                max(0, playbackCoordinator.replayablePlaybackSampleCount - 1)
+            )
+            Self.log("Rebuilding active cached replay after route change from offset=\(resumeOffset)")
+            if let lastReplayableRequest {
+                activeRequest = lastReplayableRequest
+            }
+            hasStartedPlaybackForActiveRequest = true
+            didEmitPreparationCompletionForActiveRequest = true
+            isPlaybackPaused = false
+            isPlaybackPreparationViewPresented = false
+            beginBackgroundTaskIfNeeded()
+            playbackCoordinator.replayLastPlayback(startingAtSample: resumeOffset, shouldAutoplay: true)
+        default:
+            break
+        }
     }
 }

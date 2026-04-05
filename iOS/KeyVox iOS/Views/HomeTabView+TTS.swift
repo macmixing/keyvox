@@ -90,15 +90,24 @@ extension HomeTabView {
                 }
 
                 HStack(alignment: .center, spacing: 12) {
-                    Text(ttsStatusText)
-                        .font(.appFont(14, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if showsReplayScrubber {
+                        TTSReplayScrubber(
+                            progress: ttsManager.playbackProgress,
+                            currentTimeSeconds: ttsManager.replayCurrentTimeSeconds,
+                            durationSeconds: ttsManager.replayDurationSeconds,
+                            onScrub: handleReplayScrub
+                        )
+                    } else {
+                        Text(ttsStatusText)
+                            .font(.appFont(14, variant: .light))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if let preparationPercentageText = ttsPreparationPercentageText {
-                        Text(preparationPercentageText)
-                            .font(.appFont(14, variant: .medium))
-                            .foregroundStyle(.yellow)
+                        if let preparationPercentageText = ttsPreparationPercentageText {
+                            Text(preparationPercentageText)
+                                .font(.appFont(14, variant: .medium))
+                                .foregroundStyle(.yellow)
+                        }
                     }
                 }
 
@@ -167,7 +176,7 @@ extension HomeTabView {
     }
 
     var showsTTSTransportProgressRing: Bool {
-        ttsManager.state == .playing
+        ttsManager.state == .playing && !ttsManager.isReplayingCachedPlayback
     }
 
     var ttsTransportPlaybackProgress: CGFloat {
@@ -186,6 +195,10 @@ extension HomeTabView {
 
     var ttsTransportSymbolWeight: Font.Weight {
         .medium
+    }
+
+    var showsReplayScrubber: Bool {
+        ttsManager.isReplayingCachedPlayback
     }
 
     var ttsStatusText: String {
@@ -359,5 +372,76 @@ extension HomeTabView {
         }
 
         audioModeCoordinator.handleReplayLastTTS()
+    }
+
+    func handleReplayScrub(_ progress: Double) {
+        ttsManager.seekReplay(toProgress: progress)
+    }
+}
+
+private struct TTSReplayScrubber: View {
+    let progress: Double
+    let currentTimeSeconds: Double
+    let durationSeconds: Double
+    let onScrub: (Double) -> Void
+
+    @State private var scrubProgress: Double
+    @State private var isScrubbing = false
+
+    init(
+        progress: Double,
+        currentTimeSeconds: Double,
+        durationSeconds: Double,
+        onScrub: @escaping (Double) -> Void
+    ) {
+        self.progress = progress
+        self.currentTimeSeconds = currentTimeSeconds
+        self.durationSeconds = durationSeconds
+        self.onScrub = onScrub
+        _scrubProgress = State(initialValue: progress)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Slider(
+                value: Binding(
+                    get: { scrubProgress },
+                    set: { scrubProgress = $0 }
+                ),
+                in: 0...1,
+                onEditingChanged: handleEditingChanged
+            )
+            .tint(.yellow)
+            .animation(.linear(duration: 1.0 / 30.0), value: scrubProgress)
+
+            HStack(spacing: 12) {
+                Text(formattedTime(isScrubbing ? durationSeconds * scrubProgress : currentTimeSeconds))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(formattedTime(durationSeconds))
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .font(.appFont(13, variant: .medium))
+            .foregroundStyle(.yellow.opacity(0.95))
+            .monospacedDigit()
+        }
+        .onChange(of: progress, initial: true) { _, newValue in
+            guard isScrubbing == false else { return }
+            scrubProgress = newValue
+        }
+    }
+
+    private func handleEditingChanged(_ editing: Bool) {
+        isScrubbing = editing
+        if editing == false {
+            onScrub(scrubProgress)
+        }
+    }
+
+    private func formattedTime(_ seconds: Double) -> String {
+        let clampedSeconds = max(0, Int(seconds.rounded(.down)))
+        let minutes = clampedSeconds / 60
+        let remainingSeconds = clampedSeconds % 60
+        return String(format: "%d:%02d", minutes, remainingSeconds)
     }
 }

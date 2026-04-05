@@ -208,6 +208,7 @@ extension TTSPlaybackCoordinator {
         chunkIndex: Int?,
         startDelay: TimeInterval? = nil
     ) {
+        let sessionID = playbackSessionID
         let sampleCount = Int(buffer.frameLength)
         let bufferStartDelay = startDelay ?? (Double(queuedSampleCount) / playbackFormat.sampleRate)
         queuedBufferCount += 1
@@ -223,6 +224,7 @@ extension TTSPlaybackCoordinator {
         playerNode.scheduleBuffer(buffer) { [weak self] in
             Task { @MainActor [weak self] in
                 guard let self else { return }
+                guard self.playbackSessionID == sessionID else { return }
                 self.queuedBufferCount = max(0, self.queuedBufferCount - 1)
                 self.queuedSampleCount = max(0, self.queuedSampleCount - sampleCount)
                 let remainingSeconds = Double(self.queuedSampleCount) / self.playbackFormat.sampleRate

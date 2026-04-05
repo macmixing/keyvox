@@ -1,4 +1,5 @@
 import Combine
+import AVFoundation
 import Foundation
 import UIKit
 
@@ -45,6 +46,14 @@ final class TTSManager: ObservableObject {
         TTSManagerPolicy.isActive(state)
     }
 
+    var replayCurrentTimeSeconds: Double {
+        playbackCoordinator.currentPlaybackSeconds
+    }
+
+    var replayDurationSeconds: Double {
+        playbackCoordinator.totalPlaybackSeconds
+    }
+
     init(
         settingsStore: AppSettingsStore,
         appHaptics: AppHapticsEmitting,
@@ -78,6 +87,11 @@ final class TTSManager: ObservableObject {
             self?.finishPlayback()
         }
         playbackCoordinator.onPlaybackCancelled = { [weak self] in
+            if let self {
+                Self.log(
+                    "Playback cancelled callback state=\(self.state.rawValue) paused=\(self.isPlaybackPaused) replaying=\(self.isReplayingCachedPlayback) pausedOffset=\(self.pausedReplaySampleOffset.map(String.init) ?? "nil") hasReplayable=\(self.hasReplayablePlayback)"
+                )
+            }
             self?.clearActiveRequest()
         }
         playbackCoordinator.onPlaybackFailed = { [weak self] error in
@@ -104,8 +118,25 @@ final class TTSManager: ObservableObject {
             self?.handleReplayablePlaybackReady()
         }
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioSessionInterruptionNotification(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioSessionRouteChangeNotification(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: nil
+        )
+
         restoreReplayablePlaybackIfNeeded()
         updateIdleSleepPrevention()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     static func log(_ message: String) {

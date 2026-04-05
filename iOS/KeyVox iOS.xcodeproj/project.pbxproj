@@ -7,163 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8E0ECBF62F807CC200B7731A /* SettingsDeletionConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */; };
-		8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */; };
-		8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */; };
-		8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
-		8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */ = {isa = PBXBuildFile; fileRef = 8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */; };
-		8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
-		8E10F65E2F66862000A0AA65 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
-		8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464F2F6013ED007E720D /* HomeTabView.swift */; };
-		8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546522F6013ED007E720D /* StyleTabView.swift */; };
-		8E2546552F6013ED007E720D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546502F6013ED007E720D /* MainTabView.swift */; };
-		8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E25464E2F6013ED007E720D /* DictionaryTabView.swift */; };
-		8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2546512F6013ED007E720D /* SettingsTabView.swift */; };
-		8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
-		8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
-		8E32B8722F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */; };
-		8E32B8782F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */; };
-		8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */; };
-		8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */; };
-		8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */; };
-		8E32BEF82F68F8C500F8DA9F /* ModelDownloadProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */; };
-		8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */; };
-		8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */; };
-		8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
-		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
-		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
-		8E6B904A2F5C6C8B00EE4F08 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
-		8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
-		8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E7DB28E2F80FBE0009E3576 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 8E7DB28D2F80FBE0009E3576 /* SwiftSoup */; };
-		8E7DB2922F81014D009E3576 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8E7DB2932F81014D009E3576 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
-		8E7DB2942F810260009E3576 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */; };
 		8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E97944B2F66B54A009A691D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944A2F66B549009A691D /* WidgetKit.framework */; };
 		8E97944D2F66B54A009A691D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944C2F66B54A009A691D /* SwiftUI.framework */; };
 		8E97945E2F66B54C009A691D /* KeyVox Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E9794482F66B549009A691D /* KeyVox Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		8E9794F12F66BB47009A691D /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
-		8E9794F22F66BBC0009A691D /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
-		8E9794F32F66BBC0009A691D /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */; };
-		8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */; };
-		8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38872F5BF41900EAFA72 /* AppRootView.swift */; };
-		8E9E38932F5BF41900EAFA72 /* AppHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000012FDE000100AA0001 /* AppHaptics.swift */; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
-		8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BE2F5C004200EAFA72 /* AppServiceRegistry.swift */; };
-		8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */; };
-		8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */; };
-		8E9E38D62F5C004200EAFA72 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C42F5C004200EAFA72 /* AudioRecorder.swift */; };
-		8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */; };
-		8E9E38D92F5C004200EAFA72 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38CC2F5C004200EAFA72 /* TranscriptionManager.swift */; };
-		8E9E38DB2F5C004200EAFA72 /* AudioRecorder+StopPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C62F5C004200EAFA72 /* AudioRecorder+StopPipeline.swift */; };
-		8E9E38DC2F5C004200EAFA72 /* AudioRecorder+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C52F5C004200EAFA72 /* AudioRecorder+Session.swift */; };
-		8E9E38DD2F5C004200EAFA72 /* AudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38C72F5C004200EAFA72 /* AudioRecorder+Streaming.swift */; };
-		8E9E38E42F5C104200EAFA72 /* SharedPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */; };
-		8E9E38E52F5C104200EAFA72 /* DictationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38E22F5C104200EAFA72 /* DictationService.swift */; };
-		8ED2E87A2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
-		8ED2E87B2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
-		8ED2E87C2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
-		8ED2E87D2F7ACFA900256F9E /* keyvox.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8ED2E8792F7ACFA900256F9E /* keyvox.icon */; };
 		8ED2F10A2F7F4F1C00256F9E /* KeyVoxTTS in Frameworks */ = {isa = PBXBuildFile; productRef = 8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */; };
-		8ED2F1112F7F4F1C00256F9E /* AudioModeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */; };
-		8ED2F1122F7F4F1C00256F9E /* PocketTTSAssetLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */; };
-		8ED2F1132F7F4F1C00256F9E /* PocketTTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */; };
-		8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */; };
-		8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */; };
-		8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */; };
-		8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */; };
-		8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */; };
-		8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */; };
-		A18000012FEB000100AA0001 /* TTSManager+AppLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */; };
-		A18000022FEB000100AA0001 /* TTSManager+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000072FEB000100AA0001 /* TTSManager+Playback.swift */; };
-		A18000032FEB000100AA0001 /* TTSManager+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000082FEB000100AA0001 /* TTSManager+State.swift */; };
-		A18000042FEB000100AA0001 /* TTSManagerPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */; };
-		8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */; };
-		8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */; };
-		8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */; };
 		8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
 		8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
-		8EECEA662F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5C2F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift */; };
-		8EECEA672F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5A2F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift */; };
-		8EECEA682F655FB900BECF17 /* ModelBackgroundDownloadJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5B2F655FB900BECF17 /* ModelBackgroundDownloadJob.swift */; };
-		8EECEA692F655FB900BECF17 /* ModelManager+Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */; };
-		8EECEA6A2F655FB900BECF17 /* ModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5F2F655FB900BECF17 /* ModelInstallManifest.swift */; };
-		8EECEA6B2F655FB900BECF17 /* ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA612F655FB900BECF17 /* ModelManager.swift */; };
-		8EECEA6C2F655FB900BECF17 /* ModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA602F655FB900BECF17 /* ModelInstallState.swift */; };
-		8EECEA6D2F655FB900BECF17 /* ModelDownloadURLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5E2F655FB900BECF17 /* ModelDownloadURLs.swift */; };
-		8EECEA6E2F655FB900BECF17 /* ModelManager+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */; };
-		8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA5D2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift */; };
-		8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */; };
-		8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */; };
-		8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
-		9B7000112FB1000100BB0001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001012FB1000100BB0001 /* AppSettingsStore.swift */; };
-		9B7000122FB1000100BB0001 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
-		9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */; };
-		9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */; };
-		9B7000152FB1000100BB0001 /* CloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001052FB1000100BB0001 /* CloudSyncCoordinator.swift */; };
-		9C7000012FC1000100CC0001 /* SessionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001012FC1000100CC0001 /* SessionPolicy.swift */; };
-		9C7000022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7001022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift */; };
-		A12000012FD1000100AA0001 /* WeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000112FD1000100AA0001 /* WeeklyWordStatsStore.swift */; };
-		A12000022FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12000122FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift */; };
-		A13000012FD2000100EE0001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000112FD2000100EE0001 /* AppDelegate.swift */; };
-		A14000012FD3000100AA0001 /* InterruptedCaptureRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000112FD3000100AA0001 /* InterruptedCaptureRecovery.swift */; };
-		A14000022FD3000100AA0001 /* InterruptedCaptureRecoveryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000122FD3000100AA0001 /* InterruptedCaptureRecoveryStore.swift */; };
-		A14000032FD3000100AA0001 /* TranscriptionManager+InterruptedCaptureRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A14000132FD3000100AA0001 /* TranscriptionManager+InterruptedCaptureRecovery.swift */; };
-		A15000012FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
-		A15000022FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */; };
-		A15000032FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */; };
-		A16000012FD4000100AA0001 /* KeyboardMenuSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */; };
-		A16000032FD4000100AA0001 /* OnboardingLogoPopInSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */; };
-		A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */; };
-		A17000012FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */; };
-		A17000022FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */; };
-		A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000042FD5000100AA0001 /* AppSceneDelegate.swift */; };
-		A17000032FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */; };
-		A17000042FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */; };
-		A17000052FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */; };
-		A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */; };
-		A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */ = {isa = PBXBuildFile; fileRef = A1C000002FEA000100AA0001 /* TTSVoicePreviews */; };
-		A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */; };
-		A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */; };
-		A1C000062FEB000100AA0001 /* TTSReplayCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C000072FEB000100AA0001 /* TTSReplayCache.swift */; };
-		AA1000012F70000100000001 /* AppTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000012F70000100000001 /* AppTypography.swift */; };
-		AA1000022F70000100000001 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000022F70000100000001 /* AppTheme.swift */; };
-		AA1000032F70000100000001 /* AppCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000032F70000100000001 /* AppCard.swift */; };
-		AA1000042F70000100000001 /* AppIconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000042F70000100000001 /* AppIconTile.swift */; };
-		AA1000052F70000100000001 /* AppScrollScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000052F70000100000001 /* AppScrollScreen.swift */; };
-		AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000062F70000100000001 /* DictionarySortMode.swift */; };
-		AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */; };
-		AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000092F70000100000001 /* DictionaryEntryRowView.swift */; };
-		AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */; };
-		AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000C2F70000100000001 /* ContainingAppTab.swift */; };
-		AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000E2F70000100000001 /* AutoFocusTextField.swift */; };
-		AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000F2F70000100000001 /* KeyboardObserver.swift */; };
-		AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */; };
-		AA1000112F70000100000001 /* AppActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000112F70000100000001 /* AppActionButton.swift */; };
-		B30000012FD5000100AA0001 /* RuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000012FD5000100AA0001 /* RuntimeFlags.swift */; };
-		B30000022FD5000100AA0001 /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000022FD5000100AA0001 /* OnboardingStore.swift */; };
-		B30000032FD5000100AA0001 /* OnboardingMicrophonePermissionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000032FD5000100AA0001 /* OnboardingMicrophonePermissionController.swift */; };
-		B30000042FD5000100AA0001 /* OnboardingKeyboardAccessProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000042FD5000100AA0001 /* OnboardingKeyboardAccessProbe.swift */; };
-		B30000052FD5000100AA0001 /* OnboardingSetupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000052FD5000100AA0001 /* OnboardingSetupState.swift */; };
-		B30000062FD5000100AA0001 /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000012FD5000100AA0001 /* OnboardingFlowView.swift */; };
-		B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
-		B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */; };
-		B300000B2FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */; };
-		B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */; };
-		B50000032FE0000200AA0001 /* SettingsTabView+TTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */; };
-		B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000012FF0000100AA0001 /* DictationModelCatalog.swift */; };
-		B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */; };
-		C10000012FF1000100AA0001 /* PlaybackPreparationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -214,26 +70,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDeletionConfirmation.swift; sourceTree = "<group>"; };
-		8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnToHostView.swift; sourceTree = "<group>"; };
-		8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
-		8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = ReturnToHost.mov; sourceTree = "<group>"; };
-		8E25464E2F6013ED007E720D /* DictionaryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTabView.swift; sourceTree = "<group>"; };
-		8E25464F2F6013ED007E720D /* HomeTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabView.swift; sourceTree = "<group>"; };
-		8E2546502F6013ED007E720D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		8E2546512F6013ED007E720D /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
-		8E2546522F6013ED007E720D /* StyleTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleTabView.swift; sourceTree = "<group>"; };
-		8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourState.swift; sourceTree = "<group>"; };
-		8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneAView.swift; sourceTree = "<group>"; };
-		8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneBView.swift; sourceTree = "<group>"; };
-		8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourSceneCView.swift; sourceTree = "<group>"; };
-		8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardTourScreen.swift; sourceTree = "<group>"; };
-		8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadProgress.swift; sourceTree = "<group>"; };
-		8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepRow.swift; sourceTree = "<group>"; };
-		8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
-		8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
-		8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
 		8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Keyboard.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -242,110 +78,7 @@
 		8E97944C2F66B54A009A691D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeyVox iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8E9E38872F5BF41900EAFA72 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
-		8E9E38882F5BF41900EAFA72 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyVoxiOS.entitlements; sourceTree = "<group>"; };
-		8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiOSApp.swift; sourceTree = "<group>"; };
-		8E9E38BE2F5C004200EAFA72 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
-		8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxURLRoute.swift; sourceTree = "<group>"; };
-		8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxURLRouter.swift; sourceTree = "<group>"; };
-		8E9E38C42F5C004200EAFA72 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
-		8E9E38C52F5C004200EAFA72 /* AudioRecorder+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Session.swift"; sourceTree = "<group>"; };
-		8E9E38C62F5C004200EAFA72 /* AudioRecorder+StopPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+StopPipeline.swift"; sourceTree = "<group>"; };
-		8E9E38C72F5C004200EAFA72 /* AudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
-		8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveInputSignalState.swift; sourceTree = "<group>"; };
-		8E9E38CC2F5C004200EAFA72 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
-		8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedPaths.swift; sourceTree = "<group>"; };
-		8E9E38E22F5C104200EAFA72 /* DictationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationService.swift; sourceTree = "<group>"; };
-		8ED2E8792F7ACFA900256F9E /* keyvox.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = keyvox.icon; sourceTree = "<group>"; };
-		8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioModeCoordinator.swift; sourceTree = "<group>"; };
-		8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSAssetLocator.swift; sourceTree = "<group>"; };
-		8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSEngine.swift; sourceTree = "<group>"; };
-		8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSEngine.swift; sourceTree = "<group>"; };
-		8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSManager.swift; sourceTree = "<group>"; };
-		8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSPlaybackCoordinator.swift; sourceTree = "<group>"; };
-		8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSInstallManifest.swift; sourceTree = "<group>"; };
-		8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelCatalog.swift; sourceTree = "<group>"; };
-		8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSModelManager.swift; sourceTree = "<group>"; };
-		A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+AppLifecycle.swift"; sourceTree = "<group>"; };
-		A18000072FEB000100AA0001 /* TTSManager+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+Playback.swift"; sourceTree = "<group>"; };
-		A18000082FEB000100AA0001 /* TTSManager+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSManager+State.swift"; sourceTree = "<group>"; };
-		A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSManagerPolicy.swift; sourceTree = "<group>"; };
-		8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
-		8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToolbarContent.swift; sourceTree = "<group>"; };
-		8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTranscriptionCardView.swift; sourceTree = "<group>"; };
 		8EECE7322F64020900BECF17 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
-		8EECEA5A2F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadCoordinator.swift; sourceTree = "<group>"; };
-		8EECEA5B2F655FB900BECF17 /* ModelBackgroundDownloadJob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadJob.swift; sourceTree = "<group>"; };
-		8EECEA5C2F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBackgroundDownloadJobStore.swift; sourceTree = "<group>"; };
-		8EECEA5D2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadBackgroundTasks.swift; sourceTree = "<group>"; };
-		8EECEA5E2F655FB900BECF17 /* ModelDownloadURLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadURLs.swift; sourceTree = "<group>"; };
-		8EECEA5F2F655FB900BECF17 /* ModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelInstallManifest.swift; sourceTree = "<group>"; };
-		8EECEA602F655FB900BECF17 /* ModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelInstallState.swift; sourceTree = "<group>"; };
-		8EECEA612F655FB900BECF17 /* ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManager.swift; sourceTree = "<group>"; };
-		8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+InstallLifecycle.swift"; sourceTree = "<group>"; };
-		8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Support.swift"; sourceTree = "<group>"; };
-		8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelManager+Validation.swift"; sourceTree = "<group>"; };
-		8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Light.ttf"; sourceTree = "<group>"; };
-		8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxKeyboardBridge.swift; sourceTree = "<group>"; };
-		9B7001012FB1000100BB0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
-		9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
-		9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
-		9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
-		9B7001052FB1000100BB0001 /* CloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncCoordinator.swift; sourceTree = "<group>"; };
-		9C7001012FC1000100CC0001 /* SessionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPolicy.swift; sourceTree = "<group>"; };
-		9C7001022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionManager+SessionLifecycle.swift"; sourceTree = "<group>"; };
-		A12000112FD1000100AA0001 /* WeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsStore.swift; sourceTree = "<group>"; };
-		A12000122FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
-		A13000112FD2000100EE0001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		A14000112FD3000100AA0001 /* InterruptedCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptedCaptureRecovery.swift; sourceTree = "<group>"; };
-		A14000122FD3000100AA0001 /* InterruptedCaptureRecoveryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptedCaptureRecoveryStore.swift; sourceTree = "<group>"; };
-		A14000132FD3000100AA0001 /* TranscriptionManager+InterruptedCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionManager+InterruptedCaptureRecovery.swift"; sourceTree = "<group>"; };
-		A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxSessionLiveActivityAttributes.swift; sourceTree = "<group>"; };
-		A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxSessionLiveActivityCoordinator.swift; sourceTree = "<group>"; };
-		A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMenuSequence.swift; sourceTree = "<group>"; };
-		A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLogoPopInSequence.swift; sourceTree = "<group>"; };
-		A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchRouteStore.swift; sourceTree = "<group>"; };
-		A17000042FD5000100AA0001 /* AppSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSceneDelegate.swift; sourceTree = "<group>"; };
-		A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Lifecycle.swift"; sourceTree = "<group>"; };
-		A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Scheduling.swift"; sourceTree = "<group>"; };
-		A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Metering.swift"; sourceTree = "<group>"; };
-		A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TTSPlaybackCoordinator+Progress.swift"; sourceTree = "<group>"; };
-		A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSPlaybackCoordinatorBufferingPolicy.swift; sourceTree = "<group>"; };
-		A18000012FDE000100AA0001 /* AppHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHaptics.swift; sourceTree = "<group>"; };
-		A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHapticsDecisions.swift; sourceTree = "<group>"; };
-		A1C000002FEA000100AA0001 /* TTSVoicePreviews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TTSVoicePreviews; sourceTree = "<group>"; };
-		A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSVoicePreviewPlayer.swift; sourceTree = "<group>"; };
-		A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeTabView+TTS.swift"; sourceTree = "<group>"; };
-		A1C000072FEB000100AA0001 /* TTSReplayCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSReplayCache.swift; sourceTree = "<group>"; };
-		AA2000012F70000100000001 /* AppTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTypography.swift; sourceTree = "<group>"; };
-		AA2000022F70000100000001 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
-		AA2000032F70000100000001 /* AppCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCard.swift; sourceTree = "<group>"; };
-		AA2000042F70000100000001 /* AppIconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconTile.swift; sourceTree = "<group>"; };
-		AA2000052F70000100000001 /* AppScrollScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScrollScreen.swift; sourceTree = "<group>"; };
-		AA2000062F70000100000001 /* DictionarySortMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySortMode.swift; sourceTree = "<group>"; };
-		AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorMode.swift; sourceTree = "<group>"; };
-		AA2000092F70000100000001 /* DictionaryEntryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryEntryRowView.swift; sourceTree = "<group>"; };
-		AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryWordEditorView.swift; sourceTree = "<group>"; };
-		AA20000C2F70000100000001 /* ContainingAppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainingAppTab.swift; sourceTree = "<group>"; };
-		AA20000E2F70000100000001 /* AutoFocusTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoFocusTextField.swift; sourceTree = "<group>"; };
-		AA20000F2F70000100000001 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
-		AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFloatingAddButton.swift; sourceTree = "<group>"; };
-		AA2000112F70000100000001 /* AppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActionButton.swift; sourceTree = "<group>"; };
-		B10000012FD5000100AA0001 /* RuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeFlags.swift; sourceTree = "<group>"; };
-		B10000022FD5000100AA0001 /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
-		B10000032FD5000100AA0001 /* OnboardingMicrophonePermissionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePermissionController.swift; sourceTree = "<group>"; };
-		B10000042FD5000100AA0001 /* OnboardingKeyboardAccessProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingKeyboardAccessProbe.swift; sourceTree = "<group>"; };
-		B10000052FD5000100AA0001 /* OnboardingSetupState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupState.swift; sourceTree = "<group>"; };
-		B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDownloadNetworkMonitor.swift; sourceTree = "<group>"; };
-		B20000012FD5000100AA0001 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
-		B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
-		B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
-		B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+Models.swift"; sourceTree = "<group>"; };
-		B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsTabView+TTS.swift"; sourceTree = "<group>"; };
-		B91000012FF0000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
-		B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
-		C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPreparationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -400,6 +133,60 @@
 			);
 			target = 8E7DB1972F809A1C009E3576 /* KeyVox Share */;
 		};
+		8E7DB73D2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox iOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */;
+		};
+		8E7DB73E2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox iOSTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/iCloud/UserDefaultsKeys.swift,
+				App/KeyVoxIPCBridge.swift,
+				App/KeyVoxSessionLiveActivityAttributes.swift,
+				App/KeyVoxSessionLiveActivityCoordinator.swift,
+				Resources/Assets.xcassets,
+				"Resources/Kanit-Light.ttf",
+				"Resources/Kanit-Medium.ttf",
+				Resources/keyvox.icon,
+				Resources/ReturnToHost.mov,
+			);
+			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
+		};
+		8E7DB73F2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Keyboard" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/iCloud/UserDefaultsKeys.swift,
+				App/KeyVoxIPCBridge.swift,
+				Resources/Assets.xcassets,
+				"Resources/Kanit-Light.ttf",
+				"Resources/Kanit-Medium.ttf",
+				Resources/keyvox.icon,
+			);
+			target = 8E7EC04E2F5C28B00080C762 /* KeyVox Keyboard */;
+		};
+		8E7DB7402F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Widget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/KeyVoxIPCBridge.swift,
+				App/KeyVoxSessionLiveActivityAttributes.swift,
+				"Resources/Kanit-Light.ttf",
+				"Resources/Kanit-Medium.ttf",
+				Resources/keyvox.icon,
+			);
+			target = 8E9794472F66B549009A691D /* KeyVox Widget */;
+		};
+		8E7DB7412F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Share" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Assets.xcassets,
+				"Resources/Kanit-Light.ttf",
+				"Resources/Kanit-Medium.ttf",
+			);
+			target = 8E7DB1972F809A1C009E3576 /* KeyVox Share */;
+		};
 		8E7EC05A2F5C28B00080C762 /* Exceptions for "KeyVox Keyboard" folder in "KeyVox Keyboard" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -432,6 +219,21 @@
 				8E7DB1A62F809A1C009E3576 /* Exceptions for "KeyVox Share" folder in "KeyVox Share" target */,
 			);
 			path = "KeyVox Share";
+			sourceTree = "<group>";
+		};
+		8E7DB6AB2F81EAF6009E3576 /* KeyVox iOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8E7DB73D2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox iOS" target */,
+				8E7DB73E2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox iOSTests" target */,
+				8E7DB73F2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Keyboard" target */,
+				8E7DB7402F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Widget" target */,
+				8E7DB7412F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Share" target */,
+			);
+			explicitFolders = (
+				Resources/TTSVoicePreviews,
+			);
+			path = "KeyVox iOS";
 			sourceTree = "<group>";
 		};
 		8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */ = {
@@ -504,31 +306,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		8E32B8732F67D33C00F8DA9F /* Tour */ = {
-			isa = PBXGroup;
-			children = (
-				A16000022FD4000100AA0001 /* KeyboardMenuSequence.swift */,
-				8E32B8742F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift */,
-				8E32B8752F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift */,
-				8E32B8762F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift */,
-				8E32B8772F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift */,
-			);
-			path = Tour;
-			sourceTree = "<group>";
-		};
-		8E70C90F2F62B1DB00E9E555 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */,
-				8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */,
-				8ED2E8792F7ACFA900256F9E /* keyvox.icon */,
-				8EECEA722F65638A00BECF17 /* Kanit-Light.ttf */,
-				8E10F59F2F660AF900A0AA65 /* ReturnToHost.mov */,
-				A1C000002FEA000100AA0001 /* TTSVoicePreviews */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
 		8E9794492F66B549009A691D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -543,7 +320,7 @@
 			children = (
 				8EECE7322F64020900BECF17 /* Launch Screen.storyboard */,
 				8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */,
-				8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */,
+				8E7DB6AB2F81EAF6009E3576 /* KeyVox iOS */,
 				8E9E38622F5BF1F200EAFA72 /* KeyVoxiOSTests */,
 				8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */,
 				8E97944E2F66B54A009A691D /* KeyVox Widget */,
@@ -563,239 +340,6 @@
 				8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		8E9E388B2F5BF41900EAFA72 /* KeyVox iOS */ = {
-			isa = PBXGroup;
-			children = (
-				8E70C90F2F62B1DB00E9E555 /* Resources */,
-				8E9E389A2F5C000000EAFA72 /* App */,
-				8E9E389B2F5C000000EAFA72 /* Core */,
-				8E9E389C2F5C000000EAFA72 /* Views */,
-				8E9E38882F5BF41900EAFA72 /* Info.plist */,
-				8E9E38892F5BF41900EAFA72 /* KeyVoxiOS.entitlements */,
-			);
-			path = "KeyVox iOS";
-			sourceTree = "<group>";
-		};
-		8E9E389A2F5C000000EAFA72 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
-				9B7001092FB1000100BB0001 /* iCloud */,
-				A18000012FDE000100AA0001 /* AppHaptics.swift */,
-				A18000032FDE000100AA0001 /* AppHapticsDecisions.swift */,
-				A17000022FD5000100AA0001 /* AppLaunchRouteStore.swift */,
-				A17000042FD5000100AA0001 /* AppSceneDelegate.swift */,
-				A13000112FD2000100EE0001 /* AppDelegate.swift */,
-				8E9E38E12F5C104200EAFA72 /* SharedPaths.swift */,
-				8E9E38BE2F5C004200EAFA72 /* AppServiceRegistry.swift */,
-				A12000112FD1000100AA0001 /* WeeklyWordStatsStore.swift */,
-				A15000112FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift */,
-				A15000122FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift */,
-				B10000102FD5000100AA0001 /* Onboarding */,
-				8EF400022F70000100C0FFEE /* KeyVoxKeyboardBridge.swift */,
-				8E9E38BF2F5C004200EAFA72 /* KeyVoxURLRoute.swift */,
-				8E9E38C02F5C004200EAFA72 /* KeyVoxURLRouter.swift */,
-				8E9E388A2F5BF41900EAFA72 /* KeyVoxiOSApp.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		8E9E389B2F5C000000EAFA72 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				8EECEA652F655FB900BECF17 /* ModelDownloader */,
-				8E9E38CB2F5C004200EAFA72 /* Audio */,
-				8ED2F1002F7F4F1C00256F9E /* TTS */,
-				8E9E38CD2F5C004200EAFA72 /* Transcription */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		8E9E389C2F5C000000EAFA72 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				AA3000012F70000100000001 /* Components */,
-				AA3000022F70000100000001 /* Dictionary */,
-				B20000102FD5000100AA0001 /* Onboarding */,
-				AA20000C2F70000100000001 /* ContainingAppTab.swift */,
-				8E25464E2F6013ED007E720D /* DictionaryTabView.swift */,
-				8E10F58A2F65BE7F00A0AA65 /* ReturnToHostView.swift */,
-				C10000022FF1000100AA0001 /* PlaybackPreparationView.swift */,
-				8E25464F2F6013ED007E720D /* HomeTabView.swift */,
-				A1C000052FEA000100AA0001 /* HomeTabView+TTS.swift */,
-				8E2546502F6013ED007E720D /* MainTabView.swift */,
-				8E2546512F6013ED007E720D /* SettingsTabView.swift */,
-				B50000002FE0000100AA0001 /* SettingsTabView+Models.swift */,
-				B50000022FE0000200AA0001 /* SettingsTabView+TTS.swift */,
-				8E2546522F6013ED007E720D /* StyleTabView.swift */,
-				8E9E38872F5BF41900EAFA72 /* AppRootView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		8E9E38CB2F5C004200EAFA72 /* Audio */ = {
-			isa = PBXGroup;
-			children = (
-				8E9E38C42F5C004200EAFA72 /* AudioRecorder.swift */,
-				8E9E38C52F5C004200EAFA72 /* AudioRecorder+Session.swift */,
-				8E9E38C62F5C004200EAFA72 /* AudioRecorder+StopPipeline.swift */,
-				8E9E38C72F5C004200EAFA72 /* AudioRecorder+Streaming.swift */,
-				8E9E38C82F5C004200EAFA72 /* LiveInputSignalState.swift */,
-			);
-			path = Audio;
-			sourceTree = "<group>";
-		};
-		8E9E38CD2F5C004200EAFA72 /* Transcription */ = {
-			isa = PBXGroup;
-			children = (
-				8E9E38E22F5C104200EAFA72 /* DictationService.swift */,
-				A14000112FD3000100AA0001 /* InterruptedCaptureRecovery.swift */,
-				A14000122FD3000100AA0001 /* InterruptedCaptureRecoveryStore.swift */,
-				9C7001012FC1000100CC0001 /* SessionPolicy.swift */,
-				8E9E38CC2F5C004200EAFA72 /* TranscriptionManager.swift */,
-				A14000132FD3000100AA0001 /* TranscriptionManager+InterruptedCaptureRecovery.swift */,
-				9C7001022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift */,
-			);
-			path = Transcription;
-			sourceTree = "<group>";
-		};
-		8ED2F1002F7F4F1C00256F9E /* TTS */ = {
-			isa = PBXGroup;
-			children = (
-				8ED2F1012F7F4F1C00256F9E /* AudioModeCoordinator.swift */,
-				8ED2F1202F7F4F1C00256F9E /* PocketTTSInstallManifest.swift */,
-				8ED2F1022F7F4F1C00256F9E /* PocketTTSAssetLocator.swift */,
-				8ED2F1212F7F4F1C00256F9E /* PocketTTSModelCatalog.swift */,
-				8ED2F1222F7F4F1C00256F9E /* PocketTTSModelManager.swift */,
-				8ED2F1032F7F4F1C00256F9E /* PocketTTSEngine.swift */,
-				8ED2F1042F7F4F1C00256F9E /* TTSEngine.swift */,
-				A18000052FEB000100AA0001 /* TTSManager */,
-				A17000062FEB000100AA0001 /* TTSPlaybackCoordinator */,
-				A1C000072FEB000100AA0001 /* TTSReplayCache.swift */,
-				A1C000022FEA000100AA0001 /* TTSVoicePreviewPlayer.swift */,
-			);
-			path = TTS;
-			sourceTree = "<group>";
-		};
-		A18000052FEB000100AA0001 /* TTSManager */ = {
-			isa = PBXGroup;
-			children = (
-				8ED2F1052F7F4F1C00256F9E /* TTSManager.swift */,
-				A18000062FEB000100AA0001 /* TTSManager+AppLifecycle.swift */,
-				A18000072FEB000100AA0001 /* TTSManager+Playback.swift */,
-				A18000082FEB000100AA0001 /* TTSManager+State.swift */,
-				A18000092FEB000100AA0001 /* TTSManagerPolicy.swift */,
-			);
-			path = TTSManager;
-			sourceTree = "<group>";
-		};
-		8EECEA652F655FB900BECF17 /* ModelDownloader */ = {
-			isa = PBXGroup;
-			children = (
-				8EECEA5A2F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift */,
-				8EECEA5B2F655FB900BECF17 /* ModelBackgroundDownloadJob.swift */,
-				8EECEA5C2F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift */,
-				8EECEA5D2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift */,
-				8EECEA5E2F655FB900BECF17 /* ModelDownloadURLs.swift */,
-				8EECEA5F2F655FB900BECF17 /* ModelInstallManifest.swift */,
-				8EECEA602F655FB900BECF17 /* ModelInstallState.swift */,
-				B91000012FF0000100AA0001 /* DictationModelCatalog.swift */,
-				B91000022FF0000100AA0001 /* InstalledDictationModelLocator.swift */,
-				8EECEA612F655FB900BECF17 /* ModelManager.swift */,
-				8EECEA622F655FB900BECF17 /* ModelManager+InstallLifecycle.swift */,
-				8EECEA632F655FB900BECF17 /* ModelManager+Support.swift */,
-				8EECEA642F655FB900BECF17 /* ModelManager+Validation.swift */,
-			);
-			path = ModelDownloader;
-			sourceTree = "<group>";
-		};
-		9B7001092FB1000100BB0001 /* iCloud */ = {
-			isa = PBXGroup;
-			children = (
-				9B7001012FB1000100BB0001 /* AppSettingsStore.swift */,
-				9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */,
-				9B7001032FB1000100BB0001 /* KeyVoxiCloudKeys.swift */,
-				9B7001042FB1000100BB0001 /* KeyVoxiCloudPayloads.swift */,
-				9B7001052FB1000100BB0001 /* CloudSyncCoordinator.swift */,
-				A12000122FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift */,
-			);
-			path = iCloud;
-			sourceTree = "<group>";
-		};
-		A17000062FEB000100AA0001 /* TTSPlaybackCoordinator */ = {
-			isa = PBXGroup;
-			children = (
-				8ED2F1062F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift */,
-				A17000072FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift */,
-				A17000082FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift */,
-				A17000092FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift */,
-				A170000A2FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift */,
-				A170000B2FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift */,
-			);
-			path = TTSPlaybackCoordinator;
-			sourceTree = "<group>";
-		};
-		AA3000012F70000100000001 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				8E0ECBF52F807CC100B7731A /* SettingsDeletionConfirmation.swift */,
-				8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */,
-				8E32BEF62F68F8C500F8DA9F /* ModelDownloadProgress.swift */,
-				8E32BEF72F68F8C500F8DA9F /* OnboardingStepRow.swift */,
-				8E10F59A2F65FC9500A0AA65 /* LoopingVideoPlayer.swift */,
-				8EECE64E2F63ED9D00BECF17 /* AppToolbarContent.swift */,
-				8EECE6502F63ED9F00BECF17 /* LastTranscriptionCardView.swift */,
-				8EECE64C2F63ED9B00BECF17 /* LogoBarView.swift */,
-				AA2000112F70000100000001 /* AppActionButton.swift */,
-				AA2000012F70000100000001 /* AppTypography.swift */,
-				AA2000022F70000100000001 /* AppTheme.swift */,
-				AA2000032F70000100000001 /* AppCard.swift */,
-				AA2000042F70000100000001 /* AppIconTile.swift */,
-				AA2000052F70000100000001 /* AppScrollScreen.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		AA3000022F70000100000001 /* Dictionary */ = {
-			isa = PBXGroup;
-			children = (
-				AA2000102F70000100000001 /* DictionaryFloatingAddButton.swift */,
-				AA20000E2F70000100000001 /* AutoFocusTextField.swift */,
-				AA20000F2F70000100000001 /* KeyboardObserver.swift */,
-				AA2000062F70000100000001 /* DictionarySortMode.swift */,
-				AA2000072F70000100000001 /* DictionaryWordEditorMode.swift */,
-				AA2000092F70000100000001 /* DictionaryEntryRowView.swift */,
-				AA20000A2F70000100000001 /* DictionaryWordEditorView.swift */,
-			);
-			path = Dictionary;
-			sourceTree = "<group>";
-		};
-		B10000102FD5000100AA0001 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				8E32B8712F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift */,
-				B10000062FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift */,
-				B10000042FD5000100AA0001 /* OnboardingKeyboardAccessProbe.swift */,
-				B10000032FD5000100AA0001 /* OnboardingMicrophonePermissionController.swift */,
-				B10000052FD5000100AA0001 /* OnboardingSetupState.swift */,
-				B10000022FD5000100AA0001 /* OnboardingStore.swift */,
-				B10000012FD5000100AA0001 /* RuntimeFlags.swift */,
-			);
-			path = Onboarding;
-			sourceTree = "<group>";
-		};
-		B20000102FD5000100AA0001 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				A16000042FD4000100AA0001 /* OnboardingLogoPopInSequence.swift */,
-				8E32B8732F67D33C00F8DA9F /* Tour */,
-				B20000012FD5000100AA0001 /* OnboardingFlowView.swift */,
-				B20000052FD5000100AA0001 /* OnboardingSetupScreen.swift */,
-				B20000032FD5000100AA0001 /* OnboardingWelcomeScreen.swift */,
-			);
-			path = Onboarding;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -883,6 +427,9 @@
 				8E7EC0552F5C28B00080C762 /* PBXTargetDependency */,
 				8E97945D2F66B54C009A691D /* PBXTargetDependency */,
 				8E7DB1A12F809A1C009E3576 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8E7DB6AB2F81EAF6009E3576 /* KeyVox iOS */,
 			);
 			name = "KeyVox iOS";
 			packageProductDependencies = (
@@ -979,9 +526,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E7DB2922F81014D009E3576 /* Kanit-Light.ttf in Resources */,
-				8E7DB2932F81014D009E3576 /* Kanit-Medium.ttf in Resources */,
-				8E7DB2942F810260009E3576 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -990,10 +534,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
-				8E32B69A2F67A0B300F8DA9F /* Kanit-Medium.ttf in Resources */,
-				8ED2E87B2F7ACFA900256F9E /* keyvox.icon in Resources */,
-				8E32B5EB2F6790ED00F8DA9F /* Kanit-Light.ttf in Resources */,
-				8E4CE59F2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
 				8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1002,9 +542,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8ED2E87A2F7ACFA900256F9E /* keyvox.icon in Resources */,
-				8E32B6952F679FCA00F8DA9F /* Kanit-Medium.ttf in Resources */,
-				8EECEA752F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1012,12 +549,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E4CE59D2F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
-				8E10F5A02F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
-				8ED2E87D2F7ACFA900256F9E /* keyvox.icon in Resources */,
-				8EECEA742F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
-				8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
-				A1C000012FEA000100AA0001 /* TTSVoicePreviews in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */,
 			);
@@ -1027,11 +558,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */,
-				8E10F5A12F660AF900A0AA65 /* ReturnToHost.mov in Resources */,
-				8E4CE5A12F6B7F76009C7CE8 /* Assets.xcassets in Resources */,
-				8ED2E87C2F7ACFA900256F9E /* keyvox.icon in Resources */,
-				8EECEA732F65638A00BECF17 /* Kanit-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1049,8 +575,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */,
-				8E6B904A2F5C6C8B00EE4F08 /* UserDefaultsKeys.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1058,8 +582,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E9794F12F66BB47009A691D /* KeyVoxIPCBridge.swift in Sources */,
-				A15000032FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1067,121 +589,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA10000E2F70000100000001 /* AutoFocusTextField.swift in Sources */,
-				AA10000F2F70000100000001 /* KeyboardObserver.swift in Sources */,
-				AA10000C2F70000100000001 /* ContainingAppTab.swift in Sources */,
-				A16000032FD4000100AA0001 /* OnboardingLogoPopInSequence.swift in Sources */,
-				A16000012FD4000100AA0001 /* KeyboardMenuSequence.swift in Sources */,
-				8E32B8782F67D38500F8DA9F /* OnboardingKeyboardTourScreen.swift in Sources */,
-				8E32B8792F67D38500F8DA9F /* OnboardingKeyboardTourSceneBView.swift in Sources */,
-				8E32B87A2F67D38500F8DA9F /* OnboardingKeyboardTourSceneCView.swift in Sources */,
-				8E32B87B2F67D38500F8DA9F /* OnboardingKeyboardTourSceneAView.swift in Sources */,
-				AA1000012F70000100000001 /* AppTypography.swift in Sources */,
-				AA1000022F70000100000001 /* AppTheme.swift in Sources */,
-				AA1000032F70000100000001 /* AppCard.swift in Sources */,
-				AA1000042F70000100000001 /* AppIconTile.swift in Sources */,
-				AA1000052F70000100000001 /* AppScrollScreen.swift in Sources */,
-				AA1000112F70000100000001 /* AppActionButton.swift in Sources */,
-				AA1000062F70000100000001 /* DictionarySortMode.swift in Sources */,
-				8EECEA662F655FB900BECF17 /* ModelBackgroundDownloadJobStore.swift in Sources */,
-				8EECEA672F655FB900BECF17 /* ModelBackgroundDownloadCoordinator.swift in Sources */,
-				8EECEA682F655FB900BECF17 /* ModelBackgroundDownloadJob.swift in Sources */,
-				8EECEA692F655FB900BECF17 /* ModelManager+Support.swift in Sources */,
-				8EECEA6A2F655FB900BECF17 /* ModelInstallManifest.swift in Sources */,
-				8EECEA6B2F655FB900BECF17 /* ModelManager.swift in Sources */,
-				8EECEA6C2F655FB900BECF17 /* ModelInstallState.swift in Sources */,
-				8EECEA6D2F655FB900BECF17 /* ModelDownloadURLs.swift in Sources */,
-				8EECEA6E2F655FB900BECF17 /* ModelManager+Validation.swift in Sources */,
-				8EECEA6F2F655FB900BECF17 /* ModelDownloadBackgroundTasks.swift in Sources */,
-				8EECEA702F655FB900BECF17 /* ModelManager+InstallLifecycle.swift in Sources */,
-				B91000112FF0000100AA0001 /* DictationModelCatalog.swift in Sources */,
-				B91000122FF0000100AA0001 /* InstalledDictationModelLocator.swift in Sources */,
-				8ED2F1112F7F4F1C00256F9E /* AudioModeCoordinator.swift in Sources */,
-				8ED2F1122F7F4F1C00256F9E /* PocketTTSAssetLocator.swift in Sources */,
-				8ED2F1132F7F4F1C00256F9E /* PocketTTSEngine.swift in Sources */,
-				8ED2F1142F7F4F1C00256F9E /* TTSEngine.swift in Sources */,
-				8E0ECBF62F807CC200B7731A /* SettingsDeletionConfirmation.swift in Sources */,
-				8ED2F1152F7F4F1C00256F9E /* TTSManager.swift in Sources */,
-				A18000012FEB000100AA0001 /* TTSManager+AppLifecycle.swift in Sources */,
-				A18000022FEB000100AA0001 /* TTSManager+Playback.swift in Sources */,
-				A18000032FEB000100AA0001 /* TTSManager+State.swift in Sources */,
-				A18000042FEB000100AA0001 /* TTSManagerPolicy.swift in Sources */,
-				8ED2F1162F7F4F1C00256F9E /* TTSPlaybackCoordinator.swift in Sources */,
-				A17000012FEB000100AA0001 /* TTSPlaybackCoordinator+Lifecycle.swift in Sources */,
-				A17000022FEB000100AA0001 /* TTSPlaybackCoordinator+Scheduling.swift in Sources */,
-				A17000032FEB000100AA0001 /* TTSPlaybackCoordinator+Metering.swift in Sources */,
-				A17000042FEB000100AA0001 /* TTSPlaybackCoordinator+Progress.swift in Sources */,
-				A17000052FEB000100AA0001 /* TTSPlaybackCoordinatorBufferingPolicy.swift in Sources */,
-				A1C000062FEB000100AA0001 /* TTSReplayCache.swift in Sources */,
-				A1C000032FEA000100AA0001 /* TTSVoicePreviewPlayer.swift in Sources */,
-				8ED2F11A2F7F4F1C00256F9E /* PocketTTSInstallManifest.swift in Sources */,
-				8ED2F11B2F7F4F1C00256F9E /* PocketTTSModelCatalog.swift in Sources */,
-				8ED2F11C2F7F4F1C00256F9E /* PocketTTSModelManager.swift in Sources */,
-				AA1000072F70000100000001 /* DictionaryWordEditorMode.swift in Sources */,
-				AA1000092F70000100000001 /* DictionaryEntryRowView.swift in Sources */,
-				AA1000102F70000100000001 /* DictionaryFloatingAddButton.swift in Sources */,
-				AA10000A2F70000100000001 /* DictionaryWordEditorView.swift in Sources */,
-				9B7000112FB1000100BB0001 /* AppSettingsStore.swift in Sources */,
-				9B7000122FB1000100BB0001 /* UserDefaultsKeys.swift in Sources */,
-				9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */,
-				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
-				9B7000152FB1000100BB0001 /* CloudSyncCoordinator.swift in Sources */,
-				8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */,
-				8E10F58B2F65BE7F00A0AA65 /* ReturnToHostView.swift in Sources */,
-				C10000012FF1000100AA0001 /* PlaybackPreparationView.swift in Sources */,
-				A17000012FD5000100AA0001 /* AppLaunchRouteStore.swift in Sources */,
-				A17000032FD5000100AA0001 /* AppSceneDelegate.swift in Sources */,
-				A13000012FD2000100EE0001 /* AppDelegate.swift in Sources */,
-				8E9E38932F5BF41900EAFA72 /* AppHaptics.swift in Sources */,
-				A18000022FDE000100AA0001 /* AppHapticsDecisions.swift in Sources */,
-				A12000012FD1000100AA0001 /* WeeklyWordStatsStore.swift in Sources */,
-				A12000022FD1000100AA0001 /* WeeklyWordStatsCloudSync.swift in Sources */,
-				A15000012FD4000100AA0001 /* KeyVoxSessionLiveActivityAttributes.swift in Sources */,
-				A15000022FD4000100AA0001 /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */,
-				8E32BEF82F68F8C500F8DA9F /* ModelDownloadProgress.swift in Sources */,
-				8E32BEF92F68F8C500F8DA9F /* OnboardingStepRow.swift in Sources */,
-				B30000012FD5000100AA0001 /* RuntimeFlags.swift in Sources */,
-				B30000022FD5000100AA0001 /* OnboardingStore.swift in Sources */,
-				B30000032FD5000100AA0001 /* OnboardingMicrophonePermissionController.swift in Sources */,
-				B30000042FD5000100AA0001 /* OnboardingKeyboardAccessProbe.swift in Sources */,
-				B30000052FD5000100AA0001 /* OnboardingSetupState.swift in Sources */,
-				B300000B2FD5000100AA0001 /* OnboardingDownloadNetworkMonitor.swift in Sources */,
-				8E10F59B2F65FC9500A0AA65 /* LoopingVideoPlayer.swift in Sources */,
-				8EF400012F70000100C0FFEE /* KeyVoxKeyboardBridge.swift in Sources */,
-				8E9E38E42F5C104200EAFA72 /* SharedPaths.swift in Sources */,
-				8E9E38C22F5C004200EAFA72 /* KeyVoxURLRoute.swift in Sources */,
-				8E9E38C32F5C004200EAFA72 /* KeyVoxURLRouter.swift in Sources */,
-				8E9E38D62F5C004200EAFA72 /* AudioRecorder.swift in Sources */,
-				8E9E38D82F5C004200EAFA72 /* LiveInputSignalState.swift in Sources */,
-				8E9E38E52F5C104200EAFA72 /* DictationService.swift in Sources */,
-				9C7000012FC1000100CC0001 /* SessionPolicy.swift in Sources */,
-				A14000012FD3000100AA0001 /* InterruptedCaptureRecovery.swift in Sources */,
-				8E32B8722F67D01A00F8DA9F /* OnboardingKeyboardTourState.swift in Sources */,
-				A14000022FD3000100AA0001 /* InterruptedCaptureRecoveryStore.swift in Sources */,
-				8E9E38D92F5C004200EAFA72 /* TranscriptionManager.swift in Sources */,
-				A14000032FD3000100AA0001 /* TranscriptionManager+InterruptedCaptureRecovery.swift in Sources */,
-				9C7000022FC1000100CC0001 /* TranscriptionManager+SessionLifecycle.swift in Sources */,
-				8E9E38DB2F5C004200EAFA72 /* AudioRecorder+StopPipeline.swift in Sources */,
-				8E9E38DC2F5C004200EAFA72 /* AudioRecorder+Session.swift in Sources */,
-				8E9E38DD2F5C004200EAFA72 /* AudioRecorder+Streaming.swift in Sources */,
-				8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */,
-				8E9E38902F5BF41900EAFA72 /* KeyVoxiOSApp.swift in Sources */,
-				8E9E38912F5BF41900EAFA72 /* AppRootView.swift in Sources */,
-				B30000062FD5000100AA0001 /* OnboardingFlowView.swift in Sources */,
-				B30000082FD5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,
-				B300000A2FD5000100AA0001 /* OnboardingSetupScreen.swift in Sources */,
-				8E2546532F6013ED007E720D /* HomeTabView.swift in Sources */,
-				A1C000042FEA000100AA0001 /* HomeTabView+TTS.swift in Sources */,
-				8EECE64F2F63ED9D00BECF17 /* AppToolbarContent.swift in Sources */,
-				8EECE6512F63ED9F00BECF17 /* LastTranscriptionCardView.swift in Sources */,
-				8EECE64D2F63ED9B00BECF17 /* LogoBarView.swift in Sources */,
-				8E2546542F6013ED007E720D /* StyleTabView.swift in Sources */,
-				8E2546552F6013ED007E720D /* MainTabView.swift in Sources */,
-				8E32C9572F6A2F1A00F8DA9F /* SettingsRow.swift in Sources */,
-				8E2546562F6013ED007E720D /* DictionaryTabView.swift in Sources */,
-				8E2546572F6013ED007E720D /* SettingsTabView.swift in Sources */,
-				B50000012FE0000100AA0001 /* SettingsTabView+Models.swift in Sources */,
-				B50000032FE0000200AA0001 /* SettingsTabView+TTS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1189,10 +596,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E10F65D2F6685AA00A0AA65 /* KeyVoxIPCBridge.swift in Sources */,
-				8E9794F22F66BBC0009A691D /* KeyVoxSessionLiveActivityAttributes.swift in Sources */,
-				8E9794F32F66BBC0009A691D /* KeyVoxSessionLiveActivityCoordinator.swift in Sources */,
-				8E10F65E2F66862000A0AA65 /* UserDefaultsKeys.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

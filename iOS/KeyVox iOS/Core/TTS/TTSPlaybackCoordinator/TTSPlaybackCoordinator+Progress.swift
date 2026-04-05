@@ -127,6 +127,16 @@ extension TTSPlaybackCoordinator {
         return min(playedSamples, currentPlaybackProgressDenominator)
     }
 
+    var currentPlaybackSeconds: Double {
+        Double(currentPlaybackSampleOffset) / playbackFormat.sampleRate
+    }
+
+    var totalPlaybackSeconds: Double {
+        let denominator = currentPlaybackProgressDenominator
+        guard denominator > 0 else { return 0 }
+        return Double(denominator) / playbackFormat.sampleRate
+    }
+
     func notifyFastModeBackgroundSafetyChanged() {
         onFastModeBackgroundSafetyChanged?(
             fastModeBackgroundSafetyProgress,

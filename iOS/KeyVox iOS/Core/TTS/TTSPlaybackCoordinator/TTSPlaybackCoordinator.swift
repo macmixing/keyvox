@@ -66,6 +66,7 @@ final class TTSPlaybackCoordinator {
     var replayStartSampleOffset = 0
     var replayPausedSampleOffset = 0
     var playbackProgressDisplayLink: CADisplayLink?
+    var playbackSessionID = UUID()
 
     var hasReplayablePlayback: Bool {
         !replayablePlaybackSamples.isEmpty
@@ -73,6 +74,10 @@ final class TTSPlaybackCoordinator {
 
     var isReplayingCachedPlayback: Bool {
         isReplayingCachedAudio
+    }
+
+    var replayablePlaybackSampleCount: Int {
+        replayablePlaybackSamples.count
     }
 
     var canContinueBackgroundPlaybackInFastMode: Bool {

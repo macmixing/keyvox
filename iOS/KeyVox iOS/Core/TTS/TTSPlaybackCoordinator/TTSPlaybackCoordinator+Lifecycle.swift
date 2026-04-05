@@ -23,6 +23,7 @@ extension TTSPlaybackCoordinator {
     func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>, fastModeEnabled: Bool = false) {
         stop(emitCallback: false)
         Self.log("Playback requested. fastMode=\(fastModeEnabled)")
+        playbackSessionID = UUID()
 
         do {
             try configureAudioSession()
@@ -97,10 +98,22 @@ extension TTSPlaybackCoordinator {
         guard canPausePlayback else { return }
         if isReplayingCachedAudio {
             replayPausedSampleOffset = currentReplaySampleOffset()
+            playbackSessionID = UUID()
+            queuedBufferCount = 0
+            queuedSampleCount = 0
+            isFinishing = false
+            totalScheduledSampleCount = 0
+            if playerNode.isPlaying {
+                playerNode.stop()
+            }
+            audioEngine.stop()
+            deactivateAudioSessionIfNeeded()
+        } else {
+            playerNode.pause()
         }
-        playerNode.pause()
         isPaused = true
         cancelScheduledMeterUpdates()
+        stopPlaybackProgressTimer()
         emitPlaybackProgress()
         Self.log("Playback paused.")
         notifyFastModeBackgroundSafetyChanged()
@@ -109,6 +122,11 @@ extension TTSPlaybackCoordinator {
 
     func resume() {
         guard canResumePlayback else { return }
+        if isReplayingCachedAudio,
+           let pausedReplaySampleOffset = replayPausedSampleOffsetSnapshot() {
+            replayLastPlayback(startingAtSample: pausedReplaySampleOffset, shouldAutoplay: true)
+            return
+        }
         if shouldDelayResumeUntilBuffered() {
             isWaitingForResumeBuffer = true
             let requiredSamples = deterministicFastModeBufferedSampleCount(
@@ -135,12 +153,15 @@ extension TTSPlaybackCoordinator {
         onPlaybackResumed?()
     }
 
-    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0) {
+    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0, shouldAutoplay: Bool = true) {
         guard !replayablePlaybackSamples.isEmpty else { return }
 
         stop(emitCallback: false)
         let safeStartSampleOffset = min(max(0, startSampleOffset), max(0, replayablePlaybackSamples.count - 1))
-        Self.log("Replaying cached playback samples=\(replayablePlaybackSamples.count) startOffset=\(safeStartSampleOffset)")
+        Self.log(
+            "Replaying cached playback samples=\(replayablePlaybackSamples.count) startOffset=\(safeStartSampleOffset) autoplay=\(shouldAutoplay)"
+        )
+        playbackSessionID = UUID()
 
         do {
             try configureAudioSession()
@@ -157,7 +178,7 @@ extension TTSPlaybackCoordinator {
         queuedSampleCount = 0
         isFinishing = false
         didStartPlayback = true
-        isPaused = false
+        isPaused = !shouldAutoplay
         pendingStartBuffers = []
         completedChunkCountBeforeStart = 0
         hasBufferedIntoNextChunk = false
@@ -172,7 +193,7 @@ extension TTSPlaybackCoordinator {
         totalEstimatedPlaybackSampleCount = replayablePlaybackSamples.count
         isReplayingCachedAudio = true
         replayStartSampleOffset = safeStartSampleOffset
-        replayPausedSampleOffset = 0
+        replayPausedSampleOffset = shouldAutoplay ? 0 : safeStartSampleOffset
 
         let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
         var startDelay: TimeInterval = 0
@@ -196,15 +217,24 @@ extension TTSPlaybackCoordinator {
         }
 
         isFinishing = true
-        playerNode.play()
-        startPlaybackProgressTimer()
+        if shouldAutoplay {
+            playerNode.play()
+            startPlaybackProgressTimer()
+        }
         emitPlaybackProgress()
-        onPlaybackStarted?()
+        if shouldAutoplay {
+            onPlaybackStarted?()
+        } else {
+            onPlaybackPaused?()
+        }
     }
 
     func stop(emitCallback: Bool) {
         let hadPlayback = playbackTask != nil || playerNode.isPlaying || queuedBufferCount > 0
-        Self.log("Stopping playback. hadPlayback=\(hadPlayback) queuedBuffers=\(queuedBufferCount) queuedSamples=\(queuedSampleCount)")
+        Self.log(
+            "Stopping playback. hadPlayback=\(hadPlayback) queuedBuffers=\(queuedBufferCount) queuedSamples=\(queuedSampleCount) paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset)"
+        )
+        playbackSessionID = UUID()
 
         playbackTask?.cancel()
         playbackTask = nil
@@ -266,7 +296,9 @@ extension TTSPlaybackCoordinator {
 
     func finishIfPossible() {
         guard isFinishing, queuedBufferCount == 0, pendingStartBuffers.isEmpty else { return }
-        Self.log("Playback finished.")
+        Self.log(
+            "Playback finished. paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset) replayableSamples=\(replayablePlaybackSamples.count)"
+        )
 
         playbackTask = nil
         activePlaybackSamples = []
@@ -295,7 +327,9 @@ extension TTSPlaybackCoordinator {
     }
 
     func handleFailure(_ error: Error) {
-        Self.log("Playback failure: \(error.localizedDescription)")
+        Self.log(
+            "Playback failure: \(error.localizedDescription) paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset)"
+        )
         stop(emitCallback: false)
         onPlaybackFailed?(error)
     }

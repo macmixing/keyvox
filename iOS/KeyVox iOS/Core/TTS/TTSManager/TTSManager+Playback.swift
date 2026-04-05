@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import UIKit
 
@@ -137,6 +138,28 @@ extension TTSManager {
         isPlaybackPreparationViewPresented = false
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.replayLastPlayback()
+    }
+
+    func seekReplay(toProgress progress: Double) {
+        guard hasReplayablePlayback else { return }
+
+        let clampedProgress = min(max(0, progress), 1)
+        let sampleOffset = Int(Double(playbackCoordinator.replayablePlaybackSampleCount) * clampedProgress)
+        let shouldAutoplay = isPlaybackPaused == false
+
+        if let lastReplayableRequest {
+            activeRequest = lastReplayableRequest
+        }
+        hasStartedPlaybackForActiveRequest = true
+        didEmitPreparationCompletionForActiveRequest = true
+        lastErrorMessage = nil
+        resetPlaybackPreparationState()
+        isPlaybackPreparationViewPresented = false
+        beginBackgroundTaskIfNeeded()
+        playbackCoordinator.replayLastPlayback(
+            startingAtSample: sampleOffset,
+            shouldAutoplay: shouldAutoplay
+        )
     }
 
     func stopPlayback() async {
