@@ -97,6 +97,7 @@ extension TTSManager {
         }
         if shouldConsumeFreeSpeakOnPlaybackStart {
             purchaseGate.consumeFreeTTSSpeakIfNeeded()
+            onNewGenerationPlaybackStarted()
             shouldConsumeFreeSpeakOnPlaybackStart = false
         }
         hasStartedPlaybackForActiveRequest = true

@@ -18,6 +18,8 @@ struct AppRootView: View {
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @EnvironmentObject private var ttsManager: TTSManager
+    @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
     @State private var onboardingOverlayOpacity = 1.0
@@ -67,6 +69,26 @@ struct AppRootView: View {
                     EmptyView()
                 }
             }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: {
+                    destination == .main
+                        && keyVoxSpeakIntroController.isPresented
+                        && ttsPurchaseController.isUnlockSheetPresented == false
+                },
+                set: { isPresented in
+                    if isPresented == false,
+                       destination == .main,
+                       ttsPurchaseController.isUnlockSheetPresented == false {
+                        keyVoxSpeakIntroController.dismiss()
+                    }
+                }
+            )
+        ) {
+            KeyVoxSpeakIntroSheetView()
+                .environmentObject(keyVoxSpeakIntroController)
+                .environmentObject(ttsPurchaseController)
         }
         .onAppear {
             previousDestination = destination
@@ -122,6 +144,7 @@ struct AppRootView: View {
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxSpeakIntroController)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)

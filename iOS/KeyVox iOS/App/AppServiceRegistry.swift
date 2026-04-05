@@ -14,6 +14,7 @@ final class AppServiceRegistry {
     let appTabRouter: AppTabRouter
     let appHaptics: AppHaptics
     let ttsPurchaseController: TTSPurchaseController
+    let keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
@@ -66,6 +67,10 @@ final class AppServiceRegistry {
         let ttsPurchaseController = TTSPurchaseController(
             defaults: settingsDefaults,
             bypassFreeSpeakLimit: runtimeFlags.bypassTTSFreeSpeakLimit
+        )
+        let keyVoxSpeakIntroController = KeyVoxSpeakIntroController(
+            defaults: settingsDefaults,
+            forcePresentation: runtimeFlags.forceKeyVoxSpeakIntro
         )
         let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
@@ -152,6 +157,9 @@ final class AppServiceRegistry {
                     selectedVoice: settingsStore.ttsVoice,
                     pocketTTSModelManager: pocketTTSModelManager
                 )
+            },
+            onNewGenerationPlaybackStarted: { [weak keyVoxSpeakIntroController] in
+                keyVoxSpeakIntroController?.markFeatureUsed()
             }
         )
         let audioModeCoordinator = AudioModeCoordinator(
@@ -217,6 +225,7 @@ final class AppServiceRegistry {
         self.appTabRouter = appTabRouter
         self.appHaptics = appHaptics
         self.ttsPurchaseController = ttsPurchaseController
+        self.keyVoxSpeakIntroController = keyVoxSpeakIntroController
         self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService

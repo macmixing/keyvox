@@ -3,9 +3,11 @@ import Foundation
 struct RuntimeFlags {
     static let forceOnboardingEnvironmentKey = "KEYVOX_FORCE_ONBOARDING"
     static let bypassTTSFreeSpeakLimitEnvironmentKey = "KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT"
+    static let forceKeyVoxSpeakIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_SPEAK_INTRO"
 
     let forceOnboarding: Bool
     let bypassTTSFreeSpeakLimit: Bool
+    let forceKeyVoxSpeakIntro: Bool
 
     init(environment: [String: String] = ProcessInfo.processInfo.environment) {
         forceOnboarding = Self.isEnabled(
@@ -13,6 +15,9 @@ struct RuntimeFlags {
         )
         bypassTTSFreeSpeakLimit = Self.isEnabled(
             environmentValue: environment[Self.bypassTTSFreeSpeakLimitEnvironmentKey]
+        )
+        forceKeyVoxSpeakIntro = Self.isEnabled(
+            environmentValue: environment[Self.forceKeyVoxSpeakIntroEnvironmentKey]
         )
     }
 
