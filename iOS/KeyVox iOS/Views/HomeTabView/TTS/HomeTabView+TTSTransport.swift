@@ -131,8 +131,6 @@ extension HomeTabView {
 
         switch ttsManager.state {
         case .idle:
-            ttsPurchaseController.refreshUsageIfNeeded()
-
             if ttsPurchaseController.canStartNewTTSSpeak == false {
                 if ttsPurchaseController.remainingFreeTTSSpeaksToday == 0 {
                     return "Unlock TTS to keep speaking copied text."

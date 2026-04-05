@@ -133,11 +133,10 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     }
 
     var canStartNewTTSSpeak: Bool {
-        refreshUsageIfNeeded()
         if bypassFreeSpeakLimit {
             return true
         }
-        return isTTSUnlocked || remainingFreeTTSSpeaksToday > 0
+        return isTTSUnlocked || currentRemainingFreeSpeakCount > 0
     }
 
     func refreshUsageIfNeeded() {
@@ -224,18 +223,26 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         defaults.integer(forKey: UserDefaultsKeys.App.ttsFreeSpeakUsageCount)
     }
 
+    private var currentRemainingFreeSpeakCount: Int {
+        if bypassFreeSpeakLimit {
+            return Self.dailyFreeSpeakLimit
+        }
+
+        if isTTSUnlocked {
+            return Self.dailyFreeSpeakLimit
+        }
+
+        let usedCount = storedUsageDayStart == currentUsageDayStart ? usedFreeSpeaksToday : 0
+        return max(0, Self.dailyFreeSpeakLimit - usedCount)
+    }
+
     private func refreshUsageState() {
         if storedUsageDayStart != currentUsageDayStart {
             defaults.set(currentUsageDayStart, forKey: UserDefaultsKeys.App.ttsFreeSpeakUsageDayStart)
             defaults.set(0, forKey: UserDefaultsKeys.App.ttsFreeSpeakUsageCount)
         }
 
-        let usedCount = defaults.integer(forKey: UserDefaultsKeys.App.ttsFreeSpeakUsageCount)
-        if bypassFreeSpeakLimit {
-            remainingFreeTTSSpeaksToday = Self.dailyFreeSpeakLimit
-        } else {
-            remainingFreeTTSSpeaksToday = isTTSUnlocked ? Self.dailyFreeSpeakLimit : max(0, Self.dailyFreeSpeakLimit - usedCount)
-        }
+        remainingFreeTTSSpeaksToday = currentRemainingFreeSpeakCount
     }
 
     private func applyUnlockState(_ unlocked: Bool) {

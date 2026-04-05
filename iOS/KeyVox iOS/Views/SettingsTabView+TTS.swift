@@ -458,7 +458,6 @@ extension SettingsTabView {
     }
 
     var ttsUnlockStatusText: String {
-        ttsPurchaseController.refreshUsageIfNeeded()
         if ttsPurchaseController.isTTSUnlocked {
             return "Unlimited copied-text playback is enabled on this Apple account."
         }
