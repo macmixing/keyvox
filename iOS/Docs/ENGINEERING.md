@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-05**
+**Last Updated: 2026-04-06**
 
 ## Design Philosophy
 
@@ -132,6 +132,7 @@ It builds and wires:
 - `PocketTTSEngine`
 - `PocketTTSModelManager`
 - `TTSPurchaseController`
+- `KeyVoxSpeakIntroController`
 - `TTSPlaybackCoordinator`
 - `TTSManager`
 - `AudioModeCoordinator`
@@ -159,6 +160,7 @@ Current root behavior:
 - layer onboarding on top of the main shell when `OnboardingStore.shouldShowOnboarding` is `true`
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 - a cold `keyvoxios://record/start` launch may preselect `ReturnToHostView` before the first real SwiftUI route render
+- the post-onboarding `KeyVoxSpeakIntroSheetView` may appear only while the resolved root destination is truly `.main`, and must never interrupt onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 
 ### Onboarding Store Rules
 
@@ -180,6 +182,7 @@ The supported runtime flags are:
 
 - `KEYVOX_FORCE_ONBOARDING`
 - `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`
+- `KEYVOX_FORCE_KEYVOX_SPEAK_INTRO`
 
 Accepted truthy values:
 
@@ -208,6 +211,20 @@ Behavior:
 - the flag is for development and testing only and must not change production monetization policy
 - the flag only applies to new PocketTTS generation gating and does not change replay behavior
 - `TTSManager` still consumes a free speak only after a new PocketTTS generation has actually started, but no use is consumed while the bypass flag is enabled
+
+### KeyVox Speak Intro Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- the flag forces the post-onboarding KeyVox Speak intro to present for development and design work
+- the flag does not change the underlying seen-state or feature-used suppression rules for production behavior
+- the intro still routes through the main app surface and must not appear over onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 
 ### Onboarding Screen Order
 
@@ -309,6 +326,9 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.IsTTSUnlocked`
 - `KeyVox.App.TTSFreeSpeakUsageDayStart`
 - `KeyVox.App.TTSFreeSpeakUsageCount`
+- `KeyVox.App.HasSeenKeyVoxSpeakIntro`
+- `KeyVox.App.HasUsedKeyVoxSpeak`
+- `KeyVox.App.KeyVoxSpeakEligibleOpenCount`
 
 ### App Group File Transport
 
@@ -910,12 +930,13 @@ Current app-owned surfaces:
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
-- `TTSUnlockSheetView`: intentionally plain placeholder unlock sheet for the phase-one copied-text playback monetization proof path
+- `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
+- `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/Components/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the post-onboarding intro wrapper, and the unlock wrapper
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination
 - `SettingsTabView+Models`: release-facing `Text Model` section for provider selection plus per-model install actions and uninstalled model size display
-- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the placeholder `TTS Access` unlock row
+- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Access` unlock row placed beneath the model section
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour

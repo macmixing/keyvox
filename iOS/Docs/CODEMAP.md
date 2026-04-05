@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-05**
+**Last Updated: 2026-04-06**
 
 ## Project Overview
 
@@ -68,6 +68,7 @@ iOS/
 │   │   ├── AppServiceRegistry.swift
 │   │   ├── KeyVoxIPCBridge.swift
 │   │   ├── KeyVoxKeyboardBridge.swift
+│   │   ├── KeyVoxSpeakIntroController.swift
 │   │   ├── KeyVoxSessionLiveActivityAttributes.swift
 │   │   ├── KeyVoxSessionLiveActivityCoordinator.swift
 │   │   ├── KeyVoxURLRoute.swift
@@ -179,7 +180,13 @@ iOS/
 │   │   │   ├── PlaybackVoicePickerMenu.swift
 │   │   │   ├── SettingsDeletionConfirmation.swift
 │   │   │   ├── SettingsRow.swift
-│   │   │   └── TTSUnlockSheetView.swift
+│   │   │   └── KeyVoxSpeak/
+│   │   │       ├── KeyVoxSpeakIntroSheetView.swift
+│   │   │       ├── KeyVoxSpeakSceneAView.swift
+│   │   │       ├── KeyVoxSpeakSceneBView.swift
+│   │   │       ├── KeyVoxSpeakSceneCView.swift
+│   │   │       ├── KeyVoxSpeakSheetView.swift
+│   │   │       └── TTSUnlockSheetView.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DictionaryEntryRowView.swift
@@ -365,8 +372,11 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, the KeyVox Speak intro controller, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
+- `KeyVox iOS/App/KeyVoxSpeakIntroController.swift`
+  - App-owned post-onboarding KeyVox Speak intro owner.
+  - Tracks whether the intro has been seen, whether the user has already used KeyVox Speak organically, the eligible-open counter for delayed presentation, and the development-only force-presentation path.
 - `KeyVox iOS/App/TTSPurchaseController.swift`
   - App-owned one-time unlock and daily-usage owner for copied-text playback.
   - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
@@ -381,6 +391,7 @@ Packages/
   - Root router for launch hold vs return-to-host vs onboarding overlay vs main app.
   - Keeps `MainTabView` mounted under the onboarding overlay so onboarding can fade into the live shell without re-rooting the scene tree.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
+  - Also owns post-onboarding KeyVox Speak intro-sheet presentation so the intro can only appear on the true `.main` route, never over onboarding, return-to-host, or playback-preparation flows.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
   - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
@@ -411,7 +422,7 @@ Packages/
 - `KeyVox iOS/App/Onboarding/OnboardingDownloadNetworkMonitor.swift`
   - Cellular vs non-cellular detection for onboarding download copy.
 - `KeyVox iOS/App/Onboarding/RuntimeFlags.swift`
-  - Reads `KEYVOX_FORCE_ONBOARDING`.
+  - Reads `KEYVOX_FORCE_ONBOARDING`, `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`, and `KEYVOX_FORCE_KEYVOX_SPEAK_INTRO`.
 
 ### Shared State, IPC, and Session Surfaces
 
@@ -419,6 +430,7 @@ Packages/
   - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
+  - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, and the delayed eligible-open counter.
 - `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
 - `KeyVox iOS/App/KeyVoxSessionLiveActivityCoordinator.swift`
@@ -498,7 +510,7 @@ Packages/
 
 - `KeyVox iOS/Views/MainTabView.swift`
   - Four-tab container: Home, Dictionary, Style, Settings.
-  - Adds edge-swipe tab navigation on top of `TabView`.
+  - Adds edge-swipe tab navigation on top of `TabView` and still owns the unlock-sheet presentation surface for the TTS monetization flow.
 - `KeyVox iOS/Views/ContainingAppTab.swift`
   - Source of truth for app-tab ordering, titles, and previous/next navigation.
 - `KeyVox iOS/Views/HomeTabView/`
@@ -515,18 +527,22 @@ Packages/
   - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
   - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
-- `KeyVox iOS/Views/Components/TTSUnlockSheetView.swift`
-  - Placeholder copied-text playback unlock sheet used by Home and Settings when the user needs to purchase or restore the one-time TTS unlock.
+- `KeyVox iOS/Views/Components/KeyVoxSpeak/`
+  - Dedicated feature folder for the shared KeyVox Speak presentation surface.
+  - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.
+  - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern.
+  - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
+  - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
-  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, version footer, and shared destructive-confirmation coordination.
+  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, the dedicated Restore Purchases card, version footer, and shared destructive-confirmation coordination.
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
   - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
-  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the placeholder `TTS Access` unlock row, including the shared installed-voice picker menu.
+  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Access` unlock row placed beneath the model section, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
