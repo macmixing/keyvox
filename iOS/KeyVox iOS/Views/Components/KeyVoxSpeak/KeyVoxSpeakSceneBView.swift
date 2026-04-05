@@ -1,21 +1,145 @@
 import SwiftUI
 
 struct KeyVoxSpeakSceneBView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Listen Anywhere")
-                .font(.appFont(26))
-                .foregroundStyle(.white)
+    private struct AccessMethod: Identifiable {
+        let id: Int
+        let icon: String
+        let title: String
+        let subtitle: String
+    }
 
-            Text("Speak copied text from the app and jump back into replay whenever you want to hear it again.")
+    private static let accessMethods: [AccessMethod] = [
+        AccessMethod(id: 0, icon: "house.fill", title: "Home Tab", subtitle: "Tap Speak from the main screen."),
+        AccessMethod(id: 1, icon: "keyboard.fill", title: "Keyboard Shortcut", subtitle: "Trigger directly from the KeyVox keyboard."),
+        AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: "Share to Speak", subtitle: "Share text, URLs, or images with text from any app."),
+        AccessMethod(id: 3, icon: "bolt.fill", title: "Shortcuts & Actions", subtitle: "Map to Action Button or Control Center.")
+    ]
+
+    @State private var circleOpacity: Double = 0
+    @State private var circleScale: CGFloat = 0.8
+    @State private var headerOpacity: Double = 0
+    @State private var rowRevealProgress: Int = 0
+    @State private var animationTask: Task<Void, Never>?
+    @State private var hasAnimated = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 16)
+
+            Image("keyvox-circle")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 64, height: 64)
+                .opacity(circleOpacity)
+                .scaleEffect(circleScale)
+                .shadow(color: .yellow.opacity(0.3), radius: 10)
+                .padding(.bottom, 20)
+
+            Text("Listen Anywhere")
+                .font(.appFont(28, variant: .medium))
+                .foregroundStyle(.white)
+                .opacity(headerOpacity)
+                .padding(.bottom, 4)
+
+            Text("Multiple ways to start speaking.")
                 .font(.appFont(16, variant: .light))
-                .foregroundStyle(.white.opacity(0.78))
+                .foregroundStyle(.white.opacity(0.7))
+                .opacity(headerOpacity)
+                .padding(.bottom, 24)
+
+            VStack(spacing: 12) {
+                ForEach(Self.accessMethods) { method in
+                    accessMethodRow(method)
+                        .opacity(method.id < rowRevealProgress ? 1 : 0)
+                        .offset(y: method.id < rowRevealProgress ? 0 : 10)
+                }
+            }
+
+            Spacer(minLength: 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 24)
+        .onAppear { startEntrance() }
+        .onDisappear { stopEntrance() }
+    }
+
+    private func accessMethodRow(_ method: AccessMethod) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.4))
+                    .frame(width: 34, height: 34)
+
+                Image(systemName: method.icon)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(.yellow)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(method.title)
+                    .font(.appFont(15, variant: .medium))
+                    .foregroundStyle(.white)
+
+                Text(method.subtitle)
+                    .font(.appFont(13, variant: .light))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
-        .padding(.bottom, 24)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                .fill(AppTheme.rowFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                        .stroke(AppTheme.rowStroke, lineWidth: 1)
+                )
+        )
+    }
+
+    private func startEntrance() {
+        guard !hasAnimated else { return }
+        hasAnimated = true
+        
+        stopEntrance()
+        circleOpacity = 0
+        circleScale = 0.8
+        headerOpacity = 0
+        rowRevealProgress = 0
+
+        animationTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.15))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                circleOpacity = 1
+                circleScale = 1.0
+            }
+
+            try? await Task.sleep(for: .seconds(0.3))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.35)) {
+                headerOpacity = 1
+            }
+
+            for index in Self.accessMethods.indices {
+                try? await Task.sleep(for: .seconds(0.12))
+                guard !Task.isCancelled else { return }
+
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.82)) {
+                    rowRevealProgress = index + 1
+                }
+            }
+        }
+    }
+
+    private func stopEntrance() {
+        animationTask?.cancel()
+        animationTask = nil
     }
 }

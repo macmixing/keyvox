@@ -123,7 +123,8 @@ struct KeyVoxSpeakSheetView: View {
         case .c:
             KeyVoxSpeakSceneCView(
                 showsUnlockDetails: showsUnlockDetails,
-                purchaseSummaryText: ttsPurchaseSummaryText
+                purchaseSummaryText: ttsPurchaseSummaryText,
+                isVisible: selectedScene == .c
             )
         }
     }

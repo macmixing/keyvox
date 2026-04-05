@@ -151,7 +151,7 @@ final class AppServiceRegistry {
             playbackCoordinator: ttsPlaybackCoordinator,
             purchaseGate: ttsPurchaseController,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
-                guard let settingsStore else { return .azelma }
+                guard let settingsStore else { return .alba }
                 guard let pocketTTSModelManager else { return settingsStore.ttsVoice }
                 return Self.resolvedTTSVoiceSelection(
                     selectedVoice: settingsStore.ttsVoice,

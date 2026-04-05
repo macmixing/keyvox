@@ -217,7 +217,7 @@ final class AppSettingsStore: ObservableObject {
            let voice = TTSVoice(rawValue: raw) {
             ttsVoice = voice
         } else {
-            ttsVoice = .azelma
+            ttsVoice = .alba
         }
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
