@@ -11,7 +11,8 @@ struct TTSPurchaseControllerTests {
         let controller = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
 
@@ -27,7 +28,8 @@ struct TTSPurchaseControllerTests {
         let controller = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
 
@@ -49,7 +51,8 @@ struct TTSPurchaseControllerTests {
         let controller = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
 
@@ -65,7 +68,8 @@ struct TTSPurchaseControllerTests {
         let controller = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
 
@@ -87,7 +91,8 @@ struct TTSPurchaseControllerTests {
         let controller = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
 
@@ -99,7 +104,8 @@ struct TTSPurchaseControllerTests {
         let secondController = TTSPurchaseController(
             defaults: harness.defaults,
             store: harness.store,
-            now: { harness.now }
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: false
         )
         await settleAsyncWork()
         #expect(secondController.isTTSUnlocked == false)

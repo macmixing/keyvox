@@ -96,6 +96,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     private let now: () -> Date
     private let calendar: Calendar
     private let bypassFreeSpeakLimitInDebug: Bool
+    private let bypassFreeSpeakLimitInAllDebugBuilds: Bool
     private var storeRefreshGeneration: UInt64 = 0
 
     init(
@@ -103,13 +104,15 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         store: any TTSUnlockStore,
         now: @escaping () -> Date = Date.init,
         calendar: Calendar = .current,
-        bypassFreeSpeakLimit: Bool = false
+        bypassFreeSpeakLimit: Bool = false,
+        bypassFreeSpeakLimitInAllDebugBuilds: Bool = true
     ) {
         self.defaults = defaults
         self.store = store
         self.now = now
         self.calendar = calendar
         self.bypassFreeSpeakLimitInDebug = bypassFreeSpeakLimit
+        self.bypassFreeSpeakLimitInAllDebugBuilds = bypassFreeSpeakLimitInAllDebugBuilds
         self.isTTSUnlocked = defaults.bool(forKey: UserDefaultsKeys.App.isTTSUnlocked)
         refreshUsageState()
 
@@ -122,14 +125,16 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         defaults: UserDefaults,
         now: @escaping () -> Date = Date.init,
         calendar: Calendar = .current,
-        bypassFreeSpeakLimit: Bool = false
+        bypassFreeSpeakLimit: Bool = false,
+        bypassFreeSpeakLimitInAllDebugBuilds: Bool = true
     ) {
         self.init(
             defaults: defaults,
             store: AppStoreTTSUnlockStore(),
             now: now,
             calendar: calendar,
-            bypassFreeSpeakLimit: bypassFreeSpeakLimit
+            bypassFreeSpeakLimit: bypassFreeSpeakLimit,
+            bypassFreeSpeakLimitInAllDebugBuilds: bypassFreeSpeakLimitInAllDebugBuilds
         )
     }
 
@@ -250,7 +255,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
     private var isFreeSpeakLimitBypassedForCurrentBuild: Bool {
         #if DEBUG
-        true
+        bypassFreeSpeakLimitInAllDebugBuilds || bypassFreeSpeakLimitInDebug
         #else
         bypassFreeSpeakLimitInDebug
         #endif
