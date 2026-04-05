@@ -10,6 +10,7 @@ struct KeyVoxSpeakSceneAView: View {
     @State private var subtitleOpacity: Double = 0
     @State private var demoCardOpacity: Double = 0
     @State private var demoCardOffset: CGFloat = 18
+    @State private var localAITextOpacity: Double = 0
     @State private var pulseScale: CGFloat = 1.0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
@@ -35,11 +36,17 @@ struct KeyVoxSpeakSceneAView: View {
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(subtitleOpacity)
-                        .padding(.bottom, 36)
+                        .padding(.bottom, 23)
 
                     keyVoxSpeakDemoCard
                         .opacity(demoCardOpacity)
                         .offset(y: demoCardOffset)
+                        .padding(.bottom, 23)
+
+                    Text("Local AI Voices")
+                        .font(.appFont(18, variant: .light))
+                        .foregroundStyle(.white.opacity(0.78))
+                        .opacity(localAITextOpacity)
 
                     Spacer(minLength: 24)
                 }
@@ -127,6 +134,7 @@ struct KeyVoxSpeakSceneAView: View {
         subtitleOpacity = 0
         demoCardOpacity = 0
         demoCardOffset = 18
+        localAITextOpacity = 0
 
         animationTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.2))
@@ -157,6 +165,13 @@ struct KeyVoxSpeakSceneAView: View {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 demoCardOpacity = 1
                 demoCardOffset = 0
+            }
+
+            try? await Task.sleep(for: .seconds(0.25))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.35)) {
+                localAITextOpacity = 1
             }
 
             try? await Task.sleep(for: .seconds(0.3))
