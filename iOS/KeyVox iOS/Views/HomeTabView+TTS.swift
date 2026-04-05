@@ -39,77 +39,12 @@ extension HomeTabView {
                             }
                             .buttonStyle(.plain)
                             .transition(.scale.combined(with: .opacity))
-                            
                             if showsTTSTransportButton {
-                                Button(action: handleSecondaryTTSAction) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color.yellow)
-
-                                        Circle()
-                                            .trim(from: 0, to: ttsTransportPlaybackProgress)
-                                            .stroke(
-                                                Color.indigo,
-                                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                                            )
-                                            .rotationEffect(.degrees(-90))
-                                            .padding(2)
-                                            .opacity(showsTTSTransportProgressRing ? 1 : 0)
-
-                                        Image(systemName: ttsTransportSymbolName)
-                                            .font(.system(size: 22, weight: ttsTransportSymbolWeight))
-                                            .foregroundStyle(.black)
-                                    }
-                                    .overlay(alignment: .topTrailing) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(ttsTransportBadgeColor)
-                                            .background(Circle().fill(Color.black))
-                                            .offset(x: 3, y: -1)
-                                            .opacity(showsTTSTransportBadge ? 1 : 0)
-                                            .scaleEffect(showsTTSTransportBadge ? 1 : 0.82)
-                                    }
-                                    .frame(width: 44, height: 44)
-                                    .shadow(color: .yellow.opacity(0.3), radius: 10)
-                                }
-                                .buttonStyle(.plain)
-                                .animation(.easeInOut(duration: 0.22), value: showsTTSTransportBadge)
+                                ttsTransportButton
                             }
                         } else {
                             if showsTTSTransportButton {
-                                Button(action: handleSecondaryTTSAction) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color.yellow)
-
-                                        Circle()
-                                            .trim(from: 0, to: ttsTransportPlaybackProgress)
-                                            .stroke(
-                                                Color.indigo,
-                                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                                            )
-                                            .rotationEffect(.degrees(-90))
-                                            .padding(2)
-                                            .opacity(showsTTSTransportProgressRing ? 1 : 0)
-
-                                        Image(systemName: ttsTransportSymbolName)
-                                            .font(.system(size: 22, weight: ttsTransportSymbolWeight))
-                                            .foregroundStyle(.black)
-                                    }
-                                    .overlay(alignment: .topTrailing) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(ttsTransportBadgeColor)
-                                            .background(Circle().fill(Color.black))
-                                            .offset(x: 3, y: -1)
-                                            .opacity(showsTTSTransportBadge ? 1 : 0)
-                                            .scaleEffect(showsTTSTransportBadge ? 1 : 0.82)
-                                    }
-                                    .frame(width: 44, height: 44)
-                                    .shadow(color: .yellow.opacity(0.3), radius: 10)
-                                }
-                                .buttonStyle(.plain)
-                                .animation(.easeInOut(duration: 0.22), value: showsTTSTransportBadge)
+                                ttsTransportButton
                             }
 
                             AppActionButton(
@@ -177,6 +112,42 @@ extension HomeTabView {
         .onDisappear {
             ttsPreparationCollapseTask?.cancel()
         }
+    }
+
+    var ttsTransportButton: some View {
+        Button(action: handleSecondaryTTSAction) {
+            ZStack {
+                Circle()
+                    .fill(Color.yellow)
+
+                Circle()
+                    .trim(from: 0, to: ttsTransportPlaybackProgress)
+                    .stroke(
+                        Color.indigo,
+                        style: StrokeStyle(lineWidth: 4, lineCap: .butt)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .padding(2)
+                    .opacity(showsTTSTransportProgressRing ? 1 : 0)
+
+                Image(systemName: ttsTransportSymbolName)
+                    .font(.system(size: 22, weight: ttsTransportSymbolWeight))
+                    .foregroundStyle(.black)
+            }
+            .overlay(alignment: .topTrailing) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(ttsTransportBadgeColor)
+                    .background(Circle().fill(Color.black))
+                    .offset(x: 3, y: -1)
+                    .opacity(showsTTSTransportBadge ? 1 : 0)
+                    .scaleEffect(showsTTSTransportBadge ? 1 : 0.82)
+            }
+            .frame(width: 44, height: 44)
+            .shadow(color: .yellow.opacity(0.3), radius: 10)
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.22), value: showsTTSTransportBadge)
     }
 
     var ttsButtonTitle: String {
