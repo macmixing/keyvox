@@ -250,9 +250,6 @@ extension TTSPlaybackCoordinator {
 
     func stop(emitCallback: Bool) {
         let hadPlayback = playbackTask != nil || playerNode.isPlaying || queuedBufferCount > 0
-        Self.log(
-            "Stopping playback. hadPlayback=\(hadPlayback) queuedBuffers=\(queuedBufferCount) queuedSamples=\(queuedSampleCount) paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset)"
-        )
         playbackSessionID = UUID()
 
         playbackTask?.cancel()
@@ -315,9 +312,6 @@ extension TTSPlaybackCoordinator {
 
     func finishIfPossible() {
         guard isFinishing, queuedBufferCount == 0, pendingStartBuffers.isEmpty else { return }
-        Self.log(
-            "Playback finished. paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset) replayableSamples=\(replayablePlaybackSamples.count)"
-        )
 
         playbackTask = nil
         activePlaybackSamples = []
@@ -346,9 +340,6 @@ extension TTSPlaybackCoordinator {
     }
 
     func handleFailure(_ error: Error) {
-        Self.log(
-            "Playback failure: \(error.localizedDescription) paused=\(isPaused) replaying=\(isReplayingCachedAudio) replayPausedOffset=\(replayPausedSampleOffset)"
-        )
         stop(emitCallback: false)
         onPlaybackFailed?(error)
     }

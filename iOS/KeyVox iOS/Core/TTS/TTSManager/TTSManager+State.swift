@@ -67,9 +67,6 @@ extension TTSManager {
     }
 
     func clearActiveRequest(clearPublishedState: Bool = true) {
-        Self.log(
-            "clearActiveRequest clearPublishedState=\(clearPublishedState) state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback) pausedOffset=\(pausedReplaySampleOffset.map(String.init) ?? "nil") hasReplayable=\(hasReplayablePlayback) coordinatorHasReplayable=\(playbackCoordinator.hasReplayablePlayback)"
-        )
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
@@ -125,18 +122,11 @@ extension TTSManager {
         if let offset = playbackCoordinator.replayPausedSampleOffsetSnapshot(),
            let request = lastReplayableRequest ?? activeRequest,
            let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
-            Self.log(
-                "Persisting paused replay request=\(request.id.uuidString) sampleCount=\(samples.count) pausedOffset=\(offset)"
-            )
             pausedReplaySampleOffset = offset
             replayCache.updatePauseState(
                 request: request,
                 sampleCount: samples.count,
                 pausedSampleOffset: offset
-            )
-        } else {
-            Self.log(
-                "Playback paused without replay snapshot replaying=\(isReplayingCachedPlayback) pausedOffsetSnapshot=\(playbackCoordinator.replayPausedSampleOffsetSnapshot().map(String.init) ?? "nil")"
             )
         }
     }
@@ -178,14 +168,10 @@ extension TTSManager {
 
     func restoreReplayablePlaybackIfNeeded() {
         guard let snapshot = replayCache.load() else {
-            Self.log("No replay cache snapshot found during restore.")
             hasReplayablePlayback = false
             return
         }
 
-        Self.log(
-            "Restoring replay cache request=\(snapshot.request.id.uuidString) sampleCount=\(snapshot.samples.count) pausedOffset=\(snapshot.pausedSampleOffset.map(String.init) ?? "nil")"
-        )
         lastReplayableRequest = snapshot.request
         hasReplayablePlayback = true
         if let pausedSampleOffset = snapshot.pausedSampleOffset,
@@ -210,9 +196,6 @@ extension TTSManager {
 
     func persistReplayablePlaybackIfNeeded(for request: KeyVoxTTSRequest) {
         guard let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() else { return }
-        Self.log(
-            "Persisting replay cache request=\(request.id.uuidString) sampleCount=\(samples.count) pausedOffset=nil"
-        )
         replayCache.save(request: request, samples: samples, pausedSampleOffset: nil)
     }
 }
