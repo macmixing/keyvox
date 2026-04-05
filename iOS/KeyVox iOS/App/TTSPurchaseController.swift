@@ -80,8 +80,8 @@ protocol TTSPurchaseGating {
 
 @MainActor
 final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
-    static let unlockProductID = "com.cueit.keyvox.tts.unlock"
-    static let dailyFreeSpeakLimit = 2
+    nonisolated static let unlockProductID = "com.cueit.keyvox.tts.unlock"
+    nonisolated static let dailyFreeSpeakLimit = 2
 
     @Published private(set) var isTTSUnlocked: Bool
     @Published private(set) var remainingFreeTTSSpeaksToday: Int = TTSPurchaseController.dailyFreeSpeakLimit
