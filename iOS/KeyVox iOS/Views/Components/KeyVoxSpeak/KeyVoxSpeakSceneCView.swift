@@ -67,7 +67,12 @@ struct KeyVoxSpeakSceneCView: View {
         .onChange(of: isVisible) { _, visible in
             if visible {
                 startEntrance()
+            } else {
+                resetEntrance()
             }
+        }
+        .onDisappear {
+            resetEntrance()
         }
     }
 
@@ -181,5 +186,16 @@ struct KeyVoxSpeakSceneCView: View {
     private func stopEntrance() {
         animationTask?.cancel()
         animationTask = nil
+    }
+
+    private func resetEntrance() {
+        stopEntrance()
+        hasAnimated = false
+        headerOpacity = 0
+        installCardOpacity = 0
+        installCardOffset = 18
+        stepRevealProgress = 0
+        fastModeHintOpacity = 0
+        footerOpacity = 0
     }
 }

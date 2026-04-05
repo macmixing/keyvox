@@ -50,12 +50,16 @@ struct KeyVoxSpeakInstallCardView: View {
                     installStepRow(step)
                         .opacity(index < revealedStepCount ? 1 : 0)
                         .offset(y: index < revealedStepCount ? 0 : 10)
+                        .allowsHitTesting(index < revealedStepCount)
+                        .accessibilityHidden(index >= revealedStepCount)
                 }
             }
 
             if showsUnlockDetails {
                 unlockSummaryRow
                     .opacity(revealedStepCount == Self.installStepCount ? 1 : 0)
+                    .allowsHitTesting(revealedStepCount == Self.installStepCount)
+                    .accessibilityHidden(revealedStepCount != Self.installStepCount)
             }
         }
         .padding(.horizontal, 18)

@@ -94,6 +94,10 @@ struct KeyVoxSpeakSheetView: View {
             ttsPreviewPlayer.stop()
             animationTask?.cancel()
             animationTask = nil
+            
+            if case .unlock(let onDismiss) = mode {
+                onDismiss()
+            }
         }
     }
 

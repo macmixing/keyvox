@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-07**
+**Last Updated: 2026-04-05**
 
 ## Design Philosophy
 

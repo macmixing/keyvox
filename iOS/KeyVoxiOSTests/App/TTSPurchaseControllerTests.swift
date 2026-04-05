@@ -8,12 +8,7 @@ struct TTSPurchaseControllerTests {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        let controller = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let controller = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
 
         #expect(controller.isTTSUnlocked == false)
@@ -25,12 +20,7 @@ struct TTSPurchaseControllerTests {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        let controller = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let controller = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
 
         controller.consumeFreeTTSSpeakIfNeeded()
@@ -48,12 +38,7 @@ struct TTSPurchaseControllerTests {
         let harness = makeHarness(isUnlocked: true)
         defer { harness.cleanup() }
 
-        let controller = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let controller = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
 
         controller.consumeFreeTTSSpeakIfNeeded()
@@ -65,12 +50,7 @@ struct TTSPurchaseControllerTests {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        let controller = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let controller = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
 
         controller.consumeFreeTTSSpeakIfNeeded()
@@ -88,12 +68,7 @@ struct TTSPurchaseControllerTests {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        let controller = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let controller = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
 
         await controller.purchaseTTSUnlock()
@@ -101,18 +76,25 @@ struct TTSPurchaseControllerTests {
 
         harness.store.isUnlocked = false
         harness.defaults.set(false, forKey: UserDefaultsKeys.App.isTTSUnlocked)
-        let secondController = TTSPurchaseController(
-            defaults: harness.defaults,
-            store: harness.store,
-            now: { harness.now },
-            bypassFreeSpeakLimitInAllDebugBuilds: false
-        )
+        let secondController = makeTTSPurchaseController(harness: harness)
         await settleAsyncWork()
         #expect(secondController.isTTSUnlocked == false)
 
         harness.store.restoreWillUnlock = true
         await secondController.restorePurchases()
         #expect(secondController.isTTSUnlocked == true)
+    }
+
+    private func makeTTSPurchaseController(
+        harness: TTSPurchaseHarness,
+        bypassFreeSpeakLimitInAllDebugBuilds: Bool = false
+    ) -> TTSPurchaseController {
+        TTSPurchaseController(
+            defaults: harness.defaults,
+            store: harness.store,
+            now: { harness.now },
+            bypassFreeSpeakLimitInAllDebugBuilds: bypassFreeSpeakLimitInAllDebugBuilds
+        )
     }
 
     private func makeHarness(isUnlocked: Bool = false) -> TTSPurchaseHarness {

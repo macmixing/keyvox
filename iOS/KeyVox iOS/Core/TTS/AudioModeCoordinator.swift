@@ -154,9 +154,9 @@ final class AudioModeCoordinator: ObservableObject {
         await transcriptionManager.repairMonitoringSessionIfNeeded()
     }
 
-    private static func log(_ message: String) {
+    private static func log(_ message: @autoclosure () -> String) {
         #if DEBUG
-        NSLog("[AudioModeCoordinator] %@", message)
+        NSLog("[AudioModeCoordinator] %@", message())
         #endif
     }
 }
