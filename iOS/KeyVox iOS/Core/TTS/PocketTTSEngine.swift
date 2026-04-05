@@ -21,6 +21,17 @@ final class PocketTTSEngine: TTSEngine {
         Self.log("PocketTTS runtime prepared.")
     }
 
+    func prewarmVoiceIfNeeded(voiceID: String) async throws {
+        let runtime = try runtimeForInstalledAssets()
+        guard let voice = KeyVoxTTSVoice(rawValue: voiceID) else {
+            throw KeyVoxTTSError.invalidVoice("PocketTTS voice \(voiceID) is not supported.")
+        }
+
+        Self.log("Prewarming PocketTTS voice \(voiceID).")
+        try await runtime.prepareVoiceIfNeeded(voice)
+        Self.log("Prewarmed PocketTTS voice \(voiceID).")
+    }
+
     func prepareForForegroundSynthesis() async {
         do {
             let runtime = try runtimeForInstalledAssets()
