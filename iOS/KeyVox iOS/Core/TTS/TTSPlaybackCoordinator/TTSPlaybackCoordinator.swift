@@ -77,6 +77,9 @@ final class TTSPlaybackCoordinator {
 
     var canContinueBackgroundPlaybackInFastMode: Bool {
         guard fastModeEnabled, didStartPlayback else { return false }
+        if isReplayingCachedAudio {
+            return true
+        }
         let requiredSamples = backgroundContinuationBufferedSampleCount(
             for: lastObservedChunkCount,
             remainingEstimatedSamples: lastObservedRemainingEstimatedSamples

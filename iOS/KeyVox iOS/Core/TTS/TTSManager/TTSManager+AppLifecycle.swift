@@ -17,6 +17,12 @@ extension TTSManager {
         guard isActive, (hasStartedPlaybackForActiveRequest || playbackPreparationPhase == .readyToReturn) else { return }
 
         if settingsStore.fastPlaybackModeEnabled {
+            if isReplayingCachedPlayback {
+                beginBackgroundTaskIfNeeded(force: true)
+                playbackCoordinator.prepareForBackgroundTransition()
+                Self.log("Fast Mode enabled: continuing cached replay in background.")
+                return
+            }
             if hasStartedPlaybackForActiveRequest {
                 beginBackgroundTaskIfNeeded(force: true)
                 Task {
