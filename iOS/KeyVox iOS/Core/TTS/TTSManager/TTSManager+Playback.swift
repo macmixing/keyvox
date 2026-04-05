@@ -64,6 +64,7 @@ extension TTSManager {
         activeRequest = request
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
+        shouldConsumeFreeSpeakOnPlaybackStart = true
         isPlaybackPaused = false
         lastErrorMessage = nil
         resetPlaybackPreparationState()
@@ -89,9 +90,9 @@ extension TTSManager {
                 voiceID: request.voiceID,
                 fastModeEnabled: settingsStore.fastPlaybackModeEnabled
             )
-            purchaseGate.consumeFreeTTSSpeakIfNeeded()
             playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
         } catch {
+            shouldConsumeFreeSpeakOnPlaybackStart = false
             handleError(error.localizedDescription)
         }
     }
@@ -112,6 +113,7 @@ extension TTSManager {
             activeRequest = lastReplayableRequest
             hasStartedPlaybackForActiveRequest = true
             didEmitPreparationCompletionForActiveRequest = true
+            shouldConsumeFreeSpeakOnPlaybackStart = false
             isPlaybackPaused = false
             lastErrorMessage = nil
             resetPlaybackPreparationState()
@@ -132,6 +134,7 @@ extension TTSManager {
         }
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = true
+        shouldConsumeFreeSpeakOnPlaybackStart = false
         isPlaybackPaused = false
         pausedReplaySampleOffset = nil
         lastErrorMessage = nil
@@ -153,6 +156,7 @@ extension TTSManager {
         }
         hasStartedPlaybackForActiveRequest = true
         didEmitPreparationCompletionForActiveRequest = true
+        shouldConsumeFreeSpeakOnPlaybackStart = false
         lastErrorMessage = nil
         resetPlaybackPreparationState()
         isPlaybackPreparationViewPresented = false

@@ -81,6 +81,7 @@ struct TTSUnlockSheetView: View {
     }
 
     private var ttsPurchaseSummaryText: String {
+        ttsPurchaseController.refreshUsageIfNeeded()
         if ttsPurchaseController.isTTSUnlocked {
             return "TTS is unlocked on this Apple account."
         }

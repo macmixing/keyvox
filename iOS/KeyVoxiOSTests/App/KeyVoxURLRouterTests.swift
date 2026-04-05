@@ -43,7 +43,11 @@ struct KeyVoxURLRouterTests {
 
     @Test func startTTSRoutePresentsUnlockWhenDailyLimitIsExhausted() async throws {
         let harness = try makeHarness(isTTSUnlocked: false, remainingFreeTTSSpeaksToday: 0)
-        defer { harness.cleanup() }
+        let originalPasteboardString = UIPasteboard.general.string
+        defer {
+            UIPasteboard.general.string = originalPasteboardString
+            harness.cleanup()
+        }
 
         UIPasteboard.general.string = "Test clipboard speech"
 
@@ -279,6 +283,8 @@ private final class StubTTSPurchaseGate: TTSPurchaseGating {
     var canStartNewTTSSpeak: Bool {
         isTTSUnlocked || remainingFreeTTSSpeaksToday > 0
     }
+
+    func refreshUsageIfNeeded() {}
 
     func presentUnlockSheet() {
         presentUnlockSheetCallCount += 1

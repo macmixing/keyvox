@@ -174,11 +174,12 @@ Current root behavior:
 - `isIgnoringPersistedPendingKeyboardTourThisLaunch`
 - `hasCompletedOnboardingThisLaunch`
 
-### Force-Onboarding Runtime Flag
+### Runtime Flags
 
-The only supported runtime flag is:
+The supported runtime flags are:
 
 - `KEYVOX_FORCE_ONBOARDING`
+- `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`
 
 Accepted truthy values:
 
@@ -192,6 +193,21 @@ Behavior:
 - the flag must still allow in-launch progression through the flow
 - persisted onboarding completion must not block the forced flow
 - stale persisted keyboard-tour handoff state must not skip setup during a forced run
+
+### TTS Free-Speak Bypass Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- the flag bypasses the phase-one limit of two free new copied-text playback generations per local calendar day
+- the flag is for development and testing only and must not change production monetization policy
+- the flag only applies to new PocketTTS generation gating and does not change replay behavior
+- `TTSManager` still consumes a free speak only after a new PocketTTS generation has actually started, but no use is consumed while the bypass flag is enabled
 
 ### Onboarding Screen Order
 
@@ -599,6 +615,7 @@ Primary owners:
 - keyboard-initiated playback stages the request in shared storage and uses the containing app as the synthesis owner
 - share-extension initiated playback also stages the request in shared storage and uses the containing app as the synthesis owner
 - phase-one monetization allows two free new copied-text playback generations per local calendar day before the one-time unlock is required
+- `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT` bypasses that daily-generation gate for development and testing only
 - replay remains free for already generated playback and must not consume daily free uses
 - only new copied-text playback generations are gated; replay, pause, resume, scrubbing, replay restore, and transcript viewing remain outside the monetization gate
 - playback-preparation progress is deterministic and gates the return-to-host path before audio starts
@@ -607,6 +624,7 @@ Primary owners:
 - paused replay state, including sample offset, is durable across app relaunches
 - replay transport uses a dedicated scrubber while cached replay is active
 - `TTSManager` consumes a free daily speak only after the new PocketTTS generation has successfully begun, not on button tap alone
+- no free speak is consumed while the TTS free-speak bypass runtime flag is enabled
 - `AudioModeCoordinator` must remain the transition owner for:
   - start dictation
   - start copied-text playback

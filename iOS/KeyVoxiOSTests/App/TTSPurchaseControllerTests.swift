@@ -74,7 +74,7 @@ struct TTSPurchaseControllerTests {
         #expect(controller.remainingFreeTTSSpeaksToday == 0)
 
         harness.now = Calendar.current.date(byAdding: .day, value: 1, to: harness.now)!
-        await controller.refreshStoreState()
+        controller.refreshUsageIfNeeded()
 
         #expect(controller.remainingFreeTTSSpeaksToday == 2)
         #expect(controller.canStartNewTTSSpeak == true)

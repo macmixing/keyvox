@@ -76,7 +76,7 @@
          <EnvironmentVariable
             key = "KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

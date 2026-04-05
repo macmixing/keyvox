@@ -35,6 +35,7 @@ final class TTSManager: ObservableObject {
     var pausedReplaySampleOffset: Int?
     var hasStartedPlaybackForActiveRequest = false
     var didEmitPreparationCompletionForActiveRequest = false
+    var shouldConsumeFreeSpeakOnPlaybackStart = false
     var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     var backgroundTaskReleaseTask: Task<Void, Never>?
     var onWillTeardownPlayback: (() async -> Void)?

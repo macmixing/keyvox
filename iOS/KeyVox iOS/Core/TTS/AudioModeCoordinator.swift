@@ -92,7 +92,6 @@ final class AudioModeCoordinator: ObservableObject {
                 String(transcriptionManager.isSessionActive),
                 String(ttsManager.isActive)
             )
-            appTabRouter.selectedTab = .home
 
             if ttsManager.isActive {
                 await ttsManager.stopPlayback()
@@ -104,6 +103,7 @@ final class AudioModeCoordinator: ObservableObject {
                 return
             }
 
+            appTabRouter.selectedTab = .home
             shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
             ttsManager.setPlaybackAudioSessionMode(
                 transcriptionManager.isSessionActive

@@ -70,6 +70,7 @@ extension TTSManager {
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
+        shouldConsumeFreeSpeakOnPlaybackStart = false
         isPlaybackPaused = false
         isReplayingCachedPlayback = false
         pausedReplaySampleOffset = nil
@@ -93,6 +94,10 @@ extension TTSManager {
     func handlePlaybackStarted() {
         if let activeRequest {
             Self.log("Playback started for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+        }
+        if shouldConsumeFreeSpeakOnPlaybackStart {
+            purchaseGate.consumeFreeTTSSpeakIfNeeded()
+            shouldConsumeFreeSpeakOnPlaybackStart = false
         }
         hasStartedPlaybackForActiveRequest = true
         isPlaybackPaused = false

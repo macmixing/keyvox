@@ -73,6 +73,7 @@ protocol TTSPurchaseGating {
     var isTTSUnlocked: Bool { get }
     var remainingFreeTTSSpeaksToday: Int { get }
     var canStartNewTTSSpeak: Bool { get }
+    func refreshUsageIfNeeded()
     func presentUnlockSheet()
     func dismissUnlockSheet()
     func consumeFreeTTSSpeakIfNeeded()
@@ -132,13 +133,19 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     }
 
     var canStartNewTTSSpeak: Bool {
+        refreshUsageIfNeeded()
         if bypassFreeSpeakLimit {
             return true
         }
         return isTTSUnlocked || remainingFreeTTSSpeaksToday > 0
     }
 
+    func refreshUsageIfNeeded() {
+        refreshUsageState()
+    }
+
     func presentUnlockSheet() {
+        refreshUsageIfNeeded()
         isUnlockSheetPresented = true
     }
 
@@ -147,6 +154,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     }
 
     func refreshStoreState() async {
+        refreshUsageIfNeeded()
         do {
             unlockProduct = try await store.loadUnlockProduct(productID: Self.unlockProductID)
             let unlocked = try await store.isUnlocked(productID: Self.unlockProductID)
@@ -159,6 +167,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
     func purchaseTTSUnlock() async {
         guard isStoreActionInFlight == false else { return }
+        refreshUsageIfNeeded()
         isStoreActionInFlight = true
         defer { isStoreActionInFlight = false }
 
@@ -176,6 +185,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
     func restorePurchases() async {
         guard isStoreActionInFlight == false else { return }
+        refreshUsageIfNeeded()
         isStoreActionInFlight = true
         defer { isStoreActionInFlight = false }
 
