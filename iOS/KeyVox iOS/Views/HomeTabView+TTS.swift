@@ -24,42 +24,6 @@ extension HomeTabView {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     HStack(spacing: 8) {
-                        if showsTTSTransportButton {
-                            Button(action: handleSecondaryTTSAction) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.yellow)
-
-                                    Circle()
-                                        .trim(from: 0, to: ttsTransportPlaybackProgress)
-                                        .stroke(
-                                            Color.indigo,
-                                            style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                                        )
-                                        .rotationEffect(.degrees(-90))
-                                        .padding(2)
-                                        .opacity(showsTTSTransportProgressRing ? 1 : 0)
-
-                                    Image(systemName: ttsTransportSymbolName)
-                                        .font(.system(size: 22, weight: ttsTransportSymbolWeight))
-                                        .foregroundStyle(.black)
-                                }
-                                .overlay(alignment: .topTrailing) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .foregroundStyle(.green)
-                                        .background(Circle().fill(Color.black))
-                                        .offset(x: 3, y: -1)
-                                        .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
-                                        .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
-                                }
-                                .frame(width: 44, height: 44)
-                                .shadow(color: .yellow.opacity(0.3), radius: 10)
-                            }
-                            .buttonStyle(.plain)
-                            .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
-                        }
-
                         if ttsManager.isActive {
                             Button(action: handlePrimaryTTSAction) {
                                 ZStack {
@@ -75,7 +39,79 @@ extension HomeTabView {
                             }
                             .buttonStyle(.plain)
                             .transition(.scale.combined(with: .opacity))
+                            
+                            if showsTTSTransportButton {
+                                Button(action: handleSecondaryTTSAction) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.yellow)
+
+                                        Circle()
+                                            .trim(from: 0, to: ttsTransportPlaybackProgress)
+                                            .stroke(
+                                                Color.indigo,
+                                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                                            )
+                                            .rotationEffect(.degrees(-90))
+                                            .padding(2)
+                                            .opacity(showsTTSTransportProgressRing ? 1 : 0)
+
+                                        Image(systemName: ttsTransportSymbolName)
+                                            .font(.system(size: 22, weight: ttsTransportSymbolWeight))
+                                            .foregroundStyle(.black)
+                                    }
+                                    .overlay(alignment: .topTrailing) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(.green)
+                                            .background(Circle().fill(Color.black))
+                                            .offset(x: 3, y: -1)
+                                            .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
+                                            .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
+                                    }
+                                    .frame(width: 44, height: 44)
+                                    .shadow(color: .yellow.opacity(0.3), radius: 10)
+                                }
+                                .buttonStyle(.plain)
+                                .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
+                            }
                         } else {
+                            if showsTTSTransportButton {
+                                Button(action: handleSecondaryTTSAction) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.yellow)
+
+                                        Circle()
+                                            .trim(from: 0, to: ttsTransportPlaybackProgress)
+                                            .stroke(
+                                                Color.indigo,
+                                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                                            )
+                                            .rotationEffect(.degrees(-90))
+                                            .padding(2)
+                                            .opacity(showsTTSTransportProgressRing ? 1 : 0)
+
+                                        Image(systemName: ttsTransportSymbolName)
+                                            .font(.system(size: 22, weight: ttsTransportSymbolWeight))
+                                            .foregroundStyle(.black)
+                                    }
+                                    .overlay(alignment: .topTrailing) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(.green)
+                                            .background(Circle().fill(Color.black))
+                                            .offset(x: 3, y: -1)
+                                            .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
+                                            .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
+                                    }
+                                    .frame(width: 44, height: 44)
+                                    .shadow(color: .yellow.opacity(0.3), radius: 10)
+                                }
+                                .buttonStyle(.plain)
+                                .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
+                            }
+
                             AppActionButton(
                                 title: ttsButtonTitle,
                                 style: .primary,
