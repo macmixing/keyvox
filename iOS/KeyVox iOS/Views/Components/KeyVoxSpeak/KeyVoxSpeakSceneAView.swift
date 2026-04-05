@@ -15,31 +15,36 @@ struct KeyVoxSpeakSceneAView: View {
     @State private var hasAnimated = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 24)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 24)
 
-            LogoBarView(size: 80)
-                .opacity(logoOpacity)
-                .scaleEffect(logoScale)
-                .padding(.bottom, 28)
+                    LogoBarView(size: 80)
+                        .opacity(logoOpacity)
+                        .scaleEffect(logoScale)
+                        .padding(.bottom, 28)
 
-            Text("KeyVox Speak")
-                .font(.appFont(32, variant: .medium))
-                .foregroundStyle(.white)
-                .opacity(titleOpacity)
-                .padding(.bottom, 6)
+                    Text("KeyVox Speak")
+                        .font(.appFont(32, variant: .medium))
+                        .foregroundStyle(.white)
+                        .opacity(titleOpacity)
+                        .padding(.bottom, 6)
 
-            Text("Your text, spoken aloud.")
-                .font(.appFont(18, variant: .light))
-                .foregroundStyle(.white.opacity(0.78))
-                .opacity(subtitleOpacity)
-                .padding(.bottom, 36)
+                    Text("Copy text, hear it speak.")
+                        .font(.appFont(18, variant: .light))
+                        .foregroundStyle(.white.opacity(0.78))
+                        .opacity(subtitleOpacity)
+                        .padding(.bottom, 36)
 
-            keyVoxSpeakDemoCard
-                .opacity(demoCardOpacity)
-                .offset(y: demoCardOffset)
+                    keyVoxSpeakDemoCard
+                        .opacity(demoCardOpacity)
+                        .offset(y: demoCardOffset)
 
-            Spacer(minLength: 24)
+                    Spacer(minLength: 24)
+                }
+                .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
@@ -64,11 +69,11 @@ struct KeyVoxSpeakSceneAView: View {
                     .shadow(color: .yellow.opacity(isPlaying ? 0.5 : 0.25), radius: isPlaying ? 12 : 6)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Hear from Alba")
+                    Text("Message from Alba")
                         .font(.appFont(16, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("\"Welcome to KeyVox Speak.\"")
+                    Text("\"I want you to try this.\"")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1)
@@ -76,9 +81,8 @@ struct KeyVoxSpeakSceneAView: View {
 
                 Spacer(minLength: 0)
 
-                if isPlaying {
-                    waveformIndicator
-                }
+                waveformIndicator
+                    .opacity(isPlaying ? 1 : 0)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -99,20 +103,11 @@ struct KeyVoxSpeakSceneAView: View {
     }
 
     private var waveformIndicator: some View {
-        HStack(spacing: 3) {
-            ForEach(0..<3, id: \.self) { index in
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(.yellow)
-                    .frame(width: 3, height: 12)
-                    .scaleEffect(y: pulseScale, anchor: .center)
-                    .animation(
-                        .easeInOut(duration: 0.4)
-                        .repeatForever(autoreverses: true)
-                        .delay(Double(index) * 0.15),
-                        value: pulseScale
-                    )
-            }
-        }
+        Image("logo-white-ios")
+            .resizable()
+            .scaledToFit()
+            .frame(height: 20)
+            .foregroundStyle(.yellow)
     }
 
     private func startEntrance() {

@@ -17,45 +17,50 @@ struct KeyVoxSpeakSceneCView: View {
     @State private var hasAnimated = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 20)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 20)
 
-            VStack(spacing: 6) {
-                Text("Free to Start")
-                    .font(.appFont(28, variant: .medium))
-                    .foregroundStyle(.white)
+                    VStack(spacing: 6) {
+                        Text("Free to Start")
+                            .font(.appFont(28, variant: .medium))
+                            .foregroundStyle(.white)
 
-                Text("Install Alba and be ready to speak right away.")
-                    .font(.appFont(16, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
+                        Text("Install Alba and be ready to speak right away.")
+                            .font(.appFont(16, variant: .light))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    .opacity(headerOpacity)
+                    .padding(.bottom, 12)
+
+                    Text("You can download up to 8 total voices in Settings.")
+                        .font(.appFont(14, variant: .medium))
+                        .foregroundStyle(.yellow)
+                        .multilineTextAlignment(.center)
+                        .opacity(headerOpacity)
+                        .padding(.bottom, 16)
+
+                    KeyVoxSpeakInstallCardView(
+                        showsUnlockDetails: showsUnlockDetails,
+                        purchaseSummaryText: purchaseSummaryText,
+                        revealedStepCount: stepRevealProgress
+                    )
+                    .opacity(installCardOpacity)
+                    .offset(y: installCardOffset)
+
+                    setupHint
+                        .opacity(footerOpacity)
+                        .padding(.top, 12)
+
+                    fastModeHint
+                        .opacity(fastModeHintOpacity)
+                        .padding(.top, 8)
+
+                    Spacer(minLength: 20)
+                }
+                .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
-            .opacity(headerOpacity)
-            .padding(.bottom, 12)
-
-            Text("You can download up to 8 total voices in Settings.")
-                .font(.appFont(14, variant: .medium))
-                .foregroundStyle(.yellow)
-                .multilineTextAlignment(.center)
-                .opacity(headerOpacity)
-                .padding(.bottom, 16)
-
-            KeyVoxSpeakInstallCardView(
-                showsUnlockDetails: showsUnlockDetails,
-                purchaseSummaryText: purchaseSummaryText,
-                revealedStepCount: stepRevealProgress
-            )
-            .opacity(installCardOpacity)
-            .offset(y: installCardOffset)
-
-            setupHint
-                .opacity(footerOpacity)
-                .padding(.top, 12)
-
-            fastModeHint
-                .opacity(fastModeHintOpacity)
-                .padding(.top, 8)
-
-            Spacer(minLength: 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)

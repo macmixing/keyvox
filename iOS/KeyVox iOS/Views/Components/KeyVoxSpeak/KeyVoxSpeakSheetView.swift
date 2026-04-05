@@ -29,6 +29,12 @@ struct KeyVoxSpeakSheetView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(width: 36, height: 5)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
                     TabView(selection: $selectedScene) {
                         ForEach(Scene.allCases, id: \.self) { scene in
                             sceneView(for: scene)
@@ -80,16 +86,6 @@ struct KeyVoxSpeakSheetView: View {
                 }
             }
             .navigationTitle("")
-            .toolbar {
-                if case .unlock(let onDismiss) = mode {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") {
-                            onDismiss()
-                        }
-                        .foregroundStyle(.yellow)
-                    }
-                }
-            }
         }
         .onAppear {
             startButtonAnimation()

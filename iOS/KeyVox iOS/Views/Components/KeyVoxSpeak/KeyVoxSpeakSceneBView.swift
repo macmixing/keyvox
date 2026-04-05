@@ -24,45 +24,50 @@ struct KeyVoxSpeakSceneBView: View {
     @State private var hasAnimated = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 16)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 16)
 
-            HStack(spacing: 14) {
-                Image("keyvox-circle")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 48, height: 48)
-                    .opacity(circleOpacity)
-                    .scaleEffect(circleScale)
-                    .shadow(color: .yellow.opacity(0.3), radius: 8)
+                    HStack(spacing: 14) {
+                        Image("keyvox-circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 48, height: 48)
+                            .opacity(circleOpacity)
+                            .scaleEffect(circleScale)
+                            .shadow(color: .yellow.opacity(0.3), radius: 8)
 
-                VStack(alignment: .leading, spacing: -6) {
-                    Text("How To Speak?")
-                        .font(.appFont(30, variant: .medium))
-                        .foregroundStyle(.white)
+                        VStack(alignment: .leading, spacing: -6) {
+                            Text("How To Speak?")
+                                .font(.appFont(30, variant: .medium))
+                                .foregroundStyle(.white)
 
-                    Text("Speak is everywhere you are.")
-                        .font(.appFont(16, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
+                            Text("Speak is everywhere you are.")
+                                .font(.appFont(16, variant: .light))
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .opacity(headerOpacity)
+                    .padding(.bottom, 24)
+
+                    VStack(spacing: 12) {
+                        ForEach(Self.accessMethods) { method in
+                            accessMethodRow(method)
+                                .opacity(method.id < rowRevealProgress ? 1 : 0)
+                                .offset(y: method.id < rowRevealProgress ? 0 : 10)
+                        }
+                    }
+                    .padding(.bottom, 14)
+
+                    fastModeCard
+                        .opacity(fastModeCardOpacity)
+
+                    Spacer(minLength: 16)
                 }
+                .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
-            .frame(maxWidth: .infinity)
-            .opacity(headerOpacity)
-            .padding(.bottom, 24)
-
-            VStack(spacing: 12) {
-                ForEach(Self.accessMethods) { method in
-                    accessMethodRow(method)
-                        .opacity(method.id < rowRevealProgress ? 1 : 0)
-                        .offset(y: method.id < rowRevealProgress ? 0 : 10)
-                }
-            }
-            .padding(.bottom, 14)
-
-            fastModeCard
-                .opacity(fastModeCardOpacity)
-
-            Spacer(minLength: 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
