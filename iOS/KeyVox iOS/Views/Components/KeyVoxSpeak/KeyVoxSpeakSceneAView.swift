@@ -31,7 +31,7 @@ struct KeyVoxSpeakSceneAView: View {
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Copy text, hear it speak.")
+                    Text("Copy text. Hear it speak.")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(subtitleOpacity)

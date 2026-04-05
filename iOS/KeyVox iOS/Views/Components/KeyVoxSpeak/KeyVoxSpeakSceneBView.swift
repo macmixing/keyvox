@@ -30,7 +30,7 @@ struct KeyVoxSpeakSceneBView: View {
                     Spacer(minLength: 16)
 
                     HStack(spacing: 14) {
-                        Image("keyvox-circle")
+                        Image("keyvox-speaks")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 48, height: 48)
