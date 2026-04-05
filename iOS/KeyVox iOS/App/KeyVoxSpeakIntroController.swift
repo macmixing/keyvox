@@ -7,6 +7,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
 
     private let defaults: UserDefaults
     private let forcePresentation: Bool
+    private var hasCountedEligibleOpenThisLaunch = false
 
     init(
         defaults: UserDefaults,
@@ -27,11 +28,13 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         guard onboardingStore.hasCompletedOnboardingThisLaunch == false else { return }
         guard hasSeenIntro == false else { return }
         guard hasUsedKeyVoxSpeak == false else { return }
+        guard hasCountedEligibleOpenThisLaunch == false else { return }
 
         let eligibleOpenCount = defaults.integer(forKey: UserDefaultsKeys.App.keyVoxSpeakEligibleOpenCount) + 1
         defaults.set(eligibleOpenCount, forKey: UserDefaultsKeys.App.keyVoxSpeakEligibleOpenCount)
+        hasCountedEligibleOpenThisLaunch = true
 
-        if eligibleOpenCount >= 2 {
+        if eligibleOpenCount >= 3 {
             isPresented = true
         }
     }
