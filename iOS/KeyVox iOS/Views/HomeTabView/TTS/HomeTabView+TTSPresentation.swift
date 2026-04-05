@@ -95,6 +95,29 @@ extension HomeTabView {
         showsTTSPreparationProgress ? ttsPreparationProgressLabel : nil
     }
 
+    var activeTTSInstallState: PocketTTSInstallState? {
+        if pocketTTSModelManager.isSharedModelReady() == false {
+            switch pocketTTSModelManager.sharedModelInstallState {
+            case .downloading, .installing:
+                return pocketTTSModelManager.sharedModelInstallState
+            case .notInstalled, .failed, .ready:
+                break
+            }
+        }
+
+        let voiceState = pocketTTSModelManager.installState(for: effectiveTTSVoice)
+        switch voiceState {
+        case .downloading, .installing:
+            return voiceState
+        case .notInstalled, .failed, .ready:
+            return nil
+        }
+    }
+
+    var showsTTSInstallProgressBar: Bool {
+        activeTTSInstallState != nil
+    }
+
     func syncTTSPreparationPresentation() {
         showsTTSPreparationSlot = showsTTSPreparationProgress
         isTTSPreparationVisible = showsTTSPreparationProgress
