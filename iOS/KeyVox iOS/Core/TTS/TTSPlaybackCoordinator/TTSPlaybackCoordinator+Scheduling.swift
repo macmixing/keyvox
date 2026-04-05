@@ -7,9 +7,7 @@ extension TTSPlaybackCoordinator {
         lastObservedChunkCount = frame.chunkCount
         lastObservedRemainingEstimatedSamples = frame.estimatedRemainingSampleCount
         recordCompletedFastModeSegmentIfNeeded(from: frame)
-        if totalEstimatedPlaybackSampleCount == 0 {
-            totalEstimatedPlaybackSampleCount = totalGeneratedSampleCount + frame.sampleCount + frame.estimatedRemainingSampleCount
-        }
+        updateStreamingPlaybackProgressEstimate(using: frame)
 
         if frame.samples.isEmpty {
             handleChunkBoundary(frame)
@@ -80,6 +78,25 @@ extension TTSPlaybackCoordinator {
         resumeIfBufferedEnough()
         emitPlaybackProgress()
         notifyFastModeBackgroundSafetyChanged()
+    }
+
+    func updateStreamingPlaybackProgressEstimate(using frame: KeyVoxTTSAudioFrame) {
+        let observedTotalSampleCount = totalGeneratedSampleCount + frame.sampleCount + frame.estimatedRemainingSampleCount
+        let minimumStableSampleCount = max(totalScheduledSampleCount, currentPlaybackSampleOffset)
+
+        guard totalEstimatedPlaybackSampleCount > 0 else {
+            totalEstimatedPlaybackSampleCount = max(observedTotalSampleCount, minimumStableSampleCount)
+            return
+        }
+
+        if didStartPlayback {
+            totalEstimatedPlaybackSampleCount = max(
+                minimumStableSampleCount,
+                min(totalEstimatedPlaybackSampleCount, observedTotalSampleCount)
+            )
+        } else {
+            totalEstimatedPlaybackSampleCount = max(observedTotalSampleCount, minimumStableSampleCount)
+        }
     }
 
     func handleChunkBoundary(_ frame: KeyVoxTTSAudioFrame) {
