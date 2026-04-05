@@ -187,18 +187,23 @@ extension TTSManager {
             "Restoring replay cache request=\(snapshot.request.id.uuidString) sampleCount=\(snapshot.samples.count) pausedOffset=\(snapshot.pausedSampleOffset.map(String.init) ?? "nil")"
         )
         lastReplayableRequest = snapshot.request
-        playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
         hasReplayablePlayback = true
         if let pausedSampleOffset = snapshot.pausedSampleOffset,
            pausedSampleOffset > 0,
            pausedSampleOffset < snapshot.samples.count {
+            playbackCoordinator.restorePausedReplay(
+                samples: snapshot.samples,
+                pausedSampleOffset: pausedSampleOffset
+            )
             pausedReplaySampleOffset = pausedSampleOffset
             activeRequest = snapshot.request
             hasStartedPlaybackForActiveRequest = true
             isPlaybackPaused = true
             isReplayingCachedPlayback = true
             state = .playing
+            playbackProgress = playbackCoordinator.currentPlaybackProgress
         } else {
+            playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
             pausedReplaySampleOffset = nil
         }
     }

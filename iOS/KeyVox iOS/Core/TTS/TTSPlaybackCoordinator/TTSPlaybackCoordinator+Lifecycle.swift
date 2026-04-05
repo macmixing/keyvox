@@ -7,6 +7,25 @@ extension TTSPlaybackCoordinator {
         replayablePlaybackSamples = samples
     }
 
+    func restorePausedReplay(samples: [Float], pausedSampleOffset: Int) {
+        let clampedPausedSampleOffset = min(max(0, pausedSampleOffset), max(0, samples.count - 1))
+
+        replayablePlaybackSamples = samples
+        activePlaybackSamples = samples
+        totalEstimatedPlaybackSampleCount = samples.count
+        totalScheduledSampleCount = samples.count
+        queuedBufferCount = 0
+        queuedSampleCount = 0
+        isFinishing = false
+        didStartPlayback = true
+        isPaused = true
+        isReplayingCachedAudio = true
+        replayStartSampleOffset = 0
+        replayPausedSampleOffset = clampedPausedSampleOffset
+        stopPlaybackProgressTimer()
+        emitPlaybackProgress()
+    }
+
     func replayablePlaybackSamplesSnapshot() -> [Float]? {
         guard !replayablePlaybackSamples.isEmpty else { return nil }
         return replayablePlaybackSamples
