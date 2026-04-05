@@ -63,17 +63,17 @@ extension HomeTabView {
                                     .overlay(alignment: .topTrailing) {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(.green)
+                                            .foregroundStyle(ttsTransportBadgeColor)
                                             .background(Circle().fill(Color.black))
                                             .offset(x: 3, y: -1)
-                                            .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
-                                            .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
+                                            .opacity(showsTTSTransportBadge ? 1 : 0)
+                                            .scaleEffect(showsTTSTransportBadge ? 1 : 0.82)
                                     }
                                     .frame(width: 44, height: 44)
                                     .shadow(color: .yellow.opacity(0.3), radius: 10)
                                 }
                                 .buttonStyle(.plain)
-                                .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
+                                .animation(.easeInOut(duration: 0.22), value: showsTTSTransportBadge)
                             }
                         } else {
                             if showsTTSTransportButton {
@@ -99,17 +99,17 @@ extension HomeTabView {
                                     .overlay(alignment: .topTrailing) {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(.green)
+                                            .foregroundStyle(ttsTransportBadgeColor)
                                             .background(Circle().fill(Color.black))
                                             .offset(x: 3, y: -1)
-                                            .opacity(showsFastModeBackgroundSafetyCheckmark ? 1 : 0)
-                                            .scaleEffect(showsFastModeBackgroundSafetyCheckmark ? 1 : 0.82)
+                                            .opacity(showsTTSTransportBadge ? 1 : 0)
+                                            .scaleEffect(showsTTSTransportBadge ? 1 : 0.82)
                                     }
                                     .frame(width: 44, height: 44)
                                     .shadow(color: .yellow.opacity(0.3), radius: 10)
                                 }
                                 .buttonStyle(.plain)
-                                .animation(.easeInOut(duration: 0.22), value: showsFastModeBackgroundSafetyCheckmark)
+                                .animation(.easeInOut(duration: 0.22), value: showsTTSTransportBadge)
                             }
 
                             AppActionButton(
@@ -209,6 +209,23 @@ extension HomeTabView {
             && ttsManager.state == .playing
             && !ttsManager.isReplayingCachedPlayback
             && ttsManager.isFastModeBackgroundSafe
+    }
+
+    var showsReplayReadyCheckmark: Bool {
+        ttsManager.isCurrentRequestReplayReady
+            && ttsManager.isActive
+            && !ttsManager.isReplayingCachedPlayback
+    }
+
+    var showsTTSTransportBadge: Bool {
+        showsReplayReadyCheckmark || showsFastModeBackgroundSafetyCheckmark
+    }
+
+    var ttsTransportBadgeColor: Color {
+        if showsReplayReadyCheckmark {
+            return .green
+        }
+        return .blue
     }
 
     var showsTTSTransportProgressRing: Bool {

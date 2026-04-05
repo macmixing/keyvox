@@ -54,6 +54,11 @@ final class TTSManager: ObservableObject {
         playbackCoordinator.totalPlaybackSeconds
     }
 
+    var isCurrentRequestReplayReady: Bool {
+        guard let activeRequest, let lastReplayableRequest else { return false }
+        return hasReplayablePlayback && activeRequest.id == lastReplayableRequest.id
+    }
+
     init(
         settingsStore: AppSettingsStore,
         appHaptics: AppHapticsEmitting,
