@@ -96,6 +96,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     private let now: () -> Date
     private let calendar: Calendar
     private let bypassFreeSpeakLimit: Bool
+    private var storeRefreshGeneration: UInt64 = 0
 
     init(
         defaults: UserDefaults,
@@ -154,12 +155,21 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
     func refreshStoreState() async {
         refreshUsageIfNeeded()
+        guard isStoreActionInFlight == false else { return }
+        let refreshGeneration = beginStoreRefresh()
+
+        let unlocked = await currentEntitlementIsUnlocked(productID: Self.unlockProductID)
+        guard canApplyStoreRefresh(generation: refreshGeneration) else { return }
+        applyUnlockState(unlocked)
+
         do {
-            unlockProduct = try await store.loadUnlockProduct(productID: Self.unlockProductID)
-            let unlocked = try await store.isUnlocked(productID: Self.unlockProductID)
-            applyUnlockState(unlocked)
+            let product = try await store.loadUnlockProduct(productID: Self.unlockProductID)
+            guard canApplyStoreRefresh(generation: refreshGeneration) else { return }
+            unlockProduct = product
             storeMessage = nil
         } catch {
+            guard canApplyStoreRefresh(generation: refreshGeneration) else { return }
+            unlockProduct = nil
             storeMessage = error.localizedDescription
         }
     }
@@ -167,6 +177,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     func purchaseTTSUnlock() async {
         guard isStoreActionInFlight == false else { return }
         refreshUsageIfNeeded()
+        invalidateStoreRefreshes()
         isStoreActionInFlight = true
         defer { isStoreActionInFlight = false }
 
@@ -185,6 +196,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     func restorePurchases() async {
         guard isStoreActionInFlight == false else { return }
         refreshUsageIfNeeded()
+        invalidateStoreRefreshes()
         isStoreActionInFlight = true
         defer { isStoreActionInFlight = false }
 
@@ -249,5 +261,29 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         isTTSUnlocked = unlocked
         defaults.set(unlocked, forKey: UserDefaultsKeys.App.isTTSUnlocked)
         refreshUsageState()
+    }
+
+    private func currentEntitlementIsUnlocked(productID: String) async -> Bool {
+        for await verificationResult in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = verificationResult else { continue }
+            guard transaction.productID == productID else { continue }
+            guard transaction.revocationDate == nil else { continue }
+            return true
+        }
+
+        return false
+    }
+
+    private func beginStoreRefresh() -> UInt64 {
+        storeRefreshGeneration &+= 1
+        return storeRefreshGeneration
+    }
+
+    private func invalidateStoreRefreshes() {
+        storeRefreshGeneration &+= 1
+    }
+
+    private func canApplyStoreRefresh(generation: UInt64) -> Bool {
+        isStoreActionInFlight == false && storeRefreshGeneration == generation
     }
 }
