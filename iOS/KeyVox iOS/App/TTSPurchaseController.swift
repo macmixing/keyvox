@@ -158,7 +158,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         guard isStoreActionInFlight == false else { return }
         let refreshGeneration = beginStoreRefresh()
 
-        let unlocked = await currentEntitlementIsUnlocked(productID: Self.unlockProductID)
+        let unlocked = await refreshedUnlockState(productID: Self.unlockProductID)
         guard canApplyStoreRefresh(generation: refreshGeneration) else { return }
         applyUnlockState(unlocked)
 
@@ -272,6 +272,18 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         }
 
         return false
+    }
+
+    private func refreshedUnlockState(productID: String) async -> Bool {
+        if store is AppStoreTTSUnlockStore {
+            return await currentEntitlementIsUnlocked(productID: productID)
+        }
+
+        do {
+            return try await store.isUnlocked(productID: productID)
+        } catch {
+            return isTTSUnlocked
+        }
     }
 
     private func beginStoreRefresh() -> UInt64 {

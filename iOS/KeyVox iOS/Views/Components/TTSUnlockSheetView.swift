@@ -85,7 +85,9 @@ struct TTSUnlockSheetView: View {
             return "TTS is unlocked on this Apple account."
         }
 
-        return "\(ttsPurchaseController.remainingFreeTTSSpeaksToday) free speaks left today"
+        let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
+        let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
+        return "\(remainingFreeSpeaks) free \(noun) left today"
     }
 
     private func purchaseUnlock() {
