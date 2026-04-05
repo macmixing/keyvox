@@ -133,15 +133,15 @@ extension HomeTabView {
         case .idle:
             return "Read copied text aloud using your selected voice."
         case .preparing:
-            return "Preparing playback..."
+            return "Getting ready..."
         case .generating:
-            return "Rendering startup audio..."
+            return "KeyVox is preparing to speak..."
         case .playing:
             return ttsManager.isPlaybackPaused ? "Playback paused." : "Speaking copied text."
         case .finished:
             return "Finished speaking."
         case .error:
-            return "Playback failed."
+            return "Failed to speak."
         }
     }
 
