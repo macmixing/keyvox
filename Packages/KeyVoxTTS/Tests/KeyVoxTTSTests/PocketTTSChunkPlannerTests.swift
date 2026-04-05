@@ -34,6 +34,40 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Time to first audio."))
     }
 
+    func testNormalizeReplacesEmailsWithPlaceholder() {
+        let normalized = PocketTTSChunkPlanner.normalize("Email me at test@example.com")
+        XCTAssertTrue(normalized.text.hasSuffix("Email me at email."))
+    }
+
+    func testNormalizeExpandsCurrencyAndPercentSymbols() {
+        let normalized = PocketTTSChunkPlanner.normalize("It costs $12.50 and saves 30%")
+        XCTAssertTrue(normalized.text.hasSuffix("It costs 12.50 dollars and saves 30 percent."))
+    }
+
+    func testNormalizeFlattensDatesAndTimes() {
+        let normalized = PocketTTSChunkPlanner.normalize("Meet me on 04/04/2026 at 3:05 PM")
+        XCTAssertTrue(normalized.text.hasSuffix("Meet me on 04 04 2026 at 3 05 PM."))
+    }
+
+    func testNormalizeStripsMarkdownAndCodeArtifacts() {
+        let normalized = PocketTTSChunkPlanner.normalize("# Title\n- `inline_code`\nVisit [docs](https://example.com)")
+        XCTAssertTrue(normalized.text.contains("Title"))
+        XCTAssertTrue(normalized.text.contains("inline code"))
+        XCTAssertTrue(normalized.text.contains("Visit docs"))
+        XCTAssertFalse(normalized.text.contains("https://"))
+        XCTAssertFalse(normalized.text.contains("`"))
+    }
+
+    func testNormalizeSplitsSnakeCaseCamelCaseAndSlashJoinedWords() {
+        let normalized = PocketTTSChunkPlanner.normalize("snake_case camelCase and/or")
+        XCTAssertTrue(normalized.text.hasSuffix("Snake case camel Case and or."))
+    }
+
+    func testNormalizeExpandsVersionPrefix() {
+        let normalized = PocketTTSChunkPlanner.normalize("Updated in v1.2.3")
+        XCTAssertTrue(normalized.text.hasSuffix("Updated in version 1.2.3."))
+    }
+
     func testChunkPlannerKeepsShortTextInSingleChunk() throws {
         let tokenizer = try SentencePieceTokenizer(modelData: fixtureSentencePieceModel())
         let chunks = PocketTTSChunkPlanner.chunk("Dr. Smith arrived. The meeting started.", tokenizer: tokenizer)

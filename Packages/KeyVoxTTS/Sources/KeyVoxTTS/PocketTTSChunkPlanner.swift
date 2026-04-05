@@ -4,8 +4,6 @@ import NaturalLanguage
 enum PocketTTSChunkPlanner {
     private static let hardBreakPattern = #"\n\s*\n+"#
     private static let softBreakPattern = #"\s*\n\s*"#
-    private static let repeatedChevronPattern = #">\s*>\s*>+"#
-    private static let urlPattern = #"https?://\S+"#
 
     static func normalize(_ text: String) -> (text: String, framesAfterEOS: Int) {
         var normalized = sanitize(text).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -464,51 +462,6 @@ enum PocketTTSChunkPlanner {
     }
 
     private static func sanitize(_ text: String) -> String {
-        var sanitized = text
-
-        sanitized = sanitized.replacingOccurrences(of: "\u{2018}", with: "'")
-        sanitized = sanitized.replacingOccurrences(of: "\u{2019}", with: "'")
-        sanitized = sanitized.replacingOccurrences(of: "\u{201C}", with: "\"")
-        sanitized = sanitized.replacingOccurrences(of: "\u{201D}", with: "\"")
-        sanitized = sanitized.replacingOccurrences(of: "\u{2013}", with: "-")
-        sanitized = sanitized.replacingOccurrences(of: "\u{2014}", with: " - ")
-        sanitized = sanitized.replacingOccurrences(of: "\u{2026}", with: "...")
-        sanitized = sanitized.replacingOccurrences(of: "&", with: " and ")
-
-        sanitized = sanitized.replacingOccurrences(
-            of: repeatedChevronPattern,
-            with: ". ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: urlPattern,
-            with: " link ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: #"\s*[\(\[]\s*"#,
-            with: ", ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: #"\s*[\)\]]\s*"#,
-            with: ", ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: #"(?<=\p{L}|\p{N})\-(?=\p{L}|\p{N})"#,
-            with: " ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: #"[^\p{L}\p{N}\s\.,!\?;:'"\(\)\[\]\/\-\n]"#,
-            with: " ",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(of: #"\s*,\s*,+"#, with: ", ", options: .regularExpression)
-        sanitized = sanitized.replacingOccurrences(of: #"\s+,([.!?])"#, with: "$1", options: .regularExpression)
-        sanitized = sanitized.replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
-
-        return sanitized
+        PocketTTSTextNormalizer.sanitize(text)
     }
 }
