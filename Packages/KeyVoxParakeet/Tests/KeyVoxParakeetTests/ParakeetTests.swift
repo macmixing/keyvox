@@ -286,6 +286,54 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[3]), 3.5, accuracy: 0.001)
     }
 
+    func testUtteranceGateRejectsShortLowConfidenceResult() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 550,
+                    text: "Yeah.",
+                    confidence: 0.604,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertTrue(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 8_799))
+    }
+
+    func testUtteranceGateKeepsHigherConfidenceShortSpeech() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 480,
+                    text: "Yes.",
+                    confidence: 0.840,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 7_680))
+    }
+
+    func testUtteranceGateKeepsLongerUtterance() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 1_400,
+                    text: "This is longer.",
+                    confidence: 0.612,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 22_400))
+    }
+
     private func makeModelFile() throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("keyvox-parakeet-\(UUID().uuidString).bin")

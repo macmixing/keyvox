@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-04-05
+
+Confidence-gated short-utterance suppression for low-confidence Parakeet output.
+
+### Includes
+
+- Added `ParakeetUtteranceGate` to the package surface so short one-shot Parakeet results can be treated as likely no-speech when they do not clear the confidence bar needed for confirmation.
+- Adapted the anti-spam pattern from the local `FluidAudio-reference` Parakeet implementation by gating brief low-confidence output at utterance confirmation time instead of hard-coding filler-word filters.
+- Added package regression coverage that rejects the short low-confidence `Yeah.`-style result shape while preserving higher-confidence short speech and longer utterances.
+
+### Notes
+
+- `1.0.1` bumps the tracked runtime version for `KeyVoxParakeet` to cover the new utterance-gating behavior used to suppress short low-confidence hallucinated output before it reaches shared dictation clients.
+
 ## [1.0.0] - 2026-03-30
 
 Baseline tracked release of the KeyVox Parakeet runtime package.

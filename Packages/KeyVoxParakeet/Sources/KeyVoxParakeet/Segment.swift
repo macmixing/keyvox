@@ -36,3 +36,28 @@ public struct ParakeetTranscriptionResult: Sendable, Equatable {
         self.detectedLanguageName = detectedLanguageName
     }
 }
+
+public enum ParakeetUtteranceGate {
+    static let sampleRate: Double = 16_000
+    static let shortUtteranceMaximumDurationSeconds: Double = 1.0
+    static let minimumConfirmedConfidence: Float = 0.80
+
+    public static func isLikelyNoSpeech(
+        result: ParakeetTranscriptionResult,
+        audioFrameCount: Int
+    ) -> Bool {
+        let nonEmptySegments = result.segments.filter {
+            !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        guard !nonEmptySegments.isEmpty else { return true }
+
+        let durationSeconds = Double(audioFrameCount) / sampleRate
+        guard durationSeconds <= shortUtteranceMaximumDurationSeconds else { return false }
+
+        let segmentConfidences = nonEmptySegments.compactMap(\.confidence)
+        guard !segmentConfidences.isEmpty else { return false }
+
+        let averageConfidence = segmentConfidences.reduce(0, +) / Float(segmentConfidences.count)
+        return averageConfidence < minimumConfirmedConfidence
+    }
+}
