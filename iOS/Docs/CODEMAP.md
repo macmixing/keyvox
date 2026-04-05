@@ -175,6 +175,7 @@ iOS/
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── ModelDownloadProgress.swift
 │   │   │   ├── OnboardingStepRow.swift
+│   │   │   ├── PlaybackVoicePickerMenu.swift
 │   │   │   ├── SettingsDeletionConfirmation.swift
 │   │   │   └── SettingsRow.swift
 │   │   ├── Dictionary/
@@ -494,12 +495,14 @@ Packages/
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout.
   - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, transcript copy affordance, and idle transcript dismissal.
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, and playback error presentation.
-  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, voice resolution, and Home-scoped TTS actions.
+  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
 - `KeyVox iOS/App/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
 - `KeyVox iOS/Views/Components/LastTranscriptionCardView.swift`
   - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
+- `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
+  - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
@@ -509,7 +512,7 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
   - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
-  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, and playback voice selection.
+  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, and playback voice selection, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`

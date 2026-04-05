@@ -34,14 +34,10 @@ extension SettingsTabView {
                                 .foregroundStyle(.white.opacity(0.5))
                                 .padding(.top, 2)
                         } else {
-                            Menu {
-                                Picker("", selection: installedVoiceSelection) {
-                                    ForEach(installedPlaybackVoices) { voice in
-                                        Text(voice.displayName).tag(voice)
-                                    }
-                                }
-                                .pickerStyle(.inline)
-                            } label: {
+                            PlaybackVoicePickerMenu(
+                                voices: installedPlaybackVoices,
+                                selection: installedVoiceSelection
+                            ) {
                                 Text("Change")
                                     .font(.appFont(16))
                                     .foregroundColor(.yellow)

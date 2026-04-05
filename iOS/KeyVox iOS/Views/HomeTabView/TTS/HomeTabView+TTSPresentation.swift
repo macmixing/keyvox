@@ -1,6 +1,59 @@
 import SwiftUI
 
 extension HomeTabView {
+    @ViewBuilder
+    var ttsVoiceShortcutLabel: some View {
+        if installedPlaybackVoices.isEmpty {
+            Text(effectiveTTSVoice.displayName)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.yellow)
+        } else {
+            PlaybackVoicePickerMenu(
+                voices: installedPlaybackVoices,
+                selection: installedVoiceSelection
+            ) {
+                Text(homePlaybackVoiceSummaryText)
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.yellow)
+            }
+        }
+    }
+
+    var installedPlaybackVoices: [AppSettingsStore.TTSVoice] {
+        pocketTTSModelManager.installedVoices()
+    }
+
+    var installedVoiceSelection: Binding<AppSettingsStore.TTSVoice> {
+        Binding(
+            get: {
+                if installedPlaybackVoices.contains(settingsStore.ttsVoice) {
+                    return settingsStore.ttsVoice
+                }
+
+                return installedPlaybackVoices.first ?? settingsStore.ttsVoice
+            },
+            set: { newValue in
+                guard installedPlaybackVoices.contains(newValue) else { return }
+                guard settingsStore.ttsVoice != newValue else { return }
+
+                appHaptics.light()
+                settingsStore.ttsVoice = newValue
+            }
+        )
+    }
+
+    var homePlaybackVoiceSummaryText: String {
+        if installedPlaybackVoices.contains(settingsStore.ttsVoice) {
+            return settingsStore.ttsVoice.displayName
+        }
+
+        if let firstInstalledVoice = installedPlaybackVoices.first {
+            return firstInstalledVoice.displayName
+        }
+
+        return effectiveTTSVoice.displayName
+    }
+
     var ttsButtonTitle: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
             return "Install"

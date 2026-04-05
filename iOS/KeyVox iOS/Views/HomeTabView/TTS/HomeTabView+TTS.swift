@@ -16,9 +16,7 @@ extension HomeTabView {
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(.yellow)
 
-                            Text(effectiveTTSVoice.displayName)
-                                .font(.appFont(15, variant: .light))
-                                .foregroundStyle(.yellow)
+                            ttsVoiceShortcutLabel
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
