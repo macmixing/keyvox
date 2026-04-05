@@ -11,6 +11,7 @@ struct KeyVoxSpeakSceneCView: View {
     @State private var installCardOpacity: Double = 0
     @State private var installCardOffset: CGFloat = 18
     @State private var stepRevealProgress: Int = 0
+    @State private var fastModeHintOpacity: Double = 0
     @State private var footerOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
@@ -49,6 +50,10 @@ struct KeyVoxSpeakSceneCView: View {
             setupHint
                 .opacity(footerOpacity)
                 .padding(.top, 12)
+
+            fastModeHint
+                .opacity(fastModeHintOpacity)
+                .padding(.top, 8)
 
             Spacer(minLength: 20)
         }
@@ -89,6 +94,19 @@ struct KeyVoxSpeakSceneCView: View {
         return "Start by downloading PocketTTS CoreML, then install Alba."
     }
 
+    private var fastModeHint: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "bolt.fill")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.yellow.opacity(0.8))
+
+            Text("Don't forget: Fast Mode starts speaking ~50% faster.")
+                .font(.appFont(13, variant: .light))
+                .foregroundStyle(.white.opacity(0.55))
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
     private var setupHint: some View {
         HStack(spacing: 8) {
             Image(systemName: pocketTTSReadyForAlba ? "checkmark.circle.fill" : "arrow.down.circle.fill")
@@ -111,6 +129,7 @@ struct KeyVoxSpeakSceneCView: View {
         installCardOpacity = 0
         installCardOffset = 18
         stepRevealProgress = 0
+        fastModeHintOpacity = 0
         footerOpacity = 0
 
         animationTask = Task { @MainActor in
@@ -138,11 +157,18 @@ struct KeyVoxSpeakSceneCView: View {
                 }
             }
 
-            try? await Task.sleep(for: .seconds(0.25))
+            try? await Task.sleep(for: .seconds(0.2))
             guard !Task.isCancelled else { return }
 
             withAnimation(.easeOut(duration: 0.4)) {
                 footerOpacity = 1
+            }
+
+            try? await Task.sleep(for: .seconds(0.15))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.35)) {
+                fastModeHintOpacity = 1
             }
         }
     }

@@ -12,13 +12,14 @@ struct KeyVoxSpeakSceneBView: View {
         AccessMethod(id: 0, icon: "house.fill", title: "Home Tab", subtitle: "Tap Speak from the main screen."),
         AccessMethod(id: 1, icon: "keyboard.fill", title: "Keyboard Shortcut", subtitle: "Trigger directly from the KeyVox keyboard."),
         AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: "Share to Speak", subtitle: "Share text, URLs, or images with text from any app."),
-        AccessMethod(id: 3, icon: "bolt.fill", title: "Shortcuts & Actions", subtitle: "Map to Action Button or Control Center.")
+        AccessMethod(id: 3, icon: "link", title: "Shortcuts & Actions", subtitle: "Map to Action Button or Control Center.")
     ]
 
     @State private var circleOpacity: Double = 0
     @State private var circleScale: CGFloat = 0.8
     @State private var headerOpacity: Double = 0
     @State private var rowRevealProgress: Int = 0
+    @State private var fastModeCardOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
@@ -26,26 +27,28 @@ struct KeyVoxSpeakSceneBView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 16)
 
-            Image("keyvox-circle")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 64, height: 64)
-                .opacity(circleOpacity)
-                .scaleEffect(circleScale)
-                .shadow(color: .yellow.opacity(0.3), radius: 10)
-                .padding(.bottom, 20)
+            HStack(spacing: 14) {
+                Image("keyvox-circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 48, height: 48)
+                    .opacity(circleOpacity)
+                    .scaleEffect(circleScale)
+                    .shadow(color: .yellow.opacity(0.3), radius: 8)
 
-            Text("Listen Anywhere")
-                .font(.appFont(28, variant: .medium))
-                .foregroundStyle(.white)
-                .opacity(headerOpacity)
-                .padding(.bottom, 4)
+                VStack(alignment: .leading, spacing: -6) {
+                    Text("How To Speak?")
+                        .font(.appFont(30, variant: .medium))
+                        .foregroundStyle(.white)
 
-            Text("Multiple ways to start speaking.")
-                .font(.appFont(16, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
-                .opacity(headerOpacity)
-                .padding(.bottom, 24)
+                    Text("Speak is everywhere you are.")
+                        .font(.appFont(16, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .opacity(headerOpacity)
+            .padding(.bottom, 24)
 
             VStack(spacing: 12) {
                 ForEach(Self.accessMethods) { method in
@@ -54,6 +57,10 @@ struct KeyVoxSpeakSceneBView: View {
                         .offset(y: method.id < rowRevealProgress ? 0 : 10)
                 }
             }
+            .padding(.bottom, 14)
+
+            fastModeCard
+                .opacity(fastModeCardOpacity)
 
             Spacer(minLength: 16)
         }
@@ -61,6 +68,43 @@ struct KeyVoxSpeakSceneBView: View {
         .padding(.horizontal, 24)
         .onAppear { startEntrance() }
         .onDisappear { stopEntrance() }
+    }
+
+    private var fastModeCard: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.4))
+                    .frame(width: 34, height: 34)
+
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(.yellow)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Fast Mode Available")
+                    .font(.appFont(14, variant: .medium))
+                    .foregroundStyle(.white)
+
+                Text("Starts speaking ~50% faster. Toggle in the toolbar.")
+                    .font(.appFont(12, variant: .light))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                .fill(Color.yellow.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                        .stroke(Color.yellow.opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 
     private func accessMethodRow(_ method: AccessMethod) -> some View {
@@ -110,6 +154,7 @@ struct KeyVoxSpeakSceneBView: View {
         circleScale = 0.8
         headerOpacity = 0
         rowRevealProgress = 0
+        fastModeCardOpacity = 0
 
         animationTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.15))
@@ -134,6 +179,13 @@ struct KeyVoxSpeakSceneBView: View {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.82)) {
                     rowRevealProgress = index + 1
                 }
+            }
+
+            try? await Task.sleep(for: .seconds(0.15))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.35)) {
+                fastModeCardOpacity = 1
             }
         }
     }

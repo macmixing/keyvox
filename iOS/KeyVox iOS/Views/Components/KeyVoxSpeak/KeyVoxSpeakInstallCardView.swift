@@ -27,7 +27,7 @@ struct KeyVoxSpeakInstallCardView: View {
                         .frame(width: 34, height: 34)
 
                     Image(systemName: pocketTTSReadyForAlba ? "checkmark" : "arrow.down.circle.fill")
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(size: 15, weight: .heavy))
                         .foregroundStyle(.yellow)
                 }
 
@@ -114,8 +114,8 @@ struct KeyVoxSpeakInstallCardView: View {
                         .overlay {
                             if step.isReady(in: pocketTTSModelManager) {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    .font(.system(size: 10, weight: .heavy))
+                                    .foregroundStyle(.black)
                             } else {
                                 Text("\(step.rawValue + 1)")
                                     .font(.appFont(12, variant: .medium))
