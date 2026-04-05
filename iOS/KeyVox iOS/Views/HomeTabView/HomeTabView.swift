@@ -11,6 +11,9 @@ struct HomeTabView: View {
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationVisible = false
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
+    @State var showsTTSTranscriptPanelContainer = false
+    @State var isTTSTranscriptPanelContentVisible = false
+    @State var ttsTranscriptCollapseTask: Task<Void, Never>?
     @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
         UserDefaultsKeys.App.isTTSTranscriptExpanded,
@@ -30,6 +33,13 @@ struct HomeTabView: View {
         }
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
+            syncTTSTranscriptPresentation()
+        }
+        .onChange(of: shouldShowExpandedTTSTranscriptPanel, initial: true) { _, _ in
+            updateTTSTranscriptPresentation()
+        }
+        .onDisappear {
+            ttsTranscriptCollapseTask?.cancel()
         }
     }
 

@@ -3,9 +3,7 @@ import SwiftUI
 extension HomeTabView {
     var ttsTranscriptToggleButton: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.22)) {
-                isTTSTranscriptExpanded.toggle()
-            }
+            setTTSTranscriptExpanded(!isTTSTranscriptExpanded)
         } label: {
             ZStack {
                 Image(systemName: "text.alignleft")
@@ -37,6 +35,8 @@ extension HomeTabView {
             }
             .frame(maxHeight: 180, alignment: .top)
             .padding(16)
+            .scaleEffect(y: isTTSTranscriptPanelContentVisible ? 1 : 0.92, anchor: .top)
+            .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
                     .fill(AppTheme.rowFill)
@@ -63,9 +63,7 @@ extension HomeTabView {
 
             if showsTTSTranscriptIdleCloseButton {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        isTTSTranscriptExpanded = false
-                    }
+                    setTTSTranscriptExpanded(false)
                 } label: {
                     Text("Close")
                         .font(.appFont(13, variant: .medium))
@@ -73,15 +71,10 @@ extension HomeTabView {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .buttonStyle(.plain)
+                .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
             }
         }
         .padding(.top, 2)
-        .transition(
-            .asymmetric(
-                insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .top)),
-                removal: .opacity
-            )
-        )
     }
 
     var showsTTSTranscriptToggle: Bool {
@@ -90,6 +83,10 @@ extension HomeTabView {
     }
 
     var showsExpandedTTSTranscript: Bool {
+        showsTTSTranscriptPanelContainer
+    }
+
+    var shouldShowExpandedTTSTranscriptPanel: Bool {
         isTTSTranscriptExpanded && currentPlaybackTranscriptText.isEmpty == false
     }
 
@@ -99,5 +96,42 @@ extension HomeTabView {
 
     var currentPlaybackTranscriptText: String {
         ttsManager.currentPlaybackDisplayText ?? ""
+    }
+
+    func setTTSTranscriptExpanded(_ isExpanded: Bool) {
+        guard isTTSTranscriptExpanded != isExpanded else { return }
+        isTTSTranscriptExpanded = isExpanded
+    }
+
+    func syncTTSTranscriptPresentation() {
+        ttsTranscriptCollapseTask?.cancel()
+        showsTTSTranscriptPanelContainer = shouldShowExpandedTTSTranscriptPanel
+        isTTSTranscriptPanelContentVisible = shouldShowExpandedTTSTranscriptPanel
+    }
+
+    func updateTTSTranscriptPresentation() {
+        ttsTranscriptCollapseTask?.cancel()
+
+        if shouldShowExpandedTTSTranscriptPanel {
+            if showsTTSTranscriptPanelContainer == false {
+                showsTTSTranscriptPanelContainer = true
+            }
+
+            withAnimation(.easeOut(duration: 0.18)) {
+                isTTSTranscriptPanelContentVisible = true
+            }
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.18)) {
+            isTTSTranscriptPanelContentVisible = false
+        }
+
+        ttsTranscriptCollapseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 180_000_000)
+            withAnimation(.easeInOut(duration: 0.26)) {
+                showsTTSTranscriptPanelContainer = false
+            }
+        }
     }
 }
