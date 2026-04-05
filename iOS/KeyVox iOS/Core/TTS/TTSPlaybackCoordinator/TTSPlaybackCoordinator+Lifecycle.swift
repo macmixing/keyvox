@@ -75,7 +75,9 @@ extension TTSPlaybackCoordinator {
 
                 await MainActor.run {
                     self.isFinishing = true
+                    self.replayablePlaybackSamples = self.activePlaybackSamples
                     Self.log("Playback stream finished. queuedBuffers=\(self.queuedBufferCount) queuedSamples=\(self.queuedSampleCount)")
+                    self.onReplayablePlaybackReady?()
                     self.finishIfPossible()
                 }
             } catch {
@@ -267,7 +269,6 @@ extension TTSPlaybackCoordinator {
         Self.log("Playback finished.")
 
         playbackTask = nil
-        replayablePlaybackSamples = activePlaybackSamples
         activePlaybackSamples = []
         isPaused = false
         isReplayingCachedAudio = false

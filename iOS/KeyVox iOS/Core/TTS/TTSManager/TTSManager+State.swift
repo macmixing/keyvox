@@ -21,6 +21,14 @@ extension TTSManager {
         }
     }
 
+    func handleReplayablePlaybackReady() {
+        guard let activeRequest else { return }
+        lastReplayableRequest = activeRequest
+        hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
+        persistReplayablePlaybackIfNeeded(for: activeRequest)
+        Self.log("Replayable playback became available for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+    }
+
     func handleError(_ message: String) {
         Task { @MainActor [weak self] in
             guard let self else { return }

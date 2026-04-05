@@ -100,6 +100,9 @@ final class TTSManager: ObservableObject {
             self?.fastModeBackgroundSafetyProgress = progress
             self?.isFastModeBackgroundSafe = isSafe
         }
+        playbackCoordinator.onReplayablePlaybackReady = { [weak self] in
+            self?.handleReplayablePlaybackReady()
+        }
 
         restoreReplayablePlaybackIfNeeded()
         updateIdleSleepPrevention()
