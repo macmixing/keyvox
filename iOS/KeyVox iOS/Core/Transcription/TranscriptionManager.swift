@@ -218,6 +218,22 @@ final class TranscriptionManager: ObservableObject {
         }
     }
 
+    func repairMonitoringSessionIfNeeded() async {
+        guard state == .idle else { return }
+        guard sessionDisablePending == false else { return }
+
+        do {
+            try await recorder.repairMonitoringAfterPlayback()
+            isSessionActive = recorder.isMonitoring
+            if isSessionActive {
+                armIdleTimeout()
+            }
+        } catch {
+            lastErrorMessage = error.localizedDescription
+            isSessionActive = recorder.isMonitoring
+        }
+    }
+
     func performStopRecordingCommand() async {
         guard state == .recording else { return }
         let utteranceID = activeUtteranceID

@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-03-31**
+**Last Updated: 2026-04-05**
 
 ## Design Philosophy
 
@@ -17,6 +17,7 @@ The containing app owns privileged work.
 Shared state must stay explicit, deterministic, and recoverable.
 The keyboard extension remains intentionally thin.
 The widget extension remains presentation-only.
+The share extension remains extraction and handoff only.
 Convenience matters, but not more than predictable behavior.
 
 ## Target Boundaries
@@ -29,9 +30,13 @@ The containing app owns:
 - app-owned haptics
 - settings and iCloud sync
 - model installation, validation, and recovery
+- copied-text playback voice installation and validation
 - microphone capture and session warmth
 - interrupted-capture recovery
 - dictation pipeline ownership
+- copied-text TTS request ownership
+- copied-text playback, replay, and pause/resume state
+- playback-preparation and return-to-host readiness gating
 - weekly word stats
 - Live Activity coordination
 - the SwiftUI app shell
@@ -44,6 +49,7 @@ The keyboard extension owns:
 - presentation-scoped keyboard view-tree lifecycle
 - toolbar mode selection and warning presentation
 - warm/cold launch handoff into the containing app
+- keyboard-owned copied-text speak control and transport state
 - text insertion into host apps
 - keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
 
@@ -66,6 +72,25 @@ The widget extension owns:
 
 The widget extension does **not** own session policy, dictation state, or business logic beyond presenting the current mirrored session state.
 
+### Share Extension
+
+The share extension owns:
+
+- extraction of directly shared text
+- extraction of text from shared URLs and web payloads
+- OCR extraction for shared images
+- staging a TTS request into App Group storage
+- launching the containing app into the TTS route
+- lightweight visual feedback while extraction is running
+
+The share extension does **not** own:
+
+- PocketTTS runtime initialization
+- voice install validation
+- synthesis
+- playback state
+- replay caching
+
 ## Platform and Target Requirements
 
 - Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
@@ -76,7 +101,11 @@ The widget extension does **not** own session policy, dictation state, or busine
 - The keyboard extension declares:
   - `NSExtensionPointIdentifier = com.apple.keyboard-service`
   - `RequestsOpenAccess = true`
+- The share extension declares:
+  - `NSExtensionPointIdentifier = com.apple.share-services`
 - Both the app and keyboard extension require the App Group entitlement:
+  - `group.com.cueit.keyvox`
+- The share extension also requires the App Group entitlement:
   - `group.com.cueit.keyvox`
 - The widget target also depends on the shared code/project wiring needed for ActivityKit and the shared App Group-backed session state.
 
@@ -90,6 +119,7 @@ It builds and wires:
 - `AppSettingsStore`
 - `OnboardingStore`
 - `WeeklyWordStatsStore`
+- `AppTabRouter`
 - `AppHaptics`
 - `WhisperService`
 - `ParakeetService`
@@ -98,6 +128,12 @@ It builds and wires:
 - `ModelManager`
 - `KeyVoxKeyboardBridge`
 - `TranscriptionManager`
+- `TTSVoicePreviewPlayer`
+- `PocketTTSEngine`
+- `PocketTTSModelManager`
+- `TTSPlaybackCoordinator`
+- `TTSManager`
+- `AudioModeCoordinator`
 - `CloudSyncCoordinator`
 - `WeeklyWordStatsCloudSync`
 - `KeyVoxSessionLiveActivityCoordinator`
@@ -220,6 +256,14 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `recordingState_timestamp`
 - `latestTranscription`
 - `session_timestamp`
+- `sessionHasBluetoothAudioRoute`
+- `recentTTSPlayback_timestamp`
+- `ttsState`
+- `ttsState_timestamp`
+- `ttsErrorMessage`
+- `ttsPlaybackMeterLevel`
+- `ttsPlaybackMeterSignalState`
+- `ttsPlaybackMeterTimestamp`
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
@@ -234,6 +278,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.PreferBuiltInMicrophone`
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
+- `KeyVox.TTSVoice`
+- `KeyVox.FastPlaybackModeEnabled`
 
 ### App-Owned Persistent Defaults Keys
 
@@ -250,6 +296,13 @@ Keyboard onboarding detection is deliberately split across three signals:
   - written atomically by the containing app
   - read by the keyboard extension only
   - ephemeral transport, not durable storage
+- `TTS/request.json`
+  - staged by the containing app, keyboard extension, and share extension
+  - consumed by the containing app as the single source of truth for pending copied-text playback requests
+- `TTS/last-replay.json`
+  - durable replay metadata containing the request, rendered sample count, and optional paused replay sample offset
+- `TTS/last-replay.pcm`
+  - durable replay audio payload for the last replayable copied-text playback
 
 ### Darwin Notification Names
 
@@ -261,6 +314,12 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `com.cueit.keyvox.transcribingStarted`
 - `com.cueit.keyvox.transcriptionReady`
 - `com.cueit.keyvox.noSpeech`
+- `com.cueit.keyvox.startTTS`
+- `com.cueit.keyvox.stopTTS`
+- `com.cueit.keyvox.ttsPreparing`
+- `com.cueit.keyvox.ttsPlaying`
+- `com.cueit.keyvox.ttsFinished`
+- `com.cueit.keyvox.ttsFailed`
 
 ### Shared Recording States
 
@@ -268,6 +327,15 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `waitingForApp`
 - `recording`
 - `transcribing`
+
+### Shared TTS States
+
+- `idle`
+- `preparing`
+- `generating`
+- `playing`
+- `finished`
+- `error`
 
 ## Shared Container Layout
 
@@ -283,11 +351,16 @@ The App Group container is the stable cross-process boundary:
 - `Models/parakeet/Decoder.mlmodelc/`
 - `Models/parakeet/JointDecision.mlmodelc/`
 - `Models/parakeet/install-manifest.json`
+- `Models/tts/pockettts/Model/`
+- `Models/tts/pockettts/Voices/<voice>/audio_prompt.bin`
 - `Models/.staging/whisper-base/` during staged Whisper download only
 - `Models/.staging/parakeet-tdt-v3/` during staged Parakeet download only
 - `Models/model-download-job.json`
 - `InterruptedCapture/pending-interrupted-capture.plist`
 - `KeyVoxCore/` for dictionary persistence
+- `TTS/request.json`
+- `TTS/last-replay.json`
+- `TTS/last-replay.pcm`
 - `live-meter-state.bin` for transient keyboard indicator transport
 
 If the App Group container is unavailable:
@@ -302,8 +375,10 @@ Warmth is controlled by `session_timestamp`.
 Rules:
 
 - `KeyVoxIPCBridge.heartbeatFreshnessWindow` is `5` seconds
+- `KeyVoxIPCBridge.recentTTSWarmStartWindow` is `8` seconds
 - the recorder or keyboard bridge refreshes the heartbeat while the app is active enough to be considered warm
 - the extension treats the app as warm only when the heartbeat is newer than that window
+- the keyboard may use a longer warm grace period when the shared state reports a Bluetooth route or recent TTS playback
 
 Warm path:
 
@@ -463,6 +538,83 @@ Additional Parakeet-specific readiness requirements:
 
 Partial installs are never treated as ready.
 
+## Copied Text Playback and PocketTTS Contract
+
+The copied-text playback stack is app-owned even when initiated from the keyboard.
+
+The local synthesis runtime itself lives in the separate `Packages/KeyVoxTTS` package.
+That package owns:
+
+- the PocketTTS runtime actor
+- runtime asset loading
+- compute-mode ownership
+- text normalization
+- sentence and chunk planning
+- SentencePiece tokenizer parsing and tokenization
+- Core ML inference helpers
+- streamed `KeyVoxTTSAudioFrame` emission
+
+Primary owners:
+
+- `PocketTTSModelManager` owns shared PocketTTS Core ML runtime install state plus per-voice install state.
+- `PocketTTSModelCatalog` owns shared-runtime artifact metadata plus approximate per-voice download size metadata used by settings.
+- `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
+- `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, playback metering, replayable-audio capture, replay seeking, and pause/resume.
+- `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, and App Group TTS state publishing.
+- `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions.
+
+### PocketTTS Install Rules
+
+- PocketTTS is split into one shared `PocketTTS CoreML` runtime install plus independently downloaded voice prompt installs.
+- deleting the shared PocketTTS runtime removes the entire PocketTTS install root, including any downloaded voices
+- the selected playback voice is persisted in `AppSettingsStore`
+- the settings UI may surface approximate voice download sizes, but install validation still depends on the manifest-backed artifact set
+- bundled voice preview clips are app resources and are intentionally separate from downloadable PocketTTS voice assets
+- the downloaded PocketTTS runtime artifacts and voice prompts are not bundled in the repository and remain third-party licensed model assets
+
+### Runtime Structure Rules
+
+- `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
+- `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, `TTSPlaybackCoordinator+Metering.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
+- `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
+- text cleanup policy for copied-text playback belongs in `PocketTTSTextNormalizer.swift`, not back inside chunk-planning logic
+
+### Fast Mode and Normal Mode Rules
+
+- `AppSettingsStore.fastPlaybackModeEnabled` is the only persisted user-facing mode switch for copied-text playback startup behavior
+- normal mode is background safe immediately once playback begins
+- fast mode is allowed to begin earlier but must use deterministic buffering and deterministic background-safety calculation rather than reactive guessing
+- replay is treated as a separate transport state and should not reuse live-stream background-safety badge meaning
+- live transport status should surface blue for background-safe playback and green once the current request has finalized into replay-ready audio
+- replay-ready persistence happens when stream generation completes, not only when audible playback has fully drained
+
+### Playback Rules
+
+- copied-text playback requests are serialized through `KeyVoxTTSRequest`
+- keyboard-initiated playback stages the request in shared storage and uses the containing app as the synthesis owner
+- share-extension initiated playback also stages the request in shared storage and uses the containing app as the synthesis owner
+- playback-preparation progress is deterministic and gates the return-to-host path before audio starts
+- the success haptic for playback preparation completion must fire before the intentional pre-playback delay begins
+- the last completed rendered playback is cached independently of the clipboard and may be replayed later from the Home tab
+- paused replay state, including sample offset, is durable across app relaunches
+- replay transport uses a dedicated scrubber while cached replay is active
+- `AudioModeCoordinator` must remain the transition owner for:
+  - start dictation
+  - start copied-text playback
+  - pause/resume/replay playback
+  - stop playback
+
+### Warm Dictation and TTS Interaction
+
+- when dictation is already warm, TTS may use a recording-preserving playback audio-session mode
+- the post-TTS handoff keeps recent-TTS state in shared IPC so the keyboard can choose the right warm-start grace period
+- Bluetooth-aware warm-start behavior is keyboard-facing policy only; the containing app still owns actual recorder and TTS session transitions
+
+### Home Routing Rules for TTS
+
+- TTS starts coming from the keyboard or URL routes must move the containing app back to the Home tab before the copied-text playback UI becomes active
+- `AppTabRouter` is the shared tab-selection source of truth for that behavior
+
 ### Background Download Rules
 
 `ModelBackgroundDownloadCoordinator` owns the background `URLSession`.
@@ -527,6 +679,23 @@ Excluded from iCloud sync:
 - onboarding state
 - pending keyboard-tour handoff
 
+## Share Extension Extraction Contract
+
+The share extension is allowed to do best-effort extraction work before launching the containing app.
+
+Current extraction order is:
+
+1. directly shared text
+2. web extraction for shared URL and HTML style payloads
+3. OCR extraction for shared images
+
+Rules:
+
+- extraction should stop at the first non-empty useful result
+- the share extension writes a `KeyVoxTTSRequest` compatible payload through `KeyVoxShareBridge`
+- the share extension must not initialize the PocketTTS runtime or own playback state
+- all actual playback still belongs to the containing app after `keyvoxios://tts/start`
+
 ## Live Activity Contract
 
 The app owns Live Activity state; the widget renders it.
@@ -577,6 +746,7 @@ The extension is a transport and insertion surface, not the transcription owner.
 - full-access instructions presentation
 - keyboard state transitions
 - warm/cold app handoff
+- keyboard-owned copied-text speak/replay transport presentation
 - cancel flow
 - host-text insertion
 - cursor movement and key-repeat interactions
@@ -601,6 +771,7 @@ Implementation split:
 - `KeyboardViewController.swift` owns the controller-facing event and state surface
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
+- `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 
 ### Toolbar and Layout Rules
 
@@ -708,11 +879,15 @@ The containing app is intentionally thin, but it is no longer a minimal debug sh
 
 Current app-owned surfaces:
 
-- `HomeTabView`: weekly stats, last transcription, debug diagnostics
+- `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
+- `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
+- `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: session timeout, Live Activities toggle, keyboard haptics, mic preference, App Store review, support link, and version footer
-- `SettingsTabView+Models`: release-facing `Active Model` section for provider selection plus per-model install actions and uninstalled model size display
+- `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination
+- `SettingsTabView+Models`: release-facing `Text Model` section for provider selection plus per-model install actions and uninstalled model size display
+- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, and voice selection
+- `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour
 

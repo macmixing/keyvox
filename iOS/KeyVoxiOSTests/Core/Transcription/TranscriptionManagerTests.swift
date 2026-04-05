@@ -790,6 +790,14 @@ private final class StubAudioRecorder: AudioRecording {
         isMonitoring = true
     }
 
+    func repairMonitoringAfterPlayback() async throws {
+        enableMonitoringCallCount += 1
+        if let enableMonitoringError {
+            throw enableMonitoringError
+        }
+        isMonitoring = true
+    }
+
     func startRecording() async throws {
         startCallCount += 1
         if let startError {

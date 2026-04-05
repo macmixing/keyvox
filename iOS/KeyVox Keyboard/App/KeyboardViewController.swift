@@ -8,6 +8,7 @@ final class KeyboardViewController: UIInputViewController {
     let interactionHaptics = KeyboardInteractionHaptics()
     let indicatorDriver = AudioIndicatorDriver()
     let startRecordingURL = URL(string: "keyvoxios://record/start")
+    let startTTSURL = URL(string: "keyvoxios://tts/start")
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
@@ -31,6 +32,24 @@ final class KeyboardViewController: UIInputViewController {
             self?.containingAppLauncher.open(url)
         },
         startRecordingURL: startRecordingURL
+    )
+    lazy var ttsController = KeyboardTTSController(
+        ipcManager: ipcManager,
+        scheduleAction: keyboardMainQueueScheduler,
+        openContainingApp: { [weak self] url in
+            self?.containingAppLauncher.open(url)
+        },
+        startTTSURL: startTTSURL,
+        clipboardTextProvider: {
+            UIPasteboard.general.string
+        },
+        selectedVoiceIDProvider: {
+            let defaults = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)
+            return defaults?.string(forKey: UserDefaultsKeys.ttsVoice) ?? "azelma"
+        },
+        requestWriter: { request in
+            KeyVoxIPCBridge.writeTTSRequest(request)
+        }
     )
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {
@@ -80,6 +99,7 @@ final class KeyboardViewController: UIInputViewController {
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         syncCapsLockState()
         dictationController.syncStateFromSharedState()
+        ttsController.syncStateFromSharedState()
         updateUI()
     }
 
@@ -95,6 +115,7 @@ final class KeyboardViewController: UIInputViewController {
         configurePrimaryViewHeight()
         syncCapsLockState()
         dictationController.syncStateFromSharedState()
+        ttsController.syncStateFromSharedState()
         updateUI()
     }
 
@@ -152,6 +173,9 @@ final class KeyboardViewController: UIInputViewController {
         hasConfiguredControllerBindings = true
 
         dictationController.onStateChange = { [weak self] state in
+            self?.keyboardState = state
+        }
+        ttsController.onStateChange = { [weak self] state in
             self?.keyboardState = state
         }
         dictationController.onTranscriptionReady = { [weak self] text in
@@ -247,6 +271,12 @@ final class KeyboardViewController: UIInputViewController {
     func handleMicTap() {
         interactionHaptics.emitMediumIfEnabled()
         dictationController.handleMicTap()
+    }
+
+    @objc
+    func handleSpeakTap() {
+        interactionHaptics.emitMediumIfEnabled()
+        ttsController.handleSpeakTap()
     }
 
     @objc

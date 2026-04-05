@@ -7,11 +7,16 @@ struct KeyVoxApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var appLaunchRouteStore: AppLaunchRouteStore
+    @StateObject private var audioModeCoordinator: AudioModeCoordinator
     @StateObject private var transcriptionManager: TranscriptionManager
+    @StateObject private var ttsManager: TTSManager
+    @StateObject private var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
+    @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @StateObject private var appTabRouter: AppTabRouter
     private let appHaptics: AppHaptics
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
@@ -19,11 +24,16 @@ struct KeyVoxApp: App {
     init() {
         let services = AppServiceRegistry.shared
         _appLaunchRouteStore = StateObject(wrappedValue: AppLaunchRouteStore.shared)
+        _audioModeCoordinator = StateObject(wrappedValue: services.audioModeCoordinator)
         _transcriptionManager = StateObject(wrappedValue: services.transcriptionManager)
+        _ttsManager = StateObject(wrappedValue: services.ttsManager)
+        _ttsVoicePreviewPlayer = StateObject(wrappedValue: services.ttsVoicePreviewPlayer)
+        _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
+        _appTabRouter = StateObject(wrappedValue: services.appTabRouter)
         appHaptics = services.appHaptics
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
@@ -52,35 +62,51 @@ struct KeyVoxApp: App {
             AppRootView()
                 .environment(\.appHaptics, appHaptics)
                 .environmentObject(appLaunchRouteStore)
+                .environmentObject(audioModeCoordinator)
                 .environmentObject(transcriptionManager)
+                .environmentObject(ttsManager)
+                .environmentObject(ttsVoicePreviewPlayer)
+                .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)
                 .environmentObject(weeklyWordStatsStore)
+                .environmentObject(appTabRouter)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
+                    NSLog("[KeyVoxApp] scenePhase=%@", String(describing: newPhase))
                     switch newPhase {
                     case .active:
                         if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
                             handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
+                        ttsManager.handleAppDidBecomeActive()
+                        pocketTTSModelManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
+                        ttsManager.handleAppDidEnterBackground()
+                        pocketTTSModelManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()
                         onboardingStore.handleAppDidEnterBackground()
                     case .inactive:
-                        break
+                        ttsManager.handleAppWillResignActive()
                     @unknown default:
                         break
                     }
                 }
                 .onOpenURL { url in
                     if let route = KeyVoxURLRoute(url: url) {
+                        NSLog(
+                            "[KeyVoxApp] onOpenURL route=%@ shouldPresentReturnToHost=%@ scenePhase=%@",
+                            String(describing: route),
+                            String(scenePhase != .active),
+                            String(describing: scenePhase)
+                        )
                         handle(
                             route: route,
                             shouldPresentReturnToHost: scenePhase != .active
@@ -93,6 +119,11 @@ struct KeyVoxApp: App {
     }
 
     private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
+        NSLog(
+            "[KeyVoxApp] handle route=%@ shouldPresentReturnToHost=%@",
+            String(describing: route),
+            String(shouldPresentReturnToHost)
+        )
         if route == .startRecording, shouldPresentReturnToHost {
             var transaction = Transaction()
             transaction.disablesAnimations = true

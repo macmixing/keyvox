@@ -31,19 +31,21 @@ protocol KeyboardDictationIPCManaging: AnyObject {
     func currentRecordingState() -> KeyboardState
     func reconciledRecordingStateIfNeeded() -> KeyboardState
     func isSessionWarm() -> Bool
+    func hasBluetoothAudioRoute() -> Bool
+    func hadRecentTTSPlayback() -> Bool
 }
 
 extension KeyboardIPCManager: KeyboardDictationIPCManaging {
     func currentRecordingState() -> KeyboardState {
-        currentSharedRecordingState().keyboardState
+        currentKeyboardState()
     }
 
     func reconciledRecordingStateIfNeeded() -> KeyboardState {
-        reconcileStaleSharedStateIfNeeded().keyboardState
+        reconcileKeyboardStateIfNeeded()
     }
 }
 
-private extension KeyboardIPCManager.SharedRecordingState {
+extension KeyboardIPCManager.SharedRecordingState {
     var keyboardState: KeyboardState {
         switch self {
         case .idle:
@@ -68,6 +70,8 @@ final class KeyboardDictationController {
     private let startRecordingURL: URL?
     private let waitingTimeoutDuration: TimeInterval
     private let warmSessionGracePeriod: TimeInterval
+    private let warmSessionGracePeriodAfterTTSPlayback: TimeInterval
+    private let warmSessionGracePeriodWithBluetoothAudio: TimeInterval
 
     private var waitingForAppTimeoutAction: KeyboardScheduledAction?
     private var gracePeriodAction: KeyboardScheduledAction?
@@ -84,7 +88,9 @@ final class KeyboardDictationController {
         openContainingApp: @escaping (URL?) -> Void,
         startRecordingURL: URL?,
         waitingTimeoutDuration: TimeInterval = 5,
-        warmSessionGracePeriod: TimeInterval = 0.5
+        warmSessionGracePeriod: TimeInterval = 0.5,
+        warmSessionGracePeriodAfterTTSPlayback: TimeInterval = 0.5,
+        warmSessionGracePeriodWithBluetoothAudio: TimeInterval = 1.5
     ) {
         self.ipcManager = ipcManager
         self.scheduleAction = scheduleAction
@@ -92,6 +98,8 @@ final class KeyboardDictationController {
         self.startRecordingURL = startRecordingURL
         self.waitingTimeoutDuration = waitingTimeoutDuration
         self.warmSessionGracePeriod = warmSessionGracePeriod
+        self.warmSessionGracePeriodAfterTTSPlayback = warmSessionGracePeriodAfterTTSPlayback
+        self.warmSessionGracePeriodWithBluetoothAudio = warmSessionGracePeriodWithBluetoothAudio
         configureIPC()
     }
 
@@ -139,14 +147,24 @@ final class KeyboardDictationController {
 
             if ipcManager.isSessionWarm() {
                 ipcManager.sendStartCommand()
-                scheduleWarmSessionGracePeriod()
+                scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
             } else {
                 openContainingApp(startRecordingURL)
             }
         case .recording:
             state = .transcribing
             ipcManager.sendStopCommand()
-        case .waitingForApp, .transcribing:
+        case .speaking:
+            state = .waitingForApp
+            scheduleWaitingTimeout()
+
+            if ipcManager.isSessionWarm() {
+                ipcManager.sendStartCommand()
+                scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
+            } else {
+                openContainingApp(startRecordingURL)
+            }
+        case .waitingForApp, .preparingPlayback, .transcribing:
             break
         }
     }
@@ -209,9 +227,9 @@ final class KeyboardDictationController {
         cancelGracePeriod()
     }
 
-    private func scheduleWarmSessionGracePeriod() {
+    private func scheduleWarmSessionGracePeriod(after delay: TimeInterval) {
         cancelGracePeriod()
-        gracePeriodAction = scheduleAction(warmSessionGracePeriod) { [weak self] in
+        gracePeriodAction = scheduleAction(delay) { [weak self] in
             guard let self, self.state == .waitingForApp else { return }
             guard self.ipcManager.currentRecordingState() != .recording else { return }
             self.openContainingApp(self.startRecordingURL)
@@ -221,5 +239,15 @@ final class KeyboardDictationController {
     private func cancelGracePeriod() {
         gracePeriodAction?.cancel()
         gracePeriodAction = nil
+    }
+
+    private func effectiveWarmSessionGracePeriod() -> TimeInterval {
+        let bluetoothGracePeriod = ipcManager.hasBluetoothAudioRoute()
+            ? warmSessionGracePeriodWithBluetoothAudio
+            : warmSessionGracePeriod
+        let recentTTSGracePeriod = ipcManager.hadRecentTTSPlayback()
+            ? warmSessionGracePeriodAfterTTSPlayback
+            : warmSessionGracePeriod
+        return max(bluetoothGracePeriod, recentTTSGracePeriod)
     }
 }

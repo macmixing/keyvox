@@ -1,12 +1,11 @@
 import SwiftUI
-import UIKit
 
 struct LastTranscriptionCardView: View {
     let text: String?
     let isLoading: Bool
 
     @Environment(\.appHaptics) private var appHaptics
-    @State private var didCopy = false
+    @StateObject private var copyFeedback = CopyFeedbackController()
 
     private var transcriptionText: String? {
         guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -80,22 +79,15 @@ struct LastTranscriptionCardView: View {
     private func copyButton(for text: String) -> some View {
         AppActionButton(
             title: "Copy",
-            systemImage: didCopy ? "checkmark" : "doc.on.doc",
-            systemImageColor: didCopy ? .black : nil,
-            systemImageWeight: didCopy ? .black : .regular,
+            systemImage: copyFeedback.didCopy ? "checkmark" : "doc.on.doc",
+            systemImageColor: copyFeedback.didCopy ? .black : nil,
+            systemImageWeight: copyFeedback.didCopy ? .black : .regular,
             style: .primary,
             minWidth: 84,
             size: .compact,
             fontSize: 15
         ) {
-            UIPasteboard.general.string = text
-            appHaptics.success()
-            didCopy = true
-
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(1.2))
-                didCopy = false
-            }
+            copyFeedback.copy(text, appHaptics: appHaptics)
         }
     }
 }

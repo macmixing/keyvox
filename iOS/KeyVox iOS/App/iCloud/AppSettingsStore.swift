@@ -30,6 +30,40 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
 
 @MainActor
 final class AppSettingsStore: ObservableObject {
+    enum TTSVoice: String, CaseIterable, Identifiable, Codable {
+        case alba
+        case azelma
+        case cosette
+        case eponine
+        case fantine
+        case javert
+        case jean
+        case marius
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .alba:
+                return "Alba"
+            case .azelma:
+                return "Azelma"
+            case .cosette:
+                return "Cosette"
+            case .eponine:
+                return "Eponine"
+            case .fantine:
+                return "Fantine"
+            case .javert:
+                return "Javert"
+            case .jean:
+                return "Jean"
+            case .marius:
+                return "Marius"
+            }
+        }
+    }
+
     enum ActiveDictationProvider: String, CaseIterable, Identifiable {
         case whisper
         case parakeet
@@ -136,9 +170,21 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var ttsVoice: TTSVoice {
+        didSet {
+            defaults.set(ttsVoice.rawValue, forKey: UserDefaultsKeys.ttsVoice)
+        }
+    }
+
     @Published var activeDictationProvider: ActiveDictationProvider {
         didSet {
             defaults.set(activeDictationProvider.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        }
+    }
+
+    @Published var fastPlaybackModeEnabled: Bool {
+        didSet {
+            defaults.set(fastPlaybackModeEnabled, forKey: UserDefaultsKeys.fastPlaybackModeEnabled)
         }
     }
 
@@ -167,12 +213,21 @@ final class AppSettingsStore: ObservableObject {
             sessionDisableTiming = .fiveMinutes
         }
 
+        if let raw = defaults.string(forKey: UserDefaultsKeys.ttsVoice),
+           let voice = TTSVoice(rawValue: raw) {
+            ttsVoice = voice
+        } else {
+            ttsVoice = .azelma
+        }
+
         if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
            let provider = ActiveDictationProvider(rawValue: raw) {
             activeDictationProvider = provider
         } else {
             activeDictationProvider = .whisper
         }
+
+        fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

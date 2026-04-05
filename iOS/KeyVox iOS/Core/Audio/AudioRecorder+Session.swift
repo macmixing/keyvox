@@ -82,17 +82,123 @@ extension AudioRecorder {
         try ensureEngineRunning()
     }
 
+    func repairMonitoringAfterPlayback() async throws {
+        let permissionGranted = await requestRecordPermission()
+        guard permissionGranted else {
+            throw AudioRecorderError.microphonePermissionDenied
+        }
+
+        let recoveryDelays: [UInt64] = [
+            0,
+            350_000_000,
+            750_000_000,
+            1_250_000_000
+        ]
+        var lastError: Error?
+
+        for (attemptIndex, delay) in recoveryDelays.enumerated() {
+            if delay > 0 {
+                invalidateAudioEngine(clearSessionActive: true)
+                deactivateAudioSessionForRouteRecovery()
+                try? await Task.sleep(nanoseconds: delay)
+                refreshCurrentCaptureDeviceName()
+            }
+
+            do {
+                try ensureEngineRunning()
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+                NSLog(
+                    "[AudioRecorder] repairMonitoring attempt=%@ failed error=%@ retryable=%@",
+                    String(attemptIndex + 1),
+                    error.localizedDescription,
+                    String(shouldRetryRecordingStartAfterRouteTransition(for: error))
+                )
+                guard shouldRetryRecordingStartAfterRouteTransition(for: error),
+                      attemptIndex < recoveryDelays.count - 1 else {
+                    throw error
+                }
+            }
+        }
+
+        if let lastError {
+            throw lastError
+        }
+    }
+
     func ensureEngineRunning() throws {
         guard !isMonitoring || audioEngine == nil || !audioEngine!.isRunning else { return }
 
+        let routeInputPorts = audioSession.currentRoute.inputs
+            .map { $0.portType.rawValue }
+            .joined(separator: ",")
+        let routeOutputPorts = audioSession.currentRoute.outputs
+            .map { $0.portType.rawValue }
+            .joined(separator: ",")
+
+        NSLog(
+            "[AudioRecorder] ensureEngineRunning begin isMonitoring=%@ engineExists=%@ engineRunning=%@ routeInputs=%@ routeOutputs=%@ category=%@ mode=%@ otherAudioPlaying=%@",
+            String(isMonitoring),
+            String(audioEngine != nil),
+            String(audioEngine?.isRunning == true),
+            routeInputPorts,
+            routeOutputPorts,
+            audioSession.category.rawValue,
+            audioSession.mode.rawValue,
+            String(audioSession.isOtherAudioPlaying)
+        )
+
         // Set up audio session for background persistence
-        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
-        try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
+        do {
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
+            NSLog("[AudioRecorder] setCategory(playAndRecord) succeeded")
+        } catch {
+            NSLog("[AudioRecorder] setCategory(playAndRecord) failed error=%@", error.localizedDescription)
+            throw error
+        }
+
+        do {
+            try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
+            NSLog("[AudioRecorder] setAllowHapticsAndSystemSoundsDuringRecording(true) succeeded")
+        } catch {
+            NSLog("[AudioRecorder] setAllowHapticsAndSystemSoundsDuringRecording(true) failed error=%@", error.localizedDescription)
+            throw error
+        }
         // Keep the hardware route's native sample rate. Bluetooth HFP routes can reject
         // a forced 16 kHz preference, and we already convert captured audio into the
         // recorder's 16 kHz output format downstream.
-        try audioSession.setActive(true)
-        try applyInputPreference()
+        do {
+            try audioSession.setActive(true)
+            let activeRouteInputPorts = audioSession.currentRoute.inputs
+                .map { $0.portType.rawValue }
+                .joined(separator: ",")
+            let activeRouteOutputPorts = audioSession.currentRoute.outputs
+                .map { $0.portType.rawValue }
+                .joined(separator: ",")
+            NSLog(
+                "[AudioRecorder] setActive(true) succeeded routeInputs=%@ routeOutputs=%@ sampleRate=%@",
+                activeRouteInputPorts,
+                activeRouteOutputPorts,
+                String(audioSession.sampleRate)
+            )
+        } catch {
+            NSLog("[AudioRecorder] setActive(true) failed error=%@", error.localizedDescription)
+            throw error
+        }
+
+        do {
+            try applyInputPreference()
+            NSLog(
+                "[AudioRecorder] applyInputPreference succeeded currentInput=%@ preferredInput=%@",
+                String(describing: audioSession.currentRoute.inputs.first?.portType.rawValue),
+                String(describing: audioSession.preferredInput?.portType.rawValue)
+            )
+        } catch {
+            NSLog("[AudioRecorder] applyInputPreference failed error=%@", error.localizedDescription)
+            throw error
+        }
 
         // Route changes can leave a stopped engine bound to a stale hardware format.
         // Always rebuild from a fresh engine when we need to restart monitoring.
@@ -183,22 +289,44 @@ extension AudioRecorder {
             throw AudioRecorderError.microphonePermissionDenied
         }
 
-        // Ensure engine is running (in monitor mode)
-        do {
-            try ensureEngineRunning()
-            try applyInputPreference()
-        } catch {
-            guard shouldRetryRecordingStartAfterRouteTransition(for: error) else {
-                throw error
+        let recoveryDelays: [UInt64] = [
+            0,
+            350_000_000,
+            750_000_000,
+            1_250_000_000
+        ]
+        var lastError: Error?
+
+        for (attemptIndex, delay) in recoveryDelays.enumerated() {
+            if delay > 0 {
+                invalidateAudioEngine(clearSessionActive: true)
+                deactivateAudioSessionForRouteRecovery()
+                try await Task.sleep(nanoseconds: delay)
+                refreshCurrentCaptureDeviceName()
             }
 
-            invalidateAudioEngine(clearSessionActive: true)
-            deactivateAudioSessionForRouteRecovery()
+            do {
+                try ensureEngineRunning()
+                try applyInputPreference()
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+                NSLog(
+                    "[AudioRecorder] startRecording attempt=%@ failed error=%@ retryable=%@",
+                    String(attemptIndex + 1),
+                    error.localizedDescription,
+                    String(shouldRetryRecordingStartAfterRouteTransition(for: error))
+                )
+                guard shouldRetryRecordingStartAfterRouteTransition(for: error),
+                      attemptIndex < recoveryDelays.count - 1 else {
+                    throw error
+                }
+            }
+        }
 
-            try await Task.sleep(nanoseconds: 350_000_000)
-            refreshCurrentCaptureDeviceName()
-            try ensureEngineRunning()
-            try applyInputPreference()
+        if let lastError {
+            throw lastError
         }
 
         // Reset state for new capture
@@ -316,6 +444,13 @@ extension AudioRecorder {
             return
         }
 
+        NSLog(
+            "[AudioRecorder] audioSessionInterruption type=%@ isRecording=%@ isMonitoring=%@",
+            String(describing: interruptionType.rawValue),
+            String(isRecording),
+            String(isMonitoring)
+        )
+
         switch interruptionType {
         case .began:
             if isRecording {
@@ -331,6 +466,11 @@ extension AudioRecorder {
     }
 
     private func handleMonitoringInterruption() {
+        NSLog(
+            "[AudioRecorder] handleMonitoringInterruption routeInputs=%@ engineRunning=%@",
+            String(audioSession.currentRoute.inputs.count),
+            String(audioEngine?.isRunning == true)
+        )
         invalidateAudioEngine(clearSessionActive: true)
         deactivateAudioSessionForRouteRecovery()
         refreshCurrentCaptureDeviceName()
@@ -339,6 +479,12 @@ extension AudioRecorder {
 
     private func handleActiveRecordingInterruption() {
         guard isRecording else { return }
+
+        NSLog(
+            "[AudioRecorder] handleActiveRecordingInterruption routeInputs=%@ engineRunning=%@",
+            String(audioSession.currentRoute.inputs.count),
+            String(audioEngine?.isRunning == true)
+        )
 
         let snapshot = streamingState.snapshot()
         let captureDuration = Date().timeIntervalSince(captureStartedAt)
@@ -366,6 +512,7 @@ extension AudioRecorder {
     private func deactivateAudioSessionForRouteRecovery() {
         // The session may already be transitioning during a route change, but recovery
         // should continue with a fresh engine either way.
+        NSLog("[AudioRecorder] deactivateAudioSessionForRouteRecovery")
         try? audioSession.setActive(false)
     }
 

@@ -13,7 +13,10 @@ struct MainTabView: View {
     }
 
     @Environment(\.appHaptics) private var appHaptics
-    @State private var selectedTab: ContainingAppTab = .home
+    @EnvironmentObject var modelManager: ModelManager
+    @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject private var appTabRouter: AppTabRouter
+    @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
 
     var body: some View {
         NavigationStack {
@@ -33,6 +36,7 @@ struct MainTabView: View {
                 AppToolbarContent(selectedTab: selectedTab)
             }
         }
+        .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
@@ -41,7 +45,7 @@ struct MainTabView: View {
     }
 
     private var tabContent: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $appTabRouter.selectedTab) {
             HomeTabView()
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
@@ -60,7 +64,7 @@ struct MainTabView: View {
                 }
                 .tag(ContainingAppTab.style)
 
-            SettingsTabView()
+            SettingsTabView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
@@ -97,11 +101,11 @@ struct MainTabView: View {
         if edge == .trailing,
            horizontalDistance <= -Swipe.threshold,
            let nextTab = selectedTab.next {
-            selectedTab = nextTab
+            appTabRouter.selectedTab = nextTab
         } else if edge == .leading,
                   horizontalDistance >= Swipe.threshold,
                   let previousTab = selectedTab.previous {
-            selectedTab = previousTab
+            appTabRouter.selectedTab = previousTab
         } else if let event = MainTabHapticsDecision.eventForEdgeSwipeAttempt(
             currentTab: selectedTab,
             edge: edge,
@@ -111,13 +115,32 @@ struct MainTabView: View {
         }
     }
 
+    private func performDeletionConfirmation(_ confirmation: SettingsPendingDeletionConfirmation) {
+        switch confirmation {
+        case .dictationModel(let modelID):
+            modelManager.deleteModel(withID: modelID)
+        case .sharedTTSModel:
+            pocketTTSModelManager.deleteSharedModel()
+        case .ttsVoice(let voice):
+            pocketTTSModelManager.deleteVoice(voice)
+        }
+    }
+
+    private var selectedTab: ContainingAppTab {
+        appTabRouter.selectedTab
+    }
+
 }
 
 #Preview {
     MainTabView()
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
+        .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
+        .environmentObject(AppServiceRegistry.shared.ttsManager)
 }

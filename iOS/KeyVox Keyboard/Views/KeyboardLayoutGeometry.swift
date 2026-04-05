@@ -4,6 +4,7 @@ enum KeyboardLayoutGeometry {
     final class TopRowAccessoryLayout {
         private weak var cancelButton: UIView?
         private weak var capsLockButton: UIView?
+        private weak var speakButton: UIView?
         private weak var keyGridView: KeyboardKeyGridView?
         private let cancelButtonLeadingConstraint: NSLayoutConstraint
         private let capsLockButtonTrailingConstraint: NSLayoutConstraint
@@ -24,10 +25,17 @@ enum KeyboardLayoutGeometry {
         private var capsLockButtonLandscapeHeightConstraint: NSLayoutConstraint?
         private weak var cancelLandscapeReferenceView: UIView?
         private weak var capsLandscapeReferenceView: UIView?
+        private var speakButtonCenterXConstraint: NSLayoutConstraint?
+        private var speakButtonBottomConstraint: NSLayoutConstraint?
+        private var speakButtonWidthConstraint: NSLayoutConstraint?
+        private var speakButtonHeightConstraint: NSLayoutConstraint?
+        private weak var speakReferenceView: UIView?
+        private var speakButtonUsesLandscapeHeight = false
 
         init(
             cancelButton: UIView,
             capsLockButton: UIView,
+            speakButton: UIView,
             keyGridView: KeyboardKeyGridView,
             cancelButtonLeadingConstraint: NSLayoutConstraint,
             capsLockButtonTrailingConstraint: NSLayoutConstraint,
@@ -40,6 +48,7 @@ enum KeyboardLayoutGeometry {
         ) {
             self.cancelButton = cancelButton
             self.capsLockButton = capsLockButton
+            self.speakButton = speakButton
             self.keyGridView = keyGridView
             self.cancelButtonLeadingConstraint = cancelButtonLeadingConstraint
             self.capsLockButtonTrailingConstraint = capsLockButtonTrailingConstraint
@@ -53,6 +62,36 @@ enum KeyboardLayoutGeometry {
 
         func update(isLandscape: Bool) {
             guard let keyGridView else { return }
+
+            if let speakButton,
+               let currentSpeakReferenceView = keyGridView.topRowKeyView(for: .nine),
+               speakReferenceView !== currentSpeakReferenceView || speakButtonUsesLandscapeHeight != isLandscape {
+                NSLayoutConstraint.deactivate([
+                    speakButtonCenterXConstraint,
+                    speakButtonBottomConstraint,
+                    speakButtonWidthConstraint,
+                    speakButtonHeightConstraint,
+                ].compactMap { $0 })
+
+                speakButtonCenterXConstraint = speakButton.centerXAnchor.constraint(equalTo: currentSpeakReferenceView.centerXAnchor)
+                speakButtonBottomConstraint = speakButton.bottomAnchor.constraint(
+                    equalTo: currentSpeakReferenceView.topAnchor,
+                    constant: -KeyboardStyle.keyboardRowSpacing
+                )
+                speakButtonWidthConstraint = speakButton.widthAnchor.constraint(equalTo: currentSpeakReferenceView.widthAnchor)
+                speakButtonHeightConstraint = isLandscape
+                    ? speakButton.heightAnchor.constraint(equalTo: currentSpeakReferenceView.heightAnchor)
+                    : speakButton.heightAnchor.constraint(equalTo: currentSpeakReferenceView.widthAnchor)
+                speakReferenceView = currentSpeakReferenceView
+                speakButtonUsesLandscapeHeight = isLandscape
+
+                NSLayoutConstraint.activate([
+                    speakButtonCenterXConstraint!,
+                    speakButtonBottomConstraint!,
+                    speakButtonWidthConstraint!,
+                    speakButtonHeightConstraint!,
+                ])
+            }
 
             if !isLandscape {
                 NSLayoutConstraint.deactivate([

@@ -149,7 +149,6 @@ extension ModelManager {
             }
         }
 
-        debugLog("validateExtractedCoreMLBundle: regularFileCount=\(regularFileCount) root=\(rootURL.path)")
         guard regularFileCount > 0 else {
             return "The extracted Core ML bundle was empty after installation."
         }

@@ -1,3 +1,4 @@
+import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
@@ -10,10 +11,15 @@ final class AppServiceRegistry {
     let settingsStore: AppSettingsStore
     let onboardingStore: OnboardingStore
     let weeklyWordStatsStore: WeeklyWordStatsStore
+    let appTabRouter: AppTabRouter
     let appHaptics: AppHaptics
+    let ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
     let activeProviderRouter: SwitchableDictationProvider
+    let ttsManager: TTSManager
+    let pocketTTSModelManager: PocketTTSModelManager
+    let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
     let postProcessor: TranscriptionPostProcessor
     let keyboardBridge: KeyVoxKeyboardBridge
@@ -54,7 +60,9 @@ final class AppServiceRegistry {
         let settingsStore = AppSettingsStore(defaults: settingsDefaults)
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
+        let appTabRouter = AppTabRouter()
         let appHaptics = AppHaptics()
+        let ttsVoicePreviewPlayer = TTSVoicePreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -80,8 +88,13 @@ final class AppServiceRegistry {
             }
         )
         
-        recorder.heartbeatCallback = { [weak keyboardBridge] in
-            keyboardBridge?.touchHeartbeat()
+        recorder.heartbeatCallback = { [weak keyboardBridge, weak recorder] in
+            let hasBluetoothAudioRoute = recorder?.audioSession.currentRoute.inputs.contains(where: {
+                $0.portType == .bluetoothHFP || $0.portType == .bluetoothLE
+            }) == true || recorder?.audioSession.currentRoute.outputs.contains(where: {
+                $0.portType == .bluetoothA2DP || $0.portType == .bluetoothHFP || $0.portType == .bluetoothLE
+            }) == true
+            keyboardBridge?.touchHeartbeat(sessionHasBluetoothAudioRoute: hasBluetoothAudioRoute)
         }
         recorder.liveMeterUpdateHandler = { [weak keyboardBridge] level, signalState in
             keyboardBridge?.publishLiveMeter(level: level, signalState: signalState)
@@ -117,6 +130,29 @@ final class AppServiceRegistry {
             sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
         )
+        let ttsPlaybackCoordinator = TTSPlaybackCoordinator()
+        let ttsEngine = PocketTTSEngine(fileManager: fileManager)
+        let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)
+        let ttsManager = TTSManager(
+            settingsStore: settingsStore,
+            appHaptics: appHaptics,
+            keyboardBridge: keyboardBridge,
+            engine: ttsEngine,
+            playbackCoordinator: ttsPlaybackCoordinator,
+            effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
+                guard let settingsStore else { return .azelma }
+                guard let pocketTTSModelManager else { return settingsStore.ttsVoice }
+                return Self.resolvedTTSVoiceSelection(
+                    selectedVoice: settingsStore.ttsVoice,
+                    pocketTTSModelManager: pocketTTSModelManager
+                )
+            }
+        )
+        let audioModeCoordinator = AudioModeCoordinator(
+            transcriptionManager: transcriptionManager,
+            ttsManager: ttsManager,
+            appTabRouter: appTabRouter
+        )
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
             dictionaryStore: dictionaryStore,
@@ -138,7 +174,7 @@ final class AppServiceRegistry {
                 .eraseToAnyPublisher()
         )
         keyboardBridge.onStartRecordingCommand = {
-            transcriptionManager.handleStartRecordingCommand()
+            audioModeCoordinator.handleStartRecordingCommand()
         }
         keyboardBridge.onStopRecordingCommand = {
             transcriptionManager.handleStopRecordingCommand()
@@ -148,6 +184,12 @@ final class AppServiceRegistry {
         }
         keyboardBridge.onDisableSessionCommand = {
             transcriptionManager.handleDisableSessionCommand()
+        }
+        keyboardBridge.onStartTTSCommand = {
+            audioModeCoordinator.handleStartTTSFromPendingRequest()
+        }
+        keyboardBridge.onStopTTSCommand = {
+            audioModeCoordinator.handleStopTTS()
         }
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
@@ -165,10 +207,15 @@ final class AppServiceRegistry {
         self.settingsStore = settingsStore
         self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.appTabRouter = appTabRouter
         self.appHaptics = appHaptics
+        self.ttsVoicePreviewPlayer = ttsVoicePreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService
         self.activeProviderRouter = activeProviderRouter
+        self.ttsManager = ttsManager
+        self.pocketTTSModelManager = pocketTTSModelManager
+        self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager
         self.postProcessor = postProcessor
         self.keyboardBridge = keyboardBridge
@@ -176,7 +223,11 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
-        self.urlRouter = KeyVoxURLRouter(transcriptionManager: transcriptionManager)
+        self.urlRouter = KeyVoxURLRouter(
+            transcriptionManager: transcriptionManager,
+            ttsManager: ttsManager,
+            audioModeCoordinator: audioModeCoordinator
+        )
 
         settingsStore.$activeDictationProvider
             .removeDuplicates()
@@ -191,7 +242,20 @@ final class AppServiceRegistry {
             }
             .store(in: &cancellables)
 
+        pocketTTSModelManager.$voiceInstallStates
+            .sink { [weak self] _ in
+                self?.normalizeTTSVoiceSelection()
+            }
+            .store(in: &cancellables)
+
+        pocketTTSModelManager.$sharedModelInstallState
+            .sink { [weak self] _ in
+                self?.normalizeTTSVoiceSelection()
+            }
+            .store(in: &cancellables)
+
         normalizeActiveProviderSelection()
+        normalizeTTSVoiceSelection()
         applyActiveProviderSelection(settingsStore.activeDictationProvider)
     }
 
@@ -228,5 +292,25 @@ final class AppServiceRegistry {
             }
             return
         }
+    }
+
+    private func normalizeTTSVoiceSelection() {
+        let resolvedVoice = Self.resolvedTTSVoiceSelection(
+            selectedVoice: settingsStore.ttsVoice,
+            pocketTTSModelManager: pocketTTSModelManager
+        )
+        guard settingsStore.ttsVoice != resolvedVoice else { return }
+        settingsStore.ttsVoice = resolvedVoice
+    }
+
+    private static func resolvedTTSVoiceSelection(
+        selectedVoice: AppSettingsStore.TTSVoice,
+        pocketTTSModelManager: PocketTTSModelManager
+    ) -> AppSettingsStore.TTSVoice {
+        if pocketTTSModelManager.isVoiceReady(selectedVoice) {
+            return selectedVoice
+        }
+
+        return pocketTTSModelManager.installedVoices().first ?? selectedVoice
     }
 }

@@ -2,10 +2,18 @@ import Foundation
 
 @MainActor
 final class KeyVoxURLRouter {
+    private let audioModeCoordinator: AudioModeCoordinator
     private let transcriptionManager: TranscriptionManager
+    private let ttsManager: TTSManager
 
-    init(transcriptionManager: TranscriptionManager) {
+    init(
+        transcriptionManager: TranscriptionManager,
+        ttsManager: TTSManager,
+        audioModeCoordinator: AudioModeCoordinator
+    ) {
+        self.audioModeCoordinator = audioModeCoordinator
         self.transcriptionManager = transcriptionManager
+        self.ttsManager = ttsManager
     }
 
     func route(for url: URL) -> KeyVoxURLRoute? {
@@ -15,9 +23,19 @@ final class KeyVoxURLRouter {
     func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool = true) {
         switch route {
         case .startRecording:
-            transcriptionManager.handleStartRecordingCommand(isFromURL: shouldPresentReturnToHost)
+            audioModeCoordinator.handleStartRecordingCommand(isFromURL: shouldPresentReturnToHost)
         case .stopRecording:
             transcriptionManager.handleStopRecordingCommand()
+        case .startTTS:
+            if let request = KeyVoxIPCBridge.readTTSRequest(),
+               request.trimmedText.isEmpty == false {
+                audioModeCoordinator.handleStartTTSFromPendingRequest(
+                    showPreparationView: request.sourceSurface == .keyboard && shouldPresentReturnToHost
+                )
+            } else {
+                ttsManager.isPlaybackPreparationViewPresented = false
+                audioModeCoordinator.handleSpeakClipboardFromApp()
+            }
         }
     }
 

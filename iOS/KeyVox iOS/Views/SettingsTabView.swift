@@ -2,9 +2,18 @@ import SwiftUI
 import StoreKit
 
 struct SettingsTabView: View {
-    @Environment(\.appHaptics) private var appHaptics
+    @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var modelManager: ModelManager
+    @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var ttsVoicePreviewPlayer: TTSVoicePreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @State var isModelSectionExpanded = false
+    @State var isModelExpandedContentVisible = false
+    @State var modelExpandedContentHeight: CGFloat = 0
+    @State var isTTSSectionExpanded = false
+    @State var isTTSExpandedContentVisible = false
+    @State var ttsExpandedContentHeight: CGFloat = 0
     
     private var appVersionBuildText: String? {
         guard
@@ -26,6 +35,7 @@ struct SettingsTabView: View {
                 keyboardSection
                 audioSection
                 activeModelSection
+                ttsSection
                 rateAndReviewSection
                 supportSection
                 versionFooter
@@ -33,6 +43,39 @@ struct SettingsTabView: View {
         }
         .task {
             modelManager.refreshStatus()
+            pocketTTSModelManager.refreshStatus()
+        }
+        .onAppear {
+            syncModelDisclosurePresentation()
+            syncTTSDisclosurePresentation()
+        }
+        .onDisappear {
+            ttsVoicePreviewPlayer.stop()
+        }
+        .onChange(of: isTTSSectionExpanded) { _, isExpanded in
+            if isExpanded == false {
+                ttsVoicePreviewPlayer.stop()
+            }
+        }
+        .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
+            let wasReady = {
+                if case .ready = oldValue { return true }
+                return false
+            }()
+            let isReady = {
+                if case .ready = newValue { return true }
+                return false
+            }()
+
+            if wasReady == false && isReady {
+                isTTSSectionExpanded = true
+            }
+        }
+        .onChange(of: shouldShowExpandedTTSContent, initial: true) { _, _ in
+            updateTTSDisclosurePresentation()
+        }
+        .onChange(of: shouldShowExpandedModelContent, initial: true) { _, _ in
+            updateModelDisclosurePresentation()
         }
     }
 
@@ -214,7 +257,7 @@ struct SettingsTabView: View {
             UIApplication.shared.open(url)
         }
     }
-    
+
     @ViewBuilder
     private var versionFooter: some View {
         if let appVersionBuildText {
@@ -229,7 +272,9 @@ struct SettingsTabView: View {
 }
 
 #Preview {
-    SettingsTabView()
+    SettingsTabView(pendingDeletionConfirmation: .constant(nil))
         .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.ttsVoicePreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

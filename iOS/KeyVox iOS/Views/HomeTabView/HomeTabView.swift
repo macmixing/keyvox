@@ -1,13 +1,30 @@
 import SwiftUI
 
 struct HomeTabView: View {
+    @Environment(\.appHaptics) var appHaptics
+    @EnvironmentObject var audioModeCoordinator: AudioModeCoordinator
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
+    @EnvironmentObject var ttsManager: TTSManager
+    @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @State var showsTTSPreparationSlot = false
+    @State var isTTSPreparationVisible = false
+    @State var ttsPreparationCollapseTask: Task<Void, Never>?
+    @State var showsTTSTranscriptPanelContainer = false
+    @State var isTTSTranscriptPanelContentVisible = false
+    @State var ttsTranscriptCollapseTask: Task<Void, Never>?
+    @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
+    @AppStorage(
+        UserDefaultsKeys.App.isTTSTranscriptExpanded,
+        store: SharedPaths.appGroupUserDefaults()
+    ) var isTTSTranscriptExpanded = false
 
     var body: some View {
         AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 weeklyStatsSection
+                speakClipboardSection
                 lastTranscriptionSection
                 #if DEBUG
                 diagnosticsSection
@@ -16,6 +33,13 @@ struct HomeTabView: View {
         }
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
+            syncTTSTranscriptPresentation()
+        }
+        .onChange(of: shouldShowExpandedTTSTranscriptPanel, initial: true) { _, _ in
+            updateTTSTranscriptPresentation()
+        }
+        .onDisappear {
+            ttsTranscriptCollapseTask?.cancel()
         }
     }
 
@@ -83,11 +107,14 @@ struct HomeTabView: View {
             return "State: transcribing"
         }
     }
-
 }
 
 #Preview {
     HomeTabView()
+        .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.ttsManager)
+        .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
 }

@@ -18,6 +18,7 @@ protocol AudioRecording: AnyObject {
     var maxActiveSignalRunDuration: TimeInterval { get }
 
     func enableMonitoring() async throws
+    func repairMonitoringAfterPlayback() async throws
     func startRecording() async throws
     func stopRecording() async -> StoppedCapture
     func ensureEngineRunning() throws

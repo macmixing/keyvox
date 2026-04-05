@@ -376,6 +376,13 @@ final class KeyboardLogoBarView: UIControl {
             return flatHeight + (CGFloat(rippleHeight) * (9 * scale))
         }
 
+        if indicatorPhase == .speaking {
+            let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
+            let speakingFloor = 4 * scale
+            let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
+            return max(minHeight, speakingFloor + dynamicHeight)
+        }
+
         guard indicatorPhase == .listening else {
             return flatHeight
         }
@@ -457,6 +464,10 @@ final class KeyboardLogoBarView: UIControl {
             accessibilityLabel = "Transcribing"
             accessibilityValue = "Transcribing"
             isEnabled = false
+        case .speaking:
+            accessibilityLabel = "Start recording"
+            accessibilityValue = "Speaking"
+            isEnabled = true
         }
     }
 }

@@ -72,6 +72,9 @@ jobs:
       - name: Run KeyVoxParakeet package tests
         run: swift test --package-path Packages/KeyVoxParakeet
 
+      - name: Run KeyVoxTTS package tests
+        run: swift test --package-path Packages/KeyVoxTTS
+
       - name: Run KeyVoxCore package tests with coverage
         id: keyvoxcore-tests
         run: |

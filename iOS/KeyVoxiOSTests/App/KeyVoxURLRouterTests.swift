@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxCore
+import KeyVoxTTS
 import Testing
 @testable import KeyVox_iOS
 
@@ -9,7 +10,11 @@ struct KeyVoxURLRouterTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        let router = KeyVoxURLRouter(transcriptionManager: harness.manager)
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator
+        )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: false)
         await settleAsyncWork()
@@ -22,7 +27,11 @@ struct KeyVoxURLRouterTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        let router = KeyVoxURLRouter(transcriptionManager: harness.manager)
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator
+        )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: true)
         await settleAsyncWork()
@@ -54,6 +63,7 @@ struct KeyVoxURLRouterTests {
             now: { Date(timeIntervalSince1970: 0) },
             installationIDGenerator: { "test-device" }
         )
+        let settingsStore = AppSettingsStore(defaults: defaults)
         let manager = TranscriptionManager(
             recorder: recorder,
             transcriptionService: transcriptionService,
@@ -69,9 +79,23 @@ struct KeyVoxURLRouterTests {
             ),
             modelPathProvider: { modelURL.path }
         )
+        let ttsManager = TTSManager(
+            settingsStore: settingsStore,
+            appHaptics: AppHaptics(),
+            keyboardBridge: KeyVoxKeyboardBridge(),
+            engine: StubTTSEngine(),
+            playbackCoordinator: TTSPlaybackCoordinator()
+        )
+        let audioModeCoordinator = AudioModeCoordinator(
+            transcriptionManager: manager,
+            ttsManager: ttsManager,
+            appTabRouter: AppTabRouter()
+        )
 
         return Harness(
             manager: manager,
+            ttsManager: ttsManager,
+            audioModeCoordinator: audioModeCoordinator,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
         )
@@ -87,11 +111,21 @@ struct KeyVoxURLRouterTests {
 @MainActor
 private final class Harness {
     let manager: TranscriptionManager
+    let ttsManager: TTSManager
+    let audioModeCoordinator: AudioModeCoordinator
     private let tempRootURL: URL
     private let defaultsSuiteName: String
 
-    init(manager: TranscriptionManager, tempRootURL: URL, defaultsSuiteName: String) {
+    init(
+        manager: TranscriptionManager,
+        ttsManager: TTSManager,
+        audioModeCoordinator: AudioModeCoordinator,
+        tempRootURL: URL,
+        defaultsSuiteName: String
+    ) {
         self.manager = manager
+        self.ttsManager = ttsManager
+        self.audioModeCoordinator = audioModeCoordinator
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName
     }
@@ -118,6 +152,10 @@ private final class StubAudioRecorder: AudioRecording {
     var maxActiveSignalRunDuration: TimeInterval = 0
 
     func enableMonitoring() async throws {
+        isMonitoring = true
+    }
+
+    func repairMonitoringAfterPlayback() async throws {
         isMonitoring = true
     }
 
@@ -174,4 +212,22 @@ private final class StubDictationService: DictationProvider {
     func cancelTranscription() {}
 
     func updateDictionaryHintPrompt(_ prompt: String) {}
+}
+
+private struct StubTTSEngine: TTSEngine {
+    func prepareIfNeeded() async throws {}
+
+    func prepareForForegroundSynthesis() async {}
+
+    func prepareForBackgroundContinuation() async {}
+
+    func makeAudioStream(
+        for text: String,
+        voiceID: String,
+        fastModeEnabled: Bool
+    ) async throws -> AsyncThrowingStream<KeyVoxTTSAudioFrame, Error> {
+        AsyncThrowingStream { continuation in
+            continuation.finish()
+        }
+    }
 }

@@ -131,6 +131,8 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
     var onNoSpeech: (() -> Void)?
 
     var isSessionWarmValue = false
+    var hasBluetoothAudioRouteValue = false
+    var hadRecentTTSPlaybackValue = false
     var currentRecordingStateValue = KeyboardState.idle
     var reconciledRecordingStateValue = KeyboardState.idle
 
@@ -170,6 +172,14 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
 
     func isSessionWarm() -> Bool {
         isSessionWarmValue
+    }
+
+    func hasBluetoothAudioRoute() -> Bool {
+        hasBluetoothAudioRouteValue
+    }
+
+    func hadRecentTTSPlayback() -> Bool {
+        hadRecentTTSPlaybackValue
     }
 }
 
