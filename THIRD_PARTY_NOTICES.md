@@ -28,6 +28,15 @@ Copyright (c) 2022 OpenAI
 
 Attribution: Based on NVIDIA's `parakeet-tdt-0.6b-v3` multilingual automatic speech recognition model. The Apple-platform Core ML conversion and distribution source used by KeyVox is FluidInference.
 
+### Kyutai PocketTTS (downloaded model artifacts)
+- Upstream model: <https://huggingface.co/kyutai/pocket-tts>
+- Apple-platform Core ML distribution: <https://huggingface.co/FluidInference/pocket-tts-coreml>
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: KeyVox downloads PocketTTS Core ML runtime artifacts, voice prompt assets, and the tokenizer model at runtime for copied-text playback. The Apple-platform Core ML artifact source used by KeyVox is distributed via FluidInference and inherits the upstream PocketTTS model licensing.
+
+Attribution: Based on Kyutai's `pocket-tts` text-to-speech model. The Apple-platform Core ML conversion and distribution source used by KeyVox is FluidInference.
+
 ### MIT License (applies to the two components above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
