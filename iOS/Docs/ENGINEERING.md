@@ -880,6 +880,7 @@ The containing app is intentionally thin, but it is no longer a minimal debug sh
 Current app-owned surfaces:
 
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
+- `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination

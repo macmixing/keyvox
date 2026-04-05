@@ -59,6 +59,7 @@ iOS/
 ├── KeyVox iOS.xctestplan
 ├── KeyVox iOS/
 │   ├── App/
+│   │   ├── CopyFeedbackController.swift
 │   │   ├── AppHaptics.swift
 │   │   ├── AppHapticsDecisions.swift
 │   │   ├── AppLaunchRouteStore.swift
@@ -491,10 +492,14 @@ Packages/
   - Filesystem-grouped Home feature surface.
   - `HomeTabView.swift` owns the weekly stats card, last transcription card, Home-level state, and debug-only diagnostics.
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout.
-  - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, and idle transcript dismissal.
+  - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, transcript copy affordance, and idle transcript dismissal.
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, and playback error presentation.
   - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, voice resolution, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
+- `KeyVox iOS/App/CopyFeedbackController.swift`
+  - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
+- `KeyVox iOS/Views/Components/LastTranscriptionCardView.swift`
+  - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around `AutoFocusTextField`, sort state, and `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`

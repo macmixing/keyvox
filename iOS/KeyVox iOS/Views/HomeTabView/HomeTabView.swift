@@ -11,6 +11,7 @@ struct HomeTabView: View {
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationVisible = false
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
+    @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
         UserDefaultsKeys.App.isTTSTranscriptExpanded,
         store: SharedPaths.appGroupUserDefaults()
