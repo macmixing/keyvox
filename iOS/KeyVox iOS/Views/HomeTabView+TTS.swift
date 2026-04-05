@@ -175,11 +175,16 @@ extension HomeTabView {
         return ttsManager.isActive || ttsManager.hasReplayablePlayback
     }
 
-    var showsFastModeBackgroundSafetyCheckmark: Bool {
-        settingsStore.fastPlaybackModeEnabled
-            && ttsManager.state == .playing
-            && !ttsManager.isReplayingCachedPlayback
-            && ttsManager.isFastModeBackgroundSafe
+    var showsBackgroundSafeCheckmark: Bool {
+        guard ttsManager.state == .playing, !ttsManager.isReplayingCachedPlayback else {
+            return false
+        }
+
+        if settingsStore.fastPlaybackModeEnabled {
+            return ttsManager.isFastModeBackgroundSafe
+        }
+
+        return true
     }
 
     var showsReplayReadyCheckmark: Bool {
@@ -189,7 +194,7 @@ extension HomeTabView {
     }
 
     var showsTTSTransportBadge: Bool {
-        showsReplayReadyCheckmark || showsFastModeBackgroundSafetyCheckmark
+        showsReplayReadyCheckmark || showsBackgroundSafeCheckmark
     }
 
     var ttsTransportBadgeColor: Color {
