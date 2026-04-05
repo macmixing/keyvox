@@ -118,7 +118,6 @@ final class ParakeetServiceTests: XCTestCase {
         XCTAssertTrue(
             service.isLikelyNoSpeech(
                 transcribedSegments: segments,
-                detectedLanguageCode: "en",
                 audioFrameCount: 8_799
             )
         )
@@ -139,7 +138,6 @@ final class ParakeetServiceTests: XCTestCase {
         XCTAssertFalse(
             service.isLikelyNoSpeech(
                 transcribedSegments: segments,
-                detectedLanguageCode: "en",
                 audioFrameCount: 7_680
             )
         )
