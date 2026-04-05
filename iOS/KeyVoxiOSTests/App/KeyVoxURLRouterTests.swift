@@ -88,7 +88,8 @@ struct KeyVoxURLRouterTests {
         )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: manager,
-            ttsManager: ttsManager
+            ttsManager: ttsManager,
+            appTabRouter: AppTabRouter()
         )
 
         return Harness(
