@@ -56,4 +56,40 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
 
         #expect(bufferedSampleCount >= Int(sampleRate * TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormMinimumCoverageSeconds))
     }
+
+    @Test func fastModeBackgroundSafetyRequiresFullThresholdBeforeEnteringSafeState() {
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
+                queuedSampleCount: 9_999,
+                requiredSampleCount: 10_000,
+                wasSafe: false
+            ) == false
+        )
+
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
+                queuedSampleCount: 10_000,
+                requiredSampleCount: 10_000,
+                wasSafe: false
+            ) == true
+        )
+    }
+
+    @Test func fastModeBackgroundSafetyUsesReleaseHysteresisAfterEnteringSafeState() {
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
+                queuedSampleCount: 9_250,
+                requiredSampleCount: 10_000,
+                wasSafe: true
+            ) == true
+        )
+
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
+                queuedSampleCount: 9_199,
+                requiredSampleCount: 10_000,
+                wasSafe: true
+            ) == false
+        )
+    }
 }

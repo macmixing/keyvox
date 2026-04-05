@@ -138,9 +138,27 @@ extension TTSPlaybackCoordinator {
     }
 
     func notifyFastModeBackgroundSafetyChanged() {
+        refreshFastModeBackgroundSafetyState()
         onFastModeBackgroundSafetyChanged?(
             fastModeBackgroundSafetyProgress,
             canContinueBackgroundPlaybackInFastMode
+        )
+    }
+
+    func refreshFastModeBackgroundSafetyState() {
+        guard fastModeEnabled, didStartPlayback, !isReplayingCachedAudio else {
+            isFastModeBackgroundSafeState = false
+            return
+        }
+
+        let requiredSamples = backgroundContinuationBufferedSampleCount(
+            for: lastObservedChunkCount,
+            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
+        )
+        isFastModeBackgroundSafeState = TTSPlaybackCoordinatorBufferingPolicy.isFastModeBackgroundSafe(
+            queuedSampleCount: queuedSampleCount,
+            requiredSampleCount: requiredSamples,
+            wasSafe: isFastModeBackgroundSafeState
         )
     }
 

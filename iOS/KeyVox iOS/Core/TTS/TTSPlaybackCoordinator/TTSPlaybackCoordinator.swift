@@ -67,6 +67,7 @@ final class TTSPlaybackCoordinator {
     var replayPausedSampleOffset = 0
     var playbackProgressDisplayLink: CADisplayLink?
     var playbackSessionID = UUID()
+    var isFastModeBackgroundSafeState = false
 
     var hasReplayablePlayback: Bool {
         !replayablePlaybackSamples.isEmpty
@@ -85,11 +86,7 @@ final class TTSPlaybackCoordinator {
         if isReplayingCachedAudio {
             return true
         }
-        let requiredSamples = backgroundContinuationBufferedSampleCount(
-            for: lastObservedChunkCount,
-            remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
-        )
-        return queuedSampleCount >= requiredSamples
+        return isFastModeBackgroundSafeState
     }
 
     var fastModeBackgroundSafetyProgress: Double {

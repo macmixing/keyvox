@@ -17,6 +17,7 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     static let remainingWorkSafetyMarginSeconds: Double = 2.5
     static let fastModeRemainingWorkSafetyMarginSeconds: Double = 0.35
     static let fastModeMinimumLeadRatio: Double = 0.10
+    static let fastModeBackgroundSafetyReleaseRatio: Double = 0.92
     static let longFormChunkThreshold = 24
     static let ultraLongFormChunkThreshold = 64
     static let longFormBackgroundRealtimeFactor: Double = 0.52
@@ -89,6 +90,23 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
             (1.0 - realtimeFactor) + (minimumLeadRatio / max(0.0001, 1.0 - minimumLeadRatio))
         )
         return Int(ceil(Double(remainingEstimatedSamples) * leadProtectionFactor))
+    }
+
+    static func isFastModeBackgroundSafe(
+        queuedSampleCount: Int,
+        requiredSampleCount: Int,
+        wasSafe: Bool
+    ) -> Bool {
+        guard requiredSampleCount > 0 else { return false }
+
+        if wasSafe {
+            let releaseThreshold = Int(
+                ceil(Double(requiredSampleCount) * fastModeBackgroundSafetyReleaseRatio)
+            )
+            return queuedSampleCount >= releaseThreshold
+        }
+
+        return queuedSampleCount >= requiredSampleCount
     }
 
     static func fastModeMinimumCoverageSeconds(for chunkCount: Int) -> Double {

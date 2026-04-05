@@ -22,6 +22,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = true
         replayStartSampleOffset = 0
         replayPausedSampleOffset = clampedPausedSampleOffset
+        isFastModeBackgroundSafeState = false
         stopPlaybackProgressTimer()
         emitPlaybackProgress()
     }
@@ -79,6 +80,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = false
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
+        isFastModeBackgroundSafeState = false
         self.fastModeEnabled = fastModeEnabled
         notifyFastModeBackgroundSafetyChanged()
 
@@ -213,6 +215,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = true
         replayStartSampleOffset = safeStartSampleOffset
         replayPausedSampleOffset = shouldAutoplay ? 0 : safeStartSampleOffset
+        isFastModeBackgroundSafeState = false
 
         let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
         var startDelay: TimeInterval = 0
@@ -278,6 +281,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = false
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
+        isFastModeBackgroundSafeState = false
 
         if playerNode.isPlaying {
             playerNode.stop()
@@ -319,6 +323,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = false
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
+        isFastModeBackgroundSafeState = false
         if playerNode.isPlaying {
             playerNode.stop()
         }
