@@ -43,9 +43,13 @@ final class KeyboardViewController: UIInputViewController {
         clipboardTextProvider: {
             UIPasteboard.general.string
         },
-        selectedVoiceIDProvider: {
+        selectedVoiceIDProvider: { [fileManager = FileManager.default] in
             let defaults = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)
-            return defaults?.string(forKey: UserDefaultsKeys.ttsVoice) ?? "azelma"
+            let preferredVoiceID = defaults?.string(forKey: UserDefaultsKeys.ttsVoice)
+            return KeyboardModelAvailability.resolvedTTSVoiceID(
+                preferredVoiceID: preferredVoiceID,
+                fileManager: fileManager
+            ) ?? "alba"
         },
         requestWriter: { request in
             KeyVoxIPCBridge.writeTTSRequest(request)
@@ -188,11 +192,15 @@ final class KeyboardViewController: UIInputViewController {
 
     func updateUI() {
         let toolbarMode = currentToolbarMode()
+        let preferredTTSVoiceID = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)?
+            .string(forKey: UserDefaultsKeys.ttsVoice)
+        let isTTSReady = KeyboardModelAvailability.isTTSReady(preferredVoiceID: preferredTTSVoiceID)
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
             toolbarMode: toolbarMode,
+            isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive
         )
         if toolbarMode != .fullAccessWarning {

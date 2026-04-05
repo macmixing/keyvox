@@ -94,13 +94,14 @@ final class KeyboardRootView: UIView {
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
+        isTTSReady: Bool,
         isTrackpadModeActive: Bool
     ) {
         let showsBrandedToolbar = toolbarMode == .branded
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        let shouldShowSpeak = showsBrandedToolbar && !state.showsCancelButton
+        let shouldShowSpeak = showsBrandedToolbar && isTTSReady && !state.showsCancelButton
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
