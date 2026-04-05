@@ -86,6 +86,10 @@ struct KeyVoxApp: App {
                         if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
                             handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
+                        if let pendingShortcutURL = KeyVoxIPCBridge.consumePendingURLRoute(),
+                           let pendingShortcutRoute = KeyVoxURLRoute(url: pendingShortcutURL) {
+                            handle(route: pendingShortcutRoute, shouldPresentReturnToHost: true)
+                        }
                         transcriptionManager.handleAppDidBecomeActive()
                         ttsManager.handleAppDidBecomeActive()
                         pocketTTSModelManager.handleAppDidBecomeActive()
