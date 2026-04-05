@@ -83,8 +83,10 @@ struct KeyVoxApp: App {
                     NSLog("[KeyVoxApp] scenePhase=%@", String(describing: newPhase))
                     switch newPhase {
                     case .active:
-                        if let initialRoute = appLaunchRouteStore.consumeInitialURLRoute() {
-                            handle(route: initialRoute, shouldPresentReturnToHost: true)
+                        let initialRoute = appLaunchRouteStore.consumeInitialURLRoute()
+                        let pendingShortcutRoute = KeyVoxIPCBridge.consumePendingURLRoute().flatMap(KeyVoxURLRoute.init(url:))
+                        if let selectedRoute = pendingShortcutRoute ?? initialRoute {
+                            handle(route: selectedRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
                         ttsManager.handleAppDidBecomeActive()

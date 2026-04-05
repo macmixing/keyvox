@@ -66,6 +66,7 @@ enum KeyVoxIPCBridge {
         static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
+        static let pendingURLRoute = "pendingURLRoute"
     }
 
     private enum LiveMeterPacket {
@@ -200,6 +201,19 @@ enum KeyVoxIPCBridge {
     static func clearTTSRequest(fileManager: FileManager = .default) {
         guard let requestURL = ttsRequestURL(fileManager: fileManager) else { return }
         try? fileManager.removeItem(at: requestURL)
+    }
+
+    static func writePendingURLRoute(_ urlString: String) {
+        defaults?.set(urlString, forKey: Key.pendingURLRoute)
+    }
+
+    static func consumePendingURLRoute() -> URL? {
+        guard let urlString = defaults?.string(forKey: Key.pendingURLRoute) else {
+            return nil
+        }
+
+        defaults?.removeObject(forKey: Key.pendingURLRoute)
+        return URL(string: urlString)
     }
 
     static func writeLiveMeter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState) {
