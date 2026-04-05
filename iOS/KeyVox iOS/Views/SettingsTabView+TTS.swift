@@ -145,7 +145,7 @@ extension SettingsTabView {
     private var ttsUnlockRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                Text("KeyVox Speak Access")
+                Text("KeyVox Speak Unlimited")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)

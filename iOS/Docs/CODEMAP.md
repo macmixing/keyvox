@@ -552,7 +552,7 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
   - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
-  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Access` unlock row placed beneath the model section, including the shared installed-voice picker menu.
+  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
