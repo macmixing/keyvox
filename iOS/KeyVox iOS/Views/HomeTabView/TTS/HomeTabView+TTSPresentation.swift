@@ -3,7 +3,7 @@ import SwiftUI
 extension HomeTabView {
     @ViewBuilder
     var ttsVoiceShortcutLabel: some View {
-        if installedPlaybackVoices.isEmpty {
+        if showsHomePlaybackVoiceShortcut == false {
             Text(effectiveTTSVoice.displayName)
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.yellow)
@@ -17,6 +17,10 @@ extension HomeTabView {
                     .foregroundStyle(.yellow)
             }
         }
+    }
+
+    var showsHomePlaybackVoiceShortcut: Bool {
+        installedPlaybackVoices.count > 1
     }
 
     var installedPlaybackVoices: [AppSettingsStore.TTSVoice] {
