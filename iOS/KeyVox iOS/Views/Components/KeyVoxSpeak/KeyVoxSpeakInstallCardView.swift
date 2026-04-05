@@ -290,7 +290,7 @@ fileprivate extension KeyVoxSpeakInstallCardView.InstallStep {
         case .sharedModel:
             switch modelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Download the shared engine that powers KeyVox Speak."
+                return "Download the shared engine that powers KeyVox Speak (~642 MB)."
             case .downloading:
                 return "Downloading the shared playback engine."
             case .installing:
@@ -304,9 +304,9 @@ fileprivate extension KeyVoxSpeakInstallCardView.InstallStep {
             switch modelManager.installState(for: .alba) {
             case .notInstalled:
                 if case .ready = modelManager.sharedModelInstallState {
-                    return "Install Alba to match the preview voice from scene A."
+                    return "Install Alba to match the preview voice from scene A (~19 MB)."
                 }
-                return "Install PocketTTS CoreML first, then download Alba."
+                return "Install PocketTTS CoreML first, then download Alba (~19 MB)."
             case .downloading:
                 return "Downloading Alba."
             case .installing:
