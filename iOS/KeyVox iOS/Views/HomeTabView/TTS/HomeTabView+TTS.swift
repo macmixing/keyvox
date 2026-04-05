@@ -86,6 +86,15 @@ extension HomeTabView {
                     }
                 }
 
+                if let activeTTSInstallState {
+                    switch activeTTSInstallState {
+                    case .downloading(let progress), .installing(let progress):
+                        ModelDownloadProgress(progress: progress, showLabel: false)
+                    case .notInstalled, .ready, .failed:
+                        EmptyView()
+                    }
+                }
+
                 if showsTTSPreparationSlot {
                     VStack(alignment: .leading, spacing: 8) {
                         ProgressView(value: ttsManager.playbackPreparationProgress)

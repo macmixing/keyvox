@@ -30,7 +30,10 @@ final class AppServiceRegistry {
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
     let urlRouter: KeyVoxURLRouter
+    private let ttsEngine: PocketTTSEngine
     private var cancellables = Set<AnyCancellable>()
+    private var ttsWarmupTask: Task<Void, Never>?
+    private var warmedTTSVoiceID: String?
 
     private init(fileManager: FileManager = .default) {
         let dictionaryBaseDirectory = SharedPaths.dictionaryBaseDirectoryURL(fileManager: fileManager)
@@ -240,6 +243,7 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
+        self.ttsEngine = ttsEngine
         self.urlRouter = KeyVoxURLRouter(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
@@ -262,18 +266,28 @@ final class AppServiceRegistry {
         pocketTTSModelManager.$voiceInstallStates
             .sink { [weak self] _ in
                 self?.normalizeTTSVoiceSelection()
+                self?.warmPocketTTSIfReady()
             }
             .store(in: &cancellables)
 
         pocketTTSModelManager.$sharedModelInstallState
             .sink { [weak self] _ in
                 self?.normalizeTTSVoiceSelection()
+                self?.warmPocketTTSIfReady()
+            }
+            .store(in: &cancellables)
+
+        settingsStore.$ttsVoice
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.warmPocketTTSIfReady()
             }
             .store(in: &cancellables)
 
         normalizeActiveProviderSelection()
         normalizeTTSVoiceSelection()
         applyActiveProviderSelection(settingsStore.activeDictationProvider)
+        warmPocketTTSIfReady()
     }
 
     private func applyActiveProviderSelection(_ provider: AppSettingsStore.ActiveDictationProvider) {
@@ -329,5 +343,36 @@ final class AppServiceRegistry {
         }
 
         return pocketTTSModelManager.installedVoices().first ?? selectedVoice
+    }
+
+    private func warmPocketTTSIfReady() {
+        let resolvedVoice = Self.resolvedTTSVoiceSelection(
+            selectedVoice: settingsStore.ttsVoice,
+            pocketTTSModelManager: pocketTTSModelManager
+        )
+
+        guard pocketTTSModelManager.isReady(for: resolvedVoice) else {
+            ttsWarmupTask?.cancel()
+            ttsWarmupTask = nil
+            warmedTTSVoiceID = nil
+            return
+        }
+
+        guard warmedTTSVoiceID != resolvedVoice.rawValue else { return }
+
+        ttsWarmupTask?.cancel()
+        warmedTTSVoiceID = resolvedVoice.rawValue
+        let voiceID = resolvedVoice.rawValue
+        let ttsEngine = self.ttsEngine
+
+        ttsWarmupTask = Task {
+            do {
+                try await ttsEngine.prewarmVoiceIfNeeded(voiceID: voiceID)
+            } catch {
+                #if DEBUG
+                NSLog("[AppServiceRegistry] Failed to prewarm PocketTTS voice %@: %@", voiceID, error.localizedDescription)
+                #endif
+            }
+        }
     }
 }

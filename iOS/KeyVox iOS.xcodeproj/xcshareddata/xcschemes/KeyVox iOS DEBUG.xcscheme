@@ -66,7 +66,7 @@
          <EnvironmentVariable
             key = "KVX_DEBUG_LOG_RAW_TEXT"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_FORCE_ONBOARDING"
@@ -76,12 +76,12 @@
          <EnvironmentVariable
             key = "KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_FORCE_KEYVOX_SPEAK_INTRO"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

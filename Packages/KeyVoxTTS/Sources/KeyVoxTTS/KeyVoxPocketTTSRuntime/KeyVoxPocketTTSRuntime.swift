@@ -51,6 +51,22 @@ public actor KeyVoxPocketTTSRuntime {
         Self.log("Preferred compute mode set to \(mode.logName).")
     }
 
+    public func prepareVoiceIfNeeded(_ voice: KeyVoxTTSVoice) async throws {
+        try await prepareIfNeeded()
+
+        let voiceConditioning = try loadVoiceConditioning(voice)
+        let currentMode = await computeModeController.mode()
+        let prefillModel = currentMode == .backgroundSafe
+            ? try modelSet(backgroundModels, modeName: "background").condStepModel
+            : try modelSet(foregroundModels, modeName: "foreground").condStepModel
+
+        _ = try await loadVoiceKVSnapshot(
+            for: voice,
+            voiceConditioning: voiceConditioning,
+            model: prefillModel
+        )
+    }
+
     public func synthesizeStreaming(
         text: String,
         voice: KeyVoxTTSVoice,

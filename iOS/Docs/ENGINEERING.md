@@ -938,7 +938,7 @@ Current app-owned surfaces:
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination
 - `SettingsTabView+Models`: release-facing `Text Model` section for provider selection plus per-model install actions and uninstalled model size display
-- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Access` unlock row placed beneath the model section
+- `SettingsTabView+TTS`: release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
 - onboarding screens: welcome, setup, keyboard tour
