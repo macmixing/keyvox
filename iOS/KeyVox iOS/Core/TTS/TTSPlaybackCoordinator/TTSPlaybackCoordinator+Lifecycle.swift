@@ -161,6 +161,13 @@ extension TTSPlaybackCoordinator {
             return
         }
 
+        do {
+            try ensureAudioEngineReadyForPlayback(context: "resume")
+        } catch {
+            handleFailure(error)
+            return
+        }
+
         playerNode.play()
         isPaused = false
         isWaitingForResumeBuffer = false
@@ -312,6 +319,14 @@ extension TTSPlaybackCoordinator {
             try? session.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
         }
         try session.setActive(true)
+    }
+
+    func ensureAudioEngineReadyForPlayback(context: String) throws {
+        if audioEngine.isRunning { return }
+
+        Self.log("Audio engine was stopped before playback context=\(context); reconfiguring session and restarting engine.")
+        try configureAudioSession()
+        try audioEngine.start()
     }
 
     func finishIfPossible() {

@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
-## [1.1.0] Build 1 - Test Flight - 2026-04-05
+## [1.0.0] Build 14 - Test Flight - 2026-04-05
 
 Introduces KeyVox Speak to the iOS beta with local copied-text playback, PocketTTS model management, official shortcut routing, and the first pass of the new unlock and feature-discovery flow.
 

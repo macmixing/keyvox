@@ -95,6 +95,7 @@ final class AppServiceRegistry {
         )
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
+        var ttsManagerRef: TTSManager?
         let recorder = AudioRecorder(
             preferBuiltInMicrophoneProvider: { [weak settingsStore] in
                 settingsStore?.preferBuiltInMicrophone ?? true
@@ -140,6 +141,9 @@ final class AppServiceRegistry {
             sessionDisableTimingProvider: { [weak settingsStore] in
                 settingsStore?.sessionDisableTiming ?? .fiveMinutes
             },
+            isTTSPlaybackActiveProvider: {
+                ttsManagerRef?.isActive ?? false
+            },
             sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
         )
@@ -171,6 +175,7 @@ final class AppServiceRegistry {
             appTabRouter: appTabRouter,
             ttsPurchaseGate: ttsPurchaseController
         )
+        ttsManagerRef = ttsManager
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
             dictionaryStore: dictionaryStore,

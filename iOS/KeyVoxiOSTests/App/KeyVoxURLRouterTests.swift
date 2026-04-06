@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 import KeyVoxCore
 import KeyVoxTTS
 import Testing
@@ -43,13 +42,7 @@ struct KeyVoxURLRouterTests {
 
     @Test func startTTSRoutePresentsUnlockWhenDailyLimitIsExhausted() async throws {
         let harness = try makeHarness(isTTSUnlocked: false, remainingFreeTTSSpeaksToday: 0)
-        let originalPasteboardString = UIPasteboard.general.string
-        defer {
-            UIPasteboard.general.string = originalPasteboardString
-            harness.cleanup()
-        }
-
-        UIPasteboard.general.string = "Test clipboard speech"
+        defer { harness.cleanup() }
 
         let router = KeyVoxURLRouter(
             transcriptionManager: harness.manager,
@@ -116,7 +109,8 @@ struct KeyVoxURLRouterTests {
             keyboardBridge: KeyVoxKeyboardBridge(),
             engine: StubTTSEngine(),
             playbackCoordinator: TTSPlaybackCoordinator(),
-            purchaseGate: purchaseGate
+            purchaseGate: purchaseGate,
+            clipboardTextProvider: { "Test clipboard speech" }
         )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: manager,
@@ -219,7 +213,7 @@ private final class StubAudioRecorder: AudioRecording {
         isMonitoring = true
     }
 
-    func stopMonitoring() throws {
+    func stopMonitoring(keepAudioSessionActive: Bool) throws {
         isMonitoring = false
     }
 

@@ -29,6 +29,7 @@ final class TTSManager: ObservableObject {
     let playbackCoordinator: TTSPlaybackCoordinator
     let purchaseGate: any TTSPurchaseGating
     let replayCache: TTSReplayCache
+    let clipboardTextProvider: @MainActor () -> String?
     let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
     let onNewGenerationPlaybackStarted: @MainActor () -> Void
     var activeRequest: KeyVoxTTSRequest?
@@ -82,6 +83,7 @@ final class TTSManager: ObservableObject {
         playbackCoordinator: TTSPlaybackCoordinator,
         purchaseGate: any TTSPurchaseGating,
         replayCache: TTSReplayCache? = nil,
+        clipboardTextProvider: (@MainActor () -> String?)? = nil,
         effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil,
         onNewGenerationPlaybackStarted: (@MainActor () -> Void)? = nil
     ) {
@@ -92,6 +94,7 @@ final class TTSManager: ObservableObject {
         self.playbackCoordinator = playbackCoordinator
         self.purchaseGate = purchaseGate
         self.replayCache = replayCache ?? TTSReplayCache()
+        self.clipboardTextProvider = clipboardTextProvider ?? { UIPasteboard.general.string }
         self.effectiveVoiceProvider = effectiveVoiceProvider ?? { settingsStore.ttsVoice }
         self.onNewGenerationPlaybackStarted = onNewGenerationPlaybackStarted ?? {}
 

@@ -244,7 +244,7 @@ extension AudioRecorder {
         KeyVoxIPCBridge.setSessionActive()
     }
 
-    func stopMonitoring() throws {
+    func stopMonitoring(keepAudioSessionActive: Bool = false) throws {
         guard isMonitoring else { return }
         guard !isRecording else {
             throw AudioRecorderError.monitoringShutdownWhileRecording
@@ -252,10 +252,12 @@ extension AudioRecorder {
 
         invalidateAudioEngine(clearSessionActive: false)
 
-        do {
-            try audioSession.setActive(false)
-        } catch {
-            throw AudioRecorderError.engineStopFailed(underlying: error)
+        if keepAudioSessionActive == false {
+            do {
+                try audioSession.setActive(false)
+            } catch {
+                throw AudioRecorderError.engineStopFailed(underlying: error)
+            }
         }
 
         isMonitoring = false
