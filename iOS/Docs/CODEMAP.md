@@ -227,25 +227,32 @@ iOS/
 │   │   ├── KeyboardViewController+PresentationLifecycle.swift
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
-│   │   ├── AudioIndicatorDriver.swift
-│   │   ├── KeyboardCapsLockStateStore.swift
-│   │   ├── KeyboardCallObserver.swift
-│   │   ├── KeyboardCursorTrackpadSupport.swift
-│   │   ├── KeyboardDictationController.swift
-│   │   ├── KeyboardDictionaryCasingStore.swift
-│   │   ├── KeyboardHapticsSettingsStore.swift
-│   │   ├── KeyboardInteractionHaptics.swift
-│   │   ├── KeyboardIPCManager.swift
-│   │   ├── KeyboardInsertionCapitalizationHeuristics.swift
-│   │   ├── KeyboardInsertionSpacingHeuristics.swift
-│   │   ├── KeyboardKeypressHaptics.swift
+│   │   ├── Dictation/
+│   │   │   ├── AudioIndicatorDriver.swift
+│   │   │   ├── KeyboardCallObserver.swift
+│   │   │   └── KeyboardDictationController.swift
+│   │   ├── Feedback/
+│   │   │   ├── KeyboardHapticsSettingsStore.swift
+│   │   │   ├── KeyboardInteractionHaptics.swift
+│   │   │   └── KeyboardKeypressHaptics.swift
+│   │   ├── Input/
+│   │   │   ├── KeyboardCursorTrackpadSupport.swift
+│   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
+│   │   │   └── KeyboardTextInputController.swift
+│   │   ├── Text/
+│   │   │   ├── KeyboardCapsLockStateStore.swift
+│   │   │   ├── KeyboardDictionaryCasingStore.swift
+│   │   │   ├── KeyboardInsertionCapitalizationHeuristics.swift
+│   │   │   └── KeyboardInsertionSpacingHeuristics.swift
+│   │   ├── Transport/
+│   │   │   ├── KeyboardIPCManager.swift
+│   │   │   ├── KeyboardTransportDisplayState.swift
+│   │   │   └── KeyboardTTSController.swift
+│   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
-│   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
 │   │   ├── KeyboardSymbolLayout.swift
-│   │   ├── KeyboardTTSController.swift
-│   │   ├── KeyboardTextInputController.swift
 │   │   ├── KeyboardToolbarMode.swift
 │   │   └── KeyboardTypography.swift
 │   ├── Info.plist
@@ -253,7 +260,6 @@ iOS/
 │   └── Views/
 │       ├── FullAccessView.swift
 │       ├── KeyboardInputHostView.swift
-│       ├── KeyboardLayoutGeometry.swift
 │       ├── KeyboardRootView.swift
 │       └── Components/
 │           ├── KeyboardCancelButton.swift
@@ -264,7 +270,6 @@ iOS/
 │           ├── KeyboardKeyView.swift
 │           ├── KeyboardLogoBarView.swift
 │           ├── KeyboardRoundedBorderRenderer.swift
-│           ├── KeyboardTransportDisplayState.swift
 │           └── KeyboardSpeakButton.swift
 ├── KeyVox Share/
 │   ├── Base.lproj/
@@ -581,26 +586,29 @@ Packages/
   - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
 - `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
   - Debug-only presentation lifecycle counters and controller test hooks.
-- `KeyVox Keyboard/Core/KeyboardCallObserver.swift`
+- `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
-- `KeyVox Keyboard/Core/KeyboardDictationController.swift`
+- `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
-- `KeyVox Keyboard/Core/KeyboardTTSController.swift`
+- `KeyVox Keyboard/Core/Transport/KeyboardTTSController.swift`
   - Keyboard-local copied-text playback transport owner that stages TTS requests and reacts to shared TTS state.
-- `KeyVox Keyboard/Core/KeyboardInteractionHaptics.swift`
+- `KeyVox Keyboard/Core/Feedback/KeyboardInteractionHaptics.swift`
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
-- `KeyVox Keyboard/Core/KeyboardIPCManager.swift`
+- `KeyVox Keyboard/Core/Transport/KeyboardIPCManager.swift`
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
-- `KeyVox Keyboard/Core/KeyboardTextInputController.swift`
+- `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
-- `KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift`
+- `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
   - Cursor-trackpad delta handling used by the space-bar trackpad interaction.
-- `KeyVox Keyboard/Core/KeyboardInsertionSpacingHeuristics.swift`
+- `KeyVox Keyboard/Core/Text/KeyboardInsertionSpacingHeuristics.swift`
   - Conservative smart-spacing before inserted dictation text.
-- `KeyVox Keyboard/Core/KeyboardInsertionCapitalizationHeuristics.swift`
+- `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationHeuristics.swift`
   - Host-text capitalization preservation for direct typing and inserted dictation paths.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
   - Lightweight rooted-install gate used by the extension toolbar for Whisper and Parakeet availability.
+- `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
+  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
+  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
@@ -609,11 +617,8 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
   - Proprietary keyboard logo-bar rendering and animation surface protected by the KeyVox branding license.
   - Intentionally limited to visual drawing, layout, and animation behavior only.
-- `KeyVox Keyboard/Views/Components/KeyboardTransportDisplayState.swift`
+- `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
-- `KeyVox Keyboard/Views/KeyboardLayoutGeometry.swift`
-  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
   - Builds the symbol-key rows, keeps the first two rows equal-width, and delegates row 3 and row 4 special-key sizing to the unified keyboard layout helper.
 - `KeyVox Keyboard/Views/FullAccessView.swift`

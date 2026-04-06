@@ -611,7 +611,7 @@ Primary owners:
   - dictation indicator animation remains separate from copied-text playback transport state
 - the trademark-protected keyboard logo implementation must stay visual-only:
   - proprietary drawing, layout, and animation stay in `KeyboardLogoBarView.swift`
-  - state application, transport/accessibility mapping, and other non-visual behavior must live outside that file
+  - state application, transport/accessibility mapping, and other non-visual behavior must live in `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`, not under `Views/`
 
 ### PocketTTS Install Rules
 
@@ -831,6 +831,14 @@ Implementation split:
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
+- keyboard `Core` is grouped by domain:
+  - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
+  - `Feedback/` owns extension-local haptics configuration and dispatch
+  - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
+  - `Text/` owns casing and spacing heuristics for inserted text
+  - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
+  - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
+- `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
 
 ### Toolbar and Layout Rules
 
