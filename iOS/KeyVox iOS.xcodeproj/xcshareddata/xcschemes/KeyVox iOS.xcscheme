@@ -51,6 +51,9 @@
             ReferencedContainer = "container:KeyVox iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../KeyVox iOS/Resources/KeyVoxSpeak.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

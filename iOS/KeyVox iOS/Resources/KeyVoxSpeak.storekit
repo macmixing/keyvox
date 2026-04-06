@@ -1,0 +1,34 @@
+{
+  "identifier" : "KeyVoxSpeakConfiguration",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "KVX_SPEAK_UNLIMITED",
+      "localizations" : [
+        {
+          "description" : "Unlock unlimited copied-text speech with KeyVox Speak.",
+          "displayName" : "KeyVox Speak Unlimited",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.cueit.keyvox.speak.unlimited",
+      "referenceName" : "KeyVox Speak Unlimited",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "storefront" : "USA",
+    "timeRate" : 1
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}
