@@ -104,6 +104,10 @@ final class KeyboardIPCManager {
         )
     }
 
+    func currentTTSPlaybackProgress() -> CGFloat {
+        CGFloat(KeyVoxIPCBridge.currentTTSPlaybackProgress())
+    }
+
     func currentSharedRecordingState() -> SharedRecordingState {
         guard let rawValue = KeyVoxIPCBridge.currentRecordingState(),
               let state = SharedRecordingState(rawValue: rawValue) else {

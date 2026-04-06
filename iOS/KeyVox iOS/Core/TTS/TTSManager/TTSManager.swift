@@ -126,6 +126,7 @@ final class TTSManager: ObservableObject {
         }
         playbackCoordinator.onPlaybackProgressChanged = { [weak self] progress in
             self?.playbackProgress = progress
+            self?.keyboardBridge.publishTTSPlaybackProgress(progress)
         }
         playbackCoordinator.onPreparationProgress = { [weak self] bufferedSamples, requiredSamples, hasStartedPlayback in
             self?.updatePlaybackPreparationProgress(

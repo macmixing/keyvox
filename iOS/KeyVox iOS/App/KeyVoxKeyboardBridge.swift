@@ -87,6 +87,7 @@ final class KeyVoxKeyboardBridge {
         pendingClearWorkItem = nil
         KeyVoxIPCBridge.setTTSState(.preparing)
         KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPreparing)
         KeyVoxIPCBridge.touchHeartbeat()
     }
@@ -98,6 +99,10 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSIsPaused(false)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPlaying)
         KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSPlaybackProgress(_ progress: Double) {
+        KeyVoxIPCBridge.setTTSPlaybackProgress(progress)
     }
 
     func publishTTSPaused() {
@@ -121,6 +126,7 @@ final class KeyVoxKeyboardBridge {
     func publishTTSFinished() {
         KeyVoxIPCBridge.setTTSState(.finished)
         KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(1)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
         KeyVoxIPCBridge.touchHeartbeat()
@@ -137,6 +143,7 @@ final class KeyVoxKeyboardBridge {
     func publishTTSFailed(message: String?) {
         KeyVoxIPCBridge.setTTSState(.error, errorMessage: message)
         KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFailed)
         KeyVoxIPCBridge.touchHeartbeat()

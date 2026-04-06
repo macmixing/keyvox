@@ -294,6 +294,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `ttsState`
 - `ttsState_timestamp`
 - `ttsIsPaused`
+- `ttsPlaybackProgress`
 - `ttsErrorMessage`
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
@@ -606,6 +607,7 @@ Primary owners:
 - the keyboard playback transport is intentionally split:
   - center logo toggles pause/resume for active playback
   - cancel and speak stop active playback completely
+  - the keyboard logo ring reads shared playback progress and overlays an indigo transport arc on top of the yellow ring
   - dictation indicator animation remains separate from copied-text playback transport state
 
 ### PocketTTS Install Rules

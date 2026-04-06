@@ -25,11 +25,13 @@ final class KeyboardLogoBarView: UIControl {
     private let backgroundLayer = CAShapeLayer()
     private let innerBorderLayer = CAShapeLayer()
     private let ringLayer = CAShapeLayer()
+    private let transportProgressLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
 
     private var keyboardState: KeyboardState = .idle
+    private var playbackProgress: CGFloat = 0
     private var indicatorPhase: AudioIndicatorPhase = .idle
     private var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
@@ -113,6 +115,7 @@ final class KeyboardLogoBarView: UIControl {
         layer.addSublayer(backgroundLayer)
         layer.addSublayer(innerBorderLayer)
         layer.addSublayer(ringLayer)
+        layer.addSublayer(transportProgressLayer)
 
         let indigo = UIColor.systemIndigo.cgColor
         let topIndigo = UIColor.systemIndigo.withAlphaComponent(0.9).cgColor
@@ -126,6 +129,12 @@ final class KeyboardLogoBarView: UIControl {
             barLayer.shadowOffset = .zero
             layer.addSublayer(barLayer)
         }
+
+        transportProgressLayer.fillColor = UIColor.clear.cgColor
+        transportProgressLayer.strokeColor = UIColor.systemIndigo.cgColor
+        transportProgressLayer.lineCap = .butt
+        transportProgressLayer.strokeStart = 0
+        transportProgressLayer.strokeEnd = 0
     }
 
     private func configureInitialPresentation() {
@@ -140,6 +149,9 @@ final class KeyboardLogoBarView: UIControl {
     func applyKeyboardState(_ state: KeyboardState) {
         let previousTransportSymbolName = transportSymbolName
         keyboardState = state
+        if state.isTTSPlaybackActive == false {
+            playbackProgress = 0
+        }
         let nextTransportSymbolName = transportSymbolName
 
         if indicatorPhase != state.indicatorPhase {
@@ -152,6 +164,14 @@ final class KeyboardLogoBarView: UIControl {
 
         let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
         updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
+        updateLayerFrames()
+    }
+
+    func applyPlaybackProgress(_ progress: CGFloat) {
+        let clampedProgress = min(max(progress, 0), 1)
+        let nextProgress = keyboardState.isTTSPlaybackActive ? clampedProgress : 0
+        guard abs(playbackProgress - nextProgress) > 0.0001 else { return }
+        playbackProgress = nextProgress
         updateLayerFrames()
     }
 
@@ -349,6 +369,20 @@ final class KeyboardLogoBarView: UIControl {
         ringLayer.fillColor = UIColor.clear.cgColor
         ringLayer.strokeColor = UIColor.systemYellow.withAlphaComponent(0.6).cgColor
         ringLayer.lineWidth = Metrics.ringLineWidth * scale
+
+        let radius = circleRect.width / 2
+        let arcCenter = CGPoint(x: circleRect.midX, y: circleRect.midY)
+        let transportPath = UIBezierPath(
+            arcCenter: arcCenter,
+            radius: radius,
+            startAngle: -.pi / 2,
+            endAngle: (.pi * 3) / 2,
+            clockwise: true
+        ).cgPath
+        transportProgressLayer.path = transportPath
+        transportProgressLayer.lineWidth = Metrics.ringLineWidth * scale
+        transportProgressLayer.strokeEnd = playbackProgress
+        transportProgressLayer.isHidden = keyboardState.isTTSPlaybackActive == false
 
         let barWidth = Metrics.barWidth * scale
         let barSpacing = Metrics.barSpacing * scale

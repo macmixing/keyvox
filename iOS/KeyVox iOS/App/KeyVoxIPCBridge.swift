@@ -61,6 +61,7 @@ enum KeyVoxIPCBridge {
         static let ttsState = "ttsState"
         static let ttsStateTimestamp = "ttsState_timestamp"
         static let ttsIsPaused = "ttsIsPaused"
+        static let ttsPlaybackProgress = "ttsPlaybackProgress"
         static let ttsErrorMessage = "ttsErrorMessage"
         static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
@@ -170,6 +171,10 @@ enum KeyVoxIPCBridge {
         defaults?.set(isPaused, forKey: Key.ttsIsPaused)
     }
 
+    static func setTTSPlaybackProgress(_ progress: Double) {
+        defaults?.set(min(max(progress, 0), 1), forKey: Key.ttsPlaybackProgress)
+    }
+
     private static func log(_ message: String) {
         #if DEBUG
         NSLog("[KeyVoxIPCBridge] %@", message)
@@ -185,6 +190,7 @@ enum KeyVoxIPCBridge {
         defaults?.removeObject(forKey: Key.ttsState)
         defaults?.removeObject(forKey: Key.ttsStateTimestamp)
         defaults?.removeObject(forKey: Key.ttsIsPaused)
+        defaults?.removeObject(forKey: Key.ttsPlaybackProgress)
         defaults?.removeObject(forKey: Key.ttsErrorMessage)
     }
 
@@ -344,6 +350,10 @@ enum KeyVoxIPCBridge {
 
     static func currentTTSIsPaused() -> Bool {
         defaults?.object(forKey: Key.ttsIsPaused) as? Bool ?? false
+    }
+
+    static func currentTTSPlaybackProgress() -> Double {
+        defaults?.object(forKey: Key.ttsPlaybackProgress) as? Double ?? 0
     }
 
     static func currentTTSStateAge() -> TimeInterval? {

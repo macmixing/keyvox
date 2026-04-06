@@ -80,7 +80,9 @@ extension KeyboardViewController {
             self?.ipcManager.currentAudioIndicatorSample()
         }
         indicatorDriver.onUpdate = { [weak self] timelineState in
-            self?.rootContainerView?.logoBarView.applyTimelineState(timelineState)
+            guard let self else { return }
+            self.rootContainerView?.logoBarView.applyTimelineState(timelineState)
+            self.rootContainerView?.logoBarView.applyPlaybackProgress(self.ipcManager.currentTTSPlaybackProgress())
         }
 
         dictationController.registerObservers()
@@ -93,6 +95,7 @@ extension KeyboardViewController {
         indicatorDriver.stop()
         indicatorDriver.sampleProvider = nil
         indicatorDriver.onUpdate = nil
+        rootContainerView?.logoBarView.applyPlaybackProgress(0)
         dictationController.unregisterObservers()
 
         if let rootContainerView {

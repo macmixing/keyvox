@@ -76,6 +76,7 @@ extension TTSManager {
         pausedReplaySampleOffset = nil
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         playbackProgress = 0
+        keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
         fastModeBackgroundSafetyProgress = 0
         isFastModeBackgroundSafe = false
         KeyVoxIPCBridge.clearTTSRequest()
@@ -196,6 +197,7 @@ extension TTSManager {
             isReplayingCachedPlayback = true
             state = .playing
             playbackProgress = playbackCoordinator.currentPlaybackProgress
+            keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
             keyboardBridge.publishTTSPaused()
         } else {
             playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
