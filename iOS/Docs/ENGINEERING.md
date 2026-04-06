@@ -170,7 +170,6 @@ Current root behavior:
 - `hasCompletedWelcomeScreen`
 - `isForceOnboardingLaunch`
 - `hasPendingKeyboardTour`
-- `hasCompletedKeyboardTourThisLaunch`
 - `hasPassedWelcomeScreenThisLaunch`
 - `isPendingKeyboardTourRouteArmed`
 - `isIgnoringPersistedPendingKeyboardTourThisLaunch`
@@ -301,6 +300,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
+- `pendingURLRoute`
 
 ### App Group Settings Keys
 
@@ -323,6 +323,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasCompletedOnboardingWelcome`
 - `KeyVox.App.HasPendingKeyboardTour`
 - `KeyVox.App.ActiveDictationProvider`
+- `KeyVox.App.IsTTSTranscriptExpanded`
 - `KeyVox.App.IsTTSUnlocked`
 - `KeyVox.App.TTSFreeSpeakUsageDayStart`
 - `KeyVox.App.TTSFreeSpeakUsageCount`
@@ -359,6 +360,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `com.cueit.keyvox.ttsPreparing`
 - `com.cueit.keyvox.ttsPlaying`
 - `com.cueit.keyvox.ttsFinished`
+- `com.cueit.keyvox.ttsStopped`
 - `com.cueit.keyvox.ttsFailed`
 
 ### Shared Recording States
@@ -615,6 +617,7 @@ Primary owners:
 
 ### Runtime Structure Rules
 
+- `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
 - `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, `TTSPlaybackCoordinator+Metering.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
@@ -998,4 +1001,4 @@ Those remain device, integration, or manual-test territory by design.
 
 - `ENGINEERING.md` tracks stable iOS architecture, onboarding rules, IPC contracts, lifecycle rules, and operational/testing policy.
 - `CODEMAP.md` tracks file ownership and major system placement.
-- `Docs/KEYVOX_IOS.md` remains historical design context rather than the current source of truth.
+- These two docs are the maintained iOS source of truth in this repo today.

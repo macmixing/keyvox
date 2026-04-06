@@ -81,7 +81,7 @@ protocol TTSPurchaseGating {
 
 @MainActor
 final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
-    nonisolated static let unlockProductID = "com.cueit.keyvox.speak.unlock"
+    nonisolated static let unlockProductID = "com.cueit.keyvox.speak.unlimited"
     nonisolated static let dailyFreeSpeakLimit = 2
 
     @Published private(set) var isTTSUnlocked: Bool
@@ -98,6 +98,7 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
     private let bypassFreeSpeakLimitInDebug: Bool
     private let bypassFreeSpeakLimitInAllDebugBuilds: Bool
     private var storeRefreshGeneration: UInt64 = 0
+    private var transactionUpdatesTask: Task<Void, Never>?
 
     init(
         defaults: UserDefaults,
@@ -115,10 +116,15 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
         self.bypassFreeSpeakLimitInAllDebugBuilds = bypassFreeSpeakLimitInAllDebugBuilds
         self.isTTSUnlocked = defaults.bool(forKey: UserDefaultsKeys.App.isTTSUnlocked)
         refreshUsageState()
+        startListeningForTransactionUpdatesIfNeeded()
 
         Task { @MainActor [weak self] in
             await self?.refreshStoreState()
         }
+    }
+
+    deinit {
+        transactionUpdatesTask?.cancel()
     }
 
     convenience init(
@@ -310,5 +316,30 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
 
     private func canApplyStoreRefresh(generation: UInt64) -> Bool {
         isStoreActionInFlight == false && storeRefreshGeneration == generation
+    }
+
+    private func startListeningForTransactionUpdatesIfNeeded() {
+        guard store is AppStoreTTSUnlockStore else { return }
+        guard transactionUpdatesTask == nil else { return }
+
+        transactionUpdatesTask = Task { [weak self] in
+            for await verificationResult in Transaction.updates {
+                guard let self else { return }
+
+                switch verificationResult {
+                case .verified(let transaction):
+                    let isMatchingUnlock = transaction.productID == Self.unlockProductID
+                    let isUnlocked = isMatchingUnlock && transaction.revocationDate == nil
+                    if isMatchingUnlock {
+                        await MainActor.run {
+                            self.applyUnlockState(isUnlocked)
+                        }
+                    }
+                    await transaction.finish()
+                case .unverified:
+                    break
+                }
+            }
+        }
     }
 }
