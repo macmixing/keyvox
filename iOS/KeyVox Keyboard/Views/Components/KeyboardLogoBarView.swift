@@ -232,6 +232,28 @@ final class KeyboardLogoBarView: UIControl {
         )
     }
 
+    func animateTransportReturnToMicrophone() {
+        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
+        updateLayerFrames()
+
+        microphoneImageView.isHidden = false
+        microphoneImageView.alpha = 0
+        microphoneImageView.transform = CGAffineTransform(scaleX: 0.22, y: 0.22)
+
+        UIView.animate(
+            withDuration: 0.42,
+            delay: 0,
+            usingSpringWithDamping: 0.72,
+            initialSpringVelocity: 0.35,
+            options: [.beginFromCurrentState, .allowUserInteraction],
+            animations: {
+                self.microphoneImageView.alpha = 1
+                self.microphoneImageView.transform = .identity
+            }
+        )
+    }
+
     private func animateBars(visible: Bool, duration: CFTimeInterval) {
         barsAreVisible = visible
         setBarsHidden(false)

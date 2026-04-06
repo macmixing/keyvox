@@ -20,6 +20,11 @@ extension KeyboardLogoBarView {
         updateAccessibility()
         guard previousTransportSymbolName != nextTransportSymbolName else { return }
 
+        if previousTransportSymbolName != nil, nextTransportSymbolName == nil {
+            animateTransportReturnToMicrophone()
+            return
+        }
+
         let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
         updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
         updateLayerFrames()
