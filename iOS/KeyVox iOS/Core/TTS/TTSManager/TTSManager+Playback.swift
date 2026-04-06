@@ -1,10 +1,9 @@
 import AVFoundation
 import Foundation
-import UIKit
 
 extension TTSManager {
     func startPlaybackFromClipboard() async {
-        guard let text = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard let text = clipboardTextProvider()?.trimmingCharacters(in: .whitespacesAndNewlines),
               text.isEmpty == false else {
             return
         }
