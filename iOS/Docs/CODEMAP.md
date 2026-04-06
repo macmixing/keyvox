@@ -122,6 +122,8 @@ iOS/
 │   │   │   ├── PocketTTSEngine.swift
 │   │   │   ├── PocketTTSInstallManifest.swift
 │   │   │   ├── PocketTTSModelCatalog.swift
+│   │   │   ├── PocketTTSModelManager+InstallLifecycle.swift
+│   │   │   ├── PocketTTSModelManager+Support.swift
 │   │   │   ├── PocketTTSModelManager.swift
 │   │   │   ├── TTSEngine.swift
 │   │   │   ├── TTSPreviewPlayer.swift
@@ -482,6 +484,11 @@ Packages/
   - PocketTTS shared-runtime and per-voice artifact metadata plus approximate voice download sizes used by settings.
 - `KeyVox iOS/Core/TTS/PocketTTSModelManager.swift`
   - Observable owner of shared PocketTTS Core ML install state and independent per-voice install state.
+  - Keeps the public install-state surface, readiness queries, and queue state for the follow-up voice install flow.
+- `KeyVox iOS/Core/TTS/PocketTTSModelManager+InstallLifecycle.swift`
+  - Install, repair, delete, and queued follow-up voice install sequencing for PocketTTS runtime and voice assets.
+- `KeyVox iOS/Core/TTS/PocketTTSModelManager+Support.swift`
+  - Shared staging, manifest, filesystem replacement, download, and install-helper utilities used by the PocketTTS manager lifecycle split.
 - `KeyVox iOS/Core/TTS/PocketTTSEngine.swift`
   - App-owned streaming TTS engine wrapper around the local PocketTTS runtime.
 - `KeyVox iOS/Core/TTS/TTSPlaybackCoordinator/`
