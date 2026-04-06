@@ -30,10 +30,10 @@ final class KeyboardLogoBarView: UIControl {
     private let microphoneImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
 
-    private var keyboardState: KeyboardState = .idle
-    private var playbackProgress: CGFloat = 0
-    private var indicatorPhase: AudioIndicatorPhase = .idle
-    private var timelineState: AudioIndicatorTimelineState = .initial
+    var keyboardState: KeyboardState = .idle
+    var playbackProgress: CGFloat = 0
+    var indicatorPhase: AudioIndicatorPhase = .idle
+    var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
     private var isAnimatingActivationTransition = false
     private var lastRasterizedMicrophonePixelSize = CGSize.zero
@@ -146,50 +146,7 @@ final class KeyboardLogoBarView: UIControl {
         setBarOpacity(0)
     }
 
-    func applyKeyboardState(_ state: KeyboardState) {
-        let previousTransportSymbolName = transportSymbolName
-        keyboardState = state
-        if state.isTTSPlaybackActive == false {
-            playbackProgress = 0
-        }
-        let nextTransportSymbolName = transportSymbolName
-
-        if indicatorPhase != state.indicatorPhase {
-            applyIndicatorPhase(state.indicatorPhase)
-            return
-        }
-
-        updateAccessibility()
-        guard previousTransportSymbolName != nextTransportSymbolName else { return }
-
-        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
-        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
-        updateLayerFrames()
-    }
-
-    func applyPlaybackProgress(_ progress: CGFloat) {
-        let clampedProgress = min(max(progress, 0), 1)
-        let nextProgress = keyboardState.isTTSPlaybackActive ? clampedProgress : 0
-        guard abs(playbackProgress - nextProgress) > 0.0001 else { return }
-        playbackProgress = nextProgress
-        updateLayerFrames()
-    }
-
-    func applyIndicatorPhase(_ phase: AudioIndicatorPhase) {
-        guard indicatorPhase != phase else { return }
-        let oldPhase = indicatorPhase
-        indicatorPhase = phase
-        updateAccessibility()
-        handleIndicatorPhaseTransition(from: oldPhase, to: phase)
-        updateLayerFrames()
-    }
-
-    func applyTimelineState(_ state: AudioIndicatorTimelineState) {
-        timelineState = state
-        updateLayerFrames()
-    }
-
-    private func handleIndicatorPhaseTransition(from oldPhase: AudioIndicatorPhase, to newPhase: AudioIndicatorPhase) {
+    func handleIndicatorPhaseTransition(from oldPhase: AudioIndicatorPhase, to newPhase: AudioIndicatorPhase) {
         if transportSymbolName != nil {
             isAnimatingActivationTransition = false
             barsAreVisible = false
@@ -307,7 +264,7 @@ final class KeyboardLogoBarView: UIControl {
         CATransaction.commit()
     }
 
-    private func updateLayerFrames() {
+    func updateLayerFrames() {
         guard bounds.width > 0, bounds.height > 0 else { return }
 
         CATransaction.begin()
@@ -436,7 +393,7 @@ final class KeyboardLogoBarView: UIControl {
         microphoneImageView.image = rasterizedImage.withRenderingMode(.alwaysOriginal)
     }
 
-    private func updateCenterIconImageIfNeeded(for size: CGSize) {
+    func updateCenterIconImageIfNeeded(for size: CGSize) {
         guard let transportSymbolName else {
             updateMicrophoneImageIfNeeded(for: size)
             return
@@ -452,19 +409,8 @@ final class KeyboardLogoBarView: UIControl {
             .withTintColor(tintColor, renderingMode: .alwaysOriginal)
     }
 
-    private func currentCenterIconSizeRatio() -> CGFloat {
+    func currentCenterIconSizeRatio() -> CGFloat {
         transportSymbolName == nil ? Metrics.micSymbolSizeRatio : Metrics.transportSymbolSizeRatio
-    }
-
-    private var transportSymbolName: String? {
-        switch keyboardState {
-        case .speaking:
-            return "pause.fill"
-        case .pausedSpeaking:
-            return "play.fill"
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
-            return nil
-        }
     }
 
     private func barHeight(for index: Int, scale: CGFloat) -> CGFloat {
@@ -541,36 +487,4 @@ final class KeyboardLogoBarView: UIControl {
         )
     }
 
-    private func updateAccessibility() {
-        switch keyboardState {
-        case .idle:
-            accessibilityLabel = "Start recording"
-            accessibilityValue = "Ready"
-            isEnabled = true
-        case .waitingForApp:
-            accessibilityLabel = "Opening app"
-            accessibilityValue = "Waiting"
-            isEnabled = false
-        case .recording:
-            accessibilityLabel = "Stop recording and transcribe"
-            accessibilityValue = "Recording"
-            isEnabled = true
-        case .transcribing:
-            accessibilityLabel = "Transcribing"
-            accessibilityValue = "Transcribing"
-            isEnabled = false
-        case .preparingPlayback:
-            accessibilityLabel = "Opening app"
-            accessibilityValue = "Waiting"
-            isEnabled = false
-        case .speaking:
-            accessibilityLabel = "Pause playback"
-            accessibilityValue = "Speaking"
-            isEnabled = true
-        case .pausedSpeaking:
-            accessibilityLabel = "Resume playback"
-            accessibilityValue = "Paused"
-            isEnabled = true
-        }
-    }
 }

@@ -264,6 +264,7 @@ iOS/
 │           ├── KeyboardKeyView.swift
 │           ├── KeyboardLogoBarView.swift
 │           ├── KeyboardRoundedBorderRenderer.swift
+│           ├── KeyboardTransportDisplayState.swift
 │           └── KeyboardSpeakButton.swift
 ├── KeyVox Share/
 │   ├── Base.lproj/
@@ -605,6 +606,11 @@ Packages/
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
+- `KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+  - Proprietary keyboard logo-bar rendering and animation surface protected by the KeyVox branding license.
+  - Intentionally limited to visual drawing, layout, and animation behavior only.
+- `KeyVox Keyboard/Views/Components/KeyboardTransportDisplayState.swift`
+  - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/KeyboardLayoutGeometry.swift`
   - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.

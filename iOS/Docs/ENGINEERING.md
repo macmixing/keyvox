@@ -609,6 +609,9 @@ Primary owners:
   - cancel and speak stop active playback completely
   - the keyboard logo ring reads shared playback progress and overlays an indigo transport arc on top of the yellow ring
   - dictation indicator animation remains separate from copied-text playback transport state
+- the trademark-protected keyboard logo implementation must stay visual-only:
+  - proprietary drawing, layout, and animation stay in `KeyboardLogoBarView.swift`
+  - state application, transport/accessibility mapping, and other non-visual behavior must live outside that file
 
 ### PocketTTS Install Rules
 
