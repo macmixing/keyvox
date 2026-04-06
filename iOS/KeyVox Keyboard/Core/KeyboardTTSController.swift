@@ -3,11 +3,15 @@ import Foundation
 protocol KeyboardTTSIPCManaging: AnyObject {
     var onTTSPreparing: (() -> Void)? { get set }
     var onTTSPlaying: (() -> Void)? { get set }
+    var onTTSPaused: (() -> Void)? { get set }
+    var onTTSResumed: (() -> Void)? { get set }
     var onTTSFinished: (() -> Void)? { get set }
     var onTTSError: ((String?) -> Void)? { get set }
 
     func sendStartTTSCommand()
     func sendStopTTSCommand()
+    func sendPauseTTSCommand()
+    func sendResumeTTSCommand()
     func currentKeyboardState() -> KeyboardState
     func reconcileKeyboardStateIfNeeded() -> KeyboardState
     func isSessionWarm() -> Bool
@@ -60,6 +64,8 @@ final class KeyboardTTSController {
         cancelPendingWork()
         ipcManager.onTTSPreparing = nil
         ipcManager.onTTSPlaying = nil
+        ipcManager.onTTSPaused = nil
+        ipcManager.onTTSResumed = nil
         ipcManager.onTTSFinished = nil
         ipcManager.onTTSError = nil
     }
@@ -76,10 +82,8 @@ final class KeyboardTTSController {
         syncStateFromSharedState()
 
         switch state {
-        case .speaking:
-            cancelPendingWork()
-            ipcManager.sendStopTTSCommand()
-            state = .idle
+        case .speaking, .pausedSpeaking:
+            stopPlaybackIfActive()
         case .preparingPlayback:
             break
         case .idle, .recording, .transcribing:
@@ -90,6 +94,37 @@ final class KeyboardTTSController {
             scheduleWaitingTimeout()
             openContainingApp(startTTSURL)
         case .waitingForApp:
+            break
+        }
+    }
+
+    func handleStopPlaybackTap() {
+        syncStateFromSharedState()
+        stopPlaybackIfActive()
+    }
+
+    private func stopPlaybackIfActive() {
+        switch state {
+        case .speaking, .pausedSpeaking:
+            cancelPendingWork()
+            ipcManager.sendStopTTSCommand()
+            state = .idle
+        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+            break
+        }
+    }
+
+    func handlePlaybackControlTap() {
+        syncStateFromSharedState()
+
+        switch state {
+        case .speaking:
+            ipcManager.sendPauseTTSCommand()
+            state = .pausedSpeaking
+        case .pausedSpeaking:
+            ipcManager.sendResumeTTSCommand()
+            state = .speaking
+        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
             break
         }
     }
@@ -105,6 +140,12 @@ final class KeyboardTTSController {
         }
         ipcManager.onTTSPlaying = { [weak self] in
             self?.handleTTSPlaying()
+        }
+        ipcManager.onTTSPaused = { [weak self] in
+            self?.handleTTSPaused()
+        }
+        ipcManager.onTTSResumed = { [weak self] in
+            self?.handleTTSResumed()
         }
         ipcManager.onTTSFinished = { [weak self] in
             self?.handleTTSFinished()
@@ -135,6 +176,16 @@ final class KeyboardTTSController {
     }
 
     private func handleTTSPlaying() {
+        cancelWaitingTimeout()
+        state = .speaking
+    }
+
+    private func handleTTSPaused() {
+        cancelWaitingTimeout()
+        state = .pausedSpeaking
+    }
+
+    private func handleTTSResumed() {
         cancelWaitingTimeout()
         state = .speaking
     }

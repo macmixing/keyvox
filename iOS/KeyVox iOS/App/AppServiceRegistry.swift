@@ -214,6 +214,12 @@ final class AppServiceRegistry {
         keyboardBridge.onStopTTSCommand = {
             audioModeCoordinator.handleStopTTS()
         }
+        keyboardBridge.onPauseTTSCommand = {
+            audioModeCoordinator.handlePauseTTS()
+        }
+        keyboardBridge.onResumeTTSCommand = {
+            audioModeCoordinator.handleResumeTTS()
+        }
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
                 await transcriptionManager?.handleRecorderInterruptedCapture(interruptedCapture)

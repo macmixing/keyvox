@@ -9,12 +9,6 @@ final class TTSPlaybackCoordinator {
         case playbackWhilePreservingRecording
     }
 
-    enum MeterPolicy {
-        static let windowSampleCount = 192
-        static let windowStepCount = 96
-        static let minimumUpdateLevel: Float = 0.015
-    }
-
     var onPlaybackStarted: (() -> Void)?
     var onPlaybackFinished: (() -> Void)?
     var onPlaybackCancelled: (() -> Void)?
@@ -23,7 +17,6 @@ final class TTSPlaybackCoordinator {
     var onPlaybackResumed: (() -> Void)?
     var onPreparationCompleted: (() -> Void)?
     var onPreparationProgress: ((Int, Int, Bool) -> Void)?
-    var onPlaybackMeterLevel: ((Float) -> Void)?
     var onPlaybackProgressChanged: ((Double) -> Void)?
     var onFastModeBackgroundSafetyChanged: ((Double, Bool) -> Void)?
     var onReplayablePlaybackReady: (() -> Void)?

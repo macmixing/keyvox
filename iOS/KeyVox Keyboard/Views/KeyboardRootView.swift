@@ -30,6 +30,7 @@ final class KeyboardRootView: UIView {
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
     private var speakButtonVisibilityTarget = false
+    private var hasAppliedInitialCancelVisibility = false
     private var hasAppliedInitialSpeakVisibility = false
 
     override init(frame: CGRect) {
@@ -101,30 +102,39 @@ final class KeyboardRootView: UIView {
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        let shouldShowSpeak = showsBrandedToolbar && isTTSReady && !state.showsCancelButton
+        let shouldShowSpeak = showsBrandedToolbar && isTTSReady && (!state.showsCancelButton || state.isTTSPlaybackActive)
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
-            cancelButton.layer.removeAllAnimations()
-
-            if shouldShowCancel {
-                cancelButton.alpha = 0
-                cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                cancelButton.isHidden = false
-
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.cancelButton.alpha = 1
-                    self.cancelButton.transform = .identity
-                })
+            if hasAppliedInitialCancelVisibility == false {
+                hasAppliedInitialCancelVisibility = true
+                if shouldShowCancel {
+                    cancelButton.isHidden = false
+                } else {
+                    cancelButton.isHidden = true
+                }
             } else {
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.cancelButton.alpha = 0
-                    self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                }) { _ in
-                    guard !self.cancelButtonVisibilityTarget else { return }
-                    self.cancelButton.isHidden = true
-                    self.cancelButton.alpha = 1
-                    self.cancelButton.transform = .identity
+                cancelButton.layer.removeAllAnimations()
+
+                if shouldShowCancel {
+                    cancelButton.alpha = 0
+                    cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    cancelButton.isHidden = false
+
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.cancelButton.alpha = 1
+                        self.cancelButton.transform = .identity
+                    })
+                } else {
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.cancelButton.alpha = 0
+                        self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    }) { _ in
+                        guard !self.cancelButtonVisibilityTarget else { return }
+                        self.cancelButton.isHidden = true
+                        self.cancelButton.alpha = 1
+                        self.cancelButton.transform = .identity
+                    }
                 }
             }
         }
@@ -171,7 +181,7 @@ final class KeyboardRootView: UIView {
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar
-        speakButton.isSpeaking = state == .speaking
+        speakButton.isSpeaking = state.isTTSPlaybackActive
         speakButton.isTrackpadModeActive = isTrackpadModeActive
         speakButton.isEnabled = shouldShowSpeak && !isTrackpadModeActive
 
@@ -187,7 +197,7 @@ final class KeyboardRootView: UIView {
         fullAccessWarningContainer.isHidden = !showsToolbarWarning
         fullAccessInfoButton.isHidden = !toolbarMode.showsWarningInfoButton
         fullAccessInfoButton.isEnabled = toolbarMode.showsWarningInfoButton
-        logoBarView.applyIndicatorPhase(state.indicatorPhase)
+        logoBarView.applyKeyboardState(state)
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
         keyGridView.setSymbolPage(symbolPage)

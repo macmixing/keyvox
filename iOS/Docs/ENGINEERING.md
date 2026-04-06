@@ -293,10 +293,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `recentTTSPlayback_timestamp`
 - `ttsState`
 - `ttsState_timestamp`
+- `ttsIsPaused`
 - `ttsErrorMessage`
-- `ttsPlaybackMeterLevel`
-- `ttsPlaybackMeterSignalState`
-- `ttsPlaybackMeterTimestamp`
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
@@ -602,9 +600,13 @@ Primary owners:
 - `PocketTTSModelCatalog` owns shared-runtime artifact metadata plus approximate per-voice download size metadata used by settings.
 - `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
 - `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
-- `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, playback metering, replayable-audio capture, replay seeking, and pause/resume.
+- `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
 - `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
+- the keyboard playback transport is intentionally split:
+  - center logo toggles pause/resume for active playback
+  - cancel and speak stop active playback completely
+  - dictation indicator animation remains separate from copied-text playback transport state
 
 ### PocketTTS Install Rules
 

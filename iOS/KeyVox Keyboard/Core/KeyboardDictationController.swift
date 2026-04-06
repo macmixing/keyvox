@@ -154,7 +154,7 @@ final class KeyboardDictationController {
         case .recording:
             state = .transcribing
             ipcManager.sendStopCommand()
-        case .speaking:
+        case .speaking, .pausedSpeaking:
             state = .waitingForApp
             scheduleWaitingTimeout()
 

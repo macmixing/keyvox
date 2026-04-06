@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-05**
+**Last Updated: 2026-04-06**
 
 ## Project Overview
 
@@ -24,13 +24,13 @@ The current default runtime flow is:
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, deterministic playback preparation, replay caching, and return-to-host readiness.
+10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 11. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
 ## Architecture
 
 - **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, PocketTTS install/runtime ownership, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
-- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
+- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
@@ -137,7 +137,6 @@ iOS/
 │   │   │   └── TTSPlaybackCoordinator/
 │   │   │       ├── TTSPlaybackCoordinator.swift
 │   │   │       ├── TTSPlaybackCoordinator+Lifecycle.swift
-│   │   │       ├── TTSPlaybackCoordinator+Metering.swift
 │   │   │       ├── TTSPlaybackCoordinator+Progress.swift
 │   │   │       ├── TTSPlaybackCoordinator+Scheduling.swift
 │   │   │       └── TTSPlaybackCoordinatorBufferingPolicy.swift

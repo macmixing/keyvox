@@ -124,6 +124,7 @@ extension TTSManager {
         Self.log("Playback paused.")
         isPlaybackPaused = true
         isReplayingCachedPlayback = playbackCoordinator.isReplayingCachedPlayback
+        keyboardBridge.publishTTSPaused()
         updateIdleSleepPrevention()
         if let offset = playbackCoordinator.replayPausedSampleOffsetSnapshot(),
            let request = lastReplayableRequest ?? activeRequest,
@@ -142,6 +143,7 @@ extension TTSManager {
         isPlaybackPaused = false
         isReplayingCachedPlayback = playbackCoordinator.isReplayingCachedPlayback
         pausedReplaySampleOffset = nil
+        keyboardBridge.publishTTSResumed()
         updateIdleSleepPrevention()
         if let request = lastReplayableRequest ?? activeRequest,
            let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
@@ -194,6 +196,7 @@ extension TTSManager {
             isReplayingCachedPlayback = true
             state = .playing
             playbackProgress = playbackCoordinator.currentPlaybackProgress
+            keyboardBridge.publishTTSPaused()
         } else {
             playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
             pausedReplaySampleOffset = nil
