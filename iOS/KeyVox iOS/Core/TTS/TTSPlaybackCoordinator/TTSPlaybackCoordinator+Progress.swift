@@ -59,6 +59,13 @@ extension TTSPlaybackCoordinator {
         )
         guard queuedSampleCount >= requiredSamples || (isFinishing && queuedSampleCount > 0) else { return }
 
+        do {
+            try ensureAudioEngineReadyForPlayback(context: "resumeIfBufferedEnough")
+        } catch {
+            handleFailure(error)
+            return
+        }
+
         playerNode.play()
         isPaused = false
         isWaitingForResumeBuffer = false

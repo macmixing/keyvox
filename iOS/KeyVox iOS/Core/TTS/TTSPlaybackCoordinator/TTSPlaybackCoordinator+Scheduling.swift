@@ -197,6 +197,12 @@ extension TTSPlaybackCoordinator {
 
         let startPlayback = { [weak self] in
             guard let self else { return }
+            do {
+                try self.ensureAudioEngineReadyForPlayback(context: "startupBuffer")
+            } catch {
+                self.handleFailure(error)
+                return
+            }
             self.playerNode.play()
             self.startPlaybackProgressTimer()
             self.onPreparationProgress?(self.activeSilentStartSampleCount, self.activeSilentStartSampleCount, true)
