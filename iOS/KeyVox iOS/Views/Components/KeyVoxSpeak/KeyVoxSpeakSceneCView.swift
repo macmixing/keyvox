@@ -64,15 +64,9 @@ struct KeyVoxSpeakSceneCView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
-        .onChange(of: isVisible) { _, visible in
-            if visible {
-                startEntrance()
-            } else {
-                resetEntrance()
-            }
-        }
-        .onDisappear {
-            resetEntrance()
+        .onChange(of: isVisible, initial: true) { _, visible in
+            guard visible else { return }
+            startEntranceIfNeeded()
         }
     }
 
@@ -130,7 +124,7 @@ struct KeyVoxSpeakSceneCView: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
-    private func startEntrance() {
+    private func startEntranceIfNeeded() {
         guard !hasAnimated else { return }
         hasAnimated = true
 
@@ -186,16 +180,5 @@ struct KeyVoxSpeakSceneCView: View {
     private func stopEntrance() {
         animationTask?.cancel()
         animationTask = nil
-    }
-
-    private func resetEntrance() {
-        stopEntrance()
-        hasAnimated = false
-        headerOpacity = 0
-        installCardOpacity = 0
-        installCardOffset = 18
-        stepRevealProgress = 0
-        fastModeHintOpacity = 0
-        footerOpacity = 0
     }
 }
