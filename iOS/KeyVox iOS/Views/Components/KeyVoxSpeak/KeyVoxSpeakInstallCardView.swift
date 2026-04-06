@@ -158,12 +158,7 @@ struct KeyVoxSpeakInstallCardView: View {
                 }
             }
 
-            switch activeInstallState {
-            case .downloading(let progress), .installing(let progress):
-                ModelDownloadProgress(progress: progress, showLabel: false)
-            case .failed, .notInstalled, .ready, .none:
-                EmptyView()
-            }
+            downloadProgressView
 
             if let errorText {
                 Text(errorText)
@@ -205,6 +200,16 @@ struct KeyVoxSpeakInstallCardView: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
         )
+    }
+
+    @ViewBuilder
+    private var downloadProgressView: some View {
+        switch activeInstallState {
+        case .downloading(let progress), .installing(let progress):
+            ModelDownloadProgress(progress: progress, showLabel: false)
+        case .failed, .notInstalled, .ready, .none:
+            EmptyView()
+        }
     }
 
     private func progressText(for state: PocketTTSInstallState) -> String? {
