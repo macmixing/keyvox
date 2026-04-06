@@ -49,6 +49,22 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Meet me on 04 04 2026 at 3 05 PM."))
     }
 
+    func testNormalizeStripsColons() {
+        let normalized = PocketTTSChunkPlanner.normalize("Agenda: review: launch")
+        XCTAssertTrue(normalized.text.hasSuffix("Agenda review launch."))
+    }
+
+    func testNormalizePreservesTerminalPeriodsOnLinkListItems() {
+        let normalized = PocketTTSChunkPlanner.normalize("- https://example.com")
+        XCTAssertTrue(normalized.text.hasSuffix("- link."))
+    }
+
+    func testNormalizeStripsLiteralAsterisks() {
+        let normalized = PocketTTSChunkPlanner.normalize("*important*")
+        XCTAssertTrue(normalized.text.hasSuffix("Important."))
+        XCTAssertFalse(normalized.text.contains("*"))
+    }
+
     func testNormalizeStripsMarkdownAndCodeArtifacts() {
         let normalized = PocketTTSChunkPlanner.normalize("# Title\n- `inline_code`\nVisit [docs](https://example.com)")
         XCTAssertTrue(normalized.text.contains("Title"))
@@ -66,6 +82,36 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
     func testNormalizeExpandsVersionPrefix() {
         let normalized = PocketTTSChunkPlanner.normalize("Updated in v1.2.3")
         XCTAssertTrue(normalized.text.hasSuffix("Updated in version 1.2.3."))
+    }
+
+    func testNormalizeAddsTerminalPeriodsToNumberedLists() {
+        let normalized = PocketTTSChunkPlanner.normalize("""
+        1. first item
+        2. second item
+        """)
+        XCTAssertTrue(normalized.text.hasSuffix("1. first item. 2. second item."))
+    }
+
+    func testNormalizePreservesParenthesizedNumberedListMarkers() {
+        let normalized = PocketTTSChunkPlanner.normalize("1) first item")
+        XCTAssertTrue(normalized.text.hasSuffix("1) first item."))
+        XCTAssertFalse(normalized.text.contains("1, first item."))
+    }
+
+    func testNormalizeAddsTerminalPeriodsToHyphenLists() {
+        let normalized = PocketTTSChunkPlanner.normalize("""
+        - first item
+        - second item
+        """)
+        XCTAssertTrue(normalized.text.hasSuffix("- first item. - second item."))
+    }
+
+    func testNormalizeAddsTerminalPeriodsToBulletLists() {
+        let normalized = PocketTTSChunkPlanner.normalize("""
+        • first item
+        • second item
+        """)
+        XCTAssertTrue(normalized.text.hasSuffix("- first item. - second item."))
     }
 
     func testChunkPlannerKeepsShortTextInSingleChunk() throws {

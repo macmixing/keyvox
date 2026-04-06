@@ -6,7 +6,6 @@ enum PocketTTSTextNormalizer {
     private static let emailPattern = #"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b"#
     private static let markdownLinkPattern = #"\[([^\]]+)\]\((https?://[^)]+)\)"#
     private static let markdownHeadingPattern = #"(?m)^\s{0,3}#{1,6}\s*"#
-    private static let markdownBulletPattern = #"(?m)^\s*[-*•]+\s+"#
     private static let fencedCodeBlockPattern = #"(?s)```.*?```"#
     private static let inlineCodePattern = #"`([^`]+)`"#
     private static let dollarAmountPattern = #"\$([0-9]+(?:\.[0-9]+)?)"#
@@ -48,11 +47,6 @@ enum PocketTTSTextNormalizer {
         sanitized = sanitized.replacingOccurrences(
             of: markdownHeadingPattern,
             with: "",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: markdownBulletPattern,
-            with: ", ",
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
@@ -106,6 +100,10 @@ enum PocketTTSTextNormalizer {
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
+            of: ":",
+            with: " "
+        )
+        sanitized = sanitized.replacingOccurrences(
             of: versionPattern,
             with: "version $1",
             options: [.regularExpression, .caseInsensitive]
@@ -115,11 +113,7 @@ enum PocketTTSTextNormalizer {
             with: ", ",
             options: .regularExpression
         )
-        sanitized = sanitized.replacingOccurrences(
-            of: closeAsidePattern,
-            with: ", ",
-            options: .regularExpression
-        )
+        sanitized = normalizeCloseAsides(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
             of: slashJoinPattern,
             with: " ",
@@ -140,8 +134,9 @@ enum PocketTTSTextNormalizer {
             with: " ",
             options: .regularExpression
         )
+        sanitized = normalizeListItemTerminalPeriods(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
-            of: #"[^\p{L}\p{N}\s\.,!\?;:'"\/\-\n]"#,
+            of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\)\n]"#,
             with: " ",
             options: .regularExpression
         )
@@ -172,5 +167,117 @@ enum PocketTTSTextNormalizer {
         )
 
         return sanitized
+    }
+
+    private static func normalizeListItemTerminalPeriods(in text: String) -> String {
+        text
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map { normalizeListItemTerminalPeriod(in: String($0)) }
+            .joined(separator: "\n")
+    }
+
+    private static func normalizeListItemTerminalPeriod(in line: String) -> String {
+        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+        guard trimmedLine.isEmpty == false else { return line }
+
+        let isNumberedListItem = trimmedLine.range(
+            of: #"^\d+[\.\)]\s+"#,
+            options: .regularExpression
+        ) != nil
+        let isBulletedListItem = trimmedLine.range(
+            of: #"^[-*•]\s+"#,
+            options: .regularExpression
+        ) != nil
+
+        guard isNumberedListItem || isBulletedListItem else { return line }
+
+        let normalizedMarkerLine = line.replacingOccurrences(
+            of: #"^(\s*)[\*•](\s+)"#,
+            with: "$1-$2",
+            options: .regularExpression
+        )
+
+        let withoutTrailingWhitespace = normalizedMarkerLine.replacingOccurrences(
+            of: #"\s+$"#,
+            with: "",
+            options: .regularExpression
+        )
+
+        if withoutTrailingWhitespace.range(
+            of: #"[,;:\.!?]+$"#,
+            options: .regularExpression
+        ) != nil {
+            return withoutTrailingWhitespace.replacingOccurrences(
+                of: #"[,;:\.!?]+$"#,
+                with: ".",
+                options: .regularExpression
+            )
+        }
+
+        return withoutTrailingWhitespace + "."
+    }
+
+    private static func normalizeCloseAsides(in text: String) -> String {
+        text
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map { normalizeCloseAsidesInLine(String($0)) }
+            .joined(separator: "\n")
+    }
+
+    private static func normalizeCloseAsidesInLine(_ line: String) -> String {
+        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+        let isNumberedListItem = trimmedLine.range(
+            of: #"^\d+\)\s+"#,
+            options: .regularExpression
+        ) != nil
+
+        guard isNumberedListItem else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let listMarkerPattern = #"^(\s*\d+\))(\s+)(.*)$"#
+        guard let range = line.range(
+            of: listMarkerPattern,
+            options: .regularExpression
+        ) else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let matchedLine = String(line[range])
+        let capturePattern = try? NSRegularExpression(pattern: listMarkerPattern)
+        guard
+            let regex = capturePattern,
+            let match = regex.firstMatch(
+                in: matchedLine,
+                range: NSRange(matchedLine.startIndex..., in: matchedLine)
+            ),
+            let markerRange = Range(match.range(at: 1), in: matchedLine),
+            let spacingRange = Range(match.range(at: 2), in: matchedLine),
+            let contentRange = Range(match.range(at: 3), in: matchedLine)
+        else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let marker = String(matchedLine[markerRange])
+        let spacing = String(matchedLine[spacingRange])
+        let content = String(matchedLine[contentRange]).replacingOccurrences(
+            of: closeAsidePattern,
+            with: ", ",
+            options: .regularExpression
+        )
+
+        return marker + spacing + content
     }
 }
