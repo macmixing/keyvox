@@ -83,10 +83,10 @@ struct KeyVoxApp: App {
                     Self.log("scenePhase=\(String(describing: newPhase))")
                     switch newPhase {
                     case .active:
+                        appLaunchRouteStore.consumePendingShortcutRouteIfNeeded()
                         let initialRoute = appLaunchRouteStore.consumeInitialURLRoute()
-                        let pendingShortcutRoute = KeyVoxIPCBridge.consumePendingURLRoute().flatMap(KeyVoxURLRoute.init(url:))
-                        if let selectedRoute = pendingShortcutRoute ?? initialRoute {
-                            handle(route: selectedRoute, shouldPresentReturnToHost: true)
+                        if let initialRoute {
+                            handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
                         ttsManager.handleAppDidBecomeActive()
@@ -120,6 +120,13 @@ struct KeyVoxApp: App {
                     } else {
                         urlRouter.handle(url: url)
                     }
+                }
+                .onChange(of: appLaunchRouteStore.routeEventSequence, initial: false) { _, _ in
+                    guard scenePhase == .active,
+                          let stagedRoute = appLaunchRouteStore.consumeInitialURLRoute() else {
+                        return
+                    }
+                    handle(route: stagedRoute, shouldPresentReturnToHost: false)
                 }
         }
     }

@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 
 enum KeyVoxIPCLiveMeterSignalState: UInt8, Equatable {
@@ -92,6 +93,7 @@ enum KeyVoxIPCBridge {
         static let ttsFinished = "com.cueit.keyvox.ttsFinished"
         static let ttsStopped = "com.cueit.keyvox.ttsStopped"
         static let ttsFailed = "com.cueit.keyvox.ttsFailed"
+        static let pendingURLRouteReady = "com.cueit.keyvox.pendingURLRouteReady"
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
@@ -168,6 +170,11 @@ enum KeyVoxIPCBridge {
         #endif
     }
 
+    private static func postDarwinNotification(named name: String) {
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterPostNotification(center, CFNotificationName(name as CFString), nil, nil, true)
+    }
+
     static func clearTTSState() {
         defaults?.removeObject(forKey: Key.ttsState)
         defaults?.removeObject(forKey: Key.ttsStateTimestamp)
@@ -211,6 +218,7 @@ enum KeyVoxIPCBridge {
 
     static func writePendingURLRoute(_ urlString: String) {
         defaults?.set(urlString, forKey: Key.pendingURLRoute)
+        postDarwinNotification(named: Notification.pendingURLRouteReady)
     }
 
     static func consumePendingURLRoute() -> URL? {
