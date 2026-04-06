@@ -33,7 +33,6 @@ enum PocketTTSTextNormalizer {
         sanitized = sanitized.replacingOccurrences(of: "\u{2014}", with: " - ")
         sanitized = sanitized.replacingOccurrences(of: "\u{2026}", with: "...")
         sanitized = sanitized.replacingOccurrences(of: "&", with: " and ")
-        sanitized = normalizeListItemTerminalPeriods(in: sanitized)
 
         sanitized = sanitized.replacingOccurrences(
             of: fencedCodeBlockPattern,
@@ -135,8 +134,9 @@ enum PocketTTSTextNormalizer {
             with: " ",
             options: .regularExpression
         )
+        sanitized = normalizeListItemTerminalPeriods(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
-            of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\*\)\n]"#,
+            of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\)\n]"#,
             with: " ",
             options: .regularExpression
         )

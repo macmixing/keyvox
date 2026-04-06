@@ -54,6 +54,17 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Agenda review launch."))
     }
 
+    func testNormalizePreservesTerminalPeriodsOnLinkListItems() {
+        let normalized = PocketTTSChunkPlanner.normalize("- https://example.com")
+        XCTAssertTrue(normalized.text.hasSuffix("- link."))
+    }
+
+    func testNormalizeStripsLiteralAsterisks() {
+        let normalized = PocketTTSChunkPlanner.normalize("*important*")
+        XCTAssertTrue(normalized.text.hasSuffix("Important."))
+        XCTAssertFalse(normalized.text.contains("*"))
+    }
+
     func testNormalizeStripsMarkdownAndCodeArtifacts() {
         let normalized = PocketTTSChunkPlanner.normalize("# Title\n- `inline_code`\nVisit [docs](https://example.com)")
         XCTAssertTrue(normalized.text.contains("Title"))
