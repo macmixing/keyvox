@@ -36,6 +36,7 @@ final class TranscriptionManager: ObservableObject {
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
     private let sessionDisableTimingProvider: (() -> SessionDisableTiming)?
+    let isTTSPlaybackActiveProvider: () -> Bool
     let sessionPolicy: SessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
@@ -83,6 +84,7 @@ final class TranscriptionManager: ObservableObject {
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
         capsLockEnabledProvider: @escaping () -> Bool = { false },
         sessionDisableTimingProvider: (() -> SessionDisableTiming)? = nil,
+        isTTSPlaybackActiveProvider: @escaping () -> Bool = { false },
         sessionDisableTimingPublisher: AnyPublisher<SessionDisableTiming, Never> = Empty().eraseToAnyPublisher(),
         sessionPolicy: SessionPolicy = .default
     ) {
@@ -109,6 +111,7 @@ final class TranscriptionManager: ObservableObject {
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
         self.sessionDisableTimingProvider = sessionDisableTimingProvider
+        self.isTTSPlaybackActiveProvider = isTTSPlaybackActiveProvider
         self.sessionPolicy = sessionPolicy
 
         bindDictionaryState()

@@ -219,7 +219,7 @@ private final class StubAudioRecorder: AudioRecording {
         isMonitoring = true
     }
 
-    func stopMonitoring() throws {
+    func stopMonitoring(keepAudioSessionActive: Bool) throws {
         isMonitoring = false
     }
 
