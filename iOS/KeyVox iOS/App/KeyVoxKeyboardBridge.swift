@@ -10,6 +10,8 @@ final class KeyVoxKeyboardBridge {
     var onDisableSessionCommand: (() -> Void)?
     var onStartTTSCommand: (() -> Void)?
     var onStopTTSCommand: (() -> Void)?
+    var onPauseTTSCommand: (() -> Void)?
+    var onResumeTTSCommand: (() -> Void)?
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
@@ -25,6 +27,8 @@ final class KeyVoxKeyboardBridge {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.disableSession)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.startTTS)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopTTS)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.pauseTTS)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.resumeTTS)
         
         touchHeartbeat()
         startHeartbeatTimer()
@@ -82,6 +86,8 @@ final class KeyVoxKeyboardBridge {
         pendingClearWorkItem?.cancel()
         pendingClearWorkItem = nil
         KeyVoxIPCBridge.setTTSState(.preparing)
+        KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPreparing)
         KeyVoxIPCBridge.touchHeartbeat()
     }
@@ -90,14 +96,38 @@ final class KeyVoxKeyboardBridge {
         pendingClearWorkItem?.cancel()
         pendingClearWorkItem = nil
         KeyVoxIPCBridge.setTTSState(.playing)
+        KeyVoxIPCBridge.setTTSIsPaused(false)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPlaying)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSPlaybackProgress(_ progress: Double) {
+        KeyVoxIPCBridge.setTTSPlaybackProgress(progress)
+    }
+
+    func publishTTSPaused() {
+        pendingClearWorkItem?.cancel()
+        pendingClearWorkItem = nil
+        KeyVoxIPCBridge.setTTSState(.playing)
+        KeyVoxIPCBridge.setTTSIsPaused(true)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPaused)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    func publishTTSResumed() {
+        pendingClearWorkItem?.cancel()
+        pendingClearWorkItem = nil
+        KeyVoxIPCBridge.setTTSState(.playing)
+        KeyVoxIPCBridge.setTTSIsPaused(false)
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsResumed)
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
     func publishTTSFinished() {
         KeyVoxIPCBridge.setTTSState(.finished)
+        KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(1)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
-        KeyVoxIPCBridge.clearTTSPlaybackMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
         KeyVoxIPCBridge.touchHeartbeat()
 
@@ -112,8 +142,9 @@ final class KeyVoxKeyboardBridge {
 
     func publishTTSFailed(message: String?) {
         KeyVoxIPCBridge.setTTSState(.error, errorMessage: message)
+        KeyVoxIPCBridge.setTTSIsPaused(false)
+        KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
-        KeyVoxIPCBridge.clearTTSPlaybackMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFailed)
         KeyVoxIPCBridge.touchHeartbeat()
     }
@@ -121,24 +152,8 @@ final class KeyVoxKeyboardBridge {
     func publishTTSStopped() {
         KeyVoxIPCBridge.clearTTSState()
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
-        KeyVoxIPCBridge.clearTTSPlaybackMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsStopped)
         KeyVoxIPCBridge.touchHeartbeat()
-    }
-
-    func publishPlaybackMeter(level: Float) {
-        let clampedLevel = min(max(level, 0), 1)
-        let signalState: KeyVoxIPCLiveMeterSignalState
-
-        switch clampedLevel {
-        case ..<0.02:
-            signalState = .dead
-        default:
-            signalState = clampedLevel < 0.08 ? .quiet : .active
-        }
-
-        KeyVoxIPCBridge.writeLiveMeter(level: clampedLevel, signalState: signalState)
-        KeyVoxIPCBridge.writeTTSPlaybackMeter(level: clampedLevel, signalState: signalState)
     }
 
     func publishLiveMeter(level: Float, signalState: LiveInputSignalState) {
@@ -185,6 +200,10 @@ final class KeyVoxKeyboardBridge {
                 self.onStartTTSCommand?()
             case KeyVoxIPCBridge.Notification.stopTTS:
                 self.onStopTTSCommand?()
+            case KeyVoxIPCBridge.Notification.pauseTTS:
+                self.onPauseTTSCommand?()
+            case KeyVoxIPCBridge.Notification.resumeTTS:
+                self.onResumeTTSCommand?()
             default:
                 break
             }

@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-05**
+**Last Updated: 2026-04-06**
 
 ## Project Overview
 
@@ -24,13 +24,13 @@ The current default runtime flow is:
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, deterministic playback preparation, replay caching, and return-to-host readiness.
+10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 11. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
 ## Architecture
 
 - **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, PocketTTS install/runtime ownership, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
-- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
+- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
@@ -137,7 +137,6 @@ iOS/
 │   │   │   └── TTSPlaybackCoordinator/
 │   │   │       ├── TTSPlaybackCoordinator.swift
 │   │   │       ├── TTSPlaybackCoordinator+Lifecycle.swift
-│   │   │       ├── TTSPlaybackCoordinator+Metering.swift
 │   │   │       ├── TTSPlaybackCoordinator+Progress.swift
 │   │   │       ├── TTSPlaybackCoordinator+Scheduling.swift
 │   │   │       └── TTSPlaybackCoordinatorBufferingPolicy.swift
@@ -228,25 +227,32 @@ iOS/
 │   │   ├── KeyboardViewController+PresentationLifecycle.swift
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
-│   │   ├── AudioIndicatorDriver.swift
-│   │   ├── KeyboardCapsLockStateStore.swift
-│   │   ├── KeyboardCallObserver.swift
-│   │   ├── KeyboardCursorTrackpadSupport.swift
-│   │   ├── KeyboardDictationController.swift
-│   │   ├── KeyboardDictionaryCasingStore.swift
-│   │   ├── KeyboardHapticsSettingsStore.swift
-│   │   ├── KeyboardInteractionHaptics.swift
-│   │   ├── KeyboardIPCManager.swift
-│   │   ├── KeyboardInsertionCapitalizationHeuristics.swift
-│   │   ├── KeyboardInsertionSpacingHeuristics.swift
-│   │   ├── KeyboardKeypressHaptics.swift
+│   │   ├── Dictation/
+│   │   │   ├── AudioIndicatorDriver.swift
+│   │   │   ├── KeyboardCallObserver.swift
+│   │   │   └── KeyboardDictationController.swift
+│   │   ├── Feedback/
+│   │   │   ├── KeyboardHapticsSettingsStore.swift
+│   │   │   ├── KeyboardInteractionHaptics.swift
+│   │   │   └── KeyboardKeypressHaptics.swift
+│   │   ├── Input/
+│   │   │   ├── KeyboardCursorTrackpadSupport.swift
+│   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
+│   │   │   └── KeyboardTextInputController.swift
+│   │   ├── Text/
+│   │   │   ├── KeyboardCapsLockStateStore.swift
+│   │   │   ├── KeyboardDictionaryCasingStore.swift
+│   │   │   ├── KeyboardInsertionCapitalizationHeuristics.swift
+│   │   │   └── KeyboardInsertionSpacingHeuristics.swift
+│   │   ├── Transport/
+│   │   │   ├── KeyboardIPCManager.swift
+│   │   │   ├── KeyboardTransportDisplayState.swift
+│   │   │   └── KeyboardTTSController.swift
+│   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
-│   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
 │   │   ├── KeyboardSymbolLayout.swift
-│   │   ├── KeyboardTTSController.swift
-│   │   ├── KeyboardTextInputController.swift
 │   │   ├── KeyboardToolbarMode.swift
 │   │   └── KeyboardTypography.swift
 │   ├── Info.plist
@@ -254,7 +260,6 @@ iOS/
 │   └── Views/
 │       ├── FullAccessView.swift
 │       ├── KeyboardInputHostView.swift
-│       ├── KeyboardLayoutGeometry.swift
 │       ├── KeyboardRootView.swift
 │       └── Components/
 │           ├── KeyboardCancelButton.swift
@@ -581,34 +586,39 @@ Packages/
   - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
 - `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
   - Debug-only presentation lifecycle counters and controller test hooks.
-- `KeyVox Keyboard/Core/KeyboardCallObserver.swift`
+- `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
-- `KeyVox Keyboard/Core/KeyboardDictationController.swift`
+- `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
-- `KeyVox Keyboard/Core/KeyboardTTSController.swift`
+- `KeyVox Keyboard/Core/Transport/KeyboardTTSController.swift`
   - Keyboard-local copied-text playback transport owner that stages TTS requests and reacts to shared TTS state.
-- `KeyVox Keyboard/Core/KeyboardInteractionHaptics.swift`
+- `KeyVox Keyboard/Core/Feedback/KeyboardInteractionHaptics.swift`
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
-- `KeyVox Keyboard/Core/KeyboardIPCManager.swift`
+- `KeyVox Keyboard/Core/Transport/KeyboardIPCManager.swift`
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
-- `KeyVox Keyboard/Core/KeyboardTextInputController.swift`
+- `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
-- `KeyVox Keyboard/Core/KeyboardCursorTrackpadSupport.swift`
+- `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
   - Cursor-trackpad delta handling used by the space-bar trackpad interaction.
-- `KeyVox Keyboard/Core/KeyboardInsertionSpacingHeuristics.swift`
+- `KeyVox Keyboard/Core/Text/KeyboardInsertionSpacingHeuristics.swift`
   - Conservative smart-spacing before inserted dictation text.
-- `KeyVox Keyboard/Core/KeyboardInsertionCapitalizationHeuristics.swift`
+- `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationHeuristics.swift`
   - Host-text capitalization preservation for direct typing and inserted dictation paths.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
   - Lightweight rooted-install gate used by the extension toolbar for Whisper and Parakeet availability.
+- `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
+  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
+  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
-- `KeyVox Keyboard/Views/KeyboardLayoutGeometry.swift`
-  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
+- `KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+  - Proprietary keyboard logo-bar rendering and animation surface protected by the KeyVox branding license.
+  - Intentionally limited to visual drawing, layout, and animation behavior only.
+- `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
+  - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
   - Builds the symbol-key rows, keeps the first two rows equal-width, and delegates row 3 and row 4 special-key sizing to the unified keyboard layout helper.
 - `KeyVox Keyboard/Views/FullAccessView.swift`

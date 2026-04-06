@@ -74,7 +74,7 @@ extension TTSPlaybackCoordinator {
             return
         }
 
-        scheduleBuffer(buffer, samples: frame.samples, chunkDebugID: frame.chunkDebugID, chunkIndex: frame.chunkIndex)
+        scheduleBuffer(buffer, chunkDebugID: frame.chunkDebugID, chunkIndex: frame.chunkIndex)
         resumeIfBufferedEnough()
         emitPlaybackProgress()
         notifyFastModeBackgroundSafetyChanged()
@@ -179,10 +179,8 @@ extension TTSPlaybackCoordinator {
         var startDelay: TimeInterval = 0
 
         for buffer in buffered {
-            let samples = copySamples(from: buffer)
             scheduleBuffer(
                 buffer,
-                samples: samples,
                 chunkDebugID: "startup-buffer",
                 chunkIndex: nil,
                 startDelay: startDelay
@@ -226,18 +224,15 @@ extension TTSPlaybackCoordinator {
 
     func scheduleBuffer(
         _ buffer: AVAudioPCMBuffer,
-        samples: [Float],
         chunkDebugID: String,
         chunkIndex: Int?,
         startDelay: TimeInterval? = nil
     ) {
         let sessionID = playbackSessionID
         let sampleCount = Int(buffer.frameLength)
-        let bufferStartDelay = startDelay ?? (Double(queuedSampleCount) / playbackFormat.sampleRate)
         queuedBufferCount += 1
         queuedSampleCount += sampleCount
         totalScheduledSampleCount += sampleCount
-        scheduleMeterUpdates(for: samples, startDelay: bufferStartDelay)
         let queuedSeconds = Double(queuedSampleCount) / playbackFormat.sampleRate
         if queuedBufferCount == 1 || queuedSeconds < 0.25 {
             Self.log(

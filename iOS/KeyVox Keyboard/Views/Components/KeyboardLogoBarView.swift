@@ -11,6 +11,7 @@ final class KeyboardLogoBarView: UIControl {
         static let barWidth: CGFloat = 4
         static let barSpacing: CGFloat = 4
         static let micSymbolSizeRatio: CGFloat = 0.65
+        static let transportSymbolSizeRatio: CGFloat = 0.48
         static let ringLineWidth: CGFloat = 2
         static let shadowRadius: CGFloat = 5
         static let barGlowRadius: CGFloat = 1.5
@@ -24,12 +25,15 @@ final class KeyboardLogoBarView: UIControl {
     private let backgroundLayer = CAShapeLayer()
     private let innerBorderLayer = CAShapeLayer()
     private let ringLayer = CAShapeLayer()
+    private let transportProgressLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
 
-    private var indicatorPhase: AudioIndicatorPhase = .idle
-    private var timelineState: AudioIndicatorTimelineState = .initial
+    var keyboardState: KeyboardState = .idle
+    var playbackProgress: CGFloat = 0
+    var indicatorPhase: AudioIndicatorPhase = .idle
+    var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
     private var isAnimatingActivationTransition = false
     private var lastRasterizedMicrophonePixelSize = CGSize.zero
@@ -52,9 +56,9 @@ final class KeyboardLogoBarView: UIControl {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let micSide = min(bounds.width, bounds.height) * Metrics.micSymbolSizeRatio
-        updateMicrophoneImageIfNeeded(for: CGSize(width: micSide, height: micSide))
-        microphoneImageView.bounds = CGRect(x: 0, y: 0, width: micSide, height: micSide)
+        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
+        microphoneImageView.bounds = CGRect(x: 0, y: 0, width: iconSide, height: iconSide)
         microphoneImageView.center = CGPoint(x: bounds.midX, y: bounds.midY)
         updateLayerFrames()
     }
@@ -68,8 +72,8 @@ final class KeyboardLogoBarView: UIControl {
     private func refreshMicrophoneImageForCurrentTraits() {
         lastRasterizedMicrophonePixelSize = .zero
         if bounds.width > 0, bounds.height > 0 {
-            let micSide = min(bounds.width, bounds.height) * Metrics.micSymbolSizeRatio
-            updateMicrophoneImageIfNeeded(for: CGSize(width: micSide, height: micSide))
+            let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+            updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
         }
     }
 
@@ -111,6 +115,7 @@ final class KeyboardLogoBarView: UIControl {
         layer.addSublayer(backgroundLayer)
         layer.addSublayer(innerBorderLayer)
         layer.addSublayer(ringLayer)
+        layer.addSublayer(transportProgressLayer)
 
         let indigo = UIColor.systemIndigo.cgColor
         let topIndigo = UIColor.systemIndigo.withAlphaComponent(0.9).cgColor
@@ -124,6 +129,12 @@ final class KeyboardLogoBarView: UIControl {
             barLayer.shadowOffset = .zero
             layer.addSublayer(barLayer)
         }
+
+        transportProgressLayer.fillColor = UIColor.clear.cgColor
+        transportProgressLayer.strokeColor = UIColor.systemIndigo.cgColor
+        transportProgressLayer.lineCap = .butt
+        transportProgressLayer.strokeStart = 0
+        transportProgressLayer.strokeEnd = 0
     }
 
     private func configureInitialPresentation() {
@@ -135,21 +146,20 @@ final class KeyboardLogoBarView: UIControl {
         setBarOpacity(0)
     }
 
-    func applyIndicatorPhase(_ phase: AudioIndicatorPhase) {
-        guard indicatorPhase != phase else { return }
-        let oldPhase = indicatorPhase
-        indicatorPhase = phase
-        updateAccessibility()
-        handleIndicatorPhaseTransition(from: oldPhase, to: phase)
-        updateLayerFrames()
-    }
+    func handleIndicatorPhaseTransition(from oldPhase: AudioIndicatorPhase, to newPhase: AudioIndicatorPhase) {
+        if transportSymbolName != nil {
+            isAnimatingActivationTransition = false
+            barsAreVisible = false
+            setBarsHidden(true)
+            setBarOpacity(0)
+            microphoneImageView.isHidden = false
+            microphoneImageView.alpha = 1
+            microphoneImageView.transform = .identity
+            let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+            updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
+            return
+        }
 
-    func applyTimelineState(_ state: AudioIndicatorTimelineState) {
-        timelineState = state
-        updateLayerFrames()
-    }
-
-    private func handleIndicatorPhaseTransition(from oldPhase: AudioIndicatorPhase, to newPhase: AudioIndicatorPhase) {
         if newPhase == .idle {
             isAnimatingActivationTransition = false
             microphoneImageView.isHidden = false
@@ -181,6 +191,8 @@ final class KeyboardLogoBarView: UIControl {
 
         guard !isAnimatingActivationTransition else { return }
 
+        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
         microphoneImageView.alpha = 0
         microphoneImageView.isHidden = true
         microphoneImageView.transform = .identity
@@ -197,6 +209,8 @@ final class KeyboardLogoBarView: UIControl {
         microphoneImageView.isHidden = false
         microphoneImageView.alpha = 1
         microphoneImageView.transform = .identity
+        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
 
         animateBarOpacity(to: 1, duration: 0.16)
 
@@ -213,6 +227,28 @@ final class KeyboardLogoBarView: UIControl {
                 guard self.indicatorPhase != .idle else { return }
                 self.microphoneImageView.isHidden = true
                 self.microphoneImageView.alpha = 0
+                self.microphoneImageView.transform = .identity
+            }
+        )
+    }
+
+    func animateTransportReturnToMicrophone() {
+        let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
+        updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
+        updateLayerFrames()
+
+        microphoneImageView.isHidden = false
+        microphoneImageView.alpha = 0
+        microphoneImageView.transform = CGAffineTransform(scaleX: 0.22, y: 0.22)
+
+        UIView.animate(
+            withDuration: 0.42,
+            delay: 0,
+            usingSpringWithDamping: 0.72,
+            initialSpringVelocity: 0.35,
+            options: [.beginFromCurrentState, .allowUserInteraction],
+            animations: {
+                self.microphoneImageView.alpha = 1
                 self.microphoneImageView.transform = .identity
             }
         )
@@ -250,7 +286,7 @@ final class KeyboardLogoBarView: UIControl {
         CATransaction.commit()
     }
 
-    private func updateLayerFrames() {
+    func updateLayerFrames() {
         guard bounds.width > 0, bounds.height > 0 else { return }
 
         CATransaction.begin()
@@ -313,6 +349,20 @@ final class KeyboardLogoBarView: UIControl {
         ringLayer.strokeColor = UIColor.systemYellow.withAlphaComponent(0.6).cgColor
         ringLayer.lineWidth = Metrics.ringLineWidth * scale
 
+        let radius = circleRect.width / 2
+        let arcCenter = CGPoint(x: circleRect.midX, y: circleRect.midY)
+        let transportPath = UIBezierPath(
+            arcCenter: arcCenter,
+            radius: radius,
+            startAngle: -.pi / 2,
+            endAngle: (.pi * 3) / 2,
+            clockwise: true
+        ).cgPath
+        transportProgressLayer.path = transportPath
+        transportProgressLayer.lineWidth = Metrics.ringLineWidth * scale
+        transportProgressLayer.strokeEnd = playbackProgress
+        transportProgressLayer.isHidden = keyboardState.isTTSPlaybackActive == false
+
         let barWidth = Metrics.barWidth * scale
         let barSpacing = Metrics.barSpacing * scale
         let totalBarWidth = (barWidth * CGFloat(barLayers.count)) + (barSpacing * CGFloat(barLayers.count - 1))
@@ -365,6 +415,26 @@ final class KeyboardLogoBarView: UIControl {
         microphoneImageView.image = rasterizedImage.withRenderingMode(.alwaysOriginal)
     }
 
+    func updateCenterIconImageIfNeeded(for size: CGSize) {
+        guard let transportSymbolName else {
+            updateMicrophoneImageIfNeeded(for: size)
+            return
+        }
+
+        lastRasterizedMicrophonePixelSize = .zero
+        let pointSize = min(size.width, size.height)
+        let configuration = UIImage.SymbolConfiguration(pointSize: pointSize, weight: .bold)
+        let tintColor = UIColor.systemIndigo
+            .withAlphaComponent(0.85)
+            .resolvedColor(with: traitCollection)
+        microphoneImageView.image = UIImage(systemName: transportSymbolName, withConfiguration: configuration)?
+            .withTintColor(tintColor, renderingMode: .alwaysOriginal)
+    }
+
+    func currentCenterIconSizeRatio() -> CGFloat {
+        transportSymbolName == nil ? Metrics.micSymbolSizeRatio : Metrics.transportSymbolSizeRatio
+    }
+
     private func barHeight(for index: Int, scale: CGFloat) -> CGFloat {
         let minHeight: CGFloat = 6 * scale
         let flatHeight: CGFloat = 3 * scale
@@ -374,13 +444,6 @@ final class KeyboardLogoBarView: UIControl {
             let waveOffset = timelineState.processingPhase + Double(index) * 0.8
             let rippleHeight = sin(waveOffset) * 0.5 + 0.5
             return flatHeight + (CGFloat(rippleHeight) * (9 * scale))
-        }
-
-        if indicatorPhase == .speaking {
-            let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
-            let speakingFloor = 4 * scale
-            let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
-            return max(minHeight, speakingFloor + dynamicHeight)
         }
 
         guard indicatorPhase == .listening else {
@@ -446,28 +509,4 @@ final class KeyboardLogoBarView: UIControl {
         )
     }
 
-    private func updateAccessibility() {
-        switch indicatorPhase {
-        case .idle:
-            accessibilityLabel = "Start recording"
-            accessibilityValue = "Ready"
-            isEnabled = true
-        case .waiting:
-            accessibilityLabel = "Opening app"
-            accessibilityValue = "Waiting"
-            isEnabled = false
-        case .listening:
-            accessibilityLabel = "Stop recording and transcribe"
-            accessibilityValue = "Recording"
-            isEnabled = true
-        case .processing:
-            accessibilityLabel = "Transcribing"
-            accessibilityValue = "Transcribing"
-            isEnabled = false
-        case .speaking:
-            accessibilityLabel = "Start recording"
-            accessibilityValue = "Speaking"
-            isEnabled = true
-        }
-    }
 }

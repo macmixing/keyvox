@@ -15,6 +15,8 @@ final class KeyboardIPCManager {
     var onNoSpeech: (() -> Void)?
     var onTTSPreparing: (() -> Void)?
     var onTTSPlaying: (() -> Void)?
+    var onTTSPaused: (() -> Void)?
+    var onTTSResumed: (() -> Void)?
     var onTTSFinished: (() -> Void)?
     var onTTSError: ((String?) -> Void)?
 
@@ -37,6 +39,8 @@ final class KeyboardIPCManager {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.noSpeech)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsPreparing)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsPlaying)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsPaused)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsResumed)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsFinished)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.ttsFailed)
     }
@@ -74,13 +78,21 @@ final class KeyboardIPCManager {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.stopTTS)
     }
 
+    func sendPauseTTSCommand() {
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.pauseTTS)
+    }
+
+    func sendResumeTTSCommand() {
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.resumeTTS)
+    }
+
     func currentAudioIndicatorSample() -> AudioIndicatorSample? {
         let snapshot: KeyVoxIPCLiveMeterSnapshot?
-        switch KeyVoxIPCBridge.currentTTSState() {
-        case .playing:
-            snapshot = KeyVoxIPCBridge.currentTTSPlaybackMeterSnapshot() ?? KeyVoxIPCBridge.currentLiveMeterSnapshot()
-        case .idle, .preparing, .generating, .finished, .error:
+        switch currentKeyboardState() {
+        case .recording, .transcribing:
             snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot()
+        case .idle, .waitingForApp, .preparingPlayback, .speaking, .pausedSpeaking:
+            snapshot = nil
         }
 
         guard let snapshot else { return nil }
@@ -90,6 +102,10 @@ final class KeyboardIPCManager {
             signalState: mapSignalState(snapshot.signalState),
             timestamp: snapshot.timestamp
         )
+    }
+
+    func currentTTSPlaybackProgress() -> CGFloat {
+        CGFloat(KeyVoxIPCBridge.currentTTSPlaybackProgress())
     }
 
     func currentSharedRecordingState() -> SharedRecordingState {
@@ -105,7 +121,7 @@ final class KeyboardIPCManager {
         case .preparing, .generating:
             return .preparingPlayback
         case .playing:
-            return .speaking
+            return KeyVoxIPCBridge.currentTTSIsPaused() ? .pausedSpeaking : .speaking
         case .finished, .error, .idle:
             return currentSharedRecordingState().keyboardState
         }
@@ -144,14 +160,15 @@ final class KeyboardIPCManager {
 
     func reconcileKeyboardStateIfNeeded() -> KeyboardState {
         let ttsState = KeyVoxIPCBridge.currentTTSState()
+        let isPaused = KeyVoxIPCBridge.currentTTSIsPaused()
         switch ttsState {
         case .preparing, .generating, .playing:
-            if !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
+            if !isPaused, !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
                 KeyVoxIPCBridge.clearTTSState()
             } else {
                 switch ttsState {
                 case .playing:
-                    return .speaking
+                    return isPaused ? .pausedSpeaking : .speaking
                 case .preparing, .generating:
                     return .preparingPlayback
                 case .finished, .error, .idle:
@@ -226,6 +243,10 @@ final class KeyboardIPCManager {
                 self.onTTSPreparing?()
             case KeyVoxIPCBridge.Notification.ttsPlaying:
                 self.onTTSPlaying?()
+            case KeyVoxIPCBridge.Notification.ttsPaused:
+                self.onTTSPaused?()
+            case KeyVoxIPCBridge.Notification.ttsResumed:
+                self.onTTSResumed?()
             case KeyVoxIPCBridge.Notification.ttsFinished:
                 self.onTTSFinished?()
             case KeyVoxIPCBridge.Notification.ttsFailed:

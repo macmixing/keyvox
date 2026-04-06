@@ -17,7 +17,7 @@ extension TTSManager {
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.keyboardBridge.publishTTSFinished()
-            self.clearActiveRequest()
+            self.clearActiveRequest(clearSharedTransportState: false)
         }
     }
 
@@ -66,7 +66,10 @@ extension TTSManager {
         }
     }
 
-    func clearActiveRequest(clearPublishedState: Bool = true) {
+    func clearActiveRequest(
+        clearPublishedState: Bool = true,
+        clearSharedTransportState: Bool = true
+    ) {
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
@@ -76,6 +79,9 @@ extension TTSManager {
         pausedReplaySampleOffset = nil
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         playbackProgress = 0
+        if clearSharedTransportState {
+            keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
+        }
         fastModeBackgroundSafetyProgress = 0
         isFastModeBackgroundSafe = false
         KeyVoxIPCBridge.clearTTSRequest()
@@ -87,7 +93,9 @@ extension TTSManager {
         if clearPublishedState {
             state = .idle
             updateIdleSleepPrevention()
-            KeyVoxIPCBridge.clearTTSState()
+            if clearSharedTransportState {
+                KeyVoxIPCBridge.clearTTSState()
+            }
         }
     }
 
@@ -124,6 +132,7 @@ extension TTSManager {
         Self.log("Playback paused.")
         isPlaybackPaused = true
         isReplayingCachedPlayback = playbackCoordinator.isReplayingCachedPlayback
+        keyboardBridge.publishTTSPaused()
         updateIdleSleepPrevention()
         if let offset = playbackCoordinator.replayPausedSampleOffsetSnapshot(),
            let request = lastReplayableRequest ?? activeRequest,
@@ -142,6 +151,7 @@ extension TTSManager {
         isPlaybackPaused = false
         isReplayingCachedPlayback = playbackCoordinator.isReplayingCachedPlayback
         pausedReplaySampleOffset = nil
+        keyboardBridge.publishTTSResumed()
         updateIdleSleepPrevention()
         if let request = lastReplayableRequest ?? activeRequest,
            let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
@@ -194,6 +204,8 @@ extension TTSManager {
             isReplayingCachedPlayback = true
             state = .playing
             playbackProgress = playbackCoordinator.currentPlaybackProgress
+            keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
+            keyboardBridge.publishTTSPaused()
         } else {
             playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
             pausedReplaySampleOffset = nil

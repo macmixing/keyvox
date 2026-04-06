@@ -266,6 +266,11 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleCancelTap() {
         interactionHaptics.emitWarningIfEnabled()
+        if keyboardState.isTTSPlaybackActive {
+            ttsController.handleStopPlaybackTap()
+            return
+        }
+
         dictationController.handleCancelTap()
     }
 
@@ -278,7 +283,12 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleMicTap() {
         interactionHaptics.emitMediumIfEnabled()
-        dictationController.handleMicTap()
+        switch keyboardState {
+        case .speaking, .pausedSpeaking:
+            ttsController.handlePlaybackControlTap()
+        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+            dictationController.handleMicTap()
+        }
     }
 
     @objc

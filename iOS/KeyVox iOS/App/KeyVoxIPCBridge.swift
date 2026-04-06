@@ -60,10 +60,9 @@ enum KeyVoxIPCBridge {
         static let recentTTSPlaybackTimestamp = "recentTTSPlayback_timestamp"
         static let ttsState = "ttsState"
         static let ttsStateTimestamp = "ttsState_timestamp"
+        static let ttsIsPaused = "ttsIsPaused"
+        static let ttsPlaybackProgress = "ttsPlaybackProgress"
         static let ttsErrorMessage = "ttsErrorMessage"
-        static let ttsPlaybackMeterLevel = "ttsPlaybackMeterLevel"
-        static let ttsPlaybackMeterSignalState = "ttsPlaybackMeterSignalState"
-        static let ttsPlaybackMeterTimestamp = "ttsPlaybackMeterTimestamp"
         static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
@@ -88,8 +87,12 @@ enum KeyVoxIPCBridge {
         static let noSpeech = "com.cueit.keyvox.noSpeech"
         static let startTTS = "com.cueit.keyvox.startTTS"
         static let stopTTS = "com.cueit.keyvox.stopTTS"
+        static let pauseTTS = "com.cueit.keyvox.pauseTTS"
+        static let resumeTTS = "com.cueit.keyvox.resumeTTS"
         static let ttsPreparing = "com.cueit.keyvox.ttsPreparing"
         static let ttsPlaying = "com.cueit.keyvox.ttsPlaying"
+        static let ttsPaused = "com.cueit.keyvox.ttsPaused"
+        static let ttsResumed = "com.cueit.keyvox.ttsResumed"
         static let ttsFinished = "com.cueit.keyvox.ttsFinished"
         static let ttsStopped = "com.cueit.keyvox.ttsStopped"
         static let ttsFailed = "com.cueit.keyvox.ttsFailed"
@@ -164,6 +167,14 @@ enum KeyVoxIPCBridge {
         }
     }
 
+    static func setTTSIsPaused(_ isPaused: Bool) {
+        defaults?.set(isPaused, forKey: Key.ttsIsPaused)
+    }
+
+    static func setTTSPlaybackProgress(_ progress: Double) {
+        defaults?.set(min(max(progress, 0), 1), forKey: Key.ttsPlaybackProgress)
+    }
+
     private static func log(_ message: String) {
         #if DEBUG
         NSLog("[KeyVoxIPCBridge] %@", message)
@@ -178,8 +189,9 @@ enum KeyVoxIPCBridge {
     static func clearTTSState() {
         defaults?.removeObject(forKey: Key.ttsState)
         defaults?.removeObject(forKey: Key.ttsStateTimestamp)
+        defaults?.removeObject(forKey: Key.ttsIsPaused)
+        defaults?.removeObject(forKey: Key.ttsPlaybackProgress)
         defaults?.removeObject(forKey: Key.ttsErrorMessage)
-        clearTTSPlaybackMeter()
     }
 
     static func markRecentTTSPlayback() {
@@ -252,34 +264,6 @@ enum KeyVoxIPCBridge {
     static func clearLiveMeter() {
         guard let url = liveMeterFileURL() else { return }
         try? FileManager.default.removeItem(at: url)
-    }
-
-    static func writeTTSPlaybackMeter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState) {
-        defaults?.set(level, forKey: Key.ttsPlaybackMeterLevel)
-        defaults?.set(signalState.rawValue, forKey: Key.ttsPlaybackMeterSignalState)
-        defaults?.set(Date().timeIntervalSince1970, forKey: Key.ttsPlaybackMeterTimestamp)
-    }
-
-    static func currentTTSPlaybackMeterSnapshot() -> KeyVoxIPCLiveMeterSnapshot? {
-        guard let level = defaults?.object(forKey: Key.ttsPlaybackMeterLevel) as? Float,
-              let signalStateRawValue = defaults?.object(forKey: Key.ttsPlaybackMeterSignalState) as? UInt8,
-              let signalState = KeyVoxIPCLiveMeterSignalState(rawValue: signalStateRawValue),
-              let timestamp = defaults?.object(forKey: Key.ttsPlaybackMeterTimestamp) as? TimeInterval else {
-            return nil
-        }
-
-        return KeyVoxIPCLiveMeterSnapshot(
-            level: level,
-            signalState: signalState,
-            sequence: 0,
-            timestamp: timestamp
-        )
-    }
-
-    static func clearTTSPlaybackMeter() {
-        defaults?.removeObject(forKey: Key.ttsPlaybackMeterLevel)
-        defaults?.removeObject(forKey: Key.ttsPlaybackMeterSignalState)
-        defaults?.removeObject(forKey: Key.ttsPlaybackMeterTimestamp)
     }
     
     private static var lastHeartbeatUpdateTime: TimeInterval = 0
@@ -362,6 +346,14 @@ enum KeyVoxIPCBridge {
         }
 
         return state
+    }
+
+    static func currentTTSIsPaused() -> Bool {
+        defaults?.object(forKey: Key.ttsIsPaused) as? Bool ?? false
+    }
+
+    static func currentTTSPlaybackProgress() -> Double {
+        defaults?.object(forKey: Key.ttsPlaybackProgress) as? Double ?? 0
     }
 
     static func currentTTSStateAge() -> TimeInterval? {

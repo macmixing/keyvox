@@ -293,10 +293,9 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `recentTTSPlayback_timestamp`
 - `ttsState`
 - `ttsState_timestamp`
+- `ttsIsPaused`
+- `ttsPlaybackProgress`
 - `ttsErrorMessage`
-- `ttsPlaybackMeterLevel`
-- `ttsPlaybackMeterSignalState`
-- `ttsPlaybackMeterTimestamp`
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
@@ -357,8 +356,12 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `com.cueit.keyvox.noSpeech`
 - `com.cueit.keyvox.startTTS`
 - `com.cueit.keyvox.stopTTS`
+- `com.cueit.keyvox.pauseTTS`
+- `com.cueit.keyvox.resumeTTS`
 - `com.cueit.keyvox.ttsPreparing`
 - `com.cueit.keyvox.ttsPlaying`
+- `com.cueit.keyvox.ttsPaused`
+- `com.cueit.keyvox.ttsResumed`
 - `com.cueit.keyvox.ttsFinished`
 - `com.cueit.keyvox.ttsStopped`
 - `com.cueit.keyvox.ttsFailed`
@@ -602,9 +605,18 @@ Primary owners:
 - `PocketTTSModelCatalog` owns shared-runtime artifact metadata plus approximate per-voice download size metadata used by settings.
 - `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
 - `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
-- `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, playback metering, replayable-audio capture, replay seeking, and pause/resume.
+- `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
 - `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
+- the keyboard playback transport is intentionally split:
+  - center logo toggles pause/resume for active playback
+  - cancel and speak stop active playback completely
+  - shared playback transport state is carried through `ttsState`, `ttsIsPaused`, and `ttsPlaybackProgress`
+  - the keyboard logo ring reads shared playback progress and overlays an indigo transport arc on top of the yellow ring
+  - dictation indicator animation remains separate from copied-text playback transport state
+- the trademark-protected keyboard logo implementation must stay visual-only:
+  - proprietary drawing, layout, and animation stay in `KeyboardLogoBarView.swift`
+  - state application, transport/accessibility mapping, and other non-visual behavior must live in `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`, not under `Views/`
 
 ### PocketTTS Install Rules
 
@@ -619,7 +631,7 @@ Primary owners:
 
 - `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
-- `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, `TTSPlaybackCoordinator+Metering.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
+- `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
 - text cleanup policy for copied-text playback belongs in `PocketTTSTextNormalizer.swift`, not back inside chunk-planning logic
 
@@ -824,6 +836,14 @@ Implementation split:
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
+- keyboard `Core` is grouped by domain:
+  - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
+  - `Feedback/` owns extension-local haptics configuration and dispatch
+  - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
+  - `Text/` owns casing and spacing heuristics for inserted text
+  - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
+  - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
+- `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
 
 ### Toolbar and Layout Rules
 

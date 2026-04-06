@@ -73,7 +73,6 @@ extension TTSPlaybackCoordinator {
         lastObservedRemainingEstimatedSamples = 0
         totalScheduledSampleCount = 0
         totalEstimatedPlaybackSampleCount = 0
-        cancelScheduledMeterUpdates()
         stopPlaybackProgressTimer()
         isPaused = false
         activePlaybackSamples = []
@@ -133,7 +132,6 @@ extension TTSPlaybackCoordinator {
             playerNode.pause()
         }
         isPaused = true
-        cancelScheduledMeterUpdates()
         stopPlaybackProgressTimer()
         emitPlaybackProgress()
         Self.log("Playback paused.")
@@ -215,7 +213,6 @@ extension TTSPlaybackCoordinator {
         activeSilentStartSampleCount = 0
         totalScheduledSampleCount = 0
         totalEstimatedPlaybackSampleCount = 0
-        cancelScheduledMeterUpdates()
         stopPlaybackProgressTimer()
         activePlaybackSamples = replayablePlaybackSamples
         totalEstimatedPlaybackSampleCount = replayablePlaybackSamples.count
@@ -236,7 +233,6 @@ extension TTSPlaybackCoordinator {
             }
             scheduleBuffer(
                 buffer,
-                samples: slice,
                 chunkDebugID: "cached-replay",
                 chunkIndex: nil,
                 startDelay: startDelay
@@ -281,7 +277,6 @@ extension TTSPlaybackCoordinator {
         lastObservedRemainingEstimatedSamples = 0
         totalScheduledSampleCount = 0
         totalEstimatedPlaybackSampleCount = 0
-        cancelScheduledMeterUpdates()
         stopPlaybackProgressTimer()
         isPaused = false
         activePlaybackSamples = []
@@ -343,7 +338,6 @@ extension TTSPlaybackCoordinator {
             playerNode.stop()
         }
         audioEngine.stop()
-        cancelScheduledMeterUpdates()
         stopPlaybackProgressTimer()
         emitPlaybackProgress(1)
         deactivateAudioSessionIfNeeded()

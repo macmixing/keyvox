@@ -7,6 +7,7 @@ enum KeyboardState: Equatable {
     case recording
     case transcribing
     case speaking
+    case pausedSpeaking
 
     var indicatorPhase: AudioIndicatorPhase {
         switch self {
@@ -20,16 +21,25 @@ enum KeyboardState: Equatable {
             return .listening
         case .transcribing:
             return .processing
-        case .speaking:
-            return .speaking
+        case .speaking, .pausedSpeaking:
+            return .idle
         }
     }
 
     var isIndicatorEnabled: Bool {
         switch self {
-        case .idle, .recording, .transcribing:
+        case .idle, .recording, .transcribing, .speaking, .pausedSpeaking:
             return true
-        case .waitingForApp, .preparingPlayback, .speaking:
+        case .waitingForApp, .preparingPlayback:
+            return false
+        }
+    }
+
+    var isTTSPlaybackActive: Bool {
+        switch self {
+        case .speaking, .pausedSpeaking:
+            return true
+        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
             return false
         }
     }
@@ -42,8 +52,8 @@ enum KeyboardState: Equatable {
             return true
         case .preparingPlayback:
             return false
-        case .speaking:
-            return false
+        case .speaking, .pausedSpeaking:
+            return true
         }
     }
 }
