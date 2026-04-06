@@ -39,6 +39,7 @@ final class PocketTTSModelManager: ObservableObject {
     private let session: URLSession
     private let assetLocator: PocketTTSAssetLocator
     private var installTask: Task<Void, Never>?
+    private var pendingVoiceInstallAfterSharedModel: AppSettingsStore.TTSVoice?
 
     init(
         fileManager: FileManager = .default,
@@ -107,6 +108,32 @@ final class PocketTTSModelManager: ObservableObject {
         downloadSharedModel()
     }
 
+    func installVoiceEnsuringSharedModel(_ voice: AppSettingsStore.TTSVoice) {
+        pendingVoiceInstallAfterSharedModel = voice
+
+        if assetLocator.isSharedModelInstalled() {
+            pendingVoiceInstallAfterSharedModel = nil
+            if assetLocator.isVoiceInstalled(voice) == false {
+                downloadVoice(voice)
+            }
+            return
+        }
+
+        downloadSharedModel()
+    }
+
+    func repairVoiceEnsuringSharedModel(_ voice: AppSettingsStore.TTSVoice) {
+        pendingVoiceInstallAfterSharedModel = voice
+
+        if assetLocator.isSharedModelInstalled() {
+            pendingVoiceInstallAfterSharedModel = nil
+            repairVoiceIfNeeded(voice)
+            return
+        }
+
+        repairSharedModelIfNeeded()
+    }
+
     func downloadSharedModel() {
         guard installTask == nil else { return }
         activeInstallTarget = .sharedModel
@@ -151,7 +178,15 @@ final class PocketTTSModelManager: ObservableObject {
                     )
                 }
 
+                let queuedVoice = self.pendingVoiceInstallAfterSharedModel.flatMap { voice in
+                    self.assetLocator.isVoiceInstalled(voice) ? nil : voice
+                }
+
                 await MainActor.run {
+                    if let queuedVoice {
+                        self.voiceInstallStates[queuedVoice] = .downloading(progress: 0)
+                        self.activeInstallTarget = .voice(queuedVoice)
+                    }
                     self.sharedModelInstallState = .ready
                 }
                 Self.log("Shared model install completed successfully.")
@@ -160,12 +195,10 @@ final class PocketTTSModelManager: ObservableObject {
                 await MainActor.run {
                     self.sharedModelInstallState = .failed(error.localizedDescription)
                 }
+                self.pendingVoiceInstallAfterSharedModel = nil
             }
 
-            await MainActor.run {
-                self.installTask = nil
-                self.activeInstallTarget = nil
-            }
+            await self.finishSharedModelInstall(fileManager: fileManager, session: session)
         }
     }
 
@@ -178,6 +211,7 @@ final class PocketTTSModelManager: ObservableObject {
         installTask?.cancel()
         installTask = nil
         activeInstallTarget = nil
+        pendingVoiceInstallAfterSharedModel = nil
 
         if let rootURL = SharedPaths.pocketTTSRootDirectoryURL(fileManager: fileManager) {
             try? fileManager.removeItem(at: rootURL)
@@ -199,55 +233,7 @@ final class PocketTTSModelManager: ObservableObject {
         activeInstallTarget = .voice(voice)
 
         installTask = Task { [fileManager, session] in
-            do {
-                Self.log("Voice install requested for \(voice.rawValue).")
-                await MainActor.run {
-                    self.voiceInstallStates[voice] = .downloading(progress: 0)
-                }
-
-                let descriptor = try await PocketTTSModelCatalog.fetchVoiceDescriptor(for: voice, session: session)
-                try await self.install(
-                    descriptor: descriptor,
-                    target: .voice(voice),
-                    stagingRootURL: try Self.makeStagingRootURL(fileManager: fileManager, target: .voice(voice)),
-                    finalRootURL: try Self.finalVoiceRootURL(voice, fileManager: fileManager),
-                    progress: { progress in
-                        self.voiceInstallStates[voice] = .downloading(progress: progress)
-                    },
-                    installing: {
-                        self.voiceInstallStates[voice] = .installing(progress: 0.95)
-                    }
-                )
-
-                let manifest = PocketTTSInstallManifest(
-                    sourceRepository: PocketTTSModelCatalog.repositoryID,
-                    artifactSizesByRelativePath: Dictionary(
-                        uniqueKeysWithValues: descriptor.artifacts.map { ($0.relativePath, $0.expectedByteCount) }
-                    )
-                )
-                try Self.writeManifest(
-                    manifest,
-                    to: try Self.finalVoiceRootURL(voice, fileManager: fileManager)
-                )
-
-                guard self.assetLocator.isVoiceInstalled(voice) else {
-                    throw NSError(
-                        domain: "PocketTTSModelManager",
-                        code: 8,
-                        userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) voice install validation failed."]
-                    )
-                }
-
-                await MainActor.run {
-                    self.voiceInstallStates[voice] = .ready
-                }
-                Self.log("Voice install completed successfully for \(voice.rawValue).")
-            } catch {
-                Self.log("Voice install failed for \(voice.rawValue) with error: \(error.localizedDescription)")
-                await MainActor.run {
-                    self.voiceInstallStates[voice] = .failed(error.localizedDescription)
-                }
-            }
+            await self.performVoiceInstall(voice, fileManager: fileManager, session: session)
 
             await MainActor.run {
                 self.installTask = nil
@@ -268,6 +254,86 @@ final class PocketTTSModelManager: ObservableObject {
     func repairVoiceIfNeeded(_ voice: AppSettingsStore.TTSVoice) {
         deleteVoice(voice)
         downloadVoice(voice)
+    }
+
+    private func finishSharedModelInstall(
+        fileManager: FileManager,
+        session: URLSession
+    ) async {
+        guard assetLocator.isSharedModelInstalled(),
+              let pendingVoice = pendingVoiceInstallAfterSharedModel,
+              assetLocator.isVoiceInstalled(pendingVoice) == false else {
+            pendingVoiceInstallAfterSharedModel = nil
+            await MainActor.run {
+                self.installTask = nil
+                self.activeInstallTarget = nil
+            }
+            return
+        }
+
+        pendingVoiceInstallAfterSharedModel = nil
+        await performVoiceInstall(pendingVoice, fileManager: fileManager, session: session)
+
+        await MainActor.run {
+            self.installTask = nil
+            self.activeInstallTarget = nil
+        }
+    }
+
+    private func performVoiceInstall(
+        _ voice: AppSettingsStore.TTSVoice,
+        fileManager: FileManager,
+        session: URLSession
+    ) async {
+        do {
+            Self.log("Voice install requested for \(voice.rawValue).")
+            await MainActor.run {
+                self.voiceInstallStates[voice] = .downloading(progress: 0)
+            }
+
+            let descriptor = try await PocketTTSModelCatalog.fetchVoiceDescriptor(for: voice, session: session)
+            try await self.install(
+                descriptor: descriptor,
+                target: .voice(voice),
+                stagingRootURL: try Self.makeStagingRootURL(fileManager: fileManager, target: .voice(voice)),
+                finalRootURL: try Self.finalVoiceRootURL(voice, fileManager: fileManager),
+                progress: { progress in
+                    self.voiceInstallStates[voice] = .downloading(progress: progress)
+                },
+                installing: {
+                    self.voiceInstallStates[voice] = .installing(progress: 0.95)
+                }
+            )
+
+            let manifest = PocketTTSInstallManifest(
+                sourceRepository: PocketTTSModelCatalog.repositoryID,
+                artifactSizesByRelativePath: Dictionary(
+                    uniqueKeysWithValues: descriptor.artifacts.map { ($0.relativePath, $0.expectedByteCount) }
+                )
+            )
+            try Self.writeManifest(
+                manifest,
+                to: try Self.finalVoiceRootURL(voice, fileManager: fileManager)
+            )
+
+            guard self.assetLocator.isVoiceInstalled(voice) else {
+                throw NSError(
+                    domain: "PocketTTSModelManager",
+                    code: 8,
+                    userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) voice install validation failed."]
+                )
+            }
+
+            await MainActor.run {
+                self.voiceInstallStates[voice] = .ready
+            }
+            Self.log("Voice install completed successfully for \(voice.rawValue).")
+        } catch {
+            Self.log("Voice install failed for \(voice.rawValue) with error: \(error.localizedDescription)")
+            await MainActor.run {
+                self.voiceInstallStates[voice] = .failed(error.localizedDescription)
+            }
+        }
     }
 
     private func install(

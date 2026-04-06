@@ -181,9 +181,9 @@ extension HomeTabView {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                pocketTTSModelManager.downloadSharedModel()
+                pocketTTSModelManager.installVoiceEnsuringSharedModel(effectiveTTSVoice)
             case .failed:
-                pocketTTSModelManager.repairSharedModelIfNeeded()
+                pocketTTSModelManager.repairVoiceEnsuringSharedModel(effectiveTTSVoice)
             case .downloading, .installing, .ready:
                 break
             }
