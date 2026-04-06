@@ -44,14 +44,11 @@ final class AppLaunchRouteStore: ObservableObject {
     }
 
     private func stage(route: KeyVoxURLRoute?) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            pendingURLRoute = route
-            initialURLRoute = route
-            hasResolvedInitialLaunchContext = true
-            if route != nil {
-                routeEventSequence &+= 1
-            }
+        pendingURLRoute = route
+        initialURLRoute = route
+        hasResolvedInitialLaunchContext = true
+        if route != nil {
+            routeEventSequence &+= 1
         }
     }
 

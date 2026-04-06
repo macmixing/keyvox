@@ -50,6 +50,7 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.manager.sessionDisablePending == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
         #expect(harness.manager.sessionExpirationDate == nil)
     }
 
@@ -71,6 +72,7 @@ struct TranscriptionManagerTests {
         #expect(harness.recorder.cancelCurrentUtteranceCallCount == 1)
         #expect(harness.transcriptionService.transcribeCallCount == 0)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func disableSessionWhileTranscribingCancelsImmediatelyAndDisables() async throws {
@@ -97,6 +99,7 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.sessionDisablePending == false)
         #expect(harness.transcriptionService.cancelCallCount == 1)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func idleTimeoutDisablesActiveIdleSession() async throws {
@@ -109,6 +112,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func idleTimeoutIsCancelledWhileRecordingAndRearmsAfterCompletion() async throws {
@@ -130,6 +134,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func enableSessionWithPermissionDeniedSurfacesError() async throws {
@@ -364,6 +369,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func immediatelyDisablesSessionAfterEmptyOutput() async throws {
@@ -377,6 +383,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func immediatelyDisablesSessionAfterMissingModel() async throws {
@@ -390,6 +397,22 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
+    }
+
+    @Test func immediatelyDisablesSessionAfterSuccessfulTranscriptionButKeepsAudioSessionActiveForTTS() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .immediately, isTTSPlaybackActive: true)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == true)
     }
 
     @Test func changingDisableTimingWhileActiveAndIdleRearmsTimeout() async throws {
@@ -418,6 +441,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func changingDisableTimingWhileRecordingAppliesAfterUtteranceCompletes() async throws {
@@ -441,6 +465,7 @@ struct TranscriptionManagerTests {
 
         #expect(harness.manager.isSessionActive == false)
         #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
     @Test func repeatedStartWhileTranscribingIsIgnored() async throws {
@@ -575,6 +600,7 @@ struct TranscriptionManagerTests {
         serviceShouldSuspend: Bool = false,
         capsLockEnabled: Bool = false,
         sessionDisableTiming: SessionDisableTiming? = nil,
+        isTTSPlaybackActive: Bool = false,
         sessionPolicy: SessionPolicy = .default
     ) throws -> ManagerHarness {
         let tempRootURL = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -624,6 +650,7 @@ struct TranscriptionManagerTests {
             sessionDisableTimingProvider: sessionDisableTimingSubject.map { subject in
                 { subject.value }
             },
+            isTTSPlaybackActiveProvider: { isTTSPlaybackActive },
             sessionDisableTimingPublisher: sessionDisableTimingSubject?.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher(),
             sessionPolicy: sessionPolicy
         )
@@ -768,6 +795,7 @@ private final class StubAudioRecorder: AudioRecording {
     var enableMonitoringCallCount = 0
     var ensureEngineRunningCallCount = 0
     var stopMonitoringCallCount = 0
+    var lastStopMonitoringKeepAudioSessionActive: Bool?
     var cancelCurrentUtteranceCallCount = 0
     var startError: Error?
     var enableMonitoringError: Error?
@@ -829,6 +857,7 @@ private final class StubAudioRecorder: AudioRecording {
 
     func stopMonitoring(keepAudioSessionActive: Bool) throws {
         stopMonitoringCallCount += 1
+        lastStopMonitoringKeepAudioSessionActive = keepAudioSessionActive
         isMonitoring = false
     }
 
