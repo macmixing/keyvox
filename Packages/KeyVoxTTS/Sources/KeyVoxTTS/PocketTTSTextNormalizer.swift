@@ -6,7 +6,6 @@ enum PocketTTSTextNormalizer {
     private static let emailPattern = #"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b"#
     private static let markdownLinkPattern = #"\[([^\]]+)\]\((https?://[^)]+)\)"#
     private static let markdownHeadingPattern = #"(?m)^\s{0,3}#{1,6}\s*"#
-    private static let markdownBulletPattern = #"(?m)^\s*[-*•]+\s+"#
     private static let fencedCodeBlockPattern = #"(?s)```.*?```"#
     private static let inlineCodePattern = #"`([^`]+)`"#
     private static let dollarAmountPattern = #"\$([0-9]+(?:\.[0-9]+)?)"#
@@ -34,6 +33,7 @@ enum PocketTTSTextNormalizer {
         sanitized = sanitized.replacingOccurrences(of: "\u{2014}", with: " - ")
         sanitized = sanitized.replacingOccurrences(of: "\u{2026}", with: "...")
         sanitized = sanitized.replacingOccurrences(of: "&", with: " and ")
+        sanitized = normalizeListItemTerminalPeriods(in: sanitized)
 
         sanitized = sanitized.replacingOccurrences(
             of: fencedCodeBlockPattern,
@@ -48,11 +48,6 @@ enum PocketTTSTextNormalizer {
         sanitized = sanitized.replacingOccurrences(
             of: markdownHeadingPattern,
             with: "",
-            options: .regularExpression
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: markdownBulletPattern,
-            with: ", ",
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
@@ -106,6 +101,10 @@ enum PocketTTSTextNormalizer {
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
+            of: ":",
+            with: " "
+        )
+        sanitized = sanitized.replacingOccurrences(
             of: versionPattern,
             with: "version $1",
             options: [.regularExpression, .caseInsensitive]
@@ -141,7 +140,7 @@ enum PocketTTSTextNormalizer {
             options: .regularExpression
         )
         sanitized = sanitized.replacingOccurrences(
-            of: #"[^\p{L}\p{N}\s\.,!\?;:'"\/\-\n]"#,
+            of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\*\)\n]"#,
             with: " ",
             options: .regularExpression
         )
@@ -172,5 +171,53 @@ enum PocketTTSTextNormalizer {
         )
 
         return sanitized
+    }
+
+    private static func normalizeListItemTerminalPeriods(in text: String) -> String {
+        text
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map { normalizeListItemTerminalPeriod(in: String($0)) }
+            .joined(separator: "\n")
+    }
+
+    private static func normalizeListItemTerminalPeriod(in line: String) -> String {
+        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+        guard trimmedLine.isEmpty == false else { return line }
+
+        let isNumberedListItem = trimmedLine.range(
+            of: #"^\d+[\.\)]\s+"#,
+            options: .regularExpression
+        ) != nil
+        let isBulletedListItem = trimmedLine.range(
+            of: #"^[-*•]\s+"#,
+            options: .regularExpression
+        ) != nil
+
+        guard isNumberedListItem || isBulletedListItem else { return line }
+
+        let normalizedMarkerLine = line.replacingOccurrences(
+            of: #"^(\s*)[\*•](\s+)"#,
+            with: "$1-$2",
+            options: .regularExpression
+        )
+
+        let withoutTrailingWhitespace = normalizedMarkerLine.replacingOccurrences(
+            of: #"\s+$"#,
+            with: "",
+            options: .regularExpression
+        )
+
+        if withoutTrailingWhitespace.range(
+            of: #"[,;:\.!?]+$"#,
+            options: .regularExpression
+        ) != nil {
+            return withoutTrailingWhitespace.replacingOccurrences(
+                of: #"[,;:\.!?]+$"#,
+                with: ".",
+                options: .regularExpression
+            )
+        }
+
+        return withoutTrailingWhitespace + "."
     }
 }
