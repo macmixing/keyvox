@@ -31,8 +31,12 @@ final class AppLaunchRouteStore: ObservableObject {
         return route
     }
 
+    func consumePendingShortcutRoute() -> KeyVoxURLRoute? {
+        KeyVoxIPCBridge.consumePendingURLRoute().flatMap(KeyVoxURLRoute.init(url:))
+    }
+
     func consumePendingShortcutRouteIfNeeded() {
-        let route = KeyVoxIPCBridge.consumePendingURLRoute().flatMap(KeyVoxURLRoute.init(url:))
+        let route = consumePendingShortcutRoute()
         guard let route else { return }
         stage(route: route)
     }
@@ -45,10 +49,13 @@ final class AppLaunchRouteStore: ObservableObject {
 
     private func stage(route: KeyVoxURLRoute?) {
         pendingURLRoute = route
-        initialURLRoute = route
-        hasResolvedInitialLaunchContext = true
-        if route != nil {
-            routeEventSequence &+= 1
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.initialURLRoute = route
+            self.hasResolvedInitialLaunchContext = true
+            if route != nil {
+                self.routeEventSequence &+= 1
+            }
         }
     }
 
