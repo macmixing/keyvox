@@ -98,10 +98,10 @@ struct KeyVoxSpeakSceneCView: View {
         }
 
         if case .ready = sharedModelState {
-            return "PocketTTS is ready. Install Alba to match the preview voice from page one."
+            return "PocketTTS is ready. Finish installing Alba and you'll be ready to speak."
         }
 
-        return "Start by downloading PocketTTS CoreML, then install Alba."
+        return "Install Alba and KeyVox will take care of the PocketTTS setup for you."
     }
 
     private var fastModeHint: some View {
