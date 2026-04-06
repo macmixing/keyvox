@@ -1,14 +1,7 @@
 import SwiftUI
 
 struct KeyVoxSpeakInstallCardView: View {
-    fileprivate enum InstallStep: Int, CaseIterable, Identifiable {
-        case sharedModel
-        case albaVoice
-
-        var id: Int { rawValue }
-    }
-
-    static let installStepCount = InstallStep.allCases.count
+    static let installStepCount = 1
 
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
@@ -36,7 +29,7 @@ struct KeyVoxSpeakInstallCardView: View {
                         .font(.appFont(17, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Download the PocketTTS engine and the Alba voice you heard on the first page.")
+                    Text("Install Alba and KeyVox will handle the PocketTTS engine automatically.")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.68))
                         .fixedSize(horizontal: false, vertical: true)
@@ -46,13 +39,11 @@ struct KeyVoxSpeakInstallCardView: View {
             }
 
             VStack(spacing: 12) {
-                ForEach(Array(InstallStep.allCases.enumerated()), id: \.element) { index, step in
-                    installStepRow(step)
-                        .opacity(index < revealedStepCount ? 1 : 0)
-                        .offset(y: index < revealedStepCount ? 0 : 10)
-                        .allowsHitTesting(index < revealedStepCount)
-                        .accessibilityHidden(index >= revealedStepCount)
-                }
+                installRow
+                    .opacity(revealedStepCount > 0 ? 1 : 0)
+                    .offset(y: revealedStepCount > 0 ? 0 : 10)
+                    .allowsHitTesting(revealedStepCount > 0)
+                    .accessibilityHidden(revealedStepCount == 0)
             }
 
             if showsUnlockDetails {
@@ -97,42 +88,49 @@ struct KeyVoxSpeakInstallCardView: View {
         return false
     }
 
-    private func installState(for step: InstallStep) -> PocketTTSInstallState {
-        switch step {
-        case .sharedModel:
-            return sharedModelState
-        case .albaVoice:
+    private var activeInstallState: PocketTTSInstallState? {
+        if isSharedModelReady == false {
+            switch sharedModelState {
+            case .downloading, .installing:
+                return sharedModelState
+            case .notInstalled, .failed, .ready:
+                break
+            }
+        }
+
+        switch albaVoiceState {
+        case .downloading, .installing:
             return albaVoiceState
+        case .notInstalled, .failed, .ready:
+            return nil
         }
     }
 
-    private func installStepRow(_ step: InstallStep) -> some View {
-        let state = installState(for: step)
-
+    private var installRow: some View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
                 HStack(alignment: .center, spacing: 10) {
                     Circle()
-                        .fill(step.isReady(in: pocketTTSModelManager) ? Color.green : AppTheme.accent.opacity(0.32))
+                        .fill(pocketTTSReadyForAlba ? Color.green : AppTheme.accent.opacity(0.32))
                         .frame(width: 22, height: 22)
                         .overlay {
-                            if step.isReady(in: pocketTTSModelManager) {
+                            if pocketTTSReadyForAlba {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 10, weight: .heavy))
                                     .foregroundStyle(.black)
                             } else {
-                                Text("\(step.rawValue + 1)")
+                                Text("1")
                                     .font(.appFont(12, variant: .medium))
                                     .foregroundStyle(.white)
                             }
                         }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(step.title)
+                        Text("Model + Voice")
                             .font(.appFont(15, variant: .medium))
                             .foregroundStyle(.white)
 
-                        Text(step.statusText(in: pocketTTSModelManager))
+                        Text(installStatusText)
                             .font(.appFont(13, variant: .light))
                             .foregroundStyle(.white.opacity(0.62))
                             .fixedSize(horizontal: false, vertical: true)
@@ -140,34 +138,32 @@ struct KeyVoxSpeakInstallCardView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                if let percentageText = progressText(for: state) {
+                if let activeInstallState,
+                   let percentageText = progressText(for: activeInstallState) {
                     Text(percentageText)
                         .font(.appFont(13, variant: .medium))
                         .foregroundStyle(.yellow)
-                } else if let buttonTitle = actionTitle(for: state) {
+                } else if let buttonTitle = actionTitle {
                     AppActionButton(
                         title: buttonTitle,
                         style: .primary,
                         size: .compact,
                         fontSize: 14,
-                        isEnabled: actionEnabled(for: step),
+                        isEnabled: isActionEnabled,
                         action: {
                             appHaptics.light()
-                            performAction(for: step, state: state)
+                            performAction()
                         }
                     )
                 }
             }
 
-            switch state {
-            case .downloading(let progress), .installing(let progress):
-                ModelDownloadProgress(progress: progress, showLabel: false)
-            case .failed(let message):
-                Text(message)
+            downloadProgressView
+
+            if let errorText {
+                Text(errorText)
                     .font(.appFont(12))
                     .foregroundStyle(.red)
-            case .notInstalled, .ready:
-                EmptyView()
             }
         }
         .padding(.horizontal, 14)
@@ -206,6 +202,16 @@ struct KeyVoxSpeakInstallCardView: View {
         )
     }
 
+    @ViewBuilder
+    private var downloadProgressView: some View {
+        switch activeInstallState {
+        case .downloading(let progress), .installing(let progress):
+            ModelDownloadProgress(progress: progress, showLabel: false)
+        case .failed, .notInstalled, .ready, .none:
+            EmptyView()
+        }
+    }
+
     private func progressText(for state: PocketTTSInstallState) -> String? {
         switch state {
         case .downloading(let progress), .installing(let progress):
@@ -215,111 +221,89 @@ struct KeyVoxSpeakInstallCardView: View {
         }
     }
 
-    private func actionTitle(for state: PocketTTSInstallState) -> String? {
-        switch state {
-        case .notInstalled:
-            return "Install"
-        case .failed:
-            return "Repair"
-        case .downloading, .installing, .ready:
+    private var actionTitle: String? {
+        if pocketTTSReadyForAlba {
             return nil
         }
-    }
 
-    private func actionEnabled(for step: InstallStep) -> Bool {
-        switch step {
-        case .sharedModel:
-            return pocketTTSModelManager.isBusyInstallingAnotherTarget(sharedModel: true) == false
-        case .albaVoice:
-            return isSharedModelReady
-                && pocketTTSModelManager.isBusyInstallingAnotherTarget(voice: .alba) == false
+        if case .failed = sharedModelState {
+            return "Repair"
         }
-    }
 
-    private func performAction(for step: InstallStep, state: PocketTTSInstallState) {
-        switch step {
-        case .sharedModel:
-            switch state {
-            case .notInstalled:
-                pocketTTSModelManager.downloadSharedModel()
-            case .failed:
-                pocketTTSModelManager.repairSharedModelIfNeeded()
-            case .downloading, .installing, .ready:
-                break
-            }
-        case .albaVoice:
-            guard isSharedModelReady else { return }
-            if settingsStore.ttsVoice != .alba {
-                settingsStore.ttsVoice = .alba
-            }
-            switch state {
-            case .notInstalled:
-                pocketTTSModelManager.downloadVoice(.alba)
-            case .failed:
-                pocketTTSModelManager.repairVoiceIfNeeded(.alba)
-            case .downloading, .installing, .ready:
-                break
-            }
+        if case .failed = albaVoiceState {
+            return "Repair"
         }
-    }
-}
 
-fileprivate extension KeyVoxSpeakInstallCardView.InstallStep {
-    var title: String {
-        switch self {
-        case .sharedModel:
-            return "PocketTTS CoreML"
-        case .albaVoice:
-            return "Alba Voice"
+        if activeInstallState != nil {
+            return nil
         }
+
+        return "Install"
     }
 
-    func isReady(in modelManager: PocketTTSModelManager) -> Bool {
-        switch self {
-        case .sharedModel:
-            if case .ready = modelManager.sharedModelInstallState {
-                return true
-            }
-            return false
-        case .albaVoice:
-            if case .ready = modelManager.installState(for: .alba) {
-                return true
-            }
-            return false
+    private var isActionEnabled: Bool {
+        pocketTTSModelManager.isBusyInstallingAnotherTarget(voice: .alba) == false
+            && pocketTTSModelManager.isBusyInstallingAnotherTarget(sharedModel: true) == false
+    }
+
+    private var installStatusText: String {
+        if pocketTTSReadyForAlba {
+            return "Alba is installed, selected, and ready for KeyVox Speak."
         }
-    }
 
-    func statusText(in modelManager: PocketTTSModelManager) -> String {
-        switch self {
-        case .sharedModel:
-            switch modelManager.sharedModelInstallState {
+        switch sharedModelState {
+        case .notInstalled:
+            return "Install Alba and KeyVox will download PocketTTS first, then the Alba voice (~661 MB total)."
+        case .downloading:
+            return "Downloading the PocketTTS engine before installing Alba."
+        case .installing:
+            return "Installing the PocketTTS engine before Alba."
+        case .ready:
+            switch albaVoiceState {
             case .notInstalled:
-                return "Download the shared engine that powers KeyVox Speak (~642 MB)."
-            case .downloading:
-                return "Downloading the shared playback engine."
-            case .installing:
-                return "Installing the shared playback engine."
-            case .ready:
-                return "PocketTTS CoreML is ready."
-            case .failed:
-                return "The shared playback engine needs repair."
-            }
-        case .albaVoice:
-            switch modelManager.installState(for: .alba) {
-            case .notInstalled:
-                if case .ready = modelManager.sharedModelInstallState {
-                    return "Install Alba to match the preview voice from scene A (~19 MB)."
-                }
-                return "Install PocketTTS CoreML first, then download Alba (~19 MB)."
+                return "PocketTTS is ready. KeyVox will finish by installing Alba (~19 MB)."
             case .downloading:
                 return "Downloading Alba."
             case .installing:
                 return "Installing Alba."
             case .ready:
-                return "Alba is installed and selected."
+                return "Alba is installed, selected, and ready for KeyVox Speak."
             case .failed:
                 return "Alba needs repair."
             }
+        case .failed:
+            return "PocketTTS setup needs repair before Alba can finish installing."
         }
+    }
+
+    private var errorText: String? {
+        if case .failed(let message) = sharedModelState {
+            return message
+        }
+
+        if case .failed(let message) = albaVoiceState {
+            return message
+        }
+
+        return nil
+    }
+
+    private func performAction() {
+        if settingsStore.ttsVoice != .alba {
+            settingsStore.ttsVoice = .alba
+        }
+
+        if case .failed = sharedModelState {
+            pocketTTSModelManager.repairVoiceEnsuringSharedModel(.alba)
+            return
+        }
+
+        if case .failed = albaVoiceState {
+            pocketTTSModelManager.repairVoiceEnsuringSharedModel(.alba)
+            return
+        }
+
+        guard pocketTTSReadyForAlba == false else { return }
+        pocketTTSModelManager.installVoiceEnsuringSharedModel(.alba)
     }
 }

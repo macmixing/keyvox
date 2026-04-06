@@ -15,6 +15,8 @@ struct KeyVoxSpeakSceneBView: View {
         AccessMethod(id: 3, icon: "link", title: "Shortcuts & Actions", subtitle: "Map to Action Button or Control Center.")
     ]
 
+    let isVisible: Bool
+
     @State private var circleOpacity: Double = 0
     @State private var circleScale: CGFloat = 0.8
     @State private var headerOpacity: Double = 0
@@ -71,8 +73,10 @@ struct KeyVoxSpeakSceneBView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
-        .onAppear { startEntrance() }
-        .onDisappear { stopEntrance() }
+        .onChange(of: isVisible, initial: true) { _, visible in
+            guard visible else { return }
+            startEntranceIfNeeded()
+        }
     }
 
     private var fastModeCard: some View {
@@ -150,10 +154,10 @@ struct KeyVoxSpeakSceneBView: View {
         )
     }
 
-    private func startEntrance() {
+    private func startEntranceIfNeeded() {
         guard !hasAnimated else { return }
         hasAnimated = true
-        
+
         stopEntrance()
         circleOpacity = 0
         circleScale = 0.8

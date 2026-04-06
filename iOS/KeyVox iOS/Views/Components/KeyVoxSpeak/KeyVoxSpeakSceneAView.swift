@@ -4,6 +4,9 @@ struct KeyVoxSpeakSceneAView: View {
     private static let demoResourceName = "keyvox-speak-demo"
 
     @EnvironmentObject private var ttsPreviewPlayer: TTSPreviewPlayer
+
+    let isVisible: Bool
+
     @State private var logoOpacity: Double = 0
     @State private var logoScale: CGFloat = 0.7
     @State private var titleOpacity: Double = 0
@@ -55,8 +58,10 @@ struct KeyVoxSpeakSceneAView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
-        .onAppear { startEntrance() }
-        .onDisappear { stopEntrance() }
+        .onChange(of: isVisible, initial: true) { _, visible in
+            guard visible else { return }
+            startEntranceIfNeeded()
+        }
     }
 
     private var keyVoxSpeakDemoCard: some View {
@@ -123,10 +128,10 @@ struct KeyVoxSpeakSceneAView: View {
             .foregroundStyle(.yellow)
     }
 
-    private func startEntrance() {
+    private func startEntranceIfNeeded() {
         guard !hasAnimated else { return }
         hasAnimated = true
-        
+
         stopEntrance()
         logoOpacity = 0
         logoScale = 0.7

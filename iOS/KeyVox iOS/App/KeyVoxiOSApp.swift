@@ -83,8 +83,8 @@ struct KeyVoxApp: App {
                     Self.log("scenePhase=\(String(describing: newPhase))")
                     switch newPhase {
                     case .active:
-                        appLaunchRouteStore.consumePendingShortcutRouteIfNeeded()
-                        let initialRoute = appLaunchRouteStore.consumeInitialURLRoute()
+                        let initialRoute = appLaunchRouteStore.consumePendingShortcutRoute()
+                            ?? appLaunchRouteStore.consumeInitialURLRoute()
                         if let initialRoute {
                             handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }

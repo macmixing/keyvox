@@ -64,15 +64,9 @@ struct KeyVoxSpeakSceneCView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
-        .onChange(of: isVisible) { _, visible in
-            if visible {
-                startEntrance()
-            } else {
-                resetEntrance()
-            }
-        }
-        .onDisappear {
-            resetEntrance()
+        .onChange(of: isVisible, initial: true) { _, visible in
+            guard visible else { return }
+            startEntranceIfNeeded()
         }
     }
 
@@ -98,10 +92,10 @@ struct KeyVoxSpeakSceneCView: View {
         }
 
         if case .ready = sharedModelState {
-            return "PocketTTS is ready. Install Alba to match the preview voice from page one."
+            return "PocketTTS is ready. Finish installing Alba and you'll be ready to speak."
         }
 
-        return "Start by downloading PocketTTS CoreML, then install Alba."
+        return "Install Alba and KeyVox will take care of the PocketTTS setup for you."
     }
 
     private var fastModeHint: some View {
@@ -130,7 +124,7 @@ struct KeyVoxSpeakSceneCView: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
-    private func startEntrance() {
+    private func startEntranceIfNeeded() {
         guard !hasAnimated else { return }
         hasAnimated = true
 
@@ -186,16 +180,5 @@ struct KeyVoxSpeakSceneCView: View {
     private func stopEntrance() {
         animationTask?.cancel()
         animationTask = nil
-    }
-
-    private func resetEntrance() {
-        stopEntrance()
-        hasAnimated = false
-        headerOpacity = 0
-        installCardOpacity = 0
-        installCardOffset = 18
-        stepRevealProgress = 0
-        fastModeHintOpacity = 0
-        footerOpacity = 0
     }
 }

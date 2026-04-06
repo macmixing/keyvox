@@ -127,9 +127,9 @@ struct KeyVoxSpeakSheetView: View {
     private func sceneView(for scene: Scene) -> some View {
         switch scene {
         case .a:
-            KeyVoxSpeakSceneAView()
+            KeyVoxSpeakSceneAView(isVisible: selectedScene == .a)
         case .b:
-            KeyVoxSpeakSceneBView()
+            KeyVoxSpeakSceneBView(isVisible: selectedScene == .b)
         case .c:
             KeyVoxSpeakSceneCView(
                 showsUnlockDetails: showsUnlockDetails,
