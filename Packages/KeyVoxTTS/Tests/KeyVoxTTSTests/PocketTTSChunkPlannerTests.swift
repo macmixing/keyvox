@@ -81,6 +81,12 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("1. first item. 2. second item."))
     }
 
+    func testNormalizePreservesParenthesizedNumberedListMarkers() {
+        let normalized = PocketTTSChunkPlanner.normalize("1) first item")
+        XCTAssertTrue(normalized.text.hasSuffix("1) first item."))
+        XCTAssertFalse(normalized.text.contains("1, first item."))
+    }
+
     func testNormalizeAddsTerminalPeriodsToHyphenLists() {
         let normalized = PocketTTSChunkPlanner.normalize("""
         - first item

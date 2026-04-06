@@ -114,11 +114,7 @@ enum PocketTTSTextNormalizer {
             with: ", ",
             options: .regularExpression
         )
-        sanitized = sanitized.replacingOccurrences(
-            of: closeAsidePattern,
-            with: ", ",
-            options: .regularExpression
-        )
+        sanitized = normalizeCloseAsides(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
             of: slashJoinPattern,
             with: " ",
@@ -219,5 +215,69 @@ enum PocketTTSTextNormalizer {
         }
 
         return withoutTrailingWhitespace + "."
+    }
+
+    private static func normalizeCloseAsides(in text: String) -> String {
+        text
+            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+            .map { normalizeCloseAsidesInLine(String($0)) }
+            .joined(separator: "\n")
+    }
+
+    private static func normalizeCloseAsidesInLine(_ line: String) -> String {
+        let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+        let isNumberedListItem = trimmedLine.range(
+            of: #"^\d+\)\s+"#,
+            options: .regularExpression
+        ) != nil
+
+        guard isNumberedListItem else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let listMarkerPattern = #"^(\s*\d+\))(\s+)(.*)$"#
+        guard let range = line.range(
+            of: listMarkerPattern,
+            options: .regularExpression
+        ) else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let matchedLine = String(line[range])
+        let capturePattern = try? NSRegularExpression(pattern: listMarkerPattern)
+        guard
+            let regex = capturePattern,
+            let match = regex.firstMatch(
+                in: matchedLine,
+                range: NSRange(matchedLine.startIndex..., in: matchedLine)
+            ),
+            let markerRange = Range(match.range(at: 1), in: matchedLine),
+            let spacingRange = Range(match.range(at: 2), in: matchedLine),
+            let contentRange = Range(match.range(at: 3), in: matchedLine)
+        else {
+            return line.replacingOccurrences(
+                of: closeAsidePattern,
+                with: ", ",
+                options: .regularExpression
+            )
+        }
+
+        let marker = String(matchedLine[markerRange])
+        let spacing = String(matchedLine[spacingRange])
+        let content = String(matchedLine[contentRange]).replacingOccurrences(
+            of: closeAsidePattern,
+            with: ", ",
+            options: .regularExpression
+        )
+
+        return marker + spacing + content
     }
 }
