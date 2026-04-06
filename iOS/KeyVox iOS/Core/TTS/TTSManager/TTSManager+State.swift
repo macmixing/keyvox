@@ -17,7 +17,7 @@ extension TTSManager {
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.keyboardBridge.publishTTSFinished()
-            self.clearActiveRequest()
+            self.clearActiveRequest(clearSharedTransportState: false)
         }
     }
 
@@ -66,7 +66,10 @@ extension TTSManager {
         }
     }
 
-    func clearActiveRequest(clearPublishedState: Bool = true) {
+    func clearActiveRequest(
+        clearPublishedState: Bool = true,
+        clearSharedTransportState: Bool = true
+    ) {
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
@@ -76,7 +79,9 @@ extension TTSManager {
         pausedReplaySampleOffset = nil
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         playbackProgress = 0
-        keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
+        if clearSharedTransportState {
+            keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
+        }
         fastModeBackgroundSafetyProgress = 0
         isFastModeBackgroundSafe = false
         KeyVoxIPCBridge.clearTTSRequest()
@@ -88,7 +93,9 @@ extension TTSManager {
         if clearPublishedState {
             state = .idle
             updateIdleSleepPrevention()
-            KeyVoxIPCBridge.clearTTSState()
+            if clearSharedTransportState {
+                KeyVoxIPCBridge.clearTTSState()
+            }
         }
     }
 

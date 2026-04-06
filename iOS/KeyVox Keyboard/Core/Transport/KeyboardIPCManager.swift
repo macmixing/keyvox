@@ -160,14 +160,15 @@ final class KeyboardIPCManager {
 
     func reconcileKeyboardStateIfNeeded() -> KeyboardState {
         let ttsState = KeyVoxIPCBridge.currentTTSState()
+        let isPaused = KeyVoxIPCBridge.currentTTSIsPaused()
         switch ttsState {
         case .preparing, .generating, .playing:
-            if !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
+            if !isPaused, !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
                 KeyVoxIPCBridge.clearTTSState()
             } else {
                 switch ttsState {
                 case .playing:
-                    return KeyVoxIPCBridge.currentTTSIsPaused() ? .pausedSpeaking : .speaking
+                    return isPaused ? .pausedSpeaking : .speaking
                 case .preparing, .generating:
                     return .preparingPlayback
                 case .finished, .error, .idle:

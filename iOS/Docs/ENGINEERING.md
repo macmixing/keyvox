@@ -356,8 +356,12 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `com.cueit.keyvox.noSpeech`
 - `com.cueit.keyvox.startTTS`
 - `com.cueit.keyvox.stopTTS`
+- `com.cueit.keyvox.pauseTTS`
+- `com.cueit.keyvox.resumeTTS`
 - `com.cueit.keyvox.ttsPreparing`
 - `com.cueit.keyvox.ttsPlaying`
+- `com.cueit.keyvox.ttsPaused`
+- `com.cueit.keyvox.ttsResumed`
 - `com.cueit.keyvox.ttsFinished`
 - `com.cueit.keyvox.ttsStopped`
 - `com.cueit.keyvox.ttsFailed`
@@ -607,6 +611,7 @@ Primary owners:
 - the keyboard playback transport is intentionally split:
   - center logo toggles pause/resume for active playback
   - cancel and speak stop active playback completely
+  - shared playback transport state is carried through `ttsState`, `ttsIsPaused`, and `ttsPlaybackProgress`
   - the keyboard logo ring reads shared playback progress and overlays an indigo transport arc on top of the yellow ring
   - dictation indicator animation remains separate from copied-text playback transport state
 - the trademark-protected keyboard logo implementation must stay visual-only:
@@ -626,7 +631,7 @@ Primary owners:
 
 - `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
-- `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, `TTSPlaybackCoordinator+Metering.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
+- `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
 - text cleanup policy for copied-text playback belongs in `PocketTTSTextNormalizer.swift`, not back inside chunk-planning logic
 
