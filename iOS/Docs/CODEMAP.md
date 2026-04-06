@@ -95,7 +95,6 @@ iOS/
 │   │       ├── CloudSyncCoordinator.swift
 │   │       ├── KeyVoxiCloudKeys.swift
 │   │       └── KeyVoxiCloudPayloads.swift
-│   ├── Assets.xcassets/
 │   ├── Core/
 │   │   ├── Audio/
 │   │   │   ├── LiveInputSignalState.swift
@@ -151,8 +150,10 @@ iOS/
 │   ├── Info.plist
 │   ├── KeyVoxiOS.entitlements
 │   ├── Resources/
+│   │   ├── Assets.xcassets/
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
+│   │   ├── KeyVoxSpeak.storekit
 │   │   ├── ReturnToHost.mov
 │   │   ├── TTSVoicePreviews/
 │   │   └── keyvox.icon/
@@ -264,6 +265,8 @@ iOS/
 │           ├── KeyboardRoundedBorderRenderer.swift
 │           └── KeyboardSpeakButton.swift
 ├── KeyVox Share/
+│   ├── Base.lproj/
+│   │   └── MainInterface.storyboard
 │   ├── ContentExtractor/
 │   │   ├── KeyVoxShareContentExtractor.swift
 │   │   ├── KeyVoxShareContentExtractorDiagnostics.swift
@@ -563,6 +566,8 @@ Packages/
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
   - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, symbol page, trackpad mode, and insertion.
+- `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
+  - Responder-chain URL launcher used by the extension whenever it needs to wake the containing app for cold dictation or copied-text playback handoff.
 - `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
   - Presentation-tree creation, per-presentation binding, teardown, and extension-host lifecycle observation.
   - Pauses the active presentation during host backgrounding, refreshes it on host foregrounding, and tears the tree down only for real dismissal and globe-key presentation swaps.
@@ -621,4 +626,4 @@ Packages/
 
 - Update this file when iOS file ownership, target boundaries, or top-level runtime flow changes.
 - Use [`ENGINEERING.md`](ENGINEERING.md) for lifecycle rules, onboarding contracts, IPC details, session behavior, and operational/testing policy.
-- Keep `Docs/KEYVOX_IOS.md` as historical design context rather than the current iOS source of truth.
+- These two docs are the maintained iOS source of truth in this repo today.
