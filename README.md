@@ -99,7 +99,7 @@ iOS
 - Custom Dictionary entries can be added on either platform and will sync across devices via iCloud.
 - Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
 
-## KeyVox Speak (iOS)
+## KeyVox Speak (iOS) - Coming Soon!
 
 KeyVox Speak brings local AI text-to-speech to iPhone, letting you copy text and hear it spoken aloud with natural-sounding voices powered by on-device PocketTTS.
 
