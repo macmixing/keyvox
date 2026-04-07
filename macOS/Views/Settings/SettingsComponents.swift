@@ -56,8 +56,8 @@ struct AnimatedWaveHeader<Trailing: View>: View {
 // MARK: - Settings Card
 struct SettingsCard<Content: View>: View {
     let content: Content
-    var fillColor: Color = MacAppTheme.cardFill
-    var strokeColor: Color = MacAppTheme.cardStroke
+    var fillColor: Color
+    var strokeColor: Color
     
     init(
         fillColor: Color = MacAppTheme.cardFill,
@@ -127,9 +127,6 @@ struct SettingsRow<Accessory: View>: View {
 }
 
 struct DeveloperLinkCard: View {
-    private static let promoCardFill = Color.yellow.opacity(0.14)
-    private static let promoCardStroke = Color.yellow.opacity(0.32)
-
     @State private var showsAnimatedGlow = false
 
     enum Icon {
@@ -183,8 +180,8 @@ struct DeveloperLinkCard: View {
 
     var body: some View {
         SettingsCard(
-            fillColor: isPromoted ? Self.promoCardFill : MacAppTheme.cardFill,
-            strokeColor: isPromoted ? Self.promoCardStroke : MacAppTheme.cardStroke
+            fillColor: isPromoted ? MacAppTheme.promoCardFill : MacAppTheme.cardFill,
+            strokeColor: isPromoted ? MacAppTheme.promoCardStroke : MacAppTheme.cardStroke
         ) {
             HStack(spacing: 16) {
                 iconView

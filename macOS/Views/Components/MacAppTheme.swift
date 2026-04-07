@@ -11,6 +11,8 @@ enum MacAppTheme {
     )
     static let cardFill = Color.white.opacity(0.05)
     static let cardStroke = Color.white.opacity(0.10)
+    static let promoCardFill = Color.yellow.opacity(0.14)
+    static let promoCardStroke = Color.yellow.opacity(0.32)
     static let rowFill = Color.white.opacity(0.04)
     static let rowPressedFill = Color.white.opacity(0.08)
     static let rowStroke = Color.white.opacity(0.08)
