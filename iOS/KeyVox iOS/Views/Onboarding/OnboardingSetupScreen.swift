@@ -38,7 +38,7 @@ struct OnboardingSetupScreen: View {
     }
 
     var body: some View {
-        AppScrollScreen(scrollDisabled: true) {
+        AppScrollScreen {
             VStack(alignment: .center, spacing: 16) {
                 Text("Set up KeyVox")
                     .font(.appFont(34))
@@ -216,7 +216,7 @@ struct OnboardingSetupScreen: View {
         switch microphonePermissionController.status {
         case .undetermined:
             return OnboardingStepButton(
-                title: "Allow access",
+                title: "Continue",
                 isEnabled: true,
                 action: {
                     appHaptics.light()
