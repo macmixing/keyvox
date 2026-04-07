@@ -51,25 +51,18 @@ extension SettingsView {
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {
-                Text("MORE FROM DEVELOPER")
+                Text("SUPPORT OPEN SOURCE DEVELOPMENT")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
 
                 DeveloperLinkCard(
-                    icon: .asset("cueboard-logo"),
-                    title: "Cueboard",
-                    subtitle: "Cueboard is a shot list planning tool for creators who think visually. Compatible with iPhone, iPad, and Apple Silicon Mac.",
-                    buttonTitle: "View"
-                ) {
-                    openDeveloperURL("https://cueboard.app?utm_source=keyvox-app-settings")
-                }
-
-                DeveloperLinkCard(
                     icon: .assetTemplate("github"),
                     title: "Sponsor on GitHub",
                     subtitle: "Support open source development of KeyVox via GitHub Sponsors.",
-                    buttonTitle: "Sponsor"
+                    buttonTitle: "Sponsor",
+                    buttonStyle: .primary,
+                    isPromoted: false
                 ) {
                     openDeveloperURL("https://github.com/sponsors/macmixing")
                 }
@@ -331,81 +324,4 @@ private extension VerticalAlignment {
     }
 
     static let audioHeaderCenter = VerticalAlignment(AudioHeaderCenterAlignment.self)
-}
-
-private struct DeveloperLinkCard: View {
-    enum Icon {
-        case asset(String)
-        case assetTemplate(String)
-        case systemImage(String)
-    }
-
-    let icon: Icon
-    let title: String
-    let subtitle: String
-    let buttonTitle: String
-    let action: () -> Void
-
-    var body: some View {
-        SettingsCard {
-            HStack(spacing: 16) {
-                iconView
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.appFont(16))
-                    Text(subtitle)
-                        .font(.appFont(11))
-                        .foregroundColor(.secondary)
-                        .lineSpacing(2)
-                }
-
-                Spacer()
-
-                Button(action: action) {
-                    Text(buttonTitle)
-                        .font(.appFont(12))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(MacAppTheme.accent.opacity(0.2))
-                        .foregroundColor(MacAppTheme.accent)
-                        .cornerRadius(8)
-                }
-                .buttonStyle(DepressedButtonStyle())
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var iconView: some View {
-        switch icon {
-        case .asset(let name):
-            Image(name)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 44, height: 44)
-                .cornerRadius(12)
-        case .assetTemplate(let name):
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(MacAppTheme.iconFill)
-                    .frame(width: 44, height: 44)
-                Image(name)
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundColor(.yellow.opacity(0.85))
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 26, height: 26)
-            }
-        case .systemImage(let name):
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(MacAppTheme.iconFill)
-                    .frame(width: 44, height: 44)
-                Image(systemName: name)
-                    .font(.appFont(20))
-                    .foregroundColor(.yellow)
-            }
-        }
-    }
 }
