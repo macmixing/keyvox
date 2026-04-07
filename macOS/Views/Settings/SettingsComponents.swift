@@ -142,8 +142,27 @@ struct DeveloperLinkCard: View {
     let title: String
     let subtitle: String
     let buttonTitle: String
+    let buttonStyle: AppActionButton.Style?
     let isPromoted: Bool
     let action: () -> Void
+
+    init(
+        icon: Icon,
+        title: String,
+        subtitle: String,
+        buttonTitle: String,
+        buttonStyle: AppActionButton.Style? = nil,
+        isPromoted: Bool,
+        action: @escaping () -> Void
+    ) {
+        self.icon = icon
+        self.title = title
+        self.subtitle = subtitle
+        self.buttonTitle = buttonTitle
+        self.buttonStyle = buttonStyle
+        self.isPromoted = isPromoted
+        self.action = action
+    }
 
     private var appIconGlowLayer: some View {
         RoundedRectangle(cornerRadius: 12)
@@ -177,7 +196,7 @@ struct DeveloperLinkCard: View {
 
                 AppActionButton(
                     title: buttonTitle,
-                    style: isPromoted ? .primary : .secondary,
+                    style: buttonStyle ?? (isPromoted ? .primary : .secondary),
                     minWidth: 96
                 ) {
                     action()

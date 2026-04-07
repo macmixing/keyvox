@@ -51,7 +51,7 @@ extension SettingsView {
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {
-                Text("MORE FROM DEVELOPER")
+                Text("SUPPORT OPEN SOURCE DEVELOPMENT")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
@@ -61,6 +61,7 @@ extension SettingsView {
                     title: "Sponsor on GitHub",
                     subtitle: "Support open source development of KeyVox via GitHub Sponsors.",
                     buttonTitle: "Sponsor",
+                    buttonStyle: .primary,
                     isPromoted: false
                 ) {
                     openDeveloperURL("https://github.com/sponsors/macmixing")
