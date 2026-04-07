@@ -60,7 +60,7 @@ extension TTSManager {
 
     func handleAppDidEnterBackground() {
         Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid) fastMode=\(settingsStore.fastPlaybackModeEnabled)")
-        isPlaybackPreparationViewPresented = false
+        dismissPlaybackPreparationView()
         guard settingsStore.fastPlaybackModeEnabled == false else {
             if hasStartedPlaybackForActiveRequest {
                 playbackCoordinator.didEnterBackground()
@@ -215,7 +215,7 @@ extension TTSManager {
             hasStartedPlaybackForActiveRequest = true
             didEmitPreparationCompletionForActiveRequest = true
             isPlaybackPaused = false
-            isPlaybackPreparationViewPresented = false
+            dismissPlaybackPreparationView()
             beginBackgroundTaskIfNeeded()
             playbackCoordinator.replayLastPlayback(startingAtSample: resumeOffset, shouldAutoplay: true)
         default:

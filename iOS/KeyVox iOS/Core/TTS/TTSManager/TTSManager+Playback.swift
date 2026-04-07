@@ -23,8 +23,7 @@ extension TTSManager {
     func startPlaybackFromPendingRequest(showPreparationView: Bool = false) async {
         guard let request = KeyVoxIPCBridge.readTTSRequest(),
               request.trimmedText.isEmpty == false else {
-            isPlaybackPreparationViewPresented = false
-            resetPlaybackPreparationState()
+            dismissPlaybackPreparationView()
             return
         }
 
@@ -66,11 +65,10 @@ extension TTSManager {
         shouldConsumeFreeSpeakOnPlaybackStart = true
         isPlaybackPaused = false
         lastErrorMessage = nil
-        resetPlaybackPreparationState()
         if showPreparationView {
-            isPlaybackPreparationViewPresented = true
+            presentPlaybackPreparationView()
         } else {
-            isPlaybackPreparationViewPresented = false
+            dismissPlaybackPreparationView()
         }
         playbackCoordinator.setPreparationCompletionDelay(
             enabled: showPreparationView && settingsStore.fastPlaybackModeEnabled == false
@@ -115,8 +113,7 @@ extension TTSManager {
             shouldConsumeFreeSpeakOnPlaybackStart = false
             isPlaybackPaused = false
             lastErrorMessage = nil
-            resetPlaybackPreparationState()
-            isPlaybackPreparationViewPresented = false
+            dismissPlaybackPreparationView()
             beginBackgroundTaskIfNeeded()
             playbackCoordinator.replayLastPlayback(startingAtSample: pausedReplaySampleOffset)
             return
@@ -137,8 +134,7 @@ extension TTSManager {
         isPlaybackPaused = false
         pausedReplaySampleOffset = nil
         lastErrorMessage = nil
-        resetPlaybackPreparationState()
-        isPlaybackPreparationViewPresented = false
+        dismissPlaybackPreparationView()
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.replayLastPlayback()
     }
@@ -157,8 +153,7 @@ extension TTSManager {
         didEmitPreparationCompletionForActiveRequest = true
         shouldConsumeFreeSpeakOnPlaybackStart = false
         lastErrorMessage = nil
-        resetPlaybackPreparationState()
-        isPlaybackPreparationViewPresented = false
+        dismissPlaybackPreparationView()
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.replayLastPlayback(
             startingAtSample: sampleOffset,
