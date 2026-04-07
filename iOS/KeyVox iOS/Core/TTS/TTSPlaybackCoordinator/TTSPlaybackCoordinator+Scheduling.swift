@@ -40,7 +40,7 @@ extension TTSPlaybackCoordinator {
                 : normalModeRequiredStartSampleCount(for: frame.chunkCount)
             activeRequiredStartSampleCount = requiredBufferedSamples
             let silentStartRequirement = fastModeEnabled
-                ? deterministicFastModeBufferedSampleCount(
+                ? fastModeStartupBufferedSampleCount(
                     for: frame.chunkCount,
                     remainingEstimatedSamples: frame.estimatedRemainingSampleCount
                 )
@@ -114,7 +114,7 @@ extension TTSPlaybackCoordinator {
                 : normalModeRequiredStartSampleCount(for: frame.chunkCount)
             activeRequiredStartSampleCount = requiredBufferedSamples
             let silentStartRequirement = fastModeEnabled
-                ? deterministicFastModeBufferedSampleCount(
+                ? fastModeStartupBufferedSampleCount(
                     for: frame.chunkCount,
                     remainingEstimatedSamples: frame.estimatedRemainingSampleCount
                 )

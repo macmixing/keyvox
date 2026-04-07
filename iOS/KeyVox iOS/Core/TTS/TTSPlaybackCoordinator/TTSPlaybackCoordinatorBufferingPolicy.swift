@@ -9,6 +9,8 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     static let fastModeMinimumCoverageSeconds: Double = 1.35
     static let fastModeLongFormMinimumCoverageSeconds: Double = 2.4
     static let fastModeUltraLongFormMinimumCoverageSeconds: Double = 3.2
+    static let fastModeLongFormStartupLeadRatio: Double = 0.25
+    static let fastModeUltraLongFormStartupLeadRatio: Double = 0.35
     static let conservativeForegroundRealtimeFactor: Double = 0.88
     static let longFormForegroundRealtimeFactor: Double = 0.62
     static let ultraLongFormForegroundRealtimeFactor: Double = 0.56
@@ -109,6 +111,48 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
         return queuedSampleCount >= requiredSampleCount
     }
 
+    static func fastModeStartupBufferedSampleCount(
+        sampleRate: Double,
+        chunkCount: Int,
+        remainingEstimatedSamples: Int
+    ) -> Int {
+        let requiredStartSamples = fastModeRequiredStartSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: chunkCount
+        )
+
+        guard chunkCount > longFormChunkThreshold else {
+            let deterministicRunwaySamples = normalModeBufferedSampleCount(
+                sampleRate: sampleRate,
+                chunkCount: chunkCount,
+                remainingEstimatedSamples: remainingEstimatedSamples,
+                requiredStartSamples: requiredStartSamples,
+                minimumCoverageSeconds: fastModeMinimumCoverageSeconds(for: chunkCount),
+                realtimeFactor: foregroundRealtimeFactor(for: chunkCount),
+                remainingWorkSafetyMarginSeconds: fastModeRemainingWorkSafetyMarginSeconds,
+                allowFullRemainingDeficit: true
+            )
+            let leadProtectedSamples = leadProtectedBufferedSampleCount(
+                remainingEstimatedSamples: remainingEstimatedSamples,
+                realtimeFactor: foregroundRealtimeFactor(for: chunkCount),
+                minimumLeadRatio: fastModeMinimumLeadRatio
+            )
+            return max(deterministicRunwaySamples, leadProtectedSamples)
+        }
+
+        let minimumCoverageSamples = Int(sampleRate * fastModeMinimumCoverageSeconds(for: chunkCount))
+        let startupLeadRatio = fastModeStartupLeadRatio(for: chunkCount)
+        let startupLeadProtectedSamples = Int(
+            ceil(Double(remainingEstimatedSamples) * startupLeadRatio)
+        )
+
+        return max(
+            requiredStartSamples,
+            minimumCoverageSamples,
+            startupLeadProtectedSamples
+        )
+    }
+
     static func deterministicBackgroundContinuationSampleCount(
         sampleRate: Double,
         chunkCount: Int,
@@ -151,6 +195,17 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
             return fastModeSingleChunkMinimumCoverageSeconds
         default:
             return fastModeMinimumCoverageSeconds
+        }
+    }
+
+    static func fastModeStartupLeadRatio(for chunkCount: Int) -> Double {
+        switch chunkCount {
+        case (ultraLongFormChunkThreshold + 1)...:
+            return fastModeUltraLongFormStartupLeadRatio
+        case (longFormChunkThreshold + 1)...:
+            return fastModeLongFormStartupLeadRatio
+        default:
+            return fastModeMinimumLeadRatio
         }
     }
 
