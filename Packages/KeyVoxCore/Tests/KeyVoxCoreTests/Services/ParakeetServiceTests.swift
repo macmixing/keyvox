@@ -1,4 +1,5 @@
 import XCTest
+import KeyVoxParakeet
 @testable import KeyVoxCore
 
 @MainActor
@@ -100,6 +101,46 @@ final class ParakeetServiceTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testIsLikelyNoSpeechRejectsShortLowConfidenceParakeetOutput() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 550,
+                text: "Yeah.",
+                confidence: 0.604,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertTrue(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 8_799
+            )
+        )
+    }
+
+    func testIsLikelyNoSpeechKeepsHigherConfidenceShortSpeech() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 480,
+                text: "Yes.",
+                confidence: 0.840,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertFalse(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 7_680
+            )
+        )
     }
 
     private func makeModelFile() throws -> URL {
