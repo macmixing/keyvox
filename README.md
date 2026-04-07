@@ -18,9 +18,9 @@ KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe
 
 KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into a mobile experience, with on-device transcription, post-processing,  shared dictionary via iCloud and synced preferences.
 
-## Join the iOS Beta
+## Download for iOS
 
-**KeyVox Keyboard Beta** is now available through TestFlight for iPhone: [Join the Beta](https://test.keyvox.app)
+🎉 **KeyVox Keyboard** is available for iPhone: [Free on the App Store](https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=github-readme&mt=8)
 
 ## Why KeyVox
 
