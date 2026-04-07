@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.6] - 2026-04-07
+
+### Added
+
+- Added a promoted KeyVox Keyboard for iPhone card to the macOS Home settings view with direct App Store access.
+- Added a copy-link action for the iPhone promo card so the App Store listing can be shared from macOS settings.
+
+### Changed
+
+- Updated the bundled `KeyVoxCore` package to `1.0.1` with shared Parakeet no-speech confirmation behavior for short low-confidence one-shot output.
+- Updated the bundled `KeyVoxParakeet` package to `1.0.1` with confidence-gated short-utterance suppression for low-confidence Parakeet output.
+- Refined macOS developer and promo card presentation with promoted card styling, stronger primary CTA treatment, and animated app icon glow.
+
+### Fixed
+
+- Reset the promo card copied state after temporary feedback so repeated copy actions behave consistently in macOS settings.
+- Hardened macOS settings card theming so shared card colors stay explicit and stable across promo and non-promo surfaces.
+
 ## [1.0.5] - 2026-03-30
 
 ### Added
