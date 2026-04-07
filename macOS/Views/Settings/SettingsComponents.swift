@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Settings Tab Enum
 enum SettingsTab: String, CaseIterable, Identifiable {
@@ -54,9 +55,9 @@ struct AnimatedWaveHeader<Trailing: View>: View {
 
 // MARK: - Settings Card
 struct SettingsCard<Content: View>: View {
-    let fillColor: Color
-    let strokeColor: Color
     let content: Content
+    var fillColor: Color = MacAppTheme.cardFill
+    var strokeColor: Color = MacAppTheme.cardStroke
     
     init(
         fillColor: Color = MacAppTheme.cardFill,
@@ -143,8 +144,12 @@ struct DeveloperLinkCard: View {
     let subtitle: String
     let buttonTitle: String
     let buttonStyle: AppActionButton.Style?
+    let copyLink: String?
     let isPromoted: Bool
     let action: () -> Void
+
+    @State private var didCopyLink = false
+    @State private var copyResetTask: Task<Void, Never>?
 
     init(
         icon: Icon,
@@ -152,6 +157,7 @@ struct DeveloperLinkCard: View {
         subtitle: String,
         buttonTitle: String,
         buttonStyle: AppActionButton.Style? = nil,
+        copyLink: String? = nil,
         isPromoted: Bool,
         action: @escaping () -> Void
     ) {
@@ -160,6 +166,7 @@ struct DeveloperLinkCard: View {
         self.subtitle = subtitle
         self.buttonTitle = buttonTitle
         self.buttonStyle = buttonStyle
+        self.copyLink = copyLink
         self.isPromoted = isPromoted
         self.action = action
     }
@@ -194,18 +201,43 @@ struct DeveloperLinkCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                AppActionButton(
-                    title: buttonTitle,
-                    style: buttonStyle ?? (isPromoted ? .primary : .secondary),
-                    minWidth: 96
-                ) {
-                    action()
+                VStack(alignment: .center, spacing: 6) {
+                    AppActionButton(
+                        title: buttonTitle,
+                        style: buttonStyle ?? (isPromoted ? .primary : .secondary),
+                        minWidth: 96
+                    ) {
+                        action()
+                    }
+
+                    if let copyLink {
+                        Button(didCopyLink ? "Copied" : "Copy link") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(copyLink, forType: .string)
+                            didCopyLink = true
+                            copyResetTask?.cancel()
+
+                            copyResetTask = Task { @MainActor in
+                                try? await Task.sleep(for: .seconds(1.2))
+                                guard !Task.isCancelled else { return }
+                                didCopyLink = false
+                                copyResetTask = nil
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .font(.appFont(11))
+                        .foregroundColor(.yellow)
+                    }
                 }
             }
         }
         .onAppear {
             guard case .appBundleIcon = icon, showsAnimatedGlow == false else { return }
             showsAnimatedGlow = true
+        }
+        .onDisappear {
+            copyResetTask?.cancel()
+            copyResetTask = nil
         }
     }
 

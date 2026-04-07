@@ -41,6 +41,7 @@ extension SettingsView {
             title: "Get KeyVox Keyboard for iPhone",
             subtitle: "The same great KeyVox dictation is available on iPhone with a keyboard experience built for iOS.",
             buttonTitle: "Download",
+            copyLink: "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-copy-link&mt=8",
             isPromoted: true
         ) {
             guard let url = URL(string: "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-promo&mt=8") else { return }
