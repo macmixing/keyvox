@@ -56,8 +56,8 @@ struct AnimatedWaveHeader<Trailing: View>: View {
 // MARK: - Settings Card
 struct SettingsCard<Content: View>: View {
     let content: Content
-    var fillColor: Color
-    var strokeColor: Color
+    let fillColor: Color
+    let strokeColor: Color
     
     init(
         fillColor: Color = MacAppTheme.cardFill,
@@ -235,6 +235,7 @@ struct DeveloperLinkCard: View {
         .onDisappear {
             copyResetTask?.cancel()
             copyResetTask = nil
+            didCopyLink = false
         }
     }
 
