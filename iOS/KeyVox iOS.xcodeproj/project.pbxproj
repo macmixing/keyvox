@@ -108,6 +108,7 @@
 				Core/Input/KeyboardCursorTrackpadSupport.swift,
 				Core/Input/KeyboardSpecialKeyInteractionSupport.swift,
 				Core/Input/KeyboardTextInputController.swift,
+				Core/KeyboardLayoutGeometry.swift,
 				Core/KeyboardModelAvailability.swift,
 				Core/KeyboardState.swift,
 				Core/KeyboardStyle.swift,
@@ -132,7 +133,6 @@
 				Views/Components/KeyboardSpeakButton.swift,
 				Views/FullAccessView.swift,
 				Views/KeyboardInputHostView.swift,
-				Core/KeyboardLayoutGeometry.swift,
 				Views/KeyboardRootView.swift,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
@@ -643,7 +643,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -678,7 +678,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";

@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import KeyVoxTTS
+import UIKit
 
 @MainActor
 final class TTSPlaybackCoordinator {
@@ -59,6 +60,7 @@ final class TTSPlaybackCoordinator {
     var replayStartSampleOffset = 0
     var replayPausedSampleOffset = 0
     var playbackProgressDisplayLink: CADisplayLink?
+    var backgroundPlaybackProgressTimer: Timer?
     var playbackSessionID = UUID()
     var isFastModeBackgroundSafeState = false
 
@@ -107,6 +109,9 @@ final class TTSPlaybackCoordinator {
 
     func prepareForForegroundPlayback() {
         isBackgroundTransitionArmed = false
+        if didStartPlayback && isPaused == false {
+            startPlaybackProgressTimer()
+        }
         Self.log("Foreground playback mode armed.")
         notifyFastModeBackgroundSafetyChanged()
     }
@@ -135,6 +140,9 @@ final class TTSPlaybackCoordinator {
 
     func didEnterBackground() {
         guard isBackgroundTransitionArmed else { return }
+        if didStartPlayback && isPaused == false {
+            startPlaybackProgressTimer()
+        }
         Self.log(
             "Background continuation mode active. bufferedSeconds=\(String(format: "%.3f", bufferedSeconds)) queuedBuffers=\(queuedBufferCount)"
         )

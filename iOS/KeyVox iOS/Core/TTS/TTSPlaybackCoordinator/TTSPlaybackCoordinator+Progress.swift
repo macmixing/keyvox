@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import KeyVoxTTS
+import UIKit
 
 extension TTSPlaybackCoordinator {
     func currentReplaySampleOffset() -> Int {
@@ -82,7 +83,13 @@ extension TTSPlaybackCoordinator {
     }
 
     func startPlaybackProgressTimer() {
-        guard playbackProgressDisplayLink == nil else { return }
+        stopPlaybackProgressTimer()
+
+        if UIApplication.shared.applicationState == .background {
+            startBackgroundPlaybackProgressTimer()
+            return
+        }
+
         let displayLink = CADisplayLink(target: self, selector: #selector(handlePlaybackProgressDisplayLinkTick))
         if #available(iOS 15.0, *) {
             displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
@@ -96,6 +103,23 @@ extension TTSPlaybackCoordinator {
     func stopPlaybackProgressTimer() {
         playbackProgressDisplayLink?.invalidate()
         playbackProgressDisplayLink = nil
+        backgroundPlaybackProgressTimer?.invalidate()
+        backgroundPlaybackProgressTimer = nil
+    }
+
+    func startBackgroundPlaybackProgressTimer() {
+        guard backgroundPlaybackProgressTimer == nil else { return }
+
+        let timer = Timer(
+            timeInterval: 1,
+            repeats: true
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.emitPlaybackProgress()
+            }
+        }
+        backgroundPlaybackProgressTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     @objc
