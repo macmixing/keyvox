@@ -54,9 +54,17 @@ struct AnimatedWaveHeader<Trailing: View>: View {
 
 // MARK: - Settings Card
 struct SettingsCard<Content: View>: View {
+    let fillColor: Color
+    let strokeColor: Color
     let content: Content
     
-    init(@ViewBuilder content: () -> Content) {
+    init(
+        fillColor: Color = MacAppTheme.cardFill,
+        strokeColor: Color = MacAppTheme.cardStroke,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.fillColor = fillColor
+        self.strokeColor = strokeColor
         self.content = content()
     }
     
@@ -65,10 +73,10 @@ struct SettingsCard<Content: View>: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(MacAppTheme.cardFill)
+                    .fill(fillColor)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(MacAppTheme.cardStroke, lineWidth: 1)
+                            .stroke(strokeColor, lineWidth: 1)
                     )
             )
     }
@@ -113,6 +121,121 @@ struct SettingsRow<Accessory: View>: View {
             
             accessory
                 .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+}
+
+struct DeveloperLinkCard: View {
+    private static let promoCardFill = Color.yellow.opacity(0.14)
+    private static let promoCardStroke = Color.yellow.opacity(0.32)
+
+    @State private var showsAnimatedGlow = false
+
+    enum Icon {
+        case asset(String)
+        case assetTemplate(String)
+        case appBundleIcon
+        case systemImage(String)
+    }
+
+    let icon: Icon
+    let title: String
+    let subtitle: String
+    let buttonTitle: String
+    let isPromoted: Bool
+    let action: () -> Void
+
+    private var appIconGlowLayer: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.yellow)
+            .frame(width: 44, height: 44)
+            .blur(radius: 8)
+            .opacity(showsAnimatedGlow ? 0.76 : 0.36)
+            .compositingGroup()
+            .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: showsAnimatedGlow)
+    }
+
+    var body: some View {
+        SettingsCard(
+            fillColor: isPromoted ? Self.promoCardFill : MacAppTheme.cardFill,
+            strokeColor: isPromoted ? Self.promoCardStroke : MacAppTheme.cardStroke
+        ) {
+            HStack(spacing: 16) {
+                iconView
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.appFont(16))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                    Text(subtitle)
+                        .font(.appFont(13))
+                        .foregroundColor(.secondary)
+                        .lineSpacing(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                AppActionButton(
+                    title: buttonTitle,
+                    style: isPromoted ? .primary : .secondary,
+                    minWidth: 96
+                ) {
+                    action()
+                }
+            }
+        }
+        .onAppear {
+            guard case .appBundleIcon = icon, showsAnimatedGlow == false else { return }
+            showsAnimatedGlow = true
+        }
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case .asset(let name):
+            Image(name)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 44, height: 44)
+                .cornerRadius(12)
+        case .assetTemplate(let name):
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(MacAppTheme.iconFill)
+                    .frame(width: 44, height: 44)
+                Image(name)
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundColor(.yellow.opacity(0.85))
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 26, height: 26)
+            }
+        case .appBundleIcon:
+            ZStack {
+                appIconGlowLayer
+
+                Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath))
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(contentMode: .fill)
+                    .scaleEffect(1.24)
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.9), lineWidth: 0.3)
+                    )
+            }
+        case .systemImage(let name):
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(MacAppTheme.iconFill)
+                    .frame(width: 44, height: 44)
+                Image(systemName: name)
+                    .font(.appFont(20))
+                    .foregroundColor(.yellow)
+            }
         }
     }
 }
