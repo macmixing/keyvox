@@ -118,6 +118,10 @@ extension HomeTabView {
         activeTTSInstallState != nil
     }
 
+    var isTTSPreparationPresentationActive: Bool {
+        showsTTSPreparationProgress || showsTTSPreparationSlot || isTTSPreparationVisible
+    }
+
     func syncTTSPreparationPresentation() {
         showsTTSPreparationSlot = showsTTSPreparationProgress
         isTTSPreparationVisible = showsTTSPreparationProgress

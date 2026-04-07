@@ -83,11 +83,13 @@ extension HomeTabView {
     }
 
     var showsExpandedTTSTranscript: Bool {
-        showsTTSTranscriptPanelContainer
+        showsTTSTranscriptPanelContainer && isTTSTranscriptPanelContentVisible
     }
 
     var shouldShowExpandedTTSTranscriptPanel: Bool {
-        isTTSTranscriptExpanded && currentPlaybackTranscriptText.isEmpty == false
+        isTTSTranscriptExpanded
+            && currentPlaybackTranscriptText.isEmpty == false
+            && isTTSPreparationPresentationActive == false
     }
 
     var showsTTSTranscriptIdleCloseButton: Bool {
@@ -104,12 +106,14 @@ extension HomeTabView {
     }
 
     func syncTTSTranscriptPresentation() {
+        ttsTranscriptRevealTask?.cancel()
         ttsTranscriptCollapseTask?.cancel()
         showsTTSTranscriptPanelContainer = shouldShowExpandedTTSTranscriptPanel
         isTTSTranscriptPanelContentVisible = shouldShowExpandedTTSTranscriptPanel
     }
 
     func updateTTSTranscriptPresentation() {
+        ttsTranscriptRevealTask?.cancel()
         ttsTranscriptCollapseTask?.cancel()
 
         if shouldShowExpandedTTSTranscriptPanel {
@@ -117,8 +121,13 @@ extension HomeTabView {
                 showsTTSTranscriptPanelContainer = true
             }
 
-            withAnimation(.easeOut(duration: 0.18)) {
-                isTTSTranscriptPanelContentVisible = true
+            ttsTranscriptRevealTask = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 180_000_000)
+                guard Task.isCancelled == false else { return }
+
+                withAnimation(.easeOut(duration: 0.18)) {
+                    isTTSTranscriptPanelContentVisible = true
+                }
             }
             return
         }
