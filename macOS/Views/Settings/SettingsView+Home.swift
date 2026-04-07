@@ -40,7 +40,7 @@ extension SettingsView {
             icon: .appBundleIcon,
             title: "Get KeyVox Keyboard for iPhone",
             subtitle: "The same great KeyVox dictation is available on iPhone with a keyboard experience built for iOS.",
-            buttonTitle: "Download",
+            buttonTitle: "View",
             copyLink: "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-copy-link&mt=8",
             isPromoted: true
         ) {
