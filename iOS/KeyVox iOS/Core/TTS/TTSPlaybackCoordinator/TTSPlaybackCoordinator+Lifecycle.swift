@@ -135,6 +135,7 @@ extension TTSPlaybackCoordinator {
             deactivateAudioSessionIfNeeded()
         } else {
             playerNode.pause()
+            deactivateAudioSessionIfNeeded()
         }
         isPaused = true
         stopPlaybackProgressTimer()
@@ -165,6 +166,7 @@ extension TTSPlaybackCoordinator {
         }
 
         do {
+            try configureAudioSession()
             try ensureAudioEngineReadyForPlayback(context: "resume")
         } catch {
             handleFailure(error)
