@@ -148,6 +148,7 @@ final class AppServiceRegistry {
             sessionPolicy: .default
         )
         let ttsPlaybackCoordinator = TTSPlaybackCoordinator()
+        let ttsSystemPlaybackController = TTSSystemPlaybackController()
         let ttsEngine = PocketTTSEngine(fileManager: fileManager)
         let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)
         let ttsManager = TTSManager(
@@ -157,6 +158,7 @@ final class AppServiceRegistry {
             engine: ttsEngine,
             playbackCoordinator: ttsPlaybackCoordinator,
             purchaseGate: ttsPurchaseController,
+            systemPlaybackController: ttsSystemPlaybackController,
             forceRegenerationForMatchingTranscript: runtimeFlags.forceTTSRegeneration,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
                 guard let settingsStore else { return .alba }

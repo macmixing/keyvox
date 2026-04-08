@@ -246,7 +246,7 @@ extension TTSPlaybackCoordinator {
             cursor = end
         }
 
-        isFinishing = true
+        isFinishing = shouldAutoplay
         if shouldAutoplay {
             playerNode.play()
             startPlaybackProgressTimer()
@@ -256,6 +256,11 @@ extension TTSPlaybackCoordinator {
             onPlaybackStarted?()
         } else {
             onPlaybackPaused?()
+            if playerNode.isPlaying {
+                playerNode.stop()
+            }
+            audioEngine.stop()
+            Self.log("Replay prepared in paused state; audio engine stopped while keeping the playback session active.")
         }
     }
 
@@ -307,7 +312,12 @@ extension TTSPlaybackCoordinator {
         let session = AVAudioSession.sharedInstance()
         switch audioSessionMode {
         case .playback:
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try session.setCategory(
+                .playback,
+                mode: .spokenAudio,
+                policy: .longFormAudio,
+                options: []
+            )
             try? session.overrideOutputAudioPort(.none)
         case .playbackWhilePreservingRecording:
             try session.setCategory(

@@ -29,6 +29,7 @@ final class TTSManager: ObservableObject {
     let playbackCoordinator: TTSPlaybackCoordinator
     let purchaseGate: any TTSPurchaseGating
     let replayCache: TTSReplayCache
+    let systemPlaybackController: TTSSystemPlaybackController?
     let forceRegenerationForMatchingTranscript: Bool
     let clipboardTextProvider: @MainActor () -> String?
     let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
@@ -106,6 +107,7 @@ final class TTSManager: ObservableObject {
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator,
         purchaseGate: any TTSPurchaseGating,
+        systemPlaybackController: TTSSystemPlaybackController? = nil,
         forceRegenerationForMatchingTranscript: Bool = false,
         replayCache: TTSReplayCache? = nil,
         clipboardTextProvider: (@MainActor () -> String?)? = nil,
@@ -118,6 +120,7 @@ final class TTSManager: ObservableObject {
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
         self.purchaseGate = purchaseGate
+        self.systemPlaybackController = systemPlaybackController
         self.forceRegenerationForMatchingTranscript = forceRegenerationForMatchingTranscript
         self.replayCache = replayCache ?? TTSReplayCache()
         self.clipboardTextProvider = clipboardTextProvider ?? { UIPasteboard.general.string }
@@ -153,6 +156,7 @@ final class TTSManager: ObservableObject {
         playbackCoordinator.onPlaybackProgressChanged = { [weak self] progress in
             self?.playbackProgress = progress
             self?.keyboardBridge.publishTTSPlaybackProgress(progress)
+            self?.refreshSystemPlaybackControls()
         }
         playbackCoordinator.onPreparationProgress = { [weak self] bufferedSamples, requiredSamples, hasStartedPlayback in
             self?.updatePlaybackPreparationProgress(
@@ -182,6 +186,7 @@ final class TTSManager: ObservableObject {
         )
 
         restoreReplayablePlaybackIfNeeded()
+        configureSystemPlaybackController()
         updateIdleSleepPrevention()
     }
 

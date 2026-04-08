@@ -128,6 +128,7 @@ iOS/
 │   │   │   ├── TTSEngine.swift
 │   │   │   ├── TTSPreviewPlayer.swift
 │   │   │   ├── TTSReplayCache.swift
+│   │   │   ├── TTSSystemPlaybackController.swift
 │   │   │   ├── TTSManager/
 │   │   │   │   ├── TTSManager.swift
 │   │   │   │   ├── TTSManager+AppLifecycle.swift
@@ -499,7 +500,9 @@ Packages/
 - `KeyVox iOS/Core/TTS/TTSPlaybackCoordinator/`
   - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, and playback scheduling.
 - `KeyVox iOS/Core/TTS/TTSManager/`
-  - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
+  - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, system playback command routing, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
+- `KeyVox iOS/Core/TTS/TTSSystemPlaybackController.swift`
+  - Public `MediaPlayer` integration owner for lock screen and Control Center now-playing metadata, replay scrubber command exposure, and remote transport command wiring.
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
   - Persistence layer for the last replayable rendered playback and paused replay sample offsets.
 - `KeyVox iOS/Core/TTS/TTSPreviewPlayer.swift`

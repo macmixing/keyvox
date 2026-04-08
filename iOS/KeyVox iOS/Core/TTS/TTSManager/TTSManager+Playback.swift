@@ -163,12 +163,40 @@ extension TTSManager {
         hasStartedPlaybackForActiveRequest = true
         didEmitPreparationCompletionForActiveRequest = true
         shouldConsumeFreeSpeakOnPlaybackStart = false
+        isReplayingCachedPlayback = true
+        playbackProgress = clampedProgress
+        if shouldAutoplay {
+            pausedReplaySampleOffset = nil
+        } else {
+            pausedReplaySampleOffset = sampleOffset
+            keyboardBridge.publishTTSPaused()
+        }
+        keyboardBridge.publishTTSPlaybackProgress(playbackProgress)
         lastErrorMessage = nil
         dismissPlaybackPreparationView()
+        if shouldAutoplay {
+            beginBackgroundTaskIfNeeded()
+            playbackCoordinator.replayLastPlayback(
+                startingAtSample: sampleOffset,
+                shouldAutoplay: true
+            )
+            return
+        }
+
+        if let samples = playbackCoordinator.replayablePlaybackSamplesSnapshot() {
+            Self.log("Restoring paused replay position sampleOffset=\(sampleOffset)")
+            playbackCoordinator.restorePausedReplay(
+                samples: samples,
+                pausedSampleOffset: sampleOffset
+            )
+            refreshSystemPlaybackControls()
+            return
+        }
+
         beginBackgroundTaskIfNeeded()
         playbackCoordinator.replayLastPlayback(
             startingAtSample: sampleOffset,
-            shouldAutoplay: shouldAutoplay
+            shouldAutoplay: false
         )
     }
 

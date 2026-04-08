@@ -606,7 +606,8 @@ Primary owners:
 - `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
 - `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
 - `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
-- `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
+- `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, system playback coordination / metadata assembly, remote transport command routing, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
+- `TTSSystemPlaybackController` owns MediaPlayer API integration and publication of transport & now-playing metadata for lock screen and Control Center transport.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
 - the keyboard playback transport is intentionally split:
   - center logo toggles pause/resume for active playback
@@ -630,8 +631,11 @@ Primary owners:
 ### Runtime Structure Rules
 
 - `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
-- `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
+- `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+SystemPlayback.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
+  - `TTSManager+SystemPlayback.swift` should stay as the TTSManager-facing adapter layer that translates internal playback state and events into system playback intent, assembles metadata, and decides when the system surface should update.
 - `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
+- `TTSSystemPlaybackController.swift` is the concrete platform integration layer that performs `MediaPlayer` API calls, remote command configuration, and transport / now-playing metadata publication.
+- system playback coordination and metadata assembly belong in `TTSManager` / `TTSPlaybackCoordinator`; platform-specific side effects belong in `TTSSystemPlaybackController.swift`, not in view code or app lifecycle routing
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
 - text cleanup policy for copied-text playback belongs in `PocketTTSTextNormalizer.swift`, not back inside chunk-planning logic
 
@@ -659,6 +663,9 @@ Primary owners:
 - the last completed rendered playback is cached independently of the clipboard and may be replayed later from the Home tab
 - paused replay state, including sample offset, is durable across app relaunches
 - replay transport uses a dedicated scrubber while cached replay is active
+- lock screen and Control Center transport must stay enabled for active replay playback through public `MediaPlayer` APIs only
+- live stream transport in system playback controls is play/pause only; replay transport may expose elapsed time, duration, and scrubbing
+- a paused replay scrub must restamp paused replay state without rebuilding a live autoplaying transport
 - `TTSManager` consumes a free daily speak only after the new PocketTTS generation has successfully begun, not on button tap alone
 - no free speak is consumed while the TTS free-speak bypass runtime flag is enabled
 - `AudioModeCoordinator` must remain the transition owner for:

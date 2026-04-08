@@ -79,6 +79,8 @@ extension TTSManager {
         case .error:
             keyboardBridge.publishTTSFailed(message: lastErrorMessage)
         }
+
+        refreshSystemPlaybackControls()
     }
 
     func clearActiveRequest(
@@ -120,6 +122,8 @@ extension TTSManager {
                 KeyVoxIPCBridge.clearTTSState()
             }
         }
+
+        refreshSystemPlaybackControls()
     }
 
     func handlePlaybackStarted() {
@@ -167,6 +171,7 @@ extension TTSManager {
                 pausedSampleOffset: offset
             )
         }
+        refreshSystemPlaybackControls()
     }
 
     func handlePlaybackResumed() {
@@ -184,6 +189,7 @@ extension TTSManager {
                 pausedSampleOffset: nil
             )
         }
+        refreshSystemPlaybackControls()
     }
 
     func updatePlaybackPreparationProgress(
@@ -256,6 +262,7 @@ extension TTSManager {
             playbackCoordinator.restoreReplayablePlayback(samples: snapshot.samples)
             pausedReplaySampleOffset = nil
         }
+        refreshSystemPlaybackControls()
     }
 
     func persistReplayablePlaybackIfNeeded(for request: KeyVoxTTSRequest) {

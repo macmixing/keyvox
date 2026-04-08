@@ -28,6 +28,17 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
         )
     }
 
+    @Test func fastModeStartupLeadRatiosMatchCurrentTunings() {
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormStartupLeadRatio == 0.28)
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.fastModeUltraLongFormStartupLeadRatio == 0.34)
+    }
+
+    @Test func deterministicRunwayCapScalesByChunkTier() {
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.maximumDeterministicRunwaySeconds(for: 8) == 90.0)
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.maximumDeterministicRunwaySeconds(for: 42) == 140.0)
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.maximumDeterministicRunwaySeconds(for: 80) == 170.0)
+    }
+
     @Test func normalModeBufferedSampleCountHonorsMinimumCoverageFloor() {
         let sampleRate = 24_000.0
         let requiredStartSamples = TTSPlaybackCoordinatorBufferingPolicy.normalModeRequiredStartSampleCount(
@@ -154,6 +165,49 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
         #expect(bufferedSampleCount == Int(expectedRequiredSeconds * sampleRate))
     }
 
+    @Test func normalModeStartupBufferedSampleCountUsesCurrentLongFormRunwayCap() {
+        let sampleRate = 24_000.0
+        let requiredStartSamples = TTSPlaybackCoordinatorBufferingPolicy.normalModeRequiredStartSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 42
+        )
+
+        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.normalModeBufferedSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 42,
+            remainingEstimatedSamples: 12_000_000,
+            requiredStartSamples: requiredStartSamples,
+            minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.returnToHostRunwaySeconds,
+            realtimeFactor: TTSPlaybackCoordinatorBufferingPolicy.backgroundRealtimeFactor(for: 42),
+            remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds,
+            allowFullRemainingDeficit: false
+        )
+
+        #expect(bufferedSampleCount == Int(sampleRate * 140.0))
+    }
+
+    @Test func normalModeStartupBufferedSampleCountUsesFullRemainingRunwayForUltraLongForm() {
+        let sampleRate = 24_000.0
+        let remainingEstimatedSamples = 4_200_000
+        let requiredStartSamples = TTSPlaybackCoordinatorBufferingPolicy.normalModeRequiredStartSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 80
+        )
+
+        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.normalModeBufferedSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 80,
+            remainingEstimatedSamples: remainingEstimatedSamples,
+            requiredStartSamples: requiredStartSamples,
+            minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.returnToHostRunwaySeconds,
+            realtimeFactor: TTSPlaybackCoordinatorBufferingPolicy.backgroundRealtimeFactor(for: 80),
+            remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.remainingWorkSafetyMarginSeconds,
+            allowFullRemainingDeficit: false
+        )
+
+        #expect(bufferedSampleCount == remainingEstimatedSamples)
+    }
+
     @Test func fastModeLongFormStartupUsesRaisedLeadRatioInsteadOfCoverageFloorOnly() {
         let sampleRate = 24_000.0
         let remainingEstimatedSamples = 6_533_760
@@ -169,6 +223,26 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
                     ceil(
                         Double(remainingEstimatedSamples)
                             * TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormStartupLeadRatio
+                    )
+                )
+        )
+    }
+
+    @Test func fastModeUltraLongFormStartupUsesCurrentLeadRatioInsteadOfCoverageFloorOnly() {
+        let sampleRate = 24_000.0
+        let remainingEstimatedSamples = 8_160_000
+        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupBufferedSampleCount(
+            sampleRate: sampleRate,
+            chunkCount: 80,
+            remainingEstimatedSamples: remainingEstimatedSamples
+        )
+
+        #expect(
+            bufferedSampleCount
+                == Int(
+                    ceil(
+                        Double(remainingEstimatedSamples)
+                            * TTSPlaybackCoordinatorBufferingPolicy.fastModeUltraLongFormStartupLeadRatio
                     )
                 )
         )

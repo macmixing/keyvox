@@ -100,9 +100,9 @@ struct PlaybackPreparationView: View {
     private var primaryHeadlineLineOne: String {
         switch ttsManager.playbackPreparationPhase {
         case .preparing:
-            return "Stay Here,"
+            return "Stay here,"
         case .readyToReturn:
-            return "Speak Is"
+            return "Speak is"
         }
     }
 
