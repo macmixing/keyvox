@@ -204,8 +204,10 @@ extension AudioRecorder {
         let deadStateHoldDuration = self.deadStateHoldDuration
         let visualActiveStateHoldDuration = self.visualActiveStateHoldDuration
 
+        let liveMeterUpdateHandler = self.liveMeterUpdateHandler
+
         inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self, streamingState, outputFormat, deadSignalPeakThreshold, sessionActiveSignalRMSThreshold, visualActiveSignalThresholdMultiplier, deadStateHoldDuration, visualActiveStateHoldDuration] buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: inputFormat) { [weak self, streamingState, outputFormat, deadSignalPeakThreshold, sessionActiveSignalRMSThreshold, visualActiveSignalThresholdMultiplier, deadStateHoldDuration, visualActiveStateHoldDuration, liveMeterUpdateHandler] buffer, _ in
             guard let self else { return }
             
             // Heartbeat for IPC bridge
@@ -224,10 +226,10 @@ extension AudioRecorder {
                 visualActiveStateHoldDuration: visualActiveStateHoldDuration
             )
             guard let update else { return }
+            liveMeterUpdateHandler?(update.level, update.signalState)
             Task { @MainActor in
                 self.audioLevel = update.level
                 self.liveInputSignalState = update.signalState
-                self.liveMeterUpdateHandler?(update.level, update.signalState)
             }
         }
 
