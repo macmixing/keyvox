@@ -81,6 +81,8 @@ struct PlaybackPreparationView: View {
                         Text("Dismiss")
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(Color.white.opacity(0.8))
+                            .frame(minWidth: 44, minHeight: 44, alignment: .center)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Dismiss")
                     .padding(.top, 12)

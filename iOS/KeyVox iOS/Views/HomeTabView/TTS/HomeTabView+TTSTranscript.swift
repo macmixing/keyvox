@@ -138,6 +138,7 @@ extension HomeTabView {
 
         ttsTranscriptCollapseTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 180_000_000)
+            guard Task.isCancelled == false else { return }
             withAnimation(.easeInOut(duration: 0.26)) {
                 showsTTSTranscriptPanelContainer = false
             }
