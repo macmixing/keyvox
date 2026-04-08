@@ -134,7 +134,7 @@ enum PocketTTSTextNormalizer {
             with: " ",
             options: .regularExpression
         )
-        sanitized = normalizeListItemTerminalPeriods(in: sanitized)
+        sanitized = normalizeTerminalPeriods(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
             of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\)\n]"#,
             with: " ",
@@ -147,6 +147,11 @@ enum PocketTTSTextNormalizer {
         )
         sanitized = sanitized.replacingOccurrences(
             of: #"\s+,([.!?])"#,
+            with: "$1",
+            options: .regularExpression
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: #"\s+([.!?])"#,
             with: "$1",
             options: .regularExpression
         )
@@ -169,33 +174,32 @@ enum PocketTTSTextNormalizer {
         return sanitized
     }
 
-    private static func normalizeListItemTerminalPeriods(in text: String) -> String {
+    private static func normalizeTerminalPeriods(in text: String) -> String {
         text
             .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-            .map { normalizeListItemTerminalPeriod(in: String($0)) }
+            .map { normalizeTerminalPeriod(in: String($0)) }
             .joined(separator: "\n")
     }
 
-    private static func normalizeListItemTerminalPeriod(in line: String) -> String {
+    private static func normalizeTerminalPeriod(in line: String) -> String {
         let trimmedLine = line.trimmingCharacters(in: .whitespaces)
         guard trimmedLine.isEmpty == false else { return line }
 
-        let isNumberedListItem = trimmedLine.range(
-            of: #"^\d+[\.\)]\s+"#,
-            options: .regularExpression
-        ) != nil
         let isBulletedListItem = trimmedLine.range(
             of: #"^[-*•]\s+"#,
             options: .regularExpression
         ) != nil
 
-        guard isNumberedListItem || isBulletedListItem else { return line }
-
-        let normalizedMarkerLine = line.replacingOccurrences(
-            of: #"^(\s*)[\*•](\s+)"#,
-            with: "$1-$2",
-            options: .regularExpression
-        )
+        let normalizedMarkerLine: String
+        if isBulletedListItem {
+            normalizedMarkerLine = line.replacingOccurrences(
+                of: #"^(\s*)[\*•](\s+)"#,
+                with: "$1-$2",
+                options: .regularExpression
+            )
+        } else {
+            normalizedMarkerLine = line
+        }
 
         let withoutTrailingWhitespace = normalizedMarkerLine.replacingOccurrences(
             of: #"\s+$"#,
@@ -204,11 +208,18 @@ enum PocketTTSTextNormalizer {
         )
 
         if withoutTrailingWhitespace.range(
-            of: #"[,;:\.!?]+$"#,
+            of: #"[.!?]+$"#,
+            options: .regularExpression
+        ) != nil {
+            return withoutTrailingWhitespace
+        }
+
+        if withoutTrailingWhitespace.range(
+            of: #"[,;:]+$"#,
             options: .regularExpression
         ) != nil {
             return withoutTrailingWhitespace.replacingOccurrences(
-                of: #"[,;:\.!?]+$"#,
+                of: #"[,;:]+$"#,
                 with: ".",
                 options: .regularExpression
             )

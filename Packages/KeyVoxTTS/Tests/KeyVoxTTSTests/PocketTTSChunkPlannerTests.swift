@@ -84,6 +84,22 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Updated in version 1.2.3."))
     }
 
+    func testNormalizeAddsTerminalPeriodsToPlainLines() {
+        let normalized = PocketTTSChunkPlanner.normalize("""
+        hello world
+        second line
+        """)
+        XCTAssertTrue(normalized.text.hasSuffix("Hello world. second line."))
+    }
+
+    func testNormalizePreservesExistingTerminalPunctuationAcrossLines() {
+        let normalized = PocketTTSChunkPlanner.normalize("""
+        hello world!
+        second line
+        """)
+        XCTAssertTrue(normalized.text.hasSuffix("Hello world! second line."))
+    }
+
     func testNormalizeAddsTerminalPeriodsToNumberedLists() {
         let normalized = PocketTTSChunkPlanner.normalize("""
         1. first item
