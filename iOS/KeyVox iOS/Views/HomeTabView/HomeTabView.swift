@@ -14,6 +14,7 @@ struct HomeTabView: View {
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
     @State var showsTTSTranscriptPanelContainer = false
     @State var isTTSTranscriptPanelContentVisible = false
+    @State var ttsTranscriptRevealTask: Task<Void, Never>?
     @State var ttsTranscriptCollapseTask: Task<Void, Never>?
     @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
@@ -40,6 +41,7 @@ struct HomeTabView: View {
             updateTTSTranscriptPresentation()
         }
         .onDisappear {
+            ttsTranscriptRevealTask?.cancel()
             ttsTranscriptCollapseTask?.cancel()
         }
     }

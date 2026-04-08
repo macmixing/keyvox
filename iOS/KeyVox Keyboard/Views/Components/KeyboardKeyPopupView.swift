@@ -9,6 +9,8 @@ final class KeyboardKeyPopupView: UIView {
         alpha = 0
         observeBorderAppearanceChanges()
 
+        let contentInsets = KeyboardStyle.popupContentInsets
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = KeyboardStyle.popupFont
         titleLabel.textColor = KeyboardStyle.popupLabelColor
@@ -18,8 +20,10 @@ final class KeyboardKeyPopupView: UIView {
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
+            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: contentInsets.left),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -contentInsets.right),
+            titleLabel.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: contentInsets.top),
+            titleLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -contentInsets.bottom),
         ])
     }
 
@@ -55,13 +59,28 @@ final class KeyboardKeyPopupView: UIView {
         titleLabel.attributedText = keyView.model.attributedTitle(for: text)
 
         let keyFrame = keyView.convert(keyView.bounds, to: container)
+        let contentInsets = KeyboardStyle.popupContentInsets
+        let labelSize = titleLabel.sizeThatFits(
+            CGSize(
+                width: CGFloat.greatestFiniteMagnitude,
+                height: CGFloat.greatestFiniteMagnitude
+            )
+        )
         let popupSize = CGSize(
-            width: keyFrame.width * KeyboardStyle.popupWidthMultiplier,
-            height: keyFrame.height * KeyboardStyle.popupHeightMultiplier
+            width: max(
+                keyFrame.width * KeyboardStyle.popupWidthMultiplier,
+                labelSize.width + contentInsets.left + contentInsets.right
+            ),
+            height: max(
+                keyFrame.height * KeyboardStyle.popupHeightMultiplier,
+                labelSize.height + contentInsets.top + contentInsets.bottom
+            )
         )
         let popupY = max(0, keyFrame.minY - popupSize.height - 2)
+        let minX = KeyboardStyle.popupMinEdgeInset
+        let maxX = max(minX, container.bounds.width - popupSize.width - KeyboardStyle.popupMinEdgeInset)
         let popupFrame = CGRect(
-            x: keyFrame.midX - popupSize.width / 2,
+            x: min(max(minX, keyFrame.midX - popupSize.width / 2), maxX),
             y: popupY,
             width: popupSize.width,
             height: popupSize.height

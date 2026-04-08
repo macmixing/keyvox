@@ -25,6 +25,8 @@ enum KeyboardStyle {
     static let keyCornerRadius: CGFloat = 8
     static let popupWidthMultiplier: CGFloat = 1.15
     static let popupHeightMultiplier: CGFloat = 1.25
+    static let popupContentInsets = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+    static let popupMinEdgeInset: CGFloat = 2
     static let popupCornerRadius: CGFloat = 10
     static let popupBorderWidth: CGFloat = 0.6
     static let popupShadowColor = UIColor.black

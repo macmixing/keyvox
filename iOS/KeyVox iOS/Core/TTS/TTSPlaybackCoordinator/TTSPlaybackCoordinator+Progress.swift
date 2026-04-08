@@ -212,6 +212,14 @@ extension TTSPlaybackCoordinator {
         return max(deterministicRunwaySamples, leadProtectedSamples)
     }
 
+    func fastModeStartupBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
+        TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupBufferedSampleCount(
+            sampleRate: playbackFormat.sampleRate,
+            chunkCount: chunkCount,
+            remainingEstimatedSamples: remainingEstimatedSamples
+        )
+    }
+
     func backgroundContinuationBufferedSampleCount(for chunkCount: Int, remainingEstimatedSamples: Int) -> Int {
         TTSPlaybackCoordinatorBufferingPolicy.deterministicBackgroundContinuationSampleCount(
             sampleRate: playbackFormat.sampleRate,

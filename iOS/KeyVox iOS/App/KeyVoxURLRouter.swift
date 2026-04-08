@@ -33,7 +33,7 @@ final class KeyVoxURLRouter {
                     showPreparationView: request.sourceSurface == .keyboard && shouldPresentReturnToHost
                 )
             } else {
-                ttsManager.isPlaybackPreparationViewPresented = false
+                ttsManager.dismissPlaybackPreparationView()
                 audioModeCoordinator.handleSpeakClipboardFromApp()
             }
         }

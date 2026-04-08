@@ -70,6 +70,27 @@ struct PlaybackPreparationView: View {
 
                 Spacer()
             }
+
+            VStack {
+                HStack {
+                    Spacer()
+
+                    Button {
+                        ttsManager.dismissPlaybackPreparationView()
+                    } label: {
+                        Text("Dismiss")
+                            .font(.appFont(14, variant: .light))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .frame(minWidth: 44, minHeight: 44, alignment: .center)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Dismiss")
+                    .padding(.top, 12)
+                    .padding(.trailing, 20)
+                }
+
+                Spacer()
+            }
         }
         .animation(.easeInOut(duration: 0.1), value: isVideoReady)
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: ttsManager.playbackPreparationProgress)

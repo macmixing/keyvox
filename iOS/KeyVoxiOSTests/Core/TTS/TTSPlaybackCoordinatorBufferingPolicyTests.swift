@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import KeyVox_iOS
 
@@ -13,6 +14,18 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
         #expect(TTSPlaybackCoordinatorBufferingPolicy.minimumCompletedFastModeSegmentLead(for: 2) == 1)
         #expect(TTSPlaybackCoordinatorBufferingPolicy.minimumCompletedFastModeSegmentLead(for: 30) == 2)
         #expect(TTSPlaybackCoordinatorBufferingPolicy.minimumCompletedFastModeSegmentLead(for: 80) == 3)
+    }
+
+    @Test func fastModeStartupLeadRatioScalesByChunkTier() {
+        #expect(TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupLeadRatio(for: 8) == 0.10)
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupLeadRatio(for: 30)
+                == TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormStartupLeadRatio
+        )
+        #expect(
+            TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupLeadRatio(for: 80)
+                == TTSPlaybackCoordinatorBufferingPolicy.fastModeUltraLongFormStartupLeadRatio
+        )
     }
 
     @Test func normalModeBufferedSampleCountHonorsMinimumCoverageFloor() {
@@ -141,25 +154,23 @@ struct TTSPlaybackCoordinatorBufferingPolicyTests {
         #expect(bufferedSampleCount == Int(expectedRequiredSeconds * sampleRate))
     }
 
-    @Test func fastModeForegroundBufferedSampleCountExceedsTheOldFortyTwoChunkStartupThreshold() {
+    @Test func fastModeLongFormStartupUsesRaisedLeadRatioInsteadOfCoverageFloorOnly() {
         let sampleRate = 24_000.0
         let remainingEstimatedSamples = 6_533_760
-        let requiredStartSamples = TTSPlaybackCoordinatorBufferingPolicy.fastModeRequiredStartSampleCount(
-            sampleRate: sampleRate,
-            chunkCount: 42
-        )
-
-        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.normalModeBufferedSampleCount(
+        let bufferedSampleCount = TTSPlaybackCoordinatorBufferingPolicy.fastModeStartupBufferedSampleCount(
             sampleRate: sampleRate,
             chunkCount: 42,
-            remainingEstimatedSamples: remainingEstimatedSamples,
-            requiredStartSamples: requiredStartSamples,
-            minimumCoverageSeconds: TTSPlaybackCoordinatorBufferingPolicy.fastModeMinimumCoverageSeconds(for: 42),
-            realtimeFactor: TTSPlaybackCoordinatorBufferingPolicy.foregroundRealtimeFactor(for: 42),
-            remainingWorkSafetyMarginSeconds: TTSPlaybackCoordinatorBufferingPolicy.fastModeRemainingWorkSafetyMarginSeconds,
-            allowFullRemainingDeficit: true
+            remainingEstimatedSamples: remainingEstimatedSamples
         )
 
-        #expect(bufferedSampleCount > 2_272_256)
+        #expect(
+            bufferedSampleCount
+                == Int(
+                    ceil(
+                        Double(remainingEstimatedSamples)
+                            * TTSPlaybackCoordinatorBufferingPolicy.fastModeLongFormStartupLeadRatio
+                    )
+                )
+        )
     }
 }

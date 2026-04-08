@@ -54,7 +54,7 @@ final class AudioModeCoordinator: ObservableObject {
                 "handleStartTTSFromPendingRequest transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive))"
             )
             guard ttsPurchaseGate.canStartNewTTSSpeak else {
-                ttsManager.isPlaybackPreparationViewPresented = false
+                ttsManager.dismissPlaybackPreparationView()
                 ttsPurchaseGate.presentUnlockSheet()
                 return
             }

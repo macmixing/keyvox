@@ -1,6 +1,20 @@
 import Foundation
 
 extension TTSManager {
+    func presentPlaybackPreparationView() {
+        shouldPersistPlaybackPreparationViewUntilBackground = true
+        resetPlaybackPreparationState()
+        isPlaybackPreparationViewPresented = true
+        Self.log("Playback preparation view presented.")
+    }
+
+    func dismissPlaybackPreparationView() {
+        shouldPersistPlaybackPreparationViewUntilBackground = false
+        isPlaybackPreparationViewPresented = false
+        resetPlaybackPreparationState()
+        Self.log("Playback preparation view dismissed.")
+    }
+
     func finishPlayback() {
         Task { @MainActor [weak self] in
             guard let self else { return }
@@ -40,6 +54,7 @@ extension TTSManager {
             self.lastErrorMessage = message
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
+            self.dismissPlaybackPreparationView()
             self.updateState(.error)
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
@@ -85,8 +100,14 @@ extension TTSManager {
         fastModeBackgroundSafetyProgress = 0
         isFastModeBackgroundSafe = false
         KeyVoxIPCBridge.clearTTSRequest()
-        isPlaybackPreparationViewPresented = false
-        resetPlaybackPreparationState()
+        let shouldPreservePlaybackPreparationView =
+            shouldPersistPlaybackPreparationViewUntilBackground
+            && playbackPreparationPhase == .readyToReturn
+        if shouldPreservePlaybackPreparationView {
+            Self.log("Preserving playback preparation view until background transition.")
+        } else {
+            dismissPlaybackPreparationView()
+        }
         playbackCoordinator.setPreparationCompletionDelay(enabled: false)
         endBackgroundTaskIfNeeded()
 
