@@ -54,6 +54,21 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Agenda. review. launch."))
     }
 
+    func testNormalizeConvertsRightArrowIntoSentencePause() {
+        let normalized = PocketTTSChunkPlanner.normalize("Agenda → review")
+        XCTAssertTrue(normalized.text.hasSuffix("Agenda. review."))
+    }
+
+    func testNormalizeConvertsArrowVariantsIntoSentencePauses() {
+        let normalized = PocketTTSChunkPlanner.normalize("Back ← next ⇒ finish")
+        XCTAssertTrue(normalized.text.hasSuffix("Back. next. finish."))
+    }
+
+    func testNormalizeStripsSlashesIntoSpaces() {
+        let normalized = PocketTTSChunkPlanner.normalize(#"alpha/beta\gamma"#)
+        XCTAssertTrue(normalized.text.hasSuffix("Alpha beta gamma."))
+    }
+
     func testNormalizePreservesTerminalPeriodsOnLinkListItems() {
         let normalized = PocketTTSChunkPlanner.normalize("- https://example.com")
         XCTAssertTrue(normalized.text.hasSuffix("- link."))

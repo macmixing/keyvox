@@ -15,7 +15,6 @@ enum PocketTTSTextNormalizer {
     private static let timePattern = #"\b([0-9]{1,2}):([0-9]{2})(?:\s*([AaPp][Mm]))?\b"#
     private static let datePattern = #"\b([0-9]{1,2})/([0-9]{1,2})/([0-9]{2,4})\b"#
     private static let versionPattern = #"\bv([0-9]+(?:\.[0-9]+){1,3})\b"#
-    private static let slashJoinPattern = #"(?<=\p{L}|\p{N})/(?=\p{L}|\p{N})"#
     private static let hyphenJoinPattern = #"(?<=\p{L}|\p{N})\-(?=\p{L}|\p{N})"#
     private static let underscoreJoinPattern = #"(?<=\p{L}|\p{N})_(?=\p{L}|\p{N})"#
     private static let camelCaseBoundaryPattern = #"(?<=\p{Ll})(?=\p{Lu})"#
@@ -31,6 +30,7 @@ enum PocketTTSTextNormalizer {
         sanitized = sanitized.replacingOccurrences(of: "\u{201D}", with: "\"")
         sanitized = sanitized.replacingOccurrences(of: "\u{2013}", with: "-")
         sanitized = sanitized.replacingOccurrences(of: "\u{2014}", with: " - ")
+        sanitized = normalizeArrows(in: sanitized)
         sanitized = sanitized.replacingOccurrences(of: "\u{2026}", with: "...")
         sanitized = sanitized.replacingOccurrences(of: "&", with: " and ")
 
@@ -115,9 +115,12 @@ enum PocketTTSTextNormalizer {
         )
         sanitized = normalizeCloseAsides(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
-            of: slashJoinPattern,
-            with: " ",
-            options: .regularExpression
+            of: "/",
+            with: " "
+        )
+        sanitized = sanitized.replacingOccurrences(
+            of: "\\",
+            with: " "
         )
         sanitized = sanitized.replacingOccurrences(
             of: hyphenJoinPattern,
@@ -172,6 +175,29 @@ enum PocketTTSTextNormalizer {
         )
 
         return sanitized
+    }
+
+    private static func normalizeArrows(in text: String) -> String {
+        let arrowRanges: [ClosedRange<UInt32>] = [
+            0x2190...0x21FF,
+            0x27F0...0x27FF,
+            0x2900...0x297F,
+            0x2B00...0x2BFF,
+        ]
+
+        var normalized = ""
+        normalized.reserveCapacity(text.count)
+
+        for scalar in text.unicodeScalars {
+            let isArrow = arrowRanges.contains { $0.contains(scalar.value) }
+            if isArrow {
+                normalized.append(". ")
+            } else {
+                normalized.unicodeScalars.append(scalar)
+            }
+        }
+
+        return normalized
     }
 
     private static func normalizeTerminalPeriods(in text: String) -> String {
