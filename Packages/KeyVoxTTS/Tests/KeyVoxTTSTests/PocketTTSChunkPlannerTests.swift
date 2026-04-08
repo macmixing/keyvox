@@ -49,9 +49,9 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Meet me on 04 04 2026 at 3 05 PM."))
     }
 
-    func testNormalizeStripsColons() {
+    func testNormalizeConvertsColonsIntoSentencePauses() {
         let normalized = PocketTTSChunkPlanner.normalize("Agenda: review: launch")
-        XCTAssertTrue(normalized.text.hasSuffix("Agenda review launch."))
+        XCTAssertTrue(normalized.text.hasSuffix("Agenda. review. launch."))
     }
 
     func testNormalizePreservesTerminalPeriodsOnLinkListItems() {
