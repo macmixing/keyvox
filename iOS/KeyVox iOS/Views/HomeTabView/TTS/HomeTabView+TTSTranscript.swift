@@ -89,7 +89,11 @@ extension HomeTabView {
     var shouldShowExpandedTTSTranscriptPanel: Bool {
         isTTSTranscriptExpanded
             && currentPlaybackTranscriptText.isEmpty == false
-            && isTTSPreparationPresentationActive == false
+            && (
+                isTTSPreparationPresentationActive == false
+                || showsTTSTranscriptPanelContainer
+                || isTTSTranscriptPanelContentVisible
+            )
     }
 
     var showsTTSTranscriptIdleCloseButton: Bool {
