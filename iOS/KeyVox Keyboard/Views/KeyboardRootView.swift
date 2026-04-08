@@ -28,6 +28,7 @@ final class KeyboardRootView: UIView {
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
+    private var hasAppliedInitialCancelVisibility = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,7 +44,6 @@ final class KeyboardRootView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-
         let cancelReferenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if cancelReferenceWidth > 0,
            let leadingControlsWidthConstraint,
@@ -100,26 +100,31 @@ final class KeyboardRootView: UIView {
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
-            cancelButton.layer.removeAllAnimations()
-
-            if shouldShowCancel {
-                cancelButton.alpha = 0
-                cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                cancelButton.isHidden = false
-
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.cancelButton.alpha = 1
-                    self.cancelButton.transform = .identity
-                })
+            if hasAppliedInitialCancelVisibility == false {
+                hasAppliedInitialCancelVisibility = true
+                cancelButton.isHidden = !shouldShowCancel
             } else {
-                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                    self.cancelButton.alpha = 0
-                    self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                }) { _ in
-                    guard !self.cancelButtonVisibilityTarget else { return }
-                    self.cancelButton.isHidden = true
-                    self.cancelButton.alpha = 1
-                    self.cancelButton.transform = .identity
+                cancelButton.layer.removeAllAnimations()
+
+                if shouldShowCancel {
+                    cancelButton.alpha = 0
+                    cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    cancelButton.isHidden = false
+
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.cancelButton.alpha = 1
+                        self.cancelButton.transform = .identity
+                    })
+                } else {
+                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
+                        self.cancelButton.alpha = 0
+                        self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                    }) { _ in
+                        guard !self.cancelButtonVisibilityTarget else { return }
+                        self.cancelButton.isHidden = true
+                        self.cancelButton.alpha = 1
+                        self.cancelButton.transform = .identity
+                    }
                 }
             }
         }
@@ -149,6 +154,8 @@ final class KeyboardRootView: UIView {
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
     private func configureView() {
