@@ -104,7 +104,7 @@ extension HomeTabView {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Install PocketTTS CoreML to read copied text aloud."
+                return "Install PocketTTS CoreML to speak copied text."
             case .downloading:
                 return "Downloading PocketTTS CoreML..."
             case .installing:
@@ -118,7 +118,7 @@ extension HomeTabView {
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Install the \(effectiveTTSVoice.displayName) voice to read copied text aloud."
+            return "Install the \(effectiveTTSVoice.displayName) voice to speak copied text."
         case .downloading:
             return "Downloading the \(effectiveTTSVoice.displayName) voice..."
         case .installing:
@@ -133,7 +133,7 @@ extension HomeTabView {
         case .idle:
             if ttsPurchaseController.canStartNewTTSSpeak == false {
                 if ttsPurchaseController.remainingFreeTTSSpeaksToday == 0 {
-                    return "Unlock TTS to keep speaking copied text."
+                    return "Unlock Speak to keep speaking copied text."
                 }
             }
 
@@ -142,7 +142,7 @@ extension HomeTabView {
                 let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
                 return "\(remainingFreeSpeaks) free \(noun) left today."
             }
-            return "Read copied text aloud using your selected voice."
+            return "Speak copied text using your selected voice."
         case .preparing:
             return "Getting ready..."
         case .generating:
@@ -162,7 +162,7 @@ extension HomeTabView {
         if lastErrorMessage.localizedCaseInsensitiveContains("unable to compute the prediction using a neural network model")
             || lastErrorMessage.localizedCaseInsensitiveContains("broken/unsupported model")
             || lastErrorMessage.localizedCaseInsensitiveContains("error code -1") {
-            return "Playback could not continue after the app moved to the background."
+            return "Speaking could not continue after the app moved to the background."
         }
 
         return lastErrorMessage

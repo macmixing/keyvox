@@ -52,6 +52,17 @@ extension TTSManager {
     }
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
+        if canReplayExistingAsset(for: request) {
+            Self.log(
+                "Reusing replayable asset for id=\(request.id.uuidString) voice=\(request.voiceID) source=\(request.sourceSurface.rawValue) textLength=\(request.trimmedText.count)"
+            )
+            if isActive {
+                await stopPlayback()
+            }
+            replayLastPlayback()
+            return
+        }
+
         if isActive {
             await stopPlayback()
         }

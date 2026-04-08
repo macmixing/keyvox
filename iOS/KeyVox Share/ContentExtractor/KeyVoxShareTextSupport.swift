@@ -55,6 +55,17 @@ enum KeyVoxShareTextSupport {
             .joined(separator: "\n\n")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    static func appendIfDistinct(_ text: String, to segments: inout [String], seenComparisons: inout Set<String>) {
+        guard let normalized = normalizeText(text),
+              let comparison = normalizedComparisonText(for: normalized),
+              seenComparisons.contains(comparison) == false else {
+            return
+        }
+
+        seenComparisons.insert(comparison)
+        segments.append(normalized)
+    }
 }
 
 enum KeyVoxShareDirectTextExtractor {
@@ -66,17 +77,26 @@ enum KeyVoxShareDirectTextExtractor {
 
     static func extractText(from items: [NSExtensionItem]) async -> String {
         var segments: [String] = []
+        var seenComparisons: Set<String> = []
 
         for item in items {
             if let attributedString = item.attributedContentText?.string,
                let normalized = KeyVoxShareTextSupport.normalizeText(attributedString) {
                 KeyVoxShareContentExtractorDiagnostics.log("Found attributedContentText length=\(normalized.count).")
-                segments.append(normalized)
+                KeyVoxShareTextSupport.appendIfDistinct(
+                    normalized,
+                    to: &segments,
+                    seenComparisons: &seenComparisons
+                )
             }
 
             for provider in item.attachments ?? [] {
                 if let text = await loadText(from: provider) {
-                    segments.append(text)
+                    KeyVoxShareTextSupport.appendIfDistinct(
+                        text,
+                        to: &segments,
+                        seenComparisons: &seenComparisons
+                    )
                 }
             }
         }

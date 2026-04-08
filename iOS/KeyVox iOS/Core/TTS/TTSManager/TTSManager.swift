@@ -29,6 +29,7 @@ final class TTSManager: ObservableObject {
     let playbackCoordinator: TTSPlaybackCoordinator
     let purchaseGate: any TTSPurchaseGating
     let replayCache: TTSReplayCache
+    let forceRegenerationForMatchingTranscript: Bool
     let clipboardTextProvider: @MainActor () -> String?
     let effectiveVoiceProvider: @MainActor () -> AppSettingsStore.TTSVoice
     let onNewGenerationPlaybackStarted: @MainActor () -> Void
@@ -41,6 +42,7 @@ final class TTSManager: ObservableObject {
     var shouldPersistPlaybackPreparationViewUntilBackground = false
     var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     var backgroundTaskReleaseTask: Task<Void, Never>?
+    var fastModeBackgroundSafetyTask: Task<Void, Never>?
     var onWillTeardownPlayback: (() async -> Void)?
 
     var shouldPreventIdleSleep: Bool {
@@ -76,6 +78,27 @@ final class TTSManager: ObservableObject {
         return nil
     }
 
+    var isFastModeToggleLocked: Bool {
+        guard activeRequest != nil else { return false }
+        guard isReplayingCachedPlayback == false else { return false }
+        return isCurrentRequestReplayReady == false
+    }
+
+    func canReplayExistingAsset(for request: KeyVoxTTSRequest) -> Bool {
+        guard forceRegenerationForMatchingTranscript == false else {
+            return false
+        }
+
+        guard hasReplayablePlayback,
+              let lastReplayableRequest else {
+            return false
+        }
+
+        return lastReplayableRequest.kind == request.kind
+            && lastReplayableRequest.voiceID == request.voiceID
+            && lastReplayableRequest.trimmedText == request.trimmedText
+    }
+
     init(
         settingsStore: AppSettingsStore,
         appHaptics: AppHapticsEmitting,
@@ -83,6 +106,7 @@ final class TTSManager: ObservableObject {
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator,
         purchaseGate: any TTSPurchaseGating,
+        forceRegenerationForMatchingTranscript: Bool = false,
         replayCache: TTSReplayCache? = nil,
         clipboardTextProvider: (@MainActor () -> String?)? = nil,
         effectiveVoiceProvider: (@MainActor () -> AppSettingsStore.TTSVoice)? = nil,
@@ -94,6 +118,7 @@ final class TTSManager: ObservableObject {
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
         self.purchaseGate = purchaseGate
+        self.forceRegenerationForMatchingTranscript = forceRegenerationForMatchingTranscript
         self.replayCache = replayCache ?? TTSReplayCache()
         self.clipboardTextProvider = clipboardTextProvider ?? { UIPasteboard.general.string }
         self.effectiveVoiceProvider = effectiveVoiceProvider ?? { settingsStore.ttsVoice }
@@ -137,8 +162,7 @@ final class TTSManager: ObservableObject {
             )
         }
         playbackCoordinator.onFastModeBackgroundSafetyChanged = { [weak self] progress, isSafe in
-            self?.fastModeBackgroundSafetyProgress = progress
-            self?.isFastModeBackgroundSafe = isSafe
+            self?.handleFastModeBackgroundSafetyChanged(progress: progress, isSafe: isSafe)
         }
         playbackCoordinator.onReplayablePlaybackReady = { [weak self] in
             self?.handleReplayablePlaybackReady()

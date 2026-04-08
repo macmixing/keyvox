@@ -98,7 +98,7 @@ extension HomeTabView {
                 if showsTTSPreparationSlot {
                     VStack(alignment: .leading, spacing: 8) {
                         ProgressView(value: ttsManager.playbackPreparationProgress)
-                            .progressViewStyle(KeyVoxProgressStyle())
+                            .progressViewStyle(KeyVoxProgressStyle(fillColor: ttsPreparationProgressColor))
                             .frame(height: 12)
                     }
                     .opacity(isTTSPreparationVisible ? 1 : 0)
@@ -129,5 +129,9 @@ extension HomeTabView {
         .onDisappear {
             ttsPreparationCollapseTask?.cancel()
         }
+    }
+
+    private var ttsPreparationProgressColor: Color {
+        settingsStore.fastPlaybackModeEnabled ? .yellow : AppTheme.accent
     }
 }

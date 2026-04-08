@@ -85,6 +85,8 @@ extension TTSManager {
         clearPublishedState: Bool = true,
         clearSharedTransportState: Bool = true
     ) {
+        fastModeBackgroundSafetyTask?.cancel()
+        fastModeBackgroundSafetyTask = nil
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
@@ -201,6 +203,29 @@ extension TTSManager {
     func resetPlaybackPreparationState() {
         playbackPreparationProgress = 0
         playbackPreparationPhase = .preparing
+    }
+
+    func handleFastModeBackgroundSafetyChanged(progress: Double, isSafe: Bool) {
+        fastModeBackgroundSafetyProgress = progress
+
+        if isSafe == false {
+            fastModeBackgroundSafetyTask?.cancel()
+            fastModeBackgroundSafetyTask = nil
+            isFastModeBackgroundSafe = false
+            return
+        }
+
+        guard isFastModeBackgroundSafe == false else { return }
+        guard fastModeBackgroundSafetyTask == nil else { return }
+
+        fastModeBackgroundSafetyTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard let self else { return }
+            guard Task.isCancelled == false else { return }
+
+            self.isFastModeBackgroundSafe = true
+            self.fastModeBackgroundSafetyTask = nil
+        }
     }
 
     func restoreReplayablePlaybackIfNeeded() {

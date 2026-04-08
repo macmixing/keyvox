@@ -157,6 +157,7 @@ final class AppServiceRegistry {
             engine: ttsEngine,
             playbackCoordinator: ttsPlaybackCoordinator,
             purchaseGate: ttsPurchaseController,
+            forceRegenerationForMatchingTranscript: runtimeFlags.forceTTSRegeneration,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
                 guard let settingsStore else { return .alba }
                 guard let pocketTTSModelManager else { return settingsStore.ttsVoice }

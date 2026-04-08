@@ -44,6 +44,7 @@ extension TTSPlaybackCoordinator {
         stop(emitCallback: false)
         Self.log("Playback requested. fastMode=\(fastModeEnabled)")
         playbackSessionID = UUID()
+        let sessionID = playbackSessionID
 
         do {
             try configureAudioSession()
@@ -90,11 +91,14 @@ extension TTSPlaybackCoordinator {
                 for try await frame in stream {
                     guard Task.isCancelled == false else { return }
                     await MainActor.run {
+                        guard self.playbackSessionID == sessionID else { return }
                         self.schedule(frame)
                     }
                 }
 
+                guard Task.isCancelled == false else { return }
                 await MainActor.run {
+                    guard self.playbackSessionID == sessionID else { return }
                     self.isFinishing = true
                     self.replayablePlaybackSamples = self.activePlaybackSamples
                     Self.log("Playback stream finished. queuedBuffers=\(self.queuedBufferCount) queuedSamples=\(self.queuedSampleCount)")
@@ -103,6 +107,7 @@ extension TTSPlaybackCoordinator {
                 }
             } catch {
                 await MainActor.run {
+                    guard self.playbackSessionID == sessionID else { return }
                     Self.log("Playback stream failed: \(error.localizedDescription)")
                     self.handleFailure(error)
                 }

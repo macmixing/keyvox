@@ -91,6 +91,7 @@ extension HomeTabView {
             && currentPlaybackTranscriptText.isEmpty == false
             && (
                 isTTSPreparationPresentationActive == false
+                || showsTTSPreparationProgress
                 || showsTTSTranscriptPanelContainer
                 || isTTSTranscriptPanelContentVisible
             )

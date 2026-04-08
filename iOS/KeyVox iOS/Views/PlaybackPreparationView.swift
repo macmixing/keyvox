@@ -102,14 +102,14 @@ struct PlaybackPreparationView: View {
         case .preparing:
             return "Stay Here,"
         case .readyToReturn:
-            return "Playback Is"
+            return "Speak Is"
         }
     }
 
     private var primaryHeadlineLineTwo: String {
         switch ttsManager.playbackPreparationPhase {
         case .preparing:
-            return "we're getting it ready."
+            return "Speak is almost ready."
         case .readyToReturn:
             return "ready to go."
         }
@@ -118,7 +118,7 @@ struct PlaybackPreparationView: View {
     private var statusTitle: String {
         switch ttsManager.playbackPreparationPhase {
         case .preparing:
-            return "Preparing playback..."
+            return "Preparing to Speak..."
         case .readyToReturn:
             return "Return to your app."
         }
@@ -127,9 +127,9 @@ struct PlaybackPreparationView: View {
     private var statusBody: String {
         switch ttsManager.playbackPreparationPhase {
         case .preparing:
-            return "Wait here while KeyVox renders enough audio to keep playback smooth."
+            return "Wait here while KeyVox prepares to speak without interruptions."
         case .readyToReturn:
-            return "Playback has started. Go back to your original app and keep listening there."
+            return "Speak has started. Go back to your original app and keep listening there."
         }
     }
 

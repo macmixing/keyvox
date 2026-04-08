@@ -9,8 +9,8 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     static let fastModeMinimumCoverageSeconds: Double = 1.35
     static let fastModeLongFormMinimumCoverageSeconds: Double = 2.4
     static let fastModeUltraLongFormMinimumCoverageSeconds: Double = 3.2
-    static let fastModeLongFormStartupLeadRatio: Double = 0.25
-    static let fastModeUltraLongFormStartupLeadRatio: Double = 0.35
+    static let fastModeLongFormStartupLeadRatio: Double = 0.28
+    static let fastModeUltraLongFormStartupLeadRatio: Double = 0.34
     static let conservativeForegroundRealtimeFactor: Double = 0.88
     static let longFormForegroundRealtimeFactor: Double = 0.62
     static let ultraLongFormForegroundRealtimeFactor: Double = 0.56
@@ -25,6 +25,8 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     static let longFormBackgroundRealtimeFactor: Double = 0.52
     static let ultraLongFormBackgroundRealtimeFactor: Double = 0.42
     static let maximumBaseDeterministicRunwaySeconds: Double = 90.0
+    static let longFormMaximumDeterministicRunwaySeconds: Double = 140.0
+    static let ultraLongFormMaximumDeterministicRunwaySeconds: Double = 170.0
     static let preparationCompletionDelaySeconds: Double = 0.5
 
     static func normalModeRequiredStartSampleCount(sampleRate: Double, chunkCount: Int) -> Int {
@@ -243,6 +245,13 @@ enum TTSPlaybackCoordinatorBufferingPolicy {
     }
 
     static func maximumDeterministicRunwaySeconds(for chunkCount: Int) -> Double {
-        maximumBaseDeterministicRunwaySeconds
+        switch chunkCount {
+        case (ultraLongFormChunkThreshold + 1)...:
+            return ultraLongFormMaximumDeterministicRunwaySeconds
+        case (longFormChunkThreshold + 1)...:
+            return longFormMaximumDeterministicRunwaySeconds
+        default:
+            return maximumBaseDeterministicRunwaySeconds
+        }
     }
 }

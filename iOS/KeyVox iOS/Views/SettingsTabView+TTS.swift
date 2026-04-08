@@ -56,7 +56,9 @@ extension SettingsTabView {
                     if supportsTTSExpansion {
                         Button {
                             appHaptics.light()
-                            isTTSSectionExpanded.toggle()
+                            withAnimation(Self.sectionExpansionAnimation) {
+                                isTTSSectionExpanded.toggle()
+                            }
                         } label: {
                             Image(systemName: isTTSSectionExpanded ? "chevron.down" : "chevron.right")
                                 .font(.system(size: 28, weight: .heavy))
@@ -71,7 +73,6 @@ extension SettingsTabView {
                 ttsExpandedContent
                     .frame(height: shouldShowExpandedTTSContent ? ttsExpandedContentHeight : 0, alignment: .top)
                     .clipped()
-                    .opacity(shouldShowExpandedTTSContent ? 1 : 0)
                     .allowsHitTesting(shouldShowExpandedTTSContent)
                     .accessibilityHidden(!shouldShowExpandedTTSContent)
                     .background(alignment: .top) {
@@ -86,8 +87,6 @@ extension SettingsTabView {
                 ttsUnlockRow
             }
         }
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedTTSContent)
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: ttsExpandedContentHeight)
     }
 
     @ViewBuilder

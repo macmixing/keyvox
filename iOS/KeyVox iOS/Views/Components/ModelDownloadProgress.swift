@@ -23,6 +23,8 @@ struct ModelDownloadProgress: View {
 }
 
 struct KeyVoxProgressStyle: ProgressViewStyle {
+    var fillColor: Color = AppTheme.accent
+
     func makeBody(configuration: Configuration) -> some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
@@ -31,9 +33,9 @@ struct KeyVoxProgressStyle: ProgressViewStyle {
 
                 if let progress = configuration.fractionCompleted {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(AppTheme.accent)
+                        .fill(fillColor)
                         .frame(width: geometry.size.width * CGFloat(progress))
-                        .shadow(color: AppTheme.accent.opacity(0.5), radius: 3)
+                        .shadow(color: fillColor.opacity(0.5), radius: 3)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: progress)
                 }
             }

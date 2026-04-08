@@ -101,7 +101,7 @@ enum PocketTTSTextNormalizer {
         )
         sanitized = sanitized.replacingOccurrences(
             of: ":",
-            with: " "
+            with: ". "
         )
         sanitized = sanitized.replacingOccurrences(
             of: versionPattern,

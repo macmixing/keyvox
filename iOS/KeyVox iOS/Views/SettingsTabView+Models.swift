@@ -59,7 +59,9 @@ extension SettingsTabView {
 
                     Button {
                         appHaptics.light()
-                        isModelSectionExpanded.toggle()
+                        withAnimation(Self.sectionExpansionAnimation) {
+                            isModelSectionExpanded.toggle()
+                        }
                     } label: {
                         Image(systemName: isModelSectionExpanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: 28, weight: .heavy))
@@ -73,7 +75,6 @@ extension SettingsTabView {
                 modelExpandedContent
                     .frame(height: shouldShowExpandedModelContent ? modelExpandedContentHeight : 0, alignment: .top)
                     .clipped()
-                    .opacity(shouldShowExpandedModelContent ? 1 : 0)
                     .allowsHitTesting(shouldShowExpandedModelContent)
                     .accessibilityHidden(!shouldShowExpandedModelContent)
                     .background(alignment: .top) {
@@ -83,8 +84,6 @@ extension SettingsTabView {
                     }
             }
         }
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: shouldShowExpandedModelContent)
-        .animation(.spring(response: 0.42, dampingFraction: 0.84), value: modelExpandedContentHeight)
     }
 
     @ViewBuilder

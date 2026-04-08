@@ -130,7 +130,11 @@ struct AppRootView: View {
     }
 
     private var shouldSkipRootTransition: Bool {
-        previousDestination == .launchHold
+        if destination == .playbackPreparation {
+            return true
+        }
+
+        return previousDestination == .launchHold
             && (destination == .onboarding || destination == .main)
     }
 

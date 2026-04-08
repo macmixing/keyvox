@@ -6,6 +6,7 @@ struct AppToolbarContent: ToolbarContent {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @EnvironmentObject private var settingsStore: AppSettingsStore
+    @EnvironmentObject private var ttsManager: TTSManager
     @State private var previousIsSessionEnabled: Bool?
     @State private var pendingToolbarToggleTarget: Bool?
     @State private var previousIsFastModeEnabled: Bool?
@@ -157,10 +158,13 @@ struct AppToolbarContent: ToolbarContent {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
         }
+        .allowsHitTesting(ttsManager.isFastModeToggleLocked == false)
         .accessibilityLabel(settingsStore.fastPlaybackModeEnabled ? "Disable fast playback" : "Enable fast playback")
     }
 
     private func toggleFastMode() {
+        guard ttsManager.isFastModeToggleLocked == false else { return }
+
         if settingsStore.fastPlaybackModeEnabled {
             pendingFastModeToggleTarget = false
         } else {

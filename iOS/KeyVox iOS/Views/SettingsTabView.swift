@@ -14,6 +14,8 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     
+    static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
+    
     private var appVersionBuildText: String? {
         guard
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
@@ -64,7 +66,9 @@ struct SettingsTabView: View {
             }()
 
             if wasReady == false && isReady {
-                isTTSSectionExpanded = true
+                withAnimation(Self.sectionExpansionAnimation) {
+                    isTTSSectionExpanded = true
+                }
             }
         }
     }
