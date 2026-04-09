@@ -11,6 +11,7 @@ struct HomeTabView: View {
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationVisible = false
+    @State var ttsPreparationRevealToken = UUID()
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
     @State var showsTTSTranscriptPanelContainer = false
     @State var isTTSTranscriptPanelContentVisible = false
@@ -41,6 +42,8 @@ struct HomeTabView: View {
             updateTTSTranscriptPresentation()
         }
         .onDisappear {
+            ttsPreparationRevealToken = UUID()
+            ttsPreparationCollapseTask?.cancel()
             ttsTranscriptRevealTask?.cancel()
             ttsTranscriptCollapseTask?.cancel()
         }
