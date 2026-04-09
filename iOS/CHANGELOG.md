@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
-## [1.0.1] Build 3 - TestFlight - 2026-04-09
+## [1.0.1] Build 3 - App Store - 2026-04-09
 
 Polishes the iOS release branch with a more stable first-open keyboard layout, fully visible symbol popups on compact devices, and more responsive live input meter updates during recording startup.
 
@@ -21,7 +21,7 @@ Polishes the iOS release branch with a more stable first-open keyboard layout, f
 - Fixed the initial iOS keyboard presentation so first-open layout state applies cleanly and the cancel control visibility no longer destabilizes the release keyboard layout.
 - Fixed stale live meter samples during cold-start recording handoff so the keyboard indicator receives live input updates sooner.
 
-## [1.0.0] Build 15 - Test Flight - 2026-04-05
+## [1.0.0] Build 15 - App Store - 2026-04-05
 
 Introduces KeyVox Speak to the iOS beta with local copied-text playback, PocketTTS model management, official shortcut routing, and the first pass of the new unlock and feature-discovery flow.
 
