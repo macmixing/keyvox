@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/macmixing/keyvox/releases/latest"><img src="https://img.shields.io/github/v/release/macmixing/keyvox?label=macOS&color=navy" alt="macOS Release"></a>
-  <a href="https://test.keyvox.app"><img src="https://img.shields.io/badge/iOS-TestFlight-navy" alt="iOS TestFlight"></a>
+  <a href="https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964"><img src="https://img.shields.io/badge/iOS-App%20Store-navy" alt="iOS App Store"></a>
   <img src="https://img.shields.io/badge/macOS-13.5%2B-FFCC00" alt="macOS 13.5+">
   <img src="https://img.shields.io/badge/iOS-18%2B-FFCC00" alt="iOS 18+">
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
@@ -103,36 +103,12 @@ iOS
 
 KeyVox Speak brings local AI text-to-speech to iPhone, letting you copy text and hear it spoken aloud with natural-sounding voices powered by on-device PocketTTS.
 
-### What is KeyVox Speak?
-
-**Copy text. Hear it speak.** KeyVox Speak is a text-to-speech feature that runs entirely on your device using local AI voices. No cloud processing, no data sent anywhere—just fast, private playback of any text you copy.
-
-### How to Access Speak
-
-KeyVox Speak is available from multiple places on iPhone:
-
-- **Home Tab**: Tap the Speak button from the main screen
-- **Keyboard Shortcut**: Trigger directly from the KeyVox keyboard
-- **Share to Speak**: Share text, URLs, or images with text from any app
-- **Shortcuts & Actions**: Map to Action Button or Control Center for quick access
-
-### Fast Mode
-
-Fast Mode starts speaking ~50% faster by skipping the initial voice warm-up. Toggle Fast Mode in the Speak toolbar when you need instant playback.
-
-### Free to Start
-
-KeyVox Speak is free to try with 2 speaks per day. Install the Alba voice (~19 MB) and start speaking right away. You can download up to 8 total voices in Settings.
-
-To unlock unlimited speaks, purchase KeyVox Speak access once and use it across all your devices on the same Apple account.
-
 ### Requirements
 
 - **PocketTTS CoreML** (~642 MB): The shared AI engine that powers all voices
 - **Voice files** (~17-19 MB each): Individual voice models like Alba, Azelma, Cosette, and more
 
 Both components install on-device and run locally with no internet connection required for playback.
-
 
 ## Troubleshooting
 
