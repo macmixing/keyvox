@@ -94,9 +94,11 @@ struct AppRootView: View {
             previousDestination = destination
             onboardingOverlayState = destination == .onboarding ? .visible : .hidden
             onboardingOverlayOpacity = 1
+            updateKeyVoxSpeakIntroPresentation(for: destination)
         }
         .onChange(of: destination, initial: false) { oldValue, newValue in
             previousDestination = oldValue
+            updateKeyVoxSpeakIntroPresentation(for: newValue)
 
             if newValue == .onboarding {
                 onboardingOverlayState = .visible
@@ -118,6 +120,11 @@ struct AppRootView: View {
                 onboardingOverlayOpacity = 1
             }
         }
+        .onChange(of: onboardingStore.hasCompletedOnboardingThisLaunch, initial: false) { _, newValue in
+            guard newValue else { return }
+            keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+            keyVoxSpeakIntroController.cancelPendingPresentation()
+        }
         .animation(rootAnimation, value: destination)
     }
 
@@ -136,6 +143,14 @@ struct AppRootView: View {
 
         return previousDestination == .launchHold
             && (destination == .onboarding || destination == .main)
+    }
+
+    private func updateKeyVoxSpeakIntroPresentation(for destination: RootDestination) {
+        if destination == .main && onboardingStore.hasCompletedOnboardingThisLaunch == false {
+            keyVoxSpeakIntroController.schedulePresentationIfEligible()
+        } else {
+            keyVoxSpeakIntroController.cancelPendingPresentation()
+        }
     }
 
 }

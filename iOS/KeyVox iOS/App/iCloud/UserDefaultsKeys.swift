@@ -25,7 +25,7 @@ nonisolated enum UserDefaultsKeys {
         static let hasPendingKeyboardTour = "KeyVox.App.HasPendingKeyboardTour"
         static let hasSeenKeyVoxSpeakIntro = "KeyVox.App.HasSeenKeyVoxSpeakIntro"
         static let hasUsedKeyVoxSpeak = "KeyVox.App.HasUsedKeyVoxSpeak"
-        static let keyVoxSpeakEligibleOpenCount = "KeyVox.App.KeyVoxSpeakEligibleOpenCount"
+        static let shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch = "KeyVox.App.ShouldShowKeyVoxSpeakIntroOnNextEligibleLaunch"
     }
 
     enum iCloud {
