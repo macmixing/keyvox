@@ -206,8 +206,8 @@ final class TTSSystemPlaybackController {
         isPlaying: Bool,
         canSeek: Bool
     ) {
-        commandCenter.playCommand.isEnabled = isActive
-        commandCenter.pauseCommand.isEnabled = isActive
+        commandCenter.playCommand.isEnabled = isActive && isPlaying == false
+        commandCenter.pauseCommand.isEnabled = isActive && isPlaying
         commandCenter.togglePlayPauseCommand.isEnabled = isActive
         commandCenter.changePlaybackPositionCommand.isEnabled = isActive && canSeek
         Self.log(
