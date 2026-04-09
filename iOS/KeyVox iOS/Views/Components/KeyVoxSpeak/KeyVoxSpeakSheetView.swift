@@ -5,6 +5,7 @@ struct KeyVoxSpeakSheetView: View {
         case a
         case b
         case c
+        case unlock
     }
 
     enum Mode {
@@ -22,6 +23,24 @@ struct KeyVoxSpeakSheetView: View {
 
     let mode: Mode
 
+    private var displayedScenes: [Scene] {
+        switch mode {
+        case .intro:
+            [.a, .b, .c]
+        case .unlock:
+            [.unlock, .b]
+        }
+    }
+
+    private var initialScene: Scene {
+        switch mode {
+        case .intro:
+            .a
+        case .unlock:
+            .unlock
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -36,7 +55,7 @@ struct KeyVoxSpeakSheetView: View {
                         .padding(.bottom, 4)
 
                     TabView(selection: $selectedScene) {
-                        ForEach(Scene.allCases, id: \.self) { scene in
+                        ForEach(displayedScenes, id: \.self) { scene in
                             sceneView(for: scene)
                                 .tag(scene)
                         }
@@ -88,6 +107,7 @@ struct KeyVoxSpeakSheetView: View {
             .navigationTitle("")
         }
         .onAppear {
+            selectedScene = initialScene
             startButtonAnimation()
         }
         .onDisappear {
@@ -136,6 +156,8 @@ struct KeyVoxSpeakSheetView: View {
                 purchaseSummaryText: ttsPurchaseSummaryText,
                 isVisible: selectedScene == .c
             )
+        case .unlock:
+            KeyVoxSpeakUnlockScene(isVisible: selectedScene == .unlock)
         }
     }
 

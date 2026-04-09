@@ -95,7 +95,11 @@ struct KeyVoxApp: App {
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
-                        keyVoxSpeakIntroController.handleAppDidBecomeActive(onboardingStore: onboardingStore)
+                        keyVoxSpeakIntroController.handleAppDidBecomeActive(
+                            onboardingStore: onboardingStore,
+                            isShowingReturnToHost: transcriptionManager.isReturnToHostViewPresented
+                                || appLaunchRouteStore.initialURLRoute == .startRecording
+                        )
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         ttsManager.handleAppDidEnterBackground()

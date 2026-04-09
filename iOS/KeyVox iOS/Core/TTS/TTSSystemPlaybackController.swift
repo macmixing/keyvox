@@ -103,6 +103,8 @@ final class TTSSystemPlaybackController {
         }
 
         nowPlayingInfoCenter.nowPlayingInfo = info
+        nowPlayingInfoCenter.playbackState = isPlaying ? .playing : .paused
+
         Self.log(
             "Published now playing info titleLength=\(title.count) voice=\(voiceName ?? "nil") isPlaying=\(isPlaying) isReplay=\(isReplay) elapsed=\(String(format: "%.2f", elapsed)) duration=\(duration.map { String(format: "%.2f", $0) } ?? "nil")"
         )

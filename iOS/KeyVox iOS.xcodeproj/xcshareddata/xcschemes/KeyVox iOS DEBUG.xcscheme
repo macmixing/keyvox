@@ -86,7 +86,7 @@
          <EnvironmentVariable
             key = "KEYVOX_FORCE_TTS_REGENERATION"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <StoreKitConfigurationFileReference

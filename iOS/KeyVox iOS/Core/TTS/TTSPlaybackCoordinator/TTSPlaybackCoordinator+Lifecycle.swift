@@ -135,6 +135,7 @@ extension TTSPlaybackCoordinator {
             deactivateAudioSessionIfNeeded()
         } else {
             playerNode.pause()
+            audioEngine.pause()
             deactivateAudioSessionIfNeeded()
         }
         isPaused = true

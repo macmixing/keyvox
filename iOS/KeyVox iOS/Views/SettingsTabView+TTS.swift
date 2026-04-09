@@ -171,6 +171,11 @@ extension SettingsTabView {
                 .font(.appFont(14, variant: .light))
                 .foregroundStyle(.white.opacity(0.7))
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("Speak currently supports English only.")
+                .font(.appFont(13, variant: .light))
+                .foregroundStyle(.yellow.opacity(0.7))
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 

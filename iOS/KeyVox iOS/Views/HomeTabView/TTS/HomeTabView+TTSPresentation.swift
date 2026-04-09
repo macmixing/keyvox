@@ -1,6 +1,10 @@
 import SwiftUI
 
 extension HomeTabView {
+    private var ttsPreparationRevealDelaySeconds: Double {
+        0.5
+    }
+
     @ViewBuilder
     var ttsVoiceShortcutLabel: some View {
         if showsHomePlaybackVoiceShortcut == false {
@@ -123,11 +127,13 @@ extension HomeTabView {
     }
 
     func syncTTSPreparationPresentation() {
+        ttsPreparationRevealToken = UUID()
         showsTTSPreparationSlot = showsTTSPreparationProgress
         isTTSPreparationVisible = showsTTSPreparationProgress
     }
 
     func updateTTSPreparationPresentation() {
+        ttsPreparationRevealToken = UUID()
         ttsPreparationCollapseTask?.cancel()
 
         if showsTTSPreparationProgress {
@@ -135,8 +141,18 @@ extension HomeTabView {
                 showsTTSPreparationSlot = true
             }
 
-            withAnimation(.easeOut(duration: 0.14)) {
-                isTTSPreparationVisible = true
+            if isTTSPreparationVisible == false {
+                let revealToken = UUID()
+                ttsPreparationRevealToken = revealToken
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + ttsPreparationRevealDelaySeconds) {
+                    guard ttsPreparationRevealToken == revealToken else { return }
+                    guard showsTTSPreparationProgress else { return }
+
+                    withAnimation(.easeOut(duration: 0.14)) {
+                        isTTSPreparationVisible = true
+                    }
+                }
             }
             return
         }

@@ -22,6 +22,7 @@ struct KeyVoxSpeakSceneBView: View {
     @State private var headerOpacity: Double = 0
     @State private var rowRevealProgress: Int = 0
     @State private var fastModeCardOpacity: Double = 0
+    @State private var disclosureOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
@@ -65,6 +66,13 @@ struct KeyVoxSpeakSceneBView: View {
 
                     fastModeCard
                         .opacity(fastModeCardOpacity)
+
+                    Text("Speak currently supports English only.")
+                        .font(.appFont(13, variant: .light))
+                        .foregroundStyle(.yellow.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 10)
+                        .opacity(disclosureOpacity)
 
                     Spacer(minLength: 16)
                 }
@@ -164,6 +172,7 @@ struct KeyVoxSpeakSceneBView: View {
         headerOpacity = 0
         rowRevealProgress = 0
         fastModeCardOpacity = 0
+        disclosureOpacity = 0
 
         animationTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.15))
@@ -195,6 +204,13 @@ struct KeyVoxSpeakSceneBView: View {
 
             withAnimation(.easeOut(duration: 0.35)) {
                 fastModeCardOpacity = 1
+            }
+
+            try? await Task.sleep(for: .seconds(0.14))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.3)) {
+                disclosureOpacity = 1
             }
         }
     }
