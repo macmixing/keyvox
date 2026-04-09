@@ -241,6 +241,7 @@ extension TTSManager {
             guard Task.isCancelled == false else { return }
 
             self.isFastModeBackgroundSafe = true
+            self.appHaptics.medium()
             self.fastModeBackgroundSafetyTask = nil
         }
     }
