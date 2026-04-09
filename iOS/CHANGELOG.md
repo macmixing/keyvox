@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.1] Build 3 - TestFlight - 2026-04-09
+
+Polishes the iOS release branch with a more stable first-open keyboard layout, fully visible symbol popups on compact devices, and more responsive live input meter updates during recording startup.
+
+### Changed
+
+- Updated keyboard symbol popup sizing to account for rendered label content and shared popup padding instead of relying on key width alone.
+- Moved shared live meter publication to the audio tap path before the recorder's `MainActor` UI update hop.
+
+### Fixed
+
+- Fixed symbol popup placement so edge keys such as `@` stay fully visible instead of clipping against the keyboard bounds on compact devices.
+- Fixed the initial iOS keyboard presentation so first-open layout state applies cleanly and the cancel control visibility no longer destabilizes the release keyboard layout.
+- Fixed stale live meter samples during cold-start recording handoff so the keyboard indicator receives live input updates sooner.
+
 ## [1.0.0] Build 11 - TestFlight - 2026-04-01
 
 Improves iOS keyboard launch stability by removing a crash-prone microphone logo rendering path that could prevent the keyboard from appearing for some users.
