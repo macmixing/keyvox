@@ -103,6 +103,8 @@ final class TTSSystemPlaybackController {
         }
 
         nowPlayingInfoCenter.nowPlayingInfo = info
+        nowPlayingInfoCenter.playbackState = isPlaying ? .playing : .paused
+
         Self.log(
             "Published now playing info titleLength=\(title.count) voice=\(voiceName ?? "nil") isPlaying=\(isPlaying) isReplay=\(isReplay) elapsed=\(String(format: "%.2f", elapsed)) duration=\(duration.map { String(format: "%.2f", $0) } ?? "nil")"
         )
@@ -131,24 +133,36 @@ final class TTSSystemPlaybackController {
     private func configureRemoteCommands() {
         playTarget = commandCenter.playCommand.addTarget { [weak self] _ in
             Self.log("Received remote play command.")
-            Task { @MainActor [weak self] in
+            if Thread.isMainThread {
                 self?.onPlay?()
+            } else {
+                DispatchQueue.main.sync {
+                    self?.onPlay?()
+                }
             }
             return .success
         }
 
         pauseTarget = commandCenter.pauseCommand.addTarget { [weak self] _ in
             Self.log("Received remote pause command.")
-            Task { @MainActor [weak self] in
+            if Thread.isMainThread {
                 self?.onPause?()
+            } else {
+                DispatchQueue.main.sync {
+                    self?.onPause?()
+                }
             }
             return .success
         }
 
         togglePlayPauseTarget = commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
             Self.log("Received remote togglePlayPause command.")
-            Task { @MainActor [weak self] in
+            if Thread.isMainThread {
                 self?.onTogglePlayPause?()
+            } else {
+                DispatchQueue.main.sync {
+                    self?.onTogglePlayPause?()
+                }
             }
             return .success
         }
@@ -161,8 +175,12 @@ final class TTSSystemPlaybackController {
             Self.log(
                 "Received remote changePlaybackPosition command position=\(String(format: "%.2f", positionEvent.positionTime))"
             )
-            Task { @MainActor [weak self] in
+            if Thread.isMainThread {
                 self?.onSeekToTime?(positionEvent.positionTime)
+            } else {
+                DispatchQueue.main.sync {
+                    self?.onSeekToTime?(positionEvent.positionTime)
+                }
             }
             return .success
         }
@@ -188,8 +206,8 @@ final class TTSSystemPlaybackController {
         isPlaying: Bool,
         canSeek: Bool
     ) {
-        commandCenter.playCommand.isEnabled = isActive && isPlaying == false
-        commandCenter.pauseCommand.isEnabled = isActive && isPlaying
+        commandCenter.playCommand.isEnabled = isActive
+        commandCenter.pauseCommand.isEnabled = isActive
         commandCenter.togglePlayPauseCommand.isEnabled = isActive
         commandCenter.changePlaybackPositionCommand.isEnabled = isActive && canSeek
         Self.log(
