@@ -2,6 +2,10 @@ import AVFoundation
 import Foundation
 
 extension TTSManager {
+    private var shouldExposeFinishedReplaySystemPlayback: Bool {
+        state == .finished && hasReplayablePlayback && lastReplayableRequest != nil
+    }
+
     func configureSystemPlaybackController() {
         systemPlaybackController?.onPlay = { [weak self] in
             self?.handleSystemPlayCommand()
@@ -20,13 +24,16 @@ extension TTSManager {
 
     func refreshSystemPlaybackControls() {
         guard let systemPlaybackController else { return }
-        guard state == .playing else {
+        guard state == .playing || shouldExposeFinishedReplaySystemPlayback else {
             Self.log("System playback controls cleared because state=\(state.rawValue)")
             systemPlaybackController.clear()
             return
         }
 
-        let isReplayTransport = isReplayingCachedPlayback || pausedReplaySampleOffset != nil
+        let isReplayTransport =
+            isReplayingCachedPlayback
+            || pausedReplaySampleOffset != nil
+            || shouldExposeFinishedReplaySystemPlayback
         guard let displayText = currentPlaybackDisplayText,
               displayText.isEmpty == false else {
             Self.log("System playback controls cleared because no playback display text was available.")
@@ -42,7 +49,7 @@ extension TTSManager {
         systemPlaybackController.update(
             displayText: displayText,
             voiceName: currentSystemPlaybackVoiceName,
-            isPlaying: isPlaybackPaused == false,
+            isPlaying: state == .playing && isPlaybackPaused == false,
             isReplay: isReplayTransport,
             elapsedSeconds: elapsedSeconds,
             durationSeconds: durationSeconds
@@ -121,6 +128,7 @@ extension TTSManager {
     private func currentSystemPlaybackElapsedSeconds(isReplayTransport: Bool) -> Double {
         let coordinatorElapsed = playbackCoordinator.currentPlaybackSeconds
         guard isReplayTransport else { return coordinatorElapsed }
+        guard shouldExposeFinishedReplaySystemPlayback == false else { return 0 }
         guard isPlaybackPaused, let pausedReplaySampleOffset else { return coordinatorElapsed }
         guard coordinatorElapsed == 0 else { return coordinatorElapsed }
 
