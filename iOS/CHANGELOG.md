@@ -21,6 +21,33 @@ Polishes the iOS release branch with a more stable first-open keyboard layout, f
 - Fixed the initial iOS keyboard presentation so first-open layout state applies cleanly and the cancel control visibility no longer destabilizes the release keyboard layout.
 - Fixed stale live meter samples during cold-start recording handoff so the keyboard indicator receives live input updates sooner.
 
+## [1.0.0] Build 15 - Test Flight - 2026-04-05
+
+Introduces KeyVox Speak to the iOS beta with local copied-text playback, PocketTTS model management, official shortcut routing, and the first pass of the new unlock and feature-discovery flow.
+
+### Added
+
+- KeyVox Speak on iPhone for copied-text text-to-speech using the local PocketTTS runtime.
+- PocketTTS shared-model and voice installation flows in Settings, including on-device voice previews and guided Alba setup for the new KeyVox Speak onboarding surfaces.
+- A dedicated post-onboarding KeyVox Speak introduction flow with swipeable scenes and a unified shared sheet used by both the intro and unlock presentation.
+- Official KeyVox Speak App Shortcut support for starting copied-text speech from the iOS Shortcuts system.
+- Replay transport, scrubber, and last-playback persistence for the most recent KeyVox Speak audio.
+
+### Changed
+
+- Added Home-card PocketTTS install progress so users can see shared-model and voice download state directly from the Speak Copied Text surface.
+- Warm PocketTTS automatically after install once the shared model and selected voice are ready to reduce first-speak cold-start cost.
+- Updated the keyboard Speak key to appear only when PocketTTS is truly ready, using real shared-model and installed-voice availability instead of only saved settings state.
+- Delayed the KeyVox Speak intro until the third true eligible cold start instead of foreground cycling.
+- Renamed the Settings unlock row to `KeyVox Speak Unlimited` and refreshed the iOS engineering notes and code map to match the new Speak surfaces.
+
+### Fixed
+
+- Fixed long-form fast-mode startup budgeting and background-continuation policy so copied-text playback does not start too aggressively and run into foreground or background starvation.
+- Fixed the Home Speak card transcript collapse animation so the transcript content shrinks away before the full card closes.
+- Fixed the keyboard Speak button visibility path so it stays hidden before PocketTTS is ready and reappears after the shared model plus an installed voice are actually available.
+- Fixed the shared KeyVox Speak sheet configuration so the local StoreKit test file resolves the current KeyVox Speak Unlimited product and shows the local price again during Xcode StoreKit testing.
+
 ## [1.0.0] Build 11 - TestFlight - 2026-04-01
 
 Improves iOS keyboard launch stability by removing a crash-prone microphone logo rendering path that could prevent the keyboard from appearing for some users.
