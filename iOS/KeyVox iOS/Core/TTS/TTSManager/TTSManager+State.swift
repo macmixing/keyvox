@@ -130,7 +130,7 @@ extension TTSManager {
         if preserveFinishedSystemPlayback {
             state = .finished
             updateIdleSleepPrevention()
-        } else if clearPublishedState, clearSharedTransportState {
+        } else if clearPublishedState == false, clearSharedTransportState {
             KeyVoxIPCBridge.clearTTSState()
         }
 

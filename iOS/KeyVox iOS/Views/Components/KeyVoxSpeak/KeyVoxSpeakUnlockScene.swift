@@ -50,6 +50,7 @@ struct KeyVoxSpeakUnlockScene: View {
                     LogoBarView(size: 60)
                         .opacity(logoOpacity)
                         .scaleEffect(logoScale)
+                        .scaleEffect(idlePulseScale)
                         .padding(.bottom, 14)
 
                     Text("Get Speak Unlimited")

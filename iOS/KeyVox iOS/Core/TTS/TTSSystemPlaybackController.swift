@@ -133,36 +133,24 @@ final class TTSSystemPlaybackController {
     private func configureRemoteCommands() {
         playTarget = commandCenter.playCommand.addTarget { [weak self] _ in
             Self.log("Received remote play command.")
-            if Thread.isMainThread {
+            Task { @MainActor [weak self] in
                 self?.onPlay?()
-            } else {
-                DispatchQueue.main.sync {
-                    self?.onPlay?()
-                }
             }
             return .success
         }
 
         pauseTarget = commandCenter.pauseCommand.addTarget { [weak self] _ in
             Self.log("Received remote pause command.")
-            if Thread.isMainThread {
+            Task { @MainActor [weak self] in
                 self?.onPause?()
-            } else {
-                DispatchQueue.main.sync {
-                    self?.onPause?()
-                }
             }
             return .success
         }
 
         togglePlayPauseTarget = commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
             Self.log("Received remote togglePlayPause command.")
-            if Thread.isMainThread {
+            Task { @MainActor [weak self] in
                 self?.onTogglePlayPause?()
-            } else {
-                DispatchQueue.main.sync {
-                    self?.onTogglePlayPause?()
-                }
             }
             return .success
         }
@@ -175,12 +163,8 @@ final class TTSSystemPlaybackController {
             Self.log(
                 "Received remote changePlaybackPosition command position=\(String(format: "%.2f", positionEvent.positionTime))"
             )
-            if Thread.isMainThread {
+            Task { @MainActor [weak self] in
                 self?.onSeekToTime?(positionEvent.positionTime)
-            } else {
-                DispatchQueue.main.sync {
-                    self?.onSeekToTime?(positionEvent.positionTime)
-                }
             }
             return .success
         }
