@@ -26,6 +26,24 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected == nil)
     }
 
+    func testIgnoresSpokenVersionPhraseInProse() {
+        let detector = ListPatternDetector()
+        let text = "We're on an update branch which is one point zero point two just so you know."
+
+        let detected = detector.detectList(in: text)
+
+        XCTAssertNil(detected)
+    }
+
+    func testIgnoresSpokenVersionPhraseInSpanishProse() {
+        let detector = ListPatternDetector()
+        let text = "Estamos en una rama de actualización que es uno punto cero punto dos para que lo sepas."
+
+        let detected = detector.detectList(in: text, languageCode: "es")
+
+        XCTAssertNil(detected)
+    }
+
     func testSplitsTrailingCommentaryFromLastListItem() {
         let detector = ListPatternDetector()
         let text = "For today one take the dog out two clean the kitchen three cook dinner tonight and now I can relax"

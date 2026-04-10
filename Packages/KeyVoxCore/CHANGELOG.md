@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-04-09
+
+Version-separator list parsing fix for spoken semantic-version prose.
+
+### Includes
+
+- Updated shared list detection to stop treating spoken version separators like `point zero point` as list cadence inside ordinary prose.
+- Made the version-separator gap heuristic language-aware so non-English transcriptions can still avoid the same false positive path.
+- Added shared-engine regression coverage for English and Spanish spoken version prose that should remain non-list text.
+
+### Notes
+
+- `1.0.2` bumps the tracked engine version for `KeyVoxCore` to cover the shared spoken-version list-detection fix used by both app clients.
+
 ## [1.0.1] - 2026-04-05
 
 Parakeet no-speech confirmation gate for short low-confidence one-shot output.

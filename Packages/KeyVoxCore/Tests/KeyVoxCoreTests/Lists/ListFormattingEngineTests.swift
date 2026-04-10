@@ -20,6 +20,14 @@ final class ListFormattingEngineTests: XCTestCase {
         XCTAssertTrue(output == text)
     }
 
+    func testLeavesSpokenVersionPhraseInProseUnchanged() {
+        let engine = ListFormattingEngine()
+        let text = "We're on an update branch which is one point zero point two just so you know."
+
+        let output = engine.formatIfNeeded(text, renderMode: .multiline)
+        XCTAssertEqual(output, text)
+    }
+
     func testLeavesTextUnchangedWhenNumberingSkipsAhead() {
         let engine = ListFormattingEngine()
         let text = "Need to do this one buy groceries two walk dog four call mom"

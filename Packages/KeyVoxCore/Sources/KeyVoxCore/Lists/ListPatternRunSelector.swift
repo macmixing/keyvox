@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 public struct ListPatternDetection {
     public let run: [ListPatternMarker]
@@ -73,7 +74,7 @@ public struct ListPatternRunSelector {
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
         guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText) else { return nil }
         guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
-        guard hasCredibleRunCadence(run: best, in: nsText) else { return nil }
+        guard hasCredibleRunCadence(run: best, in: nsText, languageCode: languageCode) else { return nil }
         return best
     }
 
@@ -250,11 +251,20 @@ public struct ListPatternRunSelector {
     // Prevent list detection from stretching across long prose spans between
     // markers. For 3+ item runs, allow the cadence to recover after one long
     // first item if later adjacent markers confirm the list flow.
-    private func hasCredibleRunCadence(run: [ListPatternMarker], in nsText: NSString) -> Bool {
+    private func hasCredibleRunCadence(
+        run: [ListPatternMarker],
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
         guard run.count >= 2 else { return true }
 
         let pairCadence = zip(run, run.dropFirst()).map { previous, next in
-            isCredibleAdjacentMarkerCadence(from: previous, to: next, in: nsText)
+            !looksLikeVersionSeparatorGap(
+                from: previous,
+                to: next,
+                in: nsText,
+                languageCode: languageCode
+            ) && isCredibleAdjacentMarkerCadence(from: previous, to: next, in: nsText)
         }
 
         if pairCadence.allSatisfy({ $0 }) {
@@ -302,6 +312,77 @@ public struct ListPatternRunSelector {
             return false
         }
         return true
+    }
+
+    private func looksLikeVersionSeparatorGap(
+        from previous: ListPatternMarker,
+        to next: ListPatternMarker,
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
+        guard next.markerTokenStart > previous.contentStart else { return false }
+        guard !markerHasExplicitDelimiter(previous, in: nsText, languageCode: languageCode) else { return false }
+        guard !markerHasExplicitDelimiter(next, in: nsText, languageCode: languageCode) else { return false }
+
+        let gapRange = NSRange(location: previous.contentStart, length: next.markerTokenStart - previous.contentStart)
+        let gapText = nsText.substring(with: gapRange)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        guard !gapText.isEmpty else { return false }
+
+        let tokenPattern = #"\p{L}+(?:-\p{L}+)?|\d+|[.·]"#
+        let tokenRegex = try? NSRegularExpression(pattern: tokenPattern, options: [])
+        let fullRange = NSRange(location: 0, length: (gapText as NSString).length)
+        let tokenMatches = tokenRegex?.matches(in: gapText, options: [], range: fullRange) ?? []
+        guard tokenMatches.count >= 3 else { return false }
+
+        let tagger = NLTagger(tagSchemes: [.lexicalClass, .language])
+        tagger.string = gapText
+        if let languageCode {
+            let normalizedLanguageCode = languageCode.replacingOccurrences(of: "_", with: "-")
+            if !normalizedLanguageCode.isEmpty,
+               let fullStringRange = Range(fullRange, in: gapText) {
+                tagger.setLanguage(NLLanguage(rawValue: normalizedLanguageCode), range: fullStringRange)
+            }
+        }
+
+        struct VersionGapToken {
+            let text: String
+            let isNumeric: Bool
+            let isConnectorSymbol: Bool
+        }
+
+        let tokens: [VersionGapToken] = tokenMatches.compactMap { match -> VersionGapToken? in
+            let tokenRange = match.range
+            guard tokenRange.location != NSNotFound else { return nil }
+            guard let stringRange = Range(tokenRange, in: gapText) else { return nil }
+            let tokenText = (gapText as NSString).substring(with: tokenRange)
+            let lexicalTag = tagger.tag(at: stringRange.lowerBound, unit: .word, scheme: .lexicalClass).0
+            let isNumeric =
+                lexicalTag == .number ||
+                lexicalTag?.rawValue == "Ordinal" ||
+                Int(tokenText) != nil ||
+                ListPatternMarkerParser.parseLocalizedNumberValue(tokenText, languageCode: languageCode) != nil
+            let isConnectorSymbol = tokenText == "." || tokenText == "·"
+            return VersionGapToken(
+                text: tokenText,
+                isNumeric: isNumeric,
+                isConnectorSymbol: isConnectorSymbol
+            )
+        }
+
+        guard let firstConnector = tokens.first, let lastConnector = tokens.last else { return false }
+        guard !firstConnector.isNumeric, !lastConnector.isNumeric else { return false }
+        guard firstConnector.text == lastConnector.text else { return false }
+
+        let middleTokens = tokens.dropFirst().dropLast()
+        guard !middleTokens.isEmpty else { return false }
+        guard middleTokens.contains(where: \.isNumeric) else { return false }
+
+        return middleTokens.allSatisfy { token in
+            token.isNumeric || token.isConnectorSymbol || token.text == firstConnector.text
+        }
     }
 
     private func shouldPrefer(
