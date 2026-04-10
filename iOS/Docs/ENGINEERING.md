@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-05**
+**Last Updated: 2026-04-09**
 
 ## Design Philosophy
 
@@ -148,6 +148,20 @@ Service ownership rules:
 - Views present state and call actions, but do not become alternate sources of truth.
 - IPC contracts remain centralized in `KeyVoxIPCBridge`.
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
+
+### Containing App Source Layout
+
+`KeyVox iOS/App/` is grouped by responsibility so the composition root stays readable:
+
+- `Lifecycle/` owns the app entry point plus UIKit delegate bridges.
+- `Composition/` owns `AppServiceRegistry` and shared rooted path helpers.
+- `Routing/` owns cold-launch URL capture and route parsing/dispatch.
+- `Integration/` owns App Group and keyboard-bridge contracts.
+- `Feedback/` owns app-scoped haptics and copy-feedback interaction state.
+- `LiveActivity/` owns the ActivityKit mirror layer.
+- `KeyVoxSpeak/` owns the post-onboarding intro controller and copied-text playback purchase gate.
+- `Stats/` owns app-local weekly usage aggregation.
+- `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
 
 ## Root Routing and Onboarding Contract
 
@@ -508,8 +522,14 @@ Cold path:
 
 - audio session category: `.playAndRecord`
 - audio session options: `.defaultToSpeaker`, `.mixWithOthers`, `.allowBluetoothHFP`
-- preferred sample rate: `16000`
-- output format: mono float PCM, non-interleaved
+- active session sample rate: keep the hardware route's native sample rate
+- downstream recorder output format: mono float PCM, non-interleaved, `16000` Hz
+
+Recorder file split:
+
+- `AudioRecorder+Session.swift` owns session setup, engine lifecycle, route recovery, and interruption observation
+- `AudioRecorder+Streaming.swift` owns buffer conversion, accumulation, and live metering
+- `AudioRecorder+StopPipeline.swift` owns stop-time and interruption-time capture finalization plus silence rejection
 
 Bluetooth routing rule:
 

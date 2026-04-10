@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-06**
+**Last Updated: 2026-04-09**
 
 ## Project Overview
 
@@ -29,7 +29,7 @@ The current default runtime flow is:
 
 ## Architecture
 
-- **`KeyVox iOS/`**: app lifecycle, composition root, onboarding state, app haptics, URL routing, App Group storage, iCloud sync, model background downloads, PocketTTS install/runtime ownership, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
+- **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, model background downloads, PocketTTS install/runtime ownership, audio capture, transcription/session management, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
@@ -60,30 +60,32 @@ iOS/
 ├── app-update-policy.json
 ├── KeyVox iOS/
 │   ├── App/
-│   │   ├── CopyFeedbackController.swift
-│   │   ├── AppHaptics.swift
-│   │   ├── AppHapticsDecisions.swift
-│   │   ├── AppLaunchRouteStore.swift
-│   │   ├── AppDelegate.swift
-│   │   ├── AppSceneDelegate.swift
-│   │   ├── AppServiceRegistry.swift
-│   │   ├── KeyVoxIPCBridge.swift
-│   │   ├── KeyVoxKeyboardBridge.swift
-│   │   ├── KeyVoxSpeakIntroController.swift
-│   │   ├── KeyVoxSessionLiveActivityAttributes.swift
-│   │   ├── KeyVoxSessionLiveActivityCoordinator.swift
-│   │   ├── KeyVoxURLRoute.swift
-│   │   ├── KeyVoxURLRouter.swift
-│   │   ├── KeyVoxiOSApp.swift
-│   │   ├── SharedPaths.swift
-│   │   ├── TTSPurchaseController.swift
-│   │   ├── WeeklyWordStatsStore.swift
 │   │   ├── AppUpdate/
 │   │   │   ├── AppUpdateConfiguration.swift
 │   │   │   ├── AppUpdateCoordinator.swift
 │   │   │   ├── AppUpdatePolicy.swift
 │   │   │   ├── AppUpdateService.swift
 │   │   │   └── AppVersion.swift
+│   │   ├── Composition/
+│   │   │   ├── AppServiceRegistry.swift
+│   │   │   └── SharedPaths.swift
+│   │   ├── Feedback/
+│   │   │   ├── AppHaptics.swift
+│   │   │   ├── AppHapticsDecisions.swift
+│   │   │   └── CopyFeedbackController.swift
+│   │   ├── Integration/
+│   │   │   ├── KeyVoxIPCBridge.swift
+│   │   │   └── KeyVoxKeyboardBridge.swift
+│   │   ├── KeyVoxSpeak/
+│   │   │   ├── KeyVoxSpeakIntroController.swift
+│   │   │   └── TTSPurchaseController.swift
+│   │   ├── Lifecycle/
+│   │   │   ├── AppDelegate.swift
+│   │   │   ├── AppSceneDelegate.swift
+│   │   │   └── KeyVoxiOSApp.swift
+│   │   ├── LiveActivity/
+│   │   │   ├── KeyVoxSessionLiveActivityAttributes.swift
+│   │   │   └── KeyVoxSessionLiveActivityCoordinator.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingDownloadNetworkMonitor.swift
 │   │   │   ├── OnboardingKeyboardAccessProbe.swift
@@ -92,9 +94,15 @@ iOS/
 │   │   │   ├── OnboardingSetupState.swift
 │   │   │   ├── OnboardingStore.swift
 │   │   │   └── RuntimeFlags.swift
+│   │   ├── Routing/
+│   │   │   ├── AppLaunchRouteStore.swift
+│   │   │   ├── KeyVoxURLRoute.swift
+│   │   │   └── KeyVoxURLRouter.swift
 │   │   ├── Shortcuts/
 │   │   │   ├── KeyVoxSpeakShortcutIntent.swift
 │   │   │   └── KeyVoxSpeakShortcutsProvider.swift
+│   │   ├── Stats/
+│   │   │   └── WeeklyWordStatsStore.swift
 │   │   └── iCloud/
 │   │       ├── AppSettingsStore.swift
 │   │       ├── UserDefaultsKeys.swift
@@ -386,24 +394,30 @@ Packages/
 
 ### App Lifecycle and Composition
 
-- `KeyVox iOS/App/KeyVoxiOSApp.swift`
+- `KeyVox iOS/App/Lifecycle/KeyVoxiOSApp.swift`
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
   - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, and shortcut-route consumption.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
+- `KeyVox iOS/App/Composition/SharedPaths.swift`
+  - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutIntent.swift`
   - App-owned `Speak Copied Text` App Intent for the official KeyVox Speak shortcut.
   - Stages the existing `keyvoxios://tts/start` route into shared app-group state and relies on the containing app to consume and route it on activation.
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
   - Registers the KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
-- `KeyVox iOS/App/AppDelegate.swift`
+- `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
   - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
-- `KeyVox iOS/App/AppSceneDelegate.swift`
+- `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
   - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
-- `KeyVox iOS/App/AppLaunchRouteStore.swift`
+- `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
-- `KeyVox iOS/App/AppServiceRegistry.swift`
+- `KeyVox iOS/App/Routing/KeyVoxURLRoute.swift`
+  - Typed app route surface for cold-start recording and copied-text playback launches.
+- `KeyVox iOS/App/Routing/KeyVoxURLRouter.swift`
+  - App-owned URL parsing and route dispatch owner for record, TTS, and return-to-host flows.
+- `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, the KeyVox Speak intro controller, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
@@ -412,15 +426,17 @@ Packages/
   - The App Store remains the latest-version source; this file only controls forced-update eligibility.
 - `KeyVox iOS/App/AppUpdate/`
   - Isolated update module for App Store release lookup, policy-manifest fetch, version comparison, cached decision state, cold-launch reminder behavior, and App Store opening.
-- `KeyVox iOS/App/KeyVoxSpeakIntroController.swift`
+- `KeyVox iOS/App/KeyVoxSpeak/KeyVoxSpeakIntroController.swift`
   - App-owned post-onboarding KeyVox Speak intro owner.
   - Tracks whether the intro has been seen, whether the user has already used KeyVox Speak organically, the eligible-open counter for delayed presentation, and the development-only force-presentation path.
-- `KeyVox iOS/App/TTSPurchaseController.swift`
+- `KeyVox iOS/App/KeyVoxSpeak/TTSPurchaseController.swift`
   - App-owned one-time unlock and daily-usage owner for copied-text playback.
   - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
-- `KeyVox iOS/App/AppHaptics.swift`
+- `KeyVox iOS/App/Stats/WeeklyWordStatsStore.swift`
+  - App-owned local weekly usage aggregator consumed by Home, settings-adjacent surfaces, and Live Activity mirroring.
+- `KeyVox iOS/App/Feedback/AppHaptics.swift`
   - App-owned UIKit haptic emitter injected through the SwiftUI environment.
-- `KeyVox iOS/App/AppHapticsDecisions.swift`
+- `KeyVox iOS/App/Feedback/AppHapticsDecisions.swift`
   - Pure decision helpers for onboarding step completion, tab selection, edge-swipe, session-toggle, and dictionary-save haptics.
 
 ### Onboarding and Root Routing
@@ -464,16 +480,16 @@ Packages/
 
 ### Shared State, IPC, and Session Surfaces
 
-- `KeyVox iOS/App/KeyVoxIPCBridge.swift`
+- `KeyVox iOS/App/Integration/KeyVoxIPCBridge.swift`
   - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, and Darwin notification names.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
-- `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
+- `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
-- `KeyVox iOS/App/KeyVoxSessionLiveActivityCoordinator.swift`
+- `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`
   - App-side owner that mirrors session state and weekly-word count into the widget extension through ActivityKit.
-- `KeyVox iOS/App/KeyVoxSessionLiveActivityAttributes.swift`
+- `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift`
   - Shared ActivityKit attributes and content state.
 - `KeyVox Widget/AppIntent.swift`
   - `EndSessionIntent` that posts the shared disable-session Darwin notification.
@@ -536,11 +552,15 @@ Packages/
 - `KeyVox iOS/Core/Audio/AudioRecorder.swift`
   - Public recorder and monitoring surface.
   - Tracks session warmth, meter state, and last capture facts.
+- `KeyVox iOS/Core/Audio/AudioRecorder+Session.swift`
+  - Owns `AVAudioSession` configuration, warm-engine setup, route-recovery retries, interruption observation, and monitoring lifecycle.
+- `KeyVox iOS/Core/Audio/AudioRecorder+Streaming.swift`
+  - Owns input-buffer conversion, capture accumulation, and live meter/signal-state updates.
 - `KeyVox iOS/Core/Audio/AudioBluetoothRoutePolicy.swift`
   - Shared preserved-TTS Bluetooth route-family policy.
   - Maps the built-in microphone setting to the playback route family without changing the recorder baseline warm-session contract.
 - `KeyVox iOS/Core/Audio/AudioRecorder+StopPipeline.swift`
-  - Produces cleaned `StoppedCapture` values and rejects silence before inference.
+  - Owns stop-time and interruption-time capture finalization, produces cleaned `StoppedCapture` values, and rejects silence before inference.
 - `KeyVox iOS/Core/Transcription/DictationService.swift`
   - iOS-local transcription-service abstraction used by the runtime manager.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
@@ -569,7 +589,7 @@ Packages/
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, playback error presentation, and the idle monetization messaging for remaining free speaks or locked state.
   - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
-- `KeyVox iOS/App/CopyFeedbackController.swift`
+- `KeyVox iOS/App/Feedback/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
 - `KeyVox iOS/Views/Components/LastTranscriptionCardView.swift`
   - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
