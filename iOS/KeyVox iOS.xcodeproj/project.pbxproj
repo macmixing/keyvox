@@ -35,6 +35,11 @@
 		8E6B90482F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B90492F5C6C8B00EE4F08 /* KeyVoxIPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */; };
 		8E6B904A2F5C6C8B00EE4F08 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7001022FB1000100BB0001 /* UserDefaultsKeys.swift */; };
+		8E6D28FA2F88B75900655E0A /* AppUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D28F52F88B75900655E0A /* AppUpdateCoordinator.swift */; };
+		8E6D28FB2F88B75900655E0A /* AppUpdateConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D28F42F88B75900655E0A /* AppUpdateConfiguration.swift */; };
+		8E6D28FC2F88B75900655E0A /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D28F72F88B75900655E0A /* AppUpdateService.swift */; };
+		8E6D28FD2F88B75900655E0A /* AppUpdatePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D28F62F88B75900655E0A /* AppUpdatePolicy.swift */; };
+		8E6D28FE2F88B75900655E0A /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D28F82F88B75900655E0A /* AppVersion.swift */; };
 		8E70C9102F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E70C9112F62B1DB00E9E555 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */; };
 		8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
@@ -193,6 +198,11 @@
 		8E32C9562F6A2F1A00F8DA9F /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		8E4CE59B2F6B7F76009C7CE8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxIPCBridge.swift; sourceTree = "<group>"; };
+		8E6D28F42F88B75900655E0A /* AppUpdateConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateConfiguration.swift; sourceTree = "<group>"; };
+		8E6D28F52F88B75900655E0A /* AppUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCoordinator.swift; sourceTree = "<group>"; };
+		8E6D28F62F88B75900655E0A /* AppUpdatePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdatePolicy.swift; sourceTree = "<group>"; };
+		8E6D28F72F88B75900655E0A /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
+		8E6D28F82F88B75900655E0A /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 		8E70C90E2F62B1DB00E9E555 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
 		8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Keyboard.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -424,6 +434,18 @@
 			path = Tour;
 			sourceTree = "<group>";
 		};
+		8E6D28F92F88B75900655E0A /* AppUpdate */ = {
+			isa = PBXGroup;
+			children = (
+				8E6D28F42F88B75900655E0A /* AppUpdateConfiguration.swift */,
+				8E6D28F52F88B75900655E0A /* AppUpdateCoordinator.swift */,
+				8E6D28F62F88B75900655E0A /* AppUpdatePolicy.swift */,
+				8E6D28F72F88B75900655E0A /* AppUpdateService.swift */,
+				8E6D28F82F88B75900655E0A /* AppVersion.swift */,
+			);
+			path = AppUpdate;
+			sourceTree = "<group>";
+		};
 		8E70C90F2F62B1DB00E9E555 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -486,6 +508,7 @@
 		8E9E389A2F5C000000EAFA72 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				8E6D28F92F88B75900655E0A /* AppUpdate */,
 				8E6B90472F5C6C4B00EE4F08 /* KeyVoxIPCBridge.swift */,
 				9B7001092FB1000100BB0001 /* iCloud */,
 				A18000012FDE000100AA0001 /* AppHaptics.swift */,
@@ -911,6 +934,11 @@
 				9B7000112FB1000100BB0001 /* AppSettingsStore.swift in Sources */,
 				9B7000122FB1000100BB0001 /* UserDefaultsKeys.swift in Sources */,
 				9B7000132FB1000100BB0001 /* KeyVoxiCloudKeys.swift in Sources */,
+				8E6D28FA2F88B75900655E0A /* AppUpdateCoordinator.swift in Sources */,
+				8E6D28FB2F88B75900655E0A /* AppUpdateConfiguration.swift in Sources */,
+				8E6D28FC2F88B75900655E0A /* AppUpdateService.swift in Sources */,
+				8E6D28FD2F88B75900655E0A /* AppUpdatePolicy.swift in Sources */,
+				8E6D28FE2F88B75900655E0A /* AppVersion.swift in Sources */,
 				9B7000142FB1000100BB0001 /* KeyVoxiCloudPayloads.swift in Sources */,
 				9B7000152FB1000100BB0001 /* CloudSyncCoordinator.swift in Sources */,
 				8E9E38C12F5C004200EAFA72 /* AppServiceRegistry.swift in Sources */,
