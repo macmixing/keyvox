@@ -73,13 +73,19 @@ struct ListPatternMarkerParser {
     }
 
     static func parseMarkerValue(_ rawToken: String, languageCode: String? = nil) -> Int? {
+        guard let value = parseLocalizedNumberValue(rawToken, languageCode: languageCode) else { return nil }
+        guard value > 0 else { return nil }
+        return value
+    }
+
+    static func parseLocalizedNumberValue(_ rawToken: String, languageCode: String? = nil) -> Int? {
         let token = rawToken
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
         guard !token.isEmpty else { return nil }
 
         if token.allSatisfy(\.isNumber) {
-            guard let value = Int(token), value > 0 else { return nil }
+            guard let value = Int(token) else { return nil }
             return value
         }
 
@@ -90,7 +96,6 @@ struct ListPatternMarkerParser {
         let numberFormatter = formatterWithoutLock(for: locale)
         guard let parsed = numberFormatter.number(from: token) else { return nil }
         let value = parsed.intValue
-        guard value > 0 else { return nil }
         guard let roundTrip = numberFormatter.string(from: NSNumber(value: value)) else { return nil }
         guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { return nil }
         return value
