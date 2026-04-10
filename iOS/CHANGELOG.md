@@ -6,7 +6,19 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
-## [1.0.1] Build 3 - TestFlight - 2026-04-09
+## [1.0.2] - 2026-04-09
+
+Adds release-branch update enforcement so unsupported installs can be blocked behind a required App Store upgrade, while preserving spoken version phrases during dictation cleanup.
+
+### Added
+
+- Added App Store update enforcement backed by a minimum-supported-version policy manifest, including shared forced-update state that can gate keyboard usage when an upgrade is required.
+
+### Fixed
+
+- Fixed dictation list detection so spoken semantic-version phrases such as `one point zero point two` stay as prose instead of being reformatted as numbered-list content.
+
+## [1.0.1] Build 3 - App Store - 2026-04-09
 
 Polishes the iOS release branch with a more stable first-open keyboard layout, fully visible symbol popups on compact devices, and more responsive live input meter updates during recording startup.
 
