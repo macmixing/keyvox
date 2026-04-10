@@ -212,33 +212,34 @@ struct SettingsTabView: View {
     private var supportSection: some View {
         AppCard {
             Button(action: openGitHubSponsors) {
-                HStack(alignment: .center, spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.accent.opacity(0.4))
-                            .frame(width: 32, height: 32)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.accent.opacity(0.4))
+                                .frame(width: 32, height: 32)
 
-                        Image("github")
-                            .resizable()
-                            .renderingMode(.template)
-                            .foregroundColor(.yellow.opacity(0.8))
-                            .frame(width: 32, height: 32)
-                    }
+                            Image("github")
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundColor(.yellow.opacity(0.8))
+                                .frame(width: 32, height: 32)
+                        }
 
-                    VStack(alignment: .leading, spacing: 4) {
                         Text("Support on GitHub")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Text("Support open source development via GitHub Sponsors.")
-                            .font(.appFont(15, variant: .light))
-                            .foregroundStyle(.white.opacity(0.7))
+                        Image(systemName: "link")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.yellow)
+                            .padding(.top, 2)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Image(systemName: "link")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.yellow)
+                    Text("Support open source development via GitHub Sponsors.")
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
                 }
             }
             .buttonStyle(.plain)
