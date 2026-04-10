@@ -182,7 +182,8 @@ final class KeyboardViewController: UIInputViewController {
             isModelInstalled: KeyboardModelAvailability.isInstalled(),
             hasFullAccess: hasFullAccess,
             hasMicrophonePermission: hasMicrophonePermission,
-            hasActivePhoneCall: callObserver.hasActivePhoneCall
+            hasActivePhoneCall: callObserver.hasActivePhoneCall,
+            isUpdateRequired: KeyVoxIPCBridge.isAppUpdateRequired()
         )
     }
 

@@ -16,6 +16,7 @@ struct AppRootView: View {
     @EnvironmentObject private var appLaunchRouteStore: AppLaunchRouteStore
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
+    @EnvironmentObject private var appUpdateCoordinator: AppUpdateCoordinator
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
     @State private var onboardingOverlayOpacity = 1.0
@@ -58,6 +59,31 @@ struct AppRootView: View {
                     EmptyView()
                 }
             }
+        }
+        .alert(
+            alertTitle,
+            isPresented: Binding(
+                get: { shouldPresentUpdateAlert },
+                set: { isPresented in
+                    if isPresented == false,
+                       destination == .main,
+                       appUpdateCoordinator.activePrompt?.decision.urgency == .optional {
+                        appUpdateCoordinator.dismissOptionalPrompt()
+                    }
+                }
+            )
+        ) {
+            Button("Update") {
+                appUpdateCoordinator.openAppStore()
+            }
+
+            if appUpdateCoordinator.activePrompt?.decision.urgency == .optional {
+                Button("Later", role: .cancel) {
+                    appUpdateCoordinator.dismissOptionalPrompt()
+                }
+            }
+        } message: {
+            Text(alertMessage)
         }
         .onAppear {
             previousDestination = destination
@@ -102,12 +128,38 @@ struct AppRootView: View {
         previousDestination == .launchHold
             && (destination == .onboarding || destination == .main)
     }
+    private var shouldPresentUpdateAlert: Bool {
+        destination == .main && appUpdateCoordinator.activePrompt != nil
+    }
+
+    private var alertTitle: String {
+        guard let prompt = appUpdateCoordinator.activePrompt else { return "" }
+
+        switch prompt.decision.urgency {
+        case .optional:
+            return "Update Available"
+        case .forced:
+            return "Update Required"
+        }
+    }
+
+    private var alertMessage: String {
+        guard let prompt = appUpdateCoordinator.activePrompt else { return "" }
+
+        switch prompt.decision.urgency {
+        case .optional:
+            return "KeyVox \(prompt.decision.release.version.rawValue) is available on the App Store."
+        case .forced:
+            return "KeyVox \(prompt.decision.release.version.rawValue) is required to continue using the app."
+        }
+    }
 }
 
 #Preview {
     AppRootView()
         .environmentObject(AppLaunchRouteStore.shared)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
+        .environmentObject(AppServiceRegistry.shared.appUpdateCoordinator)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)

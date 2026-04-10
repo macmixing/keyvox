@@ -26,6 +26,7 @@ enum KeyVoxIPCBridge {
         static let keyboardOnboardingPresentationTimestamp = "keyboardOnboardingPresentation_timestamp"
         static let keyboardOnboardingAccessTimestamp = "keyboardOnboardingAccess_timestamp"
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
+        static let appUpdateRequired = "appUpdateRequired"
     }
 
     private enum LiveMeterPacket {
@@ -147,6 +148,10 @@ enum KeyVoxIPCBridge {
     static func clearKeyboardOnboardingPresentation() {
         defaults?.removeObject(forKey: Key.keyboardOnboardingPresentationTimestamp)
     }
+
+    static func setAppUpdateRequired(_ isRequired: Bool) {
+        defaults?.set(isRequired, forKey: Key.appUpdateRequired)
+    }
     
     // MARK: - Read (Both)
     
@@ -177,6 +182,9 @@ enum KeyVoxIPCBridge {
         return d?.string(forKey: Key.transcription)
     }
 
+    static func isAppUpdateRequired() -> Bool {
+        defaults?.object(forKey: Key.appUpdateRequired) as? Bool ?? false
+    }
     static func keyboardOnboardingAccessTimestamp() -> TimeInterval? {
         guard let d = defaults else { return nil }
 

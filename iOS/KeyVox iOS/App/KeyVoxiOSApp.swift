@@ -12,6 +12,7 @@ struct KeyVoxApp: App {
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @StateObject private var appUpdateCoordinator: AppUpdateCoordinator
     private let appHaptics: AppHaptics
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
@@ -24,6 +25,7 @@ struct KeyVoxApp: App {
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
+        _appUpdateCoordinator = StateObject(wrappedValue: services.appUpdateCoordinator)
         appHaptics = services.appHaptics
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
@@ -57,6 +59,7 @@ struct KeyVoxApp: App {
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)
                 .environmentObject(weeklyWordStatsStore)
+                .environmentObject(appUpdateCoordinator)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
                     switch newPhase {
@@ -66,6 +69,7 @@ struct KeyVoxApp: App {
                         }
                         transcriptionManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
+                        appUpdateCoordinator.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
