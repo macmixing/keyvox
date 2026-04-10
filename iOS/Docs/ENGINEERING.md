@@ -136,6 +136,7 @@ It builds and wires:
 - `TTSPlaybackCoordinator`
 - `TTSManager`
 - `AudioModeCoordinator`
+- `AppUpdateCoordinator`
 - `CloudSyncCoordinator`
 - `WeeklyWordStatsCloudSync`
 - `KeyVoxSessionLiveActivityCoordinator`
@@ -161,6 +162,7 @@ Current root behavior:
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 - a cold `keyvoxios://record/start` launch may preselect `ReturnToHostView` before the first real SwiftUI route render
 - the post-onboarding `KeyVoxSpeakIntroSheetView` may appear only while the resolved root destination is truly `.main`, and must never interrupt onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
+- app update prompts may appear only while the resolved root destination is truly `.main`, and must never interrupt launch hold, onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 
 ### Onboarding Store Rules
 
@@ -299,6 +301,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
+- `appUpdateRequired`
 - `pendingURLRoute`
 
 ### App Group Settings Keys
@@ -322,6 +325,10 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasCompletedOnboardingWelcome`
 - `KeyVox.App.HasPendingKeyboardTour`
 - `KeyVox.App.ActiveDictationProvider`
+- `KeyVox.App.CachedAppStoreReleaseURL`
+- `KeyVox.App.CachedAppStoreReleaseVersion`
+- `KeyVox.App.CachedAppUpdateUrgency`
+- `KeyVox.App.LastAppUpdateCheckTime`
 - `KeyVox.App.IsTTSTranscriptExpanded`
 - `KeyVox.App.IsTTSUnlocked`
 - `KeyVox.App.TTSFreeSpeakUsageDayStart`
@@ -343,6 +350,26 @@ Keyboard onboarding detection is deliberately split across three signals:
   - durable replay metadata containing the request, rendered sample count, and optional paused replay sample offset
 - `TTS/last-replay.pcm`
   - durable replay audio payload for the last replayable copied-text playback
+
+## App Update Contract
+
+The containing app owns update policy. The keyboard only consumes the shared forced-update result.
+
+Current rules:
+
+- `AppUpdateService` fetches the latest public version from the App Store lookup endpoint and fetches the minimum supported version from the public `iOS/app-update-policy.json` manifest in the repository
+- the App Store is the only source of truth for the latest release version
+- the policy manifest is only allowed to decide the minimum supported version; it must not duplicate latest-version state
+- `AppUpdatePolicyEvaluator` maps:
+  - current version >= latest App Store version -> no prompt
+  - current version < latest App Store version and current version >= minimum supported version -> optional update
+  - current version < minimum supported version -> forced update
+- `AppUpdateCoordinator` caches the last resolved decision in app-owned defaults so optional updates can reappear on cold launch without requiring a fresh network fetch every time
+- optional updates are dismissible only for the current process lifetime and should reappear on the next cold launch while the cached decision remains valid
+- forced updates are never dismissible
+- forced update state is mirrored into `KeyVoxIPCBridge` through the shared `appUpdateRequired` flag so the keyboard toolbar can route into its warning mode
+- the containing app may present update UI only on the true `.main` route
+- the keyboard must not evaluate App Store or policy-manifest state directly
 
 ### Darwin Notification Names
 
@@ -873,6 +900,7 @@ Toolbar modes are:
 - full-access warning
 - microphone warning
 - phone-call warning
+- update-required warning
 
 The keyboard root layout has an important invariant:
 

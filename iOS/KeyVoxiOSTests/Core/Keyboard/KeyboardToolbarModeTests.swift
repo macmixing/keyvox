@@ -7,7 +7,8 @@ struct KeyboardToolbarModeTests {
             isModelInstalled: true,
             hasFullAccess: true,
             hasMicrophonePermission: true,
-            hasActivePhoneCall: true
+            hasActivePhoneCall: true,
+            isUpdateRequired: false
         )
 
         #expect(mode == .phoneCallWarning)
@@ -20,13 +21,15 @@ struct KeyboardToolbarModeTests {
             isModelInstalled: true,
             hasFullAccess: false,
             hasMicrophonePermission: true,
-            hasActivePhoneCall: true
+            hasActivePhoneCall: true,
+            isUpdateRequired: false
         )
         let microphoneMode = KeyboardToolbarMode.resolve(
             isModelInstalled: true,
             hasFullAccess: true,
             hasMicrophonePermission: false,
-            hasActivePhoneCall: true
+            hasActivePhoneCall: true,
+            isUpdateRequired: false
         )
 
         #expect(fullAccessMode == .fullAccessWarning)

@@ -19,6 +19,7 @@ struct KeyVoxApp: App {
     @StateObject private var onboardingStore: OnboardingStore
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @StateObject private var appTabRouter: AppTabRouter
+    @StateObject private var appUpdateCoordinator: AppUpdateCoordinator
     private let appHaptics: AppHaptics
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
@@ -38,6 +39,7 @@ struct KeyVoxApp: App {
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
         _appTabRouter = StateObject(wrappedValue: services.appTabRouter)
+        _appUpdateCoordinator = StateObject(wrappedValue: services.appUpdateCoordinator)
         appHaptics = services.appHaptics
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
@@ -78,6 +80,7 @@ struct KeyVoxApp: App {
                 .environmentObject(onboardingStore)
                 .environmentObject(weeklyWordStatsStore)
                 .environmentObject(appTabRouter)
+                .environmentObject(appUpdateCoordinator)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
                     Self.log("scenePhase=\(String(describing: newPhase))")
@@ -92,6 +95,7 @@ struct KeyVoxApp: App {
                         ttsManager.handleAppDidBecomeActive()
                         pocketTTSModelManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
+                        appUpdateCoordinator.handleAppDidBecomeActive()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )

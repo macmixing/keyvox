@@ -14,6 +14,10 @@ nonisolated enum UserDefaultsKeys {
 
     enum App {
         static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"
+        static let cachedAppStoreReleaseURL = "KeyVox.App.CachedAppStoreReleaseURL"
+        static let cachedAppStoreReleaseVersion = "KeyVox.App.CachedAppStoreReleaseVersion"
+        static let cachedAppUpdateUrgency = "KeyVox.App.CachedAppUpdateUrgency"
+        static let lastAppUpdateCheckTime = "KeyVox.App.LastAppUpdateCheckTime"
         static let isTTSTranscriptExpanded = "KeyVox.App.IsTTSTranscriptExpanded"
         static let isTTSUnlocked = "KeyVox.App.IsTTSUnlocked"
         static let ttsFreeSpeakUsageDayStart = "KeyVox.App.TTSFreeSpeakUsageDayStart"

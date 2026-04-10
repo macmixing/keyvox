@@ -29,6 +29,7 @@ final class AppServiceRegistry {
     let iCloudSyncCoordinator: CloudSyncCoordinator
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
+    let appUpdateCoordinator: AppUpdateCoordinator
     let urlRouter: KeyVoxURLRouter
     private let ttsEngine: PocketTTSEngine
     private var cancellables = Set<AnyCancellable>()
@@ -203,6 +204,7 @@ final class AppServiceRegistry {
                 .map(\.combinedWordCount)
                 .eraseToAnyPublisher()
         )
+        let appUpdateCoordinator = AppUpdateCoordinator(defaults: settingsDefaults)
         keyboardBridge.onStartRecordingCommand = {
             audioModeCoordinator.handleStartRecordingCommand()
         }
@@ -261,6 +263,7 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
+        self.appUpdateCoordinator = appUpdateCoordinator
         self.ttsEngine = ttsEngine
         self.urlRouter = KeyVoxURLRouter(
             transcriptionManager: transcriptionManager,

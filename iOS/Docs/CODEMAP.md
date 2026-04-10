@@ -57,6 +57,7 @@ iOS/
 │   └── ENGINEERING.md
 ├── KeyVox iOS.xcodeproj/
 ├── KeyVox iOS.xctestplan
+├── app-update-policy.json
 ├── KeyVox iOS/
 │   ├── App/
 │   │   ├── CopyFeedbackController.swift
@@ -77,6 +78,12 @@ iOS/
 │   │   ├── SharedPaths.swift
 │   │   ├── TTSPurchaseController.swift
 │   │   ├── WeeklyWordStatsStore.swift
+│   │   ├── AppUpdate/
+│   │   │   ├── AppUpdateConfiguration.swift
+│   │   │   ├── AppUpdateCoordinator.swift
+│   │   │   ├── AppUpdatePolicy.swift
+│   │   │   ├── AppUpdateService.swift
+│   │   │   └── AppVersion.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingDownloadNetworkMonitor.swift
 │   │   │   ├── OnboardingKeyboardAccessProbe.swift
@@ -301,6 +308,7 @@ iOS/
 │   └── KeyVox_WidgetLiveActivity.swift
 ├── KeyVoxiOSTests/
 │   ├── App/
+│   │   ├── AppUpdatePolicyEvaluatorTests.swift
 │   │   ├── AppHapticsDecisionTests.swift
 │   │   ├── AppSettingsStoreTests.swift
 │   │   ├── CloudSyncCoordinatorTests.swift
@@ -397,8 +405,13 @@ Packages/
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, the KeyVox Speak intro controller, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, PocketTTS runtime services, the TTS unlock gate, the KeyVox Speak intro controller, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
+- `app-update-policy.json`
+  - Public minimum-supported-version manifest consumed by the iOS update service.
+  - The App Store remains the latest-version source; this file only controls forced-update eligibility.
+- `KeyVox iOS/App/AppUpdate/`
+  - Isolated update module for App Store release lookup, policy-manifest fetch, version comparison, cached decision state, cold-launch reminder behavior, and App Store opening.
 - `KeyVox iOS/App/KeyVoxSpeakIntroController.swift`
   - App-owned post-onboarding KeyVox Speak intro owner.
   - Tracks whether the intro has been seen, whether the user has already used KeyVox Speak organically, the eligible-open counter for delayed presentation, and the development-only force-presentation path.
@@ -417,6 +430,7 @@ Packages/
   - Keeps `MainTabView` mounted under the onboarding overlay so onboarding can fade into the live shell without re-rooting the scene tree.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
   - Also owns post-onboarding KeyVox Speak intro-sheet presentation so the intro can only appear on the true `.main` route, never over onboarding, return-to-host, or playback-preparation flows.
+  - Also owns the system update alert presentation and keeps update prompts scoped to the `.main` route so launch-hold, onboarding, return-to-host, and playback-preparation flows remain uninterrupted.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
   - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
@@ -451,10 +465,10 @@ Packages/
 ### Shared State, IPC, and Session Surfaces
 
 - `KeyVox iOS/App/KeyVoxIPCBridge.swift`
-  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, and Darwin notification names.
+  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, and Darwin notification names.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
-  - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, and the delayed eligible-open counter.
+  - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
 - `KeyVox iOS/App/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
 - `KeyVox iOS/App/KeyVoxSessionLiveActivityCoordinator.swift`
@@ -575,6 +589,9 @@ Packages/
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
   - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, the dedicated Restore Purchases card, version footer, and shared destructive-confirmation coordination.
+- `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
+  - Central warning-priority resolver for the keyboard toolbar.
+  - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
   - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
