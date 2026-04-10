@@ -484,6 +484,16 @@ Cold path:
 - preferred sample rate: `16000`
 - output format: mono float PCM, non-interleaved
 
+Bluetooth routing rule:
+
+- the recorder baseline stays on the historical HFP-capable warm-session contract
+- preserved TTS playback does not share that exact category-option set
+- this inconsistency is intentional: moving the recorder baseline onto the preserved-TTS route-family policy caused Bluetooth `newDeviceAvailable` interruptions to tear down the warm session before TTS began
+- `AudioBluetoothRoutePolicy` is therefore scoped only to preserved TTS playback, where it maps:
+  - built-in microphone preferred -> `.allowBluetoothA2DP`
+  - built-in microphone disabled -> `.allowBluetoothHFP`
+- do not merge the recorder baseline and preserved-TTS policy owners unless logs prove the recorder warm session survives the route-family change
+
 Engine lifetime rules:
 
 - monitoring mode can keep the engine warm after a completed dictation
@@ -606,6 +616,7 @@ Primary owners:
 - `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
 - `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
 - `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
+- `AudioBluetoothRoutePolicy` owns the preserved-TTS Bluetooth route-family decision and is the only owner allowed to translate the built-in microphone preference into A2DP-vs-HFP playback behavior.
 - `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, system playback coordination / metadata assembly, remote transport command routing, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
 - `TTSSystemPlaybackController` owns MediaPlayer API integration and publication of transport & now-playing metadata for lock screen and Control Center transport.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
@@ -634,6 +645,7 @@ Primary owners:
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+SystemPlayback.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
   - `TTSManager+SystemPlayback.swift` should stay as the TTSManager-facing adapter layer that translates internal playback state and events into system playback intent, assembles metadata, and decides when the system surface should update.
 - `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
+- `AudioBluetoothRoutePolicy.swift` stays separate from both recorder input preference resolution and TTS playback lifecycle code so Bluetooth route-family mapping remains isolated and testable.
 - `TTSSystemPlaybackController.swift` is the concrete platform integration layer that performs `MediaPlayer` API calls, remote command configuration, and transport / now-playing metadata publication.
 - system playback coordination and metadata assembly belong in `TTSManager` / `TTSPlaybackCoordinator`; platform-specific side effects belong in `TTSSystemPlaybackController.swift`, not in view code or app lifecycle routing
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`

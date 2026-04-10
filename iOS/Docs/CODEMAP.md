@@ -97,6 +97,7 @@ iOS/
 │   │       └── KeyVoxiCloudPayloads.swift
 │   ├── Core/
 │   │   ├── Audio/
+│   │   │   ├── AudioBluetoothRoutePolicy.swift
 │   │   │   ├── LiveInputSignalState.swift
 │   │   │   ├── AudioRecorder.swift
 │   │   │   ├── AudioRecorder+Session.swift
@@ -134,6 +135,7 @@ iOS/
 │   │   │   │   ├── TTSManager+AppLifecycle.swift
 │   │   │   │   ├── TTSManager+Playback.swift
 │   │   │   │   ├── TTSManager+State.swift
+│   │   │   │   ├── TTSManager+SystemPlayback.swift
 │   │   │   │   └── TTSManagerPolicy.swift
 │   │   │   └── TTSPlaybackCoordinator/
 │   │   │       ├── TTSPlaybackCoordinator.swift
@@ -193,6 +195,7 @@ iOS/
 │   │   │       ├── KeyVoxSpeakSceneBView.swift
 │   │   │       ├── KeyVoxSpeakSceneCView.swift
 │   │   │       ├── KeyVoxSpeakSheetView.swift
+│   │   │       ├── KeyVoxSpeakUnlockScene.swift
 │   │   │       └── TTSUnlockSheetView.swift
 │   │   ├── Dictionary/
 │   │   │   ├── AutoFocusTextField.swift
@@ -317,6 +320,7 @@ iOS/
 │   │   └── WeeklyWordStatsStoreTests.swift
 │   ├── Core/
 │   │   ├── Audio/
+│   │   │   ├── AudioBluetoothRoutePolicyTests.swift
 │   │   │   ├── AudioInputPreferenceResolverTests.swift
 │   │   │   └── StoppedCaptureProcessorTests.swift
 │   │   ├── Keyboard/
@@ -329,7 +333,8 @@ iOS/
 │   │   ├── TTS/
 │   │   │   ├── TTSManager/
 │   │   │   │   └── TTSManagerPolicyTests.swift
-│   │   │   └── TTSPlaybackCoordinatorBufferingPolicyTests.swift
+│   │   │   ├── TTSPlaybackCoordinatorBufferingPolicyTests.swift
+│   │   │   └── TTSSystemPlaybackTests.swift
 │   │   └── Transcription/
 │   │       └── TranscriptionManagerTests.swift
 │   └── KeyVoxiOSTests.swift
@@ -426,9 +431,8 @@ Packages/
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
 - `KeyVox iOS/Views/Components/ModelDownloadProgress.swift`
   - Reusable onboarding download progress bar with the app accent styling and an optional percent label.
-- `KeyVox iOS/Views/Components/TTSUnlockSheetView.swift`
-  - Intentionally plain placeholder unlock sheet for the copied-text playback monetization proof path.
-  - Surfaces the one-time unlock CTA, restore action, and the current remaining-free-speaks summary without trying to be a polished paywall yet.
+- `KeyVox iOS/Views/Components/KeyVoxSpeak/TTSUnlockSheetView.swift`
+  - Thin unlock-mode wrapper around the shared KeyVox Speak sheet surface used by the copied-text playback purchase flow.
 - `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourScreen.swift`
   - Full-screen post-Settings handoff screen that autofocuses a text field and keeps the input pinned above the keyboard.
   - Advances through three tour scenes (`a`, `b`, `c`) and only enables the final completion action after the KeyVox keyboard has been shown and a first non-empty transcription has completed.
@@ -498,7 +502,7 @@ Packages/
 - `KeyVox iOS/Core/TTS/PocketTTSEngine.swift`
   - App-owned streaming TTS engine wrapper around the local PocketTTS runtime.
 - `KeyVox iOS/Core/TTS/TTSPlaybackCoordinator/`
-  - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, and playback scheduling.
+  - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, playback scheduling, and preserved-TTS route-family selection.
 - `KeyVox iOS/Core/TTS/TTSManager/`
   - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, system playback command routing, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
 - `KeyVox iOS/Core/TTS/TTSSystemPlaybackController.swift`
@@ -518,6 +522,9 @@ Packages/
 - `KeyVox iOS/Core/Audio/AudioRecorder.swift`
   - Public recorder and monitoring surface.
   - Tracks session warmth, meter state, and last capture facts.
+- `KeyVox iOS/Core/Audio/AudioBluetoothRoutePolicy.swift`
+  - Shared preserved-TTS Bluetooth route-family policy.
+  - Maps the built-in microphone setting to the playback route family without changing the recorder baseline warm-session contract.
 - `KeyVox iOS/Core/Audio/AudioRecorder+StopPipeline.swift`
   - Produces cleaned `StoppedCapture` values and rejects silence before inference.
 - `KeyVox iOS/Core/Transcription/DictationService.swift`
@@ -558,6 +565,7 @@ Packages/
   - Dedicated feature folder for the shared KeyVox Speak presentation surface.
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern.
+  - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
   - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, Alba install, progress, and repair actions.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.

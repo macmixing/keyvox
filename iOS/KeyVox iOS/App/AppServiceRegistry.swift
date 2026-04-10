@@ -147,7 +147,11 @@ final class AppServiceRegistry {
             sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
         )
-        let ttsPlaybackCoordinator = TTSPlaybackCoordinator()
+        let ttsPlaybackCoordinator = TTSPlaybackCoordinator(
+            preferBuiltInMicrophoneProvider: { [weak settingsStore] in
+                settingsStore?.preferBuiltInMicrophone ?? true
+            }
+        )
         let ttsSystemPlaybackController = TTSSystemPlaybackController()
         let ttsEngine = PocketTTSEngine(fileManager: fileManager)
         let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)

@@ -63,6 +63,7 @@ final class TTSPlaybackCoordinator {
     var backgroundPlaybackProgressTimer: Timer?
     var playbackSessionID = UUID()
     var isFastModeBackgroundSafeState = false
+    let preferBuiltInMicrophoneProvider: () -> Bool
 
     var hasReplayablePlayback: Bool {
         !replayablePlaybackSamples.isEmpty
@@ -102,7 +103,10 @@ final class TTSPlaybackCoordinator {
         didStartPlayback && isPaused
     }
 
-    init() {
+    init(
+        preferBuiltInMicrophoneProvider: @escaping () -> Bool = { true }
+    ) {
+        self.preferBuiltInMicrophoneProvider = preferBuiltInMicrophoneProvider
         audioEngine.attach(playerNode)
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: playbackFormat)
     }
@@ -112,7 +116,6 @@ final class TTSPlaybackCoordinator {
         if didStartPlayback && isPaused == false {
             startPlaybackProgressTimer()
         }
-        Self.log("Foreground playback mode armed.")
         notifyFastModeBackgroundSafetyChanged()
     }
 
@@ -128,14 +131,10 @@ final class TTSPlaybackCoordinator {
     func prepareForBackgroundTransition() {
         guard didStartPlayback else {
             isBackgroundTransitionArmed = true
-            Self.log("Background transition armed before playback start.")
             return
         }
 
         isBackgroundTransitionArmed = true
-        Self.log(
-            "Background transition armed. bufferedSeconds=\(String(format: "%.3f", bufferedSeconds)) queuedBuffers=\(queuedBufferCount)"
-        )
     }
 
     func didEnterBackground() {
@@ -143,9 +142,6 @@ final class TTSPlaybackCoordinator {
         if didStartPlayback && isPaused == false {
             startPlaybackProgressTimer()
         }
-        Self.log(
-            "Background continuation mode active. bufferedSeconds=\(String(format: "%.3f", bufferedSeconds)) queuedBuffers=\(queuedBufferCount)"
-        )
     }
 
     static func log(_ message: String) {

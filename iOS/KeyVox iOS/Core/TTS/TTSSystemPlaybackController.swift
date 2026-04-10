@@ -105,10 +105,6 @@ final class TTSSystemPlaybackController {
         nowPlayingInfoCenter.nowPlayingInfo = info
         nowPlayingInfoCenter.playbackState = isPlaying ? .playing : .paused
 
-        Self.log(
-            "Published now playing info titleLength=\(title.count) voice=\(voiceName ?? "nil") isPlaying=\(isPlaying) isReplay=\(isReplay) elapsed=\(String(format: "%.2f", elapsed)) duration=\(duration.map { String(format: "%.2f", $0) } ?? "nil")"
-        )
-
         lastTitle = title
         lastVoiceName = voiceName
         lastIsPlaying = isPlaying
@@ -194,9 +190,6 @@ final class TTSSystemPlaybackController {
         commandCenter.pauseCommand.isEnabled = isActive && isPlaying
         commandCenter.togglePlayPauseCommand.isEnabled = isActive
         commandCenter.changePlaybackPositionCommand.isEnabled = isActive && canSeek
-        Self.log(
-            "Updated remote command availability active=\(isActive) playing=\(isPlaying) canSeek=\(canSeek) playEnabled=\(commandCenter.playCommand.isEnabled) pauseEnabled=\(commandCenter.pauseCommand.isEnabled) toggleEnabled=\(commandCenter.togglePlayPauseCommand.isEnabled) seekEnabled=\(commandCenter.changePlaybackPositionCommand.isEnabled)"
-        )
     }
 
     private func condensedTitle(from displayText: String) -> String {

@@ -245,12 +245,6 @@ extension TTSPlaybackCoordinator {
                 guard self.playbackSessionID == sessionID else { return }
                 self.queuedBufferCount = max(0, self.queuedBufferCount - 1)
                 self.queuedSampleCount = max(0, self.queuedSampleCount - sampleCount)
-                let remainingSeconds = Double(self.queuedSampleCount) / self.playbackFormat.sampleRate
-                if self.queuedBufferCount == 0 || remainingSeconds < 0.25 {
-                    Self.log(
-                        "Buffer completed chunk=\(chunkIndex.map { String($0 + 1) } ?? "-") chunkID=\(chunkDebugID) sampleCount=\(sampleCount) remainingBuffers=\(self.queuedBufferCount) remainingSeconds=\(String(format: "%.3f", remainingSeconds))"
-                    )
-                }
                 self.emitPlaybackProgress()
                 self.notifyFastModeBackgroundSafetyChanged()
                 self.finishIfPossible()

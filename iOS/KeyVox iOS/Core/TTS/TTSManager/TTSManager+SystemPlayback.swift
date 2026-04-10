@@ -43,9 +43,6 @@ extension TTSManager {
 
         let elapsedSeconds = currentSystemPlaybackElapsedSeconds(isReplayTransport: isReplayTransport)
         let durationSeconds = isReplayTransport ? currentSystemReplayDurationSeconds : nil
-        Self.log(
-            "Refreshing system playback controls replay=\(isReplayTransport) paused=\(isPlaybackPaused) elapsed=\(String(format: "%.2f", elapsedSeconds)) duration=\(durationSeconds.map { String(format: "%.2f", $0) } ?? "nil")"
-        )
         systemPlaybackController.update(
             displayText: displayText,
             voiceName: currentSystemPlaybackVoiceName,

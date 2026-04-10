@@ -4,7 +4,6 @@ import UIKit
 
 extension TTSManager {
     func handleAppDidBecomeActive() {
-        Self.log("handleAppDidBecomeActive state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid)")
         KeyVoxIPCBridge.touchHeartbeat()
         Task {
             await engine.prepareForForegroundSynthesis()
@@ -14,7 +13,6 @@ extension TTSManager {
     }
 
     func handleAppWillResignActive() {
-        Self.log("handleAppWillResignActive state=\(state.rawValue) hasStartedPlayback=\(hasStartedPlaybackForActiveRequest) fastMode=\(settingsStore.fastPlaybackModeEnabled)")
         guard isActive, (hasStartedPlaybackForActiveRequest || playbackPreparationPhase == .readyToReturn) else { return }
 
         if settingsStore.fastPlaybackModeEnabled {
@@ -59,7 +57,6 @@ extension TTSManager {
     }
 
     func handleAppDidEnterBackground() {
-        Self.log("handleAppDidEnterBackground state=\(state.rawValue) backgroundTaskActive=\(backgroundTaskID != .invalid) fastMode=\(settingsStore.fastPlaybackModeEnabled)")
         dismissPlaybackPreparationView()
         guard settingsStore.fastPlaybackModeEnabled == false else {
             if hasStartedPlaybackForActiveRequest {

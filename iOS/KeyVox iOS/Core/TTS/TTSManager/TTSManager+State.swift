@@ -5,14 +5,12 @@ extension TTSManager {
         shouldPersistPlaybackPreparationViewUntilBackground = true
         resetPlaybackPreparationState()
         isPlaybackPreparationViewPresented = true
-        Self.log("Playback preparation view presented.")
     }
 
     func dismissPlaybackPreparationView() {
         shouldPersistPlaybackPreparationViewUntilBackground = false
         isPlaybackPreparationViewPresented = false
         resetPlaybackPreparationState()
-        Self.log("Playback preparation view dismissed.")
     }
 
     func finishPlayback() {

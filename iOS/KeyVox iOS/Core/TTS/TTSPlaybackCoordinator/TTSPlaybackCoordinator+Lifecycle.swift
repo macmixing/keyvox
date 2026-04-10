@@ -323,11 +323,17 @@ extension TTSPlaybackCoordinator {
             )
             try? session.overrideOutputAudioPort(.none)
         case .playbackWhilePreservingRecording:
+            let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
+                preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
+            )
+            var categoryOptions: AVAudioSession.CategoryOptions = [.defaultToSpeaker]
+            categoryOptions.formUnion(bluetoothRoutePolicy.bluetoothCategoryOptions)
             try session.setCategory(
                 .playAndRecord,
                 mode: .default,
-                options: [.defaultToSpeaker, .allowBluetoothHFP, .allowBluetoothA2DP]
+                options: categoryOptions
             )
+            Self.log("Configuring preserved playback session routePolicy=\(bluetoothRoutePolicy.family.rawValue)")
             let isUsingBuiltInReceiver = session.currentRoute.outputs.contains { $0.portType == .builtInReceiver }
             try? session.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
         }
