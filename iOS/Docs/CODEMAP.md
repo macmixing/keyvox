@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-09**
+**Last Updated: 2026-04-10**
 
 ## Project Overview
 
@@ -75,6 +75,7 @@ iOS/
 │   │   │   └── CopyFeedbackController.swift
 │   │   ├── Integration/
 │   │   │   ├── KeyVoxIPCBridge.swift
+│   │   │   ├── KeyVoxTTSRequest.swift
 │   │   │   └── KeyVoxKeyboardBridge.swift
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
@@ -105,6 +106,7 @@ iOS/
 │   │   │   └── WeeklyWordStatsStore.swift
 │   │   └── iCloud/
 │   │       ├── AppSettingsStore.swift
+│   │       ├── KeyVoxPlaybackVoice.swift
 │   │       ├── UserDefaultsKeys.swift
 │   │       ├── WeeklyWordStatsCloudSync.swift
 │   │       ├── CloudSyncCoordinator.swift
@@ -482,9 +484,13 @@ Packages/
 
 - `KeyVox iOS/App/Integration/KeyVoxIPCBridge.swift`
   - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, and Darwin notification names.
+- `KeyVox iOS/App/Integration/KeyVoxTTSRequest.swift`
+  - Dependency-free shared copied-text playback request model and enums used by both the containing app and share extension to keep the JSON handoff contract compile-time safe.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
+- `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
+  - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`

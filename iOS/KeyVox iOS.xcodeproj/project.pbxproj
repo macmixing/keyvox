@@ -156,6 +156,7 @@
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
+				App/Integration/KeyVoxTTSRequest.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift,
 				Resources/Assets.xcassets,
@@ -171,6 +172,7 @@
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
+				App/Integration/KeyVoxTTSRequest.swift,
 				Resources/Assets.xcassets,
 				"Resources/Kanit-Light.ttf",
 				"Resources/Kanit-Medium.ttf",
@@ -182,6 +184,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Integration/KeyVoxIPCBridge.swift,
+				App/Integration/KeyVoxTTSRequest.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift,
 				"Resources/Kanit-Light.ttf",
 				"Resources/Kanit-Medium.ttf",
@@ -192,6 +195,8 @@
 		8E7DB7412F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Share" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/iCloud/KeyVoxPlaybackVoice.swift,
+				App/Integration/KeyVoxTTSRequest.swift,
 				Resources/Assets.xcassets,
 				"Resources/Kanit-Light.ttf",
 				"Resources/Kanit-Medium.ttf",

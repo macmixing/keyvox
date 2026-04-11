@@ -1,14 +1,5 @@
 import Foundation
 
-struct KeyVoxShareTTSRequest: Codable {
-    let id: UUID
-    let text: String
-    let createdAt: TimeInterval
-    let sourceSurface: String
-    let voiceID: String
-    let kind: String
-}
-
 enum KeyVoxShareBridge {
     static let appGroupID = "group.com.cueit.keyvox"
     static let ttsVoiceDefaultsKey = "KeyVox.TTSVoice"
@@ -27,13 +18,13 @@ enum KeyVoxShareBridge {
             attributes: nil
         )
 
-        let request = KeyVoxShareTTSRequest(
+        let request = KeyVoxTTSRequest(
             id: UUID(),
             text: trimmedText,
             createdAt: Date().timeIntervalSince1970,
-            sourceSurface: "share_extension",
+            sourceSurface: .shareExtension,
             voiceID: selectedVoiceID(),
-            kind: "speakClipboardText"
+            kind: .speakClipboardText
         )
 
         guard let data = try? JSONEncoder().encode(request) else { return }
@@ -42,7 +33,7 @@ enum KeyVoxShareBridge {
 
     private static func selectedVoiceID() -> String {
         let defaults = UserDefaults(suiteName: appGroupID)
-        return defaults?.string(forKey: ttsVoiceDefaultsKey) ?? "azelma"
+        return defaults?.string(forKey: ttsVoiceDefaultsKey) ?? KeyVoxPlaybackVoice.alba.rawValue
     }
 
     private static func ttsRequestURL(fileManager: FileManager) -> URL? {

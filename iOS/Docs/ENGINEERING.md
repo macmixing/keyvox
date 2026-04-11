@@ -822,7 +822,8 @@ Current extraction order is:
 Rules:
 
 - extraction should stop at the first non-empty useful result
-- the share extension writes a `KeyVoxTTSRequest` compatible payload through `KeyVoxShareBridge`
+- the share extension writes the shared `KeyVoxTTSRequest` payload through `KeyVoxShareBridge`
+- the canonical playback-voice catalog for both the app and share extension lives in `KeyVoxPlaybackVoice`; the share extension must not depend on `AppSettingsStore`
 - the share extension must not initialize the PocketTTS runtime or own playback state
 - all actual playback still belongs to the containing app after `keyvoxios://tts/start`
 

@@ -146,7 +146,7 @@ private final class StubTTSUnlockStore: TTSUnlockStore {
     }
 
     func loadUnlockProduct(productID: String) async throws -> TTSUnlockStoreProduct? {
-        TTSUnlockStoreProduct(id: productID, displayName: "Unlock TTS", displayPrice: "$9.99")
+        TTSUnlockStoreProduct(id: productID, displayName: "Unlock TTS", displayPrice: "$4.99")
     }
 
     func isUnlocked(productID: String) async throws -> Bool {

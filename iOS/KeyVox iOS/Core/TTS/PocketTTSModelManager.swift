@@ -78,19 +78,30 @@ final class PocketTTSModelManager: ObservableObject {
     func handleAppDidEnterBackground() {}
 
     func isSharedModelReady() -> Bool {
-        assetLocator.isSharedModelInstalled()
+        if case .ready = sharedModelInstallState {
+            return true
+        }
+        return false
     }
 
     func isVoiceReady(_ voice: AppSettingsStore.TTSVoice) -> Bool {
-        assetLocator.isVoiceInstalled(voice)
+        if case .ready = installState(for: voice) {
+            return true
+        }
+        return false
     }
 
     func isReady(for voice: AppSettingsStore.TTSVoice) -> Bool {
-        assetLocator.isReady(for: voice)
+        isSharedModelReady() && isVoiceReady(voice)
     }
 
     func installedVoices() -> [AppSettingsStore.TTSVoice] {
-        AppSettingsStore.TTSVoice.allCases.filter { isVoiceReady($0) }
+        AppSettingsStore.TTSVoice.allCases.filter { voice in
+            if case .ready = installState(for: voice) {
+                return true
+            }
+            return false
+        }
     }
 
     func isBusyInstallingAnotherTarget(sharedModel: Bool = false, voice: AppSettingsStore.TTSVoice? = nil) -> Bool {

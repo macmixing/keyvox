@@ -7,25 +7,11 @@ struct DictionaryTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var dictionaryStore: DictionaryStore
     @State private var dictionarySortMode: DictionarySortMode = .alphabetical
+    @State private var displayedEntries: [DictionaryEntry] = []
     @State private var dictionaryEditorMode: DictionaryWordEditorMode?
     @State private var isFloatingAddButtonVisible = false
     @State private var lastPresentedEditorID: String?
     @State private var shouldEmitSortSelectionHaptic = true
-
-    private var displayedEntries: [DictionaryEntry] {
-        switch dictionarySortMode {
-        case .alphabetical:
-            return dictionaryStore.entries.sorted {
-                let order = $0.phrase.localizedCaseInsensitiveCompare($1.phrase)
-                if order == .orderedSame {
-                    return $0.id.uuidString < $1.id.uuidString
-                }
-                return order == .orderedAscending
-            }
-        case .recentlyAdded:
-            return Array(dictionaryStore.entries.reversed())
-        }
-    }
 
     private var showsFloatingAddButton: Bool {
         dictionaryEditorMode == nil
@@ -119,7 +105,14 @@ struct DictionaryTabView: View {
                 lastPresentedEditorID = newValue
             }
         }
+        .onAppear {
+            rebuildDisplayedEntries()
+        }
+        .onChange(of: dictionaryStore.entries) { _, _ in
+            rebuildDisplayedEntries()
+        }
         .onChange(of: dictionarySortMode, initial: false) { _, _ in
+            rebuildDisplayedEntries()
             guard shouldEmitSortSelectionHaptic else {
                 shouldEmitSortSelectionHaptic = true
                 return
@@ -157,6 +150,21 @@ struct DictionaryTabView: View {
     private func presentAddWordEditor() {
         appHaptics.light()
         dictionaryEditorMode = .add
+    }
+
+    private func rebuildDisplayedEntries() {
+        switch dictionarySortMode {
+        case .alphabetical:
+            displayedEntries = dictionaryStore.entries.sorted {
+                let order = $0.phrase.localizedCaseInsensitiveCompare($1.phrase)
+                if order == .orderedSame {
+                    return $0.id.uuidString < $1.id.uuidString
+                }
+                return order == .orderedAscending
+            }
+        case .recentlyAdded:
+            displayedEntries = Array(dictionaryStore.entries.reversed())
+        }
     }
 
     private var animationTriggerID: String {

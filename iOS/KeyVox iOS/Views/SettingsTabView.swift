@@ -43,10 +43,6 @@ struct SettingsTabView: View {
                 versionFooter
             }
         }
-        .task {
-            modelManager.refreshStatus()
-            pocketTTSModelManager.refreshStatus()
-        }
         .onDisappear {
             ttsPreviewPlayer.stop()
         }
