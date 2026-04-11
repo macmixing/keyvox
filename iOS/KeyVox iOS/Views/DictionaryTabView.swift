@@ -10,6 +10,7 @@ struct DictionaryTabView: View {
     @State private var displayedEntries: [DictionaryEntry] = []
     @State private var dictionaryEditorMode: DictionaryWordEditorMode?
     @State private var isFloatingAddButtonVisible = false
+    @State private var listPresentationID = UUID()
     @State private var lastPresentedEditorID: String?
     @State private var shouldEmitSortSelectionHaptic = true
 
@@ -71,6 +72,7 @@ struct DictionaryTabView: View {
                     .multilineTextAlignment(.center)
                     .dictionaryScreenRow(top: 4, bottom: 0)
             }
+            .id(listPresentationID)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
@@ -118,6 +120,10 @@ struct DictionaryTabView: View {
                 return
             }
             appHaptics.selection()
+        }
+        .onChange(of: isActive, initial: false) { _, newValue in
+            guard newValue == false else { return }
+            listPresentationID = UUID()
         }
         .task(id: animationTriggerID) {
             guard isActive, dictionaryEditorMode == nil else {
