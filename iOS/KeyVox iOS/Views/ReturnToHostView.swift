@@ -55,6 +55,7 @@ struct ReturnToHostView: View {
                 Spacer()
             }
         }
+        .dynamicTypeSize(.xSmall ... .xxxLarge)
         .animation(.easeInOut(duration: 0.1), value: isVideoReady)
     }
 }

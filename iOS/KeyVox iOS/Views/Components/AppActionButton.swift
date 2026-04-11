@@ -34,8 +34,7 @@ struct AppActionButton: View {
                     minWidth: fillsWidth ? nil : (width ?? minWidth),
                     idealWidth: fillsWidth ? nil : width,
                     maxWidth: fillsWidth ? .infinity : width,
-                    minHeight: minHeight,
-                    maxHeight: maxHeight
+                    minHeight: minHeight
                 )
                 .background(backgroundColor)
                 .overlay {
@@ -67,6 +66,7 @@ struct AppActionButton: View {
             Text(title)
                 .font(.appFont(fontSize))
                 .foregroundStyle(foregroundColor)
+                .multilineTextAlignment(.center)
         }
     }
 
@@ -94,15 +94,6 @@ struct AppActionButton: View {
             return 54
         case .compact:
             return 36
-        }
-    }
-
-    private var maxHeight: CGFloat {
-        switch size {
-        case .regular:
-            return 64
-        case .compact:
-            return 44
         }
     }
 

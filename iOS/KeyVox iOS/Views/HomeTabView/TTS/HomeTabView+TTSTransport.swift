@@ -100,17 +100,30 @@ extension HomeTabView {
         ttsManager.isReplayingCachedPlayback
     }
 
+    var showsFastModeBackgroundSafetyWarning: Bool {
+        settingsStore.fastPlaybackModeEnabled
+            && ttsManager.state == .playing
+            && ttsManager.isPlaybackPaused == false
+            && ttsManager.isReplayingCachedPlayback == false
+            && hasReachedFastModeBackgroundSafeStateThisPlayback == false
+            && ttsManager.isFastModeBackgroundSafe == false
+    }
+
+    var fastModeBackgroundSafetyWarningText: String {
+        "Wait for the blue/green check mark before leaving."
+    }
+
     var ttsStatusText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Install PocketTTS CoreML to speak copied text."
+                return "Install the speech engine to speak copied text."
             case .downloading:
-                return "Downloading PocketTTS CoreML..."
+                return "Downloading speech engine..."
             case .installing:
-                return "Installing PocketTTS CoreML..."
+                return "Installing speech engine..."
             case .failed:
-                return "PocketTTS CoreML install failed."
+                return "Speech engine install failed."
             case .ready:
                 break
             }

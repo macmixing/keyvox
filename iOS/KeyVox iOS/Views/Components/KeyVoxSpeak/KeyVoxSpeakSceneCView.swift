@@ -2,10 +2,10 @@ import SwiftUI
 
 struct KeyVoxSpeakSceneCView: View {
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
+    @StateObject private var networkMonitor = OnboardingDownloadNetworkMonitor()
 
-    let showsUnlockDetails: Bool
-    let purchaseSummaryText: String
     let isVisible: Bool
+    let isUnlockContext: Bool
 
     @State private var headerOpacity: Double = 0
     @State private var installCardOpacity: Double = 0
@@ -23,31 +23,39 @@ struct KeyVoxSpeakSceneCView: View {
                     Spacer(minLength: 20)
 
                     VStack(spacing: 6) {
-                        Text("Free to Start")
-                            .font(.appFont(28, variant: .medium))
+                        Text(isUnlockContext ? "Finish Setup" : "Free to Start")
+                            .font(.appFont(35, variant: .medium))
                             .foregroundStyle(.white)
 
                         Text("Install Alba and be ready to speak right away.")
-                            .font(.appFont(16, variant: .light))
+                            .font(.appFont(18, variant: .light))
                             .foregroundStyle(.white.opacity(0.7))
+                            .multilineTextAlignment(.center)
                     }
                     .opacity(headerOpacity)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 10)
 
                     Text("You can download up to 8 total voices in Settings.")
-                        .font(.appFont(14, variant: .medium))
+                        .font(.appFont(16, variant: .medium))
                         .foregroundStyle(.yellow)
                         .multilineTextAlignment(.center)
                         .opacity(headerOpacity)
-                        .padding(.bottom, 16)
+                        .padding(.bottom, 20)
 
                     KeyVoxSpeakInstallCardView(
-                        showsUnlockDetails: showsUnlockDetails,
-                        purchaseSummaryText: purchaseSummaryText,
                         revealedStepCount: stepRevealProgress
                     )
                     .opacity(installCardOpacity)
                     .offset(y: installCardOffset)
+
+                    if networkMonitor.isOnCellular && !pocketTTSReadyForAlba {
+                        Text("Wi-Fi is recommended for this download.")
+                            .font(.appFont(14, variant: .light))
+                            .foregroundStyle(.yellow)
+                            .multilineTextAlignment(.center)
+                            .opacity(footerOpacity)
+                            .padding(.top, 18)
+                    }
 
                     setupHint
                         .opacity(footerOpacity)
@@ -55,12 +63,13 @@ struct KeyVoxSpeakSceneCView: View {
 
                     fastModeHint
                         .opacity(fastModeHintOpacity)
-                        .padding(.top, 8)
+                        .padding(.top, 10)
 
-                    Spacer(minLength: 20)
+                    Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
+            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
@@ -101,11 +110,11 @@ struct KeyVoxSpeakSceneCView: View {
     private var fastModeHint: some View {
         HStack(spacing: 8) {
             Image(systemName: "bolt.fill")
-                .font(.system(size: 16, weight: .medium))
+                .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(.yellow.opacity(0.8))
 
             Text("Don't forget: Fast Mode starts speaking ~50% faster.")
-                .font(.appFont(13, variant: .light))
+                .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.55))
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -113,12 +122,12 @@ struct KeyVoxSpeakSceneCView: View {
 
     private var setupHint: some View {
         HStack(spacing: 8) {
-            Image(systemName: pocketTTSReadyForAlba ? "checkmark.circle.fill" : "arrow.down.circle.fill")
-                .font(.system(size: 16, weight: .medium))
+            Image(systemName: pocketTTSReadyForAlba ? "house.circle.fill" : "arrow.forward.circle.fill")
+                .font(.system(size: 25, weight: .heavy))
                 .foregroundStyle(.yellow.opacity(0.8))
 
             Text(setupHintText)
-                .font(.appFont(13, variant: .light))
+                .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.55))
         }
         .frame(maxWidth: .infinity, alignment: .center)

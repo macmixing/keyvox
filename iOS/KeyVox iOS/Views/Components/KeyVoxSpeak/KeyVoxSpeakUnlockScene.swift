@@ -37,7 +37,6 @@ struct KeyVoxSpeakUnlockScene: View {
     @State private var taglineOpacity: Double = 0
     @State private var rowRevealProgress: Int = 0
     @State private var footerOpacity: Double = 0
-    @State private var idlePulseScale: CGFloat = 1.0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
@@ -50,7 +49,6 @@ struct KeyVoxSpeakUnlockScene: View {
                     LogoBarView(size: 60)
                         .opacity(logoOpacity)
                         .scaleEffect(logoScale)
-                        .scaleEffect(idlePulseScale)
                         .padding(.bottom, 14)
 
                     Text("Get Speak Unlimited")
@@ -60,7 +58,7 @@ struct KeyVoxSpeakUnlockScene: View {
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Upgrade once. Use Speak forever.")
+                    Text("Unlock once. Speak forever.")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -75,7 +73,7 @@ struct KeyVoxSpeakUnlockScene: View {
 
                             if benefit.id < Self.benefits.count - 1 {
                                 Rectangle()
-                                    .fill(Color.white.opacity(0.06))
+                                    .fill(Color.white.opacity(0.12))
                                     .frame(height: 1)
                                     .padding(.horizontal, 32)
                                     .opacity(benefit.id + 1 < rowRevealProgress ? 1 : 0)
@@ -94,6 +92,7 @@ struct KeyVoxSpeakUnlockScene: View {
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
+            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
@@ -110,12 +109,12 @@ struct KeyVoxSpeakUnlockScene: View {
                 .foregroundStyle(.yellow)
 
             Text(benefit.title)
-                .font(.appFont(15, variant: .medium))
+                .font(.appFont(16, variant: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
             Text(benefit.subtitle)
-                .font(.appFont(13, variant: .light))
+                .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.55))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -135,7 +134,6 @@ struct KeyVoxSpeakUnlockScene: View {
         taglineOpacity = 0
         rowRevealProgress = 0
         footerOpacity = 0
-        idlePulseScale = 1.0
 
         animationTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.2))
@@ -176,12 +174,6 @@ struct KeyVoxSpeakUnlockScene: View {
                 footerOpacity = 1
             }
 
-            try? await Task.sleep(for: .seconds(0.3))
-            guard !Task.isCancelled else { return }
-
-            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                idlePulseScale = 1.12
-            }
         }
     }
 

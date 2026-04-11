@@ -47,12 +47,16 @@ struct AppRootView: View {
 
     var body: some View {
         ZStack {
-            if destination == .onboarding || destination == .main {
+            if destination == .onboarding || destination == .main || destination == .playbackPreparation {
                 MainTabView()
 
                 if onboardingOverlayState == .visible || destination == .onboarding {
                     OnboardingFlowView()
                         .opacity(onboardingOverlayOpacity)
+                }
+
+                if destination == .playbackPreparation {
+                    PlaybackPreparationView()
                 }
             } else {
                 switch destination {
@@ -63,10 +67,7 @@ struct AppRootView: View {
                 case .returnToHost:
                     ReturnToHostView()
                         .transition(rootTransition)
-                case .playbackPreparation:
-                    PlaybackPreparationView()
-                        .transition(rootTransition)
-                case .onboarding, .main:
+                case .playbackPreparation, .onboarding, .main:
                     EmptyView()
                 }
             }

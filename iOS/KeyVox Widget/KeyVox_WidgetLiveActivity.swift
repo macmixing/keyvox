@@ -24,7 +24,7 @@ struct KeyVox_WidgetLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     KeyVoxSessionStopButton()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                 }
             } compactLeading: {
                 KeyVoxDynamicIslandLogo()
@@ -96,11 +96,11 @@ private struct KeyVoxDynamicIslandLogo: View {
 private struct KeyVoxSessionStopButton: View {
     var body: some View {
         Button(intent: EndSessionIntent()) {
-            Image("live-activity-button", bundle: .main)
+            Image(systemName: "power")
                 .resizable()
                 .renderingMode(.template)
                 .scaledToFit()
-                .frame(width: 29, height: 29)
+                .frame(width: 25, height: 25)
                 .foregroundStyle(.primary)
                 .padding(10)
         }

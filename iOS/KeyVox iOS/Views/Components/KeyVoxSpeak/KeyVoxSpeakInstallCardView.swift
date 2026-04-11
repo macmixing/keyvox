@@ -7,8 +7,6 @@ struct KeyVoxSpeakInstallCardView: View {
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject private var settingsStore: AppSettingsStore
 
-    let showsUnlockDetails: Bool
-    let purchaseSummaryText: String
     let revealedStepCount: Int
 
     var body: some View {
@@ -19,9 +17,17 @@ struct KeyVoxSpeakInstallCardView: View {
                         .fill(AppTheme.accent.opacity(0.4))
                         .frame(width: 34, height: 34)
 
-                    Image(systemName: pocketTTSReadyForAlba ? "checkmark" : "arrow.down.circle.fill")
-                        .font(.system(size: 15, weight: .heavy))
-                        .foregroundStyle(.yellow)
+                    if pocketTTSReadyForAlba {
+                        Image(systemName: "person.fill.checkmark")
+                            .font(.system(size: 15, weight: .heavy))
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.green, .yellow)
+                            .offset(x: 3)
+                    } else {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 15, weight: .heavy))
+                            .foregroundStyle(.yellow)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -46,12 +52,6 @@ struct KeyVoxSpeakInstallCardView: View {
                     .accessibilityHidden(revealedStepCount == 0)
             }
 
-            if showsUnlockDetails {
-                unlockSummaryRow
-                    .opacity(revealedStepCount == Self.installStepCount ? 1 : 0)
-                    .allowsHitTesting(revealedStepCount == Self.installStepCount)
-                    .accessibilityHidden(revealedStepCount != Self.installStepCount)
-            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 18)
@@ -113,15 +113,16 @@ struct KeyVoxSpeakInstallCardView: View {
                     Circle()
                         .fill(pocketTTSReadyForAlba ? Color.green : AppTheme.accent.opacity(0.32))
                         .frame(width: 22, height: 22)
+                        .overlay(Circle().stroke(pocketTTSReadyForAlba ? Color.green : Color.yellow, lineWidth: 0.4))
                         .overlay {
                             if pocketTTSReadyForAlba {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .heavy))
+                                    .font(.system(size: 12, weight: .black))
                                     .foregroundStyle(.black)
                             } else {
-                                Text("1")
-                                    .font(.appFont(12, variant: .medium))
-                                    .foregroundStyle(.white)
+                                Image(systemName: "arrowshape.down.fill")
+                                    .font(.system(size: 10, weight: .heavy))
+                                    .foregroundStyle(.yellow)
                             }
                         }
 
@@ -130,9 +131,11 @@ struct KeyVoxSpeakInstallCardView: View {
                             .font(.appFont(15, variant: .medium))
                             .foregroundStyle(.white)
 
-                        Text(installStatusText)
-                            .font(.appFont(13, variant: .light))
+                        (Text(installStatusText)
                             .foregroundStyle(.white.opacity(0.62))
+                        + Text(installSizeAnnotation ?? "")
+                            .foregroundStyle(.yellow.opacity(0.72)))
+                            .font(.appFont(13, variant: .light))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -174,30 +177,6 @@ struct KeyVoxSpeakInstallCardView: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
                         .stroke(AppTheme.rowStroke, lineWidth: 1)
-                )
-        )
-    }
-
-    private var unlockSummaryRow: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.yellow)
-
-            Text(purchaseSummaryText)
-                .font(.appFont(13, variant: .light))
-                .foregroundStyle(.white.opacity(0.72))
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                .fill(Color.white.opacity(0.04))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
         )
     }
@@ -246,6 +225,17 @@ struct KeyVoxSpeakInstallCardView: View {
             && pocketTTSModelManager.isBusyInstallingAnotherTarget(sharedModel: true) == false
     }
 
+    private var installSizeAnnotation: String? {
+        if pocketTTSReadyForAlba { return nil }
+
+        if case .notInstalled = sharedModelState { return " (~661 MB total)." }
+
+        if case .ready = sharedModelState,
+           case .notInstalled = albaVoiceState { return " (~19 MB)." }
+
+        return nil
+    }
+
     private var installStatusText: String {
         if pocketTTSReadyForAlba {
             return "Alba is installed, selected, and ready for KeyVox Speak."
@@ -253,7 +243,7 @@ struct KeyVoxSpeakInstallCardView: View {
 
         switch sharedModelState {
         case .notInstalled:
-            return "Install Alba and KeyVox will download PocketTTS first, then the Alba voice (~661 MB total)."
+            return "Install Alba and KeyVox will download PocketTTS first, then the Alba voice"
         case .downloading:
             return "Downloading the PocketTTS engine before installing Alba."
         case .installing:
@@ -261,7 +251,7 @@ struct KeyVoxSpeakInstallCardView: View {
         case .ready:
             switch albaVoiceState {
             case .notInstalled:
-                return "PocketTTS is ready. KeyVox will finish by installing Alba (~19 MB)."
+                return "PocketTTS is ready. KeyVox will finish by installing Alba"
             case .downloading:
                 return "Downloading Alba."
             case .installing:

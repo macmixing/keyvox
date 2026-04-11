@@ -73,16 +73,37 @@ extension HomeTabView {
                             onScrub: handleReplayScrub
                         )
                     } else {
-                        Text(ttsStatusText)
-                            .font(.appFont(14, variant: .light))
-                            .foregroundStyle(.white.opacity(0.7))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        ZStack(alignment: .leading) {
+                            HStack(alignment: .center, spacing: 12) {
+                                Text(ttsStatusText)
+                                    .font(.appFont(14, variant: .light))
+                                    .foregroundStyle(.white.opacity(0.7))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
 
-                        if let preparationPercentageText = ttsPreparationPercentageText {
-                            Text(preparationPercentageText)
-                                .font(.appFont(14, variant: .medium))
-                                .foregroundStyle(.yellow)
+                                if let preparationPercentageText = ttsPreparationPercentageText {
+                                    Text(preparationPercentageText)
+                                        .font(.appFont(14, variant: .medium))
+                                        .foregroundStyle(.yellow)
+                                        .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
+                                }
+                            }
+
+                            if mountsFastModeBackgroundSafetyWarningRow {
+                                HStack(alignment: .center, spacing: 6) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(.yellow)
+
+                                    Text(fastModeBackgroundSafetyWarningText)
+                                        .font(.appFont(14, variant: .light))
+                                        .foregroundStyle(.yellow.opacity(0.92))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .opacity(showsFastModeBackgroundSafetyWarningRow ? 1 : 0)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
 

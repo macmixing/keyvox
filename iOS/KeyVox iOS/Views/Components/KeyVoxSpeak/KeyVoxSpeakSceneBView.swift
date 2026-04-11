@@ -16,6 +16,7 @@ struct KeyVoxSpeakSceneBView: View {
     ]
 
     let isVisible: Bool
+    var isUnlockContext: Bool = false
 
     @State private var circleOpacity: Double = 0
     @State private var circleScale: CGFloat = 0.8
@@ -42,14 +43,15 @@ struct KeyVoxSpeakSceneBView: View {
                             .shadow(color: .yellow.opacity(0.3), radius: 8)
 
                         VStack(alignment: .leading, spacing: -6) {
-                            Text("How To Speak?")
-                                .font(.appFont(30, variant: .medium))
+                            Text("Speak Anywhere")
+                                .font(.appFont(35, variant: .medium))
                                 .foregroundStyle(.white)
 
-                            Text("Speak is everywhere you are.")
-                                .font(.appFont(16, variant: .light))
+                            Text(isUnlockContext ? "All of this. No daily cap." : "It's everywhere you are.")
+                                .font(.appFont(18, variant: .light))
                                 .foregroundStyle(.white.opacity(0.7))
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity)
                     .opacity(headerOpacity)
@@ -68,16 +70,17 @@ struct KeyVoxSpeakSceneBView: View {
                         .opacity(fastModeCardOpacity)
 
                     Text("Speak currently supports English only.")
-                        .font(.appFont(13, variant: .light))
+                        .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 10)
                         .opacity(disclosureOpacity)
 
-                    Spacer(minLength: 16)
+                    Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
+            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
@@ -95,17 +98,17 @@ struct KeyVoxSpeakSceneBView: View {
                     .frame(width: 34, height: 34)
 
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 18, weight: .medium))
+                    .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(.yellow)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Fast Mode Available")
-                    .font(.appFont(14, variant: .medium))
+                    .font(.appFont(16, variant: .medium))
                     .foregroundStyle(.white)
 
                 Text("Starts speaking ~50% faster. Toggle in the toolbar.")
-                    .font(.appFont(12, variant: .light))
+                    .font(.appFont(14, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -132,17 +135,17 @@ struct KeyVoxSpeakSceneBView: View {
                     .frame(width: 34, height: 34)
 
                 Image(systemName: method.icon)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.yellow)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(method.title)
-                    .font(.appFont(15, variant: .medium))
+                    .font(.appFont(17, variant: .medium))
                     .foregroundStyle(.white)
 
                 Text(method.subtitle)
-                    .font(.appFont(13, variant: .light))
+                    .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)

@@ -86,7 +86,7 @@ struct AppToolbarContent: ToolbarContent {
 
     private var sessionToggleButton: some View {
         Button(action: toggleSession) {
-            Image("logo-white-ios")
+            Image("keyvox-circle")
                 .resizable()
                 .renderingMode(.original)
                 .scaledToFit()
@@ -157,6 +157,7 @@ struct AppToolbarContent: ToolbarContent {
             Image(systemName: "bolt.fill")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
         }
         .allowsHitTesting(ttsManager.isFastModeToggleLocked == false)
         .accessibilityLabel(settingsStore.fastPlaybackModeEnabled ? "Disable fast playback" : "Enable fast playback")

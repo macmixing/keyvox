@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct HomeTabView: View {
+    private enum TTSStatusTransition {
+        static let fadeDuration = 0.2
+        static let revealDelayNanoseconds: UInt64 = 200_000_000
+    }
+
     @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var audioModeCoordinator: AudioModeCoordinator
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
@@ -17,6 +22,11 @@ struct HomeTabView: View {
     @State var isTTSTranscriptPanelContentVisible = false
     @State var ttsTranscriptRevealTask: Task<Void, Never>?
     @State var ttsTranscriptCollapseTask: Task<Void, Never>?
+    @State var hasReachedFastModeBackgroundSafeStateThisPlayback = false
+    @State var mountsFastModeBackgroundSafetyWarningRow = false
+    @State var showsFastModeBackgroundSafetyWarningRow = false
+    @State var showsPrimaryTTSStatusRow = true
+    @State var ttsStatusTransitionTask: Task<Void, Never>?
     @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
         UserDefaultsKeys.App.isTTSTranscriptExpanded,
@@ -41,11 +51,30 @@ struct HomeTabView: View {
         .onChange(of: shouldShowExpandedTTSTranscriptPanel, initial: true) { _, _ in
             updateTTSTranscriptPresentation()
         }
+        .onChange(of: ttsManager.state, initial: true) { _, _ in
+            syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: ttsManager.isFastModeBackgroundSafe, initial: true) { _, _ in
+            syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: ttsManager.isReplayingCachedPlayback, initial: true) { _, _ in
+            syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: ttsManager.isPlaybackPaused, initial: true) { _, _ in
+            syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: settingsStore.fastPlaybackModeEnabled, initial: true) { _, _ in
+            syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: showsFastModeBackgroundSafetyWarning, initial: true) { _, _ in
+            syncTTSStatusRows()
+        }
         .onDisappear {
             ttsPreparationRevealToken = UUID()
             ttsPreparationCollapseTask?.cancel()
             ttsTranscriptRevealTask?.cancel()
             ttsTranscriptCollapseTask?.cancel()
+            ttsStatusTransitionTask?.cancel()
         }
     }
 
@@ -111,6 +140,49 @@ struct HomeTabView: View {
             return "State: processingCapture"
         case .transcribing:
             return "State: transcribing"
+        }
+    }
+
+    private func syncFastModeBackgroundSafetyWarningState() {
+        let isEligibleFastPlayback =
+            settingsStore.fastPlaybackModeEnabled
+            && ttsManager.state == .playing
+            && ttsManager.isReplayingCachedPlayback == false
+            && ttsManager.isPlaybackPaused == false
+
+        guard isEligibleFastPlayback else {
+            hasReachedFastModeBackgroundSafeStateThisPlayback = false
+            return
+        }
+
+        if ttsManager.isFastModeBackgroundSafe {
+            hasReachedFastModeBackgroundSafeStateThisPlayback = true
+        }
+    }
+
+    private func syncTTSStatusRows() {
+        ttsStatusTransitionTask?.cancel()
+
+        if showsFastModeBackgroundSafetyWarning {
+            showsPrimaryTTSStatusRow = false
+            mountsFastModeBackgroundSafetyWarningRow = true
+            withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
+                showsFastModeBackgroundSafetyWarningRow = true
+            }
+            return
+        }
+
+        withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
+            showsFastModeBackgroundSafetyWarningRow = false
+        }
+
+        ttsStatusTransitionTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: TTSStatusTransition.revealDelayNanoseconds)
+            guard Task.isCancelled == false else { return }
+            mountsFastModeBackgroundSafetyWarningRow = false
+            withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
+                showsPrimaryTTSStatusRow = true
+            }
         }
     }
 }

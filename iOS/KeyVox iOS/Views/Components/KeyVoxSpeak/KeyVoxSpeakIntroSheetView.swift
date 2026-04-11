@@ -8,7 +8,8 @@ struct KeyVoxSpeakIntroSheetView: View {
     var body: some View {
         KeyVoxSpeakSheetView(
             mode: .intro(
-                onTryNow: dismissIntro
+                onTryNow: dismissIntro,
+                onDismiss: dismissIntro
             )
         )
         .environmentObject(ttsPurchaseController)

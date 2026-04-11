@@ -1,8 +1,14 @@
 import SwiftUI
 
 struct PlaybackPreparationView: View {
+    private enum DismissAnimation {
+        static let duration = 0.34
+    }
+
     @EnvironmentObject private var ttsManager: TTSManager
     @State private var isVideoReady = false
+    @State private var contentOpacity = 1.0
+    @State private var isDismissing = false
 
     var body: some View {
         ZStack {
@@ -76,7 +82,19 @@ struct PlaybackPreparationView: View {
                     Spacer()
 
                     Button {
-                        ttsManager.dismissPlaybackPreparationView()
+                        guard isDismissing == false else { return }
+                        isDismissing = true
+
+                        withAnimation(.easeInOut(duration: DismissAnimation.duration)) {
+                            contentOpacity = 0
+                        }
+
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .seconds(DismissAnimation.duration))
+                            ttsManager.dismissPlaybackPreparationView()
+                            contentOpacity = 1
+                            isDismissing = false
+                        }
                     } label: {
                         Text("Dismiss")
                             .font(.appFont(14, variant: .light))
@@ -92,6 +110,8 @@ struct PlaybackPreparationView: View {
                 Spacer()
             }
         }
+        .opacity(contentOpacity)
+        .dynamicTypeSize(.xSmall ... .xxxLarge)
         .animation(.easeInOut(duration: 0.1), value: isVideoReady)
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: ttsManager.playbackPreparationProgress)
         .animation(.easeInOut(duration: 0.2), value: ttsManager.playbackPreparationPhase)

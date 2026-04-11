@@ -30,13 +30,13 @@ struct KeyVoxSpeakSceneAView: View {
                         .padding(.bottom, 28)
 
                     Text("KeyVox Speak")
-                        .font(.appFont(32, variant: .medium))
+                        .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
                     Text("Copy text. Hear it speak.")
-                        .font(.appFont(18, variant: .light))
+                        .font(.appFont(20, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(subtitleOpacity)
                         .padding(.bottom, 23)
@@ -46,15 +46,16 @@ struct KeyVoxSpeakSceneAView: View {
                         .offset(y: demoCardOffset)
                         .padding(.bottom, 23)
 
-                    Text("Local AI Voices")
+                    Text("Up to 8 on-device AI voices")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(localAITextOpacity)
 
-                    Spacer(minLength: 24)
+                    Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
+            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
@@ -81,14 +82,13 @@ struct KeyVoxSpeakSceneAView: View {
                     .shadow(color: .yellow.opacity(isPlaying ? 0.5 : 0.25), radius: isPlaying ? 12 : 6)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Message from Alba")
-                        .font(.appFont(16, variant: .medium))
+                    Text("Listen to this first")
+                        .font(.appFont(18, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("\"I want you to try this.\"")
-                        .font(.appFont(14, variant: .light))
+                    Text("Tap play to hear Alba's voice.")
+                        .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.6))
-                        .lineLimit(1)
                 }
 
                 Spacer(minLength: 0)
@@ -121,7 +121,7 @@ struct KeyVoxSpeakSceneAView: View {
     }
 
     private var waveformIndicator: some View {
-        Image("logo-white-ios")
+            Image(systemName: "speaker.wave.2.fill")
             .resizable()
             .scaledToFit()
             .frame(height: 20)
