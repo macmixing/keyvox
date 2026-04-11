@@ -151,6 +151,9 @@ struct AppRootView: View {
             keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
             keyVoxSpeakIntroController.cancelPendingPresentation()
         }
+        .onChange(of: appUpdateCoordinator.activePrompt?.id, initial: false) { _, _ in
+            updateKeyVoxSpeakIntroPresentation(for: destination)
+        }
         .animation(rootAnimation, value: destination)
     }
 
@@ -172,7 +175,9 @@ struct AppRootView: View {
     }
 
     private func updateKeyVoxSpeakIntroPresentation(for destination: RootDestination) {
-        if destination == .main && onboardingStore.hasCompletedOnboardingThisLaunch == false {
+        if destination == .main,
+           onboardingStore.hasCompletedOnboardingThisLaunch == false,
+           appUpdateCoordinator.activePrompt == nil {
             keyVoxSpeakIntroController.schedulePresentationIfEligible()
         } else {
             keyVoxSpeakIntroController.cancelPendingPresentation()
