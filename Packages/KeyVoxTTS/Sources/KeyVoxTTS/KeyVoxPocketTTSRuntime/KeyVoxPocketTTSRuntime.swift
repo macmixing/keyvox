@@ -20,7 +20,7 @@ public actor KeyVoxPocketTTSRuntime {
     var constantsBundle: PocketTTSConstantsBundle?
     var cachedVoices: [KeyVoxTTSVoice: PocketTTSVoiceConditioning] = [:]
     var cachedVoiceKVSnapshots: [KeyVoxTTSVoice: PocketTTSInferenceTypes.KVCacheState] = [:]
-    private let computeModeController = ComputeModeController()
+    nonisolated let computeModeController = ComputeModeController()
 
     public init(assetLayout: KeyVoxTTSAssetLayout) {
         self.assetLayout = assetLayout
@@ -47,15 +47,20 @@ public actor KeyVoxPocketTTSRuntime {
     }
 
     public func setPreferredComputeMode(_ mode: KeyVoxTTSComputeMode) async {
-        await computeModeController.setMode(mode)
+        computeModeController.setMode(mode)
         Self.log("Preferred compute mode set to \(mode.logName).")
+    }
+
+    public nonisolated func requestPreferredComputeMode(_ mode: KeyVoxTTSComputeMode) {
+        computeModeController.setMode(mode)
+        Self.log("Preferred compute mode requested immediately: \(mode.logName).")
     }
 
     public func prepareVoiceIfNeeded(_ voice: KeyVoxTTSVoice) async throws {
         try await prepareIfNeeded()
 
         let voiceConditioning = try loadVoiceConditioning(voice)
-        let currentMode = await computeModeController.mode()
+        let currentMode = computeModeController.mode()
         let prefillModel = currentMode == .backgroundSafe
             ? try modelSet(backgroundModels, modeName: "background").condStepModel
             : try modelSet(foregroundModels, modeName: "foreground").condStepModel
@@ -84,7 +89,7 @@ public actor KeyVoxPocketTTSRuntime {
         let constants = try constants()
         let voiceConditioning = try loadVoiceConditioning(voice)
         let voicePrefillStart = CFAbsoluteTimeGetCurrent()
-        let currentMode = await computeModeController.mode()
+        let currentMode = computeModeController.mode()
         let prefillModel = currentMode == .backgroundSafe
             ? try modelSet(backgroundModels, modeName: "background").condStepModel
             : try modelSet(foregroundModels, modeName: "foreground").condStepModel

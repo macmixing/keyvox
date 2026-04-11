@@ -252,7 +252,7 @@ actor KeyVoxPocketTTSStreamGenerator {
     }
 
     private func activeModelSet() async -> KeyVoxPocketTTSRuntime.ModelSet {
-        switch await computeModeController.mode() {
+        switch computeModeController.mode() {
         case .foreground:
             return foregroundModels
         case .backgroundSafe:

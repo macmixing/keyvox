@@ -1,14 +1,20 @@
 import Foundation
 
-actor ComputeModeController {
+final class ComputeModeController: @unchecked Sendable {
+    private let lock = NSLock()
     private var preferredMode: KeyVoxTTSComputeMode = .foreground
 
     func setMode(_ mode: KeyVoxTTSComputeMode) {
+        lock.lock()
         preferredMode = mode
+        lock.unlock()
     }
 
     func mode() -> KeyVoxTTSComputeMode {
-        preferredMode
+        lock.lock()
+        let mode = preferredMode
+        lock.unlock()
+        return mode
     }
 }
 

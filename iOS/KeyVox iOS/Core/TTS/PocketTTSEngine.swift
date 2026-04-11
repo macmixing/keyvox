@@ -52,6 +52,18 @@ final class PocketTTSEngine: TTSEngine {
         }
     }
 
+    func requestForegroundSynthesisImmediately() {
+        guard let runtime else { return }
+        runtime.requestPreferredComputeMode(.foreground)
+        Self.log("Requested immediate foreground synthesis mode.")
+    }
+
+    func requestBackgroundContinuationImmediately() {
+        guard let runtime else { return }
+        runtime.requestPreferredComputeMode(.backgroundSafe)
+        Self.log("Requested immediate background-safe synthesis mode.")
+    }
+
     func makeAudioStream(
         for text: String,
         voiceID: String,

@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import UIKit
 
 extension TTSManager {
     private var shouldExposeFinishedReplaySystemPlayback: Bool {
@@ -80,6 +81,18 @@ extension TTSManager {
             "Handling system pause command state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback)"
         )
         guard state == .playing, isPlaybackPaused == false else { return }
+
+        let isBackgroundLiveGeneration =
+            UIApplication.shared.applicationState != .active
+            && isReplayingCachedPlayback == false
+        if isBackgroundLiveGeneration {
+            beginBackgroundTaskIfNeeded(force: true)
+            engine.requestBackgroundContinuationImmediately()
+            Task {
+                await engine.prepareForBackgroundContinuation()
+            }
+        }
+
         pausePlayback()
     }
 

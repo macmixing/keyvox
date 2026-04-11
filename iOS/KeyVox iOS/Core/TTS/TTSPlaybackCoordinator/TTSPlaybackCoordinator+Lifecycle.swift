@@ -138,6 +138,7 @@ extension TTSPlaybackCoordinator {
             audioEngine.pause()
             deactivateAudioSessionIfNeeded()
         }
+        handoffPausedAudioSessionIfNeeded()
         isPaused = true
         stopPlaybackProgressTimer()
         emitPlaybackProgress()
@@ -263,6 +264,7 @@ extension TTSPlaybackCoordinator {
                 playerNode.stop()
             }
             audioEngine.stop()
+            handoffPausedAudioSessionIfNeeded()
             Self.log("Replay prepared in paused state; audio engine stopped while keeping the playback session active.")
         }
     }
@@ -380,5 +382,31 @@ extension TTSPlaybackCoordinator {
     func handleFailure(_ error: Error) {
         stop(emitCallback: false)
         onPlaybackFailed?(error)
+    }
+
+    private func handoffPausedAudioSessionIfNeeded() {
+        guard audioSessionMode == .playbackWhilePreservingRecording else { return }
+
+        let session = AVAudioSession.sharedInstance()
+
+        do {
+            try session.setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            Self.log("Failed to deactivate preserved recording session before paused handoff: \(error.localizedDescription)")
+        }
+
+        do {
+            try session.setCategory(
+                .playback,
+                mode: .spokenAudio,
+                policy: .longFormAudio,
+                options: []
+            )
+            try? session.overrideOutputAudioPort(.none)
+            try session.setActive(true)
+            Self.log("Handed paused playback off to playback/spokenAudio session.")
+        } catch {
+            Self.log("Failed to hand paused playback off to playback session: \(error.localizedDescription)")
+        }
     }
 }

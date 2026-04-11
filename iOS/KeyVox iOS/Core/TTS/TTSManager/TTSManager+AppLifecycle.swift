@@ -3,11 +3,23 @@ import Foundation
 import UIKit
 
 extension TTSManager {
-    func handleAppDidBecomeActive() {
-        KeyVoxIPCBridge.touchHeartbeat()
+    private func requestImmediateForegroundSynthesis() {
+        engine.requestForegroundSynthesisImmediately()
         Task {
             await engine.prepareForForegroundSynthesis()
         }
+    }
+
+    private func requestImmediateBackgroundContinuation() {
+        engine.requestBackgroundContinuationImmediately()
+        Task {
+            await engine.prepareForBackgroundContinuation()
+        }
+    }
+
+    func handleAppDidBecomeActive() {
+        KeyVoxIPCBridge.touchHeartbeat()
+        requestImmediateForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
         endBackgroundTaskIfNeeded()
     }
@@ -24,9 +36,7 @@ extension TTSManager {
             }
             if hasStartedPlaybackForActiveRequest {
                 beginBackgroundTaskIfNeeded(force: true)
-                Task {
-                    await engine.prepareForBackgroundContinuation()
-                }
+                requestImmediateBackgroundContinuation()
                 playbackCoordinator.prepareForBackgroundTransition()
             } else {
                 endBackgroundTaskIfNeeded()
@@ -49,9 +59,7 @@ extension TTSManager {
         if shouldPreserveForegroundSynthesisDuringTransition {
             Self.log("Delaying background-safe synthesis switch until playback is ready to return.")
         } else {
-            Task {
-                await engine.prepareForBackgroundContinuation()
-            }
+            requestImmediateBackgroundContinuation()
         }
         playbackCoordinator.prepareForBackgroundTransition()
     }
@@ -111,6 +119,42 @@ extension TTSManager {
 
     func updateIdleSleepPrevention() {
         UIApplication.shared.isIdleTimerDisabled = shouldPreventIdleSleep
+    }
+
+    @objc
+    func handleProtectedDataWillBecomeUnavailableNotification(_ notification: Notification) {
+        let isActiveLiveGeneration =
+            state == .playing
+            && isPlaybackPaused == false
+            && isReplayingCachedPlayback == false
+
+        Self.log(
+            "Protected data will become unavailable state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback) fastMode=\(settingsStore.fastPlaybackModeEnabled) backgroundSafe=\(isFastModeBackgroundSafe) isActiveLiveGeneration=\(isActiveLiveGeneration)"
+        )
+
+        guard isActiveLiveGeneration else { return }
+
+        if settingsStore.fastPlaybackModeEnabled {
+            guard playbackCoordinator.canContinueBackgroundPlaybackInFastMode else {
+                if playbackCoordinator.canPausePlayback {
+                    Self.log("Protected data will become unavailable while fast-mode playback is not background-safe; pausing playback.")
+                    beginBackgroundTaskIfNeeded(force: true)
+                    requestImmediateBackgroundContinuation()
+                    pausePlayback()
+                }
+                return
+            }
+        }
+
+        beginBackgroundTaskIfNeeded(force: true)
+        requestImmediateBackgroundContinuation()
+    }
+
+    @objc
+    func handleProtectedDataDidBecomeAvailableNotification(_ notification: Notification) {
+        Self.log(
+            "Protected data did become available state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback)"
+        )
     }
 
     @objc

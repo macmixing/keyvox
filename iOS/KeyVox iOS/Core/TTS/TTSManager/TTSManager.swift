@@ -184,6 +184,18 @@ final class TTSManager: ObservableObject {
             name: AVAudioSession.routeChangeNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleProtectedDataWillBecomeUnavailableNotification(_:)),
+            name: UIApplication.protectedDataWillBecomeUnavailableNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleProtectedDataDidBecomeAvailableNotification(_:)),
+            name: UIApplication.protectedDataDidBecomeAvailableNotification,
+            object: nil
+        )
 
         restoreReplayablePlaybackIfNeeded()
         configureSystemPlaybackController()

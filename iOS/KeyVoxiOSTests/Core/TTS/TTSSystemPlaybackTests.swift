@@ -224,6 +224,8 @@ private struct StubAppHaptics: AppHapticsEmitting {
 private struct StubTTSEngine: TTSEngine {
     func prepareIfNeeded() async throws {}
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}
+    func requestForegroundSynthesisImmediately() {}
+    func requestBackgroundContinuationImmediately() {}
     func prepareForForegroundSynthesis() async {}
     func prepareForBackgroundContinuation() async {}
 
