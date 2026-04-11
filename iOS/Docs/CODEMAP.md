@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-10**
+**Last Updated: 2026-04-11**
 
 ## Project Overview
 
@@ -34,7 +34,7 @@ The current default runtime flow is:
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
-- **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, iCloud sync, weekly stats, model lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
+- **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, iCloud sync, weekly stats, model lifecycle, copied-text playback policy and lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
 - **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
 
 ## Contributor Notes
@@ -350,6 +350,7 @@ iOS/
 │   │   │   └── KeyboardViewControllerTests.swift
 │   │   ├── TTS/
 │   │   │   ├── TTSManager/
+│   │   │   │   ├── TTSManagerLifecycleTests.swift
 │   │   │   │   └── TTSManagerPolicyTests.swift
 │   │   │   ├── TTSPlaybackCoordinatorBufferingPolicyTests.swift
 │   │   │   └── TTSSystemPlaybackTests.swift
@@ -689,7 +690,7 @@ Packages/
 - `KeyVoxiOSTests/Core/Keyboard/`
   - Keyboard dictation control, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, and cursor-trackpad helpers.
 - `KeyVoxiOSTests/Core/TTS/`
-  - Deterministic TTS manager policy and buffering-policy coverage for copied-text playback behavior.
+  - Deterministic copied-text playback coverage for TTS manager lifecycle handoff rules, system playback integration, and buffering policy behavior.
 - `KeyVoxiOSTests/Core/Transcription/`
   - Transcription/session lifecycle and interrupted-capture recovery behavior.
 
