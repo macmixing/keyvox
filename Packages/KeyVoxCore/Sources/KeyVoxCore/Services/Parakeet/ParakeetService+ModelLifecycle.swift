@@ -11,6 +11,7 @@ extension ParakeetService {
         warmupHandle?.task.cancel()
         warmupHandle = nil
         parakeet?.unload()
+        logModelUnloadedIfNeeded(parakeet)
         parakeet = nil
         isTranscribing = false
     }
@@ -73,6 +74,7 @@ extension ParakeetService {
         guard warmupHandle?.id == handle.id else {
             if let warmedParakeet, parakeet !== warmedParakeet {
                 warmedParakeet.unload()
+                logModelUnloadedIfNeeded(warmedParakeet)
             }
             return
         }
@@ -82,6 +84,7 @@ extension ParakeetService {
         if let parakeet {
             if let warmedParakeet, parakeet !== warmedParakeet {
                 warmedParakeet.unload()
+                logModelUnloadedIfNeeded(warmedParakeet)
             }
             return
         }
@@ -94,5 +97,12 @@ extension ParakeetService {
         var params = ParakeetParams.default
         params.initialPrompt = initialPrompt
         return try Parakeet(fromModelURL: modelURL, withParams: params)
+    }
+
+    private func logModelUnloadedIfNeeded(_ parakeet: Parakeet?) {
+        guard parakeet != nil else { return }
+        #if DEBUG
+        print("ParakeetService: Unloaded model from memory.")
+        #endif
     }
 }

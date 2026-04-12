@@ -120,10 +120,6 @@ final class TranscriptionManager: ObservableObject {
         isSessionActive = recorder.isMonitoring
         lastTranscriptionText = KeyVoxIPCBridge.latestTranscription()
         hasPendingInterruptedCaptureRecovery = interruptedCaptureRecoveryStore.load() != nil
-        
-        if isModelAvailable {
-            transcriptionService.warmup()
-        }
 
         if isSessionActive {
             armIdleTimeout()

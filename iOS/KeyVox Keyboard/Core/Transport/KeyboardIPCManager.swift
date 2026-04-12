@@ -163,8 +163,9 @@ final class KeyboardIPCManager {
         let isPaused = KeyVoxIPCBridge.currentTTSIsPaused()
         switch ttsState {
         case .preparing, .generating, .playing:
-            if !isPaused, !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
+            if !isSessionWarm(), let age = KeyVoxIPCBridge.currentTTSStateAge(), age > 5 {
                 KeyVoxIPCBridge.clearTTSState()
+                return .idle
             } else {
                 switch ttsState {
                 case .playing:
