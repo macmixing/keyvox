@@ -68,6 +68,10 @@ struct KeyVoxSpeakSheetView: View {
         }
     }
 
+    private var pageIndexDisplayMode: PageTabViewStyle.IndexDisplayMode {
+        displayedScenes.count > 1 ? .always : .never
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -81,7 +85,7 @@ struct KeyVoxSpeakSheetView: View {
                                 .tag(scene)
                         }
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .always))
+                    .tabViewStyle(.page(indexDisplayMode: pageIndexDisplayMode))
                     .opacity(tabViewOpacity)
 
                     VStack(spacing: 8) {
