@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-03-31**
+**Last Updated: 2026-04-11**
 
 ## Design Philosophy
 
@@ -31,8 +31,8 @@ KeyVox is organized by responsibility:
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
-- `Core/Services/`: Paste/injection and update/checking services, while provider inference now lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
-- `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, and generic audio-indicator timing/state driving.
+- `Core/Services/`: Paste/injection and update/checking services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, while update feed source selection lives in `UpdateFeedConfig.swift` and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
+- `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
@@ -40,6 +40,7 @@ KeyVox is organized by responsibility:
 ### macOS Theme Ownership
 
 - `Views/Components/MacAppTheme.swift` is the shared macOS theme surface for reusable app-window styling tokens.
+- `Views/Components/UIComponents.swift` is the shared macOS typography/progress/effect surface for reusable non-branded UI primitives.
 - `MacAppTheme.screenBackground` is the source of truth for the standard macOS app window background (`#1A1740` equivalent).
 - Reusable settings/onboarding/update/modal styling should prefer `MacAppTheme` tokens instead of reintroducing local hard-coded indigo/background stacks.
 - `Views/StatusMenuView.swift` and `Views/Warnings/*` intentionally keep separate styling and should not be folded into `MacAppTheme` unless product direction changes.
@@ -104,9 +105,10 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 ## Update Feed and Release Checks
 
-`Core/Services/AppUpdateService.swift` is the update source-of-truth.
+`Core/Services/AppUpdateService.swift` is the prompt/check orchestration source-of-truth, with `Core/Services/UpdateFeedConfig.swift` owning which GitHub repository feed is used.
 
 - Reads latest release metadata from GitHub Releases.
+- Resolves the tracked feed through `UpdateFeedResolver`, allowing an optional local owner/repo override without changing tracked defaults.
 - Normalizes release tags such as `v1.2.3` to `1.2.3`.
 - Uses a summarized release-notes preview (summary section when present, else truncated body text).
 - Parses release metadata into an installable zip path vs manual-only fallback.
@@ -130,9 +132,13 @@ KeyVox now supports an in-place GitHub Releases updater on macOS.
 The updater is intentionally separated by concern:
 
 - `Core/Services/AppUpdateService.swift`
-  release discovery, session snooze behavior, and prompt construction
+  release discovery from the resolved feed, session snooze behavior, and prompt construction
 - `Core/Services/AppUpdateLogic.swift`
   pure release parsing, version comparison, and host allowlist helpers
+- `Core/Services/UpdateFeedConfig.swift`
+  tracked feed defaults plus local override resolution
+- `Core/Services/UpdatePromptPresenting.swift`
+  prompt UI abstraction boundary used by the service
 - `Core/Services/AppUpdate/`
   install pipeline pieces (`AppReleaseInfo`, manifest loading, download transport, checksum verification, extraction, bundle verification, install launch, cleanup, launch notice handling)
 - `Views/UpdatePromptOverlay.swift`
@@ -233,9 +239,11 @@ These remain integration/manual-test territory by design.
 - Keep branded visual tuning inside branded view files.
 - `Views/Components/LogoBarView.swift` is the only branded Mac logo file on this branch.
 - `Views/Components/MacAppTheme.swift` is the shared non-branded macOS theme file for app-window surfaces; keep generic window/theme tokens there rather than scattering repeated values across settings/onboarding/update views.
+- `Views/Components/UIComponents.swift` is the shared non-branded home for typography/effect/progress primitives; keep those generic building blocks there rather than re-declaring them in feature views.
 - Do not route `Views/StatusMenuView.swift` or `Views/Warnings/*` through `MacAppTheme` unless the product explicitly wants those surfaces visually unified with the main app windows.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
+- `Core/Overlay/OverlayTypes.swift` should remain the neutral home for reusable fling-impact models instead of folding those shapes into panel or physics files.
 - Keep the macOS iCloud settings sync split intact: `KeyVoxiCloudSyncCoordinator` owns dictionary/settings convergence, while `WeeklyWordStatsCloudSync` owns weekly usage only.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.

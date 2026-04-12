@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-03-31**
+**Last Updated: 2026-04-11**
 
 ## Project Overview
 
@@ -22,7 +22,10 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - Behavior and motion constants are kept file-local near their owning runtime logic to reduce maintenance confusion.
 - Proprietary visual tuning remains in the excluded branded file `Views/Components/LogoBarView.swift`.
 - Shared macOS app-window theme tokens now live in `Views/Components/MacAppTheme.swift`; use that file for reusable settings/onboarding/update/modal colors instead of repeating local window background stacks.
+- Shared macOS typography, blur wrappers, and generic progress visuals now live in `Views/Components/UIComponents.swift`.
 - `Views/StatusMenuView.swift` and `Views/Warnings/*` intentionally keep separate styling ownership and are not part of `MacAppTheme`.
+- `Core/Overlay/OverlayTypes.swift` owns reusable fling-impact models; keep those neutral and non-branded rather than embedding them into physics or panel files.
+- `Core/Services/UpdateFeedConfig.swift` owns the tracked GitHub feed plus the optional local override resolver; update-feed source selection should stay separate from prompt and install behavior.
 - No shared constants module is required unless a value is truly reused across multiple domains.
 - Unit tests intentionally focus on deterministic/runtime-safe behavior; hardware/global-input/UI-rendering remain integration scope.
 - `CODEMAP.md` is the source of truth for high-level file ownership and where major systems live; `ENGINEERING.md` owns behavior contracts, pipeline order, and maintainer policy.
@@ -33,43 +36,60 @@ This is a curated map of the repo layout (intentionally not an exhaustive invent
 
 ```text
 KeyVox/
-├── App/
-│   ├── KeyVoxApp.swift
-│   ├── WindowManager+Updates.swift
-│   ├── AppSettingsStore.swift
-│   ├── AppServiceRegistry.swift
-│   ├── LoginItemController.swift
-│   ├── WeeklyWordStatsStore.swift
-│   ├── UserDefaultsKeys.swift
-│   └── iCloud/
-├── Core/
-│   ├── KeyboardMonitor.swift
-│   ├── Audio/
-│   │   └── AudioRecorder.swift
-│   ├── ModelDownloader/
-│   ├── Transcription/
-│   │   └── TranscriptionManager.swift
-│   ├── Services/
-│   │   ├── Paste/
-│   │   │   └── PasteService.swift
-│   │   ├── AppUpdateService.swift
-│   │   └── AppUpdate/
-│   ├── Overlay/
-│   │   ├── OverlayManager.swift
-│   │   └── AudioIndicatorDriver.swift
-├── Views/
-│   ├── Components/
-│   │   ├── LogoBarView.swift
-│   │   ├── MacAppTheme.swift
-│   │   └── ConfirmDeletePromptView.swift
-│   ├── StatusMenuView.swift
-│   ├── OnboardingView.swift
-│   ├── RecordingOverlay.swift
-│   ├── UpdatePromptOverlay.swift
-│   ├── Updates/
-│   ├── Settings/
-│   └── Warnings/
-├── Resources/
+├── macOS/
+│   ├── App/
+│   │   ├── KeyVoxApp.swift
+│   │   ├── WindowManager+Updates.swift
+│   │   ├── AppSettingsStore.swift
+│   │   ├── AppServiceRegistry.swift
+│   │   ├── LoginItemController.swift
+│   │   ├── WeeklyWordStatsStore.swift
+│   │   ├── UserDefaultsKeys.swift
+│   │   └── iCloud/
+│   ├── Core/
+│   │   ├── KeyboardMonitor.swift
+│   │   ├── AudioDeviceManager.swift
+│   │   ├── Audio/
+│   │   │   └── AudioRecorder*.swift
+│   │   ├── ModelDownloader/
+│   │   ├── Transcription/
+│   │   │   └── TranscriptionManager.swift
+│   │   ├── Services/
+│   │   │   ├── Paste/
+│   │   │   │   ├── Accessibility/
+│   │   │   │   ├── Clipboard/
+│   │   │   │   ├── Heuristics/
+│   │   │   │   ├── MenuFallback/
+│   │   │   │   ├── Pipeline/
+│   │   │   │   └── PasteService.swift
+│   │   │   ├── AppUpdateService.swift
+│   │   │   ├── AppUpdateLogic.swift
+│   │   │   ├── UpdateFeedConfig.swift
+│   │   │   ├── UpdatePromptPresenting.swift
+│   │   │   └── AppUpdate/
+│   │   └── Overlay/
+│   │       ├── OverlayManager.swift
+│   │       ├── OverlayTypes.swift
+│   │       └── AudioIndicatorDriver.swift
+│   ├── Views/
+│   │   ├── Components/
+│   │   │   ├── LogoBarView.swift
+│   │   │   ├── MacAppTheme.swift
+│   │   │   ├── UIComponents.swift
+│   │   │   ├── SettingsLastTranscriptionCard.swift
+│   │   │   └── ConfirmDeletePromptView.swift
+│   │   ├── StatusMenuView.swift
+│   │   ├── OnboardingView.swift
+│   │   ├── RecordingOverlay.swift
+│   │   ├── UpdatePromptOverlay.swift
+│   │   ├── Updates/
+│   │   ├── Settings/
+│   │   └── Warnings/
+│   ├── Resources/
+│   ├── KeyVoxTests/
+│   └── Docs/
+│       ├── CODEMAP.md
+│       └── ENGINEERING.md
 ├── Packages/
 │   ├── KeyVoxCore/
 │   │   └── Sources/KeyVoxCore/
@@ -85,10 +105,7 @@ KeyVox/
 │   └── KeyVoxParakeet/
 ├── Tools/
 ├── build/
-├── KeyVoxTests/
-└── macOS/Docs/
-    ├── CODEMAP.md
-    └── ENGINEERING.md
+└── README.md
 ```
 
 
@@ -230,6 +247,8 @@ KeyVox/
   - NSPanel event capture for drag velocity sampling and double-click reset trigger.
 - `Core/Overlay/OverlayFlingPhysics.swift`
   - Pure fling impact/reflection/duration helpers used by motion control.
+- `Core/Overlay/OverlayTypes.swift`
+  - Shared neutral fling-impact models used across overlay physics and motion orchestration.
 - `Core/AudioDeviceManager.swift`
   - Microphone discovery and selection policy.
   - Uses `AppSettingsStore.selectedMicrophoneUID` for persisted selection.
@@ -268,10 +287,26 @@ KeyVox/
 ### Service Layer (`Core/Services` + `Packages/KeyVoxCore/Sources/KeyVoxCore/Services`)
 
 - `Core/Services/AppUpdateService.swift`
-  - Fetches the latest GitHub release, applies session snooze rules, and builds the initial update prompt.
+  - Fetches the latest GitHub release from the resolved feed, applies session snooze rules, and builds the initial update prompt.
   - Keeps automatic prompt policy separate from the install pipeline.
 - `Core/Services/AppUpdateLogic.swift`
   - Pure update release parsing, host allowlist checks, version normalization/comparison, and asset classification.
+- `Core/Services/UpdateFeedConfig.swift`
+  - Defines the tracked GitHub release feed plus the optional local override resolver used by update checks.
+- `Core/Services/UpdatePromptPresenting.swift`
+  - Small UI presentation seam used so update-check behavior stays testable and decoupled from prompt-window ownership.
+- `Core/Services/Paste/PasteService.swift`
+  - Host paste orchestrator that snapshots the clipboard, attempts Accessibility insertion first, coordinates menu fallback second, and restores or recovers clipboard state afterward.
+- `Core/Services/Paste/Accessibility/*`
+  - Focused AX inspection/live-session/injection helpers used for direct text insertion.
+- `Core/Services/Paste/MenuFallback/*`
+  - Menu-driven paste execution, scanning, verification, and warmup/fallback coordination.
+- `Core/Services/Paste/Clipboard/*`
+  - Clipboard snapshot and failure-recovery helpers that preserve clipboard fidelity during paste attempts.
+- `Core/Services/Paste/Heuristics/*`
+  - Leading-capitalization, spacing, and dictionary-casing helpers that keep insertion behavior deterministic across targets.
+- `Core/Services/Paste/Pipeline/*`
+  - Shared paste execution models and policy helpers used to keep decision logic pure and testable.
 - `Core/Services/AppUpdate/AppReleaseInfo.swift`
   - Canonical updater release and manifest metadata models.
 - `Core/Services/AppUpdate/AppUpdateCoordinator.swift`
@@ -415,6 +450,8 @@ KeyVox/
 
 - `Views/Components/AppActionButton.swift`
   - Shared capsule-styled primary/secondary/destructive button used across updater, settings prompt, and onboarding confirmation surfaces.
+- `Views/Components/UIComponents.swift`
+  - Shared app typography, blur wrapper, and generic progress presentation primitives used across macOS surfaces.
 - `Views/UpdatePromptOverlay.swift`
   - Lightweight update prompt shown before entering the dedicated updater window.
   - Owns prompt-window centering through `UpdatePromptManager`.
@@ -434,6 +471,8 @@ KeyVox/
   - Final post-update notice window shown after successful installs.
 - `Views/Components/AppUpdateProgressBar.swift`
   - Updater-specific progress bar component used inside updater progress UI.
+- `Views/Components/SettingsLastTranscriptionCard.swift`
+  - Home-tab card that surfaces the most recent successful transcription persisted by the host app.
 
 ### Release Tooling (`build/`)
 
