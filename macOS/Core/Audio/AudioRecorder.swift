@@ -14,6 +14,7 @@ class AudioRecorder: NSObject, ObservableObject {
     var captureInput: AVCaptureDeviceInput?
     var audioCaptureOutput: AVCaptureAudioDataOutput?
     var converter: AVAudioConverter?
+    var isStopFinalizationPending = false
 
     var audioData: [Float] = []
     let audioDataQueue = DispatchQueue(label: "AudioRecorder.audioDataQueue")
@@ -28,6 +29,7 @@ class AudioRecorder: NSObject, ObservableObject {
     let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
     let normalizationTargetPeak: Float = 0.9
     let normalizationMaxGain: Float = 3.0
+    var stopCaptureTailDuration: TimeInterval = 0.18
 
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0

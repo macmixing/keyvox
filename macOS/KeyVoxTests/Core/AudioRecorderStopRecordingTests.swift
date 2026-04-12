@@ -44,4 +44,40 @@ final class AudioRecorderStopRecordingTests: XCTestCase {
         XCTAssertEqual(finalBufferedCount, initialFrames.count + lateFrames.count)
         XCTAssertEqual(returnedFrames.count, finalBufferedCount)
     }
+
+    func testStopRecordingIncludesTailFramesDeliveredShortlyAfterStopRequest() {
+        let recorder = AudioRecorder()
+        recorder.captureStartedAt = Date()
+        recorder.isRecording = true
+        recorder.stopCaptureTailDuration = 0.06
+
+        let initialFrames = Array(repeating: Float(0.2), count: 1_600)
+        let tailFrames = Array(repeating: Float(0.2), count: 800)
+
+        recorder.audioDataQueue.sync {
+            recorder.audioData = initialFrames
+        }
+
+        recorder.captureQueue.asyncAfter(deadline: .now() + 0.02) {
+            recorder.audioDataQueue.sync {
+                recorder.audioData.append(contentsOf: tailFrames)
+            }
+        }
+
+        let stopFinished = expectation(description: "stop finished with tail frames")
+        var returnedFrames: [Float] = []
+        recorder.stopRecording { frames in
+            returnedFrames = frames
+            stopFinished.fulfill()
+        }
+
+        wait(for: [stopFinished], timeout: 1.0)
+
+        let finalBufferedCount = recorder.audioDataQueue.sync {
+            recorder.audioData.count
+        }
+
+        XCTAssertEqual(finalBufferedCount, initialFrames.count + tailFrames.count)
+        XCTAssertEqual(returnedFrames.count, finalBufferedCount)
+    }
 }
