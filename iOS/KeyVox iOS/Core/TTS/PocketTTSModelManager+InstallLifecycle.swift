@@ -67,7 +67,7 @@ extension PocketTTSModelManager {
                     throw NSError(
                         domain: "PocketTTSModelManager",
                         code: 5,
-                        userInfo: [NSLocalizedDescriptionKey: "PocketTTS install validation failed."]
+                        userInfo: [NSLocalizedDescriptionKey: "Speak engine install validation failed."]
                     )
                 }
 

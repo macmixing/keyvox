@@ -17,7 +17,7 @@ extension SettingsTabView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Text Model")
+                        Text("Dictation Model")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
@@ -158,10 +158,18 @@ extension SettingsTabView {
                 actionButton(for: modelID, state: state)
             }
 
-            HStack(alignment: .center, spacing: 12) {
-                Text(modelStatusText(for: modelID, state: state))
+            if case .notInstalled = state,
+               let descriptionText = modelDescriptionText(for: modelID) {
+                Text(descriptionText)
                     .font(.appFont(14, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack(alignment: .center, spacing: 12) {
+                Text(modelStatusText(for: modelID, state: state))
+                    .font(.appFont(13, variant: .light))
+                    .foregroundStyle(.white.opacity(0.56))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 if let percentageText = modelProgressPercentageText(for: state) {
@@ -268,6 +276,15 @@ extension SettingsTabView {
         }
     }
 
+    func modelDescriptionText(for modelID: DictationModelID) -> String? {
+        switch modelID {
+        case .whisperBase:
+            return "Accurate and lightweight."
+        case .parakeetTdtV3:
+            return "Lightning fast, heavier footprint."
+        }
+    }
+
     var selectableProviders: [AppSettingsStore.ActiveDictationProvider] {
         AppSettingsStore.ActiveDictationProvider.allCases.filter {
             modelManager.isModelReady(for: $0.modelID)
@@ -286,7 +303,7 @@ extension SettingsTabView {
 
     var textModelDescriptionText: String {
         if selectableProviders.isEmpty {
-            return "Install a text model to let KeyVox transcribe speech on this device."
+            return "Install a dictation model to let KeyVox transcribe speech on this device."
         }
         return "Choose which installed model KeyVox uses when transcribing speech on this device."
     }

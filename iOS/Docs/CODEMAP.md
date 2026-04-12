@@ -612,12 +612,14 @@ Packages/
   - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
 - `KeyVox iOS/Views/Components/InlineWarningRow.swift`
   - Shared yellow warning row treatment for inline caution copy, including the reused cellular-download warning shown across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings model surfaces.
+- `KeyVox iOS/Views/Components/ThirdPartyNoticesView.swift`
+  - Non-dismissable legal notices sheet with the shared top-right close affordance, rendering the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown inside app-styled readable text.
 - `KeyVox iOS/Views/Components/KeyVoxSpeak/`
   - Dedicated feature folder for the shared KeyVox Speak presentation surface.
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern.
   - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
-  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, Alba install, progress, and repair actions.
+  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/DictionaryTabView.swift`
@@ -625,14 +627,14 @@ Packages/
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView.swift`
-  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, the dedicated Restore Purchases card, version footer, and shared destructive-confirmation coordination.
+  - Session timeout, Live Activities toggle, keyboard haptics, audio preference, App Store review, support link, the dedicated Restore Purchases card, the third-party notices footer link and sheet presentation, version footer, and shared destructive-confirmation coordination.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView+Models.swift`
-  - Release-facing `Text Model` section, provider selection, per-model install actions, and not-installed size labels.
+  - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView+TTS.swift`
-  - Release-facing `Voice Model` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
+  - Release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/Components/SettingsDeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/ReturnToHostView.swift`

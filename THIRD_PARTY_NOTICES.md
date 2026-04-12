@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-This project is primarily licensed under MIT for source code (see `LICENSE.md`).
+This project is primarily licensed under MIT for source code (see [our license](https://github.com/macmixing/keyvox/blob/main/LICENSE.md)).
 Third-party components, data, and fonts remain under their original licenses.
 
 ## Runtime Components

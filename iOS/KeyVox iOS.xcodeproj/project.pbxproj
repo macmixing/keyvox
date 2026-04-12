@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B64A2A42FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */; };
 		8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -80,6 +81,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = text; name = THIRD_PARTY_NOTICES.md; path = ../THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
 		8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Keyboard.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -334,6 +336,7 @@
 		8E9E38492F5BF1F000EAFA72 = {
 			isa = PBXGroup;
 			children = (
+				5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */,
 				8EECE7322F64020900BECF17 /* Launch Screen.storyboard */,
 				8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */,
 				8E7DB6AB2F81EAF6009E3576 /* KeyVox iOS */,
@@ -566,6 +569,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B64A2A42FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */,
 			);

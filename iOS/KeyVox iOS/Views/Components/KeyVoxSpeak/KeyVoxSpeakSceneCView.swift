@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct KeyVoxSpeakSceneCView: View {
+    private static let featuredVoice = AppSettingsStore.TTSVoice.alba
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var networkMonitor = OnboardingDownloadNetworkMonitor()
 
@@ -28,7 +29,7 @@ struct KeyVoxSpeakSceneCView: View {
                             .font(.appFont(35, variant: .medium))
                             .foregroundStyle(.white)
 
-                        Text("Install Alba and be ready to speak right away.")
+                        Text("Install \(Self.featuredVoice.displayName) and be ready to speak right away.")
                             .font(.appFont(18, variant: .light))
                             .foregroundStyle(.white.opacity(0.7))
                             .multilineTextAlignment(.center)
@@ -103,14 +104,14 @@ struct KeyVoxSpeakSceneCView: View {
 
     private var setupHintText: String {
         if pocketTTSReadyForAlba {
-            return "Alba is ready. You can start KeyVox Speak from the Home tab now."
+            return "\(Self.featuredVoice.displayName) is ready. You can start KeyVox Speak from the Home tab now."
         }
 
         if case .ready = sharedModelState {
-            return "PocketTTS is ready. Finish installing Alba and you'll be ready to speak."
+            return "The Speak engine is ready. Finish by installing \(Self.featuredVoice.displayName)'s voice and you'll be ready to speak."
         }
 
-        return "Install Alba and KeyVox will take care of the PocketTTS setup for you."
+        return "Install \(Self.featuredVoice.displayName) and KeyVox will take care of everything under the hood."
     }
 
     private var fastModeHint: some View {

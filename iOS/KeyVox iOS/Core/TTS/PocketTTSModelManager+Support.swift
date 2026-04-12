@@ -6,7 +6,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the PocketTTS model install directory."]
+                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the Speak engine install directory."]
             )
         }
         return rootURL
@@ -17,7 +17,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 10,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the PocketTTS root directory."]
+                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the Speak engine root directory."]
             )
         }
         return rootURL
@@ -43,7 +43,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 3,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to create the PocketTTS staging directory."]
+                userInfo: [NSLocalizedDescriptionKey: "Unable to create the Speak engine staging directory."]
             )
         }
 
@@ -81,7 +81,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 4,
-                userInfo: [NSLocalizedDescriptionKey: "PocketTTS download failed."]
+                userInfo: [NSLocalizedDescriptionKey: "Speak engine download failed."]
             )
         }
         log("Download request succeeded for \(url.absoluteString) with status \(httpResponse.statusCode).")

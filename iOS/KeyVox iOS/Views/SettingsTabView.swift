@@ -13,6 +13,7 @@ struct SettingsTabView: View {
     @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
+    @State var isThirdPartyNoticesPresented = false
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
     static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
@@ -43,6 +44,9 @@ struct SettingsTabView: View {
                 restorePurchasesSection
                 versionFooter
             }
+        }
+        .sheet(isPresented: $isThirdPartyNoticesPresented) {
+            ThirdPartyNoticesView()
         }
         .onDisappear {
             ttsPreviewPlayer.stop()
@@ -297,13 +301,27 @@ struct SettingsTabView: View {
     @ViewBuilder
     private var versionFooter: some View {
         if let appVersionBuildText {
-            Text(appVersionBuildText)
-                .font(.appFont(12))
-                .foregroundStyle(.white.opacity(0.5))
-                .frame(maxWidth: .infinity)
-                .padding(.top, 12)
-                .padding(.bottom, 12)
+            VStack(spacing: 10) {
+                Button(action: presentThirdPartyNotices) {
+                    Text("Third-Party Notices")
+                        .font(.appFont(14))
+                        .foregroundStyle(AppTheme.accent.opacity(0.95))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+
+                Text(appVersionBuildText)
+                    .font(.appFont(12))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.bottom, 12)
         }
+    }
+
+    private func presentThirdPartyNotices() {
+        appHaptics.light()
+        isThirdPartyNoticesPresented = true
     }
 }
 

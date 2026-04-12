@@ -17,7 +17,7 @@ extension SettingsTabView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Voice Model")
+                        Text("KeyVox Speak")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
@@ -105,10 +105,10 @@ extension SettingsTabView {
                         .padding(.trailing, 12)
 
                     VStack(alignment: .leading, spacing: 14) {
-                        ForEach(Array(AppSettingsStore.TTSVoice.allCases.enumerated()), id: \.element) { index, voice in
+                        ForEach(Array(AppSettingsStore.TTSVoice.userFacingCases.enumerated()), id: \.element) { index, voice in
                             ttsVoiceRow(for: voice)
 
-                            if index < AppSettingsStore.TTSVoice.allCases.count - 1 {
+                            if index < AppSettingsStore.TTSVoice.userFacingCases.count - 1 {
                                 Divider()
                                     .background(.white.opacity(0.22))
                                     .padding(.leading, 12)
@@ -403,7 +403,7 @@ extension SettingsTabView {
         }
 
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install KeyVox Speak engine (PocketTTS CoreML) before downloading voices."
+            return "Install the KeyVox Speak engine before downloading voices."
         }
 
         let formattedSize = ByteCountFormatter.string(
@@ -456,12 +456,12 @@ extension SettingsTabView {
 
     var playbackVoiceDescriptionText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install the KeyVox Speak engine (PocketTTS CoreML) first. Then you can download voices."
+            return "Install the KeyVox Speak engine first, then you can download voices."
         }
         if installedPlaybackVoices.isEmpty {
             return "Download a playback voice to let KeyVox read copied text aloud."
         }
-        return "Choose which installed PocketTTS voice KeyVox uses when speaking copied text."
+        return "Choose which installed voice KeyVox uses when speaking copied text."
     }
 
     var ttsUnlockStatusText: String {

@@ -19,9 +19,9 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     var title: String {
         switch self {
         case .dictationModel:
-            return "Delete Text Model?"
+            return "Delete Dictation Model?"
         case .sharedTTSModel:
-            return "Delete Voice Runtime?"
+            return "Delete Speak Engine?"
         case .ttsVoice:
             return "Delete Voice?"
         }
@@ -32,7 +32,7 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
         case .dictationModel(let modelID):
             return "Delete the \(modelID.provider.displayName) model from this device?"
         case .sharedTTSModel:
-            return "Delete PocketTTS CoreML and all downloaded voices from this device?"
+            return "Delete the KeyVox Speak engine and all downloaded voices from this device?"
         case .ttsVoice(let voice):
             return "Delete the \(voice.displayName) voice from this device?"
         }

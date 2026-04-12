@@ -2,6 +2,7 @@ import SwiftUI
 
 struct KeyVoxSpeakInstallCardView: View {
     static let installStepCount = 1
+    private static let featuredVoice = AppSettingsStore.TTSVoice.alba
 
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var pocketTTSModelManager: PocketTTSModelManager
@@ -31,11 +32,11 @@ struct KeyVoxSpeakInstallCardView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Set Up Alba")
+                    Text("Set Up \(Self.featuredVoice.displayName)")
                         .font(.appFont(17, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Install Alba and KeyVox will handle the PocketTTS engine automatically.")
+                    Text("Install \(Self.featuredVoice.displayName)'s voice and KeyVox will handle the Speak engine for you.")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.68))
                         .fixedSize(horizontal: false, vertical: true)
@@ -238,31 +239,31 @@ struct KeyVoxSpeakInstallCardView: View {
 
     private var installStatusText: String {
         if pocketTTSReadyForAlba {
-            return "Alba is installed, selected, and ready for KeyVox Speak."
+            return "\(Self.featuredVoice.displayName)'s voice is installed, selected, and ready for KeyVox Speak."
         }
 
         switch sharedModelState {
         case .notInstalled:
-            return "Install Alba and KeyVox will download PocketTTS first, then the Alba voice"
+            return "Install \(Self.featuredVoice.displayName) and KeyVox will download the Speak engine first, then \(Self.featuredVoice.displayName)'s voice"
         case .downloading:
-            return "Downloading the PocketTTS engine before installing Alba."
+            return "Downloading the Speak engine before installing \(Self.featuredVoice.displayName)."
         case .installing:
-            return "Installing the PocketTTS engine before Alba."
+            return "Installing the Speak engine before \(Self.featuredVoice.displayName)."
         case .ready:
             switch albaVoiceState {
             case .notInstalled:
-                return "PocketTTS is ready. KeyVox will finish by installing Alba"
+                return "KeyVox Speak engine is ready. Now we'll finish by installing \(Self.featuredVoice.displayName)'s voice."
             case .downloading:
-                return "Downloading Alba."
+                return "Downloading \(Self.featuredVoice.displayName)."
             case .installing:
-                return "Installing Alba."
+                return "Installing \(Self.featuredVoice.displayName)."
             case .ready:
-                return "Alba is installed, selected, and ready for KeyVox Speak."
+                return "\(Self.featuredVoice.displayName) is installed, selected, and ready for KeyVox Speak."
             case .failed:
-                return "Alba needs repair."
+                return "\(Self.featuredVoice.displayName) needs repair."
             }
         case .failed:
-            return "PocketTTS setup needs repair before Alba can finish installing."
+            return "Speak engine setup needs repair before \(Self.featuredVoice.displayName) can finish installing."
         }
     }
 

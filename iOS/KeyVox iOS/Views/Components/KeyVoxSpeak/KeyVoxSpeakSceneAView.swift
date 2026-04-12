@@ -2,6 +2,7 @@ import SwiftUI
 
 struct KeyVoxSpeakSceneAView: View {
     private static let demoResourceName = "keyvox-speak-demo"
+    private static let featuredVoice = AppSettingsStore.TTSVoice.alba
 
     @EnvironmentObject private var ttsPreviewPlayer: TTSPreviewPlayer
 
@@ -86,7 +87,7 @@ struct KeyVoxSpeakSceneAView: View {
                         .font(.appFont(18, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Tap play to hear Alba's voice.")
+                    Text("Tap play to hear \(Self.featuredVoice.displayName)'s voice.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.6))
                 }

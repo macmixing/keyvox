@@ -42,11 +42,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     }
 
     func stop() {
-        player?.stop()
-        player = nil
-        activePreviewResourceName = nil
-        isPlaying = false
-        deactivateAudioSessionIfNeeded()
+        resetPlaybackState(deactivateAudioSession: true)
     }
 
     func hasPreview(resourceName: String) -> Bool {
@@ -75,6 +71,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
         }
 
         do {
+            resetPlaybackState(deactivateAudioSession: false)
             try configureAudioSession()
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
@@ -87,6 +84,20 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
         } catch {
             Self.log("Failed to play preview for \(resourceName): \(String(describing: error))")
             stop()
+        }
+    }
+
+    private func resetPlaybackState(deactivateAudioSession: Bool) {
+        let previousPlayer = player
+        player = nil
+        activePreviewResourceName = nil
+        isPlaying = false
+
+        previousPlayer?.delegate = nil
+        previousPlayer?.stop()
+
+        if deactivateAudioSession {
+            deactivateAudioSessionIfNeeded()
         }
     }
 

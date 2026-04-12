@@ -43,7 +43,7 @@ final class AppSettingsStore: ObservableObject {
             case .whisper:
                 return "Whisper Base"
             case .parakeet:
-                return "Parakeet TDT v3"
+                return "Parakeet v3"
             }
         }
 

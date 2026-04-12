@@ -12,24 +12,29 @@ enum KeyVoxPlaybackVoice: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
+    static var userFacingCases: [Self] {
+        allCases.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+
+    // Raw values stay as stable internal codenames while displayName carries the branded UI label.
     var displayName: String {
         switch self {
         case .alba:
-            return "Alba"
+            return "Theo"
         case .azelma:
-            return "Azelma"
+            return "Anne"
         case .cosette:
-            return "Cosette"
+            return "Jordan"
         case .eponine:
-            return "Eponine"
+            return "Sharon"
         case .fantine:
-            return "Fantine"
+            return "Victoria"
         case .javert:
-            return "Javert"
+            return "Dean"
         case .jean:
-            return "Jean"
+            return "Jon"
         case .marius:
-            return "Marius"
+            return "Parker"
         }
     }
 }

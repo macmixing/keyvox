@@ -50,7 +50,7 @@ final class PocketTTSModelManager: ObservableObject {
         self.session = session
         self.assetLocator = assetLocator ?? PocketTTSAssetLocator(fileManager: fileManager)
         self.voiceInstallStates = Dictionary(
-            uniqueKeysWithValues: AppSettingsStore.TTSVoice.allCases.map { ($0, .notInstalled) }
+            uniqueKeysWithValues: AppSettingsStore.TTSVoice.userFacingCases.map { ($0, .notInstalled) }
         )
         refreshStatus()
     }
@@ -66,7 +66,7 @@ final class PocketTTSModelManager: ObservableObject {
     func refreshStatus() {
         guard installTask == nil else { return }
         sharedModelInstallState = assetLocator.isSharedModelInstalled() ? .ready : .notInstalled
-        for voice in AppSettingsStore.TTSVoice.allCases {
+        for voice in AppSettingsStore.TTSVoice.userFacingCases {
             voiceInstallStates[voice] = assetLocator.isVoiceInstalled(voice) ? .ready : .notInstalled
         }
     }
@@ -96,7 +96,7 @@ final class PocketTTSModelManager: ObservableObject {
     }
 
     func installedVoices() -> [AppSettingsStore.TTSVoice] {
-        AppSettingsStore.TTSVoice.allCases.filter { voice in
+        AppSettingsStore.TTSVoice.userFacingCases.filter { voice in
             if case .ready = installState(for: voice) {
                 return true
             }

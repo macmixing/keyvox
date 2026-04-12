@@ -125,7 +125,7 @@ enum PocketTTSModelCatalog {
             throw NSError(
                 domain: "PocketTTSModelCatalog",
                 code: 6,
-                userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) is not a supported PocketTTS voice."]
+                userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) is not a supported Speak engine voice."]
             )
         }
 
@@ -173,7 +173,7 @@ enum PocketTTSModelCatalog {
             throw NSError(
                 domain: "PocketTTSModelCatalog",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to fetch PocketTTS asset metadata."]
+                userInfo: [NSLocalizedDescriptionKey: "Failed to fetch Speak engine asset metadata."]
             )
         }
         log("Tree fetch succeeded for \(path) with status \(httpResponse.statusCode).")

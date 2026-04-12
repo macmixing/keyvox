@@ -137,6 +137,10 @@ struct KeyVoxSpeakSheetView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.white.opacity(0.58))
                                 .frame(width: 28, height: 28)
+                                .background {
+                                    Color.clear
+                                        .frame(width: 56, height: 56)
+                                }
                                 .contentShape(Rectangle())
                         }
                         .accessibilityLabel("Close")
@@ -224,6 +228,7 @@ struct KeyVoxSpeakSheetView: View {
     }
 
     private func dismissSheet() {
+        appHaptics.light()
         switch mode {
         case .intro(_, _, let onDismiss):
             onDismiss()
