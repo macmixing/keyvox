@@ -11,7 +11,7 @@ struct OnboardingKeyboardTourState: Equatable {
     var hasCompletedFirstTourTranscription = false
 
     var scene: Scene {
-        if hasCompletedFirstTourTranscription {
+        if canFinish {
             return .c
         }
 

@@ -13,6 +13,7 @@ struct SettingsTabView: View {
     @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
+    @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
     static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
     

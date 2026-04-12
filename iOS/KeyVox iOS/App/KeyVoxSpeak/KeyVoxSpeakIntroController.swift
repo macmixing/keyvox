@@ -4,6 +4,7 @@ import Foundation
 @MainActor
 final class KeyVoxSpeakIntroController: ObservableObject {
     @Published var isPresented: Bool
+    @Published var introPresentation: KeyVoxSpeakSheetView.IntroPresentation
 
     private let defaults: UserDefaults
     private let forcePresentation: Bool
@@ -18,6 +19,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         self.defaults = defaults
         self.forcePresentation = forcePresentation
         self.isPresented = false
+        self.introPresentation = .full
     }
 
     func markDeferredUntilNextEligibleLaunch() {
@@ -31,6 +33,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         isShowingReturnToHost: Bool
     ) {
         if forcePresentation {
+            introPresentation = .full
             isPresented = true
             return
         }
@@ -52,6 +55,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
             guard hasUsedKeyVoxSpeak == false else { return }
 
             defaults.set(false, forKey: UserDefaultsKeys.App.shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch)
+            introPresentation = .full
             isPresented = true
             pendingPresentationTask = nil
         }
@@ -59,6 +63,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
 
     func schedulePresentationIfEligible() {
         if forcePresentation {
+            introPresentation = .full
             isPresented = true
             return
         }
@@ -76,9 +81,18 @@ final class KeyVoxSpeakIntroController: ObservableObject {
             guard hasSeenIntro == false else { return }
             guard hasUsedKeyVoxSpeak == false else { return }
 
+            introPresentation = .full
             isPresented = true
             pendingPresentationTask = nil
         }
+    }
+
+    func present(
+        introPresentation: KeyVoxSpeakSheetView.IntroPresentation
+    ) {
+        cancelPendingPresentation()
+        self.introPresentation = introPresentation
+        isPresented = true
     }
 
     func cancelPendingPresentation() {

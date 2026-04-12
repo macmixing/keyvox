@@ -14,6 +14,7 @@ struct HomeTabView: View {
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @EnvironmentObject var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationVisible = false
     @State var ttsPreparationRevealToken = UUID()
@@ -27,6 +28,7 @@ struct HomeTabView: View {
     @State var showsFastModeBackgroundSafetyWarningRow = false
     @State var showsPrimaryTTSStatusRow = true
     @State var ttsStatusTransitionTask: Task<Void, Never>?
+    @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
         UserDefaultsKeys.App.isTTSTranscriptExpanded,
@@ -65,6 +67,9 @@ struct HomeTabView: View {
         }
         .onChange(of: settingsStore.fastPlaybackModeEnabled, initial: true) { _, _ in
             syncFastModeBackgroundSafetyWarningState()
+        }
+        .onChange(of: ttsManager.warningMessage, initial: true) { _, _ in
+            syncTTSStatusRows()
         }
         .onChange(of: showsFastModeBackgroundSafetyWarning, initial: true) { _, _ in
             syncTTSStatusRows()
@@ -163,7 +168,7 @@ struct HomeTabView: View {
     private func syncTTSStatusRows() {
         ttsStatusTransitionTask?.cancel()
 
-        if showsFastModeBackgroundSafetyWarning {
+        if ttsWarningText != nil {
             showsPrimaryTTSStatusRow = false
             mountsFastModeBackgroundSafetyWarningRow = true
             withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
@@ -196,4 +201,5 @@ struct HomeTabView: View {
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
+        .environmentObject(AppServiceRegistry.shared.keyVoxSpeakIntroController)
 }

@@ -1,6 +1,19 @@
 import Foundation
 
 extension TTSManager {
+    private enum WarningCopy {
+        static let emptyClipboard = "Copy something first."
+    }
+
+    func showEmptyClipboardWarning() {
+        warningMessage = WarningCopy.emptyClipboard
+        appHaptics.warning()
+    }
+
+    func clearWarningMessage() {
+        warningMessage = nil
+    }
+
     func presentPlaybackPreparationView() {
         shouldPersistPlaybackPreparationViewUntilBackground = true
         resetPlaybackPreparationState()
@@ -52,6 +65,7 @@ extension TTSManager {
             } else {
                 Self.log("Playback failed with no active request. error=\(message)")
             }
+            self.warningMessage = nil
             self.lastErrorMessage = message
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
@@ -144,6 +158,7 @@ extension TTSManager {
             onNewGenerationPlaybackStarted()
             shouldConsumeFreeSpeakOnPlaybackStart = false
         }
+        warningMessage = nil
         hasStartedPlaybackForActiveRequest = true
         isPlaybackPaused = false
         isReplayingCachedPlayback = playbackCoordinator.isReplayingCachedPlayback

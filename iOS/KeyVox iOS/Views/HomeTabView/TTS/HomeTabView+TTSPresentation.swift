@@ -197,6 +197,25 @@ extension HomeTabView {
         return pocketTTSModelManager.installedVoices().first ?? settingsStore.ttsVoice
     }
 
+    var keyVoxSpeakHelpPresentation: KeyVoxSpeakSheetView.IntroPresentation {
+        let hasInstalledSpeakAssets =
+            pocketTTSModelManager.isSharedModelReady()
+            && pocketTTSModelManager.isReady(for: effectiveTTSVoice)
+
+        let hasUsedKeyVoxSpeak = SharedPaths.appGroupUserDefaults()?
+            .bool(forKey: UserDefaultsKeys.App.hasUsedKeyVoxSpeak) ?? false
+
+        return KeyVoxSpeakFlowRules.helpPresentation(
+            hasInstalledSpeakAssets: hasInstalledSpeakAssets,
+            hasUsedKeyVoxSpeak: hasUsedKeyVoxSpeak
+        )
+    }
+
+    func handleKeyVoxSpeakHelpAction() {
+        appHaptics.light()
+        keyVoxSpeakIntroController.present(introPresentation: keyVoxSpeakHelpPresentation)
+    }
+
     func handlePrimaryTTSAction() {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {

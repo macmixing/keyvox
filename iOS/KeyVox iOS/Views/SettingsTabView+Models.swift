@@ -51,11 +51,18 @@ extension SettingsTabView {
                 Divider()
                     .background(.white.opacity(0.22))
 
-                HStack(alignment: .center, spacing: 12) {
-                    Text(textModelDescriptionText)
-                        .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(textModelDescriptionText)
+                            .font(.appFont(15, variant: .light))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        if showsCombinedTextModelCellularWarning {
+                            InlineWarningRow(text: InlineWarningRow.Copy.cellularModelDownloadRecommended)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     Button {
                         appHaptics.light()
@@ -165,9 +172,17 @@ extension SettingsTabView {
             }
 
             if case .failed(let message) = state {
-                Text(message)
-                    .font(.appFont(12))
-                    .foregroundStyle(.red)
+                    Text(message)
+                        .font(.appFont(12))
+                        .foregroundStyle(.red)
+            }
+
+            if InlineWarningRules.showsSettingsIndividualTextModelWarning(
+                isOnCellular: downloadNetworkMonitor.isOnCellular,
+                showsCombinedWarning: showsCombinedTextModelCellularWarning,
+                modelState: state
+            ) {
+                InlineWarningRow(text: InlineWarningRow.Copy.cellularDownloadRecommended)
             }
 
             switch state {
@@ -278,6 +293,13 @@ extension SettingsTabView {
 
     var shouldShowExpandedModelContent: Bool {
         isModelSectionExpanded
+    }
+
+    var showsCombinedTextModelCellularWarning: Bool {
+        InlineWarningRules.showsSettingsCombinedTextModelWarning(
+            isOnCellular: downloadNetworkMonitor.isOnCellular,
+            modelStates: DictationModelID.allCases.map { modelManager.state(for: $0) }
+        )
     }
 
     func updateModelExpandedContentHeight(_ newHeight: CGFloat) {

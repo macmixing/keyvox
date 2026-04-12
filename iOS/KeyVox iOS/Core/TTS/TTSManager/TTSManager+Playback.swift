@@ -3,8 +3,11 @@ import Foundation
 
 extension TTSManager {
     func startPlaybackFromClipboard() async {
+        clearWarningMessage()
+
         guard let text = clipboardTextProvider()?.trimmingCharacters(in: .whitespacesAndNewlines),
               text.isEmpty == false else {
+            showEmptyClipboardWarning()
             return
         }
 
@@ -21,6 +24,8 @@ extension TTSManager {
     }
 
     func startPlaybackFromPendingRequest(showPreparationView: Bool = false) async {
+        clearWarningMessage()
+
         guard let request = KeyVoxIPCBridge.readTTSRequest(),
               request.trimmedText.isEmpty == false else {
             dismissPlaybackPreparationView()
@@ -52,6 +57,8 @@ extension TTSManager {
     }
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
+        clearWarningMessage()
+
         if canReplayExistingAsset(for: request) {
             Self.log(
                 "Reusing replayable asset for id=\(request.id.uuidString) voice=\(request.voiceID) source=\(request.sourceSurface.rawValue) textLength=\(request.trimmedText.count)"
@@ -114,6 +121,8 @@ extension TTSManager {
     }
 
     func resumePlayback() {
+        clearWarningMessage()
+
         if playbackCoordinator.canResumePlayback == false,
            let pausedReplaySampleOffset,
            hasReplayablePlayback,
@@ -135,6 +144,7 @@ extension TTSManager {
 
     func replayLastPlayback() {
         guard hasReplayablePlayback else { return }
+        clearWarningMessage()
 
         if let lastReplayableRequest {
             activeRequest = lastReplayableRequest
@@ -152,6 +162,7 @@ extension TTSManager {
 
     func seekReplay(toProgress progress: Double) {
         guard hasReplayablePlayback else { return }
+        clearWarningMessage()
 
         let clampedProgress = min(max(0, progress), 1)
         let sampleOffset = Int(Double(playbackCoordinator.replayablePlaybackSampleCount) * clampedProgress)
@@ -201,6 +212,8 @@ extension TTSManager {
     }
 
     func stopPlayback() async {
+        clearWarningMessage()
+
         if let activeRequest {
             Self.log("Stop requested for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
         } else {

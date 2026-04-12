@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-11**
+**Last Updated: 2026-04-12**
 
 ## Project Overview
 
@@ -95,6 +95,9 @@ iOS/
 │   │   │   ├── OnboardingSetupState.swift
 │   │   │   ├── OnboardingStore.swift
 │   │   │   └── RuntimeFlags.swift
+│   │   ├── Presentation/
+│   │   │   ├── InlineWarningRules.swift
+│   │   │   └── KeyVoxSpeakFlowRules.swift
 │   │   ├── Routing/
 │   │   │   ├── AppLaunchRouteStore.swift
 │   │   │   ├── KeyVoxURLRoute.swift
@@ -198,6 +201,7 @@ iOS/
 │   │   │   ├── AppTheme.swift
 │   │   │   ├── AppToolbarContent.swift
 │   │   │   ├── AppTypography.swift
+│   │   │   ├── InlineWarningRow.swift
 │   │   │   ├── LastTranscriptionCardView.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── ModelDownloadProgress.swift
@@ -435,6 +439,10 @@ Packages/
 - `KeyVox iOS/App/KeyVoxSpeak/TTSPurchaseController.swift`
   - App-owned one-time unlock and daily-usage owner for copied-text playback.
   - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
+- `KeyVox iOS/App/Presentation/KeyVoxSpeakFlowRules.swift`
+  - Pure scene-selection and scene-fallback rules shared by the intro sheet, unlock sheet, and the Home help presentation path so branch coverage stays deterministic in tests.
+- `KeyVox iOS/App/Presentation/InlineWarningRules.swift`
+  - Pure warning-visibility rules shared by onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install surfaces so Wi-Fi warning coverage stays deterministic in iOS tests.
 - `KeyVox iOS/App/Stats/WeeklyWordStatsStore.swift`
   - App-owned local weekly usage aggregator consumed by Home, settings-adjacent surfaces, and Live Activity mirroring.
 - `KeyVox iOS/App/Feedback/AppHaptics.swift`
@@ -594,7 +602,7 @@ Packages/
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout.
   - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, expanded transcript presentation, transcript copy affordance, and idle transcript dismissal.
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, playback error presentation, and the idle monetization messaging for remaining free speaks or locked state.
-  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, and Home-scoped TTS actions.
+  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, the question-mark KeyVox Speak help presentation selection, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
 - `KeyVox iOS/App/Feedback/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
@@ -602,6 +610,8 @@ Packages/
   - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
   - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
+- `KeyVox iOS/Views/Components/InlineWarningRow.swift`
+  - Shared yellow warning row treatment for inline caution copy, including the reused cellular-download warning shown across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings model surfaces.
 - `KeyVox iOS/Views/Components/KeyVoxSpeak/`
   - Dedicated feature folder for the shared KeyVox Speak presentation surface.
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.

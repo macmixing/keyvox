@@ -12,6 +12,7 @@ final class TTSManager: ObservableObject {
 
     @Published var state: KeyVoxTTSState = .idle
     @Published var lastErrorMessage: String?
+    @Published var warningMessage: String?
     @Published var isPlaybackPreparationViewPresented = false
     @Published var playbackPreparationProgress: Double = 0
     @Published var playbackPreparationPhase: PlaybackPreparationPhase = .preparing

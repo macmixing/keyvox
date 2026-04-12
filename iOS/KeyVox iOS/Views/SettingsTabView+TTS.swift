@@ -47,7 +47,7 @@ extension SettingsTabView {
                     }
                 }
 
-                HStack(alignment: .center, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
                     Text(playbackVoiceDescriptionText)
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
@@ -183,7 +183,7 @@ extension SettingsTabView {
     private var ttsSharedModelRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                Text("PocketTTS CoreML")
+                Text("KeyVox Speak Engine")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -208,6 +208,13 @@ extension SettingsTabView {
                 Text(message)
                     .font(.appFont(12))
                     .foregroundStyle(.red)
+            }
+
+            if InlineWarningRules.showsSettingsTTSCellularDownloadWarning(
+                isOnCellular: downloadNetworkMonitor.isOnCellular,
+                sharedModelState: pocketTTSModelManager.sharedModelInstallState
+            ) {
+                InlineWarningRow(text: InlineWarningRow.Copy.cellularDownloadRecommended)
             }
 
             switch pocketTTSModelManager.sharedModelInstallState {
@@ -371,11 +378,11 @@ extension SettingsTabView {
         case .notInstalled:
             return "Not installed (~642 MB)"
         case .downloading:
-            return "Downloading PocketTTS CoreML"
+            return "Downloading KeyVox Speak engine."
         case .installing:
-            return "Installing PocketTTS CoreML"
+            return "Installing KeyVox Speak engine."
         case .ready:
-            return "Installed"
+            return "Tap play to preview a voice."
         case .failed:
             return "Install failed"
         }
@@ -396,7 +403,7 @@ extension SettingsTabView {
         }
 
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install PocketTTS CoreML before downloading voices."
+            return "Install KeyVox Speak engine (PocketTTS CoreML) before downloading voices."
         }
 
         let formattedSize = ByteCountFormatter.string(
@@ -449,7 +456,7 @@ extension SettingsTabView {
 
     var playbackVoiceDescriptionText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install PocketTTS CoreML first. Once it is ready, you can download individual playback voices."
+            return "Install the KeyVox Speak engine (PocketTTS CoreML) first. Then you can download voices."
         }
         if installedPlaybackVoices.isEmpty {
             return "Download a playback voice to let KeyVox read copied text aloud."

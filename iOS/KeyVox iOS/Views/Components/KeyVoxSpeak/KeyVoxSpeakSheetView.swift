@@ -1,15 +1,33 @@
 import SwiftUI
 
 struct KeyVoxSpeakSheetView: View {
-    private enum Scene: Int, CaseIterable {
+    enum Scene: Int, CaseIterable {
         case a
         case b
         case c
         case unlock
     }
 
+    struct IntroPresentation {
+        let displayedScenes: [Scene]
+        let initialScene: Scene
+        let sceneCTitleOverride: String?
+        let hidesSetupSceneWhenReady: Bool
+
+        static let full = IntroPresentation(
+            displayedScenes: [.a, .b, .c],
+            initialScene: .a,
+            sceneCTitleOverride: nil,
+            hidesSetupSceneWhenReady: false
+        )
+    }
+
     enum Mode {
-        case intro(onTryNow: () -> Void, onDismiss: () -> Void)
+        case intro(
+            presentation: IntroPresentation = .full,
+            onTryNow: () -> Void,
+            onDismiss: () -> Void
+        )
         case unlock(onDismiss: () -> Void)
     }
 
@@ -26,30 +44,28 @@ struct KeyVoxSpeakSheetView: View {
     let mode: Mode
 
     private var displayedScenes: [Scene] {
-        switch mode {
-        case .intro:
-            [.a, .b, .c]
-        case .unlock:
-            if shouldShowSetupSceneInUnlockFlow {
-                [.unlock, .b, .c]
-            } else {
-                [.unlock, .b]
-            }
-        }
+        KeyVoxSpeakFlowRules.displayedScenes(
+            for: mode,
+            isReadyForSelectedVoice: pocketTTSModelManager.isReady(for: settingsStore.ttsVoice)
+        )
     }
 
     private var initialScene: Scene {
         switch mode {
-        case .intro:
-            .a
+        case .intro(let presentation, _, _):
+            presentation.initialScene
         case .unlock:
             .unlock
         }
     }
 
-    private var shouldShowSetupSceneInUnlockFlow: Bool {
-        guard case .unlock = mode else { return false }
-        return pocketTTSModelManager.isReady(for: settingsStore.ttsVoice) == false
+    private var introSceneCTitleOverride: String? {
+        switch mode {
+        case .intro(let presentation, _, _):
+            return presentation.sceneCTitleOverride
+        case .unlock:
+            return nil
+        }
     }
 
     var body: some View {
@@ -73,7 +89,7 @@ struct KeyVoxSpeakSheetView: View {
                             .background(.white.opacity(0.14))
 
                         switch mode {
-                        case .intro(let onTryNow, _):
+                        case .intro(_, let onTryNow, _):
                             AppActionButton(
                                 title: "Try KeyVox Speak",
                                 style: .primary,
@@ -135,6 +151,12 @@ struct KeyVoxSpeakSheetView: View {
             selectedScene = initialScene
             startButtonAnimation()
         }
+        .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: false) { _, _ in
+            syncSelectedSceneWithAvailableScenes()
+        }
+        .onChange(of: pocketTTSModelManager.installState(for: settingsStore.ttsVoice), initial: false) { _, _ in
+            syncSelectedSceneWithAvailableScenes()
+        }
         .onDisappear {
             ttsPreviewPlayer.stop()
             animationTask?.cancel()
@@ -173,7 +195,8 @@ struct KeyVoxSpeakSheetView: View {
         case .c:
             KeyVoxSpeakSceneCView(
                 isVisible: selectedScene == .c,
-                isUnlockContext: isUnlockMode
+                isUnlockContext: isUnlockMode,
+                titleOverride: introSceneCTitleOverride
             )
         case .unlock:
             KeyVoxSpeakUnlockScene(isVisible: selectedScene == .unlock)
@@ -198,11 +221,19 @@ struct KeyVoxSpeakSheetView: View {
 
     private func dismissSheet() {
         switch mode {
-        case .intro(_, let onDismiss):
+        case .intro(_, _, let onDismiss):
             onDismiss()
         case .unlock(let onDismiss):
             onDismiss()
         }
+    }
+
+    private func syncSelectedSceneWithAvailableScenes() {
+        selectedScene = KeyVoxSpeakFlowRules.syncedSelectedScene(
+            currentScene: selectedScene,
+            displayedScenes: displayedScenes,
+            mode: mode
+        )
     }
 
     private func startButtonAnimation() {

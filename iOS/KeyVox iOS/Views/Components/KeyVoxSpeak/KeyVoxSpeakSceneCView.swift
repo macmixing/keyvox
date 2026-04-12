@@ -6,6 +6,7 @@ struct KeyVoxSpeakSceneCView: View {
 
     let isVisible: Bool
     let isUnlockContext: Bool
+    let titleOverride: String?
 
     @State private var headerOpacity: Double = 0
     @State private var installCardOpacity: Double = 0
@@ -23,7 +24,7 @@ struct KeyVoxSpeakSceneCView: View {
                     Spacer(minLength: 20)
 
                     VStack(spacing: 6) {
-                        Text(isUnlockContext ? "Finish Setup" : "Free to Start")
+                        Text(titleOverride ?? (isUnlockContext ? "Finish Setup" : "One More Thing"))
                             .font(.appFont(35, variant: .medium))
                             .foregroundStyle(.white)
 
@@ -48,11 +49,16 @@ struct KeyVoxSpeakSceneCView: View {
                     .opacity(installCardOpacity)
                     .offset(y: installCardOffset)
 
-                    if networkMonitor.isOnCellular && !pocketTTSReadyForAlba {
-                        Text("Wi-Fi is recommended for this download.")
-                            .font(.appFont(14, variant: .light))
-                            .foregroundStyle(.yellow)
-                            .multilineTextAlignment(.center)
+                    if InlineWarningRules.showsKeyVoxSpeakSetupWarning(
+                        isOnCellular: networkMonitor.isOnCellular,
+                        sharedModelState: sharedModelState,
+                        voiceState: albaVoiceState
+                    ) {
+                        InlineWarningRow(
+                            text: InlineWarningRow.Copy.cellularDownloadRecommended,
+                            alignmentMode: .centered
+                        )
+                            .frame(maxWidth: .infinity, alignment: .center)
                             .opacity(footerOpacity)
                             .padding(.top, 18)
                     }

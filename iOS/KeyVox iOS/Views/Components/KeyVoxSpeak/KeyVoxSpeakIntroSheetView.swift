@@ -8,6 +8,7 @@ struct KeyVoxSpeakIntroSheetView: View {
     var body: some View {
         KeyVoxSpeakSheetView(
             mode: .intro(
+                presentation: keyVoxSpeakIntroController.introPresentation,
                 onTryNow: dismissIntro,
                 onDismiss: dismissIntro
             )

@@ -1,6 +1,32 @@
 import SwiftUI
 
 extension HomeTabView {
+    var showsTTSCellularDownloadWarning: Bool {
+        InlineWarningRules.showsHomeTTSCellularDownloadWarning(
+            isOnCellular: downloadNetworkMonitor.isOnCellular,
+            sharedModelState: pocketTTSModelManager.sharedModelInstallState
+        )
+    }
+
+    var ttsCellularDownloadWarningText: String {
+        InlineWarningRow.Copy.cellularDownloadRecommended
+    }
+
+    var ttsWarningText: String? {
+        if showsFastModeBackgroundSafetyWarning {
+            return fastModeBackgroundSafetyWarningText
+        }
+
+        guard let warningMessage = ttsManager.warningMessage else { return nil }
+
+        switch ttsManager.state {
+        case .idle, .finished, .error:
+            return warningMessage
+        case .preparing, .generating, .playing:
+            return nil
+        }
+    }
+
     var ttsTransportButton: some View {
         Button(action: handleSecondaryTTSAction) {
             ZStack {
@@ -117,13 +143,13 @@ extension HomeTabView {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Install the speech engine to speak copied text."
+                return "Install the KeyVox Speak engine to speak copied text."
             case .downloading:
-                return "Downloading speech engine..."
+                return "Downloading KeyVox Speak engine..."
             case .installing:
-                return "Installing speech engine..."
+                return "Installing KeyVox Speak engine..."
             case .failed:
-                return "Speech engine install failed."
+                return "KeyVox Speak engine install failed."
             case .ready:
                 break
             }
@@ -146,7 +172,7 @@ extension HomeTabView {
         case .idle:
             if ttsPurchaseController.canStartNewTTSSpeak == false {
                 if ttsPurchaseController.remainingFreeTTSSpeaksToday == 0 {
-                    return "Unlock Speak to keep speaking copied text."
+                    return "Unlock Speak Unlimited to keep speaking copied text."
                 }
             }
 

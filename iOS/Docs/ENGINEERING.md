@@ -1022,9 +1022,10 @@ Current app-owned surfaces:
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
+- `InlineWarningRules`: pure shared visibility rules under `App/Presentation/` for Wi-Fi caution rows across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install flows
 - `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
-- `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/Components/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper
+- `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/Components/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper; the pure `KeyVoxSpeakFlowRules` resolver now lives under `App/Presentation/` so scene selection and fallback behavior stay separate from component rendering
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, disclosure state, and destructive-confirmation coordination

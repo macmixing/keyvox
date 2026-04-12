@@ -5,11 +5,25 @@ extension HomeTabView {
     var speakClipboardSection: some View {
         AppCard {
             VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .center, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Speak Copied Text")
-                            .font(.appFont(17))
-                            .foregroundStyle(.white)
+                        HStack(alignment: .center, spacing: 4) {
+                            Text("Speak Copied Text")
+                                .font(.appFont(17))
+                                .foregroundStyle(.white)
+
+                            Button(action: handleKeyVoxSpeakHelpAction) {
+                                Image(systemName: "questionmark.circle")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundStyle(.yellow)
+                                    .frame(width: 16, height: 16)
+                                    .contentShape(Rectangle())
+                                    .padding(8)
+                            }
+                            .buttonStyle(.plain)
+                            .frame(width: 32, height: 32)
+                            .accessibilityLabel("Learn about KeyVox Speak")
+                        }
 
                         HStack(alignment: .center, spacing: 6) {
                             Image(systemName: "waveform")
@@ -21,7 +35,7 @@ extension HomeTabView {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    HStack(spacing: 8) {
+                    HStack(alignment: .center, spacing: 8) {
                         if showsTTSTranscriptToggle {
                             ttsTranscriptToggleButton
                                 .padding(.trailing, 8)
@@ -64,46 +78,43 @@ extension HomeTabView {
                     }
                 }
 
-                HStack(alignment: .center, spacing: 12) {
-                    if showsReplayScrubber {
-                        TTSReplayScrubber(
-                            progress: ttsManager.playbackProgress,
-                            currentTimeSeconds: ttsManager.replayCurrentTimeSeconds,
-                            durationSeconds: ttsManager.replayDurationSeconds,
-                            onScrub: handleReplayScrub
-                        )
-                    } else {
-                        ZStack(alignment: .leading) {
-                            HStack(alignment: .center, spacing: 12) {
-                                Text(ttsStatusText)
-                                    .font(.appFont(14, variant: .light))
-                                    .foregroundStyle(.white.opacity(0.7))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
-
-                                if let preparationPercentageText = ttsPreparationPercentageText {
-                                    Text(preparationPercentageText)
-                                        .font(.appFont(14, variant: .medium))
-                                        .foregroundStyle(.yellow)
-                                        .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
-                                }
-                            }
-
-                            if mountsFastModeBackgroundSafetyWarningRow {
-                                HStack(alignment: .center, spacing: 6) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(.yellow)
-
-                                    Text(fastModeBackgroundSafetyWarningText)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .center, spacing: 12) {
+                        if showsReplayScrubber {
+                            TTSReplayScrubber(
+                                progress: ttsManager.playbackProgress,
+                                currentTimeSeconds: ttsManager.replayCurrentTimeSeconds,
+                                durationSeconds: ttsManager.replayDurationSeconds,
+                                onScrub: handleReplayScrub
+                            )
+                        } else {
+                            ZStack(alignment: .leading) {
+                                HStack(alignment: .center, spacing: 12) {
+                                    Text(ttsStatusText)
                                         .font(.appFont(14, variant: .light))
-                                        .foregroundStyle(.yellow.opacity(0.92))
+                                        .foregroundStyle(.white.opacity(0.7))
                                         .frame(maxWidth: .infinity, alignment: .leading)
+                                        .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
+
+                                    if let preparationPercentageText = ttsPreparationPercentageText {
+                                        Text(preparationPercentageText)
+                                            .font(.appFont(14, variant: .medium))
+                                            .foregroundStyle(.yellow)
+                                            .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
+                                    }
                                 }
-                                .opacity(showsFastModeBackgroundSafetyWarningRow ? 1 : 0)
+
+                                if mountsFastModeBackgroundSafetyWarningRow, let ttsWarningText {
+                                    InlineWarningRow(text: ttsWarningText)
+                                    .opacity(showsFastModeBackgroundSafetyWarningRow ? 1 : 0)
+                                }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    if showsTTSCellularDownloadWarning {
+                        InlineWarningRow(text: ttsCellularDownloadWarningText)
                     }
                 }
 

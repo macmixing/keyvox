@@ -141,9 +141,11 @@ struct OnboardingSetupScreen: View {
                     }
 
                     if shouldShowCellularModelWarning {
-                        Text("We recommend Wi-Fi for this download.")
-                            .font(.appFont(12))
-                            .foregroundStyle(.yellow)
+                        InlineWarningRow(
+                            text: InlineWarningRow.Copy.cellularDownloadRecommended,
+                            fontSize: 12,
+                            iconSize: 11
+                        )
                     }
                 }
             }
@@ -312,7 +314,10 @@ struct OnboardingSetupScreen: View {
     }
 
     private var shouldShowCellularModelWarning: Bool {
-        downloadNetworkMonitor.isOnCellular && onboardingModelState == .notInstalled
+        InlineWarningRules.showsOnboardingCellularModelWarning(
+            isOnCellular: downloadNetworkMonitor.isOnCellular,
+            modelState: onboardingModelState
+        )
     }
 
     private var shouldShowOfflineModelError: Bool {
