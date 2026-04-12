@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import KeyVoxTTS
 import MediaPlayer
@@ -154,6 +155,25 @@ struct TTSSystemPlaybackTests {
             .init(category: .playback, mode: .spokenAudio, policy: .longFormAudio, options: [])
         ])
         #expect(audioSession.portOverrides == [.none])
+        #expect(coordinator.hasHandedOffPausedPlaybackSession == true)
+    }
+
+    @Test func stoppingAfterPausedRecordingPreservationReleasesHandedOffPlaybackSession() {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        coordinator.setAudioSessionMode(.playbackWhilePreservingRecording)
+        coordinator.didStartPlayback = true
+        coordinator.overrideIsPlayerNodePlaying = true
+
+        coordinator.pause()
+        coordinator.stop()
+
+        #expect(audioSession.activeCalls == [
+            .init(active: false, options: []),
+            .init(active: true, options: []),
+            .init(active: false, options: [.notifyOthersOnDeactivation])
+        ])
+        #expect(coordinator.hasHandedOffPausedPlaybackSession == false)
     }
 
     @Test func pausingPlainPlaybackDoesNotDeactivateOrHandoffAudioSession() {

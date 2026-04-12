@@ -81,6 +81,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = false
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
+        hasHandedOffPausedPlaybackSession = false
         isFastModeBackgroundSafeState = false
         self.fastModeEnabled = fastModeEnabled
         notifyFastModeBackgroundSafetyChanged()
@@ -230,6 +231,7 @@ extension TTSPlaybackCoordinator {
         isReplayingCachedAudio = true
         replayStartSampleOffset = safeStartSampleOffset
         replayPausedSampleOffset = shouldAutoplay ? 0 : safeStartSampleOffset
+        hasHandedOffPausedPlaybackSession = false
         isFastModeBackgroundSafeState = false
 
         let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
@@ -318,6 +320,7 @@ extension TTSPlaybackCoordinator {
     func configureAudioSession() throws {
         switch audioSessionMode {
         case .playback:
+            hasHandedOffPausedPlaybackSession = false
             try audioSession.setCategory(
                 .playback,
                 mode: .spokenAudio,
@@ -326,6 +329,7 @@ extension TTSPlaybackCoordinator {
             )
             try? audioSession.overrideOutputAudioPort(.none)
         case .playbackWhilePreservingRecording:
+            hasHandedOffPausedPlaybackSession = false
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
                 preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
             )
@@ -373,12 +377,14 @@ extension TTSPlaybackCoordinator {
     }
 
     func deactivateAudioSessionIfNeeded() {
-        guard audioSessionMode == .playback else {
+        let shouldDeactivate = audioSessionMode == .playback || hasHandedOffPausedPlaybackSession
+        guard shouldDeactivate else {
             Self.log("Preserving active audio session after playback finish.")
             return
         }
 
         try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
+        hasHandedOffPausedPlaybackSession = false
     }
 
     func handleFailure(_ error: Error) {
@@ -404,6 +410,7 @@ extension TTSPlaybackCoordinator {
             )
             try? audioSession.overrideOutputAudioPort(.none)
             try audioSession.setActive(true, options: [])
+            hasHandedOffPausedPlaybackSession = true
             Self.log("Handed paused playback off to playback/spokenAudio session.")
         } catch {
             Self.log("Failed to hand paused playback off to playback session: \(error.localizedDescription)")
