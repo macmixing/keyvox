@@ -6,6 +6,19 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-04-12
+
+Improved shared dictation model lifecycle observability for provider switching.
+
+### Includes
+
+- Added symmetric debug unload logging for `ParakeetService` so shared model teardown is visible alongside the existing Whisper unload path.
+- Covered the explicit unload path and the stale-warmup cleanup paths so the shared engine logs when Parakeet is actually released from memory.
+
+### Notes
+
+- `1.0.3` bumps the tracked engine version for `KeyVoxCore` to cover the shared Parakeet lifecycle observability improvement used by both app clients.
+
 ## [1.0.2] - 2026-04-09
 
 Version-separator list parsing fix for spoken semantic-version prose.

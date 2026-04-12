@@ -321,14 +321,8 @@ final class AppServiceRegistry {
 
         activeProviderRouter.replaceActiveProvider(
             with: activeProvider,
-            warmNewProviderIfReady: false
+            warmNewProviderIfReady: true
         )
-
-        if provider == .parakeet {
-            Task { [weak self] in
-                await self?.parakeetService.preloadIfNeeded()
-            }
-        }
     }
 
     private func normalizeActiveProviderSelection() {
