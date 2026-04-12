@@ -47,6 +47,9 @@ extension SettingsTabView {
                     }
                 }
 
+                Divider()
+                    .background(.white.opacity(0.22))
+
                 HStack(alignment: .top, spacing: 12) {
                     Text(playbackVoiceDescriptionText)
                         .font(.appFont(15, variant: .light))
