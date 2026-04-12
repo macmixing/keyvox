@@ -45,10 +45,12 @@ nonisolated struct AppUpdateService {
         guard let version = AppVersion(item.version) else {
             throw AppUpdateServiceError.invalidReleaseVersion
         }
-
+        
+        #if DEBUG
         print(
             "[AppUpdate] lookup version=\(item.version) storeURL=\(item.trackViewUrl?.absoluteString ?? "nil")"
         )
+        #endif
 
         return AppStoreRelease(
             version: version,
@@ -73,9 +75,11 @@ nonisolated struct AppUpdateService {
             throw AppUpdateServiceError.invalidHTTPResponse
         }
 
+        #if DEBUG
         print(
             "[AppUpdate] response status=\(httpResponse.statusCode) url=\(httpResponse.url?.absoluteString ?? "unknown") bytes=\(data.count)"
         )
+        #endif
 
         guard (200...299).contains(httpResponse.statusCode) else {
             let responseBody = data.isEmpty ? nil : String(data: data, encoding: .utf8)
