@@ -151,6 +151,7 @@ struct TTSManagerLifecycleTests {
         playbackCoordinator.isPaused = false
         playbackCoordinator.isReplayingCachedAudio = false
         playbackCoordinator.playbackSessionID = UUID()
+        playbackCoordinator.configureAudioGraphIfNeeded()
         let samples = Array(repeating: Float(0), count: 24_000)
         if let buffer = playbackCoordinator.makeBuffer(from: samples) {
             try? playbackCoordinator.configureAudioSession()

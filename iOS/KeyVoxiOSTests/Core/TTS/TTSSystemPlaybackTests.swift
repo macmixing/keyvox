@@ -136,6 +136,42 @@ struct TTSSystemPlaybackTests {
         #expect(MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled == true)
     }
 
+    @Test func pausingWhilePreservingRecordingHandsPlaybackOffToSpokenAudioSession() {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        coordinator.setAudioSessionMode(.playbackWhilePreservingRecording)
+        coordinator.didStartPlayback = true
+        coordinator.overrideIsPlayerNodePlaying = true
+
+        coordinator.pause()
+
+        #expect(coordinator.isPaused == true)
+        #expect(audioSession.activeCalls == [
+            .init(active: false, options: []),
+            .init(active: true, options: [])
+        ])
+        #expect(audioSession.policyCategoryCalls == [
+            .init(category: .playback, mode: .spokenAudio, policy: .longFormAudio, options: [])
+        ])
+        #expect(audioSession.portOverrides == [.none])
+    }
+
+    @Test func pausingPlainPlaybackDoesNotDeactivateOrHandoffAudioSession() {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        coordinator.setAudioSessionMode(.playback)
+        coordinator.didStartPlayback = true
+        coordinator.overrideIsPlayerNodePlaying = true
+
+        coordinator.pause()
+
+        #expect(coordinator.isPaused == true)
+        #expect(audioSession.activeCalls.isEmpty)
+        #expect(audioSession.policyCategoryCalls.isEmpty)
+        #expect(audioSession.plainCategoryCalls.isEmpty)
+        #expect(audioSession.portOverrides.isEmpty)
+    }
+
     private func makeHarness(includeSystemPlaybackController: Bool = false) -> TTSSystemPlaybackHarness {
         let suiteName = "TTSSystemPlaybackTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -193,6 +229,51 @@ struct TTSSystemPlaybackTests {
         default:
             return nil
         }
+    }
+}
+
+private final class SpyPlaybackAudioSession: TTSPlaybackAudioSessionControlling {
+    struct ActiveCall: Equatable {
+        let active: Bool
+        let options: AVAudioSession.SetActiveOptions
+    }
+
+    struct PolicyCategoryCall: Equatable {
+        let category: AVAudioSession.Category
+        let mode: AVAudioSession.Mode
+        let policy: AVAudioSession.RouteSharingPolicy
+        let options: AVAudioSession.CategoryOptions
+    }
+
+    var currentOutputPortTypes: [AVAudioSession.Port] = []
+    private(set) var activeCalls: [ActiveCall] = []
+    private(set) var policyCategoryCalls: [PolicyCategoryCall] = []
+    private(set) var plainCategoryCalls: [(category: AVAudioSession.Category, mode: AVAudioSession.Mode, options: AVAudioSession.CategoryOptions)] = []
+    private(set) var portOverrides: [AVAudioSession.PortOverride] = []
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        policy: AVAudioSession.RouteSharingPolicy,
+        options: AVAudioSession.CategoryOptions
+    ) throws {
+        policyCategoryCalls.append(.init(category: category, mode: mode, policy: policy, options: options))
+    }
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        options: AVAudioSession.CategoryOptions
+    ) throws {
+        plainCategoryCalls.append((category: category, mode: mode, options: options))
+    }
+
+    func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws {
+        portOverrides.append(portOverride)
+    }
+
+    func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws {
+        activeCalls.append(.init(active: active, options: options))
     }
 }
 

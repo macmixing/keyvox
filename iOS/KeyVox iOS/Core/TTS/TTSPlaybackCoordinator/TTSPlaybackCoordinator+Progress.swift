@@ -6,6 +6,7 @@ import UIKit
 extension TTSPlaybackCoordinator {
     func currentReplaySampleOffset() -> Int {
         guard isReplayingCachedAudio else { return 0 }
+        guard hasConfiguredAudioGraph else { return replayPausedSampleOffset }
         guard let renderTime = playerNode.lastRenderTime,
               let playerTime = playerNode.playerTime(forNodeTime: renderTime) else {
             return replayPausedSampleOffset
@@ -148,6 +149,10 @@ extension TTSPlaybackCoordinator {
     var currentPlaybackSampleOffset: Int {
         if isReplayingCachedAudio {
             return currentReplaySampleOffset()
+        }
+        guard hasConfiguredAudioGraph else {
+            let playedSamples = max(0, totalScheduledSampleCount - queuedSampleCount)
+            return min(playedSamples, currentPlaybackProgressDenominator)
         }
         guard let renderTime = playerNode.lastRenderTime,
               let playerTime = playerNode.playerTime(forNodeTime: renderTime) else {

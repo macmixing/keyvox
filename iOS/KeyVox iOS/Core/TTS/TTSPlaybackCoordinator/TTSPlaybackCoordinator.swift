@@ -3,6 +3,32 @@ import Foundation
 import KeyVoxTTS
 import UIKit
 
+protocol TTSPlaybackAudioSessionControlling: AnyObject {
+    var currentOutputPortTypes: [AVAudioSession.Port] { get }
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        policy: AVAudioSession.RouteSharingPolicy,
+        options: AVAudioSession.CategoryOptions
+    ) throws
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        options: AVAudioSession.CategoryOptions
+    ) throws
+
+    func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws
+    func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws
+}
+
+extension AVAudioSession: TTSPlaybackAudioSessionControlling {
+    var currentOutputPortTypes: [AVAudioSession.Port] {
+        currentRoute.outputs.map(\.portType)
+    }
+}
+
 @MainActor
 final class TTSPlaybackCoordinator {
     enum AudioSessionMode {
@@ -63,6 +89,9 @@ final class TTSPlaybackCoordinator {
     var backgroundPlaybackProgressTimer: Timer?
     var playbackSessionID = UUID()
     var isFastModeBackgroundSafeState = false
+    var hasConfiguredAudioGraph = false
+    var overrideIsPlayerNodePlaying: Bool?
+    let audioSession: any TTSPlaybackAudioSessionControlling
     let preferBuiltInMicrophoneProvider: () -> Bool
 
     var hasReplayablePlayback: Bool {
@@ -96,7 +125,7 @@ final class TTSPlaybackCoordinator {
     }
 
     var canPausePlayback: Bool {
-        didStartPlayback && playerNode.isPlaying && !isPaused
+        didStartPlayback && (overrideIsPlayerNodePlaying ?? playerNode.isPlaying) && !isPaused
     }
 
     var canResumePlayback: Bool {
@@ -104,11 +133,19 @@ final class TTSPlaybackCoordinator {
     }
 
     init(
+        audioSession: any TTSPlaybackAudioSessionControlling = AVAudioSession.sharedInstance(),
         preferBuiltInMicrophoneProvider: @escaping () -> Bool = { true }
     ) {
+        self.audioSession = audioSession
         self.preferBuiltInMicrophoneProvider = preferBuiltInMicrophoneProvider
+    }
+
+    func configureAudioGraphIfNeeded() {
+        guard hasConfiguredAudioGraph == false else { return }
+        // Keep the graph lazy so cold launch does not interrupt external media playback.
         audioEngine.attach(playerNode)
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: playbackFormat)
+        hasConfiguredAudioGraph = true
     }
 
     func prepareForForegroundPlayback() {

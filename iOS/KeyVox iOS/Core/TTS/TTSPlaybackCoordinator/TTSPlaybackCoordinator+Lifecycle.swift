@@ -47,6 +47,7 @@ extension TTSPlaybackCoordinator {
         let sessionID = playbackSessionID
 
         do {
+            configureAudioGraphIfNeeded()
             try configureAudioSession()
             if audioEngine.isRunning == false {
                 try audioEngine.start()
@@ -132,13 +133,13 @@ extension TTSPlaybackCoordinator {
                 playerNode.stop()
             }
             audioEngine.stop()
-            deactivateAudioSessionIfNeeded()
         } else {
             playerNode.pause()
             audioEngine.pause()
-            deactivateAudioSessionIfNeeded()
         }
-        handoffPausedAudioSessionIfNeeded()
+        if audioSessionMode == .playbackWhilePreservingRecording {
+            handoffPausedAudioSessionIfNeeded()
+        }
         isPaused = true
         stopPlaybackProgressTimer()
         emitPlaybackProgress()
@@ -199,6 +200,7 @@ extension TTSPlaybackCoordinator {
         playbackSessionID = UUID()
 
         do {
+            configureAudioGraphIfNeeded()
             try configureAudioSession()
             if audioEngine.isRunning == false {
                 try audioEngine.start()
@@ -314,35 +316,35 @@ extension TTSPlaybackCoordinator {
     }
 
     func configureAudioSession() throws {
-        let session = AVAudioSession.sharedInstance()
         switch audioSessionMode {
         case .playback:
-            try session.setCategory(
+            try audioSession.setCategory(
                 .playback,
                 mode: .spokenAudio,
                 policy: .longFormAudio,
                 options: []
             )
-            try? session.overrideOutputAudioPort(.none)
+            try? audioSession.overrideOutputAudioPort(.none)
         case .playbackWhilePreservingRecording:
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
                 preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
             )
             var categoryOptions: AVAudioSession.CategoryOptions = [.defaultToSpeaker]
             categoryOptions.formUnion(bluetoothRoutePolicy.bluetoothCategoryOptions)
-            try session.setCategory(
+            try audioSession.setCategory(
                 .playAndRecord,
                 mode: .default,
                 options: categoryOptions
             )
             Self.log("Configuring preserved playback session routePolicy=\(bluetoothRoutePolicy.family.rawValue)")
-            let isUsingBuiltInReceiver = session.currentRoute.outputs.contains { $0.portType == .builtInReceiver }
-            try? session.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+            let isUsingBuiltInReceiver = audioSession.currentOutputPortTypes.contains(.builtInReceiver)
+            try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
         }
-        try session.setActive(true)
+        try audioSession.setActive(true, options: [])
     }
 
     func ensureAudioEngineReadyForPlayback(context: String) throws {
+        configureAudioGraphIfNeeded()
         if audioEngine.isRunning { return }
 
         Self.log("Audio engine was stopped before playback context=\(context); reconfiguring session and restarting engine.")
@@ -376,7 +378,7 @@ extension TTSPlaybackCoordinator {
             return
         }
 
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     func handleFailure(_ error: Error) {
@@ -387,23 +389,21 @@ extension TTSPlaybackCoordinator {
     private func handoffPausedAudioSessionIfNeeded() {
         guard audioSessionMode == .playbackWhilePreservingRecording else { return }
 
-        let session = AVAudioSession.sharedInstance()
-
         do {
-            try session.setActive(false, options: [.notifyOthersOnDeactivation])
+            try audioSession.setActive(false, options: [])
         } catch {
             Self.log("Failed to deactivate preserved recording session before paused handoff: \(error.localizedDescription)")
         }
 
         do {
-            try session.setCategory(
+            try audioSession.setCategory(
                 .playback,
                 mode: .spokenAudio,
                 policy: .longFormAudio,
                 options: []
             )
-            try? session.overrideOutputAudioPort(.none)
-            try session.setActive(true)
+            try? audioSession.overrideOutputAudioPort(.none)
+            try audioSession.setActive(true, options: [])
             Self.log("Handed paused playback off to playback/spokenAudio session.")
         } catch {
             Self.log("Failed to hand paused playback off to playback session: \(error.localizedDescription)")
