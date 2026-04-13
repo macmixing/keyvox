@@ -13,6 +13,7 @@ class TranscriptionManager: ObservableObject {
     enum AppState: Equatable {
         case idle
         case recording
+        case stopping
         case transcribing
         case error(String)
     }
@@ -161,7 +162,7 @@ class TranscriptionManager: ObservableObject {
     }
     
     private func abortRecording() {
-        guard state == .recording || state == .transcribing else { return }
+        guard state == .recording || state == .stopping || state == .transcribing else { return }
         activeStopRequestID = nil
         stopRequestedAt = nil
         
@@ -181,6 +182,20 @@ class TranscriptionManager: ObservableObject {
     private func handleTriggerKey(isPressed: Bool) {
         guard appSettings.hasCompletedOnboarding else { return }
         guard stopRequestedAt == nil else {
+            #if DEBUG
+            if isPressed {
+                print("Trigger ignored while recorder stop finalization is pending.")
+            }
+            #endif
+            updateOverlayHandsFreeVisualState()
+            return
+        }
+        guard state != .stopping else {
+            #if DEBUG
+            if isPressed {
+                print("Trigger ignored while session is transitioning from recording to transcription.")
+            }
+            #endif
             updateOverlayHandsFreeVisualState()
             return
         }
@@ -244,6 +259,7 @@ class TranscriptionManager: ObservableObject {
         let stopRequestID = UUID()
         stopRequestedAt = startTime
         activeStopRequestID = stopRequestID
+        state = .stopping
         #if DEBUG
         print("--- Speed Profile Start ---")
         #endif

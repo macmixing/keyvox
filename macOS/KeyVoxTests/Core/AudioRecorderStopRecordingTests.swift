@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import XCTest
 @testable import KeyVox
 
@@ -40,9 +41,13 @@ final class AudioRecorderStopRecordingTests: XCTestCase {
         let finalBufferedCount = recorder.audioDataQueue.sync {
             recorder.audioData.count
         }
+        let expectedTrailingPadFrames = Int(
+            (recorder.transcriptionTrailingSilenceDuration * recorder.outputFormat.sampleRate).rounded()
+        )
 
         XCTAssertEqual(finalBufferedCount, initialFrames.count + lateFrames.count)
-        XCTAssertEqual(returnedFrames.count, finalBufferedCount)
+        XCTAssertEqual(returnedFrames.count, finalBufferedCount + expectedTrailingPadFrames)
+        XCTAssertEqual(Array(returnedFrames.suffix(expectedTrailingPadFrames)), Array(repeating: 0, count: expectedTrailingPadFrames))
     }
 
     func testStopRecordingIncludesTailFramesDeliveredShortlyAfterStopRequest() {
@@ -76,8 +81,32 @@ final class AudioRecorderStopRecordingTests: XCTestCase {
         let finalBufferedCount = recorder.audioDataQueue.sync {
             recorder.audioData.count
         }
+        let expectedTrailingPadFrames = Int(
+            (recorder.transcriptionTrailingSilenceDuration * recorder.outputFormat.sampleRate).rounded()
+        )
 
         XCTAssertEqual(finalBufferedCount, initialFrames.count + tailFrames.count)
-        XCTAssertEqual(returnedFrames.count, finalBufferedCount)
+        XCTAssertEqual(returnedFrames.count, finalBufferedCount + expectedTrailingPadFrames)
+        XCTAssertEqual(Array(returnedFrames.suffix(expectedTrailingPadFrames)), Array(repeating: 0, count: expectedTrailingPadFrames))
+    }
+
+    func testOutputFramesForStoppedCaptureAppendsTranscriptionSilencePad() {
+        let recorder = AudioRecorder()
+        recorder.captureStartedAt = Date().addingTimeInterval(-0.2)
+
+        let samples = Array(repeating: Float(0.2), count: 1_600)
+        recorder.audioDataQueue.sync {
+            recorder.audioData = samples
+        }
+
+        let outputFrames = recorder.outputFramesForStoppedCapture()
+        let expectedTrailingPadFrames = Int(
+            (recorder.transcriptionTrailingSilenceDuration * recorder.outputFormat.sampleRate).rounded()
+        )
+        let expectedNormalizedFrames = Array(repeating: Float(0.6), count: samples.count)
+
+        XCTAssertEqual(outputFrames.count, samples.count + expectedTrailingPadFrames)
+        XCTAssertEqual(Array(outputFrames.prefix(samples.count)), expectedNormalizedFrames)
+        XCTAssertEqual(Array(outputFrames.suffix(expectedTrailingPadFrames)), Array(repeating: 0, count: expectedTrailingPadFrames))
     }
 }

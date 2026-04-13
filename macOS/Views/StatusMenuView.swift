@@ -156,6 +156,7 @@ struct StatusMenuView: View {
         switch manager.state {
         case .idle: return .idle
         case .recording: return .recording
+        case .stopping: return .transcribing
         case .transcribing: return .transcribing
         case .error(let msg): return .error(msg)
         }
