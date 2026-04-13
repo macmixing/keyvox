@@ -1,6 +1,10 @@
 import Foundation
 import AppKit
 
+struct AppUpdateResumeAfterApplicationsMoveContext {
+    let preferredDisplayKey: String?
+}
+
 struct AppUpdateApplicationsPrereflight {
     private let fileManager: FileManager
     private let defaults: UserDefaults
@@ -23,16 +27,32 @@ struct AppUpdateApplicationsPrereflight {
             .appendingPathComponent(bundleURL.lastPathComponent, isDirectory: true)
     }
 
-    func stageResumeAfterApplicationsMove() {
+    func stageResumeAfterApplicationsMove(preferredDisplayKey: String?) {
         defaults.set(true, forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
+        if let preferredDisplayKey {
+            defaults.set(preferredDisplayKey, forKey: UserDefaultsKeys.App.resumeUpdaterPreferredDisplayKey)
+        } else {
+            defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterPreferredDisplayKey)
+        }
+    }
+
+    func stageResumeAfterApplicationsMove() {
+        stageResumeAfterApplicationsMove(preferredDisplayKey: nil)
+    }
+
+    func consumeResumeAfterApplicationsMoveContext() -> AppUpdateResumeAfterApplicationsMoveContext? {
+        let shouldResume = defaults.bool(forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
+        let preferredDisplayKey = defaults.string(forKey: UserDefaultsKeys.App.resumeUpdaterPreferredDisplayKey)
+        if shouldResume {
+            defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
+            defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterPreferredDisplayKey)
+            return AppUpdateResumeAfterApplicationsMoveContext(preferredDisplayKey: preferredDisplayKey)
+        }
+        return nil
     }
 
     func consumeResumeAfterApplicationsMove() -> Bool {
-        let shouldResume = defaults.bool(forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
-        if shouldResume {
-            defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
-        }
-        return shouldResume
+        consumeResumeAfterApplicationsMoveContext() != nil
     }
 
     func moveCurrentAppToApplications(bundleURL: URL = Bundle.main.bundleURL) throws -> URL {

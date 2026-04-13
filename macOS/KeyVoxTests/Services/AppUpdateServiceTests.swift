@@ -262,6 +262,39 @@ final class AppUpdateServiceTests: XCTestCase {
         try await waitForCondition { promptPresenter.prompts.count == 2 }
     }
 
+    func testFocusedDisplaySelectionFallsBackDeterministically() {
+        let resolved = AppUpdateDisplaySelectionLogic.focusedDisplayKey(
+            keyWindowDisplayKey: nil,
+            mainWindowDisplayKey: "main-window",
+            mouseDisplayKey: "mouse",
+            mainScreenDisplayKey: "main-screen",
+            fallbackDisplayKey: "fallback"
+        )
+
+        XCTAssertTrue(resolved == "main-window")
+    }
+
+    func testInteractionDisplaySelectionPrefersMouseDisplay() {
+        let resolved = AppUpdateDisplaySelectionLogic.interactionDisplayKey(
+            mouseDisplayKey: "mouse",
+            focusedDisplayKey: "focused"
+        )
+
+        XCTAssertTrue(resolved == "mouse")
+    }
+
+    func testResolvedDisplaySelectionPrefersStoredDisplayBeforeFallbacks() {
+        let resolved = AppUpdateDisplaySelectionLogic.resolvedDisplayKey(
+            preferredDisplayKey: "stored",
+            windowDisplayKey: "window",
+            focusedDisplayKey: "focused",
+            mainScreenDisplayKey: "main-screen",
+            fallbackDisplayKey: "fallback"
+        )
+
+        XCTAssertTrue(resolved == "stored")
+    }
+
     private func makeService(
         promptPresenter: RecordingPromptPresenter,
         now: MutableNow,

@@ -102,8 +102,11 @@ final class AppUpdateCoordinator: ObservableObject {
     func prepareForLaunch() {
         cleanupService.cleanupStaleArtifacts()
         postUpdateNoticeVersion = noticeService.consumePendingNoticeVersionIfNeeded()
-        if applicationsPrereflight.consumeResumeAfterApplicationsMove() {
+        if let resumeContext = applicationsPrereflight.consumeResumeAfterApplicationsMoveContext() {
             service.suppressNextAutomaticUpdatePrompt()
+            AppUpdateDisplayCoordinator.shared.restorePreferredDisplayKeyForResumedUpdate(
+                resumeContext.preferredDisplayKey
+            )
             WindowManager.shared.openUpdateWindow()
             startTrackedOperation {
                 await self.resumeInstallAfterApplicationsMove()
@@ -112,6 +115,7 @@ final class AppUpdateCoordinator: ObservableObject {
     }
 
     func openWindowForManualCheck() {
+        AppUpdateDisplayCoordinator.shared.captureManualCheckDisplay()
         WindowManager.shared.openUpdateWindow()
         startTrackedOperation {
             await self.refreshRelease(userInitiated: true)
@@ -272,7 +276,9 @@ final class AppUpdateCoordinator: ObservableObject {
         do {
             statusMessage = "Moving KeyVox to Applications..."
             let destinationURL = try applicationsPrereflight.moveCurrentAppToApplications()
-            applicationsPrereflight.stageResumeAfterApplicationsMove()
+            applicationsPrereflight.stageResumeAfterApplicationsMove(
+                preferredDisplayKey: AppUpdateDisplayCoordinator.shared.preferredDisplayKeyForResume
+            )
             NSWorkspace.shared.open(destinationURL)
             NSApplication.shared.terminate(nil)
         } catch {

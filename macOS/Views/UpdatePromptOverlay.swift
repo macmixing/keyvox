@@ -84,6 +84,7 @@ struct UpdatePromptOverlay: View {
     }
 }
 
+@MainActor
 final class UpdatePromptManager {
     static let shared = UpdatePromptManager()
     private var window: NSPanel?
@@ -132,7 +133,7 @@ final class UpdatePromptManager {
 
     private func centerPromptWindow() {
         guard let window else { return }
-        let screen = window.screen ?? NSApp.keyWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first
+        let screen = AppUpdateDisplayCoordinator.shared.preferredScreen(for: window)
         guard let screen else { return }
 
         let visibleFrame = screen.visibleFrame
