@@ -1,6 +1,124 @@
 import AppKit
 import SwiftUI
 
+enum AppUpdateDisplaySelectionLogic {
+    static func focusedDisplayKey(
+        keyWindowDisplayKey: String?,
+        mainWindowDisplayKey: String?,
+        mouseDisplayKey: String?,
+        mainScreenDisplayKey: String?,
+        fallbackDisplayKey: String?
+    ) -> String? {
+        keyWindowDisplayKey
+            ?? mainWindowDisplayKey
+            ?? mouseDisplayKey
+            ?? mainScreenDisplayKey
+            ?? fallbackDisplayKey
+    }
+
+    static func interactionDisplayKey(
+        mouseDisplayKey: String?,
+        focusedDisplayKey: String?
+    ) -> String? {
+        mouseDisplayKey ?? focusedDisplayKey
+    }
+
+    static func resolvedDisplayKey(
+        preferredDisplayKey: String?,
+        windowDisplayKey: String?,
+        focusedDisplayKey: String?,
+        mainScreenDisplayKey: String?,
+        fallbackDisplayKey: String?
+    ) -> String? {
+        preferredDisplayKey
+            ?? windowDisplayKey
+            ?? focusedDisplayKey
+            ?? mainScreenDisplayKey
+            ?? fallbackDisplayKey
+    }
+}
+
+@MainActor
+final class AppUpdateDisplayCoordinator {
+    static let shared = AppUpdateDisplayCoordinator()
+
+    private(set) var preferredDisplayKey: String?
+
+    private init() {}
+
+    var preferredDisplayKeyForResume: String? {
+        preferredDisplayKey ?? interactionDisplayKey()
+    }
+
+    func captureManualCheckDisplay() {
+        preferredDisplayKey = interactionDisplayKey()
+    }
+
+    func captureAutomaticPromptDisplay() {
+        preferredDisplayKey = focusedDisplayKey()
+    }
+
+    func restorePreferredDisplayKeyForResumedUpdate(_ displayKey: String?) {
+        preferredDisplayKey = displayKey ?? focusedDisplayKey()
+    }
+
+    func preferredScreen(for window: NSWindow? = nil) -> NSScreen? {
+        let resolvedDisplayKey = AppUpdateDisplaySelectionLogic.resolvedDisplayKey(
+            preferredDisplayKey: preferredDisplayKey,
+            windowDisplayKey: displayKey(for: window?.screen),
+            focusedDisplayKey: focusedDisplayKey(),
+            mainScreenDisplayKey: displayKey(for: NSScreen.main),
+            fallbackDisplayKey: displayKey(for: NSScreen.screens.first)
+        )
+
+        return screen(forDisplayKey: resolvedDisplayKey)
+            ?? window?.screen
+            ?? NSApp.keyWindow?.screen
+            ?? NSApp.mainWindow?.screen
+            ?? screenContaining(point: NSEvent.mouseLocation)
+            ?? NSScreen.main
+            ?? NSScreen.screens.first
+    }
+
+    private func focusedDisplayKey() -> String? {
+        AppUpdateDisplaySelectionLogic.focusedDisplayKey(
+            keyWindowDisplayKey: displayKey(for: NSApp.keyWindow?.screen),
+            mainWindowDisplayKey: displayKey(for: NSApp.mainWindow?.screen),
+            mouseDisplayKey: displayKeyForMouseLocation(),
+            mainScreenDisplayKey: displayKey(for: NSScreen.main),
+            fallbackDisplayKey: displayKey(for: NSScreen.screens.first)
+        )
+    }
+
+    private func interactionDisplayKey() -> String? {
+        AppUpdateDisplaySelectionLogic.interactionDisplayKey(
+            mouseDisplayKey: displayKeyForMouseLocation(),
+            focusedDisplayKey: focusedDisplayKey()
+        )
+    }
+
+    private func displayKeyForMouseLocation() -> String? {
+        displayKey(for: screenContaining(point: NSEvent.mouseLocation))
+    }
+
+    private func screenContaining(point: NSPoint) -> NSScreen? {
+        NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? NSScreen.main
+    }
+
+    private func displayKey(for screen: NSScreen?) -> String? {
+        guard let screen else { return nil }
+        guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else {
+            return nil
+        }
+        return String(number.uint32Value)
+    }
+
+    private func screen(forDisplayKey key: String?) -> NSScreen? {
+        guard let key else { return nil }
+        return NSScreen.screens.first(where: { displayKey(for: $0) == key })
+    }
+}
+
 extension WindowManager {
     @MainActor
     func openUpdateWindow(centered: Bool = true) {
@@ -124,7 +242,7 @@ extension WindowManager {
 
     @MainActor
     private func centerFloatingWindow(_ window: NSWindow) {
-        let screen = window.screen ?? NSApp.keyWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first
+        let screen = AppUpdateDisplayCoordinator.shared.preferredScreen(for: window)
         guard let screen else { return }
 
         let visibleFrame = screen.visibleFrame

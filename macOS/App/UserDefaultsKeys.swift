@@ -21,6 +21,7 @@ enum UserDefaultsKeys {
         static let pendingUpdatedVersion = "KeyVox.App.PendingUpdatedVersion"
         static let lastAcknowledgedUpdatedVersion = "KeyVox.App.LastAcknowledgedUpdatedVersion"
         static let resumeUpdaterAfterApplicationsMove = "KeyVox.App.ResumeUpdaterAfterApplicationsMove"
+        static let resumeUpdaterPreferredDisplayKey = "KeyVox.App.ResumeUpdaterPreferredDisplayKey"
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let lastTranscription = "KeyVox.App.LastTranscription"

@@ -127,6 +127,10 @@ final class AppUpdateService: ObservableObject {
     }
 
     private func performUpdateCheck(isManualCheck: Bool) async {
+        if isManualCheck {
+            AppUpdateDisplayCoordinator.shared.captureManualCheckDisplay()
+        }
+
         if !isManualCheck, suppressNextAutomaticPrompt {
             suppressNextAutomaticPrompt = false
             return
@@ -161,6 +165,9 @@ final class AppUpdateService: ObservableObject {
         }
 
         guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return }
+        if !isManualCheck {
+            AppUpdateDisplayCoordinator.shared.captureAutomaticPromptDisplay()
+        }
         promptPresenter.show(prompt: prompt)
     }
 
