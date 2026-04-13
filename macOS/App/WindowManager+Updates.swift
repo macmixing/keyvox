@@ -71,13 +71,27 @@ final class AppUpdateDisplayCoordinator {
             fallbackDisplayKey: displayKey(for: NSScreen.screens.first)
         )
 
-        return screen(forDisplayKey: resolvedDisplayKey)
-            ?? window?.screen
-            ?? NSApp.keyWindow?.screen
-            ?? NSApp.mainWindow?.screen
-            ?? screenContaining(point: NSEvent.mouseLocation)
-            ?? NSScreen.main
-            ?? NSScreen.screens.first
+        if let screen = screen(forDisplayKey: resolvedDisplayKey) {
+            return screen
+        }
+
+        if let screen = window?.screen {
+            return screen
+        }
+
+        if let screen = NSApp.keyWindow?.screen {
+            return screen
+        }
+
+        if let screen = NSApp.mainWindow?.screen {
+            return screen
+        }
+
+        if let screen = screenContaining(point: NSEvent.mouseLocation) {
+            return screen
+        }
+
+        return NSScreen.main ?? NSScreen.screens.first
     }
 
     private func focusedDisplayKey() -> String? {
