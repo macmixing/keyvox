@@ -84,6 +84,7 @@ struct UpdatePromptOverlay: View {
     }
 }
 
+@MainActor
 final class UpdatePromptManager {
     static let shared = UpdatePromptManager()
     private var window: NSPanel?
