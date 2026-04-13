@@ -126,6 +126,7 @@ struct SettingsView: View {
                 .padding(.bottom, 40)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .scrollIndicators(.hidden)
 
             if showsDictionaryFloatingAddButton {
                 DictionaryFloatingAddButton {
