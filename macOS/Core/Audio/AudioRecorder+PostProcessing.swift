@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import KeyVoxCore
 
 extension AudioRecorder {
@@ -57,13 +58,30 @@ extension AudioRecorder {
             #if DEBUG
             print("Audio processed: Preserving internal silence for transcription timing fidelity.")
             #endif
-            outputFrames = AudioPostProcessing.normalizeForTranscription(
+            let normalizedFrames = AudioPostProcessing.normalizeForTranscription(
                 snapshot,
                 targetPeak: normalizationTargetPeak,
                 maxGain: normalizationMaxGain
             )
+            outputFrames = appendTrailingSilenceForTranscription(normalizedFrames)
         }
 
         return outputFrames
+    }
+
+    private func appendTrailingSilenceForTranscription(_ samples: [Float]) -> [Float] {
+        guard !samples.isEmpty else { return samples }
+
+        let trailingFrameCount = Int((transcriptionTrailingSilenceDuration * outputFormat.sampleRate).rounded())
+        guard trailingFrameCount > 0 else { return samples }
+
+        #if DEBUG
+        print(
+            "Audio transcription pad: appendedFrames=\(trailingFrameCount) " +
+            "duration=\(String(format: "%.3f", transcriptionTrailingSilenceDuration))s"
+        )
+        #endif
+
+        return samples + Array(repeating: 0, count: trailingFrameCount)
     }
 }
