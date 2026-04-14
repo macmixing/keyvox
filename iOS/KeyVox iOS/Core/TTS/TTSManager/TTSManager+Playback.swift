@@ -23,6 +23,31 @@ extension TTSManager {
         await startPlayback(request, showPreparationView: false)
     }
 
+    func startBenchmarkPlayback(text: String, label: String) async {
+        clearWarningMessage()
+
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedText.isEmpty == false else {
+            showEmptyClipboardWarning()
+            return
+        }
+
+        let request = KeyVoxTTSRequest(
+            id: UUID(),
+            text: trimmedText,
+            createdAt: Date().timeIntervalSince1970,
+            sourceSurface: .app,
+            voiceID: effectiveVoiceProvider().rawValue,
+            kind: .speakClipboardText
+        )
+        await startPlayback(
+            request,
+            showPreparationView: false,
+            allowReplay: false,
+            benchmarkLabel: label
+        )
+    }
+
     func startPlaybackFromPendingRequest(showPreparationView: Bool = false) async {
         clearWarningMessage()
 
@@ -56,10 +81,15 @@ extension TTSManager {
         await startPlayback(normalizedRequest, showPreparationView: effectiveShowPreparationView)
     }
 
-    func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
+    func startPlayback(
+        _ request: KeyVoxTTSRequest,
+        showPreparationView: Bool = false,
+        allowReplay: Bool = true,
+        benchmarkLabel: String? = nil
+    ) async {
         clearWarningMessage()
 
-        if canReplayExistingAsset(for: request) {
+        if allowReplay && canReplayExistingAsset(for: request) {
             Self.log(
                 "Reusing replayable asset for id=\(request.id.uuidString) voice=\(request.voiceID) source=\(request.sourceSurface.rawValue) textLength=\(request.trimmedText.count)"
             )
@@ -78,6 +108,14 @@ extension TTSManager {
             "Starting request id=\(request.id.uuidString) voice=\(request.voiceID) source=\(request.sourceSurface.rawValue) textLength=\(request.trimmedText.count) showPreparationView=\(showPreparationView)"
         )
         activeRequest = request
+        if let benchmarkLabel {
+            benchmarkRecorder.beginRun(
+                label: benchmarkLabel,
+                request: request,
+                voiceDisplayName: benchmarkVoiceDisplayName(for: request.voiceID),
+                fastModeEnabled: settingsStore.fastPlaybackModeEnabled
+            )
+        }
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
         shouldConsumeFreeSpeakOnPlaybackStart = true
@@ -98,6 +136,7 @@ extension TTSManager {
 
         do {
             try await engine.prepareIfNeeded()
+            benchmarkRecorder.markEnginePrepared(for: request.id)
             updateState(.generating)
 
             let stream = try await engine.makeAudioStream(
@@ -105,6 +144,7 @@ extension TTSManager {
                 voiceID: request.voiceID,
                 fastModeEnabled: settingsStore.fastPlaybackModeEnabled
             )
+            benchmarkRecorder.markStreamCreated(for: request.id)
             playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
         } catch {
             shouldConsumeFreeSpeakOnPlaybackStart = false
@@ -227,5 +267,12 @@ extension TTSManager {
             persistReplayablePlaybackIfNeeded(for: lastReplayableRequest)
         }
         clearActiveRequest()
+    }
+
+    private func benchmarkVoiceDisplayName(for voiceID: String) -> String {
+        guard let voice = AppSettingsStore.TTSVoice(rawValue: voiceID) else {
+            return voiceID
+        }
+        return voice.displayName
     }
 }

@@ -110,6 +110,37 @@ final class AudioModeCoordinator: ObservableObject {
         }
     }
 
+    func handleRunTTSBenchmark(text: String, label: String) {
+        Task { @MainActor in
+            guard !isTransitioning else { return }
+            isTransitioning = true
+            defer { isTransitioning = false }
+
+            Self.log(
+                "handleRunTTSBenchmark label=\(label) transcriptionState=\(String(describing: transcriptionManager.state)) isSessionActive=\(String(transcriptionManager.isSessionActive))"
+            )
+
+            guard ttsPurchaseGate.canStartNewTTSSpeak else {
+                ttsPurchaseGate.presentUnlockSheet()
+                return
+            }
+
+            appTabRouter.selectedTab = .home
+            shouldRepairMonitoringAfterTTS = transcriptionManager.isSessionActive
+            ttsManager.setPlaybackAudioSessionMode(
+                transcriptionManager.isSessionActive
+                ? .playbackWhilePreservingRecording
+                : .playback
+            )
+
+            if transcriptionManager.state != .idle {
+                await transcriptionManager.performCancelCurrentUtterance()
+            }
+
+            await ttsManager.startBenchmarkPlayback(text: text, label: label)
+        }
+    }
+
     func handleStopTTS() {
         Task { @MainActor in
             await ttsManager.stopPlayback()

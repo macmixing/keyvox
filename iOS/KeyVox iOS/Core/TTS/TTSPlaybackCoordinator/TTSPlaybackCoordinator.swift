@@ -47,6 +47,7 @@ final class TTSPlaybackCoordinator {
     var onPlaybackProgressChanged: ((Double) -> Void)?
     var onFastModeBackgroundSafetyChanged: ((Double, Bool) -> Void)?
     var onReplayablePlaybackReady: (() -> Void)?
+    var onFrameReceived: ((KeyVoxTTSAudioFrame) -> Void)?
 
     let audioEngine = AVAudioEngine()
     let playerNode = AVAudioPlayerNode()

@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxTTS
 
 extension TTSManager {
     private enum WarningCopy {
@@ -29,6 +30,7 @@ extension TTSManager {
     func finishPlayback() {
         Task { @MainActor [weak self] in
             guard let self else { return }
+            let completedRequestID = activeRequest?.id
             if let activeRequest {
                 Self.log("Playback finished for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
                 self.lastReplayableRequest = activeRequest
@@ -42,6 +44,9 @@ extension TTSManager {
             self.updateState(.finished)
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
+            if let completedRequestID {
+                self.benchmarkRecorder.markFinished(for: completedRequestID)
+            }
             self.clearActiveRequest(
                 clearSharedTransportState: false,
                 preserveFinishedSystemPlayback: self.hasReplayablePlayback
@@ -54,12 +59,17 @@ extension TTSManager {
         lastReplayableRequest = activeRequest
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         persistReplayablePlaybackIfNeeded(for: activeRequest)
+        benchmarkRecorder.markReplayReady(
+            for: activeRequest.id,
+            totalSampleCount: playbackCoordinator.replayablePlaybackSampleCount
+        )
         Self.log("Replayable playback became available for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
     }
 
     func handleError(_ message: String) {
         Task { @MainActor [weak self] in
             guard let self else { return }
+            let failedRequestID = activeRequest?.id
             if let activeRequest {
                 Self.log("Playback failed for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID) error=\(message)")
             } else {
@@ -74,6 +84,9 @@ extension TTSManager {
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.keyboardBridge.publishTTSFailed(message: message)
+            if let failedRequestID {
+                self.benchmarkRecorder.markFailed(for: failedRequestID, message: message)
+            }
             self.clearActiveRequest(clearPublishedState: false)
         }
     }
@@ -152,6 +165,7 @@ extension TTSManager {
     func handlePlaybackStarted() {
         if let activeRequest {
             Self.log("Playback started for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
+            benchmarkRecorder.markPlaybackStarted(for: activeRequest.id)
         }
         if shouldConsumeFreeSpeakOnPlaybackStart {
             purchaseGate.consumeFreeTTSSpeakIfNeeded()
@@ -245,6 +259,10 @@ extension TTSManager {
             return
         }
 
+        if let activeRequest {
+            benchmarkRecorder.markBackgroundReady(for: activeRequest.id)
+        }
+
         guard isFastModeBackgroundSafe == false else { return }
         guard fastModeBackgroundSafetyTask == nil else { return }
 
@@ -255,8 +273,23 @@ extension TTSManager {
 
             self.isFastModeBackgroundSafe = true
             self.appHaptics.medium()
+            if let activeRequest = self.activeRequest {
+                self.benchmarkRecorder.markBackgroundStable(for: activeRequest.id)
+            }
             self.fastModeBackgroundSafetyTask = nil
         }
+    }
+
+    func handlePlaybackFrame(_ frame: KeyVoxTTSAudioFrame) {
+        guard let activeRequest else { return }
+        benchmarkRecorder.recordFrame(frame, for: activeRequest.id)
+    }
+
+    func handlePlaybackCancelled() {
+        if let activeRequest {
+            benchmarkRecorder.markCancelled(for: activeRequest.id)
+        }
+        clearActiveRequest()
     }
 
     func restoreReplayablePlaybackIfNeeded() {

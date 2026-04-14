@@ -4,6 +4,7 @@ import KeyVoxTTS
 
 extension TTSPlaybackCoordinator {
     func schedule(_ frame: KeyVoxTTSAudioFrame) {
+        onFrameReceived?(frame)
         lastObservedChunkCount = frame.chunkCount
         lastObservedRemainingEstimatedSamples = frame.estimatedRemainingSampleCount
         recordCompletedFastModeSegmentIfNeeded(from: frame)

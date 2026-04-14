@@ -20,6 +20,7 @@ final class AppServiceRegistry {
     let parakeetService: ParakeetService
     let activeProviderRouter: SwitchableDictationProvider
     let ttsManager: TTSManager
+    let ttsBenchmarkRecorder: TTSBenchmarkRecorder
     let pocketTTSModelManager: PocketTTSModelManager
     let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
@@ -80,6 +81,7 @@ final class AppServiceRegistry {
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
+        let ttsBenchmarkRecorder = TTSBenchmarkRecorder()
         let modelManager = ModelManager(
             fileManager: fileManager,
             modelLocator: modelLocator,
@@ -163,6 +165,7 @@ final class AppServiceRegistry {
             engine: ttsEngine,
             playbackCoordinator: ttsPlaybackCoordinator,
             purchaseGate: ttsPurchaseController,
+            benchmarkRecorder: ttsBenchmarkRecorder,
             systemPlaybackController: ttsSystemPlaybackController,
             forceRegenerationForMatchingTranscript: runtimeFlags.forceTTSRegeneration,
             effectiveVoiceProvider: { [weak settingsStore, weak pocketTTSModelManager] in
@@ -254,6 +257,7 @@ final class AppServiceRegistry {
         self.parakeetService = parakeetService
         self.activeProviderRouter = activeProviderRouter
         self.ttsManager = ttsManager
+        self.ttsBenchmarkRecorder = ttsBenchmarkRecorder
         self.pocketTTSModelManager = pocketTTSModelManager
         self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager

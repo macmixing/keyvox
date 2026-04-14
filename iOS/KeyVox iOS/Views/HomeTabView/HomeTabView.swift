@@ -129,6 +129,10 @@ struct HomeTabView: View {
                         .font(.appFont(12))
                         .foregroundStyle(.red)
                 }
+
+                Divider()
+
+                TTSBenchmarkDiagnosticsSection()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -197,6 +201,7 @@ struct HomeTabView: View {
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
+        .environmentObject(AppServiceRegistry.shared.ttsBenchmarkRecorder)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.settingsStore)

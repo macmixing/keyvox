@@ -29,6 +29,7 @@ final class TTSManager: ObservableObject {
     let engine: any TTSEngine
     let playbackCoordinator: TTSPlaybackCoordinator
     let purchaseGate: any TTSPurchaseGating
+    let benchmarkRecorder: TTSBenchmarkRecorder
     let replayCache: TTSReplayCache
     let systemPlaybackController: TTSSystemPlaybackController?
     let forceRegenerationForMatchingTranscript: Bool
@@ -108,6 +109,7 @@ final class TTSManager: ObservableObject {
         engine: any TTSEngine,
         playbackCoordinator: TTSPlaybackCoordinator,
         purchaseGate: any TTSPurchaseGating,
+        benchmarkRecorder: TTSBenchmarkRecorder? = nil,
         systemPlaybackController: TTSSystemPlaybackController? = nil,
         forceRegenerationForMatchingTranscript: Bool = false,
         replayCache: TTSReplayCache? = nil,
@@ -121,6 +123,7 @@ final class TTSManager: ObservableObject {
         self.engine = engine
         self.playbackCoordinator = playbackCoordinator
         self.purchaseGate = purchaseGate
+        self.benchmarkRecorder = benchmarkRecorder ?? TTSBenchmarkRecorder()
         self.systemPlaybackController = systemPlaybackController
         self.forceRegenerationForMatchingTranscript = forceRegenerationForMatchingTranscript
         self.replayCache = replayCache ?? TTSReplayCache()
@@ -149,7 +152,7 @@ final class TTSManager: ObservableObject {
                     "Playback cancelled callback state=\(self.state.rawValue) paused=\(self.isPlaybackPaused) replaying=\(self.isReplayingCachedPlayback) pausedOffset=\(self.pausedReplaySampleOffset.map(String.init) ?? "nil") hasReplayable=\(self.hasReplayablePlayback)"
                 )
             }
-            self?.clearActiveRequest()
+            self?.handlePlaybackCancelled()
         }
         playbackCoordinator.onPlaybackFailed = { [weak self] error in
             self?.handleError(error.localizedDescription)
@@ -171,6 +174,9 @@ final class TTSManager: ObservableObject {
         }
         playbackCoordinator.onReplayablePlaybackReady = { [weak self] in
             self?.handleReplayablePlaybackReady()
+        }
+        playbackCoordinator.onFrameReceived = { [weak self] frame in
+            self?.handlePlaybackFrame(frame)
         }
 
         NotificationCenter.default.addObserver(
