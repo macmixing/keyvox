@@ -77,9 +77,16 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
             }
 
             if !decodedChunk.text.isEmpty {
-                let segmentStart = milliseconds(forFrameIndex: frameOffset)
+                let chunkStart = milliseconds(forFrameIndex: frameOffset)
                 let chunkEnd = milliseconds(forFrameIndex: chunkUpperBound)
-                let segmentEnd = min(chunkEnd, segmentStart + max(decodedChunk.relativeEndTimeMilliseconds, 0))
+                let segmentStart = min(
+                    chunkEnd,
+                    chunkStart + max(decodedChunk.relativeStartTimeMilliseconds, 0)
+                )
+                let segmentEnd = min(
+                    chunkEnd,
+                    chunkStart + max(decodedChunk.relativeEndTimeMilliseconds, 0)
+                )
 
                 segments.append(
                     ParakeetSegment(
