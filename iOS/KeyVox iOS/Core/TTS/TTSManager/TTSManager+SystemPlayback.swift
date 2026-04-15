@@ -4,7 +4,10 @@ import UIKit
 
 extension TTSManager {
     private var shouldExposeFinishedReplaySystemPlayback: Bool {
-        state == .finished && hasReplayablePlayback && lastReplayableRequest != nil
+        state == .finished
+            && shouldExposeFinishedSystemPlayback
+            && hasReplayablePlayback
+            && lastReplayableRequest != nil
     }
 
     func configureSystemPlaybackController() {

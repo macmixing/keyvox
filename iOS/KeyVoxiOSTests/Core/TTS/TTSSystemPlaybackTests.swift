@@ -192,7 +192,7 @@ struct TTSSystemPlaybackTests {
         #expect(audioSession.portOverrides.isEmpty)
     }
 
-    @Test func finishingWhilePreservingRecordingRetainsPlaybackSessionAndSkipsMonitoringRepair() async {
+    @Test func finishingWhilePreservingRecordingClearsSystemPlaybackAndKeepsWarmSessionAlive() async {
         let audioSession = SpyPlaybackAudioSession()
         let harness = makeHarness(
             includeSystemPlaybackController: true,
@@ -222,19 +222,17 @@ struct TTSSystemPlaybackTests {
 
         let info = MPNowPlayingInfoCenter.default().nowPlayingInfo
         #expect(harness.manager.state == .finished)
-        #expect(teardownCallCount == 0)
-        #expect(audioSession.activeCalls == [
-            .init(active: false, options: []),
-            .init(active: true, options: [])
-        ])
-        #expect(audioSession.policyCategoryCalls == [
-            .init(category: .playback, mode: .spokenAudio, policy: .longFormAudio, options: [])
-        ])
-        #expect(audioSession.portOverrides == [.none])
-        #expect(doubleValue(info?[MPNowPlayingInfoPropertyPlaybackRate]) == 0)
-        #expect(MPRemoteCommandCenter.shared().playCommand.isEnabled == true)
+        #expect(teardownCallCount == 1)
+        #expect(harness.manager.shouldExposeFinishedSystemPlayback == false)
+        #expect(harness.manager.hasReplayablePlayback == true)
+        #expect(audioSession.activeCalls.isEmpty)
+        #expect(audioSession.policyCategoryCalls.isEmpty)
+        #expect(audioSession.portOverrides.isEmpty)
+        #expect(info == nil)
+        #expect(MPRemoteCommandCenter.shared().playCommand.isEnabled == false)
         #expect(MPRemoteCommandCenter.shared().pauseCommand.isEnabled == false)
-        #expect(MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled == true)
+        #expect(MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled == false)
+        #expect(MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled == false)
     }
 
     private func makeHarness(

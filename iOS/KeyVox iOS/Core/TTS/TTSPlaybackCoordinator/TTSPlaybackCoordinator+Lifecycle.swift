@@ -83,7 +83,6 @@ extension TTSPlaybackCoordinator {
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
         hasHandedOffPausedPlaybackSession = false
-        hasRetainedFinishedSystemPlaybackSession = false
         isFastModeBackgroundSafeState = false
         hasObservedFastModeBackgroundSafeCompute = false
         self.fastModeEnabled = fastModeEnabled
@@ -235,7 +234,6 @@ extension TTSPlaybackCoordinator {
         replayStartSampleOffset = safeStartSampleOffset
         replayPausedSampleOffset = shouldAutoplay ? 0 : safeStartSampleOffset
         hasHandedOffPausedPlaybackSession = false
-        hasRetainedFinishedSystemPlaybackSession = false
         isFastModeBackgroundSafeState = false
 
         let bufferSampleCount = Int(playbackFormat.sampleRate * 0.5)
@@ -308,7 +306,6 @@ extension TTSPlaybackCoordinator {
         replayPausedSampleOffset = 0
         isFastModeBackgroundSafeState = false
         hasObservedFastModeBackgroundSafeCompute = false
-        hasRetainedFinishedSystemPlaybackSession = false
 
         if playerNode.isPlaying {
             playerNode.stop()
@@ -327,7 +324,6 @@ extension TTSPlaybackCoordinator {
         switch audioSessionMode {
         case .playback:
             hasHandedOffPausedPlaybackSession = false
-            hasRetainedFinishedSystemPlaybackSession = false
             try audioSession.setCategory(
                 .playback,
                 mode: .spokenAudio,
@@ -337,7 +333,6 @@ extension TTSPlaybackCoordinator {
             try? audioSession.overrideOutputAudioPort(.none)
         case .playbackWhilePreservingRecording:
             hasHandedOffPausedPlaybackSession = false
-            hasRetainedFinishedSystemPlaybackSession = false
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
                 preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
             )
@@ -398,36 +393,6 @@ extension TTSPlaybackCoordinator {
     func handleFailure(_ error: Error) {
         stop(emitCallback: false)
         onPlaybackFailed?(error)
-    }
-
-    @discardableResult
-    func retainFinishedSystemPlaybackSessionIfNeeded() -> Bool {
-        guard audioSessionMode == .playbackWhilePreservingRecording else { return false }
-
-        do {
-            try audioSession.setActive(false, options: [])
-        } catch {
-            Self.log(
-                "Failed to deactivate preserved recording session before finished replay handoff: \(error.localizedDescription)"
-            )
-        }
-
-        do {
-            try audioSession.setCategory(
-                .playback,
-                mode: .spokenAudio,
-                policy: .longFormAudio,
-                options: []
-            )
-            try? audioSession.overrideOutputAudioPort(.none)
-            try audioSession.setActive(true, options: [])
-            hasRetainedFinishedSystemPlaybackSession = true
-            Self.log("Retained finished replay playback ownership with playback/spokenAudio session.")
-            return true
-        } catch {
-            Self.log("Failed to retain finished replay playback session: \(error.localizedDescription)")
-            return false
-        }
     }
 
     private func handoffPausedAudioSessionIfNeeded() {

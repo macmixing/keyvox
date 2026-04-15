@@ -39,15 +39,11 @@ extension TTSManager {
             self.hasReplayablePlayback = self.playbackCoordinator.hasReplayablePlayback
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
-            let retainedFinishedSystemPlaybackSession =
+            self.shouldExposeFinishedSystemPlayback =
                 self.hasReplayablePlayback
-                && self.playbackCoordinator.retainFinishedSystemPlaybackSessionIfNeeded()
+                && self.playbackCoordinator.audioSessionMode == .playback
             self.updateState(.finished)
-            if retainedFinishedSystemPlaybackSession {
-                Self.log("Skipping monitoring repair so finished replay keeps playback session ownership.")
-            } else {
-                await self.onWillTeardownPlayback?()
-            }
+            await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.clearActiveRequest(
                 clearSharedTransportState: false,
@@ -86,6 +82,9 @@ extension TTSManager {
     }
 
     func updateState(_ newState: KeyVoxTTSState) {
+        if newState != .finished {
+            shouldExposeFinishedSystemPlayback = false
+        }
         state = newState
         updateIdleSleepPrevention()
 
@@ -150,6 +149,10 @@ extension TTSManager {
             updateIdleSleepPrevention()
         } else if clearPublishedState == false, clearSharedTransportState {
             KeyVoxIPCBridge.clearTTSState()
+        }
+
+        if preserveFinishedSystemPlayback == false {
+            shouldExposeFinishedSystemPlayback = false
         }
 
         refreshSystemPlaybackControls()
