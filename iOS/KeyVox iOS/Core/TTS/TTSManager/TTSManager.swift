@@ -44,7 +44,7 @@ final class TTSManager: ObservableObject {
     var shouldPersistPlaybackPreparationViewUntilBackground = false
     var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     var backgroundTaskReleaseTask: Task<Void, Never>?
-    var fastModeBackgroundSafetyTask: Task<Void, Never>?
+    var hasRequestedFastModeBackgroundContinuation = false
     var onWillTeardownPlayback: (() async -> Void)?
 
     var shouldPreventIdleSleep: Bool {

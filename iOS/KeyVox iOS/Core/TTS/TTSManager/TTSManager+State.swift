@@ -103,12 +103,11 @@ extension TTSManager {
         clearSharedTransportState: Bool = true,
         preserveFinishedSystemPlayback: Bool = false
     ) {
-        fastModeBackgroundSafetyTask?.cancel()
-        fastModeBackgroundSafetyTask = nil
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
         shouldConsumeFreeSpeakOnPlaybackStart = false
+        hasRequestedFastModeBackgroundContinuation = false
         isPlaybackPaused = false
         isReplayingCachedPlayback = false
         pausedReplaySampleOffset = nil
@@ -239,24 +238,21 @@ extension TTSManager {
         fastModeBackgroundSafetyProgress = progress
 
         if isSafe == false {
-            fastModeBackgroundSafetyTask?.cancel()
-            fastModeBackgroundSafetyTask = nil
             isFastModeBackgroundSafe = false
             return
         }
 
-        guard isFastModeBackgroundSafe == false else { return }
-        guard fastModeBackgroundSafetyTask == nil else { return }
-
-        fastModeBackgroundSafetyTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            guard let self else { return }
-            guard Task.isCancelled == false else { return }
-
-            self.isFastModeBackgroundSafe = true
-            self.appHaptics.medium()
-            self.fastModeBackgroundSafetyTask = nil
+        if playbackCoordinator.canContinueBackgroundPlaybackInFastMode {
+            guard isFastModeBackgroundSafe == false else { return }
+            isFastModeBackgroundSafe = true
+            appHaptics.medium()
+            return
         }
+
+        guard hasRequestedFastModeBackgroundContinuation == false else { return }
+        guard state == .playing, isPlaybackPaused == false, isReplayingCachedPlayback == false else { return }
+
+        requestFastModeBackgroundContinuationIfNeeded()
     }
 
     func restoreReplayablePlaybackIfNeeded() {

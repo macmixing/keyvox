@@ -177,7 +177,7 @@ extension TTSPlaybackCoordinator {
         refreshFastModeBackgroundSafetyState()
         onFastModeBackgroundSafetyChanged?(
             fastModeBackgroundSafetyProgress,
-            canContinueBackgroundPlaybackInFastMode
+            isFastModeBackgroundSafeState
         )
     }
 

@@ -70,6 +70,7 @@ struct TTSManagerLifecycleTests {
         harness.manager.playbackCoordinator.didStartPlayback = true
         harness.manager.playbackCoordinator.isPaused = false
         harness.manager.playbackCoordinator.isFastModeBackgroundSafeState = true
+        harness.manager.playbackCoordinator.hasObservedFastModeBackgroundSafeCompute = true
 
         harness.manager.handleProtectedDataWillBecomeUnavailableNotification(
             Notification(name: UIApplication.protectedDataWillBecomeUnavailableNotification)

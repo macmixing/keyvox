@@ -23,6 +23,7 @@ extension TTSPlaybackCoordinator {
         replayStartSampleOffset = 0
         replayPausedSampleOffset = clampedPausedSampleOffset
         isFastModeBackgroundSafeState = false
+        hasObservedFastModeBackgroundSafeCompute = false
         stopPlaybackProgressTimer()
         emitPlaybackProgress()
     }
@@ -83,6 +84,7 @@ extension TTSPlaybackCoordinator {
         replayPausedSampleOffset = 0
         hasHandedOffPausedPlaybackSession = false
         isFastModeBackgroundSafeState = false
+        hasObservedFastModeBackgroundSafeCompute = false
         self.fastModeEnabled = fastModeEnabled
         notifyFastModeBackgroundSafetyChanged()
 
@@ -303,6 +305,7 @@ extension TTSPlaybackCoordinator {
         replayStartSampleOffset = 0
         replayPausedSampleOffset = 0
         isFastModeBackgroundSafeState = false
+        hasObservedFastModeBackgroundSafeCompute = false
 
         if playerNode.isPlaying {
             playerNode.stop()

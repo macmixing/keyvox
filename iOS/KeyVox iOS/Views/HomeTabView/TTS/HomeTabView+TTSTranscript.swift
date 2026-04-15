@@ -1,6 +1,10 @@
 import SwiftUI
 
 extension HomeTabView {
+    private enum TTSTranscriptLayout {
+        static let maximumExpandedHeight: CGFloat = 300
+    }
+
     var ttsTranscriptToggleButton: some View {
         Button {
             setTTSTranscriptExpanded(!isTTSTranscriptExpanded)
@@ -27,13 +31,14 @@ extension HomeTabView {
         VStack(alignment: .leading, spacing: 10) {
             ScrollView {
                 Text(currentPlaybackTranscriptText)
-                    .font(.appFont(14, variant: .light))
-                    .foregroundStyle(.white.opacity(0.82))
+                    .font(.appFont(18, variant: .light))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .multilineTextAlignment(.leading)
                     .textSelection(.enabled)
             }
-            .frame(maxHeight: 180, alignment: .top)
+            .scrollIndicators(.hidden)
+            .frame(maxHeight: TTSTranscriptLayout.maximumExpandedHeight, alignment: .top)
             .padding(16)
             .scaleEffect(y: isTTSTranscriptPanelContentVisible ? 1 : 0.92, anchor: .top)
             .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
