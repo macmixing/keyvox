@@ -115,7 +115,7 @@ public enum ParakeetUtteranceGate {
         )
     }
 
-    static func utteranceDurationSeconds(
+    public static func utteranceDurationSeconds(
         for nonEmptySegments: [ParakeetSegment],
         fallbackAudioFrameCount: Int
     ) -> Double {

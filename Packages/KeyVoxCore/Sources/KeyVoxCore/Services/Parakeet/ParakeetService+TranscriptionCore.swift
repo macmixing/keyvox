@@ -236,16 +236,9 @@ extension ParakeetService {
         for nonEmptySegments: [ParakeetSegment],
         fallbackAudioFrameCount: Int
     ) -> Double {
-        guard let firstSegment = nonEmptySegments.first,
-              let lastSegment = nonEmptySegments.last else {
-            return Double(fallbackAudioFrameCount) / 16_000.0
-        }
-
-        let utteranceMilliseconds = max(0, lastSegment.endTime - firstSegment.startTime)
-        guard utteranceMilliseconds > 0 else {
-            return Double(fallbackAudioFrameCount) / 16_000.0
-        }
-
-        return Double(utteranceMilliseconds) / 1_000.0
+        ParakeetUtteranceGate.utteranceDurationSeconds(
+            for: nonEmptySegments,
+            fallbackAudioFrameCount: fallbackAudioFrameCount
+        )
     }
 }
