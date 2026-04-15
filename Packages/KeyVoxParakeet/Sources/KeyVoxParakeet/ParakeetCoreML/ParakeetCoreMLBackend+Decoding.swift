@@ -35,6 +35,7 @@ extension ParakeetCoreMLBackend {
                 detectedLanguageName: nil,
                 confidence: nil,
                 noSpeechProbability: 1,
+                relativeStartTimeMilliseconds: 0,
                 relativeEndTimeMilliseconds: milliseconds(forFrameCount: actualFrameCount)
             )
         }
@@ -52,6 +53,10 @@ extension ParakeetCoreMLBackend {
         var confidenceTotal: Float = 0
         var confidenceCount = 0
         var timeIndex = 0
+        var firstTextTimeIndex: Int?
+        var lastTextEndTimeIndex: Int?
+        var firstLexicalTextTimeIndex: Int?
+        var lastLexicalTextEndTimeIndex: Int?
         var lastEmissionTimeIndex = -1
         var emissionsAtCurrentTimeIndex = 0
         var loggedDecisions = 0
@@ -109,6 +114,22 @@ extension ParakeetCoreMLBackend {
                 emittedTokenIDs.append(decision.tokenID)
                 confidenceTotal += decision.tokenProbability
                 confidenceCount += 1
+                if firstTextTimeIndex == nil {
+                    firstTextTimeIndex = currentTimeIndex
+                }
+                lastTextEndTimeIndex = max(
+                    lastTextEndTimeIndex ?? 0,
+                    currentTimeIndex + max(duration, 1)
+                )
+                if vocabulary.tokenHasLexicalContent(for: decision.tokenID) {
+                    if firstLexicalTextTimeIndex == nil {
+                        firstLexicalTextTimeIndex = currentTimeIndex
+                    }
+                    lastLexicalTextEndTimeIndex = max(
+                        lastLexicalTextEndTimeIndex ?? 0,
+                        currentTimeIndex + max(duration, 1)
+                    )
+                }
                 if currentTimeIndex == lastEmissionTimeIndex {
                     emissionsAtCurrentTimeIndex += 1
                 } else {
@@ -143,6 +164,13 @@ extension ParakeetCoreMLBackend {
         let finalText = vocabulary.decodedText(from: emittedTokenIDs)
         let languageName = detectedLanguageCode.flatMap { vocabulary.languageName(for: $0) }
         let averageConfidence = confidenceCount > 0 ? confidenceTotal / Float(confidenceCount) : nil
+        let textTiming = Self.relativeTextTiming(
+            firstTextTimeIndex: firstLexicalTextTimeIndex ?? firstTextTimeIndex,
+            lastTextEndTimeIndex: lastLexicalTextEndTimeIndex ?? lastTextEndTimeIndex,
+            fallbackEndTimeIndex: timeIndex,
+            encoderFrameCount: encoderFrames.frameCount,
+            actualFrameCount: actualFrameCount
+        )
 
         return DecodedChunk(
             text: finalText,
@@ -150,7 +178,8 @@ extension ParakeetCoreMLBackend {
             detectedLanguageName: languageName,
             confidence: averageConfidence,
             noSpeechProbability: noSpeechProbability,
-            relativeEndTimeMilliseconds: Int((Double(timeIndex) / Double(max(encoderFrames.frameCount, 1))) * Double(milliseconds(forFrameCount: actualFrameCount)))
+            relativeStartTimeMilliseconds: textTiming.startMilliseconds,
+            relativeEndTimeMilliseconds: textTiming.endMilliseconds
         )
     }
 

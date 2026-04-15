@@ -110,7 +110,7 @@ final class ParakeetServiceTests: XCTestCase {
                 startTime: 0,
                 endTime: 550,
                 text: "Yeah.",
-                confidence: 0.604,
+                confidence: 0.603,
                 noSpeechProbability: nil
             )
         ]
@@ -141,6 +141,133 @@ final class ParakeetServiceTests: XCTestCase {
                 audioFrameCount: 7_680
             )
         )
+    }
+
+    func testIsLikelyNoSpeechRejectsShortLowConfidenceSegmentWhenCaptureIncludesPadding() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 550,
+                text: "Yeah.",
+                confidence: 0.591,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertTrue(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 18_847
+            )
+        )
+    }
+
+    func testIsLikelyNoSpeechKeepsShortLowConfidenceMultiwordSegment() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 850,
+                text: "Yeah, one two.",
+                confidence: 0.745,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertFalse(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 19_701
+            )
+        )
+    }
+
+    func testIsLikelyNoSpeechKeepsSingleWordSpeechAboveFallbackThreshold() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 1_000,
+                text: "Lol.",
+                confidence: 0.612,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertFalse(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 20_960
+            )
+        )
+    }
+
+    func testIsLikelyNoSpeechRejectsShortSingleWordNearThreshold() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 470,
+                text: "Yeah.",
+                confidence: 0.616,
+                noSpeechProbability: nil
+            )
+        ]
+
+        XCTAssertTrue(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 22_437
+            )
+        )
+    }
+
+    func testIsLikelyNoSpeechRejectsLowConfidenceSingleWordLeak() {
+        let service = ParakeetService()
+        let segments = [
+            ParakeetSegment(
+                startTime: 0,
+                endTime: 910,
+                text: "Well,",
+                confidence: 0.448,
+                noSpeechProbability: 0
+            )
+        ]
+
+        XCTAssertTrue(
+            service.isLikelyNoSpeech(
+                transcribedSegments: segments,
+                audioFrameCount: 18_165
+            )
+        )
+    }
+
+    func testTrailingLikelyNoSpeechSegmentIsDroppedAfterValidSpeech() {
+        let validSegment = ParakeetSegment(
+            startTime: 0,
+            endTime: 16_000,
+            text: "This might have been exactly what we needed.",
+            confidence: 0.980,
+            noSpeechProbability: nil
+        )
+        let trailingSegment = ParakeetSegment(
+            startTime: 16_050,
+            endTime: 16_550,
+            text: "Yeah.",
+            confidence: 0.600,
+            noSpeechProbability: nil
+        )
+
+        let filteredResult = ParakeetUtteranceGate.droppingLikelyNoSpeechTrailingSegments(
+            from: ParakeetTranscriptionResult(
+                segments: [validSegment, trailingSegment],
+                detectedLanguageCode: "en",
+                detectedLanguageName: "English"
+            )
+        )
+
+        XCTAssertEqual(filteredResult.segments, [validSegment])
     }
 
     private func makeModelFile() throws -> URL {

@@ -90,7 +90,13 @@ extension ParakeetCoreMLBackend {
         let detectedLanguageName: String?
         let confidence: Float?
         let noSpeechProbability: Float?
+        let relativeStartTimeMilliseconds: Int
         let relativeEndTimeMilliseconds: Int
+    }
+
+    struct RelativeTextTiming: Equatable {
+        let startMilliseconds: Int
+        let endMilliseconds: Int
     }
 
     func paddedAudioFrames(from audioFrames: [Float], frameCount: Int) -> [Float] {
@@ -125,6 +131,55 @@ extension ParakeetCoreMLBackend {
 
     func milliseconds(forFrameCount frameCount: Int) -> Int {
         milliseconds(forFrameIndex: frameCount)
+    }
+
+    static func relativeMilliseconds(
+        forEncoderTimeIndex timeIndex: Int,
+        encoderFrameCount: Int,
+        actualFrameCount: Int
+    ) -> Int {
+        let clampedTimeIndex = max(0, min(timeIndex, encoderFrameCount))
+        return Int(
+            (Double(clampedTimeIndex) / Double(max(encoderFrameCount, 1))) *
+            ((Double(actualFrameCount) / Constants.sampleRate) * 1000)
+        )
+    }
+
+    static func relativeTextTiming(
+        firstTextTimeIndex: Int?,
+        lastTextEndTimeIndex: Int?,
+        fallbackEndTimeIndex: Int,
+        encoderFrameCount: Int,
+        actualFrameCount: Int
+    ) -> RelativeTextTiming {
+        let fallbackEndMilliseconds = relativeMilliseconds(
+            forEncoderTimeIndex: fallbackEndTimeIndex,
+            encoderFrameCount: encoderFrameCount,
+            actualFrameCount: actualFrameCount
+        )
+
+        guard let firstTextTimeIndex, let lastTextEndTimeIndex else {
+            return RelativeTextTiming(
+                startMilliseconds: 0,
+                endMilliseconds: fallbackEndMilliseconds
+            )
+        }
+
+        let startMilliseconds = relativeMilliseconds(
+            forEncoderTimeIndex: firstTextTimeIndex,
+            encoderFrameCount: encoderFrameCount,
+            actualFrameCount: actualFrameCount
+        )
+        let endMilliseconds = relativeMilliseconds(
+            forEncoderTimeIndex: max(firstTextTimeIndex, lastTextEndTimeIndex),
+            encoderFrameCount: encoderFrameCount,
+            actualFrameCount: actualFrameCount
+        )
+
+        return RelativeTextTiming(
+            startMilliseconds: startMilliseconds,
+            endMilliseconds: max(startMilliseconds, endMilliseconds)
+        )
     }
 
     func mappedDuration(for durationBin: Int32) throws -> Int {

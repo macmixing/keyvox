@@ -44,7 +44,9 @@ extension ParakeetService {
                 let chunkResult = paragraphChunker.split(audioFrames)
                 var transcribedChunks: [TranscribedChunk] = []
                 transcribedChunks.reserveCapacity(chunkResult.chunks.count)
-                var transcribedSegments: [ParakeetSegment] = []
+                var transcribedResult = ParakeetTranscriptionResult(segments: [])
+                var chunkSegmentCounts: [Int] = []
+                chunkSegmentCounts.reserveCapacity(chunkResult.chunks.count)
                 var detectedLanguageCode: String?
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
@@ -60,7 +62,12 @@ extension ParakeetService {
                     if detectedLanguageCode == nil {
                         detectedLanguageCode = result.detectedLanguageCode
                     }
-                    transcribedSegments.append(contentsOf: result.segments)
+                    transcribedResult = ParakeetTranscriptionResult(
+                        segments: transcribedResult.segments + result.segments,
+                        detectedLanguageCode: detectedLanguageCode ?? result.detectedLanguageCode,
+                        detectedLanguageName: result.detectedLanguageName
+                    )
+                    chunkSegmentCounts.append(result.segments.count)
 
                     let chunkText = result.segments
                         .map(\.text)
@@ -82,6 +89,23 @@ extension ParakeetService {
                     return
                 }
 
+                let originalSegmentCount = transcribedResult.segments.count
+                let filteredResult = ParakeetUtteranceGate.droppingLikelyNoSpeechTrailingSegments(
+                    from: transcribedResult
+                )
+                let droppedTrailingSegmentCount = originalSegmentCount - filteredResult.segments.count
+                if droppedTrailingSegmentCount > 0,
+                   !transcribedChunks.isEmpty,
+                   !chunkSegmentCounts.isEmpty {
+                    let priorSegmentCount = chunkSegmentCounts.dropLast().reduce(0, +)
+                    let remainingLastChunkSegments = max(0, filteredResult.segments.count - priorSegmentCount)
+                    let filteredLastChunkSegments = Array(filteredResult.segments.suffix(remainingLastChunkSegments))
+                    transcribedChunks[transcribedChunks.count - 1] = TranscribedChunk(
+                        text: self.normalizeWhitespace(filteredLastChunkSegments.map(\.text).joined(separator: " ")),
+                        trailingBoundaryFrame: transcribedChunks[transcribedChunks.count - 1].trailingBoundaryFrame
+                    )
+                }
+
                 let assembledText = self.assembleTranscription(
                     from: transcribedChunks,
                     silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
@@ -92,18 +116,31 @@ extension ParakeetService {
                     preservingNewlines: enableAutoParagraphs
                 )
                 let likelyNoSpeech = finalText.isEmpty || self.isLikelyNoSpeech(
-                    transcribedSegments: transcribedSegments,
+                    transcribedSegments: filteredResult.segments,
                     audioFrameCount: audioFrames.count
                 )
                 #if DEBUG
-                let averageConfidence: Float = transcribedSegments.isEmpty
+                let averageConfidence: Float = filteredResult.segments.isEmpty
                     ? 0
-                    : transcribedSegments.compactMap(\.confidence).reduce(0, +) / Float(max(transcribedSegments.compactMap(\.confidence).count, 1))
+                    : filteredResult.segments.compactMap(\.confidence).reduce(0, +) / Float(max(filteredResult.segments.compactMap(\.confidence).count, 1))
+                let averageNoSpeechProbability: Float = filteredResult.segments.compactMap(\.noSpeechProbability).isEmpty
+                    ? 0
+                    : filteredResult.segments.compactMap(\.noSpeechProbability).reduce(0, +) / Float(max(filteredResult.segments.compactMap(\.noSpeechProbability).count, 1))
+                let nonEmptySegments = filteredResult.segments.filter {
+                    !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                }
+                let utteranceDurationSeconds = self.utteranceDurationSeconds(
+                    for: nonEmptySegments,
+                    fallbackAudioFrameCount: audioFrames.count
+                )
                 print(
                     "ParakeetService final decode: chunks=\(chunkResult.chunks.count) " +
-                    "segments=\(transcribedSegments.count) " +
+                    "segments=\(filteredResult.segments.count) " +
+                    "droppedTrailingSegments=\(droppedTrailingSegmentCount) " +
                     "audioSeconds=\(String(format: "%.2f", Double(audioFrames.count) / 16_000.0)) " +
+                    "utteranceSeconds=\(String(format: "%.2f", utteranceDurationSeconds)) " +
                     "avgConfidence=\(String(format: "%.3f", averageConfidence)) " +
+                    "avgNoSpeechProb=\(String(format: "%.3f", averageNoSpeechProbability)) " +
                     "likelyNoSpeech=\(likelyNoSpeech) " +
                     "finalChars=\(finalText.count)"
                 )
@@ -193,5 +230,22 @@ extension ParakeetService {
             ),
             audioFrameCount: audioFrameCount
         )
+    }
+
+    func utteranceDurationSeconds(
+        for nonEmptySegments: [ParakeetSegment],
+        fallbackAudioFrameCount: Int
+    ) -> Double {
+        guard let firstSegment = nonEmptySegments.first,
+              let lastSegment = nonEmptySegments.last else {
+            return Double(fallbackAudioFrameCount) / 16_000.0
+        }
+
+        let utteranceMilliseconds = max(0, lastSegment.endTime - firstSegment.startTime)
+        guard utteranceMilliseconds > 0 else {
+            return Double(fallbackAudioFrameCount) / 16_000.0
+        }
+
+        return Double(utteranceMilliseconds) / 1_000.0
     }
 }
