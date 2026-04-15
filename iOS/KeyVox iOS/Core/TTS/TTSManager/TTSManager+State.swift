@@ -39,8 +39,15 @@ extension TTSManager {
             self.hasReplayablePlayback = self.playbackCoordinator.hasReplayablePlayback
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
+            let retainedFinishedSystemPlaybackSession =
+                self.hasReplayablePlayback
+                && self.playbackCoordinator.retainFinishedSystemPlaybackSessionIfNeeded()
             self.updateState(.finished)
-            await self.onWillTeardownPlayback?()
+            if retainedFinishedSystemPlaybackSession {
+                Self.log("Skipping monitoring repair so finished replay keeps playback session ownership.")
+            } else {
+                await self.onWillTeardownPlayback?()
+            }
             KeyVoxIPCBridge.markRecentTTSPlayback()
             self.clearActiveRequest(
                 clearSharedTransportState: false,
