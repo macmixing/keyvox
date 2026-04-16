@@ -41,6 +41,7 @@ extension HomeTabView {
                     .multilineTextAlignment(.leading)
                     .textSelection(.enabled)
             }
+            .id(currentPlaybackTranscriptScrollID)
             .scrollIndicators(.hidden)
             .frame(maxHeight: TTSTranscriptLayout.maximumExpandedHeight, alignment: .top)
             .padding(16)
@@ -113,6 +114,10 @@ extension HomeTabView {
 
     var currentPlaybackTranscriptText: String {
         ttsManager.currentPlaybackDisplayText ?? ""
+    }
+
+    var currentPlaybackTranscriptScrollID: UUID? {
+        ttsManager.activeRequest?.id ?? ttsManager.lastReplayableRequest?.id
     }
 
     func setTTSTranscriptExpanded(_ isExpanded: Bool) {
