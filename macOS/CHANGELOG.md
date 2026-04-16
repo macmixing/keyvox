@@ -6,6 +6,29 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.7] - 2026-04-15
+
+### Changed
+
+- Updated the bundled `KeyVoxCore` package to `1.0.4` with shared Parakeet no-speech handling refinements, model lifecycle observability, and spoken-version list-detection fixes.
+- Updated the bundled `KeyVoxParakeet` package to `1.0.2` with decoder timing, lexical segment timing, and no-speech gating refinements for short cue-like hallucinations.
+- Made macOS clipboard restoration after paste insertion evidence-driven so verified Accessibility and menu fallback insertions restore the previous clipboard immediately.
+
+### Fixed
+
+- Preserved trailing dictation audio during the macOS stop-recording handoff so final speech is less likely to be clipped before transcription.
+- Kept macOS update prompt and installer windows anchored to the active display across update checks, relaunch prereflight, and installation flow transitions.
+- Kept a grace delay only for trusted menu fallback paste paths that do not expose concrete insertion evidence.
+- Prevented spoken semantic-version prose such as `version one point zero point seven` from being mistaken for list structure during shared text formatting.
+- Tightened Parakeet short-output filtering so brief low-confidence cue-like hallucinations are rejected without suppressing valid short speech.
+
+### Package versions
+
+KeyVox macOS 1.0.7 (build 1):
+- KeyVoxCore       1.0.4
+- KeyVoxWhisper    1.0.0
+- KeyVoxParakeet   1.0.2
+
 ## [1.0.6] - 2026-04-07
 
 ### Added
