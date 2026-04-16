@@ -3,7 +3,20 @@ import Cocoa
 struct PasteMenuFallbackExecutionResult {
     let didMenuFallbackInsert: Bool
     let menuAttempt: PasteMenuFallbackAttemptResult?
+    let completionEvidence: PasteMenuFallbackCompletionEvidence
     let suppressFirstWarmupFailureWarning: Bool
+
+    init(
+        didMenuFallbackInsert: Bool,
+        menuAttempt: PasteMenuFallbackAttemptResult?,
+        completionEvidence: PasteMenuFallbackCompletionEvidence = .none,
+        suppressFirstWarmupFailureWarning: Bool
+    ) {
+        self.didMenuFallbackInsert = didMenuFallbackInsert
+        self.menuAttempt = menuAttempt
+        self.completionEvidence = completionEvidence
+        self.suppressFirstWarmupFailureWarning = suppressFirstWarmupFailureWarning
+    }
 }
 
 protocol PasteMenuFallbackCoordinating {
@@ -53,6 +66,7 @@ final class PasteMenuFallbackCoordinator {
 
         var didMenuFallbackInsert = false
         var menuAttempt: PasteMenuFallbackAttemptResult?
+        var completionEvidence: PasteMenuFallbackCompletionEvidence = .none
         var isFirstMenuSuccessAttemptForProcess = false
 
         var textForMenuPaste = insertionText
@@ -81,6 +95,9 @@ final class PasteMenuFallbackCoordinator {
             didMenuFallbackInsert = Self.didMenuFallbackInsertForEmptyClipboardPayload(
                 didTypeLeadingSpaces: didTypeLeadingSpaces
             )
+            if didMenuFallbackInsert {
+                completionEvidence = .noClipboardPayload
+            }
         } else {
             let liveVerificationProcessID =
                 menuFallbackExecutor.frontmostProcessIDOnMainThread() ?? targetAppIdentity?.pid
@@ -138,6 +155,12 @@ final class PasteMenuFallbackCoordinator {
                 trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
                 verificationPassed: verificationPassed
             )
+            completionEvidence = Self.completionEvidenceForMenuAttempt(
+                attempt: menuAttemptResult,
+                didMenuFallbackInsert: didMenuFallbackInsert,
+                trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
+                verificationPassed: verificationPassed
+            )
         }
 
         let suppressFirstWarmupFailureWarning = Self.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
@@ -150,6 +173,7 @@ final class PasteMenuFallbackCoordinator {
         return PasteMenuFallbackExecutionResult(
             didMenuFallbackInsert: didMenuFallbackInsert,
             menuAttempt: menuAttempt,
+            completionEvidence: completionEvidence,
             suppressFirstWarmupFailureWarning: suppressFirstWarmupFailureWarning
         )
     }
@@ -172,6 +196,26 @@ final class PasteMenuFallbackCoordinator {
             return trustMenuSuccessWithoutAXVerification || verificationPassed
         case .actionErrored:
             return verificationPassed
+        }
+    }
+
+    static func completionEvidenceForMenuAttempt(
+        attempt: PasteMenuFallbackAttemptResult,
+        didMenuFallbackInsert: Bool,
+        trustMenuSuccessWithoutAXVerification: Bool,
+        verificationPassed: Bool
+    ) -> PasteMenuFallbackCompletionEvidence {
+        guard didMenuFallbackInsert else { return .none }
+        switch attempt {
+        case .unavailable:
+            return .none
+        case .actionSucceeded:
+            if verificationPassed {
+                return .verifiedInsertion
+            }
+            return trustMenuSuccessWithoutAXVerification ? .trustedWithoutVerification : .none
+        case .actionErrored:
+            return verificationPassed ? .verifiedInsertion : .none
         }
     }
 

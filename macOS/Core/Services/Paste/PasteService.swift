@@ -6,7 +6,6 @@ class PasteService {
 
     private let pasteQueue: DispatchQueue
     private let restoreDelayAfterMenuFallback: TimeInterval
-    private let restoreDelayAfterAccessibilityInjection: TimeInterval
     private var lastInsertionAppIdentity: PasteAppIdentity?
     private var lastInsertionAt: Date = .distantPast
     private var lastInsertedTrailingCharacter: Character?
@@ -28,7 +27,6 @@ class PasteService {
         pasteQueue: DispatchQueue = DispatchQueue(label: "com.KeyVox.paste", qos: .userInteractive),
         heuristicTTL: TimeInterval = 10,
         restoreDelayAfterMenuFallback: TimeInterval = 0.8,
-        restoreDelayAfterAccessibilityInjection: TimeInterval = 0.25,
         menuFallbackVerificationTimeout: TimeInterval = 0.6,
         menuFallbackVerificationPollInterval: TimeInterval = 0.05,
         frontmostAppIdentityProvider: (() -> PasteAppIdentity?)? = nil,
@@ -45,7 +43,6 @@ class PasteService {
     ) {
         self.pasteQueue = pasteQueue
         self.restoreDelayAfterMenuFallback = restoreDelayAfterMenuFallback
-        self.restoreDelayAfterAccessibilityInjection = restoreDelayAfterAccessibilityInjection
         self.frontmostAppIdentityProvider = frontmostAppIdentityProvider
             ?? { PasteService.defaultFrontmostAppIdentity() }
         self.clockNow = clockNow
@@ -125,6 +122,7 @@ class PasteService {
 
             var didMenuFallbackInsert = false
             var suppressFirstWarmupFailureWarning = false
+            var menuFallbackCompletionEvidence: PasteMenuFallbackCompletionEvidence = .none
             if accessibilityDecision.needsMenuFallback {
                 let menuFallbackExecution = self.menuFallbackCoordinator.executeMenuFallback(
                     insertionText: insertionText,
@@ -137,19 +135,20 @@ class PasteService {
                 )
                 didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
                 suppressFirstWarmupFailureWarning = menuFallbackExecution.suppressFirstWarmupFailureWarning
+                menuFallbackCompletionEvidence = menuFallbackExecution.completionEvidence
             }
 
             let executionPlan = PasteServiceExecutionPlan.build(
                 didAccessibilityInsertText: accessibilityDecision.didAccessibilityInsertText,
                 didMenuFallbackInsert: didMenuFallbackInsert,
                 usedMenuFallbackPath: accessibilityDecision.needsMenuFallback,
+                menuFallbackCompletionEvidence: menuFallbackCompletionEvidence,
                 suppressFirstWarmupFailureWarning: suppressFirstWarmupFailureWarning,
                 shouldStartFailureRecovery: Self.shouldStartFailureRecovery(
                     didAccessibilityInsertText: accessibilityDecision.didAccessibilityInsertText,
                     didMenuFallbackInsert: didMenuFallbackInsert
                 ),
-                restoreDelayAfterMenuFallback: self.restoreDelayAfterMenuFallback,
-                restoreDelayAfterAccessibilityInjection: self.restoreDelayAfterAccessibilityInjection
+                restoreDelayAfterMenuFallback: self.restoreDelayAfterMenuFallback
             )
 
             if executionPlan.shouldRememberInsertion {
@@ -159,8 +158,7 @@ class PasteService {
             if executionPlan.shouldStartFailureRecovery {
                 self.startFailureRecoveryOnMainThread(savedSnapshot: savedSnapshot)
             } else {
-                let delay = executionPlan.restoreDelay ?? self.restoreDelayAfterAccessibilityInjection
-                self.restoreClipboardOnMainThread(from: savedSnapshot, delay: delay)
+                self.restoreClipboardOnMainThread(from: savedSnapshot, policy: executionPlan.restorePolicy)
             }
         }
     }
@@ -230,13 +228,26 @@ class PasteService {
 
     private func restoreClipboardOnMainThread(
         from savedSnapshot: PasteClipboardSnapshot.Snapshot,
-        delay: TimeInterval
+        policy: PasteClipboardRestorePolicy
     ) {
         let restoreBlock = { [clipboardAdapter] in
             clipboardAdapter.restore(savedSnapshot)
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+        switch policy {
+        case .immediate:
+            #if DEBUG
+            print("Clipboard restore policy: immediate")
+            #endif
+            DispatchQueue.main.async(execute: restoreBlock)
+        case .afterDelay(let delay):
+            #if DEBUG
+            print("Clipboard restore policy: delayed \(String(format: "%.3f", delay))s")
+            #endif
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+        case .deferredToFailureRecovery:
+            break
+        }
     }
 
     static func shouldStartFailureRecovery(
