@@ -1,16 +1,33 @@
 import SwiftUI
 
 extension HomeTabView {
+    private var speakClipboardTitleFirstLineCenterOffset: CGFloat {
+        let fontSize: CGFloat = 17
+        let font: UIFont
+
+        if let name = AppTypography.resolvedFontName(for: fontSize, variant: .medium),
+           let resolvedFont = UIFont(name: name, size: fontSize) {
+            font = resolvedFont
+        } else {
+            font = .systemFont(ofSize: fontSize, weight: .medium)
+        }
+
+        return font.ascender - (font.lineHeight / 2)
+    }
+
     @ViewBuilder
     var speakClipboardSection: some View {
         AppCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(alignment: .center, spacing: 4) {
+                        HStack(alignment: .speakClipboardTitleFirstLineCenter, spacing: 4) {
                             Text("Speak Copied Text")
                                 .font(.appFont(17))
                                 .foregroundStyle(.white)
+                                .alignmentGuide(.speakClipboardTitleFirstLineCenter) { dimensions in
+                                    dimensions[.firstTextBaseline] - speakClipboardTitleFirstLineCenterOffset
+                                }
 
                             Button(action: handleKeyVoxSpeakHelpAction) {
                                 Image(systemName: "questionmark.circle")
@@ -23,6 +40,9 @@ extension HomeTabView {
                             .buttonStyle(.plain)
                             .frame(width: 32, height: 32)
                             .accessibilityLabel("Learn about KeyVox Speak")
+                            .alignmentGuide(.speakClipboardTitleFirstLineCenter) { dimensions in
+                                dimensions[VerticalAlignment.center]
+                            }
                         }
 
                         HStack(alignment: .center, spacing: 6) {
@@ -47,9 +67,19 @@ extension HomeTabView {
                                     Circle()
                                         .fill(Color.yellow)
 
-                                    Image(systemName: "stop.fill")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundStyle(.black)
+                                    if showsPrimaryTTSLoadingSpinner {
+                                        NativeActivityIndicator(
+                                            color: .black,
+                                            style: .medium
+                                        )
+                                            .frame(width: 18, height: 18)
+                                            .transition(.opacity)
+                                    } else {
+                                        Image(systemName: "stop.fill")
+                                            .font(.system(size: 18, weight: .medium))
+                                            .foregroundStyle(.black)
+                                            .transition(.opacity)
+                                    }
                                 }
                                 .frame(width: 44, height: 44)
                                 .shadow(color: .yellow.opacity(0.3), radius: 10)
@@ -88,7 +118,7 @@ extension HomeTabView {
                                 onScrub: handleReplayScrub
                             )
                         } else {
-                            ZStack(alignment: .leading) {
+                            ZStack(alignment: .topLeading) {
                                 HStack(alignment: .center, spacing: 12) {
                                     Text(ttsStatusText)
                                         .font(.appFont(14, variant: .light))
@@ -103,13 +133,16 @@ extension HomeTabView {
                                             .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
                                     }
                                 }
+                                .animation(.easeInOut(duration: 0.2), value: showsPrimaryTTSStatusRow)
 
-                                if mountsFastModeBackgroundSafetyWarningRow, let ttsWarningText {
-                                    InlineWarningRow(text: ttsWarningText)
-                                    .opacity(showsFastModeBackgroundSafetyWarningRow ? 1 : 0)
+                                if mountsFastModeBackgroundSafetyWarningRow,
+                                   let mountedTTSWarningText {
+                                    InlineWarningRow(text: mountedTTSWarningText)
+                                        .opacity(showsFastModeBackgroundSafetyWarningRow ? 1 : 0)
+                                        .animation(.easeInOut(duration: 0.2), value: showsFastModeBackgroundSafetyWarningRow)
                                 }
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
                         }
                     }
 
@@ -128,18 +161,26 @@ extension HomeTabView {
                 }
 
                 if showsTTSPreparationSlot {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ProgressView(value: ttsManager.playbackPreparationProgress)
-                            .progressViewStyle(KeyVoxProgressStyle(fillColor: ttsPreparationProgressColor))
-                            .frame(height: 12)
-                    }
-                    .opacity(isTTSPreparationVisible ? 1 : 0)
-                    .allowsHitTesting(isTTSPreparationVisible)
-                    .accessibilityHidden(!isTTSPreparationVisible)
+                    Color.clear
+                        .frame(
+                            height: isTTSPreparationSlotExpanded ? ttsPreparationSlotHeight : 0,
+                            alignment: .top
+                        )
+                        .overlay(alignment: .top) {
+                            ProgressView(value: ttsManager.playbackPreparationProgress)
+                                .progressViewStyle(KeyVoxProgressStyle(fillColor: ttsPreparationProgressColor))
+                                .frame(height: ttsPreparationSlotHeight)
+                                .opacity(isTTSPreparationVisible ? 1 : 0)
+                        }
+                        .allowsHitTesting(isTTSPreparationVisible)
+                        .accessibilityHidden(!isTTSPreparationVisible)
+                        .animation(.easeInOut(duration: ttsPreparationSlotAnimationDurationSeconds), value: isTTSPreparationSlotExpanded)
                 }
 
                 if showsExpandedTTSTranscript {
                     ttsTranscriptPanel
+                        .transition(.scale(scale: 0.96, anchor: .top))
+
                 }
 
                 if let ttsErrorText {
@@ -151,7 +192,6 @@ extension HomeTabView {
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: ttsManager.playbackPreparationProgress)
         .animation(.easeOut(duration: 0.14), value: isTTSPreparationVisible)
-        .animation(.easeInOut(duration: 0.52), value: showsTTSPreparationSlot)
         .onAppear {
             syncTTSPreparationPresentation()
         }
@@ -166,4 +206,14 @@ extension HomeTabView {
     private var ttsPreparationProgressColor: Color {
         settingsStore.fastPlaybackModeEnabled ? .yellow : AppTheme.accent
     }
+}
+
+private extension VerticalAlignment {
+    private enum SpeakClipboardTitleFirstLineCenter: AlignmentID {
+        static func defaultValue(in context: ViewDimensions) -> CGFloat {
+            context[VerticalAlignment.center]
+        }
+    }
+
+    static let speakClipboardTitleFirstLineCenter = VerticalAlignment(SpeakClipboardTitleFirstLineCenter.self)
 }

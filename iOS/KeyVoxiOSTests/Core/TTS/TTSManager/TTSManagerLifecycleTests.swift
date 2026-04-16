@@ -103,6 +103,40 @@ struct TTSManagerLifecycleTests {
         #expect(harness.manager.playbackCoordinator.isPaused)
     }
 
+    @Test func replayablePlaybackReadyUnloadsTTSEngine() {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.activeRequest = makeRequest(createdAt: 5)
+
+        harness.manager.handleReplayablePlaybackReady()
+
+        #expect(harness.engine.unloadCallCount == 1)
+    }
+
+    @Test func stopPlaybackUnloadsTTSEngine() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.activeRequest = makeRequest(createdAt: 6)
+
+        await harness.manager.stopPlayback()
+
+        #expect(harness.engine.unloadCallCount == 1)
+    }
+
+    @Test func playbackErrorUnloadsTTSEngine() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.activeRequest = makeRequest(createdAt: 7)
+
+        harness.manager.handleError("synthetic failure")
+        await settleLifecycleTasks()
+
+        #expect(harness.engine.unloadCallCount == 1)
+    }
+
     private func makeHarness() -> TTSManagerLifecycleHarness {
         let suiteName = "TTSManagerLifecycleTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -190,10 +224,15 @@ private final class SpyTTSEngine: TTSEngine {
     private(set) var immediateBackgroundRequestCount = 0
     private(set) var prepareForegroundCallCount = 0
     private(set) var prepareBackgroundCallCount = 0
+    private(set) var unloadCallCount = 0
 
     func prepareIfNeeded() async throws {}
 
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}
+
+    func unloadIfNeeded() {
+        unloadCallCount += 1
+    }
 
     func requestForegroundSynthesisImmediately() {
         immediateForegroundRequestCount += 1

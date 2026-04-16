@@ -4,6 +4,7 @@ import KeyVoxTTS
 protocol TTSEngine {
     func prepareIfNeeded() async throws
     func prewarmVoiceIfNeeded(voiceID: String) async throws
+    func unloadIfNeeded()
     func requestForegroundSynthesisImmediately()
     func requestBackgroundContinuationImmediately()
     func prepareForForegroundSynthesis() async

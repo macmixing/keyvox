@@ -16,6 +16,7 @@ struct HomeTabView: View {
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @EnvironmentObject var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     @State var showsTTSPreparationSlot = false
+    @State var isTTSPreparationSlotExpanded = false
     @State var isTTSPreparationVisible = false
     @State var ttsPreparationRevealToken = UUID()
     @State var ttsPreparationCollapseTask: Task<Void, Never>?
@@ -26,6 +27,7 @@ struct HomeTabView: View {
     @State var hasReachedFastModeBackgroundSafeStateThisPlayback = false
     @State var mountsFastModeBackgroundSafetyWarningRow = false
     @State var showsFastModeBackgroundSafetyWarningRow = false
+    @State var mountedTTSWarningText: String?
     @State var showsPrimaryTTSStatusRow = true
     @State var ttsStatusTransitionTask: Task<Void, Never>?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
@@ -168,11 +170,23 @@ struct HomeTabView: View {
     private func syncTTSStatusRows() {
         ttsStatusTransitionTask?.cancel()
 
-        if ttsWarningText != nil {
-            showsPrimaryTTSStatusRow = false
-            mountsFastModeBackgroundSafetyWarningRow = true
+        if let ttsWarningText {
+            mountedTTSWarningText = ttsWarningText
             withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
-                showsFastModeBackgroundSafetyWarningRow = true
+                showsFastModeBackgroundSafetyWarningRow = false
+                showsPrimaryTTSStatusRow = false
+            }
+
+            ttsStatusTransitionTask = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: TTSStatusTransition.revealDelayNanoseconds)
+                guard Task.isCancelled == false else { return }
+
+                mountsFastModeBackgroundSafetyWarningRow = true
+                await Task.yield()
+
+                withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
+                    showsFastModeBackgroundSafetyWarningRow = true
+                }
             }
             return
         }
@@ -185,6 +199,7 @@ struct HomeTabView: View {
             try? await Task.sleep(nanoseconds: TTSStatusTransition.revealDelayNanoseconds)
             guard Task.isCancelled == false else { return }
             mountsFastModeBackgroundSafetyWarningRow = false
+            mountedTTSWarningText = nil
             withAnimation(.easeInOut(duration: TTSStatusTransition.fadeDuration)) {
                 showsPrimaryTTSStatusRow = true
             }

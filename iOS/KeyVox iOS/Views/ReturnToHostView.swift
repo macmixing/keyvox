@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ReturnToHostView: View {
+    @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @State private var isVideoReady = false
     
     var body: some View {
@@ -54,6 +55,28 @@ struct ReturnToHostView: View {
                 
                 Spacer()
             }
+
+            VStack {
+                HStack {
+                    Spacer()
+
+                    Button {
+                        transcriptionManager.isReturnToHostViewPresented = false
+                    } label: {
+                        Text("Dismiss")
+                            .font(.appFont(14, variant: .light))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .frame(minWidth: 44, minHeight: 44, alignment: .center)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss")
+                    .padding(.top, 12)
+                    .padding(.trailing, 20)
+                }
+
+                Spacer()
+            }
         }
         .dynamicTypeSize(.xSmall ... .xxxLarge)
         .animation(.easeInOut(duration: 0.1), value: isVideoReady)
@@ -62,4 +85,5 @@ struct ReturnToHostView: View {
 
 #Preview {
     ReturnToHostView()
+        .environmentObject(AppServiceRegistry.shared.transcriptionManager)
 }

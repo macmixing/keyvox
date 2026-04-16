@@ -250,6 +250,8 @@ private struct StubTTSEngine: TTSEngine {
 
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}
 
+    func unloadIfNeeded() {}
+
     func requestForegroundSynthesisImmediately() {}
 
     func requestBackgroundContinuationImmediately() {}

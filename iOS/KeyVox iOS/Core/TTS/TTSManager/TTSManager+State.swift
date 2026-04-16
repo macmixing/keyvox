@@ -57,6 +57,7 @@ extension TTSManager {
         lastReplayableRequest = activeRequest
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         persistReplayablePlaybackIfNeeded(for: activeRequest)
+        engine.unloadIfNeeded()
         Self.log("Replayable playback became available for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
     }
 
@@ -72,6 +73,7 @@ extension TTSManager {
             self.lastErrorMessage = message
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
+            self.engine.unloadIfNeeded()
             self.dismissPlaybackPreparationView()
             self.updateState(.error)
             await self.onWillTeardownPlayback?()
