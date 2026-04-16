@@ -90,6 +90,7 @@ final class TTSPlaybackCoordinator {
     var backgroundPlaybackProgressTimer: Timer?
     var playbackSessionID = UUID()
     var isFastModeBackgroundSafeState = false
+    var hasObservedFastModeBackgroundSafeCompute = false
     var hasConfiguredAudioGraph = false
     var hasHandedOffPausedPlaybackSession = false
     var overrideIsPlayerNodePlaying: Bool?
@@ -113,7 +114,7 @@ final class TTSPlaybackCoordinator {
         if isReplayingCachedAudio {
             return true
         }
-        return isFastModeBackgroundSafeState
+        return isFastModeBackgroundSafeState && hasObservedFastModeBackgroundSafeCompute
     }
 
     var fastModeBackgroundSafetyProgress: Double {

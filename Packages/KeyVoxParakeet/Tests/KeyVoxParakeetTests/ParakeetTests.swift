@@ -286,6 +286,19 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(ParakeetFloat16Storage.float(from: pointer[3]), 3.5, accuracy: 0.001)
     }
 
+    func testRelativeTextTimingIgnoresTrailingBlankTail() {
+        let timing = ParakeetCoreMLBackend.relativeTextTiming(
+            firstTextTimeIndex: 2,
+            lastTextEndTimeIndex: 7,
+            fallbackEndTimeIndex: 16,
+            encoderFrameCount: 16,
+            actualFrameCount: 20_730
+        )
+
+        XCTAssertEqual(timing.startMilliseconds, 161)
+        XCTAssertEqual(timing.endMilliseconds, 566)
+    }
+
     func testUtteranceGateRejectsShortLowConfidenceResult() {
         let result = ParakeetTranscriptionResult(
             segments: [
@@ -293,7 +306,7 @@ final class ParakeetTests: XCTestCase {
                     startTime: 0,
                     endTime: 550,
                     text: "Yeah.",
-                    confidence: 0.604,
+                    confidence: 0.603,
                     noSpeechProbability: nil
                 )
             ]
@@ -318,6 +331,118 @@ final class ParakeetTests: XCTestCase {
         XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 7_680))
     }
 
+    func testUtteranceGateRejectsShortResultWhenDecoderSignalsNoSpeech() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 420,
+                    text: "Yeah.",
+                    confidence: 0.910,
+                    noSpeechProbability: 0.780
+                )
+            ]
+        )
+
+        XCTAssertTrue(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 8_320))
+    }
+
+    func testUtteranceGateRejectsShortLowConfidenceResultWhenCaptureDurationIncludesPadding() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 550,
+                    text: "Yeah.",
+                    confidence: 0.591,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertTrue(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 18_847))
+    }
+
+    func testUtteranceGateKeepsShortLowConfidenceMultiwordSpeech() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 850,
+                    text: "Yeah, one two.",
+                    confidence: 0.745,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 19_701))
+    }
+
+    func testUtteranceGateKeepsSingleWordSpeechAboveFallbackThreshold() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 1_000,
+                    text: "Lol.",
+                    confidence: 0.612,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 20_960))
+    }
+
+    func testUtteranceGateRejectsShortSingleWordNearThreshold() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 470,
+                    text: "Yeah.",
+                    confidence: 0.616,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        XCTAssertTrue(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 22_437))
+    }
+
+    func testUtteranceGateRejectsLowConfidenceSingleWordLeak() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 910,
+                    text: "Well,",
+                    confidence: 0.448,
+                    noSpeechProbability: 0
+                )
+            ]
+        )
+
+        XCTAssertTrue(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 18_165))
+    }
+
+    func testUtteranceGateKeepsShortResultWhenDecoderNoSpeechSignalIsLow() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 420,
+                    text: "Yes.",
+                    confidence: 0.910,
+                    noSpeechProbability: 0.120
+                )
+            ]
+        )
+
+        XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 8_320))
+    }
+
     func testUtteranceGateKeepsLongerUtterance() {
         let result = ParakeetTranscriptionResult(
             segments: [
@@ -332,6 +457,34 @@ final class ParakeetTests: XCTestCase {
         )
 
         XCTAssertFalse(ParakeetUtteranceGate.isLikelyNoSpeech(result: result, audioFrameCount: 22_400))
+    }
+
+    func testUtteranceGateDropsTrailingLikelyNoSpeechSegmentAfterValidSpeech() {
+        let result = ParakeetTranscriptionResult(
+            segments: [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: 16_000,
+                    text: "This might have been exactly what we needed.",
+                    confidence: 0.980,
+                    noSpeechProbability: nil
+                ),
+                ParakeetSegment(
+                    startTime: 16_050,
+                    endTime: 16_550,
+                    text: "Yeah.",
+                    confidence: 0.600,
+                    noSpeechProbability: nil
+                )
+            ]
+        )
+
+        let filteredResult = ParakeetUtteranceGate.droppingLikelyNoSpeechTrailingSegments(
+            from: result
+        )
+
+        XCTAssertEqual(filteredResult.segments.count, 1)
+        XCTAssertEqual(filteredResult.segments.first?.text, "This might have been exactly what we needed.")
     }
 
     private func makeModelFile() throws -> URL {

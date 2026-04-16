@@ -41,6 +41,9 @@ extension TTSManager {
             self.hasReplayablePlayback = self.playbackCoordinator.hasReplayablePlayback
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
+            self.shouldExposeFinishedSystemPlayback =
+                self.hasReplayablePlayback
+                && self.playbackCoordinator.audioSessionMode == .playback
             self.updateState(.finished)
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
@@ -63,6 +66,7 @@ extension TTSManager {
             for: activeRequest.id,
             totalSampleCount: playbackCoordinator.replayablePlaybackSampleCount
         )
+        engine.unloadIfNeeded()
         Self.log("Replayable playback became available for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
     }
 
@@ -79,6 +83,7 @@ extension TTSManager {
             self.lastErrorMessage = message
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
+            self.engine.unloadIfNeeded()
             self.dismissPlaybackPreparationView()
             self.updateState(.error)
             await self.onWillTeardownPlayback?()
@@ -92,6 +97,9 @@ extension TTSManager {
     }
 
     func updateState(_ newState: KeyVoxTTSState) {
+        if newState != .finished {
+            shouldExposeFinishedSystemPlayback = false
+        }
         state = newState
         updateIdleSleepPrevention()
 
@@ -116,12 +124,11 @@ extension TTSManager {
         clearSharedTransportState: Bool = true,
         preserveFinishedSystemPlayback: Bool = false
     ) {
-        fastModeBackgroundSafetyTask?.cancel()
-        fastModeBackgroundSafetyTask = nil
         activeRequest = nil
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
         shouldConsumeFreeSpeakOnPlaybackStart = false
+        hasRequestedFastModeBackgroundContinuation = false
         isPlaybackPaused = false
         isReplayingCachedPlayback = false
         pausedReplaySampleOffset = nil
@@ -157,6 +164,10 @@ extension TTSManager {
             updateIdleSleepPrevention()
         } else if clearPublishedState == false, clearSharedTransportState {
             KeyVoxIPCBridge.clearTTSState()
+        }
+
+        if preserveFinishedSystemPlayback == false {
+            shouldExposeFinishedSystemPlayback = false
         }
 
         refreshSystemPlaybackControls()
@@ -253,8 +264,6 @@ extension TTSManager {
         fastModeBackgroundSafetyProgress = progress
 
         if isSafe == false {
-            fastModeBackgroundSafetyTask?.cancel()
-            fastModeBackgroundSafetyTask = nil
             isFastModeBackgroundSafe = false
             return
         }
@@ -263,21 +272,20 @@ extension TTSManager {
             benchmarkRecorder.markBackgroundReady(for: activeRequest.id)
         }
 
-        guard isFastModeBackgroundSafe == false else { return }
-        guard fastModeBackgroundSafetyTask == nil else { return }
-
-        fastModeBackgroundSafetyTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            guard let self else { return }
-            guard Task.isCancelled == false else { return }
-
-            self.isFastModeBackgroundSafe = true
-            self.appHaptics.medium()
-            if let activeRequest = self.activeRequest {
-                self.benchmarkRecorder.markBackgroundStable(for: activeRequest.id)
+        if playbackCoordinator.canContinueBackgroundPlaybackInFastMode {
+            guard isFastModeBackgroundSafe == false else { return }
+            if let activeRequest {
+                benchmarkRecorder.markBackgroundStable(for: activeRequest.id)
             }
-            self.fastModeBackgroundSafetyTask = nil
+            isFastModeBackgroundSafe = true
+            appHaptics.medium()
+            return
         }
+
+        guard hasRequestedFastModeBackgroundContinuation == false else { return }
+        guard state == .playing, isPlaybackPaused == false, isReplayingCachedPlayback == false else { return }
+
+        requestFastModeBackgroundContinuationIfNeeded()
     }
 
     func handlePlaybackFrame(_ frame: KeyVoxTTSAudioFrame) {

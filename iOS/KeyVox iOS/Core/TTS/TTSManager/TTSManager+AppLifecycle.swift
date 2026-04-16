@@ -3,6 +3,12 @@ import Foundation
 import UIKit
 
 extension TTSManager {
+    func requestFastModeBackgroundContinuationIfNeeded() {
+        guard hasRequestedFastModeBackgroundContinuation == false else { return }
+        hasRequestedFastModeBackgroundContinuation = true
+        requestImmediateBackgroundContinuation()
+    }
+
     private func requestImmediateForegroundSynthesis() {
         engine.requestForegroundSynthesisImmediately()
         Task {
@@ -19,6 +25,7 @@ extension TTSManager {
 
     func handleAppDidBecomeActive() {
         KeyVoxIPCBridge.touchHeartbeat()
+        hasRequestedFastModeBackgroundContinuation = false
         requestImmediateForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
         endBackgroundTaskIfNeeded()
@@ -36,7 +43,7 @@ extension TTSManager {
             }
             if hasStartedPlaybackForActiveRequest {
                 beginBackgroundTaskIfNeeded(force: true)
-                requestImmediateBackgroundContinuation()
+                requestFastModeBackgroundContinuationIfNeeded()
                 playbackCoordinator.prepareForBackgroundTransition()
             } else {
                 endBackgroundTaskIfNeeded()
@@ -139,7 +146,7 @@ extension TTSManager {
                 if playbackCoordinator.canPausePlayback {
                     Self.log("Protected data will become unavailable while fast-mode playback is not background-safe; pausing playback.")
                     beginBackgroundTaskIfNeeded(force: true)
-                    requestImmediateBackgroundContinuation()
+                    requestFastModeBackgroundContinuationIfNeeded()
                     pausePlayback()
                 }
                 return
@@ -147,7 +154,11 @@ extension TTSManager {
         }
 
         beginBackgroundTaskIfNeeded(force: true)
-        requestImmediateBackgroundContinuation()
+        if settingsStore.fastPlaybackModeEnabled {
+            requestFastModeBackgroundContinuationIfNeeded()
+        } else {
+            requestImmediateBackgroundContinuation()
+        }
     }
 
     @objc

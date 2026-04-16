@@ -147,6 +147,16 @@ internal struct ParakeetVocabulary {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    func tokenHasLexicalContent(for tokenID: Int32) -> Bool {
+        guard case let .text(token)? = kind(for: tokenID) else { return false }
+
+        let normalizedToken = token
+            .replacingOccurrences(of: "▁", with: " ")
+            .replacingOccurrences(of: "Ġ", with: " ")
+
+        return normalizedToken.rangeOfCharacter(from: .alphanumerics) != nil
+    }
+
     private static func makeGreedyMatchIndex(tokensByID: [Int32: String]) -> [Character: [String]] {
         let textTokens = tokensByID.values.filter { token in
             !(token.hasPrefix("<|") && token.hasSuffix("|>")) && !token.isEmpty

@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-09**
+**Last Updated: 2026-04-16**
 
 ## Design Philosophy
 
@@ -148,6 +148,7 @@ Service ownership rules:
 - Views present state and call actions, but do not become alternate sources of truth.
 - IPC contracts remain centralized in `KeyVoxIPCBridge`.
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
+- `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
 
 ### Containing App Source Layout
 
@@ -171,6 +172,7 @@ Current root behavior:
 
 - hold on a neutral background until the initial launch context is resolved
 - show `ReturnToHostView` only when onboarding is not being suppressed and a cold start route or explicit return-to-host presentation is active
+- allow `ReturnToHostView` to dismiss itself back to the Home surface without tearing down the underlying app route or session owner
 - keep the main tab shell mounted whenever the app is in the onboarding-or-main path
 - layer onboarding on top of the main shell when `OnboardingStore.shouldShowOnboarding` is `true`
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
@@ -660,11 +662,12 @@ Primary owners:
 
 - `PocketTTSModelManager` owns shared PocketTTS Core ML runtime install state plus per-voice install state.
 - `PocketTTSModelCatalog` owns shared-runtime artifact metadata plus approximate per-voice download size metadata used by settings.
-- `PocketTTSEngine` owns PocketTTS runtime access and streaming synthesis.
+- `PocketTTSEngine` owns PocketTTS runtime access, app-side runtime injection, explicit preparation/unload, prepared-runtime compute-mode guards, debug load/unload visibility, and streaming synthesis.
 - `TTSPurchaseController` owns the one-time copied-text playback unlock, cached entitlement state, the two-free-speaks-per-day local usage policy, and the placeholder unlock-sheet presentation state.
 - `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
 - `AudioBluetoothRoutePolicy` owns the preserved-TTS Bluetooth route-family decision and is the only owner allowed to translate the built-in microphone preference into A2DP-vs-HFP playback behavior.
 - `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, system playback coordination / metadata assembly, remote transport command routing, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
+- `TTSManager` is responsible for unloading the PocketTTS runtime once live generation is no longer needed: after generated playback becomes replayable, after explicit stop, or after playback error.
 - `TTSSystemPlaybackController` owns MediaPlayer API integration and publication of transport & now-playing metadata for lock screen and Control Center transport.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
 - the keyboard playback transport is intentionally split:
@@ -689,6 +692,7 @@ Primary owners:
 ### Runtime Structure Rules
 
 - `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
+- `PocketTTSEngine` owns the app-side runtime wrapper seam around `KeyVoxPocketTTSRuntime` so tests can verify runtime creation, preparation, compute-mode requests, and unload behavior without instantiating real Core ML assets.
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+SystemPlayback.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
   - `TTSManager+SystemPlayback.swift` should stay as the TTSManager-facing adapter layer that translates internal playback state and events into system playback intent, assembles metadata, and decides when the system surface should update.
 - `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
@@ -697,6 +701,15 @@ Primary owners:
 - system playback coordination and metadata assembly belong in `TTSManager` / `TTSPlaybackCoordinator`; platform-specific side effects belong in `TTSSystemPlaybackController.swift`, not in view code or app lifecycle routing
 - `KeyVoxPocketTTSRuntime` is split by concern into runtime orchestration, asset loading, compute-mode control, and stream generation files under `Packages/KeyVoxTTS/Sources/KeyVoxTTS/KeyVoxPocketTTSRuntime/`
 - text cleanup policy for copied-text playback belongs in `PocketTTSTextNormalizer.swift`, not back inside chunk-planning logic
+
+### PocketTTS Runtime Lifetime Rules
+
+- PocketTTS runtime preparation is demand-driven by playback, not proactively warmed by `AppServiceRegistry`.
+- `PocketTTSEngine.prepareIfNeeded()` creates and prepares the runtime for installed assets, then marks the runtime prepared.
+- `PocketTTSEngine.unloadIfNeeded()` releases the runtime, clears the prepared flag, and clears loaded asset identity so the next generation rebuilds from the current installed assets.
+- Foreground/background compute-mode changes may only run against an existing prepared runtime.
+- Immediate compute-mode request helpers are hints for already prepared runtimes; they must not instantiate or prepare the runtime by themselves.
+- Runtime unload must happen when the current generation is no longer needed, while replayable rendered audio stays available through the replay cache and playback coordinator.
 
 ### Fast Mode and Normal Mode Rules
 
@@ -718,6 +731,7 @@ Primary owners:
 - replay remains free for already generated playback and must not consume daily free uses
 - only new copied-text playback generations are gated; replay, pause, resume, scrubbing, replay restore, and transcript viewing remain outside the monetization gate
 - playback-preparation progress is deterministic and gates the return-to-host path before audio starts
+- Home preparation UI keeps the stop button in a native loading-spinner state until preparation progress crosses the visible-progress threshold, then fades in the progress slot.
 - the success haptic for playback preparation completion must fire before the intentional pre-playback delay begins
 - the last completed rendered playback is cached independently of the clipboard and may be replayed later from the Home tab
 - paused replay state, including sample offset, is durable across app relaunches
@@ -1020,6 +1034,7 @@ The containing app is intentionally thin, but it is no longer a minimal debug sh
 Current app-owned surfaces:
 
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
+- Home copied-text playback UI stages status/warning rows, spinner-to-progress handoff, transcript expansion/collapse, and preparation progress so content does not snap, drift, or bleed through card animations.
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
 - `InlineWarningRules`: pure shared visibility rules under `App/Presentation/` for Wi-Fi caution rows across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install flows
@@ -1035,7 +1050,7 @@ Current app-owned surfaces:
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
-- `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch
+- `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch, with a top-right dismiss affordance that returns the app to Home while preserving the containing app as the route/session owner
 - onboarding screens: welcome, setup, keyboard tour
 
 `AppHaptics` is the app-owned feedback bridge for these surfaces, while `AppHapticsDecisions` keeps the trigger rules deterministic and testable.
@@ -1061,6 +1076,8 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - weekly stats storage and merge behavior
 - Live Activity coordination
 - model manager validation and repair behavior
+- PocketTTS engine runtime preparation, unload, and prepared-runtime compute-mode behavior
+- TTS manager engine-unload behavior on replayable completion, explicit stop, and playback error
 - stop-time capture processing
 - keyboard dictation controller behavior
 - keyboard interaction haptics

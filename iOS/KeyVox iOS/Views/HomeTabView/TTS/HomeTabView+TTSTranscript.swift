@@ -1,6 +1,14 @@
 import SwiftUI
 
 extension HomeTabView {
+    private enum TTSTranscriptLayout {
+        static let maximumExpandedHeight: CGFloat = 300
+        static let cardAnimationDuration = 0.14
+        static let revealDelayNanoseconds: UInt64 = 100_000_000
+        static let collapseContentDuration = 0.20
+
+    }
+
     var ttsTranscriptToggleButton: some View {
         Button {
             setTTSTranscriptExpanded(!isTTSTranscriptExpanded)
@@ -27,16 +35,15 @@ extension HomeTabView {
         VStack(alignment: .leading, spacing: 10) {
             ScrollView {
                 Text(currentPlaybackTranscriptText)
-                    .font(.appFont(14, variant: .light))
-                    .foregroundStyle(.white.opacity(0.82))
+                    .font(.appFont(18, variant: .light))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .multilineTextAlignment(.leading)
                     .textSelection(.enabled)
             }
-            .frame(maxHeight: 180, alignment: .top)
+            .scrollIndicators(.hidden)
+            .frame(maxHeight: TTSTranscriptLayout.maximumExpandedHeight, alignment: .top)
             .padding(16)
-            .scaleEffect(y: isTTSTranscriptPanelContentVisible ? 1 : 0.92, anchor: .top)
-            .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
                     .fill(AppTheme.rowFill)
@@ -60,6 +67,8 @@ extension HomeTabView {
                 .padding(.trailing, 4)
                 .animation(.easeInOut(duration: 0.18), value: ttsTranscriptCopyFeedback.didCopy)
             }
+            .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
+            .compositingGroup()
 
             if showsTTSTranscriptIdleCloseButton {
                 Button {
@@ -75,6 +84,7 @@ extension HomeTabView {
             }
         }
         .padding(.top, 2)
+        .clipped()
     }
 
     var showsTTSTranscriptToggle: Bool {
@@ -83,7 +93,7 @@ extension HomeTabView {
     }
 
     var showsExpandedTTSTranscript: Bool {
-        showsTTSTranscriptPanelContainer && isTTSTranscriptPanelContentVisible
+        showsTTSTranscriptPanelContainer
     }
 
     var shouldShowExpandedTTSTranscriptPanel: Bool {
@@ -123,28 +133,34 @@ extension HomeTabView {
 
         if shouldShowExpandedTTSTranscriptPanel {
             if showsTTSTranscriptPanelContainer == false {
-                showsTTSTranscriptPanelContainer = true
+                isTTSTranscriptPanelContentVisible = false
+                withAnimation(.easeInOut(duration: TTSTranscriptLayout.cardAnimationDuration)) {
+                    showsTTSTranscriptPanelContainer = true
+                }
             }
 
             ttsTranscriptRevealTask = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 180_000_000)
+                try? await Task.sleep(nanoseconds: TTSTranscriptLayout.revealDelayNanoseconds)
                 guard Task.isCancelled == false else { return }
 
-                withAnimation(.easeOut(duration: 0.18)) {
+                withAnimation(.easeInOut(duration: TTSTranscriptLayout.cardAnimationDuration)) {
                     isTTSTranscriptPanelContentVisible = true
                 }
             }
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.18)) {
+        withAnimation(.easeInOut(duration: TTSTranscriptLayout.collapseContentDuration)) {
             isTTSTranscriptPanelContentVisible = false
         }
 
         ttsTranscriptCollapseTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 180_000_000)
+            try? await Task.sleep(
+                nanoseconds: UInt64(TTSTranscriptLayout.cardAnimationDuration * 1_000_000_000)
+            )
             guard Task.isCancelled == false else { return }
-            withAnimation(.easeInOut(duration: 0.26)) {
+
+            withAnimation(.easeInOut(duration: TTSTranscriptLayout.cardAnimationDuration)) {
                 showsTTSTranscriptPanelContainer = false
             }
         }

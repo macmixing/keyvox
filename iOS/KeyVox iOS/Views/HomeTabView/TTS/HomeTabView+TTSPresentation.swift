@@ -1,8 +1,24 @@
 import SwiftUI
 
 extension HomeTabView {
+    var ttsPreparationSlotHeight: CGFloat {
+        12
+    }
+
+    var ttsPreparationSlotAnimationDurationSeconds: Double {
+        0.2
+    }
+
+    private var ttsPreparationVisibleProgressThreshold: Double {
+        0.02
+    }
+
     private var ttsPreparationRevealDelaySeconds: Double {
-        0.5
+        showsTTSPreparationProgress ? 0.02 : 0.5
+    }
+
+    private var ttsPreparationFadeOutWaitNanoseconds: UInt64 {
+        240_000_000
     }
 
     @ViewBuilder
@@ -83,12 +99,13 @@ extension HomeTabView {
     }
 
     var showsTTSPreparationProgress: Bool {
-        switch ttsManager.state {
-        case .preparing, .generating:
-            return true
-        case .idle, .playing, .finished, .error:
-            return false
-        }
+        guard ttsManager.state == .preparing || ttsManager.state == .generating else { return false }
+        return ttsManager.playbackPreparationProgress >= ttsPreparationVisibleProgressThreshold
+    }
+
+    var showsPrimaryTTSLoadingSpinner: Bool {
+        (ttsManager.state == .preparing || ttsManager.state == .generating)
+            && showsTTSPreparationProgress == false
     }
 
     var ttsPreparationProgressLabel: String {
@@ -129,6 +146,7 @@ extension HomeTabView {
     func syncTTSPreparationPresentation() {
         ttsPreparationRevealToken = UUID()
         showsTTSPreparationSlot = showsTTSPreparationProgress
+        isTTSPreparationSlotExpanded = showsTTSPreparationProgress
         isTTSPreparationVisible = showsTTSPreparationProgress
     }
 
@@ -139,6 +157,15 @@ extension HomeTabView {
         if showsTTSPreparationProgress {
             if showsTTSPreparationSlot == false {
                 showsTTSPreparationSlot = true
+                isTTSPreparationSlotExpanded = false
+
+                DispatchQueue.main.async {
+                    guard showsTTSPreparationProgress else { return }
+
+                    withAnimation(.easeInOut(duration: ttsPreparationSlotAnimationDurationSeconds)) {
+                        isTTSPreparationSlotExpanded = true
+                    }
+                }
             }
 
             if isTTSPreparationVisible == false {
@@ -164,12 +191,18 @@ extension HomeTabView {
         }
 
         ttsPreparationCollapseTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 240_000_000)
+            try? await Task.sleep(nanoseconds: ttsPreparationFadeOutWaitNanoseconds)
             guard Task.isCancelled == false else { return }
 
-            withAnimation(.easeInOut(duration: 0.52)) {
-                showsTTSPreparationSlot = false
+            withAnimation(.easeInOut(duration: ttsPreparationSlotAnimationDurationSeconds)) {
+                isTTSPreparationSlotExpanded = false
             }
+
+            try? await Task.sleep(
+                nanoseconds: UInt64(ttsPreparationSlotAnimationDurationSeconds * 1_000_000_000)
+            )
+            guard Task.isCancelled == false else { return }
+            showsTTSPreparationSlot = false
         }
     }
 

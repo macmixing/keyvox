@@ -13,6 +13,7 @@ class TranscriptionManager: ObservableObject {
     enum AppState: Equatable {
         case idle
         case recording
+        case stopping
         case transcribing
         case error(String)
     }
@@ -161,7 +162,9 @@ class TranscriptionManager: ObservableObject {
     }
     
     private func abortRecording() {
-        guard state == .recording || state == .transcribing else { return }
+        guard state == .recording || state == .stopping || state == .transcribing else { return }
+        activeStopRequestID = nil
+        stopRequestedAt = nil
         
         #if DEBUG
         print("!! ESCAPE pressed: Aborting session !!")
@@ -178,6 +181,24 @@ class TranscriptionManager: ObservableObject {
     
     private func handleTriggerKey(isPressed: Bool) {
         guard appSettings.hasCompletedOnboarding else { return }
+        guard stopRequestedAt == nil else {
+            #if DEBUG
+            if isPressed {
+                print("Trigger ignored while recorder stop finalization is pending.")
+            }
+            #endif
+            updateOverlayHandsFreeVisualState()
+            return
+        }
+        guard state != .stopping else {
+            #if DEBUG
+            if isPressed {
+                print("Trigger ignored while session is transitioning from recording to transcription.")
+            }
+            #endif
+            updateOverlayHandsFreeVisualState()
+            return
+        }
 
         if isPressed {
             if state == .idle {
@@ -228,12 +249,17 @@ class TranscriptionManager: ObservableObject {
     }
     
     private var stopRequestedAt: Date?
+    private var activeStopRequestID: UUID?
     
     private func stopRecordingAndTranscribe() {
         guard case .recording = state else { return }
+        guard activeStopRequestID == nil else { return }
         
         let startTime = Date()
+        let stopRequestID = UUID()
         stopRequestedAt = startTime
+        activeStopRequestID = stopRequestID
+        state = .stopping
         #if DEBUG
         print("--- Speed Profile Start ---")
         #endif
@@ -244,6 +270,9 @@ class TranscriptionManager: ObservableObject {
 
         audioRecorder.stopRecording { [weak self] frames in
             guard let self = self else { return }
+            guard self.activeStopRequestID == stopRequestID else { return }
+            self.activeStopRequestID = nil
+            self.stopRequestedAt = nil
             
             // Root Cause Fix: Bluetooth HFP/SCO to A2DP switching delay.
             // NSSound cannot play into a Bluetooth Voice channel (HFP).
@@ -359,6 +388,7 @@ class TranscriptionManager: ObservableObject {
 
     private func updateOverlayHandsFreeVisualState() {
         let isPreviewActive = state == .recording &&
+            stopRequestedAt == nil &&
             !isLocked &&
             keyboardMonitor.isTriggerKeyPressed &&
             keyboardMonitor.isShiftPressed

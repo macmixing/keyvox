@@ -1,6 +1,7 @@
 import XCTest
 @testable import KeyVox
 
+@MainActor
 final class PasteDecisionMatrixTests: XCTestCase {
     func testNoWarningWhenAccessibilityInsertionSucceeds() {
         XCTAssertFalse(
@@ -40,6 +41,38 @@ final class PasteDecisionMatrixTests: XCTestCase {
                 didAccessibilityInsertText: false,
                 didMenuFallbackInsert: didMenuInsert
             )
+        )
+    }
+
+    func testMenuCompletionEvidenceDistinguishesVerifiedAndTrustedSuccess() {
+        XCTAssertEqual(
+            PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
+                attempt: .actionSucceeded,
+                didMenuFallbackInsert: true,
+                trustMenuSuccessWithoutAXVerification: false,
+                verificationPassed: true
+            ),
+            .verifiedInsertion
+        )
+
+        XCTAssertEqual(
+            PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
+                attempt: .actionSucceeded,
+                didMenuFallbackInsert: true,
+                trustMenuSuccessWithoutAXVerification: true,
+                verificationPassed: false
+            ),
+            .trustedWithoutVerification
+        )
+
+        XCTAssertEqual(
+            PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
+                attempt: .actionSucceeded,
+                didMenuFallbackInsert: false,
+                trustMenuSuccessWithoutAXVerification: true,
+                verificationPassed: false
+            ),
+            .none
         )
     }
 

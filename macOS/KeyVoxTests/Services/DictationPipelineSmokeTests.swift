@@ -364,7 +364,6 @@ final class DictationPipelineSmokeTests: XCTestCase {
             pasteQueue: DispatchQueue(label: "DictationPipelineSmokeTests.queue.\(UUID().uuidString)"),
             heuristicTTL: 10,
             restoreDelayAfterMenuFallback: 0,
-            restoreDelayAfterAccessibilityInjection: 0,
             menuFallbackVerificationTimeout: 0.01,
             menuFallbackVerificationPollInterval: 0.001,
             frontmostAppIdentityProvider: { PasteAppIdentity(bundleID: "com.example.app", pid: 777) },

@@ -260,6 +260,7 @@ extension TTSManager {
             Self.log("Stop requested with no active request.")
         }
         playbackCoordinator.stop()
+        engine.unloadIfNeeded()
         await onWillTeardownPlayback?()
         KeyVoxIPCBridge.clearTTSRequest()
         keyboardBridge.publishTTSStopped()

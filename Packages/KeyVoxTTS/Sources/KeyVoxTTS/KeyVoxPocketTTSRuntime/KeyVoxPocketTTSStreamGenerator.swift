@@ -287,6 +287,7 @@ actor KeyVoxPocketTTSStreamGenerator {
                 frameIndex: max(batchStartFrameIndex, frameIndex),
                 chunkIndex: chunkIndex,
                 chunkCount: chunkCount,
+                computeMode: computeModeController.mode(),
                 isChunkFinalBatch: isChunkFinalBatch,
                 chunkDebugID: chunkDebugID,
                 estimatedRemainingSampleCount: clampedRemainingEstimatedSampleCount,

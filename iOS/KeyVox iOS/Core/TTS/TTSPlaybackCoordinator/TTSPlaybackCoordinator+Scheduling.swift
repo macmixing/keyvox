@@ -7,6 +7,13 @@ extension TTSPlaybackCoordinator {
         onFrameReceived?(frame)
         lastObservedChunkCount = frame.chunkCount
         lastObservedRemainingEstimatedSamples = frame.estimatedRemainingSampleCount
+        if fastModeEnabled,
+           !isReplayingCachedAudio,
+           !hasObservedFastModeBackgroundSafeCompute,
+           frame.computeMode == .backgroundSafe {
+            hasObservedFastModeBackgroundSafeCompute = true
+            notifyFastModeBackgroundSafetyChanged()
+        }
         recordCompletedFastModeSegmentIfNeeded(from: frame)
         updateStreamingPlaybackProgressEstimate(using: frame)
 

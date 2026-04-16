@@ -192,7 +192,53 @@ struct TTSSystemPlaybackTests {
         #expect(audioSession.portOverrides.isEmpty)
     }
 
-    private func makeHarness(includeSystemPlaybackController: Bool = false) -> TTSSystemPlaybackHarness {
+    @Test func finishingWhilePreservingRecordingClearsSystemPlaybackAndKeepsWarmSessionAlive() async {
+        let audioSession = SpyPlaybackAudioSession()
+        let harness = makeHarness(
+            includeSystemPlaybackController: true,
+            playbackCoordinator: TTSPlaybackCoordinator(audioSession: audioSession)
+        )
+        defer { harness.cleanup() }
+
+        let request = makeRequest(
+            text: "Finished warm-session playback should stay replay-ready instead of leaving system transport in a broken state.",
+            createdAt: 3
+        )
+        let samples = Array(repeating: Float(0.25), count: 96_000)
+        var teardownCallCount = 0
+
+        harness.manager.playbackCoordinator.setAudioSessionMode(.playbackWhilePreservingRecording)
+        harness.manager.activeRequest = request
+        harness.manager.lastReplayableRequest = request
+        harness.manager.playbackCoordinator.restoreReplayablePlayback(samples: samples)
+        harness.manager.hasReplayablePlayback = true
+        harness.manager.onWillTeardownPlayback = {
+            teardownCallCount += 1
+        }
+
+        harness.manager.finishPlayback()
+        await Task.yield()
+        await Task.yield()
+
+        let info = MPNowPlayingInfoCenter.default().nowPlayingInfo
+        #expect(harness.manager.state == .finished)
+        #expect(teardownCallCount == 1)
+        #expect(harness.manager.shouldExposeFinishedSystemPlayback == false)
+        #expect(harness.manager.hasReplayablePlayback == true)
+        #expect(audioSession.activeCalls.isEmpty)
+        #expect(audioSession.policyCategoryCalls.isEmpty)
+        #expect(audioSession.portOverrides.isEmpty)
+        #expect(info == nil)
+        #expect(MPRemoteCommandCenter.shared().playCommand.isEnabled == false)
+        #expect(MPRemoteCommandCenter.shared().pauseCommand.isEnabled == false)
+        #expect(MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled == false)
+        #expect(MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled == false)
+    }
+
+    private func makeHarness(
+        includeSystemPlaybackController: Bool = false,
+        playbackCoordinator: TTSPlaybackCoordinator? = nil
+    ) -> TTSSystemPlaybackHarness {
         let suiteName = "TTSSystemPlaybackTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
@@ -203,13 +249,14 @@ struct TTSSystemPlaybackTests {
         let systemPlaybackController = includeSystemPlaybackController
             ? TTSSystemPlaybackController()
             : nil
+        let resolvedPlaybackCoordinator = playbackCoordinator ?? TTSPlaybackCoordinator()
 
         let manager = TTSManager(
             settingsStore: AppSettingsStore(defaults: defaults),
             appHaptics: StubAppHaptics(),
             keyboardBridge: KeyVoxKeyboardBridge(),
             engine: StubTTSEngine(),
-            playbackCoordinator: TTSPlaybackCoordinator(),
+            playbackCoordinator: resolvedPlaybackCoordinator,
             purchaseGate: StubTTSPurchaseGate(),
             systemPlaybackController: systemPlaybackController,
             replayCache: replayCache
@@ -325,6 +372,7 @@ private struct StubAppHaptics: AppHapticsEmitting {
 private struct StubTTSEngine: TTSEngine {
     func prepareIfNeeded() async throws {}
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}
+    func unloadIfNeeded() {}
     func requestForegroundSynthesisImmediately() {}
     func requestBackgroundContinuationImmediately() {}
     func prepareForForegroundSynthesis() async {}

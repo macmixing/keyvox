@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-04-14
+
+Shared Parakeet no-speech handling refinements for short cue-like hallucinations.
+
+### Includes
+
+- Updated `ParakeetService` to preserve and filter full segment metadata across chunk assembly so likely no-speech trailing segments can be dropped before the final transcription is assembled.
+- Added shared debug observability for dropped trailing segments, decoded utterance duration, and average decoder no-speech probability to make Parakeet no-speech misses easier to diagnose from package logs.
+- Switched the shared Parakeet no-speech gate to use decoded utterance span rather than total captured audio length, which keeps transcription padding and late tail frames from falsely stretching short hallucinated output into confirmed speech.
+- Expanded shared-engine regression coverage for padded short captures, trailing `Yeah.`-style tails, short multiword speech preservation, and the updated short single-word confidence boundary.
+
+### Notes
+
+- `1.0.4` bumps the tracked engine version for `KeyVoxCore` to cover the shared Parakeet no-speech handling refinements used by both app clients.
+
 ## [1.0.3] - 2026-04-12
 
 Improved shared dictation model lifecycle observability for provider switching.
