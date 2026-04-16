@@ -45,16 +45,16 @@ enum PastePolicies {
 struct PasteServiceExecutionPlan {
     let shouldRememberInsertion: Bool
     let shouldStartFailureRecovery: Bool
-    let restoreDelay: TimeInterval?
+    let restorePolicy: PasteClipboardRestorePolicy
 
     static func build(
         didAccessibilityInsertText: Bool,
         didMenuFallbackInsert: Bool,
         usedMenuFallbackPath: Bool,
+        menuFallbackCompletionEvidence: PasteMenuFallbackCompletionEvidence = .none,
         suppressFirstWarmupFailureWarning: Bool,
         shouldStartFailureRecovery: Bool,
-        restoreDelayAfterMenuFallback: TimeInterval,
-        restoreDelayAfterAccessibilityInjection: TimeInterval
+        restoreDelayAfterMenuFallback: TimeInterval
     ) -> PasteServiceExecutionPlan {
         let rememberInsertion = didAccessibilityInsertText || didMenuFallbackInsert
         let shouldRecover = !suppressFirstWarmupFailureWarning && shouldStartFailureRecovery
@@ -63,18 +63,45 @@ struct PasteServiceExecutionPlan {
             return PasteServiceExecutionPlan(
                 shouldRememberInsertion: rememberInsertion,
                 shouldStartFailureRecovery: true,
-                restoreDelay: nil
+                restorePolicy: .deferredToFailureRecovery
             )
         }
+
+        let restorePolicy = Self.clipboardRestorePolicy(
+            usedMenuFallbackPath: usedMenuFallbackPath,
+            menuFallbackCompletionEvidence: menuFallbackCompletionEvidence,
+            restoreDelayAfterMenuFallback: restoreDelayAfterMenuFallback
+        )
 
         return PasteServiceExecutionPlan(
             shouldRememberInsertion: rememberInsertion,
             shouldStartFailureRecovery: false,
-            restoreDelay: usedMenuFallbackPath
-                ? restoreDelayAfterMenuFallback
-                : restoreDelayAfterAccessibilityInjection
+            restorePolicy: restorePolicy
         )
     }
+
+    private static func clipboardRestorePolicy(
+        usedMenuFallbackPath: Bool,
+        menuFallbackCompletionEvidence: PasteMenuFallbackCompletionEvidence,
+        restoreDelayAfterMenuFallback: TimeInterval
+    ) -> PasteClipboardRestorePolicy {
+        guard usedMenuFallbackPath else {
+            return .immediate
+        }
+
+        switch menuFallbackCompletionEvidence {
+        case .noClipboardPayload, .verifiedInsertion:
+            return .immediate
+        case .trustedWithoutVerification, .none:
+            return .afterDelay(restoreDelayAfterMenuFallback)
+        }
+    }
+}
+
+enum PasteClipboardRestorePolicy: Equatable {
+    case immediate
+    case afterDelay(TimeInterval)
+    case deferredToFailureRecovery
 }
 
 struct PasteAccessibilityExecutionDecision {

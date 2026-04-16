@@ -42,6 +42,13 @@ enum PasteMenuFallbackAttemptResult {
     case actionErrored
 }
 
+enum PasteMenuFallbackCompletionEvidence {
+    case none
+    case noClipboardPayload
+    case verifiedInsertion
+    case trustedWithoutVerification
+}
+
 struct PasteMenuFallbackVerificationContext {
     let snapshots: [PasteMenuFallbackVerificationSnapshot]
 }
