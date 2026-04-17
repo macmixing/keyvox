@@ -6,6 +6,19 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.5] - 2026-04-16
+
+Month-led year preservation for numeric grouping.
+
+### Includes
+
+- Updated shared numeric grouping to keep four-digit year references ungrouped when they follow full calendar month names, such as `November 2025`.
+- Preserved existing thousands grouping for nearby four-digit quantities in the same transcription output.
+
+### Notes
+
+- `1.0.5` bumps the tracked engine version for `KeyVoxCore` to cover the shared month-led year preservation fix used by both app clients.
+
 ## [1.0.4] - 2026-04-14
 
 Shared Parakeet no-speech handling refinements for short cue-like hallucinations.

@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.8] - 2026-04-16
+
+### Changed
+
+- Updated the bundled `KeyVoxCore` package to `1.0.5` with shared numeric grouping refinements that preserve month-led year references such as `November 2025`.
+- Refined macOS menu fallback paste verification so clipboard restoration now distinguishes exact dictated-payload evidence from structural insertion signals.
+
+### Fixed
+
+- Prevented delayed menu paste consumers, including browser-based editors, from receiving the previously restored clipboard content after KeyVox had already triggered insertion.
+- Kept immediate clipboard restoration for menu fallback only when the expected dictated text is observed in the target field, while preserving the existing grace delay for structural-only or trusted fallback evidence.
+- Preserved thousands grouping for quantity-like four-digit numbers while leaving adjacent calendar year references ungrouped.
+
+### Package versions
+
+KeyVox macOS 1.0.8 (build 1):
+- KeyVoxCore       1.0.5
+- KeyVoxWhisper    1.0.0
+- KeyVoxParakeet   1.0.2
+
 ## [1.0.7] - 2026-04-15
 
 ### Changed
