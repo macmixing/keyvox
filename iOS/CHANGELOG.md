@@ -6,6 +6,15 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-04-17
+
+Fixes onboarding progression when users complete keyboard setup out of the expected step order while working through app settings.
+
+### Fixed
+
+- Fixed an onboarding state where users could complete microphone access, enable the KeyVox keyboard, and allow Full Access during the same Settings trip, then return to a fully checked setup screen with no way to continue.
+- Fixed onboarding so users who enable the KeyVox keyboard before the dictation model finishes downloading are automatically advanced into the keyboard tour once the model is ready.
+
 ## [1.0.2] - 2026-04-09
 
 Adds release-branch update enforcement so unsupported installs can be blocked behind a required App Store upgrade, while preserving spoken version phrases during dictation cleanup.
