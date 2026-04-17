@@ -160,6 +160,78 @@ struct OnboardingStoreTests {
         #expect(store.shouldShowKeyboardTourScreen == false)
     }
 
+    @Test func readyKeyboardTourHandoffRecordsAndArmsRoute() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordKeyboardTourHandoffIfReady(
+            isModelReady: true,
+            isMicrophonePermissionGranted: true,
+            isKeyboardEnabledInSystemSettings: true
+        )
+
+        #expect(store.hasPendingKeyboardTour)
+        #expect(store.shouldShowKeyboardTourScreen)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == true)
+    }
+
+    @Test func keyboardTourHandoffDoesNotRecordBeforeModelIsReady() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordKeyboardTourHandoffIfReady(
+            isModelReady: false,
+            isMicrophonePermissionGranted: true,
+            isKeyboardEnabledInSystemSettings: true
+        )
+
+        #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.shouldShowKeyboardTourScreen == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) == nil)
+    }
+
+    @Test func keyboardTourHandoffDoesNotRecordBeforeMicrophoneIsGranted() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordKeyboardTourHandoffIfReady(
+            isModelReady: true,
+            isMicrophonePermissionGranted: false,
+            isKeyboardEnabledInSystemSettings: true
+        )
+
+        #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.shouldShowKeyboardTourScreen == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) == nil)
+    }
+
+    @Test func keyboardTourHandoffDoesNotRecordBeforeKeyboardIsEnabled() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        store.recordKeyboardTourHandoffIfReady(
+            isModelReady: true,
+            isMicrophonePermissionGranted: true,
+            isKeyboardEnabledInSystemSettings: false
+        )
+
+        #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.shouldShowKeyboardTourScreen == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) == nil)
+    }
+
     private func makeDefaults() -> UserDefaults {
         let suiteName = "OnboardingStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

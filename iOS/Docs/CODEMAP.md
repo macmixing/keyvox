@@ -90,6 +90,7 @@ iOS/
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingDownloadNetworkMonitor.swift
 │   │   │   ├── OnboardingKeyboardAccessProbe.swift
+│   │   │   ├── OnboardingKeyboardTourHandoffState.swift
 │   │   │   ├── OnboardingKeyboardTourState.swift
 │   │   │   ├── OnboardingMicrophonePermissionController.swift
 │   │   │   ├── OnboardingSetupState.swift
@@ -335,6 +336,7 @@ iOS/
 │   │   ├── KeyVoxURLRouteTests.swift
 │   │   ├── ModelManagerTests.swift
 │   │   ├── OnboardingKeyboardAccessProbeTests.swift
+│   │   ├── OnboardingKeyboardTourHandoffStateTests.swift
 │   │   ├── OnboardingKeyboardTourStateTests.swift
 │   │   ├── OnboardingMicrophonePermissionControllerTests.swift
 │   │   ├── OnboardingDownloadNetworkMonitorTests.swift
@@ -467,12 +469,14 @@ Packages/
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
   - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
+  - Records and arms the keyboard-tour handoff once app-level prerequisites say the model is ready, microphone access is granted, and the keyboard is enabled.
 - `KeyVox iOS/Views/Onboarding/OnboardingFlowView.swift`
   - Ordered onboarding router: welcome -> setup -> keyboard tour.
 - `KeyVox iOS/Views/Onboarding/OnboardingSetupScreen.swift`
   - Model download, microphone permission, and keyboard-settings handoff screen.
   - Gates keyboard setup until both the model is ready and microphone access has been granted, while allowing those two setup tasks to proceed in parallel.
-  - Records the pending keyboard-tour handoff before opening Settings and uses app-owned haptics for warning/success step feedback.
+  - Records the pending keyboard-tour handoff before opening Settings and reconciles completed app-level requirements on return from Settings or model completion.
+  - Uses app-owned haptics for warning/success step feedback.
 - `KeyVox iOS/Views/Onboarding/OnboardingStepRow.swift`
   - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
@@ -486,6 +490,8 @@ Packages/
   - Completes onboarding directly when the final `Finish` action runs.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourState.swift`
   - Small state machine that drives tour scene A/B/C progression and completion gating.
+- `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourHandoffState.swift`
+  - Small app-level gate for starting the keyboard tour once the model is ready, microphone access is granted, and the keyboard is enabled in system settings.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardAccessProbe.swift`
   - App-side probe for keyboard enablement, keyboard presentation, and keyboard-reported Full Access confirmation.
 - `KeyVox iOS/App/Onboarding/OnboardingMicrophonePermissionController.swift`
