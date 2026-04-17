@@ -29,6 +29,18 @@ public struct ThousandsGroupingNormalizer {
     private static let dateDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.date.rawValue
     )
+    private static let calendarMonthTokens: Set<String> = {
+        let monthFormatter = DateFormatter()
+        monthFormatter.locale = Locale(identifier: "en_US_POSIX")
+        monthFormatter.calendar = Calendar(identifier: .gregorian)
+
+        let tokenGroups = [
+            monthFormatter.monthSymbols ?? [],
+            monthFormatter.standaloneMonthSymbols ?? [],
+        ]
+
+        return Set(tokenGroups.flatMap { $0 }.map(normalizedCalendarMonthToken).filter { !$0.isEmpty })
+    }()
     private static let wordRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b\p{L}+(?:-\p{L}+)?\b"#,
         options: []
@@ -349,6 +361,10 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
+        if isCalendarMonthToken(previous) {
+            return true
+        }
+
         if let nextTag = next?.tag,
            [.verb, .pronoun, .determiner, .conjunction].contains(nextTag) {
             return true
@@ -405,5 +421,16 @@ public struct ThousandsGroupingNormalizer {
     private func isPluralInflectedNoun(_ token: LexicalToken?) -> Bool {
         guard let token, token.tag == .noun, let lemma = token.lemma else { return false }
         return token.text.compare(lemma, options: [.caseInsensitive, .diacriticInsensitive]) != .orderedSame
+    }
+
+    private func isCalendarMonthToken(_ token: LexicalToken?) -> Bool {
+        guard let token else { return false }
+        return Self.calendarMonthTokens.contains(Self.normalizedCalendarMonthToken(token.text))
+    }
+
+    private static func normalizedCalendarMonthToken(_ text: String) -> String {
+        text
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
     }
 }
