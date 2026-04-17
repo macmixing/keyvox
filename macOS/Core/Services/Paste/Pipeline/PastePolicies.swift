@@ -90,9 +90,9 @@ struct PasteServiceExecutionPlan {
         }
 
         switch menuFallbackCompletionEvidence {
-        case .noClipboardPayload, .verifiedInsertion:
+        case .noClipboardPayload, .expectedPayloadObserved:
             return .immediate
-        case .trustedWithoutVerification, .none:
+        case .structuralInsertionObserved, .trustedWithoutVerification, .none:
             return .afterDelay(restoreDelayAfterMenuFallback)
         }
     }

@@ -42,11 +42,38 @@ enum PasteMenuFallbackAttemptResult {
     case actionErrored
 }
 
-enum PasteMenuFallbackCompletionEvidence {
+enum PasteMenuFallbackCompletionEvidence: Equatable {
     case none
     case noClipboardPayload
-    case verifiedInsertion
+    case expectedPayloadObserved
+    case structuralInsertionObserved
     case trustedWithoutVerification
+}
+
+enum PasteMenuFallbackVerificationOutcome: Equatable {
+    case none
+    case structuralInsertionObserved
+    case expectedPayloadObserved
+
+    var didObserveInsertion: Bool {
+        switch self {
+        case .none:
+            return false
+        case .structuralInsertionObserved, .expectedPayloadObserved:
+            return true
+        }
+    }
+
+    var completionEvidence: PasteMenuFallbackCompletionEvidence {
+        switch self {
+        case .none:
+            return .none
+        case .structuralInsertionObserved:
+            return .structuralInsertionObserved
+        case .expectedPayloadObserved:
+            return .expectedPayloadObserved
+        }
+    }
 }
 
 struct PasteMenuFallbackVerificationContext {
@@ -57,6 +84,19 @@ struct PasteMenuFallbackVerificationSnapshot {
     let element: AXUIElement
     let selectedRange: CFRange?
     let valueLength: Int?
+    let valueText: String?
+
+    init(
+        element: AXUIElement,
+        selectedRange: CFRange?,
+        valueLength: Int?,
+        valueText: String? = nil
+    ) {
+        self.element = element
+        self.selectedRange = selectedRange
+        self.valueLength = valueLength
+        self.valueText = valueText
+    }
 }
 
 struct PasteMenuFallbackUndoState {

@@ -111,7 +111,7 @@ final class PasteMenuFallbackCoordinator {
             let menuAttemptResult = menuFallbackExecutor.pasteViaMenuBarOnMainThread()
             menuAttempt = menuAttemptResult
             var trustWithoutAXVerification = false
-            var verificationPassed = false
+            var verificationOutcome: PasteMenuFallbackVerificationOutcome = .none
 
             if case .actionSucceeded = menuAttemptResult,
                shouldAllowFirstMenuSuccessWarmupSuppression(for: targetAppIdentity) {
@@ -128,38 +128,48 @@ final class PasteMenuFallbackCoordinator {
                     if verificationContext != nil {
                         // Even when AXPress reports success, verify resulting AX state when possible
                         // so we can catch no-op "successful" actions in apps like browser-based editors.
-                        verificationPassed = menuFallbackExecutor.verifyInsertion(using: verificationContext)
+                        verificationOutcome = menuFallbackExecutor.verifyInsertionOutcome(
+                            using: verificationContext,
+                            expectedText: textForMenuPaste
+                        )
                     } else {
-                        verificationPassed = menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                        if menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
                             initialUndoState: initialUndoState
-                        )
+                        ) {
+                            verificationOutcome = .structuralInsertionObserved
+                        }
                     }
-                    if !verificationPassed {
-                        verificationPassed = menuFallbackExecutor.verifyInsertionUsingLiveValueChangeSession(
-                            liveValueChangeSession
-                        )
+                    if !verificationOutcome.didObserveInsertion {
+                        if menuFallbackExecutor.verifyInsertionUsingLiveValueChangeSession(liveValueChangeSession) {
+                            verificationOutcome = .structuralInsertionObserved
+                        }
                     }
                 }
             case .actionErrored:
                 if verificationContext != nil {
-                    verificationPassed = menuFallbackExecutor.verifyInsertion(using: verificationContext)
-                } else {
-                    verificationPassed = menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
-                        initialUndoState: initialUndoState
+                    verificationOutcome = menuFallbackExecutor.verifyInsertionOutcome(
+                        using: verificationContext,
+                        expectedText: textForMenuPaste
                     )
+                } else {
+                    if menuFallbackExecutor.verifyInsertionWithoutAXContextOnMainThread(
+                        initialUndoState: initialUndoState
+                    ) {
+                        verificationOutcome = .structuralInsertionObserved
+                    }
                 }
             }
 
             didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(
                 attempt: menuAttemptResult,
                 trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
-                verificationPassed: verificationPassed
+                verificationPassed: verificationOutcome.didObserveInsertion
             )
             completionEvidence = Self.completionEvidenceForMenuAttempt(
                 attempt: menuAttemptResult,
                 didMenuFallbackInsert: didMenuFallbackInsert,
                 trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
-                verificationPassed: verificationPassed
+                verificationOutcome: verificationOutcome
             )
         }
 
@@ -203,19 +213,19 @@ final class PasteMenuFallbackCoordinator {
         attempt: PasteMenuFallbackAttemptResult,
         didMenuFallbackInsert: Bool,
         trustMenuSuccessWithoutAXVerification: Bool,
-        verificationPassed: Bool
+        verificationOutcome: PasteMenuFallbackVerificationOutcome
     ) -> PasteMenuFallbackCompletionEvidence {
         guard didMenuFallbackInsert else { return .none }
         switch attempt {
         case .unavailable:
             return .none
         case .actionSucceeded:
-            if verificationPassed {
-                return .verifiedInsertion
+            if verificationOutcome.didObserveInsertion {
+                return verificationOutcome.completionEvidence
             }
             return trustMenuSuccessWithoutAXVerification ? .trustedWithoutVerification : .none
         case .actionErrored:
-            return verificationPassed ? .verifiedInsertion : .none
+            return verificationOutcome.didObserveInsertion ? verificationOutcome.completionEvidence : .none
         }
     }
 

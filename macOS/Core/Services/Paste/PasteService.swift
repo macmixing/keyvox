@@ -136,6 +136,9 @@ class PasteService {
                 didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
                 suppressFirstWarmupFailureWarning = menuFallbackExecution.suppressFirstWarmupFailureWarning
                 menuFallbackCompletionEvidence = menuFallbackExecution.completionEvidence
+                #if DEBUG
+                print("Menu fallback completion evidence: \(menuFallbackCompletionEvidence)")
+                #endif
             }
 
             let executionPlan = PasteServiceExecutionPlan.build(

@@ -8,6 +8,7 @@ protocol PasteAXInspecting {
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character?
     func valueLengthForMenuVerification(element: AXUIElement) -> Int?
+    func valueStringForMenuVerification(element: AXUIElement) -> String?
     func candidateVerificationElements(
         for pid: pid_t,
         maxDepth: Int,
@@ -177,12 +178,12 @@ final class PasteAXInspector: PasteAXInspecting {
     }
 
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
-        var valueRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXValueAttribute as CFString, &valueRef) == .success,
-              let value = valueRef as? String else {
-            return nil
-        }
+        guard let value = valueStringForMenuVerification(element: element) else { return nil }
         return (value as NSString).length
+    }
+
+    func valueStringForMenuVerification(element: AXUIElement) -> String? {
+        valueString(for: element)
     }
 
     func candidateVerificationElements(

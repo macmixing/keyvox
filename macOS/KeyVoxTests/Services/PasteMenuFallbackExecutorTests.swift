@@ -48,6 +48,59 @@ final class PasteMenuFallbackExecutorTests: XCTestCase {
         XCTAssertTrue(executor.verifyInsertion(using: context))
     }
 
+    func testVerifyInsertionOutcomeObservesExpectedPayloadBeforeCaret() {
+        let inspector = MockPasteAXInspector()
+        let element = makeRetainedElement()
+        inspector.setRange(
+            for: element,
+            values: [CFRange(location: 5, length: 0)]
+        )
+        inspector.setStringForRange("hello", location: 0, length: 5, element: element)
+
+        let executor = makeExecutor(inspector: inspector)
+
+        let context = PasteMenuFallbackVerificationContext(
+            snapshots: [
+                PasteMenuFallbackVerificationSnapshot(
+                    element: element,
+                    selectedRange: CFRange(location: 0, length: 0),
+                    valueLength: nil
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            executor.verifyInsertionOutcome(using: context, expectedText: "hello"),
+            .expectedPayloadObserved
+        )
+    }
+
+    func testVerifyInsertionOutcomeKeepsRangeMovementStructuralWhenPayloadIsNotObserved() {
+        let inspector = MockPasteAXInspector()
+        let element = makeRetainedElement()
+        inspector.setRange(
+            for: element,
+            values: [CFRange(location: 5, length: 0)]
+        )
+
+        let executor = makeExecutor(inspector: inspector)
+
+        let context = PasteMenuFallbackVerificationContext(
+            snapshots: [
+                PasteMenuFallbackVerificationSnapshot(
+                    element: element,
+                    selectedRange: CFRange(location: 0, length: 0),
+                    valueLength: nil
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            executor.verifyInsertionOutcome(using: context, expectedText: "hello"),
+            .structuralInsertionObserved
+        )
+    }
+
     func testVerifyInsertionReturnsTrueWhenValueLengthChanges() {
         let inspector = MockPasteAXInspector()
         let element = makeRetainedElement()
@@ -112,6 +165,9 @@ private final class MockPasteAXInspector: PasteAXInspecting {
     private var rangeIndex = 0
     private var valueLengthSequence: [Int?] = [nil]
     private var valueLengthIndex = 0
+    private var valueStringSequence: [String?] = [nil]
+    private var valueStringIndex = 0
+    private var rangeStringByLocationAndLength: [String: String] = [:]
 
     func setRange(for element: AXUIElement, values: [CFRange]) {
         _ = element
@@ -125,10 +181,24 @@ private final class MockPasteAXInspector: PasteAXInspecting {
         valueLengthIndex = 0
     }
 
+    func setValueStrings(for element: AXUIElement, values: [String]) {
+        _ = element
+        valueStringSequence = values.map { Optional($0) }
+        valueStringIndex = 0
+    }
+
+    func setStringForRange(_ text: String, location: Int, length: Int, element: AXUIElement) {
+        _ = element
+        rangeStringByLocationAndLength["\(location):\(length)"] = text
+    }
+
     func focusedInsertionContext() -> PasteInsertionContext? { nil }
     func focusedUIElement() -> AXUIElement? { nil }
     func roleString(for element: AXUIElement) -> String? { nil }
-    func stringForRange(_ range: CFRange, element: AXUIElement) -> String? { nil }
+    func stringForRange(_ range: CFRange, element: AXUIElement) -> String? {
+        _ = element
+        return rangeStringByLocationAndLength["\(range.location):\(range.length)"]
+    }
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character? { nil }
     func candidateVerificationElements(
         for pid: pid_t,
@@ -150,6 +220,13 @@ private final class MockPasteAXInspector: PasteAXInspecting {
         _ = element
         let value = valueLengthSequence[min(valueLengthIndex, valueLengthSequence.count - 1)]
         valueLengthIndex += 1
+        return value
+    }
+
+    func valueStringForMenuVerification(element: AXUIElement) -> String? {
+        _ = element
+        let value = valueStringSequence[min(valueStringIndex, valueStringSequence.count - 1)]
+        valueStringIndex += 1
         return value
     }
 }

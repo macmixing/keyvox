@@ -81,7 +81,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         let coordinator = MockMenuFallbackCoordinator(result: .init(
             didMenuFallbackInsert: true,
             menuAttempt: .actionSucceeded,
-            completionEvidence: .verifiedInsertion,
+            completionEvidence: .expectedPayloadObserved,
             suppressFirstWarmupFailureWarning: false
         ))
         let service = try makeService(
@@ -102,6 +102,38 @@ final class PasteServiceExecutionTests: XCTestCase {
 
         XCTAssertEqual(recovery.startCalls, 0)
         XCTAssertEqual(coordinator.executeCalls, 1)
+    }
+
+    func testStructuralMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let recovery = MockFailureRecoveryController()
+        let capitalization = MockCapitalizationHeuristics(outputText: "hello")
+        let injector = MockAccessibilityInjector(outcome: .failureNeedsFallback)
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: true,
+            menuAttempt: .actionSucceeded,
+            completionEvidence: .structuralInsertionObserved,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: recovery,
+            capitalization: capitalization,
+            spacing: MockSpacingHeuristics(),
+            injector: injector,
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0.15
+        )
+
+        service.pasteText("hello")
+
+        try await Task.sleep(nanoseconds: 40_000_000)
+        XCTAssertEqual(clipboard.restoreCalls, 0)
+
+        try await waitForCondition {
+            clipboard.restoreCalls == 1
+        }
+        XCTAssertEqual(recovery.startCalls, 0)
     }
 
     func testTrustedMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {
@@ -252,7 +284,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             didAccessibilityInsertText: false,
             didMenuFallbackInsert: true,
             usedMenuFallbackPath: true,
-            menuFallbackCompletionEvidence: .verifiedInsertion,
+            menuFallbackCompletionEvidence: .expectedPayloadObserved,
             suppressFirstWarmupFailureWarning: false,
             shouldStartFailureRecovery: false,
             restoreDelayAfterMenuFallback: 0.8
@@ -260,6 +292,19 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertTrue(verifiedMenuRestorePlan.shouldRememberInsertion)
         XCTAssertFalse(verifiedMenuRestorePlan.shouldStartFailureRecovery)
         XCTAssertEqual(verifiedMenuRestorePlan.restorePolicy, .immediate)
+
+        let structuralMenuRestorePlan = PasteServiceExecutionPlan.build(
+            didAccessibilityInsertText: false,
+            didMenuFallbackInsert: true,
+            usedMenuFallbackPath: true,
+            menuFallbackCompletionEvidence: .structuralInsertionObserved,
+            suppressFirstWarmupFailureWarning: false,
+            shouldStartFailureRecovery: false,
+            restoreDelayAfterMenuFallback: 0.8
+        )
+        XCTAssertTrue(structuralMenuRestorePlan.shouldRememberInsertion)
+        XCTAssertFalse(structuralMenuRestorePlan.shouldStartFailureRecovery)
+        XCTAssertEqual(structuralMenuRestorePlan.restorePolicy, .afterDelay(0.8))
 
         let trustedMenuRestorePlan = PasteServiceExecutionPlan.build(
             didAccessibilityInsertText: false,

@@ -44,15 +44,25 @@ final class PasteDecisionMatrixTests: XCTestCase {
         )
     }
 
-    func testMenuCompletionEvidenceDistinguishesVerifiedAndTrustedSuccess() {
+    func testMenuCompletionEvidenceDistinguishesPayloadStructuralAndTrustedSuccess() {
         XCTAssertEqual(
             PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
                 attempt: .actionSucceeded,
                 didMenuFallbackInsert: true,
                 trustMenuSuccessWithoutAXVerification: false,
-                verificationPassed: true
+                verificationOutcome: .expectedPayloadObserved
             ),
-            .verifiedInsertion
+            .expectedPayloadObserved
+        )
+
+        XCTAssertEqual(
+            PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
+                attempt: .actionSucceeded,
+                didMenuFallbackInsert: true,
+                trustMenuSuccessWithoutAXVerification: false,
+                verificationOutcome: .structuralInsertionObserved
+            ),
+            .structuralInsertionObserved
         )
 
         XCTAssertEqual(
@@ -60,7 +70,7 @@ final class PasteDecisionMatrixTests: XCTestCase {
                 attempt: .actionSucceeded,
                 didMenuFallbackInsert: true,
                 trustMenuSuccessWithoutAXVerification: true,
-                verificationPassed: false
+                verificationOutcome: .none
             ),
             .trustedWithoutVerification
         )
@@ -70,7 +80,7 @@ final class PasteDecisionMatrixTests: XCTestCase {
                 attempt: .actionSucceeded,
                 didMenuFallbackInsert: false,
                 trustMenuSuccessWithoutAXVerification: true,
-                verificationPassed: false
+                verificationOutcome: .none
             ),
             .none
         )

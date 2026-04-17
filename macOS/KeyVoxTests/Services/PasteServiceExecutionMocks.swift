@@ -166,6 +166,14 @@ final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
         _ = context
         return false
     }
+    func verifyInsertionOutcome(
+        using context: PasteMenuFallbackVerificationContext?,
+        expectedText: String
+    ) -> PasteMenuFallbackVerificationOutcome {
+        _ = context
+        _ = expectedText
+        return .none
+    }
     func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState? { nil }
     func verifyInsertionWithoutAXContextOnMainThread(initialUndoState: PasteMenuFallbackUndoState?) -> Bool {
         _ = initialUndoState
@@ -206,6 +214,10 @@ final class MockAXInspector: PasteAXInspecting {
         return nil
     }
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
+        _ = element
+        return nil
+    }
+    func valueStringForMenuVerification(element: AXUIElement) -> String? {
         _ = element
         return nil
     }
