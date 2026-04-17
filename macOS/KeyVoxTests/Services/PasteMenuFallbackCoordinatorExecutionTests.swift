@@ -258,6 +258,7 @@ private final class MockPasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
     var verificationContext: PasteMenuFallbackVerificationContext?
     var undoState: PasteMenuFallbackUndoState?
     var verifyInsertionResult = false
+    var verifyInsertionOutcomeResult: PasteMenuFallbackVerificationOutcome?
     var verifyInsertionWithoutAXResult = false
     var verifyLiveResult = false
     var liveSession: PasteAXLiveSessioning?
@@ -286,6 +287,19 @@ private final class MockPasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         _ = context
         verifyInsertionCalls += 1
         return verifyInsertionResult
+    }
+
+    func verifyInsertionOutcome(
+        using context: PasteMenuFallbackVerificationContext?,
+        expectedText: String
+    ) -> PasteMenuFallbackVerificationOutcome {
+        _ = context
+        _ = expectedText
+        verifyInsertionCalls += 1
+        if let verifyInsertionOutcomeResult {
+            return verifyInsertionOutcomeResult
+        }
+        return verifyInsertionResult ? .structuralInsertionObserved : .none
     }
 
     func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState? {

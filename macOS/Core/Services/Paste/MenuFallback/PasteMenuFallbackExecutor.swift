@@ -5,6 +5,10 @@ protocol PasteMenuFallbackExecuting {
     func frontmostProcessIDOnMainThread() -> pid_t?
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext?
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool
+    func verifyInsertionOutcome(
+        using context: PasteMenuFallbackVerificationContext?,
+        expectedText: String
+    ) -> PasteMenuFallbackVerificationOutcome
     func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState?
     func verifyInsertionWithoutAXContextOnMainThread(
         initialUndoState: PasteMenuFallbackUndoState?
@@ -95,29 +99,47 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
     }
 
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool {
-        guard let context, !context.snapshots.isEmpty else { return false }
+        verifyInsertionOutcome(using: context, expectedText: "").didObserveInsertion
+    }
+
+    func verifyInsertionOutcome(
+        using context: PasteMenuFallbackVerificationContext?,
+        expectedText: String
+    ) -> PasteMenuFallbackVerificationOutcome {
+        guard let context, !context.snapshots.isEmpty else { return .none }
         let deadline = Date().addingTimeInterval(verificationTimeout)
+        var didObserveStructuralInsertion = false
 
         while Date() < deadline {
             for snapshot in context.snapshots {
                 let currentRange = axInspector.selectedRange(for: snapshot.element)
                 let currentLength = axInspector.valueLengthForMenuVerification(element: snapshot.element)
+                let currentValue = axInspector.valueStringForMenuVerification(element: snapshot.element)
+
+                if expectedPayloadObserved(
+                    expectedText,
+                    snapshot: snapshot,
+                    currentRange: currentRange,
+                    currentValue: currentValue
+                ) {
+                    return .expectedPayloadObserved
+                }
 
                 if let oldRange = snapshot.selectedRange, let currentRange {
                     if oldRange.location != currentRange.location || oldRange.length != currentRange.length {
-                        return true
+                        didObserveStructuralInsertion = true
                     }
                 }
 
                 if let oldLength = snapshot.valueLength, let currentLength, oldLength != currentLength {
-                    return true
+                    didObserveStructuralInsertion = true
                 }
             }
 
             usleep(useconds_t(verificationPollInterval * 1_000_000))
         }
 
-        return false
+        return didObserveStructuralInsertion ? .structuralInsertionObserved : .none
     }
 
     func captureUndoStateOnMainThread() -> PasteMenuFallbackUndoState? {
@@ -270,8 +292,64 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         PasteMenuFallbackVerificationSnapshot(
             element: element,
             selectedRange: axInspector.selectedRange(for: element),
-            valueLength: axInspector.valueLengthForMenuVerification(element: element)
+            valueLength: axInspector.valueLengthForMenuVerification(element: element),
+            valueText: axInspector.valueStringForMenuVerification(element: element)
         )
+    }
+
+    private func expectedPayloadObserved(
+        _ expectedText: String,
+        snapshot: PasteMenuFallbackVerificationSnapshot,
+        currentRange: CFRange?,
+        currentValue: String?
+    ) -> Bool {
+        guard !expectedText.isEmpty else { return false }
+        let expectedLength = (expectedText as NSString).length
+
+        if let currentRange,
+           currentRange.location >= expectedLength,
+           let rangeText = axInspector.stringForRange(
+                CFRange(location: currentRange.location - expectedLength, length: expectedLength),
+                element: snapshot.element
+           ),
+           rangeText == expectedText {
+            return true
+        }
+
+        guard let currentValue else { return false }
+        let currentNSString = currentValue as NSString
+
+        if let currentRange,
+           currentRange.location >= expectedLength {
+            let insertedRange = NSRange(
+                location: currentRange.location - expectedLength,
+                length: expectedLength
+            )
+            if NSMaxRange(insertedRange) <= currentNSString.length,
+               currentNSString.substring(with: insertedRange) == expectedText {
+                return true
+            }
+        }
+
+        guard let originalValue = snapshot.valueText else { return false }
+        if let selectedRange = snapshot.selectedRange {
+            let replacementRange = NSRange(location: selectedRange.location, length: selectedRange.length)
+            let originalNSString = originalValue as NSString
+            if replacementRange.location >= 0,
+               NSMaxRange(replacementRange) <= originalNSString.length {
+                let expectedValue = originalNSString.replacingCharacters(
+                    in: replacementRange,
+                    with: expectedText
+                )
+                if currentValue == expectedValue {
+                    return true
+                }
+            }
+        }
+
+        return currentValue != originalValue
+            && !originalValue.contains(expectedText)
+            && currentValue.contains(expectedText)
     }
 
     private func undoStateChanged(

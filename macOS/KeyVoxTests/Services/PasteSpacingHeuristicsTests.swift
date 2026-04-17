@@ -181,6 +181,7 @@ private final class MockPasteAXInspector: PasteAXInspecting {
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? { nil }
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character? { nil }
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? { nil }
+    func valueStringForMenuVerification(element: AXUIElement) -> String? { nil }
     func candidateVerificationElements(
         for pid: pid_t,
         maxDepth: Int,
