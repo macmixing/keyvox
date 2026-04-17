@@ -3,6 +3,10 @@ import SwiftUI
 extension HomeTabView {
     private enum TTSTranscriptLayout {
         static let maximumExpandedHeight: CGFloat = 300
+        static let contentPadding: CGFloat = 16
+        static let copyButtonSize: CGFloat = 32
+        static let copyButtonInset: CGFloat = 4
+        static let minimumExpandedHeight = copyButtonSize + (contentPadding * 2)
         static let cardAnimationDuration = 0.14
         static let revealDelayNanoseconds: UInt64 = 100_000_000
         static let collapseContentDuration = 0.20
@@ -37,14 +41,22 @@ extension HomeTabView {
                 Text(currentPlaybackTranscriptText)
                     .font(.appFont(18, variant: .light))
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(
+                        maxWidth: .infinity,
+                        minHeight: TTSTranscriptLayout.copyButtonSize,
+                        alignment: isSingleLineTTSTranscript ? .leading : .topLeading
+                    )
                     .multilineTextAlignment(.leading)
                     .textSelection(.enabled)
             }
             .id(currentPlaybackTranscriptScrollID)
             .scrollIndicators(.hidden)
-            .frame(maxHeight: TTSTranscriptLayout.maximumExpandedHeight, alignment: .top)
-            .padding(16)
+            .contentMargins(.all, TTSTranscriptLayout.contentPadding, for: .scrollContent)
+            .frame(
+                minHeight: TTSTranscriptLayout.minimumExpandedHeight,
+                maxHeight: TTSTranscriptLayout.maximumExpandedHeight,
+                alignment: .top
+            )
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
                     .fill(AppTheme.rowFill)
@@ -60,12 +72,15 @@ extension HomeTabView {
                     Image(systemName: ttsTranscriptCopyFeedback.didCopy ? "checkmark" : "doc.on.doc")
                         .font(.system(size: 18, weight: ttsTranscriptCopyFeedback.didCopy ? .bold : .medium))
                         .foregroundStyle(.white.opacity(0.88))
-                        .frame(width: 32, height: 32)
+                        .frame(
+                            width: TTSTranscriptLayout.copyButtonSize,
+                            height: TTSTranscriptLayout.copyButtonSize
+                        )
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 4)
-                .padding(.trailing, 4)
+                .padding(.top, TTSTranscriptLayout.copyButtonInset)
+                .padding(.trailing, TTSTranscriptLayout.copyButtonInset)
                 .animation(.easeInOut(duration: 0.18), value: ttsTranscriptCopyFeedback.didCopy)
             }
             .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
@@ -114,6 +129,10 @@ extension HomeTabView {
 
     var currentPlaybackTranscriptText: String {
         ttsManager.currentPlaybackDisplayText ?? ""
+    }
+
+    var isSingleLineTTSTranscript: Bool {
+        currentPlaybackTranscriptText.rangeOfCharacter(from: .newlines) == nil
     }
 
     var currentPlaybackTranscriptScrollID: UUID? {
