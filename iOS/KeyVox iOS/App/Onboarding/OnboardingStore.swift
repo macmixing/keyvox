@@ -104,4 +104,21 @@ final class OnboardingStore: ObservableObject {
 
         isPendingKeyboardTourRouteArmed = true
     }
+
+    func recordKeyboardTourHandoffIfReady(
+        isModelReady: Bool,
+        isMicrophonePermissionGranted: Bool,
+        isKeyboardEnabledInSystemSettings: Bool
+    ) {
+        guard isModelReady,
+              isMicrophonePermissionGranted,
+              isKeyboardEnabledInSystemSettings else {
+            return
+        }
+
+        recordPendingKeyboardTour()
+        armPendingKeyboardTourRouteIfNeeded(
+            isKeyboardEnabledInSystemSettings: isKeyboardEnabledInSystemSettings
+        )
+    }
 }

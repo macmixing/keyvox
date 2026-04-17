@@ -53,6 +53,7 @@ struct OnboardingSetupScreen: View {
         }
         .task {
             refreshState()
+            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             guard newPhase == .active else { return }
@@ -62,6 +63,8 @@ struct OnboardingSetupScreen: View {
                microphonePermissionController.status == .granted {
                 completeMicrophoneStep()
             }
+
+            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onAppear {
             previousWarningToken = currentWarningToken
@@ -83,6 +86,9 @@ struct OnboardingSetupScreen: View {
         }
         .onChange(of: isKeyboardStepCompleted, initial: false) { _, newValue in
             emitStepCompletionHaptic(previousCompletion: &previousKeyboardStepCompletion, newValue: newValue)
+        }
+        .onChange(of: keyboardTourHandoffState, initial: false) { _, _ in
+            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onChange(of: microphonePermissionController.status, initial: false) { oldValue, newValue in
             if newValue != .granted {
@@ -339,6 +345,14 @@ struct OnboardingSetupScreen: View {
         isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess
     }
 
+    private var keyboardTourHandoffState: OnboardingKeyboardTourHandoffState {
+        OnboardingKeyboardTourHandoffState(
+            isModelReady: isModelStepCompleted,
+            isMicrophonePermissionGranted: microphonePermissionController.status == .granted,
+            isKeyboardEnabledInSystemSettings: keyboardAccessProbe.isKeyboardEnabledInSystemSettings
+        )
+    }
+
     private var currentWarningToken: String? {
         if case .failed(let message) = onboardingModelState, shouldShowOfflineModelError == false {
             return "model.error.\(message)"
@@ -388,6 +402,25 @@ struct OnboardingSetupScreen: View {
         appHaptics.success()
         displaysMicrophoneStepCompletion = true
         hasPendingMicrophoneStepCompletion = false
+    }
+
+    private func advanceToKeyboardTourIfHandoffIsReady() {
+        guard keyboardTourHandoffState.canStartKeyboardTour else { return }
+
+        Self.log(
+            "advanceToKeyboardTour handoffReady modelReady=\(keyboardTourHandoffState.isModelReady) microphoneGranted=\(keyboardTourHandoffState.isMicrophonePermissionGranted) keyboardEnabled=\(keyboardTourHandoffState.isKeyboardEnabledInSystemSettings) hasFullAccess=\(keyboardAccessProbe.hasFullAccessConfirmedByKeyboard) accessTimestamp=\(String(describing: keyboardAccessProbe.lastConfirmedAccessTimestamp)) presentationTimestamp=\(String(describing: keyboardAccessProbe.lastKeyboardPresentationTimestamp))"
+        )
+        onboardingStore.recordKeyboardTourHandoffIfReady(
+            isModelReady: keyboardTourHandoffState.isModelReady,
+            isMicrophonePermissionGranted: keyboardTourHandoffState.isMicrophonePermissionGranted,
+            isKeyboardEnabledInSystemSettings: keyboardTourHandoffState.isKeyboardEnabledInSystemSettings
+        )
+    }
+
+    private static func log(_ message: String) {
+        #if DEBUG
+        NSLog("[OnboardingSetupScreen] %@", message)
+        #endif
     }
 
 }

@@ -179,6 +179,7 @@ Rules:
 - model download may continue while the user works through the other visible steps
 - when microphone access is denied, onboarding must route the user to app settings rather than pretending the permission can still be requested in place
 - the setup screen records a pending keyboard-tour handoff before opening KeyVox settings
+- the setup screen records and arms the keyboard-tour handoff when the model is ready, microphone access is granted, and the keyboard is already enabled, even if the user enabled the keyboard during a microphone settings trip or before the model finished downloading
 
 ### Keyboard Tour Contract
 
