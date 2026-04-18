@@ -27,15 +27,6 @@ struct AppTintedScrollIndicator: View {
             && trackHeight > Self.overflowThreshold
     }
 
-    private var scrollableDistance: CGFloat {
-        max(metrics.maximumVisibleMinY, Self.overflowThreshold)
-    }
-
-    private var scrollProgress: CGFloat {
-        let rawProgress = metrics.visibleMinY / scrollableDistance
-        return min(max(rawProgress, 0), 1)
-    }
-
     private func thumbHeight(for trackHeight: CGFloat) -> CGFloat {
         guard showsIndicator(trackHeight: trackHeight) else { return 0 }
         let proportionalHeight = trackHeight * (metrics.visibleHeight / metrics.contentHeight)
@@ -44,6 +35,6 @@ struct AppTintedScrollIndicator: View {
 
     private func thumbOffset(for trackHeight: CGFloat) -> CGFloat {
         let availableTrackDistance = max(trackHeight - thumbHeight(for: trackHeight), 0)
-        return availableTrackDistance * scrollProgress
+        return availableTrackDistance * metrics.scrollProgress
     }
 }

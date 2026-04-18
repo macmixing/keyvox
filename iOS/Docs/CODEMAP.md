@@ -625,7 +625,7 @@ Packages/
 - `KeyVox iOS/App/Feedback/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
 - `KeyVox iOS/Views/HomeTabView/LastTranscriptionCardView.swift`
-  - Latest transcription card plus its trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
+  - Latest transcription card plus its shared tinted transcription scroller and trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
   - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
 - `KeyVox iOS/Views/Components/InlineWarningRow.swift`

@@ -79,7 +79,7 @@ extension HomeTabView {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                    .stroke(AppTheme.rowStroke, lineWidth: 1)
+                    .strokeBorder(AppTheme.rowStroke, lineWidth: 1)
             )
             .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
             .compositingGroup()
