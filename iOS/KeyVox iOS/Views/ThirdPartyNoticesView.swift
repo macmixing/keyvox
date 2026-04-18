@@ -34,9 +34,9 @@ struct ThirdPartyNoticesView: View {
 
                     Button(action: dismissSheet) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 25, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.58))
-                            .frame(width: 28, height: 28)
+                            .frame(width: 36, height: 36)
                             .background {
                                 Color.clear
                                     .frame(width: 56, height: 56)
