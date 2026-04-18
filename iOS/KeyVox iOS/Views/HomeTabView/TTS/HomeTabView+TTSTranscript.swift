@@ -37,7 +37,11 @@ extension HomeTabView {
 
     var ttsTranscriptPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ScrollView {
+            AppTintedScrollView(
+                contentPadding: TTSTranscriptLayout.contentPadding,
+                minimumHeight: TTSTranscriptLayout.minimumExpandedHeight,
+                maximumHeight: TTSTranscriptLayout.maximumExpandedHeight
+            ) {
                 Text(currentPlaybackTranscriptText)
                     .font(.appFont(18, variant: .light))
                     .foregroundStyle(.white)
@@ -50,21 +54,11 @@ extension HomeTabView {
                     .textSelection(.enabled)
             }
             .id(currentPlaybackTranscriptScrollID)
-            .scrollIndicators(.hidden)
-            .contentMargins(.all, TTSTranscriptLayout.contentPadding, for: .scrollContent)
-            .frame(
-                minHeight: TTSTranscriptLayout.minimumExpandedHeight,
-                maxHeight: TTSTranscriptLayout.maximumExpandedHeight,
-                alignment: .top
-            )
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
                     .fill(AppTheme.rowFill)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                            .stroke(AppTheme.rowStroke, lineWidth: 1)
-                    )
             )
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius))
             .overlay(alignment: .topTrailing) {
                 Button {
                     ttsTranscriptCopyFeedback.copy(currentPlaybackTranscriptText, appHaptics: appHaptics)
@@ -83,6 +77,10 @@ extension HomeTabView {
                 .padding(.trailing, TTSTranscriptLayout.copyButtonInset)
                 .animation(.easeInOut(duration: 0.18), value: ttsTranscriptCopyFeedback.didCopy)
             }
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
+                    .stroke(AppTheme.rowStroke, lineWidth: 1)
+            )
             .opacity(isTTSTranscriptPanelContentVisible ? 1 : 0)
             .compositingGroup()
 

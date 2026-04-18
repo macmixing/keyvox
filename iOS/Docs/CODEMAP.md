@@ -202,8 +202,11 @@ iOS/
 │   │   │   │   ├── AppActionButton.swift
 │   │   │   │   ├── AppCard.swift
 │   │   │   │   ├── AppIconTile.swift
+│   │   │   │   ├── AppScrollMetrics.swift
 │   │   │   │   ├── AppScrollScreen.swift
 │   │   │   │   ├── AppTheme.swift
+│   │   │   │   ├── AppTintedScrollIndicator.swift
+│   │   │   │   ├── AppTintedScrollView.swift
 │   │   │   │   └── AppToolbarContent.swift
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
@@ -613,8 +616,9 @@ Packages/
 - `KeyVox iOS/Views/HomeTabView/`
   - Filesystem-grouped Home feature surface.
   - `HomeTabView.swift` owns the weekly stats card, last transcription card, Home-level state, and debug-only diagnostics.
+  - `KeyVox iOS/Views/Components/App/AppTintedScrollView.swift`, `KeyVox iOS/Views/Components/App/AppScrollMetrics.swift`, and `KeyVox iOS/Views/Components/App/AppTintedScrollIndicator.swift` own the reusable hidden-native-scroll-indicator wrapper and custom tinted scroll thumb used by Home scrollable text surfaces.
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout, first-line title/help alignment, loading-spinner handoff, and progress-slot rendering.
-  - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, staged expanded transcript presentation, transcript copy affordance, and idle transcript dismissal.
+  - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, staged expanded transcript presentation, transcript copy affordance, idle transcript dismissal, and the Home-specific content passed into the shared tinted scroller.
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, playback error presentation, and the idle monetization messaging for remaining free speaks or locked state.
   - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, loading-spinner/progress thresholds, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, the question-mark KeyVox Speak help presentation selection, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.

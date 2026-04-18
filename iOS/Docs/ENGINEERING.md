@@ -1036,6 +1036,7 @@ Current app-owned surfaces:
 
 - `HomeTabView`: filesystem-grouped Home feature with `HomeTabView.swift` for the main Home composition and a dedicated `HomeTabView/TTS/` split for copied-text playback layout, transport presentation, transcript behavior, and replay scrubber UI
 - Home copied-text playback UI stages status/warning rows, spinner-to-progress handoff, transcript expansion/collapse, and preparation progress so content does not snap, drift, or bleed through card animations.
+- Scrollable Home text surfaces that need a tinted indicator should use the shared `AppTintedScrollView`, `AppScrollMetrics`, and `AppTintedScrollIndicator` components under `Views/Components/App/`. These components keep SwiftUI's native scroll indicator hidden and derive thumb progress from `ScrollGeometry.visibleRect` rather than raw offset guesses so the thumb reaches the scroll box endpoints deterministically.
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
 - `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
 - `InlineWarningRules`: pure shared visibility rules under `App/Presentation/` for Wi-Fi caution rows across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install flows
