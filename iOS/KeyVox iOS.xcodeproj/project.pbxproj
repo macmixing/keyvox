@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5B64A2A42FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */; };
+		5B64A2A62FF01A9A00A10001 /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B64A2A52FF01A9A00A10001 /* PDFKit.framework */; };
 		8E70C9122F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */; };
 		8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -82,6 +83,7 @@
 
 /* Begin PBXFileReference section */
 		5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = text; name = THIRD_PARTY_NOTICES.md; path = ../THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
+		5B64A2A52FF01A9A00A10001 /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LaunchLogo.png; sourceTree = "<group>"; };
 		8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Share.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Keyboard.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -284,6 +286,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B64A2A62FF01A9A00A10001 /* PDFKit.framework in Frameworks */,
 				8E7DB28E2F80FBE0009E3576 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -327,6 +330,7 @@
 		8E9794492F66B549009A691D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5B64A2A52FF01A9A00A10001 /* PDFKit.framework */,
 				8E97944A2F66B549009A691D /* WidgetKit.framework */,
 				8E97944C2F66B54A009A691D /* SwiftUI.framework */,
 			);

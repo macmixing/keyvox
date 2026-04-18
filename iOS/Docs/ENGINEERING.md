@@ -78,6 +78,7 @@ The share extension owns:
 
 - extraction of directly shared text
 - extraction of text from shared URLs and web payloads
+- extraction of selectable text from shared PDFs with rendered-page OCR fallback
 - OCR extraction for shared images
 - staging a TTS request into App Group storage
 - launching the containing app into the TTS route
@@ -830,13 +831,15 @@ The share extension is allowed to do best-effort extraction work before launchin
 
 Current extraction order is:
 
-1. directly shared text
+1. selectable PDF extraction with rendered-page OCR fallback
 2. web extraction for shared URL and HTML style payloads
-3. OCR extraction for shared images
+3. directly shared text
+4. OCR extraction for shared images
 
 Rules:
 
 - extraction should stop at the first non-empty useful result
+- `KeyVoxShareOCRRenderingPolicy` owns OCR render width and tile geometry shared by image OCR and PDF page OCR; PDF fallback must render tiles through that policy instead of allocating whole-page bitmaps or inventing separate caps
 - the share extension writes the shared `KeyVoxTTSRequest` payload through `KeyVoxShareBridge`
 - the canonical playback-voice catalog for both the app and share extension lives in `KeyVoxPlaybackVoice`; the share extension must not depend on `AppSettingsStore`
 - the share extension must not initialize the PocketTTS runtime or own playback state

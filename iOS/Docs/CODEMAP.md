@@ -7,7 +7,7 @@ KeyVox iOS ships as four cooperating targets:
 
 - The containing app owns onboarding, settings, model lifecycle, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
 - The keyboard extension owns the visible custom keyboard, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, and keyboard-only interaction behavior.
-- The share extension owns shared text/URL extraction, OCR for shared images, TTS request handoff to the main app, and visual feedback during share processing.
+- The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
 Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, and post-processing order.
@@ -311,7 +311,10 @@ iOS/
 │   │   ├── KeyVoxShareContentExtractor.swift
 │   │   ├── KeyVoxShareContentExtractorDiagnostics.swift
 │   │   ├── KeyVoxShareImageItemLoader.swift
+│   │   ├── KeyVoxShareItemProviderLoader.swift
 │   │   ├── KeyVoxShareOCRPipeline.swift
+│   │   ├── KeyVoxShareOCRRenderingPolicy.swift
+│   │   ├── KeyVoxSharePDFExtractor.swift
 │   │   ├── KeyVoxShareTextSupport.swift
 │   │   └── KeyVoxShareWebExtractor.swift
 │   ├── Views/

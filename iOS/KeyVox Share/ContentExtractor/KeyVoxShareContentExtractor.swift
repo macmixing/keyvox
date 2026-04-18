@@ -4,6 +4,7 @@ enum KeyVoxShareContentExtractor {
     enum ExtractionSource: String {
         case direct
         case web
+        case pdf
         case ocr
     }
 
@@ -14,6 +15,13 @@ enum KeyVoxShareContentExtractor {
         }
 
         KeyVoxShareContentExtractorDiagnostics.log("Received \(items.count) extension item(s).")
+
+        let pdfText = await KeyVoxSharePDFExtractor.extractText(from: items)
+        if pdfText.isEmpty == false {
+            KeyVoxShareContentExtractorDiagnostics.log("Using PDF text length=\(pdfText.count).")
+            KeyVoxShareContentExtractorDiagnostics.logExtractionSummary(for: pdfText, source: .pdf)
+            return pdfText
+        }
 
         let webText = await KeyVoxShareWebExtractor.extractText(from: items)
         if webText.isEmpty == false {

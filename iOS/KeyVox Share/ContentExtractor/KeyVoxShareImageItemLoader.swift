@@ -10,7 +10,10 @@ enum KeyVoxShareImageItemLoader {
 
         do {
             KeyVoxShareContentExtractorDiagnostics.log("Attempting generic image item load.")
-            if let imageItem = try await loadItem(from: provider, typeIdentifier: UTType.image.identifier) {
+            if let imageItem = try await KeyVoxShareItemProviderLoader.loadItem(
+                from: provider,
+                typeIdentifier: UTType.image.identifier
+            ) {
                 KeyVoxShareContentExtractorDiagnostics.log(
                     "Loaded generic image item type=\(String(describing: type(of: imageItem)))."
                 )
@@ -28,7 +31,10 @@ enum KeyVoxShareImageItemLoader {
 
             KeyVoxShareContentExtractorDiagnostics.log("Attempting file-backed image OCR load.")
             do {
-                if let fileURL = try await loadFileRepresentation(from: provider, typeIdentifier: UTType.image.identifier) {
+                if let fileURL = try await KeyVoxShareItemProviderLoader.loadFileRepresentation(
+                    from: provider,
+                    typeIdentifier: UTType.image.identifier
+                ) {
                     KeyVoxShareContentExtractorDiagnostics.log("Loaded file-backed image at \(fileURL.path).")
                     return try KeyVoxShareOCRPipeline.recognizeText(at: fileURL)
                 }
@@ -41,66 +47,15 @@ enum KeyVoxShareImageItemLoader {
                 )
             }
 
-            let data = try await loadDataRepresentation(from: provider, typeIdentifier: UTType.image.identifier)
+            let data = try await KeyVoxShareItemProviderLoader.loadDataRepresentation(
+                from: provider,
+                typeIdentifier: UTType.image.identifier
+            )
             KeyVoxShareContentExtractorDiagnostics.log("Loaded in-memory image data bytes=\(data.count).")
             return try KeyVoxShareOCRPipeline.recognizeText(in: data)
         } catch {
             KeyVoxShareContentExtractorDiagnostics.log("Image OCR load failed: \(error.localizedDescription)")
             return nil
-        }
-    }
-
-    static func loadItem(from provider: NSItemProvider, typeIdentifier: String) async throws -> NSSecureCoding? {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                continuation.resume(returning: item)
-            }
-        }
-    }
-
-    private static func loadDataRepresentation(from provider: NSItemProvider, typeIdentifier: String) async throws -> Data {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                guard let data else {
-                    continuation.resume(throwing: CocoaError(.fileReadUnknown))
-                    return
-                }
-
-                continuation.resume(returning: data)
-            }
-        }
-    }
-
-    private static func loadFileRepresentation(from provider: NSItemProvider, typeIdentifier: String) async throws -> URL? {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                guard let url else {
-                    continuation.resume(returning: nil)
-                    return
-                }
-
-                do {
-                    let persistentURL = try makePersistentCopy(of: url)
-                    continuation.resume(returning: persistentURL)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
         }
     }
 
@@ -130,9 +85,9 @@ enum KeyVoxShareImageItemLoader {
         }
 
         if let url = item as? URL {
-            let persistentURL = try makePersistentCopy(of: url)
+            let persistentURL = try KeyVoxShareItemProviderLoader.makePersistentCopy(of: url)
             defer {
-                try? FileManager.default.removeItem(at: persistentURL)
+                try? FileManager.default.removeItem(at: persistentURL.deletingLastPathComponent())
             }
             KeyVoxShareContentExtractorDiagnostics.log("Recognizing text from generic item URL \(persistentURL.path).")
             return try KeyVoxShareOCRPipeline.recognizeText(at: persistentURL)
@@ -190,7 +145,10 @@ enum KeyVoxShareImageItemLoader {
         }
 
         if let url = object as? URL {
-            let persistentURL = try makePersistentCopy(of: url)
+            let persistentURL = try KeyVoxShareItemProviderLoader.makePersistentCopy(of: url)
+            defer {
+                try? FileManager.default.removeItem(at: persistentURL.deletingLastPathComponent())
+            }
             return try KeyVoxShareOCRPipeline.recognizeText(at: persistentURL)
         }
 
@@ -214,28 +172,6 @@ enum KeyVoxShareImageItemLoader {
         return nil
     }
 
-    private static func makePersistentCopy(of fileURL: URL) throws -> URL {
-        let fileManager = FileManager.default
-        let destinationURL = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-            .appendingPathComponent(fileURL.lastPathComponent, isDirectory: false)
-
-        try fileManager.createDirectory(
-            at: destinationURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true,
-            attributes: nil
-        )
-
-        if fileManager.fileExists(atPath: destinationURL.path) {
-            try fileManager.removeItem(at: destinationURL)
-        }
-
-        try fileManager.copyItem(at: fileURL, to: destinationURL)
-        KeyVoxShareContentExtractorDiagnostics.log(
-            "Copied shared file into persistent temporary URL \(destinationURL.path)."
-        )
-        return destinationURL
-    }
 }
 
 enum KeyVoxShareImageOCRExtractor {

@@ -6,9 +6,6 @@ import Vision
 
 enum KeyVoxShareOCRPipeline {
     private enum OCRPolicy {
-        static let maximumRecognitionWidth: CGFloat = 2_048
-        static let tileHeight: CGFloat = 1_536
-        static let tileOverlap: CGFloat = 96
         static let paragraphGapMultiplier: CGFloat = 1.45
         static let columnAlignmentTolerance: CGFloat = 42
         static let wrapContinuationTolerance: CGFloat = 30
@@ -72,25 +69,53 @@ enum KeyVoxShareOCRPipeline {
         return normalized.isEmpty ? nil : normalized
     }
 
+    static func recognizeText(
+        tileCount: Int,
+        tileProvider: (Int) -> KeyVoxShareOCRTile?
+    ) throws -> String? {
+        let recognizedParagraphs = try recognizeTextParagraphs(
+            tileCount: tileCount,
+            tileProvider: tileProvider
+        )
+        let normalized = KeyVoxShareTextSupport.joinedText(from: recognizedParagraphs)
+        return normalized.isEmpty ? nil : normalized
+    }
+
     private static func recognizeTextParagraphs(in image: CGImage) throws -> [String] {
-        let tileRects = recognitionTileRects(for: image)
-        KeyVoxShareContentExtractorDiagnostics.log("Recognizing text across \(tileRects.count) tile(s).")
+        let imageSize = CGSize(width: image.width, height: image.height)
+        let tileRects = KeyVoxShareOCRRenderingPolicy.tileRects(for: imageSize)
+
+        return try recognizeTextParagraphs(tileCount: tileRects.count) { index in
+            let tileRect = tileRects[index]
+            guard let tileImage = image.cropping(to: tileRect.integral) else {
+                return nil
+            }
+
+            return KeyVoxShareOCRTile(image: tileImage, rect: tileRect)
+        }
+    }
+
+    private static func recognizeTextParagraphs(
+        tileCount: Int,
+        tileProvider: (Int) -> KeyVoxShareOCRTile?
+    ) throws -> [String] {
+        KeyVoxShareContentExtractorDiagnostics.log("Recognizing text across \(tileCount) tile(s).")
         var recognizedLines: [OCRLine] = []
 
-        for (index, tileRect) in tileRects.enumerated() {
-            guard let tileImage = image.cropping(to: tileRect.integral) else { continue }
+        for index in 0..<tileCount {
+            guard let tile = tileProvider(index) else { continue }
             KeyVoxShareContentExtractorDiagnostics.log(
-                "Running OCR on tile \(index + 1)/\(tileRects.count) width=\(tileImage.width) height=\(tileImage.height) originY=\(Int(tileRect.origin.y))."
+                "Running OCR on tile \(index + 1)/\(tileCount) width=\(tile.image.width) height=\(tile.image.height) originY=\(Int(tile.rect.origin.y))."
             )
 
             let request = VNRecognizeTextRequest()
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
 
-            let handler = VNImageRequestHandler(cgImage: tileImage)
+            let handler = VNImageRequestHandler(cgImage: tile.image)
             try handler.perform([request])
 
-            let tileLines = ocrLines(from: request.results ?? [], tileRect: tileRect, tileImage: tileImage)
+            let tileLines = ocrLines(from: request.results ?? [], tileRect: tile.rect, tileImage: tile.image)
             KeyVoxShareContentExtractorDiagnostics.log(
                 "OCR tile \(index + 1) produced \(tileLines.count) positioned line(s)."
             )
@@ -149,7 +174,7 @@ enum KeyVoxShareOCRPipeline {
             return nil
         }
 
-        if pixelWidth <= OCRPolicy.maximumRecognitionWidth {
+        if pixelWidth <= KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth {
             KeyVoxShareContentExtractorDiagnostics.log(
                 "Using original image width=\(Int(pixelWidth)) height=\(sourceImage.height)."
             )
@@ -157,9 +182,9 @@ enum KeyVoxShareOCRPipeline {
         }
 
         KeyVoxShareContentExtractorDiagnostics.log(
-            "Scaling image width from \(Int(pixelWidth)) to \(Int(OCRPolicy.maximumRecognitionWidth))."
+            "Scaling image width from \(Int(pixelWidth)) to \(Int(KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth))."
         )
-        return scaledImage(sourceImage, maximumWidth: OCRPolicy.maximumRecognitionWidth)
+        return scaledImage(sourceImage, maximumWidth: KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth)
     }
 
     private static func preparedImage(from image: UIImage) -> CGImage? {
@@ -177,38 +202,14 @@ enum KeyVoxShareOCRPipeline {
             return nil
         }
 
-        if CGFloat(sourceImage.width) <= OCRPolicy.maximumRecognitionWidth {
+        if CGFloat(sourceImage.width) <= KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth {
             return sourceImage
         }
 
         KeyVoxShareContentExtractorDiagnostics.log(
-            "Scaling UIImage width from \(sourceImage.width) to \(Int(OCRPolicy.maximumRecognitionWidth))."
+            "Scaling UIImage width from \(sourceImage.width) to \(Int(KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth))."
         )
-        return scaledImage(sourceImage, maximumWidth: OCRPolicy.maximumRecognitionWidth)
-    }
-
-    private static func recognitionTileRects(for image: CGImage) -> [CGRect] {
-        let imageRect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
-        guard imageRect.height > OCRPolicy.tileHeight else {
-            return [imageRect]
-        }
-
-        var rects: [CGRect] = []
-        let stride = max(OCRPolicy.tileHeight - OCRPolicy.tileOverlap, 1)
-        var originY: CGFloat = 0
-
-        while originY < imageRect.height {
-            let height = min(OCRPolicy.tileHeight, imageRect.height - originY)
-            rects.append(CGRect(x: 0, y: originY, width: imageRect.width, height: height))
-
-            if originY + height >= imageRect.height {
-                break
-            }
-
-            originY += stride
-        }
-
-        return rects
+        return scaledImage(sourceImage, maximumWidth: KeyVoxShareOCRRenderingPolicy.maximumRecognitionWidth)
     }
 
     private static func scaledImage(_ image: CGImage, maximumWidth: CGFloat) -> CGImage? {

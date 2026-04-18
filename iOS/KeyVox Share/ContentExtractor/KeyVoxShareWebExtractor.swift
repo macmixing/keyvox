@@ -27,7 +27,10 @@ enum KeyVoxShareWebExtractor {
         for typeIdentifier in supportedTypeIdentifiers where provider.hasItemConformingToTypeIdentifier(typeIdentifier) {
             do {
                 KeyVoxShareContentExtractorDiagnostics.log("Attempting web text load for type=\(typeIdentifier).")
-                let item = try await KeyVoxShareImageItemLoader.loadItem(from: provider, typeIdentifier: typeIdentifier)
+                let item = try await KeyVoxShareItemProviderLoader.loadItem(
+                    from: provider,
+                    typeIdentifier: typeIdentifier
+                )
                 
                 // Handle async URL fetching
                 if let url = item as? URL, url.scheme == "http" || url.scheme == "https" {
