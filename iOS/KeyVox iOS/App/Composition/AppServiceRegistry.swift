@@ -73,7 +73,6 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxSpeakIntro
         )
-        let ttsPreviewPlayer = TTSPreviewPlayer(appHaptics: appHaptics)
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -144,6 +143,15 @@ final class AppServiceRegistry {
             },
             sessionDisableTimingPublisher: settingsStore.$sessionDisableTiming.eraseToAnyPublisher(),
             sessionPolicy: .default
+        )
+        let ttsPreviewPlayer = TTSPreviewPlayer(
+            appHaptics: appHaptics,
+            isRecordingSessionActiveProvider: { [weak transcriptionManager] in
+                transcriptionManager?.isSessionActive ?? false
+            },
+            preferBuiltInMicrophoneProvider: { [weak settingsStore] in
+                settingsStore?.preferBuiltInMicrophone ?? true
+            }
         )
         let ttsPlaybackCoordinator = TTSPlaybackCoordinator(
             preferBuiltInMicrophoneProvider: { [weak settingsStore] in

@@ -9,14 +9,22 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
 
     private let appHaptics: AppHapticsEmitting
     private let audioSession: AVAudioSession
+    private let isRecordingSessionActiveProvider: @MainActor () -> Bool
+    private let preferBuiltInMicrophoneProvider: @MainActor () -> Bool
     private var player: AVAudioPlayer?
+    private var hasActivatedAudioSession = false
+    private var shouldDeactivateAudioSessionOnStop = false
 
     init(
         appHaptics: AppHapticsEmitting,
-        audioSession: AVAudioSession = .sharedInstance()
+        audioSession: AVAudioSession = .sharedInstance(),
+        isRecordingSessionActiveProvider: (@MainActor () -> Bool)? = nil,
+        preferBuiltInMicrophoneProvider: (@MainActor () -> Bool)? = nil
     ) {
         self.appHaptics = appHaptics
         self.audioSession = audioSession
+        self.isRecordingSessionActiveProvider = isRecordingSessionActiveProvider ?? { false }
+        self.preferBuiltInMicrophoneProvider = preferBuiltInMicrophoneProvider ?? { true }
         super.init()
     }
 
@@ -96,7 +104,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
         previousPlayer?.delegate = nil
         previousPlayer?.stop()
 
-        if deactivateAudioSession {
+        if deactivateAudioSession, hasActivatedAudioSession, shouldDeactivateAudioSessionOnStop {
             deactivateAudioSessionIfNeeded()
         }
     }
@@ -118,13 +126,31 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     }
 
     private func configureAudioSession() throws {
-        try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-        try? audioSession.overrideOutputAudioPort(.none)
+        if isRecordingSessionActiveProvider() {
+            let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
+                preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
+            )
+            var categoryOptions: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .mixWithOthers]
+            categoryOptions.formUnion(bluetoothRoutePolicy.bluetoothCategoryOptions)
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: categoryOptions)
+            let isUsingBuiltInReceiver = audioSession.currentRoute.outputs.contains {
+                $0.portType == .builtInReceiver
+            }
+            try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+            shouldDeactivateAudioSessionOnStop = false
+        } else {
+            try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try? audioSession.overrideOutputAudioPort(.none)
+            shouldDeactivateAudioSessionOnStop = true
+        }
         try audioSession.setActive(true)
+        hasActivatedAudioSession = true
     }
 
     private func deactivateAudioSessionIfNeeded() {
         try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
+        hasActivatedAudioSession = false
+        shouldDeactivateAudioSessionOnStop = false
     }
 
     private static func log(_ message: String) {
