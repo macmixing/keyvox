@@ -69,10 +69,8 @@ final class PasteMenuFallbackExecutorTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(
-            executor.verifyInsertionOutcome(using: context, expectedText: "hello"),
-            .expectedPayloadObserved
-        )
+        let outcome = executor.verifyInsertionOutcome(using: context, expectedText: "hello")
+        XCTAssertTrue(outcome.isExpectedPayloadObserved)
     }
 
     func testVerifyInsertionOutcomeKeepsRangeMovementStructuralWhenPayloadIsNotObserved() {
@@ -95,10 +93,8 @@ final class PasteMenuFallbackExecutorTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(
-            executor.verifyInsertionOutcome(using: context, expectedText: "hello"),
-            .structuralInsertionObserved
-        )
+        let outcome = executor.verifyInsertionOutcome(using: context, expectedText: "hello")
+        XCTAssertTrue(outcome.isStructuralInsertionObserved)
     }
 
     func testVerifyInsertionReturnsTrueWhenValueLengthChanges() {
@@ -157,6 +153,18 @@ final class PasteMenuFallbackExecutorTests: XCTestCase {
         )
         Self.leakedExecutors.append(executor)
         return executor
+    }
+}
+
+private extension PasteMenuFallbackVerificationOutcome {
+    var isExpectedPayloadObserved: Bool {
+        guard case .expectedPayloadObserved = self else { return false }
+        return true
+    }
+
+    var isStructuralInsertionObserved: Bool {
+        guard case .structuralInsertionObserved = self else { return false }
+        return true
     }
 }
 
