@@ -29,8 +29,6 @@ class AudioRecorder: NSObject, ObservableObject {
     let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
     let normalizationTargetPeak: Float = 0.9
     let normalizationMaxGain: Float = 3.0
-    var stopCaptureTailDuration: TimeInterval = 0.18
-    var transcriptionTrailingSilenceDuration: TimeInterval = 0.24
 
     @Published var isRecording = false
     @Published var audioLevel: Float = 0.0

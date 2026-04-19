@@ -89,17 +89,8 @@ extension AudioRecorder {
         guard !isStopFinalizationPending else { return }
 
         isStopFinalizationPending = true
-        let stopRequestedAt = Date()
-        let bufferedFrameCountAtStopRequest = audioDataQueue.sync {
-            audioData.count
-        }
-
-        captureQueue.asyncAfter(deadline: .now() + stopCaptureTailDuration) { [weak self] in
-            self?.finalizeStopRecordingSession(
-                stopRequestedAt: stopRequestedAt,
-                bufferedFrameCountAtStopRequest: bufferedFrameCountAtStopRequest,
-                completion: completion
-            )
+        captureQueue.async { [weak self] in
+            self?.finalizeStopRecordingSession(completion: completion)
         }
     }
 
@@ -110,11 +101,7 @@ extension AudioRecorder {
         captureQueue.sync {}
     }
 
-    private func finalizeStopRecordingSession(
-        stopRequestedAt: Date,
-        bufferedFrameCountAtStopRequest: Int,
-        completion: @escaping ([Float]) -> Void
-    ) {
+    private func finalizeStopRecordingSession(completion: @escaping ([Float]) -> Void) {
         audioCaptureOutput?.setSampleBufferDelegate(nil, queue: nil)
 
         // Finalize from the capture queue so anything already queued for delivery
@@ -133,27 +120,12 @@ extension AudioRecorder {
 
         drainPendingCaptureQueueWork()
 
-        let bufferedFrameCountBeforeTeardown = audioDataQueue.sync {
-            audioData.count
-        }
-
         captureSession = nil
         captureInput = nil
         audioCaptureOutput = nil
         converter = nil
         isRecording = false
         isStopFinalizationPending = false
-
-        #if DEBUG
-        let lateBufferedFrameCount = max(0, bufferedFrameCountBeforeTeardown - bufferedFrameCountAtStopRequest)
-        let tailSeconds = Date().timeIntervalSince(stopRequestedAt)
-        print(
-            "Audio stop finalize: tailSeconds=\(String(format: "%.3f", tailSeconds)) " +
-            "bufferedFramesAtRequest=\(bufferedFrameCountAtStopRequest) " +
-            "bufferedFramesBeforeTeardown=\(bufferedFrameCountBeforeTeardown) " +
-            "lateBufferedFrames=\(lateBufferedFrameCount)"
-        )
-        #endif
 
         let outputFrames = outputFramesForStoppedCapture()
         DispatchQueue.main.async {
