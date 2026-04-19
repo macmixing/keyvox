@@ -5,7 +5,8 @@ extension ParakeetCoreMLBackend {
     func decodeChunk(
         audioFrames: [Float],
         params: ParakeetParams,
-        requestID: UUID
+        requestID: UUID,
+        startFrame: Int
     ) throws -> DecodedChunk {
         try throwIfCancelled(requestID)
 
@@ -31,6 +32,7 @@ extension ParakeetCoreMLBackend {
         if encoderLength == 0 {
             return DecodedChunk(
                 text: "",
+                emittedTokens: [],
                 detectedLanguageCode: nil,
                 detectedLanguageName: nil,
                 confidence: nil,
@@ -45,8 +47,8 @@ extension ParakeetCoreMLBackend {
         let decoderStepInput = try makeFloat32Array(shape: [1, Constants.decoderHiddenSize, 1])
         var decoderStep = try initialDecoderStep()
         decoderStep = try applyInitialPromptIfNeeded(params.initialPrompt, to: decoderStep)
-        var emittedTokenIDs: [Int32] = []
-        emittedTokenIDs.reserveCapacity(min(encoderFrames.frameCount * 2, Constants.maxTokenCountPerChunk))
+        var emittedTokens: [EmittedToken] = []
+        emittedTokens.reserveCapacity(min(encoderFrames.frameCount * 2, Constants.maxTokenCountPerChunk))
 
         var detectedLanguageCode: String?
         var noSpeechProbability: Float?
@@ -61,7 +63,7 @@ extension ParakeetCoreMLBackend {
         var emissionsAtCurrentTimeIndex = 0
         var loggedDecisions = 0
 
-        while timeIndex < encoderFrames.frameCount && emittedTokenIDs.count < Constants.maxTokenCountPerChunk {
+        while timeIndex < encoderFrames.frameCount && emittedTokens.count < Constants.maxTokenCountPerChunk {
             try throwIfCancelled(requestID)
 
             let currentTimeIndex = timeIndex
@@ -111,7 +113,24 @@ extension ParakeetCoreMLBackend {
                 timeIndex = encoderFrames.frameCount
                 continue
             case .text?:
-                emittedTokenIDs.append(decision.tokenID)
+                let tokenStartFrame = startFrame + Self.relativeFrameIndex(
+                    forEncoderTimeIndex: currentTimeIndex,
+                    encoderFrameCount: encoderFrames.frameCount,
+                    actualFrameCount: actualFrameCount
+                )
+                let tokenEndFrame = startFrame + Self.relativeFrameIndex(
+                    forEncoderTimeIndex: currentTimeIndex + max(duration, 1),
+                    encoderFrameCount: encoderFrames.frameCount,
+                    actualFrameCount: actualFrameCount
+                )
+                emittedTokens.append(
+                    EmittedToken(
+                        tokenID: decision.tokenID,
+                        confidence: decision.tokenProbability,
+                        startFrame: tokenStartFrame,
+                        endFrame: max(tokenStartFrame, tokenEndFrame)
+                    )
+                )
                 confidenceTotal += decision.tokenProbability
                 confidenceCount += 1
                 if firstTextTimeIndex == nil {
@@ -161,7 +180,7 @@ extension ParakeetCoreMLBackend {
             timeIndex = min(encoderFrames.frameCount, currentTimeIndex + duration)
         }
 
-        let finalText = vocabulary.decodedText(from: emittedTokenIDs)
+        let finalText = vocabulary.decodedText(from: emittedTokens.map(\.tokenID))
         let languageName = detectedLanguageCode.flatMap { vocabulary.languageName(for: $0) }
         let averageConfidence = confidenceCount > 0 ? confidenceTotal / Float(confidenceCount) : nil
         let textTiming = Self.relativeTextTiming(
@@ -174,6 +193,7 @@ extension ParakeetCoreMLBackend {
 
         return DecodedChunk(
             text: finalText,
+            emittedTokens: emittedTokens,
             detectedLanguageCode: detectedLanguageCode,
             detectedLanguageName: languageName,
             confidence: averageConfidence,

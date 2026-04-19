@@ -56,18 +56,22 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
 
     func transcribe(audioFrames: [Float], params: ParakeetParams) async throws -> ParakeetTranscriptionResult {
         let requestID = beginRequest()
-        var segments: [ParakeetSegment] = []
         var detectedLanguageCode: String?
         var detectedLanguageName: String?
+        var mergedTokens: [EmittedToken] = []
+        var noSpeechProbability: Float?
 
-        var frameOffset = 0
-        while frameOffset < audioFrames.count {
+        for window in Self.decodeWindows(forFrameCount: audioFrames.count) {
             await Task.yield()
             try throwIfCancelled(requestID)
 
-            let chunkUpperBound = min(frameOffset + Constants.chunkFrameCount, audioFrames.count)
-            let chunkFrames = Array(audioFrames[frameOffset..<chunkUpperBound])
-            let decodedChunk = try decodeChunk(audioFrames: chunkFrames, params: params, requestID: requestID)
+            let chunkFrames = Array(audioFrames[window.startFrame..<window.endFrame])
+            let decodedChunk = try decodeChunk(
+                audioFrames: chunkFrames,
+                params: params,
+                requestID: requestID,
+                startFrame: window.startFrame
+            )
             await Task.yield()
             try throwIfCancelled(requestID)
 
@@ -76,31 +80,34 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
                 detectedLanguageName = decodedChunk.detectedLanguageName
             }
 
-            if !decodedChunk.text.isEmpty {
-                let chunkStart = milliseconds(forFrameIndex: frameOffset)
-                let chunkEnd = milliseconds(forFrameIndex: chunkUpperBound)
-                let segmentStart = min(
-                    chunkEnd,
-                    chunkStart + max(decodedChunk.relativeStartTimeMilliseconds, 0)
-                )
-                let segmentEnd = min(
-                    chunkEnd,
-                    chunkStart + max(decodedChunk.relativeEndTimeMilliseconds, 0)
-                )
+            mergedTokens = Self.mergedTokens(
+                mergedTokens,
+                appending: decodedChunk.emittedTokens,
+                usesTailContext: window.usesTailContext
+            )
 
-                segments.append(
-                    ParakeetSegment(
-                        startTime: segmentStart,
-                        endTime: max(segmentStart, segmentEnd),
-                        text: decodedChunk.text,
-                        confidence: decodedChunk.confidence,
-                        noSpeechProbability: decodedChunk.noSpeechProbability
-                    )
-                )
+            if let chunkNoSpeechProbability = decodedChunk.noSpeechProbability {
+                noSpeechProbability = max(noSpeechProbability ?? 0, chunkNoSpeechProbability)
             }
-
-            frameOffset = chunkUpperBound
         }
+
+        let mergedTokenIDs = mergedTokens.map(\.tokenID)
+        let mergedText = vocabulary.decodedText(from: mergedTokenIDs)
+        let confidenceTotal = mergedTokens.reduce(Float(0)) { $0 + $1.confidence }
+        let averageConfidence = !mergedTokens.isEmpty
+            ? confidenceTotal / Float(mergedTokens.count)
+            : nil
+        let segments = mergedText.isEmpty
+            ? []
+            : [
+                ParakeetSegment(
+                    startTime: 0,
+                    endTime: milliseconds(forFrameCount: audioFrames.count),
+                    text: mergedText,
+                    confidence: averageConfidence,
+                    noSpeechProbability: noSpeechProbability
+                )
+            ]
 
         return ParakeetTranscriptionResult(
             segments: segments,

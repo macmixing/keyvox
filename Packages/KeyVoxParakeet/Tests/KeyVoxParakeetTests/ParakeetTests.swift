@@ -299,6 +299,105 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(timing.endMilliseconds, 566)
     }
 
+    func testDecodeWindowsAddsTailContextForFinalRemainder() {
+        let frameCount = 265_525
+        let tailStartFrame = frameCount - ParakeetCoreMLBackend.Constants.chunkFrameCount
+        let windows = ParakeetCoreMLBackend.decodeWindows(forFrameCount: frameCount)
+
+        XCTAssertEqual(
+            windows,
+            [
+                ParakeetCoreMLBackend.DecodeWindow(
+                    startFrame: 0,
+                    endFrame: ParakeetCoreMLBackend.Constants.chunkFrameCount,
+                    usesTailContext: false
+                ),
+                ParakeetCoreMLBackend.DecodeWindow(
+                    startFrame: ParakeetCoreMLBackend.Constants.chunkFrameCount,
+                    endFrame: frameCount,
+                    usesTailContext: false
+                ),
+                ParakeetCoreMLBackend.DecodeWindow(
+                    startFrame: tailStartFrame,
+                    endFrame: frameCount,
+                    usesTailContext: true
+                ),
+            ]
+        )
+    }
+
+    func testDecodeWindowsDoNotAddTailContextForExactChunkMultiple() {
+        let windows = ParakeetCoreMLBackend.decodeWindows(forFrameCount: 480_000)
+
+        XCTAssertEqual(
+            windows,
+            [
+                ParakeetCoreMLBackend.DecodeWindow(
+                    startFrame: 0,
+                    endFrame: ParakeetCoreMLBackend.Constants.chunkFrameCount,
+                    usesTailContext: false
+                ),
+                ParakeetCoreMLBackend.DecodeWindow(
+                    startFrame: ParakeetCoreMLBackend.Constants.chunkFrameCount,
+                    endFrame: 480_000,
+                    usesTailContext: false
+                ),
+            ]
+        )
+    }
+
+    func testMergedTokenIDsAppendOnlyNonOverlappingSuffix() {
+        let merged = ParakeetCoreMLBackend.mergedTokenIDs(
+            [10, 20, 30, 40],
+            appending: [30, 40, 50, 60]
+        )
+
+        XCTAssertEqual(merged, [10, 20, 30, 40, 50, 60])
+    }
+
+    func testTailContextMergedTokensReplaceTimedOverlap() {
+        let accumulated = [
+            emittedToken(10, startFrame: 0, endFrame: 100),
+            emittedToken(20, startFrame: 100, endFrame: 200),
+            emittedToken(30, startFrame: 200, endFrame: 300),
+            emittedToken(40, startFrame: 300, endFrame: 400),
+        ]
+        let rescue = [
+            emittedToken(31, startFrame: 200, endFrame: 300),
+            emittedToken(41, startFrame: 300, endFrame: 400),
+            emittedToken(50, startFrame: 400, endFrame: 500),
+        ]
+
+        let merged = ParakeetCoreMLBackend.mergedTokens(
+            accumulated,
+            appending: rescue,
+            usesTailContext: true
+        )
+
+        XCTAssertEqual(merged.map(\.tokenID), [10, 20, 31, 41, 50])
+    }
+
+    func testNonTailContextMergedTokensUseExactTokenOverlap() {
+        let accumulated = [
+            emittedToken(10, startFrame: 0, endFrame: 100),
+            emittedToken(20, startFrame: 100, endFrame: 200),
+            emittedToken(30, startFrame: 200, endFrame: 300),
+        ]
+        let next = [
+            emittedToken(20, startFrame: 100, endFrame: 200),
+            emittedToken(30, startFrame: 200, endFrame: 300),
+            emittedToken(40, startFrame: 300, endFrame: 400),
+        ]
+
+        let merged = ParakeetCoreMLBackend.mergedTokens(
+            accumulated,
+            appending: next,
+            usesTailContext: false
+        )
+
+        XCTAssertEqual(merged.map(\.tokenID), [10, 20, 30, 40])
+    }
+
     func testUtteranceGateRejectsShortLowConfidenceResult() {
         let result = ParakeetTranscriptionResult(
             segments: [
@@ -508,6 +607,20 @@ final class ParakeetTests: XCTestCase {
             try? FileManager.default.removeItem(at: directoryURL)
         }
         return directoryURL
+    }
+
+    private func emittedToken(
+        _ tokenID: Int32,
+        startFrame: Int,
+        endFrame: Int,
+        confidence: Float = 1
+    ) -> ParakeetCoreMLBackend.EmittedToken {
+        ParakeetCoreMLBackend.EmittedToken(
+            tokenID: tokenID,
+            confidence: confidence,
+            startFrame: startFrame,
+            endFrame: endFrame
+        )
     }
 }
 

@@ -86,12 +86,26 @@ extension ParakeetCoreMLBackend {
 
     struct DecodedChunk {
         let text: String
+        let emittedTokens: [EmittedToken]
         let detectedLanguageCode: String?
         let detectedLanguageName: String?
         let confidence: Float?
         let noSpeechProbability: Float?
         let relativeStartTimeMilliseconds: Int
         let relativeEndTimeMilliseconds: Int
+    }
+
+    struct EmittedToken: Equatable {
+        let tokenID: Int32
+        let confidence: Float
+        let startFrame: Int
+        let endFrame: Int
+    }
+
+    struct DecodeWindow: Equatable {
+        let startFrame: Int
+        let endFrame: Int
+        let usesTailContext: Bool
     }
 
     struct RelativeTextTiming: Equatable {
@@ -145,6 +159,18 @@ extension ParakeetCoreMLBackend {
         )
     }
 
+    static func relativeFrameIndex(
+        forEncoderTimeIndex timeIndex: Int,
+        encoderFrameCount: Int,
+        actualFrameCount: Int
+    ) -> Int {
+        let clampedTimeIndex = max(0, min(timeIndex, encoderFrameCount))
+        return Int(
+            (Double(clampedTimeIndex) / Double(max(encoderFrameCount, 1))) *
+            Double(actualFrameCount)
+        )
+    }
+
     static func relativeTextTiming(
         firstTextTimeIndex: Int?,
         lastTextEndTimeIndex: Int?,
@@ -180,6 +206,76 @@ extension ParakeetCoreMLBackend {
             startMilliseconds: startMilliseconds,
             endMilliseconds: max(startMilliseconds, endMilliseconds)
         )
+    }
+
+    static func decodeWindows(forFrameCount frameCount: Int) -> [DecodeWindow] {
+        guard frameCount > 0 else { return [] }
+
+        var windows: [DecodeWindow] = []
+        var frameOffset = 0
+        while frameOffset < frameCount {
+            let upperBound = min(frameOffset + Constants.chunkFrameCount, frameCount)
+            windows.append(
+                DecodeWindow(
+                    startFrame: frameOffset,
+                    endFrame: upperBound,
+                    usesTailContext: false
+                )
+            )
+            frameOffset = upperBound
+        }
+
+        let hasFinalRemainder = frameCount > Constants.chunkFrameCount &&
+            frameCount % Constants.chunkFrameCount != 0
+        if hasFinalRemainder {
+            let tailStartFrame = max(0, frameCount - Constants.chunkFrameCount)
+            let tailWindow = DecodeWindow(
+                startFrame: tailStartFrame,
+                endFrame: frameCount,
+                usesTailContext: true
+            )
+            if !windows.contains(tailWindow) {
+                windows.append(tailWindow)
+            }
+        }
+
+        return windows
+    }
+
+    static func mergedTokenIDs(_ accumulated: [Int32], appending next: [Int32]) -> [Int32] {
+        guard !accumulated.isEmpty else { return next }
+        guard !next.isEmpty else { return accumulated }
+
+        var overlapCount = min(accumulated.count, next.count)
+        while overlapCount > 0 {
+            if Array(accumulated.suffix(overlapCount)) == Array(next.prefix(overlapCount)) {
+                return accumulated + next.dropFirst(overlapCount)
+            }
+            overlapCount -= 1
+        }
+
+        return accumulated + next
+    }
+
+    static func mergedTokens(
+        _ accumulated: [EmittedToken],
+        appending next: [EmittedToken],
+        usesTailContext: Bool
+    ) -> [EmittedToken] {
+        guard !accumulated.isEmpty else { return next }
+        guard !next.isEmpty else { return accumulated }
+
+        if usesTailContext {
+            let replacementStartFrame = next[0].startFrame
+            return accumulated.filter { $0.endFrame <= replacementStartFrame } + next
+        }
+
+        let mergedTokenIDs = mergedTokenIDs(
+            accumulated.map(\.tokenID),
+            appending: next.map(\.tokenID)
+        )
+        let droppedPrefixCount = accumulated.count + next.count - mergedTokenIDs.count
+        return accumulated + next.dropFirst(max(0, droppedPrefixCount))
     }
 
     func mappedDuration(for durationBin: Int32) throws -> Int {
