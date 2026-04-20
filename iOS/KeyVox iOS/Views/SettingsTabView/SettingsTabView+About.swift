@@ -31,7 +31,7 @@ extension SettingsTabView {
                     )
                 }
 
-                Text("Share your experience on the App Store")
+                Text("Share your experience on the App Store.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }

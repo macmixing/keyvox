@@ -1,5 +1,12 @@
 import SwiftUI
 
+enum SettingsTabCopy {
+    enum Keyboard {
+        static let hapticsTitle = "Keyboard Haptics"
+        static let hapticsDescription = "Get haptic feedback from KeyVox Keyboard."
+    }
+}
+
 extension SettingsTabView {
     @ViewBuilder
     var sessionSection: some View {
@@ -43,7 +50,7 @@ extension SettingsTabView {
                         .padding(.top, 2)
                     }
 
-                    Text("Decide when the dictation session turns off")
+                    Text("Decide when the dictation session turns off.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -54,7 +61,7 @@ extension SettingsTabView {
                 SettingsRow(
                     icon: "widget.small",
                     title: "Live Activities",
-                    description: "Allow KeyVox to show live activity updates",
+                    description: "Allow KeyVox to show live activity updates.",
                     isOn: $settingsStore.liveActivitiesEnabled
                 )
             }
@@ -114,8 +121,8 @@ extension SettingsTabView {
         AppCard {
             SettingsRow(
                 icon: "keyboard",
-                title: "Keyboard Haptics",
-                description: "Get haptic feedback from KeyVox Keyboard",
+                title: SettingsTabCopy.Keyboard.hapticsTitle,
+                description: SettingsTabCopy.Keyboard.hapticsDescription,
                 isOn: $settingsStore.keyboardHapticsEnabled
             )
         }

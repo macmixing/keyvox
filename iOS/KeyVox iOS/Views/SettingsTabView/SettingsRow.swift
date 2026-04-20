@@ -76,8 +76,8 @@ struct SettingsRow<TrailingContent: View>: View {
             VStack(alignment: .leading, spacing: 16) {
                 SettingsRow(
                     icon: "waveform",
-                    title: "Keyboard Haptics",
-                    description: "Get haptic feedback from KeyVox Keyboard",
+                    title: SettingsTabCopy.Keyboard.hapticsTitle,
+                    description: SettingsTabCopy.Keyboard.hapticsDescription,
                     isOn: .constant(true)
                 )
             }
