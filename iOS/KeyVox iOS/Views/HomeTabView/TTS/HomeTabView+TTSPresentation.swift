@@ -1,5 +1,32 @@
 import SwiftUI
 
+enum TTSPreparationPresentationPolicy {
+    static func showsProgress(
+        state: KeyVoxTTSState,
+        progress: Double,
+        visibleThreshold: Double,
+        isWarmStart: Bool
+    ) -> Bool {
+        guard state == .preparing || state == .generating else { return false }
+        return isWarmStart || progress >= visibleThreshold
+    }
+
+    static func showsSpinner(
+        state: KeyVoxTTSState,
+        progress: Double,
+        visibleThreshold: Double,
+        isWarmStart: Bool
+    ) -> Bool {
+        guard state == .preparing || state == .generating else { return false }
+        return showsProgress(
+            state: state,
+            progress: progress,
+            visibleThreshold: visibleThreshold,
+            isWarmStart: isWarmStart
+        ) == false
+    }
+}
+
 extension HomeTabView {
     var ttsPreparationSlotHeight: CGFloat {
         12
@@ -78,6 +105,19 @@ extension HomeTabView {
         return effectiveTTSVoice.displayName
     }
 
+    var ttsVoiceReadinessColor: Color {
+        isTTSVoiceReadyIndicatorActive ? Color.yellow : Color.white
+    }
+
+    private var isTTSVoiceReadyIndicatorActive: Bool {
+        switch ttsManager.state {
+        case .preparing, .generating:
+            return showsTTSPreparationProgress
+        case .idle, .playing, .finished, .error:
+            return ttsManager.engine.isPreparedForSynthesis
+        }
+    }
+
     var ttsButtonTitle: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
             return "Install"
@@ -99,13 +139,21 @@ extension HomeTabView {
     }
 
     var showsTTSPreparationProgress: Bool {
-        guard ttsManager.state == .preparing || ttsManager.state == .generating else { return false }
-        return ttsManager.playbackPreparationProgress >= ttsPreparationVisibleProgressThreshold
+        TTSPreparationPresentationPolicy.showsProgress(
+            state: ttsManager.state,
+            progress: ttsManager.playbackPreparationProgress,
+            visibleThreshold: ttsPreparationVisibleProgressThreshold,
+            isWarmStart: ttsManager.isCurrentPlaybackWarmStart
+        )
     }
 
     var showsPrimaryTTSLoadingSpinner: Bool {
-        (ttsManager.state == .preparing || ttsManager.state == .generating)
-            && showsTTSPreparationProgress == false
+        TTSPreparationPresentationPolicy.showsSpinner(
+            state: ttsManager.state,
+            progress: ttsManager.playbackPreparationProgress,
+            visibleThreshold: ttsPreparationVisibleProgressThreshold,
+            isWarmStart: ttsManager.isCurrentPlaybackWarmStart
+        )
     }
 
     var ttsPreparationProgressLabel: String {

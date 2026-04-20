@@ -103,10 +103,19 @@ struct TTSManagerLifecycleTests {
         #expect(harness.manager.playbackCoordinator.isPaused)
     }
 
-    @Test func replayablePlaybackReadyUnloadsTTSEngine() {
+    @Test func defaultSpeakTimeoutKeepsRuntimeWarmForFiveMinutes() {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
+        #expect(harness.manager.settingsStore.speakTimeoutTiming == .fiveMinutes)
+    }
+
+    @Test func replayablePlaybackReadyUnloadsTTSEngineWhenSpeakTimeoutIsImmediate() {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.settingsStore.speakTimeoutTiming = .immediately
+        harness.engine.isPreparedForSynthesis = true
         harness.manager.activeRequest = makeRequest(createdAt: 5)
 
         harness.manager.handleReplayablePlaybackReady()
@@ -114,27 +123,70 @@ struct TTSManagerLifecycleTests {
         #expect(harness.engine.unloadCallCount == 1)
     }
 
-    @Test func stopPlaybackUnloadsTTSEngine() async {
+    @Test func replayablePlaybackReadyRetainsTTSEngineWhenSpeakTimeoutIsTimed() {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
+        harness.engine.isPreparedForSynthesis = true
         harness.manager.activeRequest = makeRequest(createdAt: 6)
+
+        harness.manager.handleReplayablePlaybackReady()
+
+        #expect(harness.engine.unloadCallCount == 0)
+        #expect(harness.engine.isPreparedForSynthesis)
+    }
+
+    @Test func stopPlaybackSchedulesTTSEngineUnloadWhenSpeakTimeoutIsTimed() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.engine.isPreparedForSynthesis = true
+        harness.manager.activeRequest = makeRequest(createdAt: 7)
+
+        await harness.manager.stopPlayback()
+
+        #expect(harness.engine.unloadCallCount == 0)
+        #expect(harness.manager.runtimeUnloadTask != nil)
+        #expect(harness.manager.pendingRuntimeUnloadReason == .stopPlayback)
+    }
+
+    @Test func stopPlaybackUnloadsTTSEngineWhenSpeakTimeoutIsImmediate() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.settingsStore.speakTimeoutTiming = .immediately
+        harness.engine.isPreparedForSynthesis = true
+        harness.manager.activeRequest = makeRequest(createdAt: 8)
 
         await harness.manager.stopPlayback()
 
         #expect(harness.engine.unloadCallCount == 1)
     }
 
-    @Test func playbackErrorUnloadsTTSEngine() async {
+    @Test func playbackErrorSchedulesTTSEngineUnloadWhenSpeakTimeoutIsTimed() async {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
-        harness.manager.activeRequest = makeRequest(createdAt: 7)
+        harness.engine.isPreparedForSynthesis = true
+        harness.manager.activeRequest = makeRequest(createdAt: 9)
 
         harness.manager.handleError("synthetic failure")
         await settleLifecycleTasks()
 
-        #expect(harness.engine.unloadCallCount == 1)
+        #expect(harness.engine.unloadCallCount == 0)
+        #expect(harness.manager.runtimeUnloadTask != nil)
+    }
+
+    @Test func warmRuntimeStartMarksCurrentPlaybackWarm() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.engine.isPreparedForSynthesis = true
+        harness.engine.keepsAudioStreamOpen = true
+
+        await harness.manager.startPlayback(makeRequest(createdAt: 10))
+
+        #expect(harness.manager.isCurrentPlaybackWarmStart)
     }
 
     private func makeHarness() -> TTSManagerLifecycleHarness {
@@ -210,6 +262,8 @@ private struct TTSManagerLifecycleHarness {
     let manager: TTSManager
 
     func cleanup() {
+        manager.cancelScheduledRuntimeUnload(logContext: "testCleanup")
+        engine.finishPendingStream()
         manager.endBackgroundTaskIfNeeded()
         manager.playbackCoordinator.playerNode.stop()
         manager.playbackCoordinator.audioEngine.stop()
@@ -220,18 +274,24 @@ private struct TTSManagerLifecycleHarness {
 
 @MainActor
 private final class SpyTTSEngine: TTSEngine {
+    var isPreparedForSynthesis = false
+    var keepsAudioStreamOpen = false
     private(set) var immediateForegroundRequestCount = 0
     private(set) var immediateBackgroundRequestCount = 0
     private(set) var prepareForegroundCallCount = 0
     private(set) var prepareBackgroundCallCount = 0
     private(set) var unloadCallCount = 0
+    private var pendingStreamContinuation: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>.Continuation?
 
-    func prepareIfNeeded() async throws {}
+    func prepareIfNeeded() async throws {
+        isPreparedForSynthesis = true
+    }
 
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}
 
     func unloadIfNeeded() {
         unloadCallCount += 1
+        isPreparedForSynthesis = false
     }
 
     func requestForegroundSynthesisImmediately() {
@@ -256,8 +316,18 @@ private final class SpyTTSEngine: TTSEngine {
         fastModeEnabled: Bool
     ) async throws -> AsyncThrowingStream<KeyVoxTTSAudioFrame, Error> {
         AsyncThrowingStream { continuation in
-            continuation.finish()
+            if keepsAudioStreamOpen == false {
+                continuation.finish()
+            } else {
+                finishPendingStream()
+                pendingStreamContinuation = continuation
+            }
         }
+    }
+
+    func finishPendingStream() {
+        pendingStreamContinuation?.finish()
+        pendingStreamContinuation = nil
     }
 }
 

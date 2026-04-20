@@ -155,6 +155,7 @@ iOS/
 │   │   │   │   ├── TTSManager.swift
 │   │   │   │   ├── TTSManager+AppLifecycle.swift
 │   │   │   │   ├── TTSManager+Playback.swift
+│   │   │   │   ├── TTSManager+RuntimeUnload.swift
 │   │   │   │   ├── TTSManager+State.swift
 │   │   │   │   ├── TTSManager+SystemPlayback.swift
 │   │   │   │   └── TTSManagerPolicy.swift
@@ -569,7 +570,7 @@ Packages/
   - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, playback scheduling, and preserved-TTS route-family selection.
 - `KeyVox iOS/Core/TTS/TTSManager/`
   - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, system playback command routing, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
-  - Unloads the PocketTTS runtime when generated audio becomes replayable, playback is explicitly stopped, or playback errors.
+  - Owns user-configured Speak Timeout behavior by unloading the PocketTTS runtime immediately or after the selected warm-retention window when generated playback finishes, is stopped, or errors.
 - `KeyVox iOS/Core/TTS/TTSSystemPlaybackController.swift`
   - Public `MediaPlayer` integration owner for lock screen and Control Center now-playing metadata, replay scrubber command exposure, and remote transport command wiring.
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`

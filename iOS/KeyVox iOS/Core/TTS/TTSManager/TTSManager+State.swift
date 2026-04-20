@@ -45,6 +45,7 @@ extension TTSManager {
             self.updateState(.finished)
             await self.onWillTeardownPlayback?()
             KeyVoxIPCBridge.markRecentTTSPlayback()
+            self.scheduleRuntimeUnloadAfterPlayback(reason: .playbackFinished)
             self.clearActiveRequest(
                 clearSharedTransportState: false,
                 preserveFinishedSystemPlayback: self.hasReplayablePlayback
@@ -57,7 +58,7 @@ extension TTSManager {
         lastReplayableRequest = activeRequest
         hasReplayablePlayback = playbackCoordinator.hasReplayablePlayback
         persistReplayablePlaybackIfNeeded(for: activeRequest)
-        engine.unloadIfNeeded()
+        releaseRuntimeWhenReplayableAudioIsReady()
         Self.log("Replayable playback became available for id=\(activeRequest.id.uuidString) voice=\(activeRequest.voiceID)")
     }
 
@@ -73,7 +74,7 @@ extension TTSManager {
             self.lastErrorMessage = message
             self.isPlaybackPaused = false
             self.pausedReplaySampleOffset = nil
-            self.engine.unloadIfNeeded()
+            self.scheduleRuntimeUnloadAfterPlayback(reason: .playbackError)
             self.dismissPlaybackPreparationView()
             self.updateState(.error)
             await self.onWillTeardownPlayback?()
@@ -115,6 +116,7 @@ extension TTSManager {
         hasStartedPlaybackForActiveRequest = false
         didEmitPreparationCompletionForActiveRequest = false
         shouldConsumeFreeSpeakOnPlaybackStart = false
+        isCurrentPlaybackWarmStart = false
         hasRequestedFastModeBackgroundContinuation = false
         isPlaybackPaused = false
         isReplayingCachedPlayback = false

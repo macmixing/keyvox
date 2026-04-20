@@ -9,6 +9,7 @@ nonisolated enum UserDefaultsKeys {
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
+    static let speakTimeoutTiming = "KeyVox.SpeakTimeoutTiming"
     static let ttsVoice = "KeyVox.TTSVoice"
     static let fastPlaybackModeEnabled = "KeyVox.FastPlaybackModeEnabled"
 
