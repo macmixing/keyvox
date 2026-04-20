@@ -47,6 +47,7 @@ final class TTSManager: ObservableObject {
     var backgroundTaskReleaseTask: Task<Void, Never>?
     var runtimeUnloadTask: Task<Void, Never>?
     var pendingRuntimeUnloadReason: TTSRuntimeUnloadReason?
+    var pendingRuntimeUnloadStartedAt: Date?
     var hasRequestedFastModeBackgroundContinuation = false
     var shouldExposeFinishedSystemPlayback = false
     var onWillTeardownPlayback: (() async -> Void)?

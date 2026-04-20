@@ -39,4 +39,29 @@ struct TTSPreparationPresentationPolicyTests {
             )
         )
     }
+
+    @Test func progressAtOrAboveThresholdShowsProgressAndDismissesSpinner() {
+        let visibleThreshold = 0.02
+
+        for isWarmStart in [true, false] {
+            for progress in [visibleThreshold, visibleThreshold + 0.01] {
+                #expect(
+                    TTSPreparationPresentationPolicy.showsProgress(
+                        state: .generating,
+                        progress: progress,
+                        visibleThreshold: visibleThreshold,
+                        isWarmStart: isWarmStart
+                    )
+                )
+                #expect(
+                    TTSPreparationPresentationPolicy.showsSpinner(
+                        state: .generating,
+                        progress: progress,
+                        visibleThreshold: visibleThreshold,
+                        isWarmStart: isWarmStart
+                    ) == false
+                )
+            }
+        }
+    }
 }

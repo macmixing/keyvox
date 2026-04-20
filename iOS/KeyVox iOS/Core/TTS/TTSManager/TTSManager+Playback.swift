@@ -58,7 +58,7 @@ extension TTSManager {
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
         clearWarningMessage()
-        cancelScheduledRuntimeUnload(reason: "newPlayback")
+        cancelScheduledRuntimeUnload(logContext: "newPlayback")
 
         if canReplayExistingAsset(for: request) {
             Self.log(

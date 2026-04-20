@@ -147,6 +147,7 @@ struct TTSManagerLifecycleTests {
 
         #expect(harness.engine.unloadCallCount == 0)
         #expect(harness.manager.runtimeUnloadTask != nil)
+        #expect(harness.manager.pendingRuntimeUnloadReason == .stopPlayback)
     }
 
     @Test func stopPlaybackUnloadsTTSEngineWhenSpeakTimeoutIsImmediate() async {
@@ -261,7 +262,8 @@ private struct TTSManagerLifecycleHarness {
     let manager: TTSManager
 
     func cleanup() {
-        manager.cancelScheduledRuntimeUnload(reason: "testCleanup")
+        manager.cancelScheduledRuntimeUnload(logContext: "testCleanup")
+        engine.finishPendingStream()
         manager.endBackgroundTaskIfNeeded()
         manager.playbackCoordinator.playerNode.stop()
         manager.playbackCoordinator.audioEngine.stop()
@@ -279,6 +281,7 @@ private final class SpyTTSEngine: TTSEngine {
     private(set) var prepareForegroundCallCount = 0
     private(set) var prepareBackgroundCallCount = 0
     private(set) var unloadCallCount = 0
+    private var pendingStreamContinuation: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>.Continuation?
 
     func prepareIfNeeded() async throws {
         isPreparedForSynthesis = true
@@ -315,8 +318,16 @@ private final class SpyTTSEngine: TTSEngine {
         AsyncThrowingStream { continuation in
             if keepsAudioStreamOpen == false {
                 continuation.finish()
+            } else {
+                finishPendingStream()
+                pendingStreamContinuation = continuation
             }
         }
+    }
+
+    func finishPendingStream() {
+        pendingStreamContinuation?.finish()
+        pendingStreamContinuation = nil
     }
 }
 

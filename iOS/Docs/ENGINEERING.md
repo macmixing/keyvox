@@ -697,7 +697,7 @@ Primary owners:
 - `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
 - `PocketTTSEngine` owns the app-side runtime wrapper seam around `KeyVoxPocketTTSRuntime` so tests can verify runtime creation, preparation, compute-mode requests, and unload behavior without instantiating real Core ML assets.
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+RuntimeUnload.swift`, `TTSManager+SystemPlayback.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
-  - `TTSManager+RuntimeUnload.swift` owns Speak Timeout scheduling, cancelation on new playback, memory-warning unloads, asset-invalidation unloads, and debug unload-reason logging.
+  - `TTSManager+RuntimeUnload.swift` owns Speak Timeout scheduling, cancellation on new playback, memory-warning unloads, asset-invalidation unloads, and debug unload-reason logging.
   - `TTSManager+SystemPlayback.swift` should stay as the TTSManager-facing adapter layer that translates internal playback state and events into system playback intent, assembles metadata, and decides when the system surface should update.
 - `TTSPlaybackCoordinator` is split by concern into `TTSPlaybackCoordinator.swift`, `TTSPlaybackCoordinator+Lifecycle.swift`, `TTSPlaybackCoordinator+Scheduling.swift`, `TTSPlaybackCoordinator+Progress.swift`, and `TTSPlaybackCoordinatorBufferingPolicy.swift`
 - `AudioBluetoothRoutePolicy.swift` stays separate from both recorder input preference resolution and TTS playback lifecycle code so Bluetooth route-family mapping remains isolated and testable.
