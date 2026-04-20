@@ -109,7 +109,7 @@ extension SettingsTabView {
                     .padding(.top, 2)
                 }
 
-                Text("Decide how long KeyVox Speak stays ready after playback.")
+                Text("Decide how long KeyVox Speak stays ready to buffer playback.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }
