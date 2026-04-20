@@ -246,6 +246,8 @@ private final class StubDictationService: DictationProvider {
 }
 
 private struct StubTTSEngine: TTSEngine {
+    var isPreparedForSynthesis: Bool { false }
+
     func prepareIfNeeded() async throws {}
 
     func prewarmVoiceIfNeeded(voiceID: String) async throws {}

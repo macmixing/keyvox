@@ -169,6 +169,11 @@ extension TTSManager {
     }
 
     @objc
+    func handleMemoryWarningNotification(_ notification: Notification) {
+        unloadRuntimeImmediately(reason: .memoryWarning)
+    }
+
+    @objc
     func handleAudioSessionInterruptionNotification(_ notification: Notification) {
         let typeDescription: String
         if let userInfo = notification.userInfo,

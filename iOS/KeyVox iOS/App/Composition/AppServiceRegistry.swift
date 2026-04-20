@@ -182,6 +182,11 @@ final class AppServiceRegistry {
                 keyVoxSpeakIntroController?.markFeatureUsed()
             }
         )
+        pocketTTSModelManager.onDidInvalidateInstalledAssets = { [weak ttsManager] in
+            Task { @MainActor [weak ttsManager] in
+                ttsManager?.unloadRuntimeImmediately(reason: .assetInvalidated)
+            }
+        }
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,

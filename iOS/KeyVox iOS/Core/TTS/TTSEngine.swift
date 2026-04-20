@@ -2,6 +2,8 @@ import Foundation
 import KeyVoxTTS
 
 protocol TTSEngine {
+    var isPreparedForSynthesis: Bool { get }
+
     func prepareIfNeeded() async throws
     func prewarmVoiceIfNeeded(voiceID: String) async throws
     func unloadIfNeeded()

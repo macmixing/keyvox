@@ -101,6 +101,7 @@ extension PocketTTSModelManager {
 
     func deleteSharedModel() {
         Self.log("Deleting installed PocketTTS shared model assets.")
+        onDidInvalidateInstalledAssets?()
         installTask?.cancel()
         installTask = nil
         activeInstallTarget = nil
@@ -136,6 +137,7 @@ extension PocketTTSModelManager {
     }
 
     func deleteVoice(_ voice: AppSettingsStore.TTSVoice) {
+        onDidInvalidateInstalledAssets?()
         if let voiceRootURL = SharedPaths.pocketTTSVoiceDirectoryURL(fileManager: fileManager)?
             .appendingPathComponent(voice.rawValue, isDirectory: true) {
             try? fileManager.removeItem(at: voiceRootURL)

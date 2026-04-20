@@ -59,6 +59,10 @@ final class PocketTTSEngine: TTSEngine {
     private var loadedAssetFingerprint: String?
 
     private let fileManager: FileManager
+
+    var isPreparedForSynthesis: Bool {
+        runtime != nil && isRuntimePrepared
+    }
     
     init(
         fileManager: FileManager = .default,
@@ -76,11 +80,15 @@ final class PocketTTSEngine: TTSEngine {
     }
 
     func prepareIfNeeded() async throws {
-        Self.log("PocketTTS model load begin.")
+        let wasPrepared = isPreparedForSynthesis
+        let startTime = CFAbsoluteTimeGetCurrent()
+        Self.log("PocketTTS model prepare begin warmStart=\(wasPrepared).")
         let runtime = try runtimeForInstalledAssets()
         try await runtime.prepareIfNeeded()
         isRuntimePrepared = true
-        Self.log("PocketTTS model load end.")
+        Self.log(
+            "PocketTTS model prepare end warmStart=\(wasPrepared) durationSeconds=\(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - startTime))."
+        )
     }
 
     func prewarmVoiceIfNeeded(voiceID: String) async throws {

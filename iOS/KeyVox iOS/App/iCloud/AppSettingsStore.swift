@@ -28,6 +28,33 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
     }
 }
 
+enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
+    case immediately
+    case fiveMinutes
+    case fifteenMinutes
+    case oneHour
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .immediately: return "Immediately"
+        case .fiveMinutes: return "5 Minutes"
+        case .fifteenMinutes: return "15 Minutes"
+        case .oneHour: return "1 Hour"
+        }
+    }
+
+    var unloadDelay: TimeInterval? {
+        switch self {
+        case .immediately: return nil
+        case .fiveMinutes: return 300
+        case .fifteenMinutes: return 900
+        case .oneHour: return 3600
+        }
+    }
+}
+
 @MainActor
 final class AppSettingsStore: ObservableObject {
     typealias TTSVoice = KeyVoxPlaybackVoice
@@ -138,6 +165,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var speakTimeoutTiming: SpeakTimeoutTiming {
+        didSet {
+            defaults.set(speakTimeoutTiming.rawValue, forKey: UserDefaultsKeys.speakTimeoutTiming)
+        }
+    }
+
     @Published var ttsVoice: TTSVoice {
         didSet {
             defaults.set(ttsVoice.rawValue, forKey: UserDefaultsKeys.ttsVoice)
@@ -179,6 +212,13 @@ final class AppSettingsStore: ObservableObject {
             sessionDisableTiming = timing
         } else {
             sessionDisableTiming = .fiveMinutes
+        }
+
+        if let raw = defaults.string(forKey: UserDefaultsKeys.speakTimeoutTiming),
+           let timing = SpeakTimeoutTiming(rawValue: raw) {
+            speakTimeoutTiming = timing
+        } else {
+            speakTimeoutTiming = .fiveMinutes
         }
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.ttsVoice),

@@ -34,6 +34,7 @@ struct SettingsTabView: View {
         AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
                 sessionSection
+                speakTimeoutSection
                 keyboardSection
                 audioSection
                 activeModelSection

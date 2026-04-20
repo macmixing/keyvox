@@ -22,6 +22,7 @@ final class TTSManager: ObservableObject {
     @Published var playbackProgress: Double = 0
     @Published var fastModeBackgroundSafetyProgress: Double = 0
     @Published var isFastModeBackgroundSafe = false
+    @Published var isCurrentPlaybackWarmStart = false
 
     let settingsStore: AppSettingsStore
     let appHaptics: AppHapticsEmitting
@@ -44,9 +45,12 @@ final class TTSManager: ObservableObject {
     var shouldPersistPlaybackPreparationViewUntilBackground = false
     var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     var backgroundTaskReleaseTask: Task<Void, Never>?
+    var runtimeUnloadTask: Task<Void, Never>?
+    var pendingRuntimeUnloadReason: TTSRuntimeUnloadReason?
     var hasRequestedFastModeBackgroundContinuation = false
     var shouldExposeFinishedSystemPlayback = false
     var onWillTeardownPlayback: (() async -> Void)?
+    var cancellables = Set<AnyCancellable>()
 
     var shouldPreventIdleSleep: Bool {
         TTSManagerPolicy.shouldPreventIdleSleep(for: state, isPlaybackPaused: isPlaybackPaused)
@@ -198,6 +202,19 @@ final class TTSManager: ObservableObject {
             name: UIApplication.protectedDataDidBecomeAvailableNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleMemoryWarningNotification(_:)),
+            name: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil
+        )
+
+        settingsStore.$speakTimeoutTiming
+            .dropFirst()
+            .sink { [weak self] _ in
+                self?.handleSpeakTimeoutTimingChanged()
+            }
+            .store(in: &cancellables)
 
         restoreReplayablePlaybackIfNeeded()
         configureSystemPlaybackController()

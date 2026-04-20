@@ -58,6 +58,7 @@ extension TTSManager {
 
     func startPlayback(_ request: KeyVoxTTSRequest, showPreparationView: Bool = false) async {
         clearWarningMessage()
+        cancelScheduledRuntimeUnload(reason: "newPlayback")
 
         if canReplayExistingAsset(for: request) {
             Self.log(
@@ -94,6 +95,10 @@ extension TTSManager {
         beginBackgroundTaskIfNeeded()
         await engine.prepareForForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
+        isCurrentPlaybackWarmStart = engine.isPreparedForSynthesis
+        Self.log(
+            "Playback start runtimeWarm=\(isCurrentPlaybackWarmStart) speakTimeout=\(settingsStore.speakTimeoutTiming.rawValue)"
+        )
         updateState(.preparing)
 
         do {
@@ -220,7 +225,7 @@ extension TTSManager {
             Self.log("Stop requested with no active request.")
         }
         playbackCoordinator.stop()
-        engine.unloadIfNeeded()
+        scheduleRuntimeUnloadAfterPlayback(reason: .stopPlayback)
         await onWillTeardownPlayback?()
         KeyVoxIPCBridge.clearTTSRequest()
         keyboardBridge.publishTTSStopped()

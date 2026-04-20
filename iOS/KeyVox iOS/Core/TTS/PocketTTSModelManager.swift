@@ -40,6 +40,7 @@ final class PocketTTSModelManager: ObservableObject {
     let assetLocator: PocketTTSAssetLocator
     var installTask: Task<Void, Never>?
     var pendingVoiceInstallAfterSharedModel: AppSettingsStore.TTSVoice?
+    var onDidInvalidateInstalledAssets: (() -> Void)?
 
     init(
         fileManager: FileManager = .default,
