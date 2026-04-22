@@ -20,6 +20,7 @@ struct KeyVox_WidgetLiveActivity: Widget {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+                        .offset(y: -6)
                         .dynamicIsland(verticalPlacement: .belowIfTooWide)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
