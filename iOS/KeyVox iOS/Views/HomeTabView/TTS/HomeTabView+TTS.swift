@@ -46,7 +46,7 @@ extension HomeTabView {
                         }
 
                         HStack(alignment: .center, spacing: 6) {
-                            Image(systemName: "waveform")
+                            Image(systemName: ttsVoiceReadinessIconName)
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundStyle(ttsVoiceReadinessColor)
 

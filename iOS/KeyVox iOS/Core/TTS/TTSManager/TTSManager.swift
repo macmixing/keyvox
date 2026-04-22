@@ -212,8 +212,8 @@ final class TTSManager: ObservableObject {
 
         settingsStore.$speakTimeoutTiming
             .dropFirst()
-            .sink { [weak self] _ in
-                self?.handleSpeakTimeoutTimingChanged()
+            .sink { [weak self] timing in
+                self?.handleSpeakTimeoutTimingChanged(to: timing)
             }
             .store(in: &cancellables)
 

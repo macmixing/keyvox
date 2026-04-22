@@ -134,19 +134,15 @@ struct KeyVoxSpeakSheetView: View {
 
                         Button(action: dismissSheet) {
                             Image(systemName: "xmark")
-                                .font(.system(size: 25, weight: .semibold))
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(.white.opacity(0.58))
                                 .frame(width: 36, height: 36)
-                                .background {
-                                    Color.clear
-                                        .frame(width: 56, height: 56)
-                                }
                                 .contentShape(Rectangle())
                         }
                         .accessibilityLabel("Close")
                         .buttonStyle(.plain)
-                        .padding(.top, 10)
-                        .padding(.trailing, 12)
+                        .padding(.top, 7)
+                        .padding(.trailing, 7)
                     }
 
                     Spacer()

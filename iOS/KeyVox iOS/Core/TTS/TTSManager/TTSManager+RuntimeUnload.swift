@@ -7,6 +7,7 @@ enum TTSRuntimeUnloadReason: String {
     case playbackFinished
     case replayableAudioReady
     case settingChangedToImmediate
+    case settingChangedToTimed
     case speakTimeoutExpired
     case stopPlayback
 }
@@ -23,14 +24,21 @@ extension TTSManager {
 
     func scheduleRuntimeUnloadAfterPlayback(
         reason: TTSRuntimeUnloadReason,
-        startedAt: Date = Date()
+        startedAt: Date = Date(),
+        timing: SpeakTimeoutTiming? = nil
     ) {
         runtimeUnloadTask?.cancel()
         runtimeUnloadTask = nil
         pendingRuntimeUnloadReason = nil
         pendingRuntimeUnloadStartedAt = nil
 
-        guard let delay = settingsStore.speakTimeoutTiming.unloadDelay else {
+        let effectiveTiming = timing ?? settingsStore.speakTimeoutTiming
+        if effectiveTiming.keepsRuntimeWarmIndefinitely {
+            Self.log("Retaining PocketTTS runtime indefinitely reason=\(reason.rawValue).")
+            return
+        }
+
+        guard let delay = effectiveTiming.unloadDelay else {
             unloadRuntimeImmediately(reason: reason)
             return
         }
@@ -84,22 +92,37 @@ extension TTSManager {
         engine.unloadIfNeeded()
     }
 
-    func handleSpeakTimeoutTimingChanged() {
+    func handleSpeakTimeoutTimingChanged(to timing: SpeakTimeoutTiming) {
+        if timing.keepsRuntimeWarmIndefinitely {
+            cancelScheduledRuntimeUnload(logContext: "speakTimeoutNever")
+            return
+        }
+
         guard let pendingRuntimeUnloadReason else {
-            if settingsStore.speakTimeoutTiming == .immediately, isActive == false {
+            if timing == .immediately, isActive == false {
                 unloadRuntimeImmediately(reason: .settingChangedToImmediate)
+            }
+
+            if timing.unloadDelay != nil,
+               isActive == false,
+               engine.isPreparedForSynthesis {
+                scheduleRuntimeUnloadAfterPlayback(
+                    reason: .settingChangedToTimed,
+                    timing: timing
+                )
             }
             return
         }
 
-        guard settingsStore.speakTimeoutTiming.unloadDelay != nil else {
+        guard timing.unloadDelay != nil else {
             unloadRuntimeImmediately(reason: .settingChangedToImmediate)
             return
         }
 
         scheduleRuntimeUnloadAfterPlayback(
             reason: pendingRuntimeUnloadReason,
-            startedAt: pendingRuntimeUnloadStartedAt ?? Date()
+            startedAt: pendingRuntimeUnloadStartedAt ?? Date(),
+            timing: timing
         )
     }
 }

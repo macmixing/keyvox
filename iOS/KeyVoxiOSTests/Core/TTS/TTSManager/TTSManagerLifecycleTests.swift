@@ -163,12 +163,58 @@ struct TTSManagerLifecycleTests {
         #expect(harness.engine.unloadCallCount == 1)
     }
 
+    @Test func stopPlaybackRetainsTTSEngineWhenSpeakTimeoutIsNever() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.settingsStore.speakTimeoutTiming = .never
+        harness.engine.isPreparedForSynthesis = true
+        harness.manager.activeRequest = makeRequest(createdAt: 9)
+
+        await harness.manager.stopPlayback()
+
+        #expect(harness.engine.unloadCallCount == 0)
+        #expect(harness.manager.runtimeUnloadTask == nil)
+        #expect(harness.engine.isPreparedForSynthesis)
+    }
+
+    @Test func changingFromNeverToTimedSchedulesTTSEngineUnloadImmediately() {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.settingsStore.speakTimeoutTiming = .never
+        harness.engine.isPreparedForSynthesis = true
+
+        harness.manager.settingsStore.speakTimeoutTiming = .fiveMinutes
+
+        #expect(harness.engine.unloadCallCount == 0)
+        #expect(harness.manager.runtimeUnloadTask != nil)
+        #expect(harness.manager.pendingRuntimeUnloadReason == .settingChangedToTimed)
+    }
+
+    @Test func changingFromTimedToNeverCancelsPendingTTSEngineUnload() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.engine.isPreparedForSynthesis = true
+        harness.manager.activeRequest = makeRequest(createdAt: 10)
+
+        await harness.manager.stopPlayback()
+        #expect(harness.manager.runtimeUnloadTask != nil)
+
+        harness.manager.settingsStore.speakTimeoutTiming = .never
+
+        #expect(harness.manager.runtimeUnloadTask == nil)
+        #expect(harness.manager.pendingRuntimeUnloadReason == nil)
+        #expect(harness.engine.isPreparedForSynthesis)
+    }
+
     @Test func playbackErrorSchedulesTTSEngineUnloadWhenSpeakTimeoutIsTimed() async {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
         harness.engine.isPreparedForSynthesis = true
-        harness.manager.activeRequest = makeRequest(createdAt: 9)
+        harness.manager.activeRequest = makeRequest(createdAt: 11)
 
         harness.manager.handleError("synthetic failure")
         await settleLifecycleTasks()
@@ -184,7 +230,7 @@ struct TTSManagerLifecycleTests {
         harness.engine.isPreparedForSynthesis = true
         harness.engine.keepsAudioStreamOpen = true
 
-        await harness.manager.startPlayback(makeRequest(createdAt: 10))
+        await harness.manager.startPlayback(makeRequest(createdAt: 12))
 
         #expect(harness.manager.isCurrentPlaybackWarmStart)
     }

@@ -670,7 +670,7 @@ Primary owners:
 - `TTSPlaybackCoordinator` owns audio-engine playback, deterministic runway gating, background-safe continuation, replayable-audio capture, replay seeking, and pause/resume.
 - `AudioBluetoothRoutePolicy` owns the preserved-TTS Bluetooth route-family decision and is the only owner allowed to translate the built-in microphone preference into A2DP-vs-HFP playback behavior.
 - `TTSManager` owns request lifecycle, playback-preparation progress, home-card replay state, replay cache persistence, paused replay restoration, system playback coordination / metadata assembly, remote transport command routing, App Group TTS state publishing, and the free-speak consumption point once a new generation has actually started.
-- `TTSManager` is responsible for applying the user-facing Speak Timeout setting to PocketTTS runtime lifetime once live generation is no longer needed: immediate unload for the `Immediately` preset, or delayed unload after the selected warm-retention window.
+- `TTSManager` is responsible for applying the user-facing Speak Timeout setting to PocketTTS runtime lifetime once live generation is no longer needed: immediate unload for the `Immediately` preset, delayed unload after the selected warm-retention window, or indefinite retention for `Never` after playback has demand-warmed the runtime.
 - `TTSSystemPlaybackController` owns MediaPlayer API integration and publication of transport & now-playing metadata for lock screen and Control Center transport.
 - `AudioModeCoordinator` is the only owner allowed to arbitrate dictation-versus-TTS transitions and to enforce the copied-text playback gate before new TTS starts.
 - the keyboard playback transport is intentionally split:
@@ -713,10 +713,11 @@ Primary owners:
 - `PocketTTSEngine.unloadIfNeeded()` releases the runtime, clears the prepared flag, and clears loaded asset identity so the next generation rebuilds from the current installed assets.
 - Foreground/background compute-mode changes may only run against an existing prepared runtime.
 - Immediate compute-mode request helpers are hints for already prepared runtimes; they must not instantiate or prepare the runtime by themselves.
-- Runtime unload after playback must follow `AppSettingsStore.speakTimeoutTiming`: `Immediately` unloads on replayable-audio readiness, explicit stop, finish, or error; timed presets keep the prepared runtime warm until the selected timeout expires.
+- Runtime unload after playback must follow `AppSettingsStore.speakTimeoutTiming`: `Immediately` unloads on replayable-audio readiness, explicit stop, finish, or error; timed presets keep the prepared runtime warm until the selected timeout expires; `Never` keeps the runtime warm indefinitely after playback has demand-warmed it.
+- Changing Speak Timeout from `Never` to a timed preset must immediately replace indefinite retention with the selected timeout for an already warm, inactive runtime.
 - Starting a new generated Speak request cancels any pending timed runtime unload and starts a new timeout window after that playback ends.
 - Memory warnings and PocketTTS shared-model or voice asset invalidation must unload immediately regardless of the user-selected Speak Timeout.
-- Warm-runtime UI indicators must represent only that the PocketTTS runtime has cleared the cold-load path; they must not imply first audio is ready.
+- Warm-runtime UI indicators must represent only that the PocketTTS runtime has cleared the cold-load path; they must not imply first audio is ready, and `Never` must not show its indefinite-warm indicator until the runtime is actually warm.
 
 ### Fast Mode and Normal Mode Rules
 

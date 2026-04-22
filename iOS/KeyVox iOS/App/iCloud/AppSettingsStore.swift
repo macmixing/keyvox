@@ -33,6 +33,7 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
     case fiveMinutes
     case fifteenMinutes
     case oneHour
+    case never
 
     var id: String { rawValue }
 
@@ -42,16 +43,24 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
         case .fiveMinutes: return "5 Minutes"
         case .fifteenMinutes: return "15 Minutes"
         case .oneHour: return "1 Hour"
+        case .never: return "Never"
         }
     }
-
+    /// Returns the delay before unloading, or `nil` if no delay applies.
+    /// When `nil`, check `keepsRuntimeWarmIndefinitely` to distinguish
+    /// between immediate unload (`.immediately`) and never unload (`.never`)
     var unloadDelay: TimeInterval? {
         switch self {
-        case .immediately: return nil
+        case .immediately, .never: return nil
         case .fiveMinutes: return 300
         case .fifteenMinutes: return 900
         case .oneHour: return 3600
         }
+    }
+
+    /// Returns `true` when the runtime should remain warm without timeout.
+    var keepsRuntimeWarmIndefinitely: Bool {
+        self == .never
     }
 }
 

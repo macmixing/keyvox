@@ -105,8 +105,17 @@ extension HomeTabView {
         return effectiveTTSVoice.displayName
     }
 
+    var ttsVoiceReadinessIconName: String {
+        if settingsStore.speakTimeoutTiming.keepsRuntimeWarmIndefinitely,
+           isTTSVoiceReadyIndicatorActive {
+            return "infinity.circle"
+        }
+
+        return "waveform"
+    }
+
     var ttsVoiceReadinessColor: Color {
-        isTTSVoiceReadyIndicatorActive ? Color.yellow : Color.white
+        return isTTSVoiceReadyIndicatorActive ? Color.yellow : Color.white
     }
 
     private var isTTSVoiceReadyIndicatorActive: Bool {

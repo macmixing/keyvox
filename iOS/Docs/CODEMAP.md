@@ -570,7 +570,7 @@ Packages/
   - Split playback transport owner for deterministic startup runway, background-safe continuation, replay capture, pause and resume, metering, progress publishing, playback scheduling, and preserved-TTS route-family selection.
 - `KeyVox iOS/Core/TTS/TTSManager/`
   - Split high-level copied-text playback owner for request lifecycle, preparation progress, replay state, paused replay restoration, lifecycle observation, system playback command routing, App Group TTS state publishing, and the consume-on-success free-speak hook used by phase-one monetization.
-  - Owns user-configured Speak Timeout behavior by unloading the PocketTTS runtime immediately or after the selected warm-retention window when generated playback finishes, is stopped, or errors.
+  - Owns user-configured Speak Timeout behavior by unloading the PocketTTS runtime immediately, after the selected warm-retention window, or never after generated playback has demand-warmed the runtime.
 - `KeyVox iOS/Core/TTS/TTSSystemPlaybackController.swift`
   - Public `MediaPlayer` integration owner for lock screen and Control Center now-playing metadata, replay scrubber command exposure, and remote transport command wiring.
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
@@ -624,7 +624,7 @@ Packages/
   - `TTS/HomeTabView+TTS.swift` owns the main copied-text playback card layout, first-line title/help alignment, loading-spinner handoff, and progress-slot rendering.
   - `TTS/HomeTabView+TTSTranscript.swift` owns transcript toggle behavior, staged expanded transcript presentation, transcript copy affordance, idle transcript dismissal, and the Home-specific content passed into the shared tinted scroller.
   - `TTS/HomeTabView+TTSTransport.swift` owns the live transport ring, replay transport button, replay scrubber gating, badge state, status copy, playback error presentation, and the idle monetization messaging for remaining free speaks or locked state.
-  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, loading-spinner/progress thresholds, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, the question-mark KeyVox Speak help presentation selection, and Home-scoped TTS actions.
+  - `TTS/HomeTabView+TTSPresentation.swift` owns preparation presentation state, loading-spinner/progress thresholds, warm-runtime indicator state, button titles, shared installed-voice selection binding, the hidden Home voice-picker shortcut, the unlock-title fallback, the question-mark KeyVox Speak help presentation selection, and Home-scoped TTS actions.
   - `TTS/TTSReplayScrubber.swift` owns the replay timeline scrubber view.
 - `KeyVox iOS/App/Feedback/CopyFeedbackController.swift`
   - Shared app-scoped copy interaction state for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing them into one visual component.
@@ -656,7 +656,7 @@ Packages/
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+General.swift`
-  - Session timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view.
+  - Session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+TTS.swift`
