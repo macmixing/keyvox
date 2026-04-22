@@ -343,9 +343,9 @@ final class TranscriptionManager: ObservableObject {
         publisher
             .removeDuplicates()
             .dropFirst()
-            .sink { [weak self] _ in
+            .sink { [weak self] timing in
                 Task { @MainActor [weak self] in
-                    await self?.handleSessionDisableTimingChanged()
+                    await self?.handleSessionDisableTimingChanged(to: timing)
                 }
             }
             .store(in: &cancellables)
@@ -355,12 +355,20 @@ final class TranscriptionManager: ObservableObject {
         sessionDisableTimingProvider?()
     }
 
-    func currentIdleTimeout() -> TimeInterval? {
-        currentSessionDisableTiming()?.idleTimeout ?? sessionPolicy.idleTimeout
+    func currentIdleTimeout(timing: SessionDisableTiming? = nil) -> TimeInterval? {
+        if let timing {
+            return timing.idleTimeout
+        }
+
+        if let currentTiming = currentSessionDisableTiming() {
+            return currentTiming.idleTimeout
+        }
+
+        return sessionPolicy.idleTimeout
     }
 
-    func shouldDisableSessionImmediatelyWhenIdle() -> Bool {
-        currentSessionDisableTiming() == .immediately
+    func shouldDisableSessionImmediatelyWhenIdle(timing: SessionDisableTiming? = nil) -> Bool {
+        (timing ?? currentSessionDisableTiming()) == .immediately
     }
 
     func refreshModelAvailability() {

@@ -19,12 +19,12 @@ extension TranscriptionManager {
         keyboardBridge.publishCancelled()
     }
 
-    func armIdleTimeout() {
+    func armIdleTimeout(timing: SessionDisableTiming? = nil) {
         cancelIdleTimeout()
 
         guard isSessionActive,
               !sessionDisablePending,
-              let idleTimeout = currentIdleTimeout() else {
+              let idleTimeout = currentIdleTimeout(timing: timing) else {
             return
         }
 
@@ -97,13 +97,18 @@ extension TranscriptionManager {
         }
     }
 
-    func handleSessionDisableTimingChanged() async {
+    func handleSessionDisableTimingChanged(to timing: SessionDisableTiming) async {
         guard isSessionActive, !sessionDisablePending, state == .idle else { return }
 
-        if shouldDisableSessionImmediatelyWhenIdle() {
+        if timing.keepsSessionActiveIndefinitely {
+            cancelIdleTimeout()
+            return
+        }
+
+        if shouldDisableSessionImmediatelyWhenIdle(timing: timing) {
             await completeSessionShutdown()
         } else {
-            armIdleTimeout()
+            armIdleTimeout(timing: timing)
         }
     }
 

@@ -6,6 +6,7 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
     case fiveMinutes
     case fifteenMinutes
     case oneHour
+    case never
 
     var id: String { rawValue }
 
@@ -15,16 +16,23 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
         case .fiveMinutes: return "5 Minutes"
         case .fifteenMinutes: return "15 Minutes"
         case .oneHour: return "1 Hour"
+        case .never: return "Never"
         }
     }
-
+    /// Returns the idle timeout before disabling, or `nil` if no timeout applies.
+    /// When `nil`, check `keepsSessionActiveIndefinitely` to distinguish
+    /// between immediate disable (`.immediately`) and never disable (`.never`)
     var idleTimeout: TimeInterval? {
         switch self {
-        case .immediately: return nil
+        case .immediately, .never: return nil
         case .fiveMinutes: return 300
         case .fifteenMinutes: return 900
         case .oneHour: return 3600
         }
+    }
+
+    var keepsSessionActiveIndefinitely: Bool {
+        self == .never
     }
 }
 

@@ -602,7 +602,7 @@ Packages/
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
   - Primary iOS runtime state machine and dictation owner.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+SessionLifecycle.swift`
-  - Idle shutdown, deferred disable-session handling, and watchdog cleanup.
+  - Idle shutdown, user-configured session timeout scheduling including Never, deferred disable-session handling, and watchdog cleanup.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+InterruptedCaptureRecovery.swift`
   - Interrupted-capture staging and recovery on app reactivation.
 - `KeyVox iOS/Core/Transcription/InterruptedCaptureRecoveryStore.swift`

@@ -115,6 +115,22 @@ struct TranscriptionManagerTests {
         #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
     }
 
+    @Test func neverDisableTimingKeepsActiveIdleSessionAlive() async throws {
+        let harness = try makeHarness(
+            sessionDisableTiming: .never,
+            sessionPolicy: SessionPolicy(idleTimeout: 0.02)
+        )
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.manager.sessionExpirationDate == nil)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
+    }
+
     @Test func idleTimeoutIsCancelledWhileRecordingAndRearmsAfterCompletion() async throws {
         let harness = try makeHarness(sessionPolicy: SessionPolicy(idleTimeout: 0.03))
         defer { harness.cleanup() }
@@ -427,6 +443,35 @@ struct TranscriptionManagerTests {
 
         let updatedExpirationDate = try #require(harness.manager.sessionExpirationDate)
         #expect(updatedExpirationDate.timeIntervalSince(originalExpirationDate) > 3_000)
+    }
+
+    @Test func changingDisableTimingToNeverWhileActiveAndIdleCancelsTimeout() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+        _ = try #require(harness.manager.sessionExpirationDate)
+
+        harness.updateSessionDisableTiming(.never)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.manager.sessionExpirationDate == nil)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
+    }
+
+    @Test func changingDisableTimingFromNeverToTimedWhileActiveAndIdleRearmsTimeout() async throws {
+        let harness = try makeHarness(sessionDisableTiming: .never)
+        defer { harness.cleanup() }
+
+        await harness.manager.performEnableSessionCommand()
+        #expect(harness.manager.sessionExpirationDate == nil)
+
+        harness.updateSessionDisableTiming(.fiveMinutes)
+        await settleAsyncManagerWork()
+
+        #expect(harness.manager.isSessionActive)
+        _ = try #require(harness.manager.sessionExpirationDate)
     }
 
     @Test func changingDisableTimingToImmediatelyWhileActiveAndIdleShutsSessionDown() async throws {

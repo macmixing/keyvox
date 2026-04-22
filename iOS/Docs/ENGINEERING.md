@@ -513,6 +513,8 @@ Cold path:
 - disabling a session while idle tears down immediately
 - disabling a session during an utterance defers shutdown until the current work finishes
 - the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
+- session timing may disable monitoring immediately, after the configured idle timeout, or never; changing from `Never` to a timed preset must re-arm an idle timeout when an active idle session is currently monitored/idle
+
 
 ### Safety Rules
 
@@ -1056,7 +1058,7 @@ Current app-owned surfaces:
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, and cross-section coordination
-- `SettingsTabView+General`: session timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view
+- `SettingsTabView+General`: session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view
 - `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection plus per-model install actions and uninstalled model size display
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view
