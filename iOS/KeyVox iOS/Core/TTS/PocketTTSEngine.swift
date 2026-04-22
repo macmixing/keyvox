@@ -94,7 +94,7 @@ final class PocketTTSEngine: TTSEngine {
     func prewarmVoiceIfNeeded(voiceID: String) async throws {
         let runtime = try runtimeForInstalledAssets()
         guard let voice = KeyVoxTTSVoice(rawValue: voiceID) else {
-            throw KeyVoxTTSError.invalidVoice("PocketTTS voice \(voiceID) is not supported.")
+            throw KeyVoxTTSError.invalidVoice("KeyVox Speak voice \(voiceID) is not supported.")
         }
 
         Self.log("Prewarming PocketTTS voice \(voiceID).")
@@ -145,7 +145,7 @@ final class PocketTTSEngine: TTSEngine {
         Self.log("Creating audio stream for voice \(voiceID).")
         let runtime = try runtimeForInstalledAssets()
         guard let voice = KeyVoxTTSVoice(rawValue: voiceID) else {
-            throw KeyVoxTTSError.invalidVoice("PocketTTS voice \(voiceID) is not supported.")
+            throw KeyVoxTTSError.invalidVoice("KeyVox Speak voice \(voiceID) is not supported.")
         }
 
         return try await runtime.synthesizeStreaming(
@@ -159,7 +159,7 @@ final class PocketTTSEngine: TTSEngine {
         guard sharedModelInstalledProvider(),
               let assetLayout = assetLayoutProvider() else {
             Self.log("Runtime request failed because assets are not installed.")
-            throw KeyVoxTTSError.missingAsset("PocketTTS assets are not installed.")
+            throw KeyVoxTTSError.missingAsset("KeyVox Speak engine is not installed.")
         }
 
         let currentFingerprint = computeAssetFingerprint(for: assetLayout)

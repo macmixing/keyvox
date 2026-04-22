@@ -3,7 +3,7 @@ import SwiftUI
 enum SettingsTabCopy {
     enum Keyboard {
         static let hapticsTitle = "Keyboard Haptics"
-        static let hapticsDescription = "Get haptic feedback from KeyVox Keyboard."
+        static let hapticsDescription = "Get haptic feedback from KeyVox keyboard."
     }
 }
 
@@ -109,7 +109,7 @@ extension SettingsTabView {
                     .padding(.top, 2)
                 }
 
-                Text("Decide how long KeyVox Speak stays ready to buffer playback.")
+                Text("Decide how long KeyVox Speak stays ready to start loading audio.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }
