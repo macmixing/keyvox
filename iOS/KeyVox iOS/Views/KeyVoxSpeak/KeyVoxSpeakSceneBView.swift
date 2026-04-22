@@ -11,7 +11,7 @@ struct KeyVoxSpeakSceneBView: View {
     private static let accessMethods: [AccessMethod] = [
         AccessMethod(id: 0, icon: "house.fill", title: "Home Tab", subtitle: "Tap Speak from the main screen."),
         AccessMethod(id: 1, icon: "keyboard.fill", title: "Keyboard Shortcut", subtitle: "Trigger directly from the KeyVox keyboard."),
-        AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: "Share to Speak", subtitle: "Share text, URLs, PDFs, or images with text from any app."),
+        AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: "Share to Speak", subtitle: "Share PDFs, websites, and images with text from any app."),
         AccessMethod(id: 3, icon: "link", title: "Shortcuts & Actions", subtitle: "Map to Action Button or Control Center.")
     ]
 
