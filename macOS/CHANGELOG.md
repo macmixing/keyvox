@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.9] - 2026-04-22
+
+### Changed
+
+- Reworked Parakeet Core ML chunk assembly around emitted-token timing, decode windows, and overlap-aware merge logic, including a tail-context rescue pass for final remainder chunks.
+- Removed macOS recorder stop-delay handling and synthetic transcription silence padding so stopped captures return normalized captured frames only after queued capture work drains.
+- Updated macOS paste menu fallback test assertions to avoid isolated enum equality checks under the XCTest host.
+
+### Fixed
+
+- Rescued short final Parakeet utterance tails that could be lost when the last partial chunk did not have enough decoding context.
+- Prevented recorder padding from inflating captured audio duration and working against short-utterance/no-speech decisions.
+
+### Package versions
+
+KeyVox macOS 1.0.9 (build 1):
+- KeyVoxCore       1.0.5
+- KeyVoxWhisper    1.0.0
+- KeyVoxParakeet   1.0.2
+
 ## [1.0.8] - 2026-04-16
 
 ### Changed
