@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.6] - 2026-04-25
+
+Built-in app and product dictionary handling for shared dictation.
+
+### Includes
+
+- Added package-owned hidden dictionary entries for `KeyVox` and `KeyVox Speak` so both app clients can correct the app and product names without requiring visible user dictionary entries.
+- Added built-in alias matching for observed app-name variants such as `Kivok`, `Kivox`, and `Keyvox`, while preserving canonical `KeyVox` and `KeyVox Speak` output.
+- Centralized dictionary hint prompt construction in `KeyVoxCore`, including de-duplication when a user already has a matching canonical dictionary entry.
+- Moved dictionary prompt refresh ownership into the shared dictation pipeline so app clients provide audio eligibility while the package owns effective dictionary availability and prompt content.
+- Tightened stylized split-join matching so fuzzy plural phrases like `key vocals` do not overcorrect to the built-in brand name, while possessive split forms like `key vox's` still normalize correctly.
+- Updated adjacent-titlecase safety handling so built-in brand aliases followed by sentence punctuation are not blocked by titlecase words at the start of the next sentence.
+
+### Notes
+
+- `1.0.6` bumps the tracked engine version for `KeyVoxCore` to cover the shared built-in dictionary and prompt ownership behavior used by both app clients.
+
 ## [1.0.5] - 2026-04-16
 
 Month-led year preservation for numeric grouping.

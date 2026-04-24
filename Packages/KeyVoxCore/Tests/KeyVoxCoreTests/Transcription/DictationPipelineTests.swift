@@ -35,6 +35,61 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(pasted, ["Project notes:\n\n1. Cueboard\n2. Cueboard"])
     }
 
+    func testPipelineAppliesBuiltInDictionaryEntryAndRefreshesProviderPrompt() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "my app is called key box", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { [self] in recorded.append($0) },
+            pasteText: { [self] in pasted.append($0) }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: true
+        )
+
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak")
+        XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, true)
+        XCTAssertEqual(result.finalText, "My app is called KeyVox")
+        XCTAssertEqual(recorded, ["My app is called KeyVox"])
+        XCTAssertEqual(pasted, ["My app is called KeyVox"])
+    }
+
+    func testPipelineKeepsProviderHintDisabledWhenAudioGateDisallowsHinting() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "my app is called key box", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        _ = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak")
+        XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, false)
+    }
+
     func testPipelineSuppressesLikelyNoSpeechResults() async throws {
         let provider = StubTranscriptionProvider(
             result: nil,
@@ -119,12 +174,13 @@ final class DictationPipelineTests: XCTestCase {
 }
 
 @MainActor
-private final class StubTranscriptionProvider: DictationTranscriptionProviding {
+private final class StubTranscriptionProvider: DictationTranscriptionProviding, DictationTranscriptionControlling {
     let result: TranscriptionProviderResult?
     let lastResultWasLikelyNoSpeech: Bool
     private(set) var receivedAudioFrames: [Float]?
     private(set) var receivedUseDictionaryHintPrompt: Bool?
     private(set) var receivedEnableAutoParagraphs: Bool?
+    private(set) var receivedDictionaryHintPrompt: String?
 
     init(
         result: TranscriptionProviderResult?,
@@ -145,10 +201,16 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         receivedEnableAutoParagraphs = enableAutoParagraphs
         completion(result)
     }
+
+    func cancelTranscription() {}
+
+    func updateDictionaryHintPrompt(_ prompt: String) {
+        receivedDictionaryHintPrompt = prompt
+    }
 }
 
 @MainActor
-private final class DeferredTranscriptionProvider: DictationTranscriptionProviding {
+private final class DeferredTranscriptionProvider: DictationTranscriptionProviding, DictationTranscriptionControlling {
     let lastResultWasLikelyNoSpeech = false
     private var completion: ((TranscriptionProviderResult?) -> Void)?
 
@@ -165,4 +227,8 @@ private final class DeferredTranscriptionProvider: DictationTranscriptionProvidi
         completion?(result)
         completion = nil
     }
+
+    func cancelTranscription() {}
+
+    func updateDictionaryHintPrompt(_ prompt: String) {}
 }

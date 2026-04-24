@@ -258,7 +258,8 @@ extension DictionaryMatcher {
             let hasAdjacentTitlecaseContext = hasAdjacentTitlecasePhraseContext(
                 tokenIndex: start,
                 totalTokens: tokens.count,
-                tokens: tokens
+                tokens: tokens,
+                text: text
             )
 
             if observedHasRuntimePronunciation,

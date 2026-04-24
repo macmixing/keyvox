@@ -26,7 +26,8 @@ extension DictionaryMatcher {
     func hasAdjacentTitlecasePhraseContext(
         tokenIndex: Int,
         totalTokens: Int,
-        tokens: [Token]
+        tokens: [Token],
+        text: String
     ) -> Bool {
         guard tokens[tokenIndex].normalized.count >= 3,
               isTitlecaseToken(tokens[tokenIndex]) else {
@@ -37,12 +38,24 @@ extension DictionaryMatcher {
             tokenIndex > 0
             && tokens[tokenIndex - 1].normalized.count >= 3
             && isTitlecaseToken(tokens[tokenIndex - 1])
+            && !hasSentenceBoundaryBetween(tokens[tokenIndex - 1], tokens[tokenIndex], in: text)
         let nextIsTitlecase =
             tokenIndex + 1 < totalTokens
             && tokens[tokenIndex + 1].normalized.count >= 3
             && isTitlecaseToken(tokens[tokenIndex + 1])
+            && !hasSentenceBoundaryBetween(tokens[tokenIndex], tokens[tokenIndex + 1], in: text)
 
         return previousIsTitlecase || nextIsTitlecase
+    }
+
+    private func hasSentenceBoundaryBetween(_ left: Token, _ right: Token, in text: String) -> Bool {
+        let leftEnd = left.range.location + left.range.length
+        let rightStart = right.range.location
+        guard rightStart > leftEnd else { return false }
+
+        let bridge = text as NSString
+        let gap = bridge.substring(with: NSRange(location: leftEnd, length: rightStart - leftEnd))
+        return gap.contains(".") || gap.contains("?") || gap.contains("!") || gap.contains("\n")
     }
 
     func isStylizedSingleTokenEntry(_ entry: CompiledEntry) -> Bool {

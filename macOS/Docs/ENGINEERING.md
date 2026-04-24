@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-04-11**
+**Last Updated: 2026-04-23**
 
 ## Design Philosophy
 
@@ -27,9 +27,9 @@ KeyVox is organized by responsibility:
 
 - `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `WeeklyWordStatsStore`).
 - `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
-- `Core/Transcription/`: Runtime state machine and macOS host-side orchestration (`TranscriptionManager`), with the reusable transcribe -> post-process -> paste boundary extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host also persists the most recent successful transcription for Home-tab display after relaunch.
+- `Core/Transcription/`: Runtime state machine and macOS host-side orchestration (`TranscriptionManager`), with the reusable transcribe -> post-process -> paste boundary extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
-- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files).
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). Package-owned hidden dictionary entries live beside user dictionary primitives so app/product naming is corrected through the same matcher pipeline without persisting or displaying those entries as user vocabulary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Core/Services/`: Paste/injection and update/checking services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, while update feed source selection lives in `UpdateFeedConfig.swift` and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
@@ -72,12 +72,22 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 
 1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
 2. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
-3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies custom-word adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
+3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies effective dictionary adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery and package-owned hidden app/product naming entries.
 4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
 5. List formatting applies numeric list rendering when confidence gates pass.
 6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
 8. Final text is inserted via the paste service, where macOS applies final insertion-time heuristics such as dictionary-aware leading-cap normalization and smart spacing based on the focused target context.
+
+## Dictionary Hinting and Built-Ins
+
+- User dictionary entries remain the only visible and persisted dictionary data. Built-in app/product entries are package-owned, hidden, and merged only at effective-use boundaries.
+- Built-in canonical entries currently cover `KeyVox` and `KeyVox Speak`. Alias spellings such as `Kivok`, `Kivox`, and `Keyvox` compile into the matcher as observed forms but replace to the canonical brand text.
+- If a user already has a matching canonical phrase in their dictionary, `KeyVoxCore` de-dupes the effective entry set so the phrase is not fed through the matcher or provider prompt twice.
+- `DictionaryHintPromptBuilder` builds prompt text from user phrases plus canonical built-ins only. Alias spellings are intentionally not exposed in the prompt.
+- macOS `TranscriptionManager` still decides whether a capture is audio-safe for dictionary hinting by using `DictionaryHintPromptGate`; `DictationPipeline` then combines that host signal with package-owned effective dictionary availability.
+- `TranscriptionPostProcessor` always applies effective dictionary entries, so the built-in corrections remain available even when a provider prompt is disabled for short, silent, or otherwise unsafe captures.
+- Adjacent-titlecase safety checks still guard against broad prose/name rewrites, but sentence punctuation is treated as a real boundary so a built-in brand alias at the end of one sentence is not blocked by titlecase text starting the next sentence.
 
 ## Model Management
 

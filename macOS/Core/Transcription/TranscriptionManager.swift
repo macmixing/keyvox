@@ -125,15 +125,6 @@ class TranscriptionManager: ObservableObject {
             }
             .store(in: &cancellables)
 
-        dictionaryStore.$entries
-            .sink { [weak self] _ in
-                guard let self else { return }
-                self.postProcessor.updateDictionaryEntries(self.dictionaryStore.entries)
-                let hintPrompt = self.dictionaryStore.whisperHintPrompt()
-                self.provider.updateDictionaryHintPrompt(hintPrompt)
-            }
-            .store(in: &cancellables)
-
         modelDownloader.$modelReady
             .removeDuplicates()
             .receive(on: DispatchQueue.main)

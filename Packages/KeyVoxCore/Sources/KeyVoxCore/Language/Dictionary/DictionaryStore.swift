@@ -100,26 +100,7 @@ public final class DictionaryStore: ObservableObject {
     }
 
     public func whisperHintPrompt(maxEntries: Int = 200, maxChars: Int = 1200) -> String {
-        let candidates = entries
-            .map(\.phrase)
-            .filter { !$0.isEmpty }
-            .suffix(maxEntries)
-
-        guard !candidates.isEmpty else { return "" }
-
-        var prompt = "Domain vocabulary: "
-        var appendedCount = 0
-        for phrase in candidates {
-            let separator = prompt == "Domain vocabulary: " ? "" : ", "
-            let chunk = separator + phrase
-            if prompt.count + chunk.count > maxChars {
-                break
-            }
-            prompt += chunk
-            appendedCount += 1
-        }
-
-        return appendedCount == 0 ? "" : prompt
+        DictionaryHintPromptBuilder.prompt(for: entries, maxEntries: maxEntries, maxChars: maxChars)
     }
 
     public func clearWarnings() {

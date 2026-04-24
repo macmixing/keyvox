@@ -23,10 +23,11 @@ public final class TranscriptionPostProcessor {
     public init() {}
 
     public func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
-        let fingerprint = fingerprint(for: entries)
+        let effectiveEntries = DictionaryBuiltInEntries.effectiveEntries(merging: entries)
+        let fingerprint = fingerprint(for: effectiveEntries)
         guard fingerprint != dictionaryFingerprint else { return }
         dictionaryFingerprint = fingerprint
-        dictionaryMatcher.rebuildIndex(entries: entries)
+        dictionaryMatcher.rebuildIndex(entries: effectiveEntries)
     }
 
     public func process(

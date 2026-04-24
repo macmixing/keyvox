@@ -20,6 +20,108 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
+    func testAppliesBuiltInAppNameDictionaryEntryWithoutUserEntry() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "My app is called Keybox.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "My app is called KeyVox.")
+    }
+
+    func testAppliesBuiltInBrandNameAliasesWithoutUserEntry() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Kivok is open. Kivox listens. Keyvox works.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "KeyVox is open. KeyVox listens. KeyVox works.")
+    }
+
+    func testDoesNotApplyBuiltInBrandNameToFuzzyPluralSplit() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I said key vocals.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I said key vocals.")
+    }
+
+    func testAppliesBuiltInBrandNameFromSplitPossessive() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I use key vox's shortcuts.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I use KeyVox's shortcuts.")
+    }
+
+    func testAppliesBuiltInBrandAliasBeforeTitlecaseSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Have you ever heard of Kivox? Yeah, it's a really cool dictation app and has a TTS feature inside of it called KeyVox Speak.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Have you ever heard of KeyVox? Yeah, it's a really cool dictation app and has a TTS feature inside of it called KeyVox Speak."
+        )
+    }
+
+    func testAppliesBuiltInProductNameDictionaryEntryWithoutUserEntry() {
+        let processor = TranscriptionPostProcessor()
+
+        let kivokOutput = processor.process(
+            "I am using Kivok Speak.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let kivoxOutput = processor.process(
+            "I am using Kivox Speak.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let keyvoxOutput = processor.process(
+            "I am using Keyvox Speak.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(kivokOutput, "I am using KeyVox Speak.")
+        XCTAssertEqual(kivoxOutput, "I am using KeyVox Speak.")
+        XCTAssertEqual(keyvoxOutput, "I am using KeyVox Speak.")
+    }
+
+    func testBuiltInAppNameDictionaryEntryWinsOverUserDuplicate() {
+        let processor = TranscriptionPostProcessor()
+        let entries = [
+            DictionaryEntry(phrase: "keyvox"),
+        ]
+
+        let output = processor.process(
+            "My app is called key box.",
+            dictionaryEntries: entries,
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "My app is called KeyVox.")
+    }
+
     func testListFormattingDisabledKeepsProseAndOtherNormalizations() {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Cueboard")]

@@ -630,14 +630,24 @@ struct TranscriptionManagerTests {
         #expect(harness.interruptedCaptureRecoveryStore.load()?.recovery.status == .pending)
     }
 
-    @Test func dictionaryUpdatesRefreshHintPrompt() async throws {
+    @Test func dictionaryPromptRefreshesWhenPipelineRuns() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
         try harness.dictionaryStore.add(phrase: "cueit")
         await settleAsyncManagerWork()
 
+        #expect(harness.transcriptionService.lastUpdatedPrompt == nil)
+
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "cueit launched", languageCode: "en")
+
+        await harness.manager.performStartRecordingCommand()
+        await harness.manager.performStopRecordingCommand()
+        await settleAsyncManagerWork()
+
         #expect(harness.transcriptionService.lastUpdatedPrompt?.lowercased().contains("cueit") == true)
+        #expect(harness.transcriptionService.lastUseDictionaryHintPrompt == true)
     }
 
     private func makeHarness(

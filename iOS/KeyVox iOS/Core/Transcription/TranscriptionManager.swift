@@ -272,7 +272,7 @@ final class TranscriptionManager: ObservableObject {
 
         transcriptionService.warmup()
 
-        let usedDictionaryHintPrompt = !dictionaryStore.entries.isEmpty && DictionaryHintPromptGate.shouldUseHintPrompt(
+        let usedDictionaryHintPrompt = DictionaryHintPromptGate.shouldUseHintPrompt(
             lastCaptureHadActiveSignal: recorder.lastCaptureHadActiveSignal,
             lastCaptureWasLikelySilence: recorder.lastCaptureWasLikelySilence,
             lastCaptureWasLongTrueSilence: recorder.lastCaptureWasLongTrueSilence,
@@ -336,7 +336,6 @@ final class TranscriptionManager: ObservableObject {
 
     private func updateDictionaryState(entries: [DictionaryEntry]) {
         postProcessor.updateDictionaryEntries(entries)
-        transcriptionService.updateDictionaryHintPrompt(whisperHintPrompt(for: entries))
     }
 
     private func bindSessionDisableTimingState(_ publisher: AnyPublisher<SessionDisableTiming, Never>) {
@@ -383,28 +382,6 @@ final class TranscriptionManager: ObservableObject {
         hasPendingInterruptedCaptureRecovery = isPresent
     }
 
-    private func whisperHintPrompt(for entries: [DictionaryEntry], maxEntries: Int = 200, maxChars: Int = 1200) -> String {
-        let candidates = entries
-            .map(\.phrase)
-            .filter { !$0.isEmpty }
-            .suffix(maxEntries)
-
-        guard !candidates.isEmpty else { return "" }
-
-        var prompt = "Domain vocabulary: "
-        var appendedCount = 0
-        for phrase in candidates {
-            let separator = prompt == "Domain vocabulary: " ? "" : ", "
-            let chunk = separator + phrase
-            if prompt.count + chunk.count > maxChars {
-                break
-            }
-            prompt += chunk
-            appendedCount += 1
-        }
-
-        return appendedCount == 0 ? "" : prompt
-    }
 }
 
 private extension String {

@@ -102,6 +102,24 @@ public final class DictionaryMatcher {
             )
 
             grouped[tokens.count, default: []].append(compiled)
+
+            for alias in DictionaryBuiltInEntries.aliases(for: entry) {
+                let normalizedAlias = DictionaryTextNormalization.normalizedPhrase(alias)
+                guard !normalizedAlias.isEmpty, normalizedAlias != normalizedPhrase else { continue }
+
+                let aliasTokens = normalizedAlias.split(separator: " ").map(String.init)
+                guard !aliasTokens.isEmpty, aliasTokens.count <= 4 else { continue }
+
+                let aliasPhoneticPhrase = encoder.scoringPhraseSignature(for: aliasTokens, lexicon: lexicon)
+                let compiledAlias = CompiledEntry(
+                    phrase: entry.phrase,
+                    normalizedPhrase: normalizedAlias,
+                    tokens: aliasTokens,
+                    phoneticPhrase: aliasPhoneticPhrase
+                )
+
+                grouped[aliasTokens.count, default: []].append(compiledAlias)
+            }
         }
 
         entriesByTokenCount = grouped

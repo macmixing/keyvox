@@ -56,6 +56,7 @@ public struct DictationPipelineResult {
 @MainActor
 public final class DictationPipeline {
     private let transcriptionProvider: DictationTranscriptionProviding
+    private let transcriptionController: (any DictationTranscriptionControlling)?
     private let postProcessor: TranscriptionPostProcessor
     private let dictionaryEntriesProvider: () -> [DictionaryEntry]
     private let autoParagraphsEnabledProvider: () -> Bool
@@ -77,6 +78,7 @@ public final class DictationPipeline {
         pasteText: @escaping (String) -> Void
     ) {
         self.transcriptionProvider = transcriptionProvider
+        self.transcriptionController = transcriptionProvider as? any DictationTranscriptionControlling
         self.postProcessor = postProcessor
         self.dictionaryEntriesProvider = dictionaryEntriesProvider
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
@@ -94,9 +96,15 @@ public final class DictationPipeline {
     ) {
         let inferenceStart = Date()
         let autoParagraphsEnabled = autoParagraphsEnabledProvider()
+        let userDictionaryEntries = dictionaryEntriesProvider()
+        let shouldUseDictionaryHintPrompt = useDictionaryHintPrompt
+            && DictionaryBuiltInEntries.hasEffectiveEntries(merging: userDictionaryEntries)
+        transcriptionController?.updateDictionaryHintPrompt(
+            DictionaryHintPromptBuilder.prompt(for: userDictionaryEntries)
+        )
         transcriptionProvider.transcribe(
             audioFrames: audioFrames,
-            useDictionaryHintPrompt: useDictionaryHintPrompt,
+            useDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
             enableAutoParagraphs: autoParagraphsEnabled
         ) { [self] result in
             let inferenceDuration = Date().timeIntervalSince(inferenceStart)
@@ -121,7 +129,9 @@ public final class DictationPipeline {
             }
 
             let pasteStart = Date()
-            let dictionaryEntries = self.dictionaryEntriesProvider()
+            let dictionaryEntries = DictionaryBuiltInEntries.effectiveEntries(
+                merging: userDictionaryEntries
+            )
             let finalText = self.postProcessor.process(
                 rawText,
                 dictionaryEntries: dictionaryEntries,
@@ -137,7 +147,7 @@ public final class DictationPipeline {
             if DictationPromptEchoGuard.shouldTreatAsNoSpeech(
                 processedText: finalText,
                 dictionaryEntries: dictionaryEntries,
-                usedDictionaryHintPrompt: useDictionaryHintPrompt
+                usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
             ) {
                 #if DEBUG
                 print("DictationPipeline: Suppressed likely dictionary prompt echo output.")
