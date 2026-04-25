@@ -20,6 +20,7 @@ struct OnboardingSetupScreen: View {
     @State private var previousKeyboardStepCompletion: Bool?
     @State private var displaysMicrophoneStepCompletion = false
     @State private var hasPendingMicrophoneStepCompletion = false
+    @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
     private let onboardingModelID: DictationModelID = .whisperBase
 
     @MainActor
@@ -105,6 +106,7 @@ struct OnboardingSetupScreen: View {
                 hasPendingMicrophoneStepCompletion = true
             }
         }
+        .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
     }
 
     @ViewBuilder
@@ -190,7 +192,7 @@ struct OnboardingSetupScreen: View {
                 isEnabled: downloadNetworkMonitor.isOnline && preflightModelStorageError == nil,
                 action: {
                     appHaptics.light()
-                    modelManager.downloadModel(withID: onboardingModelID)
+                    pendingDownloadConfirmation = .dictationModel(onboardingModelID)
                 }
             )
         case .failed:
@@ -297,6 +299,16 @@ struct OnboardingSetupScreen: View {
         modelManager.refreshStatus()
         microphonePermissionController.refreshStatus()
         keyboardAccessProbe.refresh()
+    }
+
+    private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
+        switch confirmation {
+        case .dictationModel(let modelID):
+            modelManager.downloadModel(withID: modelID)
+        case .sharedTTSModel, .ttsVoice, .ttsVoiceWithSharedModel:
+            // Onboarding only confirms dictation model downloads; TTS download confirmations are owned by the app shell or Speak sheet.
+            break
+        }
     }
 
     private func openKeyboardSettings() {

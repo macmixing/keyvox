@@ -9,6 +9,7 @@ struct KeyVoxSpeakInstallCardView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
 
     let revealedStepCount: Int
+    let onDownloadRequested: (PendingDownloadConfirmation) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -295,6 +296,11 @@ struct KeyVoxSpeakInstallCardView: View {
         }
 
         guard pocketTTSReadyForAlba == false else { return }
-        pocketTTSModelManager.installVoiceEnsuringSharedModel(.alba)
+
+        if isSharedModelReady {
+            onDownloadRequested(.ttsVoice(.alba))
+        } else {
+            onDownloadRequested(.ttsVoiceWithSharedModel(.alba))
+        }
     }
 }

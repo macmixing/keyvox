@@ -314,7 +314,7 @@ extension SettingsTabView {
                 size: .compact,
                 fontSize: 15,
                 isEnabled: !pocketTTSModelManager.isBusyInstallingAnotherTarget(sharedModel: true),
-                action: { pocketTTSModelManager.downloadSharedModel() }
+                action: { pendingDownloadConfirmation = .sharedTTSModel }
             )
         case .ready:
             AppActionButton(
@@ -351,7 +351,7 @@ extension SettingsTabView {
                 size: .compact,
                 fontSize: 15,
                 isEnabled: pocketTTSModelManager.isSharedModelReady() && !isBlockedByAnotherActiveInstall,
-                action: { pocketTTSModelManager.downloadVoice(voice) }
+                action: { pendingDownloadConfirmation = .ttsVoice(voice) }
             )
         case .ready:
             AppActionButton(

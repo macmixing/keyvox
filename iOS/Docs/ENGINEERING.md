@@ -265,9 +265,25 @@ Rules:
 - keyboard setup stays gated until the model install state is `.ready` and microphone permission is granted
 - microphone permission may be completed while the model download is still running
 - model download may continue while the user works through the other visible steps
+- tapping the onboarding model download action must present an explicit download confirmation with the Whisper Base model name and approximate size before `ModelManager` starts the download
 - when microphone access is denied, onboarding must route the user to app settings rather than pretending the permission can still be requested in place
 - the setup screen records a pending keyboard-tour handoff before opening KeyVox settings
 - the setup screen records and arms the keyboard-tour handoff when the model is ready, microphone access is granted, and the keyboard is already enabled, even if the user enabled the keyboard during a microphone settings trip or before the model finished downloading
+
+### Download Confirmation Contract
+
+Any user-facing model or voice download must be confirmed before the manager starts work.
+
+Rules:
+
+- `DownloadConfirmation.swift` owns the shared confirmation styling and the per-resource title/message copy.
+- Confirmation copy must stay specific to the requested resource: Whisper Base, Parakeet TDT v3, the shared Speak engine, an individual Speak voice, or the combined first-use Speak engine plus selected voice.
+- Confirmations must disclose the pinned approximate download size for that resource path.
+- Home and Settings must route download requests through the `MainTabView`-owned confirmation overlay so the overlay covers tab content, the navigation toolbar, and the tab bar.
+- The KeyVox Speak sheet must own its own sheet-level confirmation overlay so scene content, the pinned bottom CTA section, and sheet chrome are covered while confirmation is active.
+- Scene C and `KeyVoxSpeakInstallCardView` must request confirmation from the sheet instead of starting downloads directly.
+- When the shared Speak engine is already ready, the KeyVox Speak install card must request the voice-only confirmation; it should request the combined engine-plus-voice confirmation only when the shared Speak engine is missing.
+- Repair actions may continue to run through the existing repair paths; this confirmation contract is for user-started downloads.
 
 ### Keyboard Tour Contract
 
@@ -691,6 +707,7 @@ Primary owners:
 - deleting the shared PocketTTS runtime removes the entire PocketTTS install root, including any downloaded voices
 - the selected playback voice is persisted in `AppSettingsStore`
 - the settings UI may surface approximate voice download sizes, but install validation still depends on the manifest-backed artifact set
+- user-started PocketTTS downloads must pass through the shared download confirmation path with separate copy for the shared Speak engine, individual voices, and combined first-use engine-plus-voice setup
 - bundled voice preview clips are app resources and are intentionally separate from downloadable PocketTTS voice assets
 - the downloaded PocketTTS runtime artifacts and voice prompts are not bundled in the repository and remain third-party licensed model assets
 
@@ -1054,6 +1071,7 @@ Current app-owned surfaces:
 - `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
 - `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper; the pure `KeyVoxSpeakFlowRules` resolver now lives under `App/Presentation/` so scene selection and fallback behavior stay separate from component rendering
+- `DownloadConfirmation`: shared non-destructive confirmation overlay for user-started model and voice downloads; app-shell surfaces route through `MainTabView`, while the KeyVox Speak sheet owns a sheet-level instance so pinned CTA controls are covered
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles

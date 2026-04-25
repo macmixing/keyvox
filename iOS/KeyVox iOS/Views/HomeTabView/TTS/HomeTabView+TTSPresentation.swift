@@ -310,7 +310,7 @@ extension HomeTabView {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                pocketTTSModelManager.installVoiceEnsuringSharedModel(effectiveTTSVoice)
+                pendingDownloadConfirmation = .ttsVoiceWithSharedModel(effectiveTTSVoice)
             case .failed:
                 pocketTTSModelManager.repairVoiceEnsuringSharedModel(effectiveTTSVoice)
             case .downloading, .installing, .ready:
@@ -321,7 +321,7 @@ extension HomeTabView {
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            pocketTTSModelManager.downloadVoice(effectiveTTSVoice)
+            pendingDownloadConfirmation = .ttsVoice(effectiveTTSVoice)
         case .failed:
             pocketTTSModelManager.repairVoiceIfNeeded(effectiveTTSVoice)
         case .downloading, .installing:

@@ -18,6 +18,7 @@ struct MainTabView: View {
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,7 @@ struct MainTabView: View {
             }
         }
         .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
+        .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         .sheet(
             isPresented: Binding(
                 get: { ttsPurchaseController.isUnlockSheetPresented },
@@ -60,7 +62,7 @@ struct MainTabView: View {
 
     private var tabContent: some View {
         TabView(selection: $appTabRouter.selectedTab) {
-            HomeTabView()
+            HomeTabView(pendingDownloadConfirmation: $pendingDownloadConfirmation)
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
@@ -78,7 +80,10 @@ struct MainTabView: View {
                 }
                 .tag(ContainingAppTab.style)
 
-            SettingsTabView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
+            SettingsTabView(
+                pendingDeletionConfirmation: $pendingDeletionConfirmation,
+                pendingDownloadConfirmation: $pendingDownloadConfirmation
+            )
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
@@ -137,6 +142,19 @@ struct MainTabView: View {
             pocketTTSModelManager.deleteSharedModel()
         case .ttsVoice(let voice):
             pocketTTSModelManager.deleteVoice(voice)
+        }
+    }
+
+    private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
+        switch confirmation {
+        case .dictationModel(let modelID):
+            modelManager.downloadModel(withID: modelID)
+        case .sharedTTSModel:
+            pocketTTSModelManager.downloadSharedModel()
+        case .ttsVoice(let voice):
+            pocketTTSModelManager.downloadVoice(voice)
+        case .ttsVoiceWithSharedModel(let voice):
+            pocketTTSModelManager.installVoiceEnsuringSharedModel(voice)
         }
     }
 

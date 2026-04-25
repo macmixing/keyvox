@@ -210,12 +210,12 @@ extension SettingsTabView {
         switch state {
         case .notInstalled:
             AppActionButton(
-                title: "Install",
+                title: "Download",
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
                 isEnabled: !isBlockedByAnotherActiveInstall,
-                action: { modelManager.downloadModel(withID: modelID) }
+                action: { pendingDownloadConfirmation = .dictationModel(modelID) }
             )
         case .ready:
             AppActionButton(

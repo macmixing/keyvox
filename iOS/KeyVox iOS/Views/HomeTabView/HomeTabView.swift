@@ -30,6 +30,7 @@ struct HomeTabView: View {
     @State var mountedTTSWarningText: String?
     @State var showsPrimaryTTSStatusRow = true
     @State var ttsStatusTransitionTask: Task<Void, Never>?
+    @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     @StateObject var ttsTranscriptCopyFeedback = CopyFeedbackController()
     @AppStorage(
@@ -208,7 +209,7 @@ struct HomeTabView: View {
 }
 
 #Preview {
-    HomeTabView()
+    HomeTabView(pendingDownloadConfirmation: .constant(nil))
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.ttsManager)

@@ -211,6 +211,7 @@ iOS/
 │   │   │   │   └── AppToolbarContent.swift
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
+│   │   │   ├── DownloadConfirmation.swift
 │   │   │   ├── InlineWarningRow.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── LoopingVideoPlayer.swift
@@ -615,6 +616,7 @@ Packages/
 - `KeyVox iOS/Views/MainTabView.swift`
   - Four-tab container: Home, Dictionary, Style, Settings.
   - Adds edge-swipe tab navigation on top of `TabView` and still owns the unlock-sheet presentation surface for the TTS monetization flow.
+  - Owns the app-shell download confirmation overlay for Home and Settings model downloads so tab bar and toolbar controls are covered while confirmation is active.
 - `KeyVox iOS/Views/ContainingAppTab.swift`
   - Source of truth for app-tab ordering, titles, and previous/next navigation.
 - `KeyVox iOS/Views/HomeTabView/`
@@ -640,10 +642,10 @@ Packages/
   - Non-dismissable legal notices sheet with the shared top-right close affordance, rendering the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown inside app-styled readable text.
 - `KeyVox iOS/Views/KeyVoxSpeak/`
   - Dedicated feature folder for the shared KeyVox Speak presentation surface.
-  - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, and mode-specific chrome.
-  - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern.
+  - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, mode-specific chrome, and sheet-level download confirmation overlay so pinned controls are covered while confirmation is active.
+  - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern. Scene C requests setup downloads through the sheet-owned confirmation path instead of starting downloads directly.
   - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
-  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions.
+  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/DictionaryTabView/DictionaryTabView.swift`
@@ -651,7 +653,7 @@ Packages/
 - `KeyVox iOS/Views/StyleTabView.swift`
   - User-facing dictation style toggles.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
-  - Top-level settings composition, shared disclosure state, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
+  - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
@@ -665,6 +667,8 @@ Packages/
   - Rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view.
 - `KeyVox iOS/Views/Components/DeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
+- `KeyVox iOS/Views/Components/DownloadConfirmation.swift`
+  - Shared non-destructive download confirmation component used before model and voice downloads. It carries separate copy for Whisper Base, Parakeet TDT v3, the Speak engine, individual Speak voices, and combined first-use Speak engine-plus-voice setup.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
   - Includes a top-right dismiss control for returning to the Home surface without waiting for an external host-app switch.

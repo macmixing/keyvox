@@ -40,6 +40,7 @@ struct KeyVoxSpeakSheetView: View {
     @State private var buttonOpacity: Double = 0
     @State private var tabViewOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
+    @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
 
     let mode: Mode
 
@@ -149,6 +150,7 @@ struct KeyVoxSpeakSheetView: View {
                 }
             }
             .navigationTitle("")
+            .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         }
         .interactiveDismissDisabled()
         .onAppear {
@@ -200,7 +202,8 @@ struct KeyVoxSpeakSheetView: View {
             KeyVoxSpeakSceneCView(
                 isVisible: selectedScene == .c,
                 isUnlockContext: isUnlockMode,
-                titleOverride: introSceneCTitleOverride
+                titleOverride: introSceneCTitleOverride,
+                onDownloadRequested: { pendingDownloadConfirmation = $0 }
             )
         case .unlock:
             KeyVoxSpeakUnlockScene(isVisible: selectedScene == .unlock)
@@ -220,6 +223,19 @@ struct KeyVoxSpeakSheetView: View {
         appHaptics.light()
         Task {
             await ttsPurchaseController.restorePurchases()
+        }
+    }
+
+    private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
+        switch confirmation {
+        case .dictationModel:
+            break
+        case .sharedTTSModel:
+            pocketTTSModelManager.downloadSharedModel()
+        case .ttsVoice(let voice):
+            pocketTTSModelManager.downloadVoice(voice)
+        case .ttsVoiceWithSharedModel(let voice):
+            pocketTTSModelManager.installVoiceEnsuringSharedModel(voice)
         }
     }
 

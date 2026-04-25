@@ -8,6 +8,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State var isModelSectionExpanded = false
     @State var modelExpandedContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
@@ -77,7 +78,10 @@ struct SettingsTabView: View {
 }
 
 #Preview {
-    SettingsTabView(pendingDeletionConfirmation: .constant(nil))
+    SettingsTabView(
+        pendingDeletionConfirmation: .constant(nil),
+        pendingDownloadConfirmation: .constant(nil)
+    )
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)

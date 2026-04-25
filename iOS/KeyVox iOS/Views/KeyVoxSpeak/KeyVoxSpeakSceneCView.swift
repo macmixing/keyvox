@@ -8,6 +8,7 @@ struct KeyVoxSpeakSceneCView: View {
     let isVisible: Bool
     let isUnlockContext: Bool
     let titleOverride: String?
+    let onDownloadRequested: (PendingDownloadConfirmation) -> Void
 
     @State private var headerOpacity: Double = 0
     @State private var installCardOpacity: Double = 0
@@ -45,7 +46,8 @@ struct KeyVoxSpeakSceneCView: View {
                         .padding(.bottom, 20)
 
                     KeyVoxSpeakInstallCardView(
-                        revealedStepCount: stepRevealProgress
+                        revealedStepCount: stepRevealProgress,
+                        onDownloadRequested: onDownloadRequested
                     )
                     .opacity(installCardOpacity)
                     .offset(y: installCardOffset)
