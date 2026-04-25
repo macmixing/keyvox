@@ -1072,6 +1072,7 @@ Current app-owned surfaces:
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
 - `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper; the pure `KeyVoxSpeakFlowRules` resolver now lives under `App/Presentation/` so scene selection and fallback behavior stay separate from component rendering
 - `DownloadConfirmation`: shared non-destructive confirmation overlay for user-started model and voice downloads; app-shell surfaces route through `MainTabView`, while the KeyVox Speak sheet owns a sheet-level instance so pinned CTA controls are covered
+- `AppUpdatePrompt`: shared custom update overlay presented from `AppRootView` so optional and forced update prompts match the app modal style and cover the mounted app shell instead of using the native system alert
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles

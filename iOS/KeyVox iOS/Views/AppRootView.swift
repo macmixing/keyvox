@@ -92,31 +92,7 @@ struct AppRootView: View {
                 .environmentObject(keyVoxSpeakIntroController)
                 .environmentObject(ttsPurchaseController)
         }
-        .alert(
-            alertTitle,
-            isPresented: Binding(
-                get: { shouldPresentUpdateAlert },
-                set: { isPresented in
-                    if isPresented == false,
-                       destination == .main,
-                       appUpdateCoordinator.activePrompt?.decision.urgency == .optional {
-                        appUpdateCoordinator.dismissOptionalPrompt()
-                    }
-                }
-            )
-        ) {
-            Button("Update") {
-                appUpdateCoordinator.openAppStore()
-            }
-
-            if appUpdateCoordinator.activePrompt?.decision.urgency == .optional {
-                Button("Later", role: .cancel) {
-                    appUpdateCoordinator.dismissOptionalPrompt()
-                }
-            }
-        } message: {
-            Text(alertMessage)
-        }
+        .appUpdatePrompt(activeUpdatePrompt, onUpdate: openUpdate, onLater: dismissOptionalUpdate)
         .onAppear {
             previousDestination = destination
             onboardingOverlayState = destination == .onboarding ? .visible : .hidden
@@ -185,30 +161,17 @@ struct AppRootView: View {
         }
     }
 
-    private var shouldPresentUpdateAlert: Bool {
-        destination == .main && appUpdateCoordinator.activePrompt != nil
+    private var activeUpdatePrompt: AppUpdateCoordinator.Prompt? {
+        guard destination == .main else { return nil }
+        return appUpdateCoordinator.activePrompt
     }
 
-    private var alertTitle: String {
-        guard let prompt = appUpdateCoordinator.activePrompt else { return "" }
-
-        switch prompt.decision.urgency {
-        case .optional:
-            return "Update Available"
-        case .forced:
-            return "Update Required"
-        }
+    private func openUpdate() {
+        appUpdateCoordinator.openAppStore()
     }
 
-    private var alertMessage: String {
-        guard let prompt = appUpdateCoordinator.activePrompt else { return "" }
-
-        switch prompt.decision.urgency {
-        case .optional:
-            return "KeyVox \(prompt.decision.release.version.rawValue) is available on the App Store."
-        case .forced:
-            return "KeyVox \(prompt.decision.release.version.rawValue) is required to continue using the app."
-        }
+    private func dismissOptionalUpdate() {
+        appUpdateCoordinator.dismissOptionalPrompt()
     }
 
 }

@@ -209,6 +209,7 @@ iOS/
 │   │   │   │   ├── AppTintedScrollIndicator.swift
 │   │   │   │   ├── AppTintedScrollView.swift
 │   │   │   │   └── AppToolbarContent.swift
+│   │   │   ├── AppUpdatePrompt.swift
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
 │   │   │   ├── DownloadConfirmation.swift
@@ -669,6 +670,8 @@ Packages/
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/Components/DownloadConfirmation.swift`
   - Shared non-destructive download confirmation component used before model and voice downloads. It carries separate copy for Whisper Base, Parakeet TDT v3, the Speak engine, individual Speak voices, and combined first-use Speak engine-plus-voice setup.
+- `KeyVox iOS/Views/Components/AppUpdatePrompt.swift`
+  - Shared custom update prompt component used by the root app shell instead of the native system alert so optional and forced update prompts match the app's modal overlay styling.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
   - Includes a top-right dismiss control for returning to the Home surface without waiting for an external host-app switch.
