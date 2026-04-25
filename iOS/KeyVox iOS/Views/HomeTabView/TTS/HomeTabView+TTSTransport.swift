@@ -143,7 +143,7 @@ extension HomeTabView {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Install the KeyVox Speak engine to speak copied text."
+                return "Download the KeyVox Speak engine and Theo's voice (~661 MB) to speak copied text."
             case .downloading:
                 return "Downloading KeyVox Speak engine..."
             case .installing:
@@ -157,11 +157,11 @@ extension HomeTabView {
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Install the \(effectiveTTSVoice.displayName) voice to speak copied text."
+            return "Download \(effectiveTTSVoice.displayName)'s voice (~19 MB) to speak copied text."
         case .downloading:
-            return "Downloading the \(effectiveTTSVoice.displayName) voice..."
+            return "Downloading \(effectiveTTSVoice.displayName)'s voice..."
         case .installing:
-            return "Installing the \(effectiveTTSVoice.displayName) voice..."
+            return "Installing \(effectiveTTSVoice.displayName)'s voice..."
         case .failed:
             return "\(effectiveTTSVoice.displayName) voice install failed."
         case .ready:

@@ -218,7 +218,7 @@ struct KeyVoxSpeakInstallCardView: View {
             return nil
         }
 
-        return "Install"
+        return "Download"
     }
 
     private var isActionEnabled: Bool {

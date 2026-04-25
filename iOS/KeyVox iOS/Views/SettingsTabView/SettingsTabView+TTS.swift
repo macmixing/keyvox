@@ -309,7 +309,7 @@ extension SettingsTabView {
         switch pocketTTSModelManager.sharedModelInstallState {
         case .notInstalled:
             AppActionButton(
-                title: "Install",
+                title: "Download",
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -346,7 +346,7 @@ extension SettingsTabView {
         switch state {
         case .notInstalled:
             AppActionButton(
-                title: "Install",
+                title: "Download",
                 style: .primary,
                 size: .compact,
                 fontSize: 15,

@@ -129,12 +129,12 @@ extension HomeTabView {
 
     var ttsButtonTitle: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install"
+            return "Download"
         }
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Install"
+            return "Download"
         case .downloading, .installing:
             return "Installing"
         case .failed:
