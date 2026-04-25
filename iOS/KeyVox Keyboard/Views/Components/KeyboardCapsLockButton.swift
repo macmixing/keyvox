@@ -118,12 +118,11 @@ final class KeyboardCapsLockButton: UIControl {
         let isPressed = isLocked || isHighlighted
         let colors = colorsForState(isPressed: isPressed, isEnabled: isEnabled)
         let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
-        let transform = isPressed ? CGAffineTransform(scaleX: 0.985, y: 0.96) : .identity
         let shadow = isPressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
         let symbolName = isLocked ? "capslock.fill" : "capslock"
 
         let applyState = {
-            self.backgroundView.transform = transform
+            self.backgroundView.transform = .identity
             self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
             self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.backgroundView.layer.shadowColor = shadow.color.cgColor
