@@ -50,6 +50,31 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 
 https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 
+## What is KeyVox Speak? (iOS)
+
+**Copy text. Hear it speak.** KeyVox Speak is a text-to-speech feature that runs entirely on your device using local AI voices. No cloud processing, no data sent anywhere. Just reliable, private playback of any text you copy.
+
+### How to Access Speak
+
+KeyVox Speak is available from multiple places on iPhone:
+
+- **Home Tab**: Tap the Speak button from the main screen
+- **Keyboard Shortcut**: Trigger directly from the KeyVox keyboard
+- **Share to Speak**: Share text, URLs, or images with text from any app
+- **Shortcuts & Actions**: Map to Action Button or Control Center for quick access
+
+### Fast Mode
+
+Fast Mode starts speaking ~50% faster. Toggle Fast Mode in the toolbar when you need quicker playback and don't mind hanging out inside the app longer.
+
+### Free to Start
+
+KeyVox Speak is free to try with 2 speaks per day. Install the Theo voice (~19 MB) and start speaking right away. You can download up to 8 total voices in Settings.
+
+To unlock unlimited speaks, purchase KeyVox Speak access once and use it across all your devices on the same Apple account.
+
+**For more information** on KeyVox Speak, visit [our website](https://keyvox.app/speak).
+
 ## Quick Start
 
 ### Requirements
