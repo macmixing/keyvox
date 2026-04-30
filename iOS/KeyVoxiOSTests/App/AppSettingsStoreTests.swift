@@ -68,53 +68,33 @@ struct AppSettingsStoreTests {
         #expect(store.liveActivitiesEnabled == false)
     }
 
-    @Test func aiStyleTransformStyleDefaultsToNone() {
+    @Test func selectedVibeDefaultsToNone() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
         let store = AppSettingsStore(defaults: defaults)
 
-        #expect(store.aiStyleTransformStyle == .none)
+        #expect(store.selectedVibe == .none)
     }
 
-    @Test func aiStyleTransformStyleWritesToDefaults() {
+    @Test func selectedVibeWritesToDefaults() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         let store = AppSettingsStore(defaults: defaults)
 
-        store.aiStyleTransformStyle = .chill
+        store.selectedVibe = .chill
 
-        let persistedValue = defaults.string(forKey: UserDefaultsKeys.aiStyleTransformStyle)
+        let persistedValue = defaults.string(forKey: UserDefaultsKeys.selectedVibe)
         #expect(persistedValue == StyleRewriteStyle.chill.rawValue)
     }
 
-    @Test func aiStyleTransformStyleRestoresPersistedValue() {
+    @Test func selectedVibeRestoresPersistedValue() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
-        defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+        defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
         let store = AppSettingsStore(defaults: defaults)
 
-        #expect(store.aiStyleTransformStyle == .polished)
-    }
-
-    @Test func aiStyleTransformStyleMigratesEnabledBooleanToPolished() {
-        let defaults = UserDefaults(suiteName: #function)!
-        defaults.removePersistentDomain(forName: #function)
-        defaults.set(true, forKey: UserDefaultsKeys.aiStyleTransformEnabled)
-
-        let store = AppSettingsStore(defaults: defaults)
-
-        #expect(store.aiStyleTransformStyle == .polished)
-    }
-
-    @Test func aiStyleTransformStyleMigratesDisabledBooleanToNone() {
-        let defaults = UserDefaults(suiteName: #function)!
-        defaults.removePersistentDomain(forName: #function)
-        defaults.set(false, forKey: UserDefaultsKeys.aiStyleTransformEnabled)
-
-        let store = AppSettingsStore(defaults: defaults)
-
-        #expect(store.aiStyleTransformStyle == .none)
+        #expect(store.selectedVibe == .polished)
     }
 }

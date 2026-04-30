@@ -357,8 +357,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.SpeakTimeoutTiming`
 - `KeyVox.TTSVoice`
 - `KeyVox.FastPlaybackModeEnabled`
-- `KeyVox.AIStyleTransformStyle`
-- `KeyVox.AIStyleTransformEnabled`
+- `KeyVox.SelectedVibe`
 
 ### App-Owned Persistent Defaults Keys
 
@@ -854,8 +853,8 @@ The Style tab remains named `Style` because it also owns list and paragraph sett
 
 The keyboard extension can also change the selected vibe from the Vibes key.
 That selector must use `StyleRewriteStyle` from `KeyVoxStyleRewrite` for ordering and display names so the keyboard does not duplicate style labels or identifiers.
-The keyboard writes `KeyVox.AIStyleTransformStyle` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
-The containing app observes that notification and refreshes `AppSettingsStore.aiStyleTransformStyle` from shared defaults so the Style tab reflects keyboard-side changes.
+The keyboard writes `KeyVox.SelectedVibe` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
+The containing app observes that notification and refreshes `AppSettingsStore.selectedVibe` from shared defaults so the Style tab reflects keyboard-side changes.
 Tap changes only the selected Vibe.
 Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, regenerating from the original base text, and replacing the active insertion.
 The keyboard does not transform arbitrary selected host-app text because the iOS text proxy can provide incomplete selected/context text.
@@ -900,7 +899,7 @@ Failure policy:
 `StyleRewritePipelineCoordinator` is the iOS adapter between `TranscriptionManager` and `KeyVoxStyleRewrite`.
 It owns:
 
-- reading the selected style from `AppSettingsStore`
+- reading the selected Vibe from `AppSettingsStore`
 - building `TextTransformRequest` values through `StyleRewriteDictationConfiguration`
 - invoking `FoundationStyleRewriteTextTransformer`
 - translating `TextTransformResult` into `DictationPipelineTextProcessingResult`
@@ -915,7 +914,7 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 
 `KeyboardVibesStateStore` owns keyboard-side Vibe selection:
 
-- reads and writes `KeyVox.AIStyleTransformStyle` from App Group defaults
+- reads and writes `KeyVox.SelectedVibe` from App Group defaults
 - derives display text from `StyleRewriteStyle`
 - cycles through `None`, `Casual`, `Polished`, `Chill`
 - posts the shared Vibes selection-change Darwin notification

@@ -12,8 +12,7 @@ nonisolated enum UserDefaultsKeys {
     static let speakTimeoutTiming = "KeyVox.SpeakTimeoutTiming"
     static let ttsVoice = "KeyVox.TTSVoice"
     static let fastPlaybackModeEnabled = "KeyVox.FastPlaybackModeEnabled"
-    static let aiStyleTransformEnabled = "KeyVox.AIStyleTransformEnabled"
-    static let aiStyleTransformStyle = "KeyVox.AIStyleTransformStyle"
+    static let selectedVibe = "KeyVox.SelectedVibe"
 
     enum App {
         static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"

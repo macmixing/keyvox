@@ -17,7 +17,7 @@ final class KeyboardVibesStateStore {
     }
 
     var selectedVibe: StyleRewriteStyle {
-        guard let rawValue = defaults?.string(forKey: UserDefaultsKeys.aiStyleTransformStyle),
+        guard let rawValue = defaults?.string(forKey: UserDefaultsKeys.selectedVibe),
               let style = StyleRewriteStyle(rawValue: rawValue) else {
             return .none
         }
@@ -33,7 +33,7 @@ final class KeyboardVibesStateStore {
         let currentIndex = styles.firstIndex(of: currentStyle) ?? 0
         let nextIndex = (currentIndex + 1) % styles.count
         let nextStyle = styles[nextIndex]
-        defaults?.set(nextStyle.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+        defaults?.set(nextStyle.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         KeyVoxIPCBridge.publishVibeSelectionChanged()
         return nextStyle.displayName
     }

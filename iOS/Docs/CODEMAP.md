@@ -767,7 +767,7 @@ Packages/
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
 - `KeyVox Keyboard/Core/Vibes/KeyboardVibesStateStore.swift`
   - Keyboard-local selector for KeyVox Vibes.
-  - Reads and writes the shared `KeyVox.AIStyleTransformStyle` default, derives display text from `StyleRewriteStyle`, and posts the shared Vibes selection-change notification so the containing app can refresh visible settings.
+  - Reads and writes the shared `KeyVox.SelectedVibe` default, derives display text from `StyleRewriteStyle`, and posts the shared Vibes selection-change notification so the containing app can refresh visible settings.
 - `KeyVox Keyboard/Core/Vibes/KeyboardVibeChangeController.swift`
   - Keyboard-local artifact-scoped Vibes changer for the latest untouched KeyVox dictation insertion.
   - Records the inserted dictation session from the latest App Group artifact, reverts to `None` when long-pressing the current selected Vibe, regenerates another Vibe from the original base text when needed, caches variants, and refuses to operate after the insertion no longer matches the active session.

@@ -22,7 +22,7 @@ extension StyleTabView {
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
-                        Text(settingsStore.aiStyleTransformStyle.displayName)
+                        Text(settingsStore.selectedVibe.displayName)
                             .font(.appFont(17))
                             .foregroundStyle(.yellow)
                     }
@@ -54,14 +54,14 @@ extension StyleTabView {
     }
 
     private var keyVoxVibesDescription: String {
-        settingsStore.aiStyleTransformStyle.description
+        settingsStore.selectedVibe.description
     }
 
     private var keyVoxVibesSelection: Binding<StyleRewriteStyle> {
         Binding(
-            get: { settingsStore.aiStyleTransformStyle },
+            get: { settingsStore.selectedVibe },
             set: { newValue in
-                settingsStore.aiStyleTransformStyle = newValue
+                settingsStore.selectedVibe = newValue
             }
         )
     }

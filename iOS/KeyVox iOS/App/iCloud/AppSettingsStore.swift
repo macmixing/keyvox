@@ -84,7 +84,7 @@ final class AppSettingsStore: ObservableObject {
 
         let store = Unmanaged<AppSettingsStore>.fromOpaque(observer).takeUnretainedValue()
         DispatchQueue.main.async {
-            store.refreshAIStyleTransformStyleFromDefaults()
+            store.refreshSelectedVibeFromDefaults()
         }
     }
 
@@ -220,9 +220,9 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
-    @Published var aiStyleTransformStyle: StyleRewriteStyle {
+    @Published var selectedVibe: StyleRewriteStyle {
         didSet {
-            defaults.set(aiStyleTransformStyle.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+            defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         }
     }
 
@@ -274,7 +274,7 @@ final class AppSettingsStore: ObservableObject {
         }
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
-        aiStyleTransformStyle = Self.resolvedAIStyleTransformStyle(from: defaults)
+        selectedVibe = Self.resolvedSelectedVibe(from: defaults)
         registerVibeSelectionObserver()
     }
 
@@ -284,23 +284,19 @@ final class AppSettingsStore: ObservableObject {
         CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
     }
 
-    nonisolated static func resolvedAIStyleTransformStyle(from defaults: UserDefaults) -> StyleRewriteStyle {
-        if let raw = defaults.string(forKey: UserDefaultsKeys.aiStyleTransformStyle),
+    nonisolated static func resolvedSelectedVibe(from defaults: UserDefaults) -> StyleRewriteStyle {
+        if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
            let style = StyleRewriteStyle(rawValue: raw) {
             return style
-        }
-
-        if defaults.object(forKey: UserDefaultsKeys.aiStyleTransformEnabled) as? Bool == true {
-            return .polished
         }
 
         return .none
     }
 
-    func refreshAIStyleTransformStyleFromDefaults() {
-        let style = Self.resolvedAIStyleTransformStyle(from: defaults)
-        guard aiStyleTransformStyle != style else { return }
-        aiStyleTransformStyle = style
+    func refreshSelectedVibeFromDefaults() {
+        let style = Self.resolvedSelectedVibe(from: defaults)
+        guard selectedVibe != style else { return }
+        selectedVibe = style
     }
 
     private func registerVibeSelectionObserver() {
