@@ -139,6 +139,18 @@ final class StyleRewriteFoundationTests: XCTestCase {
         )
     }
 
+    func testChillHeuristicPreservesMathSymbols() {
+        let output = ChillHeuristicFormatter().format("2+2=4")
+
+        XCTAssertEqual(output, "2+2=4")
+    }
+
+    func testChillHeuristicPreservesEmailAddress() {
+        let output = ChillHeuristicFormatter().format("contact@dom.tech")
+
+        XCTAssertEqual(output, "contact@dom.tech")
+    }
+
     func testFoundationRewriteRepairCollapsesAdjacentProtectedDuplicate() {
         let output = FoundationRewriteOutputRepair.repair(
             original: "im just trying trying to work",
