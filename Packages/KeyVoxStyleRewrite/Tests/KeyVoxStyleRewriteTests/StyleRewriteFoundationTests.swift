@@ -151,6 +151,17 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertEqual(output, "contact@dom.tech")
     }
 
+    func testChillHeuristicPreservesParagraphBreaks() {
+        let output = ChillHeuristicFormatter().format(
+            "Hey, this is really crazy.\n\nWhat are you doing tomorrow? I don't even know."
+        )
+
+        XCTAssertEqual(
+            output,
+            "hey this is really crazy\n\nwhat are you doing tomorrow? i dont even know"
+        )
+    }
+
     func testFoundationRewriteRepairCollapsesAdjacentProtectedDuplicate() {
         let output = FoundationRewriteOutputRepair.repair(
             original: "im just trying trying to work",

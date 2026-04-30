@@ -4,6 +4,13 @@ public struct ChillHeuristicFormatter: Sendable {
     public init() {}
 
     public func format(_ text: String) -> String {
+        paragraphTexts(in: text)
+            .map(formatParagraph)
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
+    }
+
+    private func formatParagraph(_ text: String) -> String {
         var segments: [(text: String, terminator: Character?)] = []
         var current: [String] = []
         let characters = Array(text.lowercased())
@@ -46,6 +53,28 @@ public struct ChillHeuristicFormatter: Sendable {
             }
             return segment.text + (segment.terminator == "?" ? "? " : ". ")
         }.joined()
+    }
+
+    private func paragraphTexts(in text: String) -> [String] {
+        var paragraphs: [String] = []
+        var currentLines: [String] = []
+
+        for line in text.components(separatedBy: .newlines) {
+            if line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                appendParagraph(currentLines.joined(separator: "\n"), to: &paragraphs)
+                currentLines.removeAll(keepingCapacity: true)
+            } else {
+                currentLines.append(line)
+            }
+        }
+
+        appendParagraph(currentLines.joined(separator: "\n"), to: &paragraphs)
+        return paragraphs
+    }
+
+    private func appendParagraph(_ text: String, to paragraphs: inout [String]) {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        paragraphs.append(text)
     }
 
     private func appendSegment(
