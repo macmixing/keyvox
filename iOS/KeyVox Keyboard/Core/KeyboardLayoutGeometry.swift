@@ -282,6 +282,11 @@ enum KeyboardLayoutGeometry {
 
             if let logoBarView,
                let currentLogoLeadingReferenceView = keyGridView.topRowKeyView(for: logoLeadingSlot) {
+                (logoBarView as? KeyboardLogoBarView)?.applyToolbarDiameter(
+                    isLandscape
+                        ? KeyboardLogoBarView.landscapeToolbarDiameter
+                        : KeyboardLogoBarView.toolbarDiameter
+                )
                 let usesCapsLockVerticalPosition = !isLandscape && capsLockButton != nil
                 let shouldRefreshLogoConstraints =
                     logoLeadingReferenceView !== currentLogoLeadingReferenceView
@@ -301,7 +306,7 @@ enum KeyboardLayoutGeometry {
                     if isLandscape {
                         logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
                             equalTo: currentLogoLeadingReferenceView.topAnchor,
-                            constant: -(KeyboardStyle.keyboardRowSpacing + 10)
+                            constant: -KeyboardStyle.keyboardRowSpacing
                         )
                     } else if let capsLockButton {
                         logoBarVerticalConstraint = logoBarView.centerYAnchor.constraint(
