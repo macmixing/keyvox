@@ -53,6 +53,10 @@ public struct ChillHeuristicFormatter: Sendable {
             return ""
         }
 
+        if character.isEmojiLike {
+            return String(character)
+        }
+
         return " "
     }
 
@@ -60,4 +64,15 @@ public struct ChillHeuristicFormatter: Sendable {
         character == "." || character == "!" || character == "?"
     }
 
+}
+
+private extension Character {
+    var isEmojiLike: Bool {
+        unicodeScalars.contains { scalar in
+            scalar.properties.isEmoji
+                || scalar.properties.isEmojiPresentation
+                || scalar.properties.isEmojiModifier
+                || scalar.properties.isEmojiModifierBase
+        }
+    }
 }

@@ -85,14 +85,6 @@ final class KeyboardVibeChangeController {
         isApplyingChange = true
         defer { isApplyingChange = false }
 
-        if let selectedText = textInputController.selectedText, selectedText.isEmpty == false {
-            return await applySelectedTextChange(
-                selectedText,
-                onProcessingStart: onProcessingStart,
-                onProcessingEnd: onProcessingEnd
-            )
-        }
-
         guard var session = activeSession else {
             return false
         }
@@ -131,46 +123,6 @@ final class KeyboardVibeChangeController {
         return true
     }
 
-    private func applySelectedTextChange(
-        _ selectedText: String,
-        onProcessingStart: @escaping () -> Void,
-        onProcessingEnd: @escaping () -> Void
-    ) async -> Bool {
-        let selectedStyle = vibesStateStore.selectedVibe
-        guard selectedStyle != .none else {
-            return false
-        }
-
-        var session = Session(
-            sourceText: selectedText,
-            originalText: selectedText,
-            documentContextBeforeInput: textInputController.documentContextBeforeInput,
-            preparesAsDictationInsertion: false,
-            currentText: selectedText,
-            currentStyle: .none,
-            variants: [.none: selectedText]
-        )
-
-        guard let replacementText = await replacementText(
-            for: selectedStyle,
-            session: &session,
-            onProcessingStart: onProcessingStart,
-            onProcessingEnd: onProcessingEnd
-        ) else {
-            return false
-        }
-
-        guard textInputController.replaceSelectedText(selectedText, with: replacementText) else {
-            return false
-        }
-
-        session.currentText = replacementText
-        session.currentStyle = selectedStyle
-        session.variants[selectedStyle] = replacementText
-        activeSession = session
-        return true
-    }
-
     private func targetStyle(for session: Session) -> StyleRewriteStyle? {
         let selectedStyle = vibesStateStore.selectedVibe
         if selectedStyle == session.currentStyle {
@@ -203,10 +155,6 @@ final class KeyboardVibeChangeController {
         let result = await textTransformer.transform(request)
         textTransformer.releasePrewarmSession(reason: "keyboard-vibe-change")
 
-        guard result.applied else {
-            return nil
-        }
-
         let replacementText = preparedText(
             result.finalText,
             documentContextBeforeInput: session.documentContextBeforeInput,
@@ -234,6 +182,7 @@ final class KeyboardVibeChangeController {
             documentContextBeforeInput: documentContextBeforeInput
         )
     }
+
 }
 
 final class KeyboardVibeChangeArtifactStore {
