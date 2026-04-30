@@ -10,6 +10,7 @@ final class KeyboardVibeChangeController {
         let preparesAsDictationInsertion: Bool
         var currentText: String
         var currentStyle: StyleRewriteStyle
+        var previousStyle: StyleRewriteStyle?
         var variants: [StyleRewriteStyle: String]
     }
 
@@ -40,6 +41,7 @@ final class KeyboardVibeChangeController {
                 preparesAsDictationInsertion: true,
                 currentText: insertion.insertedText,
                 currentStyle: .none,
+                previousStyle: nil,
                 variants: [.none: insertion.insertedText]
             )
             return
@@ -70,6 +72,7 @@ final class KeyboardVibeChangeController {
             preparesAsDictationInsertion: true,
             currentText: insertion.insertedText,
             currentStyle: selectedStyle,
+            previousStyle: nil,
             variants: variants
         )
     }
@@ -117,6 +120,7 @@ final class KeyboardVibeChangeController {
         }
 
         session.currentText = replacementText
+        session.previousStyle = session.currentStyle
         session.currentStyle = targetStyle
         session.variants[targetStyle] = replacementText
         activeSession = session
@@ -126,6 +130,10 @@ final class KeyboardVibeChangeController {
     private func targetStyle(for session: Session) -> StyleRewriteStyle? {
         let selectedStyle = vibesStateStore.selectedVibe
         if selectedStyle == session.currentStyle {
+            if let previousStyle = session.previousStyle {
+                return previousStyle
+            }
+
             return selectedStyle == StyleRewriteStyle.none ? nil : StyleRewriteStyle.none
         }
 
