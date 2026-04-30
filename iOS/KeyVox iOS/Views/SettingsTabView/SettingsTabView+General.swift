@@ -56,7 +56,7 @@ extension SettingsTabView {
                 }
 
                 Divider()
-                    .background(.white.opacity(0.4))
+                    .overlay(.white.opacity(0.22))
 
                 SettingsRow(
                     icon: "widget.small",

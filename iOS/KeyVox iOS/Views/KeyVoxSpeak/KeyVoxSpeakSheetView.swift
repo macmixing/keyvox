@@ -91,7 +91,7 @@ struct KeyVoxSpeakSheetView: View {
 
                     VStack(spacing: 8) {
                         Divider()
-                            .background(.white.opacity(0.14))
+                            .overlay(.white.opacity(0.14))
 
                         switch mode {
                         case .intro(_, let onTryNow, _):

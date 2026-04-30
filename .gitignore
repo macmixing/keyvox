@@ -15,6 +15,7 @@ Packages/**/.swiftpm/
 # Local build artifacts / generated distributables
 build/
 KeyVox.dmg
+Vendor/StyleRewrite/*.xcframework/
 
 # Marketing artifacts
 Tools/Marketing/

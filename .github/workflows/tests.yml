@@ -35,6 +35,8 @@ jobs:
 
   ios-app-tests:
     runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,3 +94,14 @@ jobs:
 
       - name: Enforce KeyVoxCore coverage
         run: Tools/Quality/check_keyvoxcore_coverage.sh "${{ steps.keyvoxcore-tests.outputs.coverage_path }}"
+
+  style-rewrite-package-tests:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run KeyVoxStyleRewrite package tests
+        run: swift test --package-path Packages/KeyVoxStyleRewrite --scratch-path /tmp/keyvox-style-rewrite-ci

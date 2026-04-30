@@ -86,13 +86,15 @@ final class KeyboardTTSController {
             stopPlaybackIfActive()
         case .preparingPlayback:
             break
-        case .idle, .recording, .transcribing:
+        case .idle, .transcribing:
             guard let request = makeClipboardRequest() else { return }
             requestWriter(request)
 
             state = .preparingPlayback
             scheduleWaitingTimeout()
             openContainingApp(startTTSURL)
+        case .recording:
+            break
         case .waitingForApp:
             break
         }

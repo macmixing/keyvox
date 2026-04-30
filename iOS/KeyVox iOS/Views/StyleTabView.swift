@@ -1,11 +1,16 @@
+import KeyVoxStyleRewrite
 import SwiftUI
 
 struct StyleTabView: View {
-    @EnvironmentObject private var settingsStore: AppSettingsStore
+    @EnvironmentObject var settingsStore: AppSettingsStore
 
     var body: some View {
         AppScrollScreen {
             VStack(alignment: .leading, spacing: 16) {
+                if FoundationStyleRewriteAvailability.isAvailable {
+                    keyVoxVibesSection
+                }
+
                 AppCard {
                     SettingsRow(
                         icon: "list.number",

@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxStyleRewrite
 import Testing
 @testable import KeyVox_iOS
 
@@ -65,5 +66,55 @@ struct AppSettingsStoreTests {
         let store = AppSettingsStore(defaults: defaults)
 
         #expect(store.liveActivitiesEnabled == false)
+    }
+
+    @Test func aiStyleTransformStyleDefaultsToNone() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.aiStyleTransformStyle == .none)
+    }
+
+    @Test func aiStyleTransformStyleWritesToDefaults() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let store = AppSettingsStore(defaults: defaults)
+
+        store.aiStyleTransformStyle = .chill
+
+        let persistedValue = defaults.string(forKey: UserDefaultsKeys.aiStyleTransformStyle)
+        #expect(persistedValue == StyleRewriteStyle.chill.rawValue)
+    }
+
+    @Test func aiStyleTransformStyleRestoresPersistedValue() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.aiStyleTransformStyle == .polished)
+    }
+
+    @Test func aiStyleTransformStyleMigratesEnabledBooleanToPolished() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(true, forKey: UserDefaultsKeys.aiStyleTransformEnabled)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.aiStyleTransformStyle == .polished)
+    }
+
+    @Test func aiStyleTransformStyleMigratesDisabledBooleanToNone() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(false, forKey: UserDefaultsKeys.aiStyleTransformEnabled)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.aiStyleTransformStyle == .none)
     }
 }

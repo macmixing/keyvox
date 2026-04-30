@@ -146,6 +146,7 @@ extension TranscriptionManager {
         }
 
         state = .idle
+        releaseStyleRewritePrewarmSession("utterance-cancelled")
         keyboardBridge.publishCancelled()
 
         if shouldShutdownAfterCancel {

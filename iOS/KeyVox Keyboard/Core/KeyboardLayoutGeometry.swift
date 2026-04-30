@@ -6,6 +6,8 @@ enum KeyboardLayoutGeometry {
         private weak var cancelButton: UIView?
         private weak var capsLockButton: UIView?
         private weak var speakButton: UIView?
+        private weak var vibesButton: UIView?
+        private weak var logoBarView: UIView?
         private weak var keyGridView: KeyboardKeyGridView?
         private let cancelButtonLeadingConstraint: NSLayoutConstraint
         private let capsLockButtonTrailingConstraint: NSLayoutConstraint
@@ -26,6 +28,8 @@ enum KeyboardLayoutGeometry {
         private var capsLockButtonLandscapeHeightConstraint: NSLayoutConstraint?
         private weak var cancelLandscapeReferenceView: UIView?
         private weak var capsLandscapeReferenceView: UIView?
+        private var capsLockButtonUsesLandscapeHeight = false
+        private var capsLockButtonPortraitHeight: CGFloat = 0
         private var speakButtonCenterXConstraint: NSLayoutConstraint?
         private var speakButtonVerticalConstraint: NSLayoutConstraint?
         private var speakButtonWidthConstraint: NSLayoutConstraint?
@@ -34,11 +38,27 @@ enum KeyboardLayoutGeometry {
         private var speakButtonUsesLandscapeHeight = false
         private var speakButtonUsesCapsLockHeight = false
         private var speakButtonPortraitHeight: CGFloat = 0
+        private var vibesButtonLeadingConstraint: NSLayoutConstraint?
+        private var vibesButtonTrailingConstraint: NSLayoutConstraint?
+        private var vibesButtonVerticalConstraint: NSLayoutConstraint?
+        private var vibesButtonHeightConstraint: NSLayoutConstraint?
+        private weak var vibesLeadingReferenceView: UIView?
+        private weak var vibesTrailingReferenceView: UIView?
+        private var vibesButtonUsesLandscapeHeight = false
+        private var vibesButtonUsesCapsLockHeight = false
+        private var vibesButtonPortraitHeight: CGFloat = 0
+        private var logoBarCenterXConstraint: NSLayoutConstraint?
+        private var logoBarVerticalConstraint: NSLayoutConstraint?
+        private weak var logoLeadingReferenceView: UIView?
+        private var logoBarUsesLandscapeVerticalPosition = false
+        private var logoBarUsesCapsLockVerticalPosition = false
 
         init(
             cancelButton: UIView,
             capsLockButton: UIView,
             speakButton: UIView,
+            vibesButton: UIView,
+            logoBarView: UIView,
             keyGridView: KeyboardKeyGridView,
             cancelButtonLeadingConstraint: NSLayoutConstraint,
             capsLockButtonTrailingConstraint: NSLayoutConstraint,
@@ -52,6 +72,8 @@ enum KeyboardLayoutGeometry {
             self.cancelButton = cancelButton
             self.capsLockButton = capsLockButton
             self.speakButton = speakButton
+            self.vibesButton = vibesButton
+            self.logoBarView = logoBarView
             self.keyGridView = keyGridView
             self.cancelButtonLeadingConstraint = cancelButtonLeadingConstraint
             self.capsLockButtonTrailingConstraint = capsLockButtonTrailingConstraint
@@ -63,11 +85,62 @@ enum KeyboardLayoutGeometry {
             self.capsLockButtonHeightConstraint = capsLockButtonHeightConstraint
         }
 
-        func update(isLandscape: Bool) {
+        func update(isLandscape: Bool, showsVibesButton: Bool) {
             guard let keyGridView else { return }
+            let speakSlot: KeyboardTopRowAccessorySlot = showsVibesButton ? .five : .seven
+            let capsLockSlot: KeyboardTopRowAccessorySlot = showsVibesButton ? .six : .eight
+            let vibesLeadingSlot: KeyboardTopRowAccessorySlot = .seven
+            let vibesTrailingSlot: KeyboardTopRowAccessorySlot = .eight
+            let logoLeadingSlot: KeyboardTopRowAccessorySlot = .nine
+
+            if let capsLockButton,
+               let currentCapsReferenceView = keyGridView.topRowKeyView(for: capsLockSlot) {
+                let resolvedCapsLockButtonPortraitHeight = min(
+                    currentCapsReferenceView.bounds.width,
+                    KeyboardStyle.buttonSize
+                )
+                let shouldRefreshCapsConstraints =
+                    capsLandscapeReferenceView !== currentCapsReferenceView
+                    || capsLockButtonUsesLandscapeHeight != isLandscape
+                    || (
+                        isLandscape == false
+                        && abs(capsLockButtonPortraitHeight - resolvedCapsLockButtonPortraitHeight) > 0.5
+                    )
+
+                if shouldRefreshCapsConstraints {
+                    NSLayoutConstraint.deactivate([
+                        capsLockButtonLandscapeCenterXConstraint,
+                        capsLockButtonLandscapeBottomConstraint,
+                        capsLockButtonLandscapeWidthConstraint,
+                        capsLockButtonLandscapeHeightConstraint,
+                    ].compactMap { $0 })
+
+                    capsLockButtonLandscapeCenterXConstraint = capsLockButton.centerXAnchor.constraint(equalTo: currentCapsReferenceView.centerXAnchor)
+                    capsLockButtonLandscapeBottomConstraint = capsLockButton.bottomAnchor.constraint(
+                        equalTo: currentCapsReferenceView.topAnchor,
+                        constant: -KeyboardStyle.keyboardRowSpacing
+                    )
+                    capsLockButtonLandscapeWidthConstraint = capsLockButton.widthAnchor.constraint(equalTo: currentCapsReferenceView.widthAnchor)
+                    if isLandscape {
+                        capsLockButtonLandscapeHeightConstraint = capsLockButton.heightAnchor.constraint(equalTo: currentCapsReferenceView.heightAnchor)
+                    } else {
+                        capsLockButtonLandscapeHeightConstraint = capsLockButton.heightAnchor.constraint(equalToConstant: resolvedCapsLockButtonPortraitHeight)
+                    }
+                    capsLandscapeReferenceView = currentCapsReferenceView
+                    capsLockButtonUsesLandscapeHeight = isLandscape
+                    capsLockButtonPortraitHeight = resolvedCapsLockButtonPortraitHeight
+
+                    NSLayoutConstraint.activate([
+                        capsLockButtonLandscapeCenterXConstraint!,
+                        capsLockButtonLandscapeBottomConstraint!,
+                        capsLockButtonLandscapeWidthConstraint!,
+                        capsLockButtonLandscapeHeightConstraint!,
+                    ])
+                }
+            }
 
             if let speakButton,
-               let currentSpeakReferenceView = keyGridView.topRowKeyView(for: .nine) {
+               let currentSpeakReferenceView = keyGridView.topRowKeyView(for: speakSlot) {
                 let usesCapsLockHeight = !isLandscape && capsLockButton != nil
                 let resolvedSpeakButtonPortraitHeight = min(
                     currentSpeakReferenceView.bounds.width,
@@ -127,37 +200,153 @@ enum KeyboardLayoutGeometry {
                 }
             }
 
+            if showsVibesButton == false {
+                NSLayoutConstraint.deactivate([
+                    vibesButtonLeadingConstraint,
+                    vibesButtonTrailingConstraint,
+                    vibesButtonVerticalConstraint,
+                    vibesButtonHeightConstraint,
+                ].compactMap { $0 })
+                vibesButtonLeadingConstraint = nil
+                vibesButtonTrailingConstraint = nil
+                vibesButtonVerticalConstraint = nil
+                vibesButtonHeightConstraint = nil
+                vibesLeadingReferenceView = nil
+                vibesTrailingReferenceView = nil
+            }
+
+            if showsVibesButton,
+               let vibesButton,
+               let currentVibesLeadingReferenceView = keyGridView.topRowKeyView(for: vibesLeadingSlot),
+               let currentVibesTrailingReferenceView = keyGridView.topRowKeyView(for: vibesTrailingSlot) {
+                let usesCapsLockHeight = !isLandscape && capsLockButton != nil
+                let resolvedVibesButtonPortraitHeight = min(
+                    currentVibesLeadingReferenceView.bounds.width,
+                    KeyboardStyle.buttonSize
+                )
+                let shouldRefreshVibesConstraints =
+                    vibesLeadingReferenceView !== currentVibesLeadingReferenceView
+                    || vibesTrailingReferenceView !== currentVibesTrailingReferenceView
+                    || vibesButtonUsesLandscapeHeight != isLandscape
+                    || vibesButtonUsesCapsLockHeight != usesCapsLockHeight
+                    || (
+                        isLandscape == false
+                        && usesCapsLockHeight == false
+                        && abs(vibesButtonPortraitHeight - resolvedVibesButtonPortraitHeight) > 0.5
+                    )
+
+                if shouldRefreshVibesConstraints {
+                    NSLayoutConstraint.deactivate([
+                        vibesButtonLeadingConstraint,
+                        vibesButtonTrailingConstraint,
+                        vibesButtonVerticalConstraint,
+                        vibesButtonHeightConstraint,
+                    ].compactMap { $0 })
+
+                    vibesButtonLeadingConstraint = vibesButton.leadingAnchor.constraint(equalTo: currentVibesLeadingReferenceView.leadingAnchor)
+                    vibesButtonTrailingConstraint = vibesButton.trailingAnchor.constraint(equalTo: currentVibesTrailingReferenceView.trailingAnchor)
+                    if isLandscape {
+                        vibesButtonVerticalConstraint = vibesButton.bottomAnchor.constraint(
+                            equalTo: currentVibesLeadingReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    } else if let capsLockButton {
+                        vibesButtonVerticalConstraint = vibesButton.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor)
+                    } else {
+                        vibesButtonVerticalConstraint = vibesButton.bottomAnchor.constraint(
+                            equalTo: currentVibesLeadingReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    }
+                    if isLandscape {
+                        vibesButtonHeightConstraint = vibesButton.heightAnchor.constraint(equalTo: currentVibesLeadingReferenceView.heightAnchor)
+                    } else if let capsLockButton {
+                        vibesButtonHeightConstraint = vibesButton.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    } else {
+                        vibesButtonHeightConstraint = vibesButton.heightAnchor.constraint(equalToConstant: resolvedVibesButtonPortraitHeight)
+                    }
+                    vibesLeadingReferenceView = currentVibesLeadingReferenceView
+                    vibesTrailingReferenceView = currentVibesTrailingReferenceView
+                    vibesButtonUsesLandscapeHeight = isLandscape
+                    vibesButtonUsesCapsLockHeight = usesCapsLockHeight
+                    vibesButtonPortraitHeight = resolvedVibesButtonPortraitHeight
+
+                    NSLayoutConstraint.activate([
+                        vibesButtonLeadingConstraint!,
+                        vibesButtonTrailingConstraint!,
+                        vibesButtonVerticalConstraint!,
+                        vibesButtonHeightConstraint!,
+                    ])
+                }
+            }
+
+            if let logoBarView,
+               let currentLogoLeadingReferenceView = keyGridView.topRowKeyView(for: logoLeadingSlot) {
+                let usesCapsLockVerticalPosition = !isLandscape && capsLockButton != nil
+                let shouldRefreshLogoConstraints =
+                    logoLeadingReferenceView !== currentLogoLeadingReferenceView
+                    || logoBarUsesLandscapeVerticalPosition != isLandscape
+                    || logoBarUsesCapsLockVerticalPosition != usesCapsLockVerticalPosition
+
+                if shouldRefreshLogoConstraints {
+                    NSLayoutConstraint.deactivate([
+                        logoBarCenterXConstraint,
+                        logoBarVerticalConstraint,
+                    ].compactMap { $0 })
+
+                    logoBarCenterXConstraint = logoBarView.centerXAnchor.constraint(
+                        equalTo: currentLogoLeadingReferenceView.trailingAnchor,
+                        constant: KeyboardStyle.keySpacing / 2
+                    )
+                    if isLandscape {
+                        logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
+                            equalTo: currentLogoLeadingReferenceView.topAnchor,
+                            constant: -(KeyboardStyle.keyboardRowSpacing + 10)
+                        )
+                    } else if let capsLockButton {
+                        logoBarVerticalConstraint = logoBarView.centerYAnchor.constraint(
+                            equalTo: capsLockButton.centerYAnchor,
+                            constant: -10
+                        )
+                    } else {
+                        logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
+                            equalTo: currentLogoLeadingReferenceView.topAnchor,
+                            constant: -(KeyboardStyle.keyboardRowSpacing + 10)
+                        )
+                    }
+                    logoLeadingReferenceView = currentLogoLeadingReferenceView
+                    logoBarUsesLandscapeVerticalPosition = isLandscape
+                    logoBarUsesCapsLockVerticalPosition = usesCapsLockVerticalPosition
+
+                    NSLayoutConstraint.activate([
+                        logoBarCenterXConstraint!,
+                        logoBarVerticalConstraint!,
+                    ])
+                }
+            }
+
             if !isLandscape {
                 NSLayoutConstraint.deactivate([
                     cancelButtonLandscapeCenterXConstraint,
                     cancelButtonLandscapeBottomConstraint,
                     cancelButtonLandscapeWidthConstraint,
                     cancelButtonLandscapeHeightConstraint,
-                    capsLockButtonLandscapeCenterXConstraint,
-                    capsLockButtonLandscapeBottomConstraint,
-                    capsLockButtonLandscapeWidthConstraint,
-                    capsLockButtonLandscapeHeightConstraint,
                 ].compactMap { $0 })
 
                 cancelButtonLandscapeCenterXConstraint = nil
                 cancelButtonLandscapeBottomConstraint = nil
                 cancelButtonLandscapeWidthConstraint = nil
                 cancelButtonLandscapeHeightConstraint = nil
-                capsLockButtonLandscapeCenterXConstraint = nil
-                capsLockButtonLandscapeBottomConstraint = nil
-                capsLockButtonLandscapeWidthConstraint = nil
-                capsLockButtonLandscapeHeightConstraint = nil
                 cancelLandscapeReferenceView = nil
-                capsLandscapeReferenceView = nil
 
                 cancelButtonLeadingConstraint.isActive = true
                 cancelButtonCenterYConstraint.isActive = true
                 cancelButtonWidthConstraint.isActive = true
                 cancelButtonHeightConstraint.isActive = true
-                capsLockButtonTrailingConstraint.isActive = true
-                capsLockButtonCenterYConstraint.isActive = true
-                capsLockButtonWidthConstraint.isActive = true
-                capsLockButtonHeightConstraint.isActive = true
+                capsLockButtonTrailingConstraint.isActive = false
+                capsLockButtonCenterYConstraint.isActive = false
+                capsLockButtonWidthConstraint.isActive = false
+                capsLockButtonHeightConstraint.isActive = false
                 return
             }
 
@@ -196,31 +385,6 @@ enum KeyboardLayoutGeometry {
                 ])
             }
 
-            if let capsLockButton, let capsReferenceView = keyGridView.topRowKeyView(for: .zero),
-               capsLandscapeReferenceView !== capsReferenceView {
-                NSLayoutConstraint.deactivate([
-                    capsLockButtonLandscapeCenterXConstraint,
-                    capsLockButtonLandscapeBottomConstraint,
-                    capsLockButtonLandscapeWidthConstraint,
-                    capsLockButtonLandscapeHeightConstraint,
-                ].compactMap { $0 })
-
-                capsLockButtonLandscapeCenterXConstraint = capsLockButton.centerXAnchor.constraint(equalTo: capsReferenceView.centerXAnchor)
-                capsLockButtonLandscapeBottomConstraint = capsLockButton.bottomAnchor.constraint(
-                    equalTo: capsReferenceView.topAnchor,
-                    constant: -KeyboardStyle.keyboardRowSpacing
-                )
-                capsLockButtonLandscapeWidthConstraint = capsLockButton.widthAnchor.constraint(equalTo: capsReferenceView.widthAnchor)
-                capsLockButtonLandscapeHeightConstraint = capsLockButton.heightAnchor.constraint(equalTo: capsReferenceView.heightAnchor)
-                capsLandscapeReferenceView = capsReferenceView
-
-                NSLayoutConstraint.activate([
-                    capsLockButtonLandscapeCenterXConstraint!,
-                    capsLockButtonLandscapeBottomConstraint!,
-                    capsLockButtonLandscapeWidthConstraint!,
-                    capsLockButtonLandscapeHeightConstraint!,
-                ])
-            }
         }
     }
 

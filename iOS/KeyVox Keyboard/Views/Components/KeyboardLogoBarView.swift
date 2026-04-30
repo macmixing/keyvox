@@ -111,7 +111,6 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     private func configureLayers() {
-        layer.addSublayer(glowLayer)
         layer.addSublayer(backgroundLayer)
         layer.addSublayer(innerBorderLayer)
         layer.addSublayer(ringLayer)
@@ -305,16 +304,6 @@ final class KeyboardLogoBarView: UIControl {
         ).insetBy(dx: circleInset, dy: circleInset)
         let circlePath = UIBezierPath(ovalIn: circleRect).cgPath
 
-        glowLayer.path = circlePath
-        glowLayer.fillColor = UIColor.clear.cgColor
-        glowLayer.strokeColor = UIColor.systemYellow.withAlphaComponent(0.45).cgColor
-        glowLayer.lineWidth = Metrics.ringLineWidth * scale
-        glowLayer.shadowColor = UIColor.systemYellow.withAlphaComponent(0.25).cgColor
-        glowLayer.shadowOpacity = 1
-        glowLayer.shadowRadius = 5 * scale
-        glowLayer.shadowOffset = .zero
-        glowLayer.shadowPath = circlePath
-
         let logoBackgroundColor = UIColor { trait in
             trait.userInterfaceStyle == .dark
                 ? UIColor.black.withAlphaComponent(0.82)
@@ -323,12 +312,6 @@ final class KeyboardLogoBarView: UIControl {
 
         backgroundLayer.path = circlePath
         backgroundLayer.fillColor = logoBackgroundColor.cgColor
-        backgroundLayer.shadowColor = UIColor.black.cgColor
-        backgroundLayer.shadowOpacity = traitCollection.userInterfaceStyle == .dark ? 0.3 : 0.15
-        backgroundLayer.shadowRadius = Metrics.shadowRadius * scale
-        backgroundLayer.shadowOffset = .zero
-        backgroundLayer.shadowPath = circlePath
-
         let innerBorderLineWidth = max(0.9 * scale, 1 / (window?.screen.scale ?? UIScreen.main.scale))
         let innerBorderInset = ((Metrics.ringLineWidth * scale) / 2) + (innerBorderLineWidth / 2)
         let innerBorderRect = circleRect.insetBy(dx: innerBorderInset, dy: innerBorderInset)

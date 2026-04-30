@@ -35,6 +35,10 @@ final class TranscriptionManager: ObservableObject {
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
+    private let processOutputText: (String) async -> DictationPipelineTextProcessingResult
+    private let recordPipelineResult: (DictationPipelineResult, String) -> Void
+    private let prewarmStyleRewriteForUpcomingDictation: () -> Void
+    let releaseStyleRewritePrewarmSession: (String) -> Void
     private let sessionDisableTimingProvider: (() -> SessionDisableTiming)?
     let isTTSPlaybackActiveProvider: () -> Bool
     let sessionPolicy: SessionPolicy
@@ -66,6 +70,9 @@ final class TranscriptionManager: ObservableObject {
         },
         pasteText: { [weak self] text in
             self?.capturePipelineOutput(text)
+        },
+        processOutputText: { [weak self] baseText in
+            await self?.processOutputText(baseText) ?? .unchanged(baseText)
         }
     )
 
@@ -83,6 +90,12 @@ final class TranscriptionManager: ObservableObject {
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
         capsLockEnabledProvider: @escaping () -> Bool = { false },
+        processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
+            .unchanged($0)
+        },
+        recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
+        prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
+        releaseStyleRewritePrewarmSession: @escaping (String) -> Void = { _ in },
         sessionDisableTimingProvider: (() -> SessionDisableTiming)? = nil,
         isTTSPlaybackActiveProvider: @escaping () -> Bool = { false },
         sessionDisableTimingPublisher: AnyPublisher<SessionDisableTiming, Never> = Empty().eraseToAnyPublisher(),
@@ -110,6 +123,10 @@ final class TranscriptionManager: ObservableObject {
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
+        self.processOutputText = processOutputText
+        self.recordPipelineResult = recordPipelineResult
+        self.prewarmStyleRewriteForUpcomingDictation = prewarmStyleRewriteForUpcomingDictation
+        self.releaseStyleRewritePrewarmSession = releaseStyleRewritePrewarmSession
         self.sessionDisableTimingProvider = sessionDisableTimingProvider
         self.isTTSPlaybackActiveProvider = isTTSPlaybackActiveProvider
         self.sessionPolicy = sessionPolicy
@@ -209,6 +226,7 @@ final class TranscriptionManager: ObservableObject {
             sessionDisablePending = false
             keyboardBridge.publishRecordingStarted()
             armUtteranceSafetyWatchdog(for: activeUtteranceID)
+            prewarmStyleRewriteForUpcomingDictation()
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
@@ -250,11 +268,13 @@ final class TranscriptionManager: ObservableObject {
 
     func completeStopRecording(_ stoppedCapture: StoppedCapture, utteranceID: UUID, startTime: Date) async {
         guard utteranceID == activeUtteranceID else {
+            releaseStyleRewritePrewarmSession("stale-utterance")
             await finishAndDisableSessionIfNeeded()
             return
         }
 
         guard !stoppedCapture.outputFrames.isEmpty else {
+            releaseStyleRewritePrewarmSession("empty-capture")
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
@@ -263,6 +283,7 @@ final class TranscriptionManager: ObservableObject {
 
         refreshModelAvailability()
         guard isModelAvailable else {
+            releaseStyleRewritePrewarmSession("dictation-model-unavailable")
             lastErrorMessage = missingModelMessageProvider()
             state = .idle
             keyboardBridge.publishNoSpeech()
@@ -295,14 +316,16 @@ final class TranscriptionManager: ObservableObject {
                 let finalText = self.pendingPipelineOutputText ?? result.finalText
                 #if DEBUG
                 print("2. Provider inference: \(String(format: "%.3f", result.inferenceDuration))s")
+                self.logTextTransformationSpeedProfile(result)
                 #endif
                 self.pendingPipelineOutputText = nil
                 self.lastErrorMessage = nil
                 self.state = .idle
+                self.recordPipelineResult(result, finalText)
 
                 if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     #if DEBUG
-                    print("3. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+                    print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
                     let totalTime = Date().timeIntervalSince(startTime)
                     print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
                     print("--- Speed Profile End ---")
@@ -310,7 +333,7 @@ final class TranscriptionManager: ObservableObject {
                     self.keyboardBridge.publishNoSpeech()
                 } else {
                     #if DEBUG
-                    print("3. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+                    print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
                     let totalTime = Date().timeIntervalSince(startTime)
                     print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
                     print("--- Speed Profile End ---")
@@ -378,14 +401,43 @@ final class TranscriptionManager: ObservableObject {
         pendingPipelineOutputText = text
     }
 
+    #if DEBUG
+    private func logTextTransformationSpeedProfile(_ result: DictationPipelineResult) {
+        let duration = String(format: "%.3f", result.textTransformationDuration)
+        let style = result.textTransformationStyleIdentifier ?? "none"
+        let mode = result.textTransformationProcessingMode.map { " mode=\($0)" } ?? ""
+        let chunkSummary = " style=\(style)\(mode) chunks=\(result.textTransformationChunkCount)"
+        let finalTextSuffix = rawDebugTextLoggingEnabled
+            ? " finalText=\(escapedDebugText(result.finalText))"
+            : ""
+        if let errorDescription = result.textTransformationErrorDescription {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=false error=\(errorDescription)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        } else {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=\(result.textTransformationApplied)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        }
+    }
+
+    private var rawDebugTextLoggingEnabled: Bool {
+        ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+    }
+
+    private func escapedDebugText(_ text: String) -> String {
+        text.replacingOccurrences(of: "\n", with: "\\n")
+    }
+    #endif
+
     func setInterruptedCaptureRecoveryPresence(_ isPresent: Bool) {
         hasPendingInterruptedCaptureRecovery = isPresent
     }
 
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        isEmpty ? nil : self
-    }
 }

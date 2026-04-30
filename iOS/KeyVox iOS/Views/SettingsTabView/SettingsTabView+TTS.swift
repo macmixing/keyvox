@@ -48,7 +48,7 @@ extension SettingsTabView {
                 }
 
                 Divider()
-                    .background(.white.opacity(0.22))
+                    .overlay(.white.opacity(0.22))
 
                 HStack(alignment: .top, spacing: 12) {
                     Text(playbackVoiceDescriptionText)
@@ -85,7 +85,7 @@ extension SettingsTabView {
                     }
 
                 Divider()
-                    .background(.white.opacity(0.22))
+                    .overlay(.white.opacity(0.22))
 
                 ttsUnlockRow
             }
@@ -96,14 +96,14 @@ extension SettingsTabView {
     private var ttsExpandedContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             Divider()
-                .background(.white.opacity(0.4))
+                .overlay(.white.opacity(0.22))
 
             VStack(alignment: .leading, spacing: 16) {
                 ttsSharedModelRow
 
                 if pocketTTSModelManager.isSharedModelReady() {
                     Divider()
-                        .background(.white.opacity(0.22))
+                        .overlay(.white.opacity(0.22))
                         .padding(.leading, 12)
                         .padding(.trailing, 12)
 
@@ -113,7 +113,7 @@ extension SettingsTabView {
 
                             if index < AppSettingsStore.TTSVoice.userFacingCases.count - 1 {
                                 Divider()
-                                    .background(.white.opacity(0.22))
+                                    .overlay(.white.opacity(0.22))
                                     .padding(.leading, 12)
                                     .padding(.trailing, 12)
                             }

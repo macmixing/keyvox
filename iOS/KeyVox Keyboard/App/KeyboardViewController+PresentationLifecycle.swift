@@ -65,6 +65,7 @@ extension KeyboardViewController {
 
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+        rootContainerView.vibesButton.addTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
         rootContainerView.speakButton.addTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
@@ -101,6 +102,7 @@ extension KeyboardViewController {
         if let rootContainerView {
             rootContainerView.cancelButton.removeTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
             rootContainerView.capsLockButton.removeTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+            rootContainerView.vibesButton.removeTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
             rootContainerView.speakButton.removeTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)

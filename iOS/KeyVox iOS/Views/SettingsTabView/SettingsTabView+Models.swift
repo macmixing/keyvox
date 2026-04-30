@@ -49,7 +49,7 @@ extension SettingsTabView {
                 }
 
                 Divider()
-                    .background(.white.opacity(0.22))
+                    .overlay(.white.opacity(0.22))
 
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -97,7 +97,7 @@ extension SettingsTabView {
     private var modelExpandedContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             Divider()
-                .background(.white.opacity(0.4))
+                .overlay(.white.opacity(0.22))
 
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(Array(DictationModelID.allCases.enumerated()), id: \.element) { index, modelID in
@@ -105,7 +105,7 @@ extension SettingsTabView {
 
                     if index < DictationModelID.allCases.count - 1 {
                         Divider()
-                            .background(.white.opacity(0.22))
+                            .overlay(.white.opacity(0.22))
                             .padding(.leading, 12)
                             .padding(.trailing, 12)
                     }

@@ -1,5 +1,7 @@
 import Combine
+import CoreFoundation
 import Foundation
+import KeyVoxStyleRewrite
 
 enum SessionDisableTiming: String, CaseIterable, Identifiable {
     case immediately
@@ -74,6 +76,18 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
 
 @MainActor
 final class AppSettingsStore: ObservableObject {
+    private static let darwinNotificationCallback: CFNotificationCallback = { _, observer, name, _, _ in
+        guard let observer,
+              name?.rawValue as String? == KeyVoxIPCBridge.Notification.vibeSelectionChanged else {
+            return
+        }
+
+        let store = Unmanaged<AppSettingsStore>.fromOpaque(observer).takeUnretainedValue()
+        DispatchQueue.main.async {
+            store.refreshAIStyleTransformStyleFromDefaults()
+        }
+    }
+
     typealias TTSVoice = KeyVoxPlaybackVoice
 
     enum ActiveDictationProvider: String, CaseIterable, Identifiable {
@@ -206,7 +220,14 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var aiStyleTransformStyle: StyleRewriteStyle {
+        didSet {
+            defaults.set(aiStyleTransformStyle.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+        }
+    }
+
     private let defaults: UserDefaults
+    private var observesVibeSelectionChanges = false
 
     init(defaults: UserDefaults) {
         self.defaults = defaults
@@ -253,6 +274,48 @@ final class AppSettingsStore: ObservableObject {
         }
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
+        aiStyleTransformStyle = Self.resolvedAIStyleTransformStyle(from: defaults)
+        registerVibeSelectionObserver()
+    }
+
+    deinit {
+        guard observesVibeSelectionChanges else { return }
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
+    }
+
+    nonisolated static func resolvedAIStyleTransformStyle(from defaults: UserDefaults) -> StyleRewriteStyle {
+        if let raw = defaults.string(forKey: UserDefaultsKeys.aiStyleTransformStyle),
+           let style = StyleRewriteStyle(rawValue: raw) {
+            return style
+        }
+
+        if defaults.object(forKey: UserDefaultsKeys.aiStyleTransformEnabled) as? Bool == true {
+            return .polished
+        }
+
+        return .none
+    }
+
+    func refreshAIStyleTransformStyleFromDefaults() {
+        let style = Self.resolvedAIStyleTransformStyle(from: defaults)
+        guard aiStyleTransformStyle != style else { return }
+        aiStyleTransformStyle = style
+    }
+
+    private func registerVibeSelectionObserver() {
+        guard observesVibeSelectionChanges == false else { return }
+        observesVibeSelectionChanges = true
+
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterAddObserver(
+            center,
+            Unmanaged.passUnretained(self).toOpaque(),
+            Self.darwinNotificationCallback,
+            KeyVoxIPCBridge.Notification.vibeSelectionChanged as CFString,
+            nil,
+            .deliverImmediately
+        )
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

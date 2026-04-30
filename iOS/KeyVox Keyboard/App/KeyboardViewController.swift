@@ -7,6 +7,7 @@ final class KeyboardViewController: UIInputViewController {
     let keypressHaptics = KeyboardKeypressHaptics()
     let interactionHaptics = KeyboardInteractionHaptics()
     let indicatorDriver = AudioIndicatorDriver()
+    let vibesStateStore = KeyboardVibesStateStore()
     let startRecordingURL = URL(string: "keyvoxios://record/start")
     let startTTSURL = URL(string: "keyvoxios://tts/start")
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
@@ -199,6 +200,8 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
+            selectedVibeTitle: vibesStateStore.selectedVibeTitle,
+            isVibesAvailable: vibesStateStore.isVibesAvailable,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive
@@ -294,8 +297,19 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleSpeakTap() {
+        guard keyboardState != .waitingForApp,
+              keyboardState != .recording,
+              keyboardState != .transcribing else { return }
         interactionHaptics.emitMediumIfEnabled()
         ttsController.handleSpeakTap()
+    }
+
+    @objc
+    func handleVibesTap() {
+        guard vibesStateStore.isVibesAvailable else { return }
+        _ = vibesStateStore.advance()
+        interactionHaptics.emitLightIfEnabled()
+        updateUI()
     }
 
     @objc

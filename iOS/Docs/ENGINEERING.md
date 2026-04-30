@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-16**
+**Last Updated: 2026-04-29**
 
 ## Design Philosophy
 
@@ -34,6 +34,7 @@ The containing app owns:
 - microphone capture and session warmth
 - interrupted-capture recovery
 - dictation pipeline ownership
+- KeyVox Vibes style rewrite coordination
 - copied-text TTS request ownership
 - copied-text playback, replay, and pause/resume state
 - playback-preparation and return-to-host readiness gating
@@ -60,6 +61,7 @@ The keyboard extension does **not** own:
 - model downloads
 - dictionary logic
 - transcription post-processing policy
+- KeyVox Vibes style rewrite policy
 - onboarding progression
 
 ### Widget Extension
@@ -95,6 +97,7 @@ The share extension does **not** own:
 ## Platform and Target Requirements
 
 - Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
+- KeyVox Vibes is an iOS app feature gated by Foundation Models availability at runtime; the broader iOS app remains installable below iOS 26 and must fall back to normal post-processed dictation text when the transform lane is unavailable.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
   - `BGTaskSchedulerPermittedIdentifiers = ["com.cueit.keyvox.model-download"]`
@@ -129,6 +132,8 @@ It builds and wires:
 - `ModelManager`
 - `KeyVoxKeyboardBridge`
 - `TranscriptionManager`
+- `StyleRewritePipelineCoordinator`
+- `StyleRewriteLatestArtifactStore`
 - `TTSPreviewPlayer`
 - `PocketTTSEngine`
 - `PocketTTSModelManager`
@@ -149,6 +154,7 @@ Service ownership rules:
 - Views present state and call actions, but do not become alternate sources of truth.
 - IPC contracts remain centralized in `KeyVoxIPCBridge`.
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
+- `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. The app owns the branded feature lifecycle; the package owns reusable transform mechanics.
 - `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
 
 ### Containing App Source Layout
@@ -351,6 +357,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.SpeakTimeoutTiming`
 - `KeyVox.TTSVoice`
 - `KeyVox.FastPlaybackModeEnabled`
+- `KeyVox.AIStyleTransformStyle`
+- `KeyVox.AIStyleTransformEnabled`
 
 ### App-Owned Persistent Defaults Keys
 
@@ -530,7 +538,7 @@ Cold path:
 - disabling a session during an utterance defers shutdown until the current work finishes
 - the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
 - session timing may disable monitoring immediately, after the configured idle timeout, or never; changing from `Never` to a timed preset must re-arm an idle timeout when an active idle session is currently monitored/idle
-
+- KeyVox Vibes prewarm is tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so the retained Foundation session must be released after the transform attempt or cancellation path finishes
 
 ### Safety Rules
 
@@ -829,6 +837,108 @@ The containing app owns live dictionary and style state, while the dictation pip
 - `StyleTabView` is the current user-facing surface
 - the runtime injects those values into the shared `DictationPipeline` at transcription time
 
+### KeyVox Vibes Rules
+
+KeyVox Vibes is the iOS user-facing name for the style rewrite feature.
+The reusable implementation package remains `KeyVoxStyleRewrite`, matching the same branded-app-surface / technical-package split used by KeyVox Speak and `KeyVoxTTS`.
+
+Current styles:
+
+- `None`: bypasses style rewrite and inserts the normal post-processed dictation text.
+- `Casual`: Foundation cleanup only. It removes obvious speech disfluencies while preserving original casing, punctuation, wording, tone, slang, profanity, sentence type, and formality.
+- `Polished`: Foundation copyedit. It performs a minimal readability pass while preserving the message type, opening phrase, structure, tone, and level of formality.
+- `Chill`: Foundation cleanup plus deterministic formatting. Foundation is used only to remove disfluencies, then `ChillHeuristicFormatter` lowercases and applies the limited-punctuation Chill output shape.
+
+Ordering is intentionally `None`, `Casual`, `Polished`, `Chill`.
+The Style tab remains named `Style` because it also owns list and paragraph settings; the feature card inside the tab is branded `KeyVox Vibes`.
+
+The keyboard extension can also change the selected vibe from the Vibes key.
+That selector must use `StyleRewriteStyle` from `KeyVoxStyleRewrite` for ordering and display names so the keyboard does not duplicate style labels or identifiers.
+The keyboard writes `KeyVox.AIStyleTransformStyle` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
+The containing app observes that notification and refreshes `AppSettingsStore.aiStyleTransformStyle` from shared defaults so the Style tab reflects keyboard-side changes.
+The keyboard selector changes only the selected style; it does not own rewrite policy, transform execution, Foundation sessions, artifacts, or prompt configuration.
+
+### Style Rewrite Package Ownership
+
+`Packages/KeyVoxStyleRewrite` owns reusable transform mechanics:
+
+- `StyleRewriteStyle` and `StyleRewriteDictationConfiguration` define style identifiers, display names, descriptions, and request construction.
+- `TextTransformRequest` carries base text, style identifier, instructions, prompt wrapper, context token limit, expected output expansion ratio, safety margin, and optional maximum response tokens.
+- `TextTransformResult` carries final text, style identifier, duration, applied flag, chunk count, per-chunk timings, typed error summaries, and processing mode metadata.
+- `TextTransformChunkPlanner` budgets every model call as instructions + prompt wrapper + input chunk + expected output + safety margin.
+- chunk planning prefers semantic boundaries first, then word-level splits when a segment exceeds budget.
+- Foundation token counting is used when available on iOS/macOS 26.4+, with conservative approximate fallback when unavailable or when counting throws.
+- `FoundationStyleRewriteTextTransformer` owns Foundation Models integration, warm/cold session usage, refusal detection, chunk execution, full fallback policy, and processing-mode metadata.
+- `FoundationRewriteOutputRepair` repairs meaningful token removals after Foundation cleanup using token/gap analysis rather than app-side semantic word lists.
+- `ChillHeuristicFormatter` owns deterministic Chill casing and punctuation after optional Foundation cleanup.
+- `DictationUtteranceArtifact` and `DictationTextVariantArtifact` are package-owned serializable models so the app can cache the latest utterance without inventing iOS-only artifact shapes.
+
+### Dictation Pipeline Style Hook
+
+The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
+
+1. provider inference returns raw text
+2. post-processing produces the canonical base text
+3. the app-provided `processOutputText` closure may transform that base text
+4. Caps Lock casing override is applied after transformation
+5. final text is recorded and inserted
+
+`DictationPipelineResult` exposes raw provider text, base text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
+This keeps the keyboard insertion path unchanged while still making speed-profile and artifact data explicit.
+
+Failure policy:
+
+- no selected request, `None`, missing Foundation support, unavailable model, refusal, guardrail failure, or required full fallback inserts the post-processed base text
+- chunk-level failures that do not require full fallback use the base text for only the failed chunk and record the error
+- Foundation refusal or guardrail output must never replace user dictation with refusal text
+
+### iOS KeyVox Vibes Runtime Ownership
+
+`StyleRewritePipelineCoordinator` is the iOS adapter between `TranscriptionManager` and `KeyVoxStyleRewrite`.
+It owns:
+
+- reading the selected style from `AppSettingsStore`
+- building `TextTransformRequest` values through `StyleRewriteDictationConfiguration`
+- invoking `FoundationStyleRewriteTextTransformer`
+- translating `TextTransformResult` into `DictationPipelineTextProcessingResult`
+- writing latest-utterance artifacts through `StyleRewriteLatestArtifactStore`
+- requesting and releasing Foundation prewarm sessions
+
+`StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
+The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
+The keyboard does not consume this artifact yet; it is kept as the foundation for future instant revert or A/B style switching.
+
+### Foundation Prewarm Lifecycle
+
+Prewarm is best-effort and utterance-scoped:
+
+- after `AudioRecorder.startRecording()` succeeds, `TranscriptionManager` asks the style coordinator to prewarm for the selected style
+- prewarm never blocks mic activation, URL handling, recorder startup, or audio capture
+- `None` and non-Foundation paths skip prewarm
+- Foundation-backed styles prewarm with an empty-base request for the selected style instructions and prompt wrapper
+- repeated prewarm calls for the same request are idempotent during the active utterance
+- transform logs whether it used a warm or cold Foundation session
+- after transform success, fallback, stale utterance, empty capture, unavailable dictation model, or utterance cancellation, the retained prewarm session is released
+- releasing only clears KeyVox's retained session reference; Foundation's internal model cache remains system-managed
+
+### KeyVox Vibes Instrumentation
+
+Debug speed-profile output stays in the existing transcription log slot.
+It reports:
+
+- provider inference duration
+- text transformation duration
+- applied flag
+- error summary when present
+- style identifier
+- processing mode such as `foundation-cleanup+warm`, `foundation-cleanup-repaired+heuristic`, or `heuristic`
+- chunk count
+- final inserted text when `KVX_DEBUG_LOG_RAW_TEXT=1`
+- injection trigger duration and total end-to-end latency
+
+The Foundation transformer also logs prewarm requested/skipped/completed, prewarm duration, warm/cold transform usage, and prewarm session release.
+When a cleanup repair restores a protected token gap, `FoundationRewriteOutputRepair` logs the protected token list and replacement gap in debug builds.
+
 ### iCloud Sync Rules
 
 `CloudSyncCoordinator` syncs:
@@ -847,6 +957,8 @@ Excluded from iCloud sync:
 - Caps Lock latch
 - keyboard haptics
 - microphone preference
+- KeyVox Vibes selected style
+- latest KeyVox Vibes utterance artifact
 - onboarding state
 - pending keyboard-tour handoff
 
@@ -946,12 +1058,14 @@ Implementation split:
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
+- `KeyboardVibesStateStore.swift` owns keyboard-side Vibes selection persistence and App Group notification dispatch
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
   - `Feedback/` owns extension-local haptics configuration and dispatch
   - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
+  - `Vibes/` owns the keyboard selector state for the app-owned KeyVox Vibes feature
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
 - `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
 
@@ -991,7 +1105,9 @@ Current symbol layout rules:
 - row 3 middle keys evenly divide the remaining width
 - row 4 side keys use a 2.5-key span
 - the space bar consumes the remaining row-4 width
-- top-row cancel and caps lock alignment is derived from the live `1` and `0` key geometry instead of guessed offsets
+- top-row cancel alignment is derived from the live `1` key geometry instead of guessed offsets
+- top-row Speak aligns over `7`, Caps Lock aligns over `8`, and the Vibes selector spans `9` and `0`
+- top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise
 
 The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
 
@@ -1137,6 +1253,7 @@ Those remain device, integration, or manual-test territory by design.
 - Keep model integrity checks strict. Accepting partial installs creates hard-to-debug runtime failures.
 - Prefer injectable seams for time, storage, downloads, permissions, and services, following the existing onboarding, model, and transcription manager patterns.
 - When `KeyVoxCore` behavior changes, update this document only if the iOS runtime contract or target boundaries change as well.
+- When `KeyVoxStyleRewrite` changes style identifiers, artifact fields, fallback policy, prewarm lifecycle, or transform metadata consumed by iOS, update this document and `CODEMAP.md`.
 
 ## Change Tracking
 

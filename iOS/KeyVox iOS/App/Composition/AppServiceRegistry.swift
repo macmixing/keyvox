@@ -2,6 +2,7 @@ import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
+import KeyVoxStyleRewrite
 
 @MainActor
 final class AppServiceRegistry {
@@ -21,6 +22,7 @@ final class AppServiceRegistry {
     let activeProviderRouter: SwitchableDictationProvider
     let ttsManager: TTSManager
     let pocketTTSModelManager: PocketTTSModelManager
+    let styleRewritePipelineCoordinator: StyleRewritePipelineCoordinator
     let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
     let postProcessor: TranscriptionPostProcessor
@@ -92,6 +94,13 @@ final class AppServiceRegistry {
         )
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
+        let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
+        let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
+            selectedStyleProvider: {
+                AppSettingsStore.resolvedAIStyleTransformStyle(from: settingsDefaults)
+            },
+            artifactStore: styleRewriteArtifactStore
+        )
         var ttsManagerRef: TTSManager?
         let recorder = AudioRecorder(
             preferBuiltInMicrophoneProvider: { [weak settingsStore] in
@@ -134,6 +143,20 @@ final class AppServiceRegistry {
             },
             capsLockEnabledProvider: {
                 settingsDefaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
+            },
+            processOutputText: { [weak styleRewritePipelineCoordinator] text in
+                await styleRewritePipelineCoordinator?.processOutputText(text) ?? .unchanged(text)
+            },
+            recordPipelineResult: { [weak styleRewritePipelineCoordinator] result, selectedText in
+                styleRewritePipelineCoordinator?.recordLatestArtifact(from: result, selectedText: selectedText)
+            },
+            prewarmStyleRewriteForUpcomingDictation: { [weak styleRewritePipelineCoordinator] in
+                Task { @MainActor [weak styleRewritePipelineCoordinator] in
+                    styleRewritePipelineCoordinator?.prewarmForUpcomingDictationIfNeeded()
+                }
+            },
+            releaseStyleRewritePrewarmSession: { [weak styleRewritePipelineCoordinator] reason in
+                styleRewritePipelineCoordinator?.releasePrewarmSession(reason: reason)
             },
             sessionDisableTimingProvider: { [weak settingsStore] in
                 settingsStore?.sessionDisableTiming ?? .fiveMinutes
@@ -265,6 +288,7 @@ final class AppServiceRegistry {
         self.activeProviderRouter = activeProviderRouter
         self.ttsManager = ttsManager
         self.pocketTTSModelManager = pocketTTSModelManager
+        self.styleRewritePipelineCoordinator = styleRewritePipelineCoordinator
         self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager
         self.postProcessor = postProcessor

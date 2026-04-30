@@ -45,12 +45,65 @@ public struct TranscriptionProviderResult: Sendable {
     }
 }
 
-public struct DictationPipelineResult {
+public struct DictationPipelineResult: Sendable {
+    public let id: UUID
     public let rawText: String
+    public let baseText: String
     public let finalText: String
     public let wasLikelyNoSpeech: Bool
     public let inferenceDuration: TimeInterval
+    public let textTransformationDuration: TimeInterval
+    public let textTransformationApplied: Bool
+    public let textTransformationStyleIdentifier: String?
+    public let textTransformationChunkCount: Int
+    public let textTransformationErrorDescription: String?
+    public let textTransformationErrors: [String]
+    public let textTransformationProcessingMode: String?
     public let pasteDuration: TimeInterval
+}
+
+public struct DictationPipelineTextProcessingResult: Equatable, Sendable {
+    public let text: String
+    public let duration: TimeInterval
+    public let applied: Bool
+    public let styleIdentifier: String?
+    public let chunkCount: Int
+    public let errorDescription: String?
+    public let errors: [String]
+    public let processingMode: String?
+
+    public init(
+        text: String,
+        duration: TimeInterval,
+        applied: Bool,
+        styleIdentifier: String?,
+        chunkCount: Int,
+        errorDescription: String?,
+        errors: [String],
+        processingMode: String? = nil
+    ) {
+        self.text = text
+        self.duration = duration
+        self.applied = applied
+        self.styleIdentifier = styleIdentifier
+        self.chunkCount = chunkCount
+        self.errorDescription = errorDescription
+        self.errors = errors
+        self.processingMode = processingMode
+    }
+
+    public static func unchanged(_ text: String) -> DictationPipelineTextProcessingResult {
+        DictationPipelineTextProcessingResult(
+            text: text,
+            duration: 0,
+            applied: false,
+            styleIdentifier: nil,
+            chunkCount: 0,
+            errorDescription: nil,
+            errors: [],
+            processingMode: nil
+        )
+    }
 }
 
 @MainActor
@@ -58,6 +111,7 @@ public final class DictationPipeline {
     private let transcriptionProvider: DictationTranscriptionProviding
     private let transcriptionController: (any DictationTranscriptionControlling)?
     private let postProcessor: TranscriptionPostProcessor
+    private let allCapsOverrideNormalizer = AllCapsOverrideNormalizer()
     private let dictionaryEntriesProvider: () -> [DictionaryEntry]
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
@@ -65,6 +119,7 @@ public final class DictationPipeline {
     private let listRenderModeProvider: () -> ListRenderMode
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
+    private let processOutputText: (String) async -> DictationPipelineTextProcessingResult
 
     public init(
         transcriptionProvider: DictationTranscriptionProviding,
@@ -75,7 +130,10 @@ public final class DictationPipeline {
         capsLockEnabledProvider: @escaping () -> Bool = { false },
         listRenderModeProvider: @escaping () -> ListRenderMode,
         recordSpokenWords: @escaping (String) -> Void,
-        pasteText: @escaping (String) -> Void
+        pasteText: @escaping (String) -> Void,
+        processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
+            .unchanged($0)
+        }
     ) {
         self.transcriptionProvider = transcriptionProvider
         self.transcriptionController = transcriptionProvider as? any DictationTranscriptionControlling
@@ -87,6 +145,7 @@ public final class DictationPipeline {
         self.listRenderModeProvider = listRenderModeProvider
         self.recordSpokenWords = recordSpokenWords
         self.pasteText = pasteText
+        self.processOutputText = processOutputText
     }
 
     public func run(
@@ -94,6 +153,7 @@ public final class DictationPipeline {
         useDictionaryHintPrompt: Bool,
         completion: @escaping (DictationPipelineResult) -> Void
     ) {
+        let utteranceID = UUID()
         let inferenceStart = Date()
         let autoParagraphsEnabled = autoParagraphsEnabledProvider()
         let userDictionaryEntries = dictionaryEntriesProvider()
@@ -118,17 +178,25 @@ public final class DictationPipeline {
             guard !wasLikelyNoSpeech else {
                 completion(
                     DictationPipelineResult(
+                        id: utteranceID,
                         rawText: rawText,
+                        baseText: "",
                         finalText: "",
                         wasLikelyNoSpeech: true,
                         inferenceDuration: inferenceDuration,
+                        textTransformationDuration: 0,
+                        textTransformationApplied: false,
+                        textTransformationStyleIdentifier: nil,
+                        textTransformationChunkCount: 0,
+                        textTransformationErrorDescription: nil,
+                        textTransformationErrors: [],
+                        textTransformationProcessingMode: nil,
                         pasteDuration: 0
                     )
                 )
                 return
             }
 
-            let pasteStart = Date()
             let dictionaryEntries = DictionaryBuiltInEntries.effectiveEntries(
                 merging: userDictionaryEntries
             )
@@ -137,7 +205,7 @@ public final class DictationPipeline {
                 dictionaryEntries: dictionaryEntries,
                 renderMode: self.listRenderModeProvider(),
                 listFormattingEnabled: self.listFormattingEnabledProvider(),
-                forceAllCaps: self.capsLockEnabledProvider(),
+                forceAllCaps: false,
                 languageCode: languageCode
             )
             #if DEBUG
@@ -154,32 +222,59 @@ public final class DictationPipeline {
                 #endif
                 completion(
                     DictationPipelineResult(
+                        id: utteranceID,
                         rawText: rawText,
+                        baseText: finalText,
                         finalText: "",
                         wasLikelyNoSpeech: true,
                         inferenceDuration: inferenceDuration,
-                        pasteDuration: Date().timeIntervalSince(pasteStart)
+                        textTransformationDuration: 0,
+                        textTransformationApplied: false,
+                        textTransformationStyleIdentifier: nil,
+                        textTransformationChunkCount: 0,
+                        textTransformationErrorDescription: nil,
+                        textTransformationErrors: [],
+                        textTransformationProcessingMode: nil,
+                        pasteDuration: 0
                     )
                 )
                 return
             }
 
-            if !finalText.isEmpty {
-                self.recordSpokenWords(finalText)
-                self.pasteText(finalText)
-            }
-
-            let pasteDuration = Date().timeIntervalSince(pasteStart)
-
-            completion(
-                DictationPipelineResult(
-                    rawText: rawText,
-                    finalText: finalText,
-                    wasLikelyNoSpeech: false,
-                    inferenceDuration: inferenceDuration,
-                    pasteDuration: pasteDuration
+            Task { @MainActor [self] in
+                let output = await self.processOutputText(finalText)
+                let outputText = self.allCapsOverrideNormalizer.normalize(
+                    in: output.text,
+                    isEnabled: self.capsLockEnabledProvider()
                 )
-            )
+                let pasteStart = Date()
+
+                if !outputText.isEmpty {
+                    self.recordSpokenWords(outputText)
+                    self.pasteText(outputText)
+                }
+
+                let pasteDuration = outputText.isEmpty ? 0 : Date().timeIntervalSince(pasteStart)
+
+                completion(
+                    DictationPipelineResult(
+                        id: utteranceID,
+                        rawText: rawText,
+                        baseText: finalText,
+                        finalText: outputText,
+                        wasLikelyNoSpeech: false,
+                        inferenceDuration: inferenceDuration,
+                        textTransformationDuration: output.duration,
+                        textTransformationApplied: output.applied,
+                        textTransformationStyleIdentifier: output.styleIdentifier,
+                        textTransformationChunkCount: output.chunkCount,
+                        textTransformationErrorDescription: output.errorDescription,
+                        textTransformationErrors: output.errors,
+                        textTransformationProcessingMode: output.processingMode,
+                        pasteDuration: pasteDuration
+                    )
+                )
+            }
         }
     }
 

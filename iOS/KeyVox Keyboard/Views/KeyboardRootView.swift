@@ -10,6 +10,7 @@ final class KeyboardRootView: UIView {
     let cancelButton = KeyboardCancelButton()
     let capsLockButton = KeyboardCapsLockButton()
     let speakButton = KeyboardSpeakButton()
+    let vibesButton = KeyboardVibesButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
     let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
@@ -29,9 +30,7 @@ final class KeyboardRootView: UIView {
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var cancelButtonVisibilityTarget = false
-    private var speakButtonVisibilityTarget = false
     private var hasAppliedInitialCancelVisibility = false
-    private var hasAppliedInitialSpeakVisibility = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -87,13 +86,18 @@ final class KeyboardRootView: UIView {
         }
 
         let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
-        topRowAccessoryLayoutGeometry?.update(isLandscape: isLandscape)
+        topRowAccessoryLayoutGeometry?.update(
+            isLandscape: isLandscape,
+            showsVibesButton: vibesButton.isHidden == false
+        )
     }
 
     func apply(
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
+        selectedVibeTitle: String,
+        isVibesAvailable: Bool,
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
@@ -102,7 +106,11 @@ final class KeyboardRootView: UIView {
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        let shouldShowSpeak = showsBrandedToolbar && isTTSReady && (!state.showsCancelButton || state.isTTSPlaybackActive)
+        let shouldShowSpeak = showsBrandedToolbar && isTTSReady
+        let shouldEnableSpeak = shouldShowSpeak
+            && state != .waitingForApp
+            && state != .recording
+            && state != .transcribing
 
         if shouldShowCancel != cancelButtonVisibilityTarget {
             cancelButtonVisibilityTarget = shouldShowCancel
@@ -139,41 +147,9 @@ final class KeyboardRootView: UIView {
             }
         }
 
-        if shouldShowSpeak != speakButtonVisibilityTarget {
-            speakButtonVisibilityTarget = shouldShowSpeak
-
-            if hasAppliedInitialSpeakVisibility == false {
-                hasAppliedInitialSpeakVisibility = true
-                if shouldShowSpeak {
-                    speakButton.isHidden = false
-                } else {
-                    speakButton.isHidden = true
-                }
-            } else {
-                speakButton.layer.removeAllAnimations()
-
-                if shouldShowSpeak {
-                    speakButton.alpha = 0
-                    speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                    speakButton.isHidden = false
-
-                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                        self.speakButton.alpha = 1
-                        self.speakButton.transform = .identity
-                    })
-                } else {
-                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                        self.speakButton.alpha = 0
-                        self.speakButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                    }) { _ in
-                        guard !self.speakButtonVisibilityTarget else { return }
-                        self.speakButton.isHidden = true
-                        self.speakButton.alpha = 1
-                        self.speakButton.transform = .identity
-                    }
-                }
-            }
-        }
+        speakButton.isHidden = !shouldShowSpeak
+        speakButton.alpha = 1
+        speakButton.transform = .identity
         
         cancelButton.isEnabled = shouldShowCancel && !isTrackpadModeActive
         cancelButton.isTrackpadModeActive = isTrackpadModeActive
@@ -181,9 +157,13 @@ final class KeyboardRootView: UIView {
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar
+        vibesButton.isTrackpadModeActive = isTrackpadModeActive
+        vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
+        vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
+        vibesButton.title = selectedVibeTitle
         speakButton.isSpeaking = state.isTTSPlaybackActive
         speakButton.isTrackpadModeActive = isTrackpadModeActive
-        speakButton.isEnabled = shouldShowSpeak && !isTrackpadModeActive
+        speakButton.isEnabled = shouldEnableSpeak && !isTrackpadModeActive
 
         // Keep the toolbar row containers visible even when the toolbar content is hidden.
         // Hiding the arranged containers causes the top row to collapse and the key grid to
@@ -218,8 +198,10 @@ final class KeyboardRootView: UIView {
         speakButton.isHidden = true
         speakButton.alpha = 1
         speakButton.transform = .identity
+        vibesButton.isHidden = true
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
         speakButton.translatesAutoresizingMaskIntoConstraints = false
+        vibesButton.translatesAutoresizingMaskIntoConstraints = false
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -268,7 +250,10 @@ final class KeyboardRootView: UIView {
         mainStack.clipsToBounds = false
 
         addSubview(mainStack)
+        addSubview(capsLockButton)
+        addSubview(vibesButton)
         addSubview(speakButton)
+        addSubview(logoBarView)
 
         addSubview(fullAccessWarningContainer)
         
@@ -277,10 +262,7 @@ final class KeyboardRootView: UIView {
         // This preserves the current keyboard height and keeps toolbar positioning
         // independent from grid layout rules.
         leadingControlsStack.addSubview(cancelButton)
-        trailingControlsStack.addSubview(capsLockButton)
         
-        centerContainerView.addSubview(logoBarView)
-
         fullAccessWarningContainer.addSubview(fullAccessWarningLabel)
         fullAccessWarningContainer.addSubview(fullAccessInfoButton)
 
@@ -326,11 +308,6 @@ final class KeyboardRootView: UIView {
             cancelButtonLeadingConstraint,
             cancelButtonCenterYConstraint,
 
-            capsLockButtonWidthConstraint!,
-            capsLockButtonHeightConstraint!,
-            capsLockButtonTrailingConstraint,
-            capsLockButtonCenterYConstraint,
-
             fullAccessWarningContainer.leadingAnchor.constraint(equalTo: contentStack.leadingAnchor),
             fullAccessWarningContainer.trailingAnchor.constraint(equalTo: contentStack.trailingAnchor),
             fullAccessWarningContainer.topAnchor.constraint(equalTo: contentStack.topAnchor),
@@ -344,8 +321,6 @@ final class KeyboardRootView: UIView {
                 constant: Metrics.topRowSideControlVerticalOffset
             ),
 
-            logoBarView.centerXAnchor.constraint(equalTo: centerContainerView.centerXAnchor),
-            logoBarView.centerYAnchor.constraint(equalTo: centerContainerView.centerYAnchor),
             fullAccessWarningLabel.leadingAnchor.constraint(
                 greaterThanOrEqualTo: fullAccessWarningContainer.leadingAnchor,
                 constant: Metrics.warningLabelHorizontalInset
@@ -375,6 +350,8 @@ final class KeyboardRootView: UIView {
                 cancelButton: cancelButton,
                 capsLockButton: capsLockButton,
                 speakButton: speakButton,
+                vibesButton: vibesButton,
+                logoBarView: logoBarView,
                 keyGridView: keyGridView,
                 cancelButtonLeadingConstraint: cancelButtonLeadingConstraint,
                 capsLockButtonTrailingConstraint: capsLockButtonTrailingConstraint,
