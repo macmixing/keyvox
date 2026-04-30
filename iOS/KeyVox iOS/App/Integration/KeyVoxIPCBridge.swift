@@ -45,6 +45,7 @@ enum KeyVoxIPCBridge {
         static let keyboardOnboardingHasFullAccess = "keyboardOnboardingHasFullAccess"
         static let appUpdateRequired = "appUpdateRequired"
         static let pendingURLRoute = "pendingURLRoute"
+        static let latestDictationArtifactData = "KeyVox.StyleRewrite.LatestDictationArtifactData"
     }
 
     private enum LiveMeterPacket {

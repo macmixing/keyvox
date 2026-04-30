@@ -26,6 +26,10 @@ final class KeyboardViewController: UIInputViewController {
             self?.dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: text) ?? false
         }
     )
+    lazy var vibeChangeController = KeyboardVibeChangeController(
+        textInputController: textInputController,
+        vibesStateStore: vibesStateStore
+    )
     lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
         scheduleAction: keyboardMainQueueScheduler,
@@ -313,6 +317,31 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @objc
+    func handleVibesLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let didApply = await self.vibeChangeController.applyLongPressChange(
+                onProcessingStart: { [weak self] in
+                    self?.indicatorDriver.phase = .processing
+                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                },
+                onProcessingEnd: { [weak self] in
+                    guard let self else { return }
+                    let phase = self.keyboardState.indicatorPhase
+                    self.indicatorDriver.phase = phase
+                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                }
+            )
+            if didApply {
+                self.interactionHaptics.emitSuccessIfEnabled()
+            } else {
+                self.interactionHaptics.emitMediumIfEnabled()
+            }
+        }
+    }
+
+    @objc
     func handleFullAccessInfoTap() {
         setFullAccessInstructionsPresented(true)
     }
@@ -362,6 +391,10 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func handleTranscriptionReady(_ text: String) {
-        _ = textInputController.insertTranscription(text)
+        guard let insertion = textInputController.insertTranscriptionWithResult(text) else {
+            return
+        }
+
+        vibeChangeController.recordInsertedDictation(insertion)
     }
 }

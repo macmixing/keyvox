@@ -16,7 +16,7 @@ final class KeyboardVibesStateStore {
         FoundationStyleRewriteAvailability.isAvailable
     }
 
-    private var selectedVibe: StyleRewriteStyle {
+    var selectedVibe: StyleRewriteStyle {
         guard let rawValue = defaults?.string(forKey: UserDefaultsKeys.aiStyleTransformStyle),
               let style = StyleRewriteStyle(rawValue: rawValue) else {
             return .none

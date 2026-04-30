@@ -129,6 +129,7 @@
 				Core/Transport/KeyboardIPCManager.swift,
 				Core/Transport/KeyboardTransportDisplayState.swift,
 				Core/Transport/KeyboardTTSController.swift,
+				Core/Vibes/KeyboardVibeChangeController.swift,
 				Core/Vibes/KeyboardVibesStateStore.swift,
 				Views/Components/KeyboardCancelButton.swift,
 				Views/Components/KeyboardCapsLockButton.swift,

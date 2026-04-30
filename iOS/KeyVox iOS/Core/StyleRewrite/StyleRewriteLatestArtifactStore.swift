@@ -2,12 +2,8 @@ import Foundation
 import KeyVoxStyleRewrite
 
 final class StyleRewriteLatestArtifactStore {
-    private enum Key {
-        static let latestArtifactData = "KeyVox.StyleRewrite.LatestDictationArtifactData"
-    }
-
     static var latestArtifactDataKeyForTests: String {
-        Key.latestArtifactData
+        KeyVoxIPCBridge.Key.latestDictationArtifactData
     }
 
     private let defaults: UserDefaults?
@@ -27,15 +23,15 @@ final class StyleRewriteLatestArtifactStore {
             return
         }
 
-        defaults?.set(data, forKey: Key.latestArtifactData)
+        defaults?.set(data, forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData)
     }
 
     func clear() {
-        defaults?.removeObject(forKey: Key.latestArtifactData)
+        defaults?.removeObject(forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData)
     }
 
     func data() -> Data? {
-        defaults?.data(forKey: Key.latestArtifactData)
+        defaults?.data(forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData)
     }
 
     func artifact() -> DictationUtteranceArtifact? {
@@ -44,7 +40,7 @@ final class StyleRewriteLatestArtifactStore {
         do {
             return try JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
         } catch {
-            log("Failed to decode latest artifact key=\(Key.latestArtifactData) error=\(error)")
+            log("Failed to decode latest artifact key=\(KeyVoxIPCBridge.Key.latestDictationArtifactData) error=\(error)")
             return nil
         }
     }
