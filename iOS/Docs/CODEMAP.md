@@ -41,7 +41,7 @@ The current default runtime flow is:
 ## Contributor Notes
 
 - Keep iOS-only platform behavior inside the iOS targets. Reusable speech, text, and dictionary logic should remain in `KeyVoxCore`.
-- Keep the keyboard extension thin. It should transport commands, render keyboard UI, and insert final text, not become an alternate owner of model, microphone, or onboarding state.
+- Keep the keyboard extension thin. It should transport commands, render keyboard UI, insert final text, and perform artifact-scoped Vibes changes only for untouched KeyVox insertions; it must not become an alternate owner of dictation recording, app onboarding, or broad arbitrary host-text transformation.
 - Keep app-extension and app-widget contracts centralized in `KeyVoxIPCBridge`; do not duplicate App Group keys, timestamps, or Darwin notification names.
 - Keep onboarding state separate from settings state. `OnboardingStore` is the routing owner for onboarding progress and launch flags.
 - Keep the keyboard root layout stable. The warning toolbar is intentionally layered as an overlay instead of participating in the main keyboard stack layout.
@@ -290,6 +290,7 @@ iOS/
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── Vibes/
+│   │   │   ├── KeyboardVibeChangeController.swift
 │   │   │   └── KeyboardVibesStateStore.swift
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
@@ -633,14 +634,14 @@ Packages/
   - Uses token/gap analysis instead of app-side semantic word lists.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/ChillHeuristicFormatter.swift`
   - Deterministic Chill formatter after optional Foundation cleanup.
-  - Lowercases, removes unsupported punctuation, keeps question marks where sentence boundaries require them, separates interior sentence boundaries with periods, and leaves the final cluster without a trailing period unless it is a question.
+  - Lowercases, removes unsupported punctuation, preserves emoji, symbol characters, and email-shaped inline tokens, keeps question marks where sentence boundaries require them, separates interior sentence boundaries with periods, and leaves the final cluster without a trailing period unless it is a question.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
   - Resolves the current `AppSettingsStore` style, creates transform requests, triggers best-effort prewarm after recording starts, releases the retained Foundation session after a transform or fallback, converts package results into `DictationPipelineTextProcessingResult`, and records latest-utterance artifacts.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift`
   - App Group latest-artifact persistence for the most recent dictation.
   - Stores raw provider text, post-processed base text, selected inserted text, selected style identifier, variant timing/error metadata, inference duration, transform duration, and creation date.
-  - Exposes raw `Data` and decoded artifact access for future keyboard A/B or revert flows.
+  - Exposes raw `Data` and decoded artifact access for keyboard Vibes revert/restyle flows.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - Branded KeyVox Vibes section inside the existing Style tab.
   - Uses the same app-card treatment as nearby settings surfaces while keeping the broader tab named `Style`.
@@ -767,6 +768,9 @@ Packages/
 - `KeyVox Keyboard/Core/Vibes/KeyboardVibesStateStore.swift`
   - Keyboard-local selector for KeyVox Vibes.
   - Reads and writes the shared `KeyVox.AIStyleTransformStyle` default, derives display text from `StyleRewriteStyle`, and posts the shared Vibes selection-change notification so the containing app can refresh visible settings.
+- `KeyVox Keyboard/Core/Vibes/KeyboardVibeChangeController.swift`
+  - Keyboard-local artifact-scoped Vibes changer for the latest untouched KeyVox dictation insertion.
+  - Records the inserted dictation session from the latest App Group artifact, reverts to `None` when long-pressing the current selected Vibe, regenerates another Vibe from the original base text when needed, caches variants, and refuses to operate after the insertion no longer matches the active session.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
@@ -780,7 +784,8 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
-  - Aligns Speak over `7`, Caps Lock over `8`, and the two-key-wide Vibes key across `9` and `0`.
+  - With Vibes available, aligns Speak over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
+  - Without Vibes available, removes the Vibes key from layout and shifts Speak/Caps Lock into the non-Vibes layout.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.

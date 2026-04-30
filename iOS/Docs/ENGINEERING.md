@@ -856,7 +856,10 @@ The keyboard extension can also change the selected vibe from the Vibes key.
 That selector must use `StyleRewriteStyle` from `KeyVoxStyleRewrite` for ordering and display names so the keyboard does not duplicate style labels or identifiers.
 The keyboard writes `KeyVox.AIStyleTransformStyle` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
 The containing app observes that notification and refreshes `AppSettingsStore.aiStyleTransformStyle` from shared defaults so the Style tab reflects keyboard-side changes.
-The keyboard selector changes only the selected style; it does not own rewrite policy, transform execution, Foundation sessions, artifacts, or prompt configuration.
+Tap changes only the selected Vibe.
+Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, regenerating from the original base text, and replacing the active insertion.
+The keyboard does not transform arbitrary selected host-app text because the iOS text proxy can provide incomplete selected/context text.
+The keyboard still does not own prompt configuration, general rewrite policy, recording, or app-level artifact creation.
 
 ### Style Rewrite Package Ownership
 
@@ -906,7 +909,36 @@ It owns:
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
 The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
-The keyboard does not consume this artifact yet; it is kept as the foundation for future instant revert or A/B style switching.
+The keyboard consumes this artifact for long-press Vibes revert/restyle on the latest untouched KeyVox dictation insertion.
+
+### Keyboard Vibes Runtime Ownership
+
+`KeyboardVibesStateStore` owns keyboard-side Vibe selection:
+
+- reads and writes `KeyVox.AIStyleTransformStyle` from App Group defaults
+- derives display text from `StyleRewriteStyle`
+- cycles through `None`, `Casual`, `Polished`, `Chill`
+- posts the shared Vibes selection-change Darwin notification
+- exposes Foundation availability so the key can disappear in non-Vibes environments
+
+`KeyboardVibeChangeController` owns keyboard-side long-press changes for KeyVox insertions:
+
+- records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
+- treats `None` as the original post-processed base text
+- stores the current insertion text, current style, and cached variants
+- regenerates variants from the original base text rather than morphing from the currently displayed style
+- accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
+- replaces only when the active insertion still matches the untouched session
+- clears the active session on mismatch to avoid data loss
+- returns success/failure so the controller can emit success or medium haptics
+
+Long-press rules:
+
+- if the selected Vibe matches the current inserted style, long press reverts to `None`
+- if the selected Vibe differs, long press restyles from the original base text
+- cached variants replace instantly
+- generated variants may temporarily drive the logo indicator into processing state
+- if the user edits, deletes, moves away from, or otherwise invalidates the active insertion, long press no-ops
 
 ### Foundation Prewarm Lifecycle
 
@@ -1059,13 +1091,14 @@ Implementation split:
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardVibesStateStore.swift` owns keyboard-side Vibes selection persistence and App Group notification dispatch
+- `KeyboardVibeChangeController.swift` owns artifact-scoped Vibes revert/restyle for the latest untouched KeyVox dictation insertion
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
   - `Feedback/` owns extension-local haptics configuration and dispatch
   - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
-  - `Vibes/` owns the keyboard selector state for the app-owned KeyVox Vibes feature
+  - `Vibes/` owns keyboard-side Vibes selection plus latest-insertion revert/restyle behavior for the app-owned KeyVox Vibes feature
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
 - `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
 
@@ -1106,7 +1139,8 @@ Current symbol layout rules:
 - row 4 side keys use a 2.5-key span
 - the space bar consumes the remaining row-4 width
 - top-row cancel alignment is derived from the live `1` key geometry instead of guessed offsets
-- top-row Speak aligns over `7`, Caps Lock aligns over `8`, and the Vibes selector spans `9` and `0`
+- with Vibes available, top-row Speak aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
+- with Vibes unavailable, the Vibes key is removed from layout and Speak/Caps Lock shift into the non-Vibes positions
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise
 
 The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
