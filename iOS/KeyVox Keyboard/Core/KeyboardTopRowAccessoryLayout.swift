@@ -3,6 +3,7 @@ import UIKit
 extension KeyboardLayoutGeometry {
     final class TopRowAccessoryLayout {
         private weak var cancelButton: UIView?
+        private weak var settingsButton: UIView?
         private weak var capsLockButton: UIView?
         private weak var speakButton: UIView?
         private weak var paragraphButton: UIView?
@@ -12,19 +13,28 @@ extension KeyboardLayoutGeometry {
         private weak var logoBarView: UIView?
         private weak var keyGridView: KeyboardKeyGridView?
         private let cancelButtonLeadingConstraint: NSLayoutConstraint
+        private let settingsButtonLeadingConstraint: NSLayoutConstraint
         private let capsLockButtonTrailingConstraint: NSLayoutConstraint
         private let cancelButtonCenterYConstraint: NSLayoutConstraint
+        private let settingsButtonCenterYConstraint: NSLayoutConstraint
         private let capsLockButtonCenterYConstraint: NSLayoutConstraint
         private let cancelButtonWidthConstraint: NSLayoutConstraint
         private let cancelButtonHeightConstraint: NSLayoutConstraint
+        private let settingsButtonWidthConstraint: NSLayoutConstraint
+        private let settingsButtonHeightConstraint: NSLayoutConstraint
         private let capsLockButtonWidthConstraint: NSLayoutConstraint
         private let capsLockButtonHeightConstraint: NSLayoutConstraint
 
+        private var settingsButtonLandscapeCenterXConstraint: NSLayoutConstraint?
+        private var settingsButtonLandscapeBottomConstraint: NSLayoutConstraint?
+        private var settingsButtonLandscapeWidthConstraint: NSLayoutConstraint?
+        private var settingsButtonLandscapeHeightConstraint: NSLayoutConstraint?
         private var cancelButtonLandscapeCenterXConstraint: NSLayoutConstraint?
         private var cancelButtonLandscapeBottomConstraint: NSLayoutConstraint?
         private var cancelButtonLandscapeWidthConstraint: NSLayoutConstraint?
         private var cancelButtonLandscapeHeightConstraint: NSLayoutConstraint?
         private weak var cancelLandscapeReferenceView: UIView?
+        private var cancelUsesLandscapePosition = false
         private var singleKeyAccessoryStates: [SingleKeyAccessoryID: SingleKeyAccessoryConstraintState] = [:]
         private var vibesButtonLeadingConstraint: NSLayoutConstraint?
         private var vibesButtonTrailingConstraint: NSLayoutConstraint?
@@ -83,6 +93,7 @@ extension KeyboardLayoutGeometry {
 
         init(
             cancelButton: UIView,
+            settingsButton: UIView,
             capsLockButton: UIView,
             speakButton: UIView,
             paragraphButton: UIView,
@@ -92,15 +103,20 @@ extension KeyboardLayoutGeometry {
             logoBarView: UIView,
             keyGridView: KeyboardKeyGridView,
             cancelButtonLeadingConstraint: NSLayoutConstraint,
+            settingsButtonLeadingConstraint: NSLayoutConstraint,
             capsLockButtonTrailingConstraint: NSLayoutConstraint,
             cancelButtonCenterYConstraint: NSLayoutConstraint,
+            settingsButtonCenterYConstraint: NSLayoutConstraint,
             capsLockButtonCenterYConstraint: NSLayoutConstraint,
             cancelButtonWidthConstraint: NSLayoutConstraint,
             cancelButtonHeightConstraint: NSLayoutConstraint,
+            settingsButtonWidthConstraint: NSLayoutConstraint,
+            settingsButtonHeightConstraint: NSLayoutConstraint,
             capsLockButtonWidthConstraint: NSLayoutConstraint,
             capsLockButtonHeightConstraint: NSLayoutConstraint
         ) {
             self.cancelButton = cancelButton
+            self.settingsButton = settingsButton
             self.capsLockButton = capsLockButton
             self.speakButton = speakButton
             self.paragraphButton = paragraphButton
@@ -110,11 +126,15 @@ extension KeyboardLayoutGeometry {
             self.logoBarView = logoBarView
             self.keyGridView = keyGridView
             self.cancelButtonLeadingConstraint = cancelButtonLeadingConstraint
+            self.settingsButtonLeadingConstraint = settingsButtonLeadingConstraint
             self.capsLockButtonTrailingConstraint = capsLockButtonTrailingConstraint
             self.cancelButtonCenterYConstraint = cancelButtonCenterYConstraint
+            self.settingsButtonCenterYConstraint = settingsButtonCenterYConstraint
             self.capsLockButtonCenterYConstraint = capsLockButtonCenterYConstraint
             self.cancelButtonWidthConstraint = cancelButtonWidthConstraint
             self.cancelButtonHeightConstraint = cancelButtonHeightConstraint
+            self.settingsButtonWidthConstraint = settingsButtonWidthConstraint
+            self.settingsButtonHeightConstraint = settingsButtonHeightConstraint
             self.capsLockButtonWidthConstraint = capsLockButtonWidthConstraint
             self.capsLockButtonHeightConstraint = capsLockButtonHeightConstraint
             singleKeyAccessoryStates = Dictionary(
@@ -381,31 +401,10 @@ extension KeyboardLayoutGeometry {
         }
 
         private func updateCancelButton(isLandscape: Bool, keyGridView: KeyboardKeyGridView) {
-            if !isLandscape {
-                NSLayoutConstraint.deactivate([
-                    cancelButtonLandscapeCenterXConstraint,
-                    cancelButtonLandscapeBottomConstraint,
-                    cancelButtonLandscapeWidthConstraint,
-                    cancelButtonLandscapeHeightConstraint,
-                ].compactMap { $0 })
-
-                cancelButtonLandscapeCenterXConstraint = nil
-                cancelButtonLandscapeBottomConstraint = nil
-                cancelButtonLandscapeWidthConstraint = nil
-                cancelButtonLandscapeHeightConstraint = nil
-                cancelLandscapeReferenceView = nil
-
-                cancelButtonLeadingConstraint.isActive = true
-                cancelButtonCenterYConstraint.isActive = true
-                cancelButtonWidthConstraint.isActive = true
-                cancelButtonHeightConstraint.isActive = true
-                capsLockButtonTrailingConstraint.isActive = false
-                capsLockButtonCenterYConstraint.isActive = false
-                capsLockButtonWidthConstraint.isActive = false
-                capsLockButtonHeightConstraint.isActive = false
-                return
-            }
-
+            settingsButtonLeadingConstraint.isActive = false
+            settingsButtonCenterYConstraint.isActive = false
+            settingsButtonWidthConstraint.isActive = false
+            settingsButtonHeightConstraint.isActive = false
             cancelButtonLeadingConstraint.isActive = false
             cancelButtonCenterYConstraint.isActive = false
             cancelButtonWidthConstraint.isActive = false
@@ -415,30 +414,105 @@ extension KeyboardLayoutGeometry {
             capsLockButtonWidthConstraint.isActive = false
             capsLockButtonHeightConstraint.isActive = false
 
-            if let cancelButton, let cancelReferenceView = keyGridView.topRowKeyView(for: .one),
-               cancelLandscapeReferenceView !== cancelReferenceView {
+            guard let cancelReferenceView = keyGridView.topRowKeyView(for: .one) else {
                 NSLayoutConstraint.deactivate([
+                    settingsButtonLandscapeCenterXConstraint,
+                    settingsButtonLandscapeBottomConstraint,
+                    settingsButtonLandscapeWidthConstraint,
+                    settingsButtonLandscapeHeightConstraint,
                     cancelButtonLandscapeCenterXConstraint,
                     cancelButtonLandscapeBottomConstraint,
                     cancelButtonLandscapeWidthConstraint,
                     cancelButtonLandscapeHeightConstraint,
                 ].compactMap { $0 })
 
-                cancelButtonLandscapeCenterXConstraint = cancelButton.centerXAnchor.constraint(equalTo: cancelReferenceView.centerXAnchor)
-                cancelButtonLandscapeBottomConstraint = cancelButton.bottomAnchor.constraint(
-                    equalTo: cancelReferenceView.topAnchor,
-                    constant: -KeyboardStyle.keyboardRowSpacing
-                )
-                cancelButtonLandscapeWidthConstraint = cancelButton.widthAnchor.constraint(equalTo: cancelReferenceView.widthAnchor)
-                cancelButtonLandscapeHeightConstraint = cancelButton.heightAnchor.constraint(equalTo: cancelReferenceView.heightAnchor)
+                settingsButtonLandscapeCenterXConstraint = nil
+                settingsButtonLandscapeBottomConstraint = nil
+                settingsButtonLandscapeWidthConstraint = nil
+                settingsButtonLandscapeHeightConstraint = nil
+                cancelButtonLandscapeCenterXConstraint = nil
+                cancelButtonLandscapeBottomConstraint = nil
+                cancelButtonLandscapeWidthConstraint = nil
+                cancelButtonLandscapeHeightConstraint = nil
+                cancelLandscapeReferenceView = nil
+                cancelUsesLandscapePosition = false
+                capsLockButtonHeightConstraint.isActive = false
+                return
+            }
+
+            if cancelLandscapeReferenceView !== cancelReferenceView || cancelUsesLandscapePosition != isLandscape {
+                NSLayoutConstraint.deactivate([
+                    settingsButtonLandscapeCenterXConstraint,
+                    settingsButtonLandscapeBottomConstraint,
+                    settingsButtonLandscapeWidthConstraint,
+                    settingsButtonLandscapeHeightConstraint,
+                    cancelButtonLandscapeCenterXConstraint,
+                    cancelButtonLandscapeBottomConstraint,
+                    cancelButtonLandscapeWidthConstraint,
+                    cancelButtonLandscapeHeightConstraint,
+                ].compactMap { $0 })
+
+                if let settingsButton {
+                    settingsButtonLandscapeCenterXConstraint = settingsButton.centerXAnchor.constraint(equalTo: cancelReferenceView.centerXAnchor)
+                    if isLandscape {
+                        settingsButtonLandscapeBottomConstraint = settingsButton.bottomAnchor.constraint(
+                            equalTo: cancelReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    } else if let capsLockButton {
+                        settingsButtonLandscapeBottomConstraint = settingsButton.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor)
+                    } else {
+                        settingsButtonLandscapeBottomConstraint = settingsButton.bottomAnchor.constraint(
+                            equalTo: cancelReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    }
+                    settingsButtonLandscapeWidthConstraint = settingsButton.widthAnchor.constraint(equalTo: cancelReferenceView.widthAnchor)
+                    if isLandscape {
+                        settingsButtonLandscapeHeightConstraint = settingsButton.heightAnchor.constraint(equalTo: cancelReferenceView.heightAnchor)
+                    } else if let capsLockButton {
+                        settingsButtonLandscapeHeightConstraint = settingsButton.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    } else {
+                        settingsButtonLandscapeHeightConstraint = settingsButton.heightAnchor.constraint(equalToConstant: min(cancelReferenceView.bounds.width, KeyboardStyle.buttonSize))
+                    }
+                }
+                if let cancelButton {
+                    cancelButtonLandscapeCenterXConstraint = cancelButton.centerXAnchor.constraint(equalTo: cancelReferenceView.centerXAnchor)
+                    if isLandscape {
+                        cancelButtonLandscapeBottomConstraint = cancelButton.bottomAnchor.constraint(
+                            equalTo: cancelReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    } else if let capsLockButton {
+                        cancelButtonLandscapeBottomConstraint = cancelButton.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor)
+                    } else {
+                        cancelButtonLandscapeBottomConstraint = cancelButton.bottomAnchor.constraint(
+                            equalTo: cancelReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    }
+                    cancelButtonLandscapeWidthConstraint = cancelButton.widthAnchor.constraint(equalTo: cancelReferenceView.widthAnchor)
+                    if isLandscape {
+                        cancelButtonLandscapeHeightConstraint = cancelButton.heightAnchor.constraint(equalTo: cancelReferenceView.heightAnchor)
+                    } else if let capsLockButton {
+                        cancelButtonLandscapeHeightConstraint = cancelButton.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    } else {
+                        cancelButtonLandscapeHeightConstraint = cancelButton.heightAnchor.constraint(equalToConstant: min(cancelReferenceView.bounds.width, KeyboardStyle.buttonSize))
+                    }
+                }
                 cancelLandscapeReferenceView = cancelReferenceView
+                cancelUsesLandscapePosition = isLandscape
 
                 NSLayoutConstraint.activate([
+                    settingsButtonLandscapeCenterXConstraint,
+                    settingsButtonLandscapeBottomConstraint,
+                    settingsButtonLandscapeWidthConstraint,
+                    settingsButtonLandscapeHeightConstraint,
                     cancelButtonLandscapeCenterXConstraint!,
                     cancelButtonLandscapeBottomConstraint!,
                     cancelButtonLandscapeWidthConstraint!,
                     cancelButtonLandscapeHeightConstraint!,
-                ])
+                ].compactMap { $0 })
             }
         }
 

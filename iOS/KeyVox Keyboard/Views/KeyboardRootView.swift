@@ -2,12 +2,12 @@ import UIKit
 
 final class KeyboardRootView: UIView {
     private enum Metrics {
-        static let topRowSideControlVerticalOffset: CGFloat = 10
         static let infoButtonSize: CGFloat = 44
         static let warningLabelHorizontalInset: CGFloat = 12
     }
 
     let cancelButton = KeyboardCancelButton()
+    let settingsButton = KeyboardSettingsToggleButton()
     let capsLockButton = KeyboardCapsLockButton()
     let speakButton = KeyboardSpeakButton()
     let paragraphButton = KeyboardSettingsToggleButton()
@@ -27,13 +27,13 @@ final class KeyboardRootView: UIView {
     private let fullAccessWarningLabel = UILabel()
     private var leadingControlsWidthConstraint: NSLayoutConstraint?
     private var trailingControlsWidthConstraint: NSLayoutConstraint?
+    private var settingsButtonWidthConstraint: NSLayoutConstraint?
+    private var settingsButtonHeightConstraint: NSLayoutConstraint?
     private var cancelButtonWidthConstraint: NSLayoutConstraint?
     private var cancelButtonHeightConstraint: NSLayoutConstraint?
     private var capsLockButtonWidthConstraint: NSLayoutConstraint?
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
-    private var cancelButtonVisibilityTarget = false
-    private var hasAppliedInitialCancelVisibility = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -53,17 +53,25 @@ final class KeyboardRootView: UIView {
         let cancelReferenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if cancelReferenceWidth > 0,
            let leadingControlsWidthConstraint,
+           let settingsButtonWidthConstraint,
+           let settingsButtonHeightConstraint,
            let cancelButtonWidthConstraint,
            let cancelButtonHeightConstraint {
             let buttonHeight = min(cancelReferenceWidth, KeyboardStyle.buttonSize)
             if abs(leadingControlsWidthConstraint.constant - cancelReferenceWidth) > 0.5 ||
+                abs(settingsButtonWidthConstraint.constant - cancelReferenceWidth) > 0.5 ||
+                abs(settingsButtonHeightConstraint.constant - buttonHeight) > 0.5 ||
                 abs(cancelButtonWidthConstraint.constant - cancelReferenceWidth) > 0.5 ||
                 abs(cancelButtonHeightConstraint.constant - buttonHeight) > 0.5 {
                 leadingControlsWidthConstraint.constant = cancelReferenceWidth
+                settingsButtonWidthConstraint.constant = cancelReferenceWidth
+                settingsButtonHeightConstraint.constant = buttonHeight
                 cancelButtonWidthConstraint.constant = cancelReferenceWidth
                 cancelButtonHeightConstraint.constant = buttonHeight
                 leadingControlsStack.setNeedsLayout()
                 leadingControlsStack.layoutIfNeeded()
+                settingsButton.setNeedsLayout()
+                settingsButton.layoutIfNeeded()
                 cancelButton.setNeedsLayout()
                 cancelButton.layoutIfNeeded()
             }
@@ -117,47 +125,18 @@ final class KeyboardRootView: UIView {
             && state != .recording
             && state != .transcribing
 
-        if shouldShowCancel != cancelButtonVisibilityTarget {
-            cancelButtonVisibilityTarget = shouldShowCancel
-            if hasAppliedInitialCancelVisibility == false {
-                hasAppliedInitialCancelVisibility = true
-                if shouldShowCancel {
-                    cancelButton.isHidden = false
-                } else {
-                    cancelButton.isHidden = true
-                }
-            } else {
-                cancelButton.layer.removeAllAnimations()
-
-                if shouldShowCancel {
-                    cancelButton.alpha = 0
-                    cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                    cancelButton.isHidden = false
-
-                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                        self.cancelButton.alpha = 1
-                        self.cancelButton.transform = .identity
-                    })
-                } else {
-                    UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .allowUserInteraction, animations: {
-                        self.cancelButton.alpha = 0
-                        self.cancelButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                    }) { _ in
-                        guard !self.cancelButtonVisibilityTarget else { return }
-                        self.cancelButton.isHidden = true
-                        self.cancelButton.alpha = 1
-                        self.cancelButton.transform = .identity
-                    }
-                }
-            }
-        }
-
+        settingsButton.isTrackpadModeActive = isTrackpadModeActive
+        settingsButton.isEnabled = showsBrandedToolbar && !shouldShowCancel && !isTrackpadModeActive
+        settingsButton.isHidden = !showsBrandedToolbar || shouldShowCancel
         speakButton.isHidden = !shouldShowSpeak
         speakButton.alpha = 1
         speakButton.transform = .identity
         
         cancelButton.isEnabled = shouldShowCancel && !isTrackpadModeActive
         cancelButton.isTrackpadModeActive = isTrackpadModeActive
+        cancelButton.isHidden = !showsBrandedToolbar || !shouldShowCancel
+        cancelButton.alpha = 1
+        cancelButton.transform = .identity
         capsLockButton.isLocked = isCapsLockEnabled
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
@@ -211,6 +190,10 @@ final class KeyboardRootView: UIView {
         cancelButton.isHidden = true
         cancelButton.alpha = 1
         cancelButton.transform = .identity
+        settingsButton.symbolName = "gearshape.fill"
+        settingsButton.accessibilityTitle = "Settings"
+        settingsButton.showsStateValue = false
+        settingsButton.isHidden = true
         speakButton.isHidden = true
         speakButton.alpha = 1
         speakButton.transform = .identity
@@ -225,6 +208,7 @@ final class KeyboardRootView: UIView {
         dictionaryButton.accessibilityTitle = "Dictionary"
         dictionaryButton.showsStateValue = false
         dictionaryButton.isHidden = true
+        settingsButton.translatesAutoresizingMaskIntoConstraints = false
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
         speakButton.translatesAutoresizingMaskIntoConstraints = false
         paragraphButton.translatesAutoresizingMaskIntoConstraints = false
@@ -293,6 +277,7 @@ final class KeyboardRootView: UIView {
         // vertically centered while those controls align visually with the top row.
         // This preserves the current keyboard height and keeps toolbar positioning
         // independent from grid layout rules.
+        leadingControlsStack.addSubview(settingsButton)
         leadingControlsStack.addSubview(cancelButton)
         
         fullAccessWarningContainer.addSubview(fullAccessWarningLabel)
@@ -313,15 +298,19 @@ final class KeyboardRootView: UIView {
         trailingControlsWidthConstraint = trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
         let cancelButtonLeadingConstraint = cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor)
         let cancelButtonCenterYConstraint = cancelButton.centerYAnchor.constraint(
-            equalTo: leadingControlsStack.centerYAnchor,
-            constant: Metrics.topRowSideControlVerticalOffset
+            equalTo: leadingControlsStack.centerYAnchor
         )
+        let settingsButtonLeadingConstraint = settingsButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor)
+        let settingsButtonCenterYConstraint = settingsButton.centerYAnchor.constraint(
+            equalTo: leadingControlsStack.centerYAnchor
+        )
+        settingsButtonWidthConstraint = settingsButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
+        settingsButtonHeightConstraint = settingsButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
         cancelButtonWidthConstraint = cancelButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
         cancelButtonHeightConstraint = cancelButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
         let capsLockButtonTrailingConstraint = capsLockButton.trailingAnchor.constraint(equalTo: trailingControlsStack.trailingAnchor)
         let capsLockButtonCenterYConstraint = capsLockButton.centerYAnchor.constraint(
-            equalTo: trailingControlsStack.centerYAnchor,
-            constant: Metrics.topRowSideControlVerticalOffset
+            equalTo: trailingControlsStack.centerYAnchor
         )
         capsLockButtonWidthConstraint = capsLockButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
         capsLockButtonHeightConstraint = capsLockButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
@@ -334,7 +323,11 @@ final class KeyboardRootView: UIView {
             leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
             trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
 
-            // Cancel button flush with the left edge of its container
+            // Leading action buttons are flush with the left edge of their container.
+            settingsButtonWidthConstraint!,
+            settingsButtonHeightConstraint!,
+            settingsButtonLeadingConstraint,
+            settingsButtonCenterYConstraint,
             cancelButtonWidthConstraint!,
             cancelButtonHeightConstraint!,
             cancelButtonLeadingConstraint,
@@ -348,10 +341,7 @@ final class KeyboardRootView: UIView {
             fullAccessInfoButton.widthAnchor.constraint(equalToConstant: Metrics.infoButtonSize),
             fullAccessInfoButton.heightAnchor.constraint(equalTo: fullAccessInfoButton.widthAnchor),
             fullAccessInfoButton.trailingAnchor.constraint(equalTo: fullAccessWarningContainer.trailingAnchor),
-            fullAccessInfoButton.centerYAnchor.constraint(
-                equalTo: fullAccessWarningContainer.centerYAnchor,
-                constant: Metrics.topRowSideControlVerticalOffset
-            ),
+            fullAccessInfoButton.centerYAnchor.constraint(equalTo: fullAccessWarningContainer.centerYAnchor),
 
             fullAccessWarningLabel.leadingAnchor.constraint(
                 greaterThanOrEqualTo: fullAccessWarningContainer.leadingAnchor,
@@ -376,10 +366,13 @@ final class KeyboardRootView: UIView {
 
         if let cancelButtonWidthConstraint,
            let cancelButtonHeightConstraint,
+           let settingsButtonWidthConstraint,
+           let settingsButtonHeightConstraint,
            let capsLockButtonWidthConstraint,
            let capsLockButtonHeightConstraint {
             topRowAccessoryLayoutGeometry = KeyboardLayoutGeometry.TopRowAccessoryLayout(
                 cancelButton: cancelButton,
+                settingsButton: settingsButton,
                 capsLockButton: capsLockButton,
                 speakButton: speakButton,
                 paragraphButton: paragraphButton,
@@ -389,11 +382,15 @@ final class KeyboardRootView: UIView {
                 logoBarView: logoBarView,
                 keyGridView: keyGridView,
                 cancelButtonLeadingConstraint: cancelButtonLeadingConstraint,
+                settingsButtonLeadingConstraint: settingsButtonLeadingConstraint,
                 capsLockButtonTrailingConstraint: capsLockButtonTrailingConstraint,
                 cancelButtonCenterYConstraint: cancelButtonCenterYConstraint,
+                settingsButtonCenterYConstraint: settingsButtonCenterYConstraint,
                 capsLockButtonCenterYConstraint: capsLockButtonCenterYConstraint,
                 cancelButtonWidthConstraint: cancelButtonWidthConstraint,
                 cancelButtonHeightConstraint: cancelButtonHeightConstraint,
+                settingsButtonWidthConstraint: settingsButtonWidthConstraint,
+                settingsButtonHeightConstraint: settingsButtonHeightConstraint,
                 capsLockButtonWidthConstraint: capsLockButtonWidthConstraint,
                 capsLockButtonHeightConstraint: capsLockButtonHeightConstraint
             )

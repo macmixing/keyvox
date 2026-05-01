@@ -76,6 +76,22 @@ struct KeyVoxURLRouterTests {
         #expect(harness.appTabRouter.selectedTab == .dictionary)
     }
 
+    @Test func openSettingsRouteSelectsSettingsTab() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter
+        )
+
+        router.handle(route: .openSettings, shouldPresentReturnToHost: false)
+
+        #expect(harness.appTabRouter.selectedTab == .settings)
+    }
+
     private func makeHarness(
         isTTSUnlocked: Bool = false,
         remainingFreeTTSSpeaksToday: Int = TTSPurchaseController.dailyFreeSpeakLimit

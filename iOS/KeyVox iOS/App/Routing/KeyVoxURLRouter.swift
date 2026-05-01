@@ -41,6 +41,8 @@ final class KeyVoxURLRouter {
             }
         case .openDictionary:
             appTabRouter.selectedTab = .dictionary
+        case .openSettings:
+            appTabRouter.selectedTab = .settings
         }
     }
 

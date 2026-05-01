@@ -749,7 +749,7 @@ Packages/
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, dictionary tab launch, symbol page, trackpad mode, and insertion.
+  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
   - Responder-chain URL launcher used by the extension whenever it needs to wake the containing app for cold dictation or copied-text playback handoff.
 - `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
@@ -789,6 +789,7 @@ Packages/
   - Owns row 3 and row 4 live width calculations driven from the measured key grid.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
+  - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
   - With Vibes available, aligns Speak over `2`, Dictionary over `3`, Paragraphs over `4`, Lists over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
   - Without Vibes available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`

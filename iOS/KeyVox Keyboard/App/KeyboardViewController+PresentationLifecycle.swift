@@ -63,6 +63,7 @@ extension KeyboardViewController {
               let rootContainerView,
               let popupOverlayView else { return }
 
+        rootContainerView.settingsButton.addTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
         rootContainerView.paragraphButton.addTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
@@ -109,6 +110,7 @@ extension KeyboardViewController {
         dictationController.unregisterObservers()
 
         if let rootContainerView {
+            rootContainerView.settingsButton.removeTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
             rootContainerView.cancelButton.removeTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
             rootContainerView.capsLockButton.removeTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
             rootContainerView.paragraphButton.removeTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
