@@ -146,9 +146,15 @@ final class StyleRewriteFoundationTests: XCTestCase {
     }
 
     func testChillHeuristicPreservesEmailAddress() {
-        let output = ChillHeuristicFormatter().format("contact@dom.tech")
+        let output = ChillHeuristicFormatter().format("dom@example.com")
 
-        XCTAssertEqual(output, "contact@dom.tech")
+        XCTAssertEqual(output, "dom@example.com")
+    }
+
+    func testChillHeuristicPreservesEmailAddressWithTrailingSentencePunctuation() {
+        let output = ChillHeuristicFormatter().format("Email dom@example.com. Then wait.")
+
+        XCTAssertEqual(output, "email dom@example.com. then wait")
     }
 
     func testChillHeuristicPreservesParagraphBreaks() {

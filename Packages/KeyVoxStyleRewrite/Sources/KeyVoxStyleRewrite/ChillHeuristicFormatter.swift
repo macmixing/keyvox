@@ -27,8 +27,16 @@ public struct ChillHeuristicFormatter: Sendable {
 
             let tokenEnd = characters[index...].firstIndex(where: \.isWhitespace) ?? characters.endIndex
             let token = String(characters[index..<tokenEnd])
-            if isProtectedInlineToken(token) {
-                current.append(token)
+            if let protectedInlineToken = protectedInlineToken(in: token) {
+                current.append(protectedInlineToken.text)
+                if let trailingPunctuation = protectedInlineToken.trailingPunctuation {
+                    if isSentenceBoundary(trailingPunctuation) {
+                        appendSegment(current.joined(), terminator: trailingPunctuation == "?" ? "?" : ".", to: &segments)
+                        current.removeAll(keepingCapacity: true)
+                    } else {
+                        current.append(replacement(for: trailingPunctuation))
+                    }
+                }
                 index = tokenEnd
                 continue
             }
@@ -118,6 +126,19 @@ public struct ChillHeuristicFormatter: Sendable {
         character == "." || character == "!" || character == "?"
     }
 
+    private func protectedInlineToken(in token: String) -> (text: String, trailingPunctuation: Character?)? {
+        if let trailingPunctuation = token.last,
+           isProtectedTrailingPunctuation(trailingPunctuation) {
+            let candidate = String(token.dropLast())
+            if isProtectedInlineToken(candidate) {
+                return (candidate, trailingPunctuation)
+            }
+        }
+
+        guard isProtectedInlineToken(token) else { return nil }
+        return (token, nil)
+    }
+
     private func isProtectedInlineToken(_ token: String) -> Bool {
         let parts = token.split(separator: "@", omittingEmptySubsequences: false)
         guard parts.count == 2,
@@ -133,6 +154,10 @@ public struct ChillHeuristicFormatter: Sendable {
             CharacterSet.alphanumerics.contains(scalar)
                 || CharacterSet(charactersIn: "._%+-@").contains(scalar)
         }
+    }
+
+    private func isProtectedTrailingPunctuation(_ character: Character) -> Bool {
+        character == "." || character == "!" || character == "?" || character == ","
     }
 
 }
