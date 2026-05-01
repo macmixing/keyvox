@@ -351,6 +351,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.ListFormattingEnabled`
 - `KeyVox.CapsLockEnabled`
 - `KeyVox.KeyboardHapticsEnabled`
+- `KeyVox.LeftHandedKeyboardLayoutEnabled`
 - `KeyVox.PreferBuiltInMicrophone`
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
