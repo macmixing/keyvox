@@ -51,7 +51,15 @@ final class KeyboardRootView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let cancelReferenceWidth = keyGridView.topRowKeyView(for: .one)?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        let showsVibesButton = vibesButton.isHidden == false
+        let placeholderSlots = topRowAccessoryLayoutGeometry?.placeholderSlots(
+            showsVibesButton: showsVibesButton,
+            isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
+        )
+        let leadingPlaceholderSlot = placeholderSlots?.leading ?? KeyboardTopRowAccessorySlot.one
+        let trailingPlaceholderSlot = placeholderSlots?.trailing ?? KeyboardTopRowAccessorySlot.zero
+
+        let cancelReferenceWidth = keyGridView.topRowKeyView(for: leadingPlaceholderSlot)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if cancelReferenceWidth > 0,
            let leadingControlsWidthConstraint,
            let settingsButtonWidthConstraint,
@@ -78,7 +86,7 @@ final class KeyboardRootView: UIView {
             }
         }
 
-        let capsReferenceWidth = keyGridView.topRowKeyView(for: .zero)?.bounds.width ?? KeyboardStyle.cancelButtonSize
+        let capsReferenceWidth = keyGridView.topRowKeyView(for: trailingPlaceholderSlot)?.bounds.width ?? KeyboardStyle.cancelButtonSize
         if capsReferenceWidth > 0,
            let trailingControlsWidthConstraint,
            let capsLockButtonWidthConstraint,
@@ -100,7 +108,7 @@ final class KeyboardRootView: UIView {
         let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
         topRowAccessoryLayoutGeometry?.update(
             isLandscape: isLandscape,
-            showsVibesButton: vibesButton.isHidden == false,
+            showsVibesButton: showsVibesButton,
             isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
         )
     }

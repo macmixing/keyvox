@@ -160,6 +160,17 @@ extension KeyboardLayoutGeometry {
             updateCancelButton(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
         }
 
+        func placeholderSlots(
+            showsVibesButton: Bool,
+            isLeftHandedLayoutEnabled: Bool
+        ) -> (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot) {
+            let slotPlan = topRowAccessorySlotPlan(
+                showsVibesButton: showsVibesButton,
+                isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
+            )
+            return (slotPlan.logoLeading, slotPlan.utilitySlot)
+        }
+
         private func updateSingleKeyAccessories(
             isLandscape: Bool,
             slotPlan: TopRowAccessorySlotPlan,
