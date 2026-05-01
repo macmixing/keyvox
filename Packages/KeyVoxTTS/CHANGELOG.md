@@ -6,6 +6,14 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-05-01
+
+### Fixed
+
+- Normalized numbered list markers written as `1)` into `1.` before PocketTTS synthesis while preserving parenthetical aside handling.
+
+---
+
 ## [1.0.0] - 2026-04-05
 
 Baseline tracked release of the KeyVox PocketTTS runtime package.

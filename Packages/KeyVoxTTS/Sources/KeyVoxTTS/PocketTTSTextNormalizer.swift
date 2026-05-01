@@ -307,7 +307,11 @@ enum PocketTTSTextNormalizer {
             )
         }
 
-        let marker = String(matchedLine[markerRange])
+        let marker = String(matchedLine[markerRange]).replacingOccurrences(
+            of: #"\)$"#,
+            with: ".",
+            options: .regularExpression
+        )
         let spacing = String(matchedLine[spacingRange])
         let content = String(matchedLine[contentRange]).replacingOccurrences(
             of: closeAsidePattern,
