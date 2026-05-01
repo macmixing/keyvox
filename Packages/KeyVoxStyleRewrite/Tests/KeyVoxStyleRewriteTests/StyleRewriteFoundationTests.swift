@@ -128,6 +128,46 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertEqual(output, "um hey uh this is cool")
     }
 
+    func testChillHeuristicPreservesEmoji() {
+        let output = ChillHeuristicFormatter().format(
+            "KeyVox runs on-device and skips the subscription nonsense. 🎙️🔒"
+        )
+
+        XCTAssertEqual(
+            output,
+            "keyvox runs on device and skips the subscription nonsense. 🎙️🔒"
+        )
+    }
+
+    func testChillHeuristicPreservesMathSymbols() {
+        let output = ChillHeuristicFormatter().format("2+2=4")
+
+        XCTAssertEqual(output, "2+2=4")
+    }
+
+    func testChillHeuristicPreservesEmailAddress() {
+        let output = ChillHeuristicFormatter().format("dom@example.com")
+
+        XCTAssertEqual(output, "dom@example.com")
+    }
+
+    func testChillHeuristicPreservesEmailAddressWithTrailingSentencePunctuation() {
+        let output = ChillHeuristicFormatter().format("Email dom@example.com. Then wait.")
+
+        XCTAssertEqual(output, "email dom@example.com. then wait")
+    }
+
+    func testChillHeuristicPreservesParagraphBreaks() {
+        let output = ChillHeuristicFormatter().format(
+            "Hey, this is really crazy.\n\nWhat are you doing tomorrow? I don't even know."
+        )
+
+        XCTAssertEqual(
+            output,
+            "hey this is really crazy\n\nwhat are you doing tomorrow? i dont even know"
+        )
+    }
+
     func testFoundationRewriteRepairCollapsesAdjacentProtectedDuplicate() {
         let output = FoundationRewriteOutputRepair.repair(
             original: "im just trying trying to work",

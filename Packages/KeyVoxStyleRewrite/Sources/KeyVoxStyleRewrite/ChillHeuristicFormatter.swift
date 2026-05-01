@@ -4,16 +4,52 @@ public struct ChillHeuristicFormatter: Sendable {
     public init() {}
 
     public func format(_ text: String) -> String {
+        paragraphTexts(in: text)
+            .map(formatParagraph)
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
+    }
+
+    private func formatParagraph(_ text: String) -> String {
         var segments: [(text: String, terminator: Character?)] = []
         var current: [String] = []
+        let characters = Array(text.lowercased())
+        var index = characters.startIndex
 
-        for character in text.lowercased() {
-            if isSentenceBoundary(character) {
-                appendSegment(current.joined(), terminator: character == "?" ? "?" : ".", to: &segments)
-                current.removeAll(keepingCapacity: true)
-            } else {
-                current.append(replacement(for: character))
+        while index < characters.endIndex {
+            let character = characters[index]
+
+            if character.isWhitespace {
+                current.append(String(character))
+                index = characters.index(after: index)
+                continue
             }
+
+            let tokenEnd = characters[index...].firstIndex(where: \.isWhitespace) ?? characters.endIndex
+            let token = String(characters[index..<tokenEnd])
+            if let protectedInlineToken = protectedInlineToken(in: token) {
+                current.append(protectedInlineToken.text)
+                if let trailingPunctuation = protectedInlineToken.trailingPunctuation {
+                    if isSentenceBoundary(trailingPunctuation) {
+                        appendSegment(current.joined(), terminator: trailingPunctuation == "?" ? "?" : ".", to: &segments)
+                        current.removeAll(keepingCapacity: true)
+                    } else {
+                        current.append(replacement(for: trailingPunctuation))
+                    }
+                }
+                index = tokenEnd
+                continue
+            }
+
+            for character in characters[index..<tokenEnd] {
+                if isSentenceBoundary(character) {
+                    appendSegment(current.joined(), terminator: character == "?" ? "?" : ".", to: &segments)
+                    current.removeAll(keepingCapacity: true)
+                } else {
+                    current.append(replacement(for: character))
+                }
+            }
+            index = tokenEnd
         }
 
         appendSegment(current.joined(), terminator: nil, to: &segments)
@@ -25,6 +61,28 @@ public struct ChillHeuristicFormatter: Sendable {
             }
             return segment.text + (segment.terminator == "?" ? "? " : ". ")
         }.joined()
+    }
+
+    private func paragraphTexts(in text: String) -> [String] {
+        var paragraphs: [String] = []
+        var currentLines: [String] = []
+
+        for line in text.components(separatedBy: .newlines) {
+            if line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                appendParagraph(currentLines.joined(separator: "\n"), to: &paragraphs)
+                currentLines.removeAll(keepingCapacity: true)
+            } else {
+                currentLines.append(line)
+            }
+        }
+
+        appendParagraph(currentLines.joined(separator: "\n"), to: &paragraphs)
+        return paragraphs
+    }
+
+    private func appendParagraph(_ text: String, to paragraphs: inout [String]) {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        paragraphs.append(text)
     }
 
     private func appendSegment(
@@ -53,6 +111,14 @@ public struct ChillHeuristicFormatter: Sendable {
             return ""
         }
 
+        if character.isEmojiLike {
+            return String(character)
+        }
+
+        if character.isSymbolLike {
+            return String(character)
+        }
+
         return " "
     }
 
@@ -60,4 +126,55 @@ public struct ChillHeuristicFormatter: Sendable {
         character == "." || character == "!" || character == "?"
     }
 
+    private func protectedInlineToken(in token: String) -> (text: String, trailingPunctuation: Character?)? {
+        if let trailingPunctuation = token.last,
+           isProtectedTrailingPunctuation(trailingPunctuation) {
+            let candidate = String(token.dropLast())
+            if isProtectedInlineToken(candidate) {
+                return (candidate, trailingPunctuation)
+            }
+        }
+
+        guard isProtectedInlineToken(token) else { return nil }
+        return (token, nil)
+    }
+
+    private func isProtectedInlineToken(_ token: String) -> Bool {
+        let parts = token.split(separator: "@", omittingEmptySubsequences: false)
+        guard parts.count == 2,
+              let local = parts.first,
+              let domain = parts.last,
+              !local.isEmpty,
+              !domain.isEmpty,
+              domain.contains(".") else {
+            return false
+        }
+
+        return token.unicodeScalars.allSatisfy { scalar in
+            CharacterSet.alphanumerics.contains(scalar)
+                || CharacterSet(charactersIn: "._%+-@").contains(scalar)
+        }
+    }
+
+    private func isProtectedTrailingPunctuation(_ character: Character) -> Bool {
+        character == "." || character == "!" || character == "?" || character == ","
+    }
+
+}
+
+private extension Character {
+    var isEmojiLike: Bool {
+        unicodeScalars.contains { scalar in
+            scalar.properties.isEmoji
+                || scalar.properties.isEmojiPresentation
+                || scalar.properties.isEmojiModifier
+                || scalar.properties.isEmojiModifierBase
+        }
+    }
+
+    var isSymbolLike: Bool {
+        unicodeScalars.allSatisfy { scalar in
+            CharacterSet.symbols.contains(scalar)
+        }
+    }
 }

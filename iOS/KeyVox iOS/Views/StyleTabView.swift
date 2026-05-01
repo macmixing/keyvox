@@ -2,7 +2,12 @@ import KeyVoxStyleRewrite
 import SwiftUI
 
 struct StyleTabView: View {
+    @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @State var isVibeExamplesExpanded = false
+    @State var vibeExamplesExpandedContentHeight: CGFloat = 0
+
+    static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
 
     var body: some View {
         AppScrollScreen {

@@ -4,6 +4,8 @@ enum SettingsTabCopy {
     enum Keyboard {
         static let hapticsTitle = "Keyboard Haptics"
         static let hapticsDescription = "Get haptic feedback from KeyVox keyboard."
+        static let leftHandedLayoutTitle = "Left-Handed Layout"
+        static let leftHandedLayoutDescription = "Mirror keyboard controls for easier left-hand access."
     }
 }
 
@@ -119,12 +121,24 @@ extension SettingsTabView {
     @ViewBuilder
     var keyboardSection: some View {
         AppCard {
-            SettingsRow(
-                icon: "keyboard",
-                title: SettingsTabCopy.Keyboard.hapticsTitle,
-                description: SettingsTabCopy.Keyboard.hapticsDescription,
-                isOn: $settingsStore.keyboardHapticsEnabled
-            )
+            VStack(spacing: 16) {
+                SettingsRow(
+                    icon: "keyboard",
+                    title: SettingsTabCopy.Keyboard.hapticsTitle,
+                    description: SettingsTabCopy.Keyboard.hapticsDescription,
+                    isOn: $settingsStore.keyboardHapticsEnabled
+                )
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                SettingsRow(
+                    icon: "switch.2",
+                    title: SettingsTabCopy.Keyboard.leftHandedLayoutTitle,
+                    description: SettingsTabCopy.Keyboard.leftHandedLayoutDescription,
+                    isOn: $settingsStore.leftHandedKeyboardLayoutEnabled
+                )
+            }
         }
     }
 

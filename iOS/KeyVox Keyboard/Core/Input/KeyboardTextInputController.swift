@@ -1,5 +1,11 @@
 import UIKit
 
+struct KeyboardTextInsertionResult: Equatable {
+    let sourceText: String
+    let insertedText: String
+    let documentContextBeforeInput: String?
+}
+
 protocol KeyboardTextDocumentProxying: AnyObject {
     var documentContextBeforeInput: String? { get }
     var documentContextAfterInput: String? { get }
@@ -130,26 +136,111 @@ final class KeyboardTextInputController {
 
     @discardableResult
     func insertTranscription(_ text: String) -> Bool {
+        insertTranscriptionWithResult(text) != nil
+    }
+
+    func insertTranscriptionWithResult(_ text: String) -> KeyboardTextInsertionResult? {
         let cleanedText = text.replacingOccurrences(
             of: #"[\r\n]+$"#,
             with: "",
             options: .regularExpression
         )
         guard !cleanedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+
+        let contextBeforeInput = documentProxy.documentContextBeforeInput
+        let insertionText = preparedTranscriptionText(
+            cleanedText,
+            documentContextBeforeInput: contextBeforeInput
+        )
+        documentProxy.insertText(insertionText)
+        return KeyboardTextInsertionResult(
+            sourceText: cleanedText,
+            insertedText: insertionText,
+            documentContextBeforeInput: contextBeforeInput
+        )
+    }
+
+    func preparedTranscriptionText(
+        _ text: String,
+        documentContextBeforeInput: String?
+    ) -> String {
+        let capitalizationNormalizedText = KeyboardInsertionCapitalizationHeuristics
+            .normalizeLeadingCapitalizationIfNeeded(
+                text: text,
+                documentContextBeforeInput: documentContextBeforeInput,
+                shouldPreserveLeadingCapitalization: shouldPreserveLeadingCapitalization
+            )
+        return KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
+            to: capitalizationNormalizedText,
+            documentContextBeforeInput: documentContextBeforeInput
+        )
+    }
+
+    var selectedText: String? {
+        documentProxy.selectedText
+    }
+
+    var documentContextBeforeInput: String? {
+        documentProxy.documentContextBeforeInput
+    }
+
+    func currentTextMatchesUntouchedInsertion(
+        _ text: String,
+        documentContextBeforeInsertion: String?
+    ) -> Bool {
+        guard text.isEmpty == false else {
             return false
         }
 
-        let capitalizationNormalizedText = KeyboardInsertionCapitalizationHeuristics
-            .normalizeLeadingCapitalizationIfNeeded(
-                text: cleanedText,
-                documentContextBeforeInput: documentProxy.documentContextBeforeInput,
-                shouldPreserveLeadingCapitalization: shouldPreserveLeadingCapitalization
-            )
-        let insertionText = KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
-            to: capitalizationNormalizedText,
-            documentContextBeforeInput: documentProxy.documentContextBeforeInput
-        )
-        documentProxy.insertText(insertionText)
+        guard let currentContext = documentProxy.documentContextBeforeInput else {
+            return false
+        }
+
+        guard currentContext.hasSuffix(text) else {
+            return false
+        }
+
+        let visiblePrefix = String(currentContext.dropLast(text.count))
+        guard visiblePrefix.isEmpty == false else {
+            return documentContextBeforeInsertion?.isEmpty ?? true
+        }
+
+        guard let documentContextBeforeInsertion else {
+            return false
+        }
+
+        return documentContextBeforeInsertion.hasSuffix(visiblePrefix)
+    }
+
+    func replaceSelectedText(_ selectedText: String, with text: String) -> Bool {
+        guard selectedText.isEmpty == false,
+              let currentSelectedText = documentProxy.selectedText,
+              currentSelectedText == selectedText else {
+            return false
+        }
+
+        documentProxy.insertText(text)
+        return true
+    }
+
+    func replaceUntouchedInsertion(
+        _ currentText: String,
+        with replacementText: String,
+        documentContextBeforeInsertion: String?
+    ) -> Bool {
+        guard currentTextMatchesUntouchedInsertion(
+            currentText,
+            documentContextBeforeInsertion: documentContextBeforeInsertion
+        ) else {
+            return false
+        }
+
+        for _ in currentText {
+            documentProxy.deleteBackward()
+        }
+        documentProxy.insertText(replacementText)
         return true
     }
 

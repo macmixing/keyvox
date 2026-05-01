@@ -78,13 +78,22 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
 final class AppSettingsStore: ObservableObject {
     private static let darwinNotificationCallback: CFNotificationCallback = { _, observer, name, _, _ in
         guard let observer,
-              name?.rawValue as String? == KeyVoxIPCBridge.Notification.vibeSelectionChanged else {
+              let notificationName = name?.rawValue as String? else {
             return
         }
 
         let store = Unmanaged<AppSettingsStore>.fromOpaque(observer).takeUnretainedValue()
         DispatchQueue.main.async {
-            store.refreshAIStyleTransformStyleFromDefaults()
+            switch notificationName {
+            case KeyVoxIPCBridge.Notification.vibeSelectionChanged:
+                store.refreshSelectedVibeFromDefaults()
+            case KeyVoxIPCBridge.Notification.listFormattingChanged:
+                store.refreshListFormattingFromDefaults()
+            case KeyVoxIPCBridge.Notification.autoParagraphsChanged:
+                store.refreshAutoParagraphsFromDefaults()
+            default:
+                break
+            }
         }
     }
 
@@ -178,6 +187,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var leftHandedKeyboardLayoutEnabled: Bool {
+        didSet {
+            defaults.set(leftHandedKeyboardLayoutEnabled, forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled)
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: UserDefaultsKeys.preferBuiltInMicrophone)
@@ -220,14 +235,14 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
-    @Published var aiStyleTransformStyle: StyleRewriteStyle {
+    @Published var selectedVibe: StyleRewriteStyle {
         didSet {
-            defaults.set(aiStyleTransformStyle.rawValue, forKey: UserDefaultsKeys.aiStyleTransformStyle)
+            defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         }
     }
 
     private let defaults: UserDefaults
-    private var observesVibeSelectionChanges = false
+    private var observesKeyboardSettingChanges = false
 
     init(defaults: UserDefaults) {
         self.defaults = defaults
@@ -243,6 +258,7 @@ final class AppSettingsStore: ObservableObject {
         listFormattingEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
+        leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
         preferBuiltInMicrophone = defaults.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         liveActivitiesEnabled = defaults.object(forKey: UserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: UserDefaultsKeys.sessionDisableTiming),
@@ -274,48 +290,65 @@ final class AppSettingsStore: ObservableObject {
         }
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
-        aiStyleTransformStyle = Self.resolvedAIStyleTransformStyle(from: defaults)
-        registerVibeSelectionObserver()
+        selectedVibe = Self.resolvedSelectedVibe(from: defaults)
+        if defaults.string(forKey: UserDefaultsKeys.selectedVibe) != selectedVibe.rawValue {
+            defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
+        }
+        registerKeyboardSettingObservers()
     }
 
     deinit {
-        guard observesVibeSelectionChanges else { return }
+        guard observesKeyboardSettingChanges else { return }
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
     }
 
-    nonisolated static func resolvedAIStyleTransformStyle(from defaults: UserDefaults) -> StyleRewriteStyle {
-        if let raw = defaults.string(forKey: UserDefaultsKeys.aiStyleTransformStyle),
+    nonisolated static func resolvedSelectedVibe(from defaults: UserDefaults) -> StyleRewriteStyle {
+        if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
            let style = StyleRewriteStyle(rawValue: raw) {
-            return style
-        }
-
-        if defaults.object(forKey: UserDefaultsKeys.aiStyleTransformEnabled) as? Bool == true {
-            return .polished
+            return style.resolvedForFoundationAvailability(FoundationStyleRewriteAvailability.isAvailable)
         }
 
         return .none
     }
 
-    func refreshAIStyleTransformStyleFromDefaults() {
-        let style = Self.resolvedAIStyleTransformStyle(from: defaults)
-        guard aiStyleTransformStyle != style else { return }
-        aiStyleTransformStyle = style
+    func refreshSelectedVibeFromDefaults() {
+        let style = Self.resolvedSelectedVibe(from: defaults)
+        guard selectedVibe != style else { return }
+        selectedVibe = style
     }
 
-    private func registerVibeSelectionObserver() {
-        guard observesVibeSelectionChanges == false else { return }
-        observesVibeSelectionChanges = true
+    func refreshListFormattingFromDefaults() {
+        let isEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+        guard listFormattingEnabled != isEnabled else { return }
+        listFormattingEnabled = isEnabled
+    }
+
+    func refreshAutoParagraphsFromDefaults() {
+        let isEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+        guard autoParagraphsEnabled != isEnabled else { return }
+        autoParagraphsEnabled = isEnabled
+    }
+
+    private func registerKeyboardSettingObservers() {
+        guard observesKeyboardSettingChanges == false else { return }
+        observesKeyboardSettingChanges = true
 
         let center = CFNotificationCenterGetDarwinNotifyCenter()
-        CFNotificationCenterAddObserver(
-            center,
-            Unmanaged.passUnretained(self).toOpaque(),
-            Self.darwinNotificationCallback,
-            KeyVoxIPCBridge.Notification.vibeSelectionChanged as CFString,
-            nil,
-            .deliverImmediately
-        )
+        [
+            KeyVoxIPCBridge.Notification.vibeSelectionChanged,
+            KeyVoxIPCBridge.Notification.listFormattingChanged,
+            KeyVoxIPCBridge.Notification.autoParagraphsChanged,
+        ].forEach { notificationName in
+            CFNotificationCenterAddObserver(
+                center,
+                Unmanaged.passUnretained(self).toOpaque(),
+                Self.darwinNotificationCallback,
+                notificationName as CFString,
+                nil,
+                .deliverImmediately
+            )
+        }
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

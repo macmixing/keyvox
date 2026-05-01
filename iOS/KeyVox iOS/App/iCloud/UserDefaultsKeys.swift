@@ -6,14 +6,14 @@ nonisolated enum UserDefaultsKeys {
     static let listFormattingEnabled = "KeyVox.ListFormattingEnabled"
     static let capsLockEnabled = "KeyVox.CapsLockEnabled"
     static let keyboardHapticsEnabled = "KeyVox.KeyboardHapticsEnabled"
+    static let leftHandedKeyboardLayoutEnabled = "KeyVox.LeftHandedKeyboardLayoutEnabled"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
     static let speakTimeoutTiming = "KeyVox.SpeakTimeoutTiming"
     static let ttsVoice = "KeyVox.TTSVoice"
     static let fastPlaybackModeEnabled = "KeyVox.FastPlaybackModeEnabled"
-    static let aiStyleTransformEnabled = "KeyVox.AIStyleTransformEnabled"
-    static let aiStyleTransformStyle = "KeyVox.AIStyleTransformStyle"
+    static let selectedVibe = "KeyVox.SelectedVibe"
 
     enum App {
         static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"

@@ -54,6 +54,10 @@ struct MainTabView: View {
                 .environmentObject(ttsPurchaseController)
         }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
+            guard appTabRouter.consumeShouldSuppressNextSelectionHaptic() == false else {
+                return
+            }
+
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
             }

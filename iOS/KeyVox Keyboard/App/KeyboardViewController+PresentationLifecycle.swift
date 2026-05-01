@@ -63,9 +63,19 @@ extension KeyboardViewController {
               let rootContainerView,
               let popupOverlayView else { return }
 
+        rootContainerView.settingsButton.addTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+        rootContainerView.paragraphButton.addTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
+        rootContainerView.listsButton.addTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
+        rootContainerView.dictionaryButton.addTarget(self, action: #selector(handleDictionaryTap), for: .touchUpInside)
         rootContainerView.vibesButton.addTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
+        let vibesLongPressRecognizer = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(handleVibesLongPress(_:))
+        )
+        vibesLongPressRecognizer.cancelsTouchesInView = true
+        rootContainerView.vibesButton.addGestureRecognizer(vibesLongPressRecognizer)
         rootContainerView.speakButton.addTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
@@ -100,9 +110,16 @@ extension KeyboardViewController {
         dictationController.unregisterObservers()
 
         if let rootContainerView {
+            rootContainerView.settingsButton.removeTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
             rootContainerView.cancelButton.removeTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
             rootContainerView.capsLockButton.removeTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+            rootContainerView.paragraphButton.removeTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
+            rootContainerView.listsButton.removeTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
+            rootContainerView.dictionaryButton.removeTarget(self, action: #selector(handleDictionaryTap), for: .touchUpInside)
             rootContainerView.vibesButton.removeTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
+            rootContainerView.vibesButton.gestureRecognizers?.forEach {
+                rootContainerView.vibesButton.removeGestureRecognizer($0)
+            }
             rootContainerView.speakButton.removeTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)

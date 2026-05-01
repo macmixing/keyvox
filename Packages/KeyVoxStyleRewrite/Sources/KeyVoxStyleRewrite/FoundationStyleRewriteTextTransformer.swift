@@ -152,15 +152,8 @@ public final class FoundationStyleRewriteTextTransformer: DictationTextTransform
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *) {
             guard let model = modelIfAvailable() else {
-                return TextTransformResult.fallback(
-                    request: request,
-                    duration: Date().timeIntervalSince(transformStart),
-                    errors: [TextTransformErrorSummary(
-                        chunkIndex: nil,
-                        message: FoundationStyleRewriteError.foundationModelsUnavailable.description,
-                        errorCode: FoundationStyleRewriteError.foundationModelsUnavailable.errorCode
-                    )]
-                ).withProcessingModeSuffix(prewarmUsage.processingModeSuffix)
+                return foundationUnavailableFallback(request: request, transformStart: transformStart)
+                    .withProcessingModeSuffix(prewarmUsage.processingModeSuffix)
             }
 
             let runner = TextTransformChunkRunner(
@@ -193,15 +186,8 @@ public final class FoundationStyleRewriteTextTransformer: DictationTextTransform
         }
         #endif
 
-        return TextTransformResult.fallback(
-            request: request,
-            duration: Date().timeIntervalSince(transformStart),
-            errors: [TextTransformErrorSummary(
-                chunkIndex: nil,
-                message: FoundationStyleRewriteError.foundationModelsUnavailable.description,
-                errorCode: FoundationStyleRewriteError.foundationModelsUnavailable.errorCode
-            )]
-        ).withProcessingModeSuffix(prewarmUsage.processingModeSuffix)
+        return foundationUnavailableFallback(request: request, transformStart: transformStart)
+            .withProcessingModeSuffix(prewarmUsage.processingModeSuffix)
     }
 
     private static func requiresFullFallback(_ error: TextTransformErrorSummary) -> Bool {
@@ -232,6 +218,21 @@ public final class FoundationStyleRewriteTextTransformer: DictationTextTransform
             chunkTimings: chunkTimings,
             errors: [],
             processingMode: processingMode
+        )
+    }
+
+    private func foundationUnavailableFallback(
+        request: TextTransformRequest,
+        transformStart: Date
+    ) -> TextTransformResult {
+        TextTransformResult.fallback(
+            request: request,
+            duration: Date().timeIntervalSince(transformStart),
+            errors: [TextTransformErrorSummary(
+                chunkIndex: nil,
+                message: FoundationStyleRewriteError.foundationModelsUnavailable.description,
+                errorCode: FoundationStyleRewriteError.foundationModelsUnavailable.errorCode
+            )]
         )
     }
 
@@ -277,7 +278,7 @@ private extension FoundationStyleRewriteTextTransformer {
         prewarmUsage: FoundationStyleRewritePrewarmUsage
     ) async -> TextTransformResult {
         guard let model = modelIfAvailable() else {
-            return chillResult(request: request, sourceText: request.baseText, transformStart: transformStart)
+            return foundationUnavailableFallback(request: request, transformStart: transformStart)
         }
 
         let runner = TextTransformChunkRunner(
@@ -451,7 +452,7 @@ private extension FoundationStyleRewriteTextTransformer {
         }
         #endif
 
-        return chillResult(request: request, sourceText: request.baseText, transformStart: transformStart)
+        return foundationUnavailableFallback(request: request, transformStart: transformStart)
     }
 
     static func formatDuration(_ duration: TimeInterval) -> String {

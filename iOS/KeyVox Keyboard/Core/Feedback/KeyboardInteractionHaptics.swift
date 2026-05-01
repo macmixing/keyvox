@@ -61,4 +61,10 @@ final class KeyboardInteractionHaptics {
         notificationGenerator.notificationOccurred(.warning)
         notificationGenerator.prepare()
     }
+
+    func emitSuccessIfEnabled() {
+        guard settingsStore.isKeypressHapticsEnabled else { return }
+        notificationGenerator.notificationOccurred(.success)
+        notificationGenerator.prepare()
+    }
 }

@@ -52,4 +52,16 @@ enum ContainingAppTab: Hashable {
 @MainActor
 final class AppTabRouter: ObservableObject {
     @Published var selectedTab: ContainingAppTab = .home
+
+    private var shouldSuppressNextSelectionHaptic = false
+
+    func selectTab(_ tab: ContainingAppTab, suppressesHaptic: Bool = false) {
+        shouldSuppressNextSelectionHaptic = suppressesHaptic && tab != selectedTab
+        selectedTab = tab
+    }
+
+    func consumeShouldSuppressNextSelectionHaptic() -> Bool {
+        defer { shouldSuppressNextSelectionHaptic = false }
+        return shouldSuppressNextSelectionHaptic
+    }
 }

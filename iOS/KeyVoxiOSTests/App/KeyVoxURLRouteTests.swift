@@ -13,6 +13,16 @@ struct KeyVoxURLRouteTests {
         #expect(route == .stopRecording)
     }
 
+    @Test func parsesOpenDictionaryRoute() {
+        let route = KeyVoxURLRoute(url: URL(string: "keyvoxios://tab/dictionary")!)
+        #expect(route == .openDictionary)
+    }
+
+    @Test func parsesOpenSettingsRoute() {
+        let route = KeyVoxURLRoute(url: URL(string: "keyvoxios://tab/settings")!)
+        #expect(route == .openSettings)
+    }
+
     @Test func rejectsInvalidScheme() {
         let route = KeyVoxURLRoute(url: URL(string: "https://record/start")!)
         #expect(route == nil)

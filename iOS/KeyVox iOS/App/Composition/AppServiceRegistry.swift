@@ -97,7 +97,7 @@ final class AppServiceRegistry {
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
         let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
             selectedStyleProvider: {
-                AppSettingsStore.resolvedAIStyleTransformStyle(from: settingsDefaults)
+                AppSettingsStore.resolvedSelectedVibe(from: settingsDefaults)
             },
             artifactStore: styleRewriteArtifactStore
         )
@@ -301,7 +301,8 @@ final class AppServiceRegistry {
         self.urlRouter = KeyVoxURLRouter(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
-            audioModeCoordinator: audioModeCoordinator
+            audioModeCoordinator: audioModeCoordinator,
+            appTabRouter: appTabRouter
         )
 
         settingsStore.$activeDictationProvider

@@ -6,6 +6,7 @@ import UIKit
 final class KeyboardLogoBarView: UIControl {
     // Change this to resize the entire toolbar logo control.
     static let toolbarDiameter: CGFloat = 53
+    static let landscapeToolbarDiameter: CGFloat = 49
 
     private enum Metrics {
         static let barWidth: CGFloat = 4
@@ -21,6 +22,14 @@ final class KeyboardLogoBarView: UIControl {
         CGSize(width: Self.toolbarDiameter, height: Self.toolbarDiameter)
     }
 
+    func applyToolbarDiameter(_ diameter: CGFloat) {
+        guard widthConstraint?.constant != diameter || heightConstraint?.constant != diameter else { return }
+        widthConstraint?.constant = diameter
+        heightConstraint?.constant = diameter
+        invalidateIntrinsicContentSize()
+        setNeedsLayout()
+    }
+
     private let glowLayer = CAShapeLayer()
     private let backgroundLayer = CAShapeLayer()
     private let innerBorderLayer = CAShapeLayer()
@@ -29,6 +38,8 @@ final class KeyboardLogoBarView: UIControl {
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
+    private var widthConstraint: NSLayoutConstraint?
+    private var heightConstraint: NSLayoutConstraint?
 
     var keyboardState: KeyboardState = .idle
     var playbackProgress: CGFloat = 0
@@ -104,10 +115,9 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     private func configureSizeConstraints() {
-        NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: Self.toolbarDiameter),
-            heightAnchor.constraint(equalToConstant: Self.toolbarDiameter),
-        ])
+        widthConstraint = widthAnchor.constraint(equalToConstant: Self.toolbarDiameter)
+        heightConstraint = heightAnchor.constraint(equalToConstant: Self.toolbarDiameter)
+        NSLayoutConstraint.activate([widthConstraint, heightConstraint].compactMap { $0 })
     }
 
     private func configureLayers() {
