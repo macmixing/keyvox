@@ -122,21 +122,37 @@ extension StyleTabView {
     }
 
     private func vibeExampleRow(_ example: VibeExample) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(example.style.displayName)
-                .font(.appFont(17))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+        Button {
+            appHaptics.light()
+            settingsStore.selectedVibe = example.style
+        } label: {
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(example.style.displayName)
+                        .font(.appFont(17))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
 
-            Text(example.text)
-                .font(.appFont(15, variant: .light))
-                .foregroundStyle(.yellow)
+                    Text(example.text)
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.yellow)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 10)
+
+                Image(systemName: example.style == settingsStore.selectedVibe ? "checkmark.circle.fill" : "checkmark.circle.dotted")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(example.style == settingsStore.selectedVibe ? .green : .white)
+            }
+            .padding(.leading, 10)
+            .padding(.trailing, 15)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .buttonStyle(.plain)
     }
 
     private func updateVibeExamplesExpandedContentHeight(_ newHeight: CGFloat) {
