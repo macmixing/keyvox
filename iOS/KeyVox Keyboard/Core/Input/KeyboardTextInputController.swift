@@ -190,15 +190,28 @@ final class KeyboardTextInputController {
         _ text: String,
         documentContextBeforeInsertion: String?
     ) -> Bool {
+        guard text.isEmpty == false else {
+            return false
+        }
+
         guard let currentContext = documentProxy.documentContextBeforeInput else {
             return false
         }
 
-        guard let documentContextBeforeInsertion else {
-            return currentContext.hasSuffix(text)
+        guard currentContext.hasSuffix(text) else {
+            return false
         }
 
-        return currentContext == documentContextBeforeInsertion + text
+        let visiblePrefix = String(currentContext.dropLast(text.count))
+        guard visiblePrefix.isEmpty == false else {
+            return documentContextBeforeInsertion?.isEmpty ?? true
+        }
+
+        guard let documentContextBeforeInsertion else {
+            return false
+        }
+
+        return documentContextBeforeInsertion.hasSuffix(visiblePrefix)
     }
 
     func replaceSelectedText(_ selectedText: String, with text: String) -> Bool {
