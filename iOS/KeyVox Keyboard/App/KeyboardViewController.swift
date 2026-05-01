@@ -7,7 +7,7 @@ final class KeyboardViewController: UIInputViewController {
     let keypressHaptics = KeyboardKeypressHaptics()
     let interactionHaptics = KeyboardInteractionHaptics()
     let indicatorDriver = AudioIndicatorDriver()
-    let vibesStateStore = KeyboardVibesStateStore()
+    let appSettingsStore = KeyboardAppSettingsStore()
     let startRecordingURL = URL(string: "keyvoxios://record/start")
     let startTTSURL = URL(string: "keyvoxios://tts/start")
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
@@ -28,7 +28,7 @@ final class KeyboardViewController: UIInputViewController {
     )
     lazy var vibeChangeController = KeyboardVibeChangeController(
         textInputController: textInputController,
-        vibesStateStore: vibesStateStore
+        appSettingsStore: appSettingsStore
     )
     lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
@@ -204,8 +204,10 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
-            selectedVibeTitle: vibesStateStore.selectedVibeTitle,
-            isVibesAvailable: vibesStateStore.isVibesAvailable,
+            selectedVibeTitle: appSettingsStore.selectedVibeTitle,
+            isVibesAvailable: appSettingsStore.isVibesAvailable,
+            isAutoParagraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
+            isListFormattingEnabled: appSettingsStore.isListFormattingEnabled,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive
@@ -310,8 +312,22 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleVibesTap() {
-        guard vibesStateStore.isVibesAvailable else { return }
-        _ = vibesStateStore.advance()
+        guard appSettingsStore.isVibesAvailable else { return }
+        _ = appSettingsStore.advanceSelectedVibe()
+        interactionHaptics.emitLightIfEnabled()
+        updateUI()
+    }
+
+    @objc
+    func handleParagraphsTap() {
+        _ = appSettingsStore.toggleAutoParagraphs()
+        interactionHaptics.emitLightIfEnabled()
+        updateUI()
+    }
+
+    @objc
+    func handleListsTap() {
+        _ = appSettingsStore.toggleListFormatting()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
     }

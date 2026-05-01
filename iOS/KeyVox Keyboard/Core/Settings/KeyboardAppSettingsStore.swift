@@ -1,7 +1,7 @@
 import Foundation
 import KeyVoxStyleRewrite
 
-final class KeyboardVibesStateStore {
+final class KeyboardAppSettingsStore {
     private let defaults: UserDefaults?
 
     init(defaults: UserDefaults? = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)) {
@@ -26,7 +26,7 @@ final class KeyboardVibesStateStore {
     }
 
     @discardableResult
-    func advance() -> String {
+    func advanceSelectedVibe() -> String {
         let styles = StyleRewriteStyle.allCases
         guard styles.isEmpty == false else { return selectedVibe.displayName }
         let currentStyle = selectedVibe
@@ -36,5 +36,29 @@ final class KeyboardVibesStateStore {
         defaults?.set(nextStyle.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         KeyVoxIPCBridge.publishVibeSelectionChanged()
         return nextStyle.displayName
+    }
+
+    var isListFormattingEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+    }
+
+    var isAutoParagraphsEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+    }
+
+    @discardableResult
+    func toggleListFormatting() -> Bool {
+        let updatedValue = !isListFormattingEnabled
+        defaults?.set(updatedValue, forKey: UserDefaultsKeys.listFormattingEnabled)
+        KeyVoxIPCBridge.publishListFormattingChanged()
+        return updatedValue
+    }
+
+    @discardableResult
+    func toggleAutoParagraphs() -> Bool {
+        let updatedValue = !isAutoParagraphsEnabled
+        defaults?.set(updatedValue, forKey: UserDefaultsKeys.autoParagraphsEnabled)
+        KeyVoxIPCBridge.publishAutoParagraphsChanged()
+        return updatedValue
     }
 }

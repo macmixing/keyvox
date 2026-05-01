@@ -280,6 +280,8 @@ iOS/
 │   │   │   ├── KeyboardCursorTrackpadSupport.swift
 │   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   │   └── KeyboardTextInputController.swift
+│   │   ├── Settings/
+│   │   │   └── KeyboardAppSettingsStore.swift
 │   │   ├── Text/
 │   │   │   ├── KeyboardCapsLockStateStore.swift
 │   │   │   ├── KeyboardDictionaryCasingStore.swift
@@ -290,8 +292,7 @@ iOS/
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── Vibes/
-│   │   │   ├── KeyboardVibeChangeController.swift
-│   │   │   └── KeyboardVibesStateStore.swift
+│   │   │   └── KeyboardVibeChangeController.swift
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
 │   │   ├── KeyboardState.swift
@@ -314,6 +315,7 @@ iOS/
 │           ├── KeyboardKeyView.swift
 │           ├── KeyboardLogoBarView.swift
 │           ├── KeyboardRoundedBorderRenderer.swift
+│           ├── KeyboardSettingsToggleButton.swift
 │           ├── KeyboardSpeakButton.swift
 │           └── KeyboardVibesButton.swift
 ├── KeyVox Share/
@@ -534,7 +536,7 @@ Packages/
 ### Shared State, IPC, and Session Surfaces
 
 - `KeyVox iOS/App/Integration/KeyVoxIPCBridge.swift`
-  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, KeyVox Vibes selection-change signaling, and Darwin notification names.
+  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, keyboard settings-change signaling, and Darwin notification names.
 - `KeyVox iOS/App/Integration/KeyVoxTTSRequest.swift`
   - Dependency-free shared copied-text playback request model and enums used by both the containing app and share extension to keep the JSON handoff contract compile-time safe.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
@@ -765,9 +767,9 @@ Packages/
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
 - `KeyVox Keyboard/Core/Transport/KeyboardIPCManager.swift`
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
-- `KeyVox Keyboard/Core/Vibes/KeyboardVibesStateStore.swift`
-  - Keyboard-local selector for KeyVox Vibes.
-  - Reads and writes the shared `KeyVox.SelectedVibe` default, derives display text from `StyleRewriteStyle`, and posts the shared Vibes selection-change notification so the containing app can refresh visible settings.
+- `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
+  - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
+  - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, and posts shared Darwin notifications so the containing app can refresh visible settings.
 - `KeyVox Keyboard/Core/Vibes/KeyboardVibeChangeController.swift`
   - Keyboard-local artifact-scoped Vibes changer for the latest untouched KeyVox dictation insertion.
   - Records the inserted dictation session from the latest App Group artifact, reverts to `None` when long-pressing the current selected Vibe, regenerates another Vibe from the original base text when needed, caches variants, and refuses to operate after the insertion no longer matches the active session.
@@ -784,8 +786,8 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
-  - With Vibes available, aligns Speak over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
-  - Without Vibes available, removes the Vibes key from layout and shifts Speak/Caps Lock into the non-Vibes layout.
+  - With Vibes available, aligns Speak over `3`, Paragraphs over `4`, Lists over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
+  - Without Vibes available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
@@ -794,6 +796,9 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
   - Keyboard Vibes selector key used in the top-row accessory area.
   - Displays the selected vibe name and visually follows the normal key palette/pressed outline behavior.
+- `KeyVox Keyboard/Views/Components/KeyboardSettingsToggleButton.swift`
+  - Reusable top-row settings toggle key for keyboard controls backed by containing-app settings.
+  - Uses normal key styling and indicates enabled state through icon tint instead of a permanently pressed visual state.
 - `KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
   - Proprietary keyboard logo-bar rendering and animation surface protected by the KeyVox branding license.
   - Intentionally limited to visual drawing, layout, and animation behavior only.

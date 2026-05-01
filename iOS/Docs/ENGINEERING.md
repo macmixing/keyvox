@@ -434,6 +434,9 @@ Current rules:
 - `com.cueit.keyvox.ttsFinished`
 - `com.cueit.keyvox.ttsStopped`
 - `com.cueit.keyvox.ttsFailed`
+- `com.cueit.keyvox.vibeSelectionChanged`
+- `com.cueit.keyvox.listFormattingChanged`
+- `com.cueit.keyvox.autoParagraphsChanged`
 
 ### Shared Recording States
 
@@ -860,6 +863,12 @@ Long press may change the latest untouched KeyVox dictation insertion by reading
 The keyboard does not transform arbitrary selected host-app text because the iOS text proxy can provide incomplete selected/context text.
 The keyboard still does not own prompt configuration, general rewrite policy, recording, or app-level artifact creation.
 
+The keyboard Lists key writes `KeyVox.ListFormattingEnabled` in App Group defaults and posts the shared list-formatting Darwin notification.
+The containing app observes that notification and refreshes `AppSettingsStore.listFormattingEnabled` so the Style tab remains in sync.
+The keyboard Paragraphs key writes `KeyVox.AutoParagraphsEnabled` in App Group defaults and posts the shared auto-paragraphs Darwin notification.
+The containing app observes that notification and refreshes `AppSettingsStore.autoParagraphsEnabled` so the Style tab remains in sync.
+The keys use the same symbols as the Style tab and show setting state through icon tint instead of a permanently pressed toggle state.
+
 ### Style Rewrite Package Ownership
 
 `Packages/KeyVoxStyleRewrite` owns reusable transform mechanics:
@@ -910,15 +919,19 @@ It owns:
 The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
 The keyboard consumes this artifact for long-press Vibes revert/restyle on the latest untouched KeyVox dictation insertion.
 
-### Keyboard Vibes Runtime Ownership
+### Keyboard App Settings Runtime Ownership
 
-`KeyboardVibesStateStore` owns keyboard-side Vibe selection:
+`KeyboardAppSettingsStore` owns keyboard-side settings that mirror containing-app settings:
 
 - reads and writes `KeyVox.SelectedVibe` from App Group defaults
 - derives display text from `StyleRewriteStyle`
 - cycles through `None`, `Casual`, `Polished`, `Chill`
 - posts the shared Vibes selection-change Darwin notification
 - exposes Foundation availability so the key can disappear in non-Vibes environments
+- reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
+- posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
+- reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
+- posts the shared auto-paragraphs Darwin notification so the containing app refreshes its settings UI
 
 `KeyboardVibeChangeController` owns keyboard-side long-press changes for KeyVox insertions:
 
@@ -1089,15 +1102,16 @@ Implementation split:
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
-- `KeyboardVibesStateStore.swift` owns keyboard-side Vibes selection persistence and App Group notification dispatch
+- `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
 - `KeyboardVibeChangeController.swift` owns artifact-scoped Vibes revert/restyle for the latest untouched KeyVox dictation insertion
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
   - `Feedback/` owns extension-local haptics configuration and dispatch
   - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
+  - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
-  - `Vibes/` owns keyboard-side Vibes selection plus latest-insertion revert/restyle behavior for the app-owned KeyVox Vibes feature
+  - `Vibes/` owns latest-insertion revert/restyle behavior for the app-owned KeyVox Vibes feature
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
 - `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
 
@@ -1138,9 +1152,11 @@ Current symbol layout rules:
 - row 4 side keys use a 2.5-key span
 - the space bar consumes the remaining row-4 width
 - top-row cancel alignment is derived from the live `1` key geometry instead of guessed offsets
-- with Vibes available, top-row Speak aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
-- with Vibes unavailable, the Vibes key is removed from layout and Speak/Caps Lock shift into the non-Vibes positions
+- with Vibes available, top-row Speak aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
+- with Vibes unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
+- top-row accessory slots are allocated from the logo edge inward so adding or removing feature keys does not leave empty holes
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise
+- keyboard settings toggles should indicate setting state without looking permanently pressed
 
 The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
 

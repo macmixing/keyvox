@@ -78,13 +78,22 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
 final class AppSettingsStore: ObservableObject {
     private static let darwinNotificationCallback: CFNotificationCallback = { _, observer, name, _, _ in
         guard let observer,
-              name?.rawValue as String? == KeyVoxIPCBridge.Notification.vibeSelectionChanged else {
+              let notificationName = name?.rawValue as String? else {
             return
         }
 
         let store = Unmanaged<AppSettingsStore>.fromOpaque(observer).takeUnretainedValue()
         DispatchQueue.main.async {
-            store.refreshSelectedVibeFromDefaults()
+            switch notificationName {
+            case KeyVoxIPCBridge.Notification.vibeSelectionChanged:
+                store.refreshSelectedVibeFromDefaults()
+            case KeyVoxIPCBridge.Notification.listFormattingChanged:
+                store.refreshListFormattingFromDefaults()
+            case KeyVoxIPCBridge.Notification.autoParagraphsChanged:
+                store.refreshAutoParagraphsFromDefaults()
+            default:
+                break
+            }
         }
     }
 
@@ -227,7 +236,7 @@ final class AppSettingsStore: ObservableObject {
     }
 
     private let defaults: UserDefaults
-    private var observesVibeSelectionChanges = false
+    private var observesKeyboardSettingChanges = false
 
     init(defaults: UserDefaults) {
         self.defaults = defaults
@@ -275,11 +284,11 @@ final class AppSettingsStore: ObservableObject {
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
         selectedVibe = Self.resolvedSelectedVibe(from: defaults)
-        registerVibeSelectionObserver()
+        registerKeyboardSettingObservers()
     }
 
     deinit {
-        guard observesVibeSelectionChanges else { return }
+        guard observesKeyboardSettingChanges else { return }
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
     }
@@ -299,19 +308,37 @@ final class AppSettingsStore: ObservableObject {
         selectedVibe = style
     }
 
-    private func registerVibeSelectionObserver() {
-        guard observesVibeSelectionChanges == false else { return }
-        observesVibeSelectionChanges = true
+    func refreshListFormattingFromDefaults() {
+        let isEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+        guard listFormattingEnabled != isEnabled else { return }
+        listFormattingEnabled = isEnabled
+    }
+
+    func refreshAutoParagraphsFromDefaults() {
+        let isEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+        guard autoParagraphsEnabled != isEnabled else { return }
+        autoParagraphsEnabled = isEnabled
+    }
+
+    private func registerKeyboardSettingObservers() {
+        guard observesKeyboardSettingChanges == false else { return }
+        observesKeyboardSettingChanges = true
 
         let center = CFNotificationCenterGetDarwinNotifyCenter()
-        CFNotificationCenterAddObserver(
-            center,
-            Unmanaged.passUnretained(self).toOpaque(),
-            Self.darwinNotificationCallback,
-            KeyVoxIPCBridge.Notification.vibeSelectionChanged as CFString,
-            nil,
-            .deliverImmediately
-        )
+        [
+            KeyVoxIPCBridge.Notification.vibeSelectionChanged,
+            KeyVoxIPCBridge.Notification.listFormattingChanged,
+            KeyVoxIPCBridge.Notification.autoParagraphsChanged,
+        ].forEach { notificationName in
+            CFNotificationCenterAddObserver(
+                center,
+                Unmanaged.passUnretained(self).toOpaque(),
+                Self.darwinNotificationCallback,
+                notificationName as CFString,
+                nil,
+                .deliverImmediately
+            )
+        }
     }
 
     func applyCloudTriggerBinding(_ value: TriggerBinding) {

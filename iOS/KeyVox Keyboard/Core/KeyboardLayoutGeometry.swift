@@ -6,6 +6,8 @@ enum KeyboardLayoutGeometry {
         private weak var cancelButton: UIView?
         private weak var capsLockButton: UIView?
         private weak var speakButton: UIView?
+        private weak var paragraphButton: UIView?
+        private weak var listsButton: UIView?
         private weak var vibesButton: UIView?
         private weak var logoBarView: UIView?
         private weak var keyGridView: KeyboardKeyGridView?
@@ -38,6 +40,22 @@ enum KeyboardLayoutGeometry {
         private var speakButtonUsesLandscapeHeight = false
         private var speakButtonUsesCapsLockHeight = false
         private var speakButtonPortraitHeight: CGFloat = 0
+        private var paragraphButtonCenterXConstraint: NSLayoutConstraint?
+        private var paragraphButtonVerticalConstraint: NSLayoutConstraint?
+        private var paragraphButtonWidthConstraint: NSLayoutConstraint?
+        private var paragraphButtonHeightConstraint: NSLayoutConstraint?
+        private weak var paragraphReferenceView: UIView?
+        private var paragraphButtonUsesLandscapeHeight = false
+        private var paragraphButtonUsesCapsLockHeight = false
+        private var paragraphButtonPortraitHeight: CGFloat = 0
+        private var listsButtonCenterXConstraint: NSLayoutConstraint?
+        private var listsButtonVerticalConstraint: NSLayoutConstraint?
+        private var listsButtonWidthConstraint: NSLayoutConstraint?
+        private var listsButtonHeightConstraint: NSLayoutConstraint?
+        private weak var listsReferenceView: UIView?
+        private var listsButtonUsesLandscapeHeight = false
+        private var listsButtonUsesCapsLockHeight = false
+        private var listsButtonPortraitHeight: CGFloat = 0
         private var vibesButtonLeadingConstraint: NSLayoutConstraint?
         private var vibesButtonTrailingConstraint: NSLayoutConstraint?
         private var vibesButtonVerticalConstraint: NSLayoutConstraint?
@@ -53,10 +71,22 @@ enum KeyboardLayoutGeometry {
         private var logoBarUsesLandscapeVerticalPosition = false
         private var logoBarUsesCapsLockVerticalPosition = false
 
+        private struct TopRowAccessorySlotPlan {
+            let speak: KeyboardTopRowAccessorySlot
+            let paragraph: KeyboardTopRowAccessorySlot
+            let lists: KeyboardTopRowAccessorySlot
+            let capsLock: KeyboardTopRowAccessorySlot
+            let vibesLeading: KeyboardTopRowAccessorySlot?
+            let vibesTrailing: KeyboardTopRowAccessorySlot?
+            let logoLeading: KeyboardTopRowAccessorySlot
+        }
+
         init(
             cancelButton: UIView,
             capsLockButton: UIView,
             speakButton: UIView,
+            paragraphButton: UIView,
+            listsButton: UIView,
             vibesButton: UIView,
             logoBarView: UIView,
             keyGridView: KeyboardKeyGridView,
@@ -72,6 +102,8 @@ enum KeyboardLayoutGeometry {
             self.cancelButton = cancelButton
             self.capsLockButton = capsLockButton
             self.speakButton = speakButton
+            self.paragraphButton = paragraphButton
+            self.listsButton = listsButton
             self.vibesButton = vibesButton
             self.logoBarView = logoBarView
             self.keyGridView = keyGridView
@@ -87,14 +119,10 @@ enum KeyboardLayoutGeometry {
 
         func update(isLandscape: Bool, showsVibesButton: Bool) {
             guard let keyGridView else { return }
-            let speakSlot: KeyboardTopRowAccessorySlot = showsVibesButton ? .five : .seven
-            let capsLockSlot: KeyboardTopRowAccessorySlot = showsVibesButton ? .six : .eight
-            let vibesLeadingSlot: KeyboardTopRowAccessorySlot = .seven
-            let vibesTrailingSlot: KeyboardTopRowAccessorySlot = .eight
-            let logoLeadingSlot: KeyboardTopRowAccessorySlot = .nine
+            let slotPlan = topRowAccessorySlotPlan(showsVibesButton: showsVibesButton)
 
             if let capsLockButton,
-               let currentCapsReferenceView = keyGridView.topRowKeyView(for: capsLockSlot) {
+               let currentCapsReferenceView = keyGridView.topRowKeyView(for: slotPlan.capsLock) {
                 let resolvedCapsLockButtonPortraitHeight = min(
                     currentCapsReferenceView.bounds.width,
                     KeyboardStyle.buttonSize
@@ -140,7 +168,7 @@ enum KeyboardLayoutGeometry {
             }
 
             if let speakButton,
-               let currentSpeakReferenceView = keyGridView.topRowKeyView(for: speakSlot) {
+               let currentSpeakReferenceView = keyGridView.topRowKeyView(for: slotPlan.speak) {
                 let usesCapsLockHeight = !isLandscape && capsLockButton != nil
                 let resolvedSpeakButtonPortraitHeight = min(
                     currentSpeakReferenceView.bounds.width,
@@ -200,6 +228,128 @@ enum KeyboardLayoutGeometry {
                 }
             }
 
+            if let paragraphButton,
+               let currentParagraphReferenceView = keyGridView.topRowKeyView(for: slotPlan.paragraph) {
+                let usesCapsLockHeight = !isLandscape && capsLockButton != nil
+                let resolvedParagraphButtonPortraitHeight = min(
+                    currentParagraphReferenceView.bounds.width,
+                    KeyboardStyle.buttonSize
+                )
+                let shouldRefreshParagraphConstraints =
+                    paragraphReferenceView !== currentParagraphReferenceView
+                    || paragraphButtonUsesLandscapeHeight != isLandscape
+                    || paragraphButtonUsesCapsLockHeight != usesCapsLockHeight
+                    || (
+                        isLandscape == false
+                        && usesCapsLockHeight == false
+                        && abs(paragraphButtonPortraitHeight - resolvedParagraphButtonPortraitHeight) > 0.5
+                    )
+
+                if shouldRefreshParagraphConstraints {
+                    NSLayoutConstraint.deactivate([
+                        paragraphButtonCenterXConstraint,
+                        paragraphButtonVerticalConstraint,
+                        paragraphButtonWidthConstraint,
+                        paragraphButtonHeightConstraint,
+                    ].compactMap { $0 })
+
+                    paragraphButtonCenterXConstraint = paragraphButton.centerXAnchor.constraint(equalTo: currentParagraphReferenceView.centerXAnchor)
+                    if isLandscape {
+                        paragraphButtonVerticalConstraint = paragraphButton.bottomAnchor.constraint(
+                            equalTo: currentParagraphReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    } else if let capsLockButton {
+                        paragraphButtonVerticalConstraint = paragraphButton.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor)
+                    } else {
+                        paragraphButtonVerticalConstraint = paragraphButton.bottomAnchor.constraint(
+                            equalTo: currentParagraphReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    }
+                    paragraphButtonWidthConstraint = paragraphButton.widthAnchor.constraint(equalTo: currentParagraphReferenceView.widthAnchor)
+                    if isLandscape {
+                        paragraphButtonHeightConstraint = paragraphButton.heightAnchor.constraint(equalTo: currentParagraphReferenceView.heightAnchor)
+                    } else if let capsLockButton {
+                        paragraphButtonHeightConstraint = paragraphButton.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    } else {
+                        paragraphButtonHeightConstraint = paragraphButton.heightAnchor.constraint(equalToConstant: resolvedParagraphButtonPortraitHeight)
+                    }
+                    paragraphReferenceView = currentParagraphReferenceView
+                    paragraphButtonUsesLandscapeHeight = isLandscape
+                    paragraphButtonUsesCapsLockHeight = usesCapsLockHeight
+                    paragraphButtonPortraitHeight = resolvedParagraphButtonPortraitHeight
+
+                    NSLayoutConstraint.activate([
+                        paragraphButtonCenterXConstraint!,
+                        paragraphButtonVerticalConstraint!,
+                        paragraphButtonWidthConstraint!,
+                        paragraphButtonHeightConstraint!,
+                    ])
+                }
+            }
+
+            if let listsButton,
+               let currentListsReferenceView = keyGridView.topRowKeyView(for: slotPlan.lists) {
+                let usesCapsLockHeight = !isLandscape && capsLockButton != nil
+                let resolvedListsButtonPortraitHeight = min(
+                    currentListsReferenceView.bounds.width,
+                    KeyboardStyle.buttonSize
+                )
+                let shouldRefreshListsConstraints =
+                    listsReferenceView !== currentListsReferenceView
+                    || listsButtonUsesLandscapeHeight != isLandscape
+                    || listsButtonUsesCapsLockHeight != usesCapsLockHeight
+                    || (
+                        isLandscape == false
+                        && usesCapsLockHeight == false
+                        && abs(listsButtonPortraitHeight - resolvedListsButtonPortraitHeight) > 0.5
+                    )
+
+                if shouldRefreshListsConstraints {
+                    NSLayoutConstraint.deactivate([
+                        listsButtonCenterXConstraint,
+                        listsButtonVerticalConstraint,
+                        listsButtonWidthConstraint,
+                        listsButtonHeightConstraint,
+                    ].compactMap { $0 })
+
+                    listsButtonCenterXConstraint = listsButton.centerXAnchor.constraint(equalTo: currentListsReferenceView.centerXAnchor)
+                    if isLandscape {
+                        listsButtonVerticalConstraint = listsButton.bottomAnchor.constraint(
+                            equalTo: currentListsReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    } else if let capsLockButton {
+                        listsButtonVerticalConstraint = listsButton.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor)
+                    } else {
+                        listsButtonVerticalConstraint = listsButton.bottomAnchor.constraint(
+                            equalTo: currentListsReferenceView.topAnchor,
+                            constant: -KeyboardStyle.keyboardRowSpacing
+                        )
+                    }
+                    listsButtonWidthConstraint = listsButton.widthAnchor.constraint(equalTo: currentListsReferenceView.widthAnchor)
+                    if isLandscape {
+                        listsButtonHeightConstraint = listsButton.heightAnchor.constraint(equalTo: currentListsReferenceView.heightAnchor)
+                    } else if let capsLockButton {
+                        listsButtonHeightConstraint = listsButton.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    } else {
+                        listsButtonHeightConstraint = listsButton.heightAnchor.constraint(equalToConstant: resolvedListsButtonPortraitHeight)
+                    }
+                    listsReferenceView = currentListsReferenceView
+                    listsButtonUsesLandscapeHeight = isLandscape
+                    listsButtonUsesCapsLockHeight = usesCapsLockHeight
+                    listsButtonPortraitHeight = resolvedListsButtonPortraitHeight
+
+                    NSLayoutConstraint.activate([
+                        listsButtonCenterXConstraint!,
+                        listsButtonVerticalConstraint!,
+                        listsButtonWidthConstraint!,
+                        listsButtonHeightConstraint!,
+                    ])
+                }
+            }
+
             if showsVibesButton == false {
                 NSLayoutConstraint.deactivate([
                     vibesButtonLeadingConstraint,
@@ -217,6 +367,8 @@ enum KeyboardLayoutGeometry {
 
             if showsVibesButton,
                let vibesButton,
+               let vibesLeadingSlot = slotPlan.vibesLeading,
+               let vibesTrailingSlot = slotPlan.vibesTrailing,
                let currentVibesLeadingReferenceView = keyGridView.topRowKeyView(for: vibesLeadingSlot),
                let currentVibesTrailingReferenceView = keyGridView.topRowKeyView(for: vibesTrailingSlot) {
                 let usesCapsLockHeight = !isLandscape && capsLockButton != nil
@@ -281,7 +433,7 @@ enum KeyboardLayoutGeometry {
             }
 
             if let logoBarView,
-               let currentLogoLeadingReferenceView = keyGridView.topRowKeyView(for: logoLeadingSlot) {
+               let currentLogoLeadingReferenceView = keyGridView.topRowKeyView(for: slotPlan.logoLeading) {
                 (logoBarView as? KeyboardLogoBarView)?.applyToolbarDiameter(
                     isLandscape
                         ? KeyboardLogoBarView.landscapeToolbarDiameter
@@ -390,6 +542,34 @@ enum KeyboardLayoutGeometry {
                 ])
             }
 
+        }
+
+        private func topRowAccessorySlotPlan(showsVibesButton: Bool) -> TopRowAccessorySlotPlan {
+            var nextTrailingRawValue = KeyboardTopRowAccessorySlot.eight.rawValue
+
+            func takeSlots(width: Int) -> (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot) {
+                let leadingRawValue = nextTrailingRawValue - width + 1
+                let leading = KeyboardTopRowAccessorySlot(rawValue: leadingRawValue) ?? .three
+                let trailing = KeyboardTopRowAccessorySlot(rawValue: nextTrailingRawValue) ?? .eight
+                nextTrailingRawValue = leadingRawValue - 1
+                return (leading, trailing)
+            }
+
+            let vibesSlots = showsVibesButton ? takeSlots(width: 2) : nil
+            let capsLockSlot = takeSlots(width: 1).leading
+            let listsSlot = takeSlots(width: 1).leading
+            let paragraphSlot = takeSlots(width: 1).leading
+            let speakSlot = takeSlots(width: 1).leading
+
+            return TopRowAccessorySlotPlan(
+                speak: speakSlot,
+                paragraph: paragraphSlot,
+                lists: listsSlot,
+                capsLock: capsLockSlot,
+                vibesLeading: vibesSlots?.leading,
+                vibesTrailing: vibesSlots?.trailing,
+                logoLeading: .nine
+            )
         }
     }
 

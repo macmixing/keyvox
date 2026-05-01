@@ -77,6 +77,8 @@ enum KeyVoxIPCBridge {
         static let ttsFailed = "com.cueit.keyvox.ttsFailed"
         static let pendingURLRouteReady = "com.cueit.keyvox.pendingURLRouteReady"
         static let vibeSelectionChanged = "com.cueit.keyvox.vibeSelectionChanged"
+        static let listFormattingChanged = "com.cueit.keyvox.listFormattingChanged"
+        static let autoParagraphsChanged = "com.cueit.keyvox.autoParagraphsChanged"
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
@@ -215,6 +217,14 @@ enum KeyVoxIPCBridge {
 
     static func publishVibeSelectionChanged() {
         postDarwinNotification(named: Notification.vibeSelectionChanged)
+    }
+
+    static func publishListFormattingChanged() {
+        postDarwinNotification(named: Notification.listFormattingChanged)
+    }
+
+    static func publishAutoParagraphsChanged() {
+        postDarwinNotification(named: Notification.autoParagraphsChanged)
     }
 
     static func consumePendingURLRoute() -> URL? {

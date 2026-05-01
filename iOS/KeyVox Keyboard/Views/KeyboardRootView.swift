@@ -10,6 +10,8 @@ final class KeyboardRootView: UIView {
     let cancelButton = KeyboardCancelButton()
     let capsLockButton = KeyboardCapsLockButton()
     let speakButton = KeyboardSpeakButton()
+    let paragraphButton = KeyboardSettingsToggleButton()
+    let listsButton = KeyboardSettingsToggleButton()
     let vibesButton = KeyboardVibesButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
@@ -98,6 +100,8 @@ final class KeyboardRootView: UIView {
         isCapsLockEnabled: Bool,
         selectedVibeTitle: String,
         isVibesAvailable: Bool,
+        isAutoParagraphsEnabled: Bool,
+        isListFormattingEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
@@ -157,6 +161,14 @@ final class KeyboardRootView: UIView {
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar
+        paragraphButton.isOn = isAutoParagraphsEnabled
+        paragraphButton.isTrackpadModeActive = isTrackpadModeActive
+        paragraphButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
+        paragraphButton.isHidden = !showsBrandedToolbar
+        listsButton.isOn = isListFormattingEnabled
+        listsButton.isTrackpadModeActive = isTrackpadModeActive
+        listsButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
+        listsButton.isHidden = !showsBrandedToolbar
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
         vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
@@ -199,8 +211,16 @@ final class KeyboardRootView: UIView {
         speakButton.alpha = 1
         speakButton.transform = .identity
         vibesButton.isHidden = true
+        paragraphButton.symbolName = "text.alignleft"
+        paragraphButton.accessibilityTitle = "Paragraphs"
+        paragraphButton.isHidden = true
+        listsButton.symbolName = "list.number"
+        listsButton.accessibilityTitle = "Lists"
+        listsButton.isHidden = true
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
         speakButton.translatesAutoresizingMaskIntoConstraints = false
+        paragraphButton.translatesAutoresizingMaskIntoConstraints = false
+        listsButton.translatesAutoresizingMaskIntoConstraints = false
         vibesButton.translatesAutoresizingMaskIntoConstraints = false
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
@@ -251,6 +271,8 @@ final class KeyboardRootView: UIView {
 
         addSubview(mainStack)
         addSubview(capsLockButton)
+        addSubview(paragraphButton)
+        addSubview(listsButton)
         addSubview(vibesButton)
         addSubview(speakButton)
         addSubview(logoBarView)
@@ -350,6 +372,8 @@ final class KeyboardRootView: UIView {
                 cancelButton: cancelButton,
                 capsLockButton: capsLockButton,
                 speakButton: speakButton,
+                paragraphButton: paragraphButton,
+                listsButton: listsButton,
                 vibesButton: vibesButton,
                 logoBarView: logoBarView,
                 keyGridView: keyGridView,

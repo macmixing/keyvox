@@ -15,20 +15,20 @@ final class KeyboardVibeChangeController {
     }
 
     private let textInputController: KeyboardTextInputController
-    private let vibesStateStore: KeyboardVibesStateStore
     private let artifactStore: KeyboardVibeChangeArtifactStore
     private let textTransformer = FoundationStyleRewriteTextTransformer()
+    private let appSettingsStore: KeyboardAppSettingsStore
 
     private var activeSession: Session?
     private var isApplyingChange = false
 
     init(
         textInputController: KeyboardTextInputController,
-        vibesStateStore: KeyboardVibesStateStore,
+        appSettingsStore: KeyboardAppSettingsStore,
         artifactStore: KeyboardVibeChangeArtifactStore = KeyboardVibeChangeArtifactStore()
     ) {
         self.textInputController = textInputController
-        self.vibesStateStore = vibesStateStore
+        self.appSettingsStore = appSettingsStore
         self.artifactStore = artifactStore
     }
 
@@ -81,7 +81,7 @@ final class KeyboardVibeChangeController {
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> Bool {
-        guard vibesStateStore.isVibesAvailable, isApplyingChange == false else {
+        guard appSettingsStore.isVibesAvailable, isApplyingChange == false else {
             return false
         }
 
@@ -128,7 +128,7 @@ final class KeyboardVibeChangeController {
     }
 
     private func targetStyle(for session: Session) -> StyleRewriteStyle? {
-        let selectedStyle = vibesStateStore.selectedVibe
+        let selectedStyle = appSettingsStore.selectedVibe
         if selectedStyle == session.currentStyle {
             if let previousStyle = session.previousStyle {
                 return previousStyle
