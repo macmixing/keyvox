@@ -40,9 +40,9 @@ final class KeyVoxURLRouter {
                 audioModeCoordinator.handleSpeakClipboardFromApp()
             }
         case .openDictionary:
-            appTabRouter.selectedTab = .dictionary
+            appTabRouter.selectTab(.dictionary, suppressesHaptic: true)
         case .openSettings:
-            appTabRouter.selectedTab = .settings
+            appTabRouter.selectTab(.settings, suppressesHaptic: true)
         }
     }
 
