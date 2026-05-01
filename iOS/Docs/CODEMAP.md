@@ -298,6 +298,7 @@ iOS/
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
 │   │   ├── KeyboardSymbolLayout.swift
+│   │   ├── KeyboardTopRowAccessoryLayout.swift
 │   │   ├── KeyboardToolbarMode.swift
 │   │   └── KeyboardTypography.swift
 │   ├── Info.plist
@@ -784,8 +785,10 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
   - Lightweight rooted-install gate used by the extension toolbar for Whisper and Parakeet availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
-  - Unified row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns top-row accessory alignment plus row 3 and row 4 live width calculations driven from the measured key grid.
+  - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
+  - Owns row 3 and row 4 live width calculations driven from the measured key grid.
+- `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
+  - Owns top-row accessory alignment driven from the measured key grid.
   - With Vibes available, aligns Speak over `3`, Paragraphs over `4`, Lists over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
   - Without Vibes available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`

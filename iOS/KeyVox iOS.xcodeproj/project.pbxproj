@@ -117,6 +117,7 @@
 				Core/Input/KeyboardTextInputController.swift,
 				Core/KeyboardLayoutGeometry.swift,
 				Core/KeyboardModelAvailability.swift,
+				Core/KeyboardTopRowAccessoryLayout.swift,
 				Core/KeyboardState.swift,
 				Core/KeyboardStyle.swift,
 				Core/KeyboardSymbolLayout.swift,

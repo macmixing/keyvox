@@ -1113,7 +1113,7 @@ Implementation split:
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
   - `Vibes/` owns latest-insertion revert/restyle behavior for the app-owned KeyVox Vibes feature
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
-- `KeyboardLayoutGeometry.swift` belongs in `Core/`, not `Views/`, because it is shared layout math rather than a renderable view
+- `KeyboardLayoutGeometry.swift` and `KeyboardTopRowAccessoryLayout.swift` belong in `Core/`, not `Views/`, because they are shared layout math rather than renderable views
 
 ### Toolbar and Layout Rules
 
@@ -1140,7 +1140,7 @@ Keyboard-specific row geometry must stay separated by responsibility:
 
 - `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, and the top-row accessory button containers
 - `KeyboardKeyGridView` owns row creation and key interaction wiring
-- `KeyboardLayoutGeometry` owns live measurement-based row sizing and accessory alignment rules
+- `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
 Do not push special-case row width math back into `KeyboardSymbolLayout` when the requirement depends on the rendered keyboard width.
 
