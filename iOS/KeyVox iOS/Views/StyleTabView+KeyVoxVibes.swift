@@ -65,6 +65,7 @@ extension StyleTabView {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(isVibeExamplesExpanded ? "Hide vibe examples" : "Show vibe examples")
                 }
 
                 vibeExamplesExpandedContent
