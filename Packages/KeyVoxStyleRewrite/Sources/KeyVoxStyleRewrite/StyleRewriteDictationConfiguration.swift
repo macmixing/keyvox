@@ -24,13 +24,26 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
     public var description: String {
         switch self {
         case .none:
-            return "Use the normal post-processed dictation text without an AI rewrite."
+            return "Use the normal post-processed dictation text without KeyVox Vibes."
         case .polished:
-            return "Lightly clean up dictated text while preserving the original tone and structure."
+            return "Rewrite dictated text while preserving the original intent and structure."
         case .casual:
-            return "Remove filler words while preserving the original casing and punctuation."
+            return "Remove filler words while preserving the original tone and punctuation."
         case .chill:
-            return "Remove filler words, then make dictation casual and lowercase with limited punctuation."
+            return "Lowercase with limited punctuation and no filler words for a relaxed vibe."
+        }
+    }
+
+    public var exampleText: String {
+        switch self {
+        case .none:
+            return "Are you um feeling this vibe? It's like pretty normal. Try it out."
+        case .casual:
+            return "Are you feeling this vibe? It's like pretty casual. Try it out."
+        case .polished:
+            return "Are you feeling this vibe? It's pretty polished. Try it out."
+        case .chill:
+            return "are you feeling this vibe? its like pretty chill. try it out"
         }
     }
 
