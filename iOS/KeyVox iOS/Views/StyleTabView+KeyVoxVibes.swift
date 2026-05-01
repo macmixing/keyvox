@@ -12,7 +12,7 @@ extension StyleTabView {
                             .fill(AppTheme.accent.opacity(0.4))
                             .frame(width: 32, height: 32)
 
-                        Image(systemName: "wand.and.sparkles")
+                        Image(systemName: "apple.intelligence")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.yellow)
                     }
