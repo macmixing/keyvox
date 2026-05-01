@@ -242,10 +242,15 @@ final class AppSettingsStore: ObservableObject {
     }
 
     private let defaults: UserDefaults
+    private let isFoundationRewriteAvailable: () -> Bool
     private var observesKeyboardSettingChanges = false
 
-    init(defaults: UserDefaults) {
+    init(
+        defaults: UserDefaults,
+        isFoundationRewriteAvailable: @escaping () -> Bool = { FoundationStyleRewriteAvailability.isAvailable }
+    ) {
         self.defaults = defaults
+        self.isFoundationRewriteAvailable = isFoundationRewriteAvailable
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.triggerBinding),
            let binding = TriggerBinding(rawValue: raw) {
@@ -290,7 +295,10 @@ final class AppSettingsStore: ObservableObject {
         }
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
-        selectedVibe = Self.resolvedSelectedVibe(from: defaults)
+        selectedVibe = Self.resolvedSelectedVibe(
+            from: defaults,
+            isFoundationRewriteAvailable: isFoundationRewriteAvailable()
+        )
         if defaults.string(forKey: UserDefaultsKeys.selectedVibe) != selectedVibe.rawValue {
             defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         }
@@ -303,17 +311,23 @@ final class AppSettingsStore: ObservableObject {
         CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
     }
 
-    nonisolated static func resolvedSelectedVibe(from defaults: UserDefaults) -> StyleRewriteStyle {
+    nonisolated static func resolvedSelectedVibe(
+        from defaults: UserDefaults,
+        isFoundationRewriteAvailable: Bool = FoundationStyleRewriteAvailability.isAvailable
+    ) -> StyleRewriteStyle {
         if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
            let style = StyleRewriteStyle(rawValue: raw) {
-            return style.resolvedForFoundationAvailability(FoundationStyleRewriteAvailability.isAvailable)
+            return style.resolvedForFoundationAvailability(isFoundationRewriteAvailable)
         }
 
         return .none
     }
 
     func refreshSelectedVibeFromDefaults() {
-        let style = Self.resolvedSelectedVibe(from: defaults)
+        let style = Self.resolvedSelectedVibe(
+            from: defaults,
+            isFoundationRewriteAvailable: isFoundationRewriteAvailable()
+        )
         guard selectedVibe != style else { return }
         selectedVibe = style
     }
