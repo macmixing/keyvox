@@ -10,6 +10,7 @@ final class KeyboardViewController: UIInputViewController {
     let appSettingsStore = KeyboardAppSettingsStore()
     let startRecordingURL = URL(string: "keyvoxios://record/start")
     let startTTSURL = URL(string: "keyvoxios://tts/start")
+    let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
@@ -330,6 +331,12 @@ final class KeyboardViewController: UIInputViewController {
         _ = appSettingsStore.toggleListFormatting()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
+    }
+
+    @objc
+    func handleDictionaryTap() {
+        interactionHaptics.emitMediumIfEnabled()
+        containingAppLauncher.open(openDictionaryURL)
     }
 
     @objc

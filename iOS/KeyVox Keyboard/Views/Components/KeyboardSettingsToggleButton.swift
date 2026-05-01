@@ -29,6 +29,12 @@ final class KeyboardSettingsToggleButton: UIControl {
         }
     }
 
+    var showsStateValue = true {
+        didSet {
+            updateAccessibility()
+        }
+    }
+
     var isTrackpadModeActive = false {
         didSet {
             updateVisualState(animated: true)
@@ -167,7 +173,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
     private func updateAccessibility() {
         accessibilityLabel = accessibilityTitle.isEmpty ? nil : accessibilityTitle
-        accessibilityValue = isOn ? "On" : "Off"
+        accessibilityValue = showsStateValue ? (isOn ? "On" : "Off") : nil
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {

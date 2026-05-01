@@ -12,6 +12,7 @@ final class KeyboardRootView: UIView {
     let speakButton = KeyboardSpeakButton()
     let paragraphButton = KeyboardSettingsToggleButton()
     let listsButton = KeyboardSettingsToggleButton()
+    let dictionaryButton = KeyboardSettingsToggleButton()
     let vibesButton = KeyboardVibesButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
@@ -169,6 +170,9 @@ final class KeyboardRootView: UIView {
         listsButton.isTrackpadModeActive = isTrackpadModeActive
         listsButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         listsButton.isHidden = !showsBrandedToolbar
+        dictionaryButton.isTrackpadModeActive = isTrackpadModeActive
+        dictionaryButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
+        dictionaryButton.isHidden = !showsBrandedToolbar
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
         vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
@@ -217,10 +221,15 @@ final class KeyboardRootView: UIView {
         listsButton.symbolName = "list.number"
         listsButton.accessibilityTitle = "Lists"
         listsButton.isHidden = true
+        dictionaryButton.symbolName = "text.book.closed.fill"
+        dictionaryButton.accessibilityTitle = "Dictionary"
+        dictionaryButton.showsStateValue = false
+        dictionaryButton.isHidden = true
         capsLockButton.translatesAutoresizingMaskIntoConstraints = false
         speakButton.translatesAutoresizingMaskIntoConstraints = false
         paragraphButton.translatesAutoresizingMaskIntoConstraints = false
         listsButton.translatesAutoresizingMaskIntoConstraints = false
+        dictionaryButton.translatesAutoresizingMaskIntoConstraints = false
         vibesButton.translatesAutoresizingMaskIntoConstraints = false
 
         logoBarView.translatesAutoresizingMaskIntoConstraints = false
@@ -273,6 +282,7 @@ final class KeyboardRootView: UIView {
         addSubview(capsLockButton)
         addSubview(paragraphButton)
         addSubview(listsButton)
+        addSubview(dictionaryButton)
         addSubview(vibesButton)
         addSubview(speakButton)
         addSubview(logoBarView)
@@ -374,6 +384,7 @@ final class KeyboardRootView: UIView {
                 speakButton: speakButton,
                 paragraphButton: paragraphButton,
                 listsButton: listsButton,
+                dictionaryButton: dictionaryButton,
                 vibesButton: vibesButton,
                 logoBarView: logoBarView,
                 keyGridView: keyGridView,

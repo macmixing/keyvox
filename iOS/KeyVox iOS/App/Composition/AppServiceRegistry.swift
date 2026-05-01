@@ -301,7 +301,8 @@ final class AppServiceRegistry {
         self.urlRouter = KeyVoxURLRouter(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
-            audioModeCoordinator: audioModeCoordinator
+            audioModeCoordinator: audioModeCoordinator,
+            appTabRouter: appTabRouter
         )
 
         settingsStore.$activeDictationProvider

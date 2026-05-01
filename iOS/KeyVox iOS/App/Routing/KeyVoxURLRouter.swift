@@ -5,15 +5,18 @@ final class KeyVoxURLRouter {
     private let audioModeCoordinator: AudioModeCoordinator
     private let transcriptionManager: TranscriptionManager
     private let ttsManager: TTSManager
+    private let appTabRouter: AppTabRouter
 
     init(
         transcriptionManager: TranscriptionManager,
         ttsManager: TTSManager,
-        audioModeCoordinator: AudioModeCoordinator
+        audioModeCoordinator: AudioModeCoordinator,
+        appTabRouter: AppTabRouter
     ) {
         self.audioModeCoordinator = audioModeCoordinator
         self.transcriptionManager = transcriptionManager
         self.ttsManager = ttsManager
+        self.appTabRouter = appTabRouter
     }
 
     func route(for url: URL) -> KeyVoxURLRoute? {
@@ -36,6 +39,8 @@ final class KeyVoxURLRouter {
                 ttsManager.dismissPlaybackPreparationView()
                 audioModeCoordinator.handleSpeakClipboardFromApp()
             }
+        case .openDictionary:
+            appTabRouter.selectedTab = .dictionary
         }
     }
 

@@ -67,6 +67,7 @@ extension KeyboardViewController {
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
         rootContainerView.paragraphButton.addTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
         rootContainerView.listsButton.addTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
+        rootContainerView.dictionaryButton.addTarget(self, action: #selector(handleDictionaryTap), for: .touchUpInside)
         rootContainerView.vibesButton.addTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
         let vibesLongPressRecognizer = UILongPressGestureRecognizer(
             target: self,
@@ -112,6 +113,7 @@ extension KeyboardViewController {
             rootContainerView.capsLockButton.removeTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
             rootContainerView.paragraphButton.removeTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
             rootContainerView.listsButton.removeTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
+            rootContainerView.dictionaryButton.removeTarget(self, action: #selector(handleDictionaryTap), for: .touchUpInside)
             rootContainerView.vibesButton.removeTarget(self, action: #selector(handleVibesTap), for: .touchUpInside)
             rootContainerView.vibesButton.gestureRecognizers?.forEach {
                 rootContainerView.vibesButton.removeGestureRecognizer($0)

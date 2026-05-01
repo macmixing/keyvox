@@ -1152,7 +1152,7 @@ Current symbol layout rules:
 - row 4 side keys use a 2.5-key span
 - the space bar consumes the remaining row-4 width
 - top-row cancel alignment is derived from the live `1` key geometry instead of guessed offsets
-- with Vibes available, top-row Speak aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
+- with Vibes available, top-row Speak aligns over `2`, Dictionary aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
 - with Vibes unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
 - top-row accessory slots are allocated from the logo edge inward so adding or removing feature keys does not leave empty holes
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise

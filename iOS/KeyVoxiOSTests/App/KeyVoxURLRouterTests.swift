@@ -13,7 +13,8 @@ struct KeyVoxURLRouterTests {
         let router = KeyVoxURLRouter(
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
-            audioModeCoordinator: harness.audioModeCoordinator
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: false)
@@ -30,7 +31,8 @@ struct KeyVoxURLRouterTests {
         let router = KeyVoxURLRouter(
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
-            audioModeCoordinator: harness.audioModeCoordinator
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: true)
@@ -47,7 +49,8 @@ struct KeyVoxURLRouterTests {
         let router = KeyVoxURLRouter(
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
-            audioModeCoordinator: harness.audioModeCoordinator
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter
         )
 
         router.handle(route: .startTTS, shouldPresentReturnToHost: false)
@@ -55,6 +58,22 @@ struct KeyVoxURLRouterTests {
 
         #expect(harness.purchaseGate.presentUnlockSheetCallCount == 1)
         #expect(harness.ttsManager.state == .idle)
+    }
+
+    @Test func openDictionaryRouteSelectsDictionaryTab() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter
+        )
+
+        router.handle(route: .openDictionary, shouldPresentReturnToHost: false)
+
+        #expect(harness.appTabRouter.selectedTab == .dictionary)
     }
 
     private func makeHarness(
@@ -112,10 +131,11 @@ struct KeyVoxURLRouterTests {
             purchaseGate: purchaseGate,
             clipboardTextProvider: { "Test clipboard speech" }
         )
+        let appTabRouter = AppTabRouter()
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: manager,
             ttsManager: ttsManager,
-            appTabRouter: AppTabRouter(),
+            appTabRouter: appTabRouter,
             ttsPurchaseGate: purchaseGate
         )
 
@@ -123,6 +143,7 @@ struct KeyVoxURLRouterTests {
             manager: manager,
             ttsManager: ttsManager,
             audioModeCoordinator: audioModeCoordinator,
+            appTabRouter: appTabRouter,
             purchaseGate: purchaseGate,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
@@ -141,6 +162,7 @@ private final class Harness {
     let manager: TranscriptionManager
     let ttsManager: TTSManager
     let audioModeCoordinator: AudioModeCoordinator
+    let appTabRouter: AppTabRouter
     let purchaseGate: StubTTSPurchaseGate
     private let tempRootURL: URL
     private let defaultsSuiteName: String
@@ -149,6 +171,7 @@ private final class Harness {
         manager: TranscriptionManager,
         ttsManager: TTSManager,
         audioModeCoordinator: AudioModeCoordinator,
+        appTabRouter: AppTabRouter,
         purchaseGate: StubTTSPurchaseGate,
         tempRootURL: URL,
         defaultsSuiteName: String
@@ -156,6 +179,7 @@ private final class Harness {
         self.manager = manager
         self.ttsManager = ttsManager
         self.audioModeCoordinator = audioModeCoordinator
+        self.appTabRouter = appTabRouter
         self.purchaseGate = purchaseGate
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName

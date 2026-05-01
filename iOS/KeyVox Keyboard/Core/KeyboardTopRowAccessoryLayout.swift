@@ -7,6 +7,7 @@ extension KeyboardLayoutGeometry {
         private weak var speakButton: UIView?
         private weak var paragraphButton: UIView?
         private weak var listsButton: UIView?
+        private weak var dictionaryButton: UIView?
         private weak var vibesButton: UIView?
         private weak var logoBarView: UIView?
         private weak var keyGridView: KeyboardKeyGridView?
@@ -48,10 +49,11 @@ extension KeyboardLayoutGeometry {
         }
 
         private enum SingleKeyAccessoryID: CaseIterable {
-            case capsLock
-            case lists
-            case paragraph
             case speak
+            case dictionary
+            case paragraph
+            case lists
+            case capsLock
         }
 
         private struct SingleKeyAccessory {
@@ -85,6 +87,7 @@ extension KeyboardLayoutGeometry {
             speakButton: UIView,
             paragraphButton: UIView,
             listsButton: UIView,
+            dictionaryButton: UIView,
             vibesButton: UIView,
             logoBarView: UIView,
             keyGridView: KeyboardKeyGridView,
@@ -102,6 +105,7 @@ extension KeyboardLayoutGeometry {
             self.speakButton = speakButton
             self.paragraphButton = paragraphButton
             self.listsButton = listsButton
+            self.dictionaryButton = dictionaryButton
             self.vibesButton = vibesButton
             self.logoBarView = logoBarView
             self.keyGridView = keyGridView
@@ -219,10 +223,11 @@ extension KeyboardLayoutGeometry {
 
         private var singleKeyAccessories: [SingleKeyAccessory] {
             [
-                SingleKeyAccessory(id: .capsLock, button: capsLockButton),
-                SingleKeyAccessory(id: .lists, button: listsButton),
-                SingleKeyAccessory(id: .paragraph, button: paragraphButton),
                 SingleKeyAccessory(id: .speak, button: speakButton),
+                SingleKeyAccessory(id: .dictionary, button: dictionaryButton),
+                SingleKeyAccessory(id: .paragraph, button: paragraphButton),
+                SingleKeyAccessory(id: .lists, button: listsButton),
+                SingleKeyAccessory(id: .capsLock, button: capsLockButton),
             ]
         }
 
@@ -450,8 +455,18 @@ extension KeyboardLayoutGeometry {
 
             let vibesSlots = showsVibesButton ? takeSlots(width: 2) : nil
             var singleKeySlots: [SingleKeyAccessoryID: KeyboardTopRowAccessorySlot] = [:]
-            for accessoryID in SingleKeyAccessoryID.allCases {
-                singleKeySlots[accessoryID] = takeSlots(width: 1).leading
+            if showsVibesButton {
+                singleKeySlots[.speak] = .two
+                singleKeySlots[.dictionary] = .three
+                singleKeySlots[.paragraph] = .four
+                singleKeySlots[.lists] = .five
+                singleKeySlots[.capsLock] = .six
+            } else {
+                singleKeySlots[.speak] = .four
+                singleKeySlots[.dictionary] = .five
+                singleKeySlots[.paragraph] = .six
+                singleKeySlots[.lists] = .seven
+                singleKeySlots[.capsLock] = .eight
             }
 
             return TopRowAccessorySlotPlan(
