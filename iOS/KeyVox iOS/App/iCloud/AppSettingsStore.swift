@@ -187,6 +187,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var leftHandedKeyboardLayoutEnabled: Bool {
+        didSet {
+            defaults.set(leftHandedKeyboardLayoutEnabled, forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled)
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: UserDefaultsKeys.preferBuiltInMicrophone)
@@ -252,6 +258,7 @@ final class AppSettingsStore: ObservableObject {
         listFormattingEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
+        leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
         preferBuiltInMicrophone = defaults.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         liveActivitiesEnabled = defaults.object(forKey: UserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: UserDefaultsKeys.sessionDisableTiming),

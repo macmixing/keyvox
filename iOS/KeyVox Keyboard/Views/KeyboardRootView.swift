@@ -34,6 +34,7 @@ final class KeyboardRootView: UIView {
     private var capsLockButtonWidthConstraint: NSLayoutConstraint?
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
+    private var isLeftHandedLayoutEnabled = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -99,7 +100,8 @@ final class KeyboardRootView: UIView {
         let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
         topRowAccessoryLayoutGeometry?.update(
             isLandscape: isLandscape,
-            showsVibesButton: vibesButton.isHidden == false
+            showsVibesButton: vibesButton.isHidden == false,
+            isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
         )
     }
 
@@ -111,6 +113,7 @@ final class KeyboardRootView: UIView {
         isVibesAvailable: Bool,
         isAutoParagraphsEnabled: Bool,
         isListFormattingEnabled: Bool,
+        isLeftHandedLayoutEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
@@ -124,6 +127,10 @@ final class KeyboardRootView: UIView {
             && state != .waitingForApp
             && state != .recording
             && state != .transcribing
+        if self.isLeftHandedLayoutEnabled != isLeftHandedLayoutEnabled {
+            self.isLeftHandedLayoutEnabled = isLeftHandedLayoutEnabled
+            setNeedsLayout()
+        }
 
         settingsButton.isTrackpadModeActive = isTrackpadModeActive
         settingsButton.isEnabled = showsBrandedToolbar && !shouldShowCancel && !isTrackpadModeActive
@@ -270,16 +277,11 @@ final class KeyboardRootView: UIView {
         addSubview(vibesButton)
         addSubview(speakButton)
         addSubview(logoBarView)
+        addSubview(settingsButton)
+        addSubview(cancelButton)
 
         addSubview(fullAccessWarningContainer)
-        
-        // Keep special toolbar controls outside the keyboard grid so the logo can stay
-        // vertically centered while those controls align visually with the top row.
-        // This preserves the current keyboard height and keeps toolbar positioning
-        // independent from grid layout rules.
-        leadingControlsStack.addSubview(settingsButton)
-        leadingControlsStack.addSubview(cancelButton)
-        
+
         fullAccessWarningContainer.addSubview(fullAccessWarningLabel)
         fullAccessWarningContainer.addSubview(fullAccessInfoButton)
 

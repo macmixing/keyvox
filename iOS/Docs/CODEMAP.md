@@ -792,6 +792,7 @@ Packages/
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
   - With Vibes available, aligns Speak over `2`, Dictionary over `3`, Paragraphs over `4`, Lists over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
   - Without Vibes available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps.
+  - Mirrors the control strip for the left-handed layout setting without changing typed symbol order.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.

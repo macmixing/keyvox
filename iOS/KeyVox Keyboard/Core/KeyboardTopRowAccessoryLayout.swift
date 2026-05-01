@@ -56,6 +56,7 @@ extension KeyboardLayoutGeometry {
             let vibesLeading: KeyboardTopRowAccessorySlot?
             let vibesTrailing: KeyboardTopRowAccessorySlot?
             let logoLeading: KeyboardTopRowAccessorySlot
+            let utilitySlot: KeyboardTopRowAccessorySlot
         }
 
         private enum SingleKeyAccessoryID: CaseIterable {
@@ -142,14 +143,21 @@ extension KeyboardLayoutGeometry {
             )
         }
 
-        func update(isLandscape: Bool, showsVibesButton: Bool) {
+        func update(
+            isLandscape: Bool,
+            showsVibesButton: Bool,
+            isLeftHandedLayoutEnabled: Bool
+        ) {
             guard let keyGridView else { return }
-            let slotPlan = topRowAccessorySlotPlan(showsVibesButton: showsVibesButton)
+            let slotPlan = topRowAccessorySlotPlan(
+                showsVibesButton: showsVibesButton,
+                isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
+            )
 
             updateSingleKeyAccessories(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
             updateVibesButton(isLandscape: isLandscape, showsVibesButton: showsVibesButton, slotPlan: slotPlan, keyGridView: keyGridView)
             updateLogoBar(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
-            updateCancelButton(isLandscape: isLandscape, keyGridView: keyGridView)
+            updateCancelButton(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
         }
 
         private func updateSingleKeyAccessories(
@@ -400,7 +408,11 @@ extension KeyboardLayoutGeometry {
             }
         }
 
-        private func updateCancelButton(isLandscape: Bool, keyGridView: KeyboardKeyGridView) {
+        private func updateCancelButton(
+            isLandscape: Bool,
+            slotPlan: TopRowAccessorySlotPlan,
+            keyGridView: KeyboardKeyGridView
+        ) {
             settingsButtonLeadingConstraint.isActive = false
             settingsButtonCenterYConstraint.isActive = false
             settingsButtonWidthConstraint.isActive = false
@@ -414,7 +426,7 @@ extension KeyboardLayoutGeometry {
             capsLockButtonWidthConstraint.isActive = false
             capsLockButtonHeightConstraint.isActive = false
 
-            guard let cancelReferenceView = keyGridView.topRowKeyView(for: .one) else {
+            guard let cancelReferenceView = keyGridView.topRowKeyView(for: slotPlan.utilitySlot) else {
                 NSLayoutConstraint.deactivate([
                     settingsButtonLandscapeCenterXConstraint,
                     settingsButtonLandscapeBottomConstraint,
@@ -516,38 +528,49 @@ extension KeyboardLayoutGeometry {
             }
         }
 
-        private func topRowAccessorySlotPlan(showsVibesButton: Bool) -> TopRowAccessorySlotPlan {
-            var nextTrailingRawValue = KeyboardTopRowAccessorySlot.eight.rawValue
-
-            func takeSlots(width: Int) -> (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot) {
-                let leadingRawValue = nextTrailingRawValue - width + 1
-                let leading = KeyboardTopRowAccessorySlot(rawValue: leadingRawValue) ?? .three
-                let trailing = KeyboardTopRowAccessorySlot(rawValue: nextTrailingRawValue) ?? .eight
-                nextTrailingRawValue = leadingRawValue - 1
-                return (leading, trailing)
-            }
-
-            let vibesSlots = showsVibesButton ? takeSlots(width: 2) : nil
+        private func topRowAccessorySlotPlan(
+            showsVibesButton: Bool,
+            isLeftHandedLayoutEnabled: Bool
+        ) -> TopRowAccessorySlotPlan {
             var singleKeySlots: [SingleKeyAccessoryID: KeyboardTopRowAccessorySlot] = [:]
-            if showsVibesButton {
+            let vibesSlots: (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot)?
+
+            if isLeftHandedLayoutEnabled, showsVibesButton {
+                singleKeySlots[.speak] = .nine
+                singleKeySlots[.dictionary] = .eight
+                singleKeySlots[.paragraph] = .seven
+                singleKeySlots[.lists] = .six
+                singleKeySlots[.capsLock] = .five
+                vibesSlots = (.three, .four)
+            } else if isLeftHandedLayoutEnabled {
+                singleKeySlots[.speak] = .seven
+                singleKeySlots[.dictionary] = .six
+                singleKeySlots[.paragraph] = .five
+                singleKeySlots[.lists] = .four
+                singleKeySlots[.capsLock] = .three
+                vibesSlots = nil
+            } else if showsVibesButton {
                 singleKeySlots[.speak] = .two
                 singleKeySlots[.dictionary] = .three
                 singleKeySlots[.paragraph] = .four
                 singleKeySlots[.lists] = .five
                 singleKeySlots[.capsLock] = .six
+                vibesSlots = (.seven, .eight)
             } else {
                 singleKeySlots[.speak] = .four
                 singleKeySlots[.dictionary] = .five
                 singleKeySlots[.paragraph] = .six
                 singleKeySlots[.lists] = .seven
                 singleKeySlots[.capsLock] = .eight
+                vibesSlots = nil
             }
 
             return TopRowAccessorySlotPlan(
                 singleKeySlots: singleKeySlots,
                 vibesLeading: vibesSlots?.leading,
                 vibesTrailing: vibesSlots?.trailing,
-                logoLeading: .nine
+                logoLeading: isLeftHandedLayoutEnabled ? .one : .nine,
+                utilitySlot: isLeftHandedLayoutEnabled ? .zero : .one
             )
         }
     }

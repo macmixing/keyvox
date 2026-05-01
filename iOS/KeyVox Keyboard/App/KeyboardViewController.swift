@@ -210,6 +210,7 @@ final class KeyboardViewController: UIInputViewController {
             isVibesAvailable: appSettingsStore.isVibesAvailable,
             isAutoParagraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
             isListFormattingEnabled: appSettingsStore.isListFormattingEnabled,
+            isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive

@@ -46,6 +46,10 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
     }
 
+    var isLeftHandedKeyboardLayoutEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
+    }
+
     @discardableResult
     func toggleListFormatting() -> Bool {
         let updatedValue = !isListFormattingEnabled

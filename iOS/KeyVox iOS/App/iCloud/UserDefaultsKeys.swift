@@ -6,6 +6,7 @@ nonisolated enum UserDefaultsKeys {
     static let listFormattingEnabled = "KeyVox.ListFormattingEnabled"
     static let capsLockEnabled = "KeyVox.CapsLockEnabled"
     static let keyboardHapticsEnabled = "KeyVox.KeyboardHapticsEnabled"
+    static let leftHandedKeyboardLayoutEnabled = "KeyVox.LeftHandedKeyboardLayoutEnabled"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
