@@ -295,6 +295,18 @@ final class StyleRewriteFoundationTests: XCTestCase {
                     errors: ["fallback"]
                 )
             ],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: "base"
+                ),
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: true,
+                    listsEnabled: true,
+                    text: "base\n\nlisted"
+                ),
+            ],
             inferenceDuration: 0.5,
             textTransformationDuration: 0.25,
             createdAt: Date()
@@ -304,6 +316,29 @@ final class StyleRewriteFoundationTests: XCTestCase {
         let decoded = try JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded, artifact)
+    }
+
+    func testDictationUtteranceArtifactDecodesMissingDeterministicVariantsAsEmpty() throws {
+        let json = """
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "rawText": "raw",
+          "baseText": "base",
+          "selectedText": "styled",
+          "selectedStyleIdentifier": "test-style",
+          "variants": [],
+          "inferenceDuration": 0.5,
+          "textTransformationDuration": 0.25,
+          "createdAt": 0
+        }
+        """
+
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        let decoded = try decoder.decode(DictationUtteranceArtifact.self, from: data)
+
+        XCTAssertEqual(decoded.deterministicVariants, [])
     }
 
     func testTextTransformRequestRoundTripsThroughJSON() throws {

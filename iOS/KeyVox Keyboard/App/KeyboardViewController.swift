@@ -28,7 +28,7 @@ final class KeyboardViewController: UIInputViewController {
             self?.dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: text) ?? false
         }
     )
-    lazy var vibeChangeController = KeyboardVibeChangeController(
+    lazy var dictationChangeController = KeyboardDictationChangeController(
         textInputController: textInputController,
         appSettingsStore: appSettingsStore
     )
@@ -354,9 +354,59 @@ final class KeyboardViewController: UIInputViewController {
         guard recognizer.state == .began else { return }
         Task { @MainActor [weak self] in
             guard let self else { return }
-            let didApply = await self.vibeChangeController.applyLongPressChange(
+            let didApply = await self.dictationChangeController.applyLongPressChange(
                 onProcessingStart: { [weak self] in
                     self?.indicatorDriver.phase = .processing
+                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                },
+                onProcessingEnd: { [weak self] in
+                    guard let self else { return }
+                    let phase = self.keyboardState.indicatorPhase
+                    self.indicatorDriver.phase = phase
+                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                }
+            )
+            if didApply {
+                self.interactionHaptics.emitSuccessIfEnabled()
+            } else {
+                self.interactionHaptics.emitMediumIfEnabled()
+            }
+        }
+    }
+
+    @objc
+    func handleParagraphsLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
+                .paragraphs,
+                onProcessingStart: { [weak self] in
+                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                },
+                onProcessingEnd: { [weak self] in
+                    guard let self else { return }
+                    let phase = self.keyboardState.indicatorPhase
+                    self.indicatorDriver.phase = phase
+                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                }
+            )
+            if didApply {
+                self.interactionHaptics.emitSuccessIfEnabled()
+            } else {
+                self.interactionHaptics.emitMediumIfEnabled()
+            }
+        }
+    }
+
+    @objc
+    func handleListsLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
+                .lists,
+                onProcessingStart: { [weak self] in
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
                 onProcessingEnd: { [weak self] in
@@ -428,6 +478,6 @@ final class KeyboardViewController: UIInputViewController {
             return
         }
 
-        vibeChangeController.recordInsertedDictation(insertion)
+        dictationChangeController.recordInsertedDictation(insertion)
     }
 }
