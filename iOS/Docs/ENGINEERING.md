@@ -934,12 +934,13 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
 - posts the shared auto-paragraphs Darwin notification so the containing app refreshes its settings UI
 
-`KeyboardVibeChangeController` owns keyboard-side long-press changes for KeyVox insertions:
+`KeyboardDictationChangeController` owns keyboard-side long-press changes for KeyVox insertions:
 
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
 - treats `None` as the original post-processed base text
-- stores the current insertion text, current style, and cached variants
-- regenerates variants from the original base text rather than morphing from the currently displayed style
+- stores the current insertion text, current Vibe, deterministic paragraph/list state, and cached rendered variants
+- regenerates Vibe variants from the current deterministic base text rather than morphing from the currently displayed style
+- applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
 - replaces only when the active insertion still matches the untouched session
 - clears the active session on mismatch to avoid data loss
@@ -1104,15 +1105,15 @@ Implementation split:
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardVibeChangeController.swift` owns artifact-scoped Vibes revert/restyle for the latest untouched KeyVox dictation insertion
+- `KeyboardDictationChangeController.swift` owns artifact-scoped long-press changes for the latest untouched KeyVox dictation insertion
 - keyboard `Core` is grouped by domain:
-  - `Dictation/` owns recording-state handoff, live indicator driving, and call gating
+  - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes
   - `Feedback/` owns extension-local haptics configuration and dispatch
   - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
   - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
-  - `Vibes/` owns latest-insertion revert/restyle behavior for the app-owned KeyVox Vibes feature
+  - `Vibes/` owns Vibes-specific keyboard UI only; latest-insertion long-press behavior lives with dictation because paragraph/list undo is not part of the Vibes entitlement boundary
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
 - `KeyboardLayoutGeometry.swift` and `KeyboardTopRowAccessoryLayout.swift` belong in `Core/`, not `Views/`, because they are shared layout math rather than renderable views
 

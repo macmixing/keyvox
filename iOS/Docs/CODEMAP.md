@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-04-16**
+**Last Updated: 2026-05-01**
 
 ## Project Overview
 
@@ -292,7 +292,6 @@ iOS/
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── Vibes/
-│   │   │   └── KeyboardVibeChangeController.swift
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
 │   │   ├── KeyboardState.swift
@@ -760,6 +759,9 @@ Packages/
   - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
+- `KeyVox Keyboard/Core/Dictation/KeyboardDictationChangeController.swift`
+  - Keyboard-local artifact-scoped changer for the latest untouched KeyVox dictation insertion.
+  - Records the inserted dictation session from the latest App Group artifact, reverts/restyles Vibes when available, applies deterministic paragraph/list state changes outside the Vibes entitlement boundary, caches rendered variants, and refuses to operate after the insertion no longer matches the active session.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
 - `KeyVox Keyboard/Core/Transport/KeyboardTTSController.swift`
@@ -771,9 +773,6 @@ Packages/
 - `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, and posts shared Darwin notifications so the containing app can refresh visible settings.
-- `KeyVox Keyboard/Core/Vibes/KeyboardVibeChangeController.swift`
-  - Keyboard-local artifact-scoped Vibes changer for the latest untouched KeyVox dictation insertion.
-  - Records the inserted dictation session from the latest App Group artifact, reverts to `None` when long-pressing the current selected Vibe, regenerates another Vibe from the original base text when needed, caches variants, and refuses to operate after the insertion no longer matches the active session.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`

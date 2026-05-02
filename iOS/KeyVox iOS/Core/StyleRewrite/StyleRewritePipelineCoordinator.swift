@@ -91,6 +91,13 @@ final class StyleRewritePipelineCoordinator {
                 selectedText: selectedText,
                 selectedStyleIdentifier: result.textTransformationStyleIdentifier,
                 variants: variants,
+                deterministicVariants: result.deterministicVariants.map { variant in
+                    DictationDeterministicTextVariantArtifact(
+                        paragraphsEnabled: variant.paragraphsEnabled,
+                        listsEnabled: variant.listsEnabled,
+                        text: variant.text
+                    )
+                },
                 inferenceDuration: result.inferenceDuration,
                 textTransformationDuration: result.textTransformationDuration,
                 createdAt: Date()

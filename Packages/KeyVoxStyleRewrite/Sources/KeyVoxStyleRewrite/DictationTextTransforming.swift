@@ -160,6 +160,22 @@ public struct DictationTextVariantArtifact: Codable, Equatable, Sendable {
     }
 }
 
+public struct DictationDeterministicTextVariantArtifact: Codable, Equatable, Sendable {
+    public let paragraphsEnabled: Bool
+    public let listsEnabled: Bool
+    public let text: String
+
+    public init(
+        paragraphsEnabled: Bool,
+        listsEnabled: Bool,
+        text: String
+    ) {
+        self.paragraphsEnabled = paragraphsEnabled
+        self.listsEnabled = listsEnabled
+        self.text = text
+    }
+}
+
 public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let id: UUID
     public let rawText: String
@@ -167,6 +183,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let selectedText: String
     public let selectedStyleIdentifier: String?
     public let variants: [DictationTextVariantArtifact]
+    public let deterministicVariants: [DictationDeterministicTextVariantArtifact]
     public let inferenceDuration: TimeInterval
     public let textTransformationDuration: TimeInterval
     public let createdAt: Date
@@ -178,6 +195,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         selectedText: String,
         selectedStyleIdentifier: String?,
         variants: [DictationTextVariantArtifact],
+        deterministicVariants: [DictationDeterministicTextVariantArtifact] = [],
         inferenceDuration: TimeInterval,
         textTransformationDuration: TimeInterval,
         createdAt: Date
@@ -188,9 +206,40 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         self.selectedText = selectedText
         self.selectedStyleIdentifier = selectedStyleIdentifier
         self.variants = variants
+        self.deterministicVariants = deterministicVariants
         self.inferenceDuration = inferenceDuration
         self.textTransformationDuration = textTransformationDuration
         self.createdAt = createdAt
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case rawText
+        case baseText
+        case selectedText
+        case selectedStyleIdentifier
+        case variants
+        case deterministicVariants
+        case inferenceDuration
+        case textTransformationDuration
+        case createdAt
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        rawText = try container.decode(String.self, forKey: .rawText)
+        baseText = try container.decode(String.self, forKey: .baseText)
+        selectedText = try container.decode(String.self, forKey: .selectedText)
+        selectedStyleIdentifier = try container.decodeIfPresent(String.self, forKey: .selectedStyleIdentifier)
+        variants = try container.decode([DictationTextVariantArtifact].self, forKey: .variants)
+        deterministicVariants = try container.decodeIfPresent(
+            [DictationDeterministicTextVariantArtifact].self,
+            forKey: .deterministicVariants
+        ) ?? []
+        inferenceDuration = try container.decode(TimeInterval.self, forKey: .inferenceDuration)
+        textTransformationDuration = try container.decode(TimeInterval.self, forKey: .textTransformationDuration)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
     }
 }
 

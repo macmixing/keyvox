@@ -40,6 +40,107 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(pasted, ["Project notes:\n\n1. Cueboard\n2. Cueboard"])
     }
 
+    func testPipelineEmitsDeterministicParagraphAndListVariants() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+        let variants = Dictionary(
+            uniqueKeysWithValues: result.deterministicVariants.map {
+                (DeterministicVariantKey($0), $0.text)
+            }
+        )
+
+        XCTAssertEqual(result.deterministicVariants.count, 4)
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], result.baseText)
+    }
+
+    func testPipelineEmitsListEnabledDeterministicVariantsWhenListsAreOff() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { false },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+        let variants = Dictionary(
+            uniqueKeysWithValues: result.deterministicVariants.map {
+                (DeterministicVariantKey($0), $0.text)
+            }
+        )
+
+        XCTAssertEqual(result.baseText, "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
+    }
+
+    func testPipelineEmitsDeterministicVariantsWhenParagraphsAndListsAreOff() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { false },
+            listFormattingEnabledProvider: { false },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+        let variants = Dictionary(
+            uniqueKeysWithValues: result.deterministicVariants.map {
+                (DeterministicVariantKey($0), $0.text)
+            }
+        )
+
+        XCTAssertEqual(result.deterministicVariants.count, 4)
+        XCTAssertEqual(result.baseText, "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
+    }
+
     func testPipelineAppliesBuiltInDictionaryEntryAndRefreshesProviderPrompt() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "my app is called key box", languageCode: "en")
@@ -352,6 +453,21 @@ final class DictationPipelineTests: XCTestCase {
         }
     }
 
+}
+
+private struct DeterministicVariantKey: Hashable {
+    let paragraphsEnabled: Bool
+    let listsEnabled: Bool
+
+    init(_ variant: DictationPipelineResult.DeterministicTextVariant) {
+        self.paragraphsEnabled = variant.paragraphsEnabled
+        self.listsEnabled = variant.listsEnabled
+    }
+
+    init(paragraphsEnabled: Bool, listsEnabled: Bool) {
+        self.paragraphsEnabled = paragraphsEnabled
+        self.listsEnabled = listsEnabled
+    }
 }
 
 @MainActor
