@@ -275,10 +275,8 @@ public final class DictationPipeline {
                         finalText: outputText,
                         deterministicVariants: self.deterministicVariants(
                             rawText: rawText,
-                            finalText: finalText,
                             dictionaryEntries: dictionaryEntries,
                             renderMode: renderMode,
-                            listFormattingEnabled: listFormattingEnabled,
                             languageCode: languageCode
                         ),
                         wasLikelyNoSpeech: false,
@@ -299,10 +297,8 @@ public final class DictationPipeline {
 
     private func deterministicVariants(
         rawText: String,
-        finalText: String,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
-        listFormattingEnabled: Bool,
         languageCode: String?
     ) -> [DictationPipelineResult.DeterministicTextVariant] {
         let noParagraphsNoLists = postProcessor.process(
@@ -325,7 +321,15 @@ public final class DictationPipeline {
             rawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: .singleLineInline,
-            listFormattingEnabled: listFormattingEnabled,
+            listFormattingEnabled: true,
+            forceAllCaps: false,
+            languageCode: languageCode
+        )
+        let paragraphsWithLists = postProcessor.process(
+            rawText,
+            dictionaryEntries: dictionaryEntries,
+            renderMode: renderMode,
+            listFormattingEnabled: true,
             forceAllCaps: false,
             languageCode: languageCode
         )
@@ -349,7 +353,7 @@ public final class DictationPipeline {
             DictationPipelineResult.DeterministicTextVariant(
                 paragraphsEnabled: true,
                 listsEnabled: true,
-                text: finalText
+                text: paragraphsWithLists
             ),
         ]
     }
