@@ -382,6 +382,7 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .paragraphs,
                 onProcessingStart: { [weak self] in
+                    self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
                 onProcessingEnd: { [weak self] in
@@ -407,6 +408,7 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .lists,
                 onProcessingStart: { [weak self] in
+                    self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
                 onProcessingEnd: { [weak self] in
