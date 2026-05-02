@@ -168,6 +168,17 @@ final class StyleRewriteFoundationTests: XCTestCase {
         )
     }
 
+    func testChillHeuristicPreservesOrderedListLineBreaks() {
+        let output = ChillHeuristicFormatter().format(
+            "I need to pick up a couple of things from the store.\n\n1. Apples\n2. Bananas"
+        )
+
+        XCTAssertEqual(
+            output,
+            "i need to pick up a couple of things from the store\n\n1. apples\n2. bananas"
+        )
+    }
+
     func testFoundationRewriteRepairCollapsesAdjacentProtectedDuplicate() {
         let output = FoundationRewriteOutputRepair.repair(
             original: "im just trying trying to work",

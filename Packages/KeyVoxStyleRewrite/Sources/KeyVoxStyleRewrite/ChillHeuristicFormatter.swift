@@ -11,6 +11,17 @@ public struct ChillHeuristicFormatter: Sendable {
     }
 
     private func formatParagraph(_ text: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        if lines.allSatisfy({ orderedListLine(in: $0) != nil }) {
+            return lines
+                .compactMap(formatOrderedListLine)
+                .joined(separator: "\n")
+        }
+
+        return formatInlineText(text)
+    }
+
+    private func formatInlineText(_ text: String) -> String {
         var segments: [(text: String, terminator: Character?)] = []
         var current: [String] = []
         let characters = Array(text.lowercased())
@@ -61,6 +72,31 @@ public struct ChillHeuristicFormatter: Sendable {
             }
             return segment.text + (segment.terminator == "?" ? "? " : ". ")
         }.joined()
+    }
+
+    private func formatOrderedListLine(_ line: String) -> String? {
+        guard let orderedListLine = orderedListLine(in: line) else { return nil }
+        let formattedText = formatInlineText(orderedListLine.text)
+        guard !formattedText.isEmpty else { return "\(orderedListLine.marker)." }
+        return "\(orderedListLine.marker). \(formattedText)"
+    }
+
+    private func orderedListLine(in line: String) -> (marker: String, text: String)? {
+        let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let markerEnd = trimmedLine.firstIndex(where: { !$0.isNumber }) else {
+            return nil
+        }
+
+        let marker = String(trimmedLine[..<markerEnd])
+        guard !marker.isEmpty,
+              trimmedLine[markerEnd] == "." else {
+            return nil
+        }
+
+        let textStart = trimmedLine.index(after: markerEnd)
+        let text = String(trimmedLine[textStart...])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (marker, text)
     }
 
     private func paragraphTexts(in text: String) -> [String] {
