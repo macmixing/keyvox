@@ -211,18 +211,19 @@ final class KeyboardDictationChangeController {
                 session: &session,
                 onProcessingStart: onProcessingStart,
                 onProcessingEnd: onProcessingEnd
-              ),
-              renderedText != session.currentText else {
+              ) else {
             return false
         }
 
-        guard textInputController.replaceUntouchedInsertion(
-            session.currentText,
-            with: renderedText,
-            documentContextBeforeInsertion: session.documentContextBeforeInput
-        ) else {
-            activeSession = nil
-            return false
+        if renderedText != session.currentText {
+            guard textInputController.replaceUntouchedInsertion(
+                session.currentText,
+                with: renderedText,
+                documentContextBeforeInsertion: session.documentContextBeforeInput
+            ) else {
+                activeSession = nil
+                return false
+            }
         }
 
         session.sourceText = replacementText
