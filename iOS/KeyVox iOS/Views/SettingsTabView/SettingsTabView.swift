@@ -5,6 +5,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
@@ -85,6 +86,7 @@ struct SettingsTabView: View {
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
 }

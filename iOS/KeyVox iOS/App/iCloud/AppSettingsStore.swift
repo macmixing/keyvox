@@ -313,8 +313,13 @@ final class AppSettingsStore: ObservableObject {
 
     nonisolated static func resolvedSelectedVibe(
         from defaults: UserDefaults,
-        isFoundationRewriteAvailable: Bool = FoundationStyleRewriteAvailability.isAvailable
+        isFoundationRewriteAvailable: Bool = FoundationStyleRewriteAvailability.isAvailable,
+        canUseVibes: Bool = true
     ) -> StyleRewriteStyle {
+        guard canUseVibes else {
+            return .none
+        }
+
         if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
            let style = StyleRewriteStyle(rawValue: raw) {
             return style.resolvedForFoundationAvailability(isFoundationRewriteAvailable)

@@ -139,6 +139,8 @@ It builds and wires:
 - `PocketTTSModelManager`
 - `TTSPurchaseController`
 - `KeyVoxSpeakIntroController`
+- `KeyVoxVibesPurchaseController`
+- `KeyVoxVibesIntroController`
 - `TTSPlaybackCoordinator`
 - `TTSManager`
 - `AudioModeCoordinator`
@@ -168,6 +170,8 @@ Service ownership rules:
 - `Feedback/` owns app-scoped haptics and copy-feedback interaction state.
 - `LiveActivity/` owns the ActivityKit mirror layer.
 - `KeyVoxSpeak/` owns the post-onboarding intro controller and copied-text playback purchase gate.
+- `KeyVoxVibes/` owns the post-onboarding intro controller, local trial state, and lifetime purchase gate for KeyVox Vibes.
+- `Purchases/` owns shared StoreKit non-consumable plumbing used by app-owned purchase controllers.
 - `Stats/` owns app-local weekly usage aggregation.
 - `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
 
@@ -249,6 +253,52 @@ Behavior:
 - the flag forces the post-onboarding KeyVox Speak intro to present for development and design work
 - the flag does not change the underlying seen-state or feature-used suppression rules for production behavior
 - the intro still routes through the main app surface and must not appear over onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
+
+### KeyVox Vibes Trial Bypass Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- `KEYVOX_BYPASS_VIBES_TRIAL` bypasses the Vibes trial/unlock gate in debug builds
+- the flag allows the app and keyboard extension to use Vibes without starting the local 24-hour trial
+- the flag must not change production monetization policy
+- Foundation availability still gates whether the Vibes feature is available
+
+### KeyVox Vibes Trial Duration Runtime Flag
+
+Behavior:
+
+- `KEYVOX_VIBES_TRIAL_DURATION_SECONDS` overrides the local Vibes trial duration in debug builds
+- the value is parsed as a positive number of seconds
+- when the user starts a trial while the flag is active, the debug duration is persisted so restarts keep evaluating the same short test window
+- production builds ignore the override and use the 24-hour trial duration
+
+### KeyVox Vibes Trial Reset Runtime Flag
+
+Behavior:
+
+- `KEYVOX_RESET_VIBES_TRIAL` removes only `KeyVox.App.VibesTrialStartedAt` and the debug Vibes trial duration override in debug builds
+- the flag does not clear purchase state, intro state, selected Vibe, or other Vibes defaults
+- production builds ignore the reset flag
+
+### KeyVox Vibes Intro Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- `KEYVOX_FORCE_KEYVOX_VIBES_INTRO` forces the full A/B/C KeyVox Vibes intro flow for development and design work
+- the flag does not start the trial or unlock Vibes
+- the forced intro still uses the normal app-owned Vibes sheet surface
 
 ### Onboarding Screen Order
 
@@ -378,7 +428,12 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.TTSFreeSpeakUsageCount`
 - `KeyVox.App.HasSeenKeyVoxSpeakIntro`
 - `KeyVox.App.HasUsedKeyVoxSpeak`
-- `KeyVox.App.KeyVoxSpeakEligibleOpenCount`
+- `KeyVox.App.ShouldShowKeyVoxSpeakIntroOnNextEligibleLaunch`
+- `KeyVox.App.IsVibesUnlocked`
+- `KeyVox.App.VibesTrialStartedAt`
+- `KeyVox.App.HasSeenKeyVoxVibesIntro`
+- `KeyVox.App.HasInteractedWithKeyVoxVibes`
+- `KeyVox.App.ShouldShowKeyVoxVibesIntroOnNextEligibleLaunch`
 
 ### App Group File Transport
 
@@ -860,6 +915,10 @@ That selector must use `StyleRewriteStyle` from `KeyVoxStyleRewrite` for orderin
 The keyboard writes `KeyVox.SelectedVibe` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
 The containing app observes that notification and refreshes `AppSettingsStore.selectedVibe` from shared defaults so the Style tab reflects keyboard-side changes.
 Tap changes only the selected Vibe.
+Before the local trial starts or the lifetime unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
+Before access is active, tapping the keyboard Vibes key emits the keyboard's medium no-op haptic and opens `keyvoxios://vibes/open`; the keyboard does not cycle to a paid Vibe.
+Vibes access requires both Foundation availability and `KeyVoxVibesPurchaseController.canUseVibes`.
+When access is unavailable or an active local trial expires, the resolved selected Vibe is forced to `None`.
 Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, regenerating from the original base text, and replacing the active insertion.
 The keyboard does not transform arbitrary selected host-app text because the iOS text proxy can provide incomplete selected/context text.
 The keyboard still does not own prompt configuration, general rewrite policy, recording, or app-level artifact creation.
@@ -920,6 +979,33 @@ It owns:
 The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
 The keyboard consumes this artifact for long-press Vibes revert/restyle on the latest untouched KeyVox dictation insertion.
 
+### KeyVox Vibes Purchase Ownership
+
+`KeyVoxVibesPurchaseController` is the containing-app owner for Vibes access.
+
+- the lifetime product identifier is `com.cueit.keyvox.vibes.unlocked`
+- the product is a non-consumable lifetime unlock named `KeyVox Vibes Lifetime Unlock`
+- the 24-hour trial is local-only and starts only when the user taps `Try Now`
+- `canUseVibes` is true only while the lifetime unlock is owned or the local trial is active
+- trial expiration immediately resolves selected Vibe to `None`
+- unlock state, trial start date, intro state, and interacted state are app-local defaults, not iCloud-synced settings
+
+`KeyVoxVibesIntroController` owns cold-launch intro scheduling.
+
+- Vibes follows the same delayed cold-launch philosophy as KeyVox Speak
+- Vibes never presents over onboarding, return-to-host, playback preparation, or recording launch flows
+- when KeyVox Speak and KeyVox Vibes both want the same eligible launch, Vibes presents first and Speak is deferred to the next eligible launch
+- a usage-only Scene B presentation path is kept available for future help/info entry points
+
+`KeyVoxVibesSheetView` owns the shared Vibes sheet shell.
+
+- intro mode shows scenes A, B, and C with a `Try Now` CTA
+- unlock mode shows the usage refresher scene and the unlock scene with a dynamic App Store price button
+- per-sheet restore checks the Vibes entitlement
+
+Settings restore is shared across KeyVox Speak and KeyVox Vibes.
+The restore card remains visible until both lifetime unlocks are owned.
+
 ### Keyboard App Settings Runtime Ownership
 
 `KeyboardAppSettingsStore` owns keyboard-side settings that mirror containing-app settings:
@@ -929,6 +1015,7 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - cycles through `None`, `Casual`, `Polished`, `Chill`
 - posts the shared Vibes selection-change Darwin notification
 - exposes Foundation availability so the key can disappear in non-Vibes environments
+- exposes Vibes access state from app-local unlock/trial defaults so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
 - reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
 - reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
@@ -1004,6 +1091,9 @@ Excluded from iCloud sync:
 - keyboard haptics
 - microphone preference
 - KeyVox Vibes selected style
+- KeyVox Vibes lifetime unlock cache
+- KeyVox Vibes local trial state
+- KeyVox Vibes intro/interacted state
 - latest KeyVox Vibes utterance artifact
 - onboarding state
 - pending keyboard-tour handoff

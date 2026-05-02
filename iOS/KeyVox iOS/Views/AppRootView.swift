@@ -20,6 +20,8 @@ struct AppRootView: View {
     @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    @EnvironmentObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appUpdateCoordinator: AppUpdateCoordinator
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
@@ -78,11 +80,15 @@ struct AppRootView: View {
                     destination == .main
                         && keyVoxSpeakIntroController.isPresented
                         && ttsPurchaseController.isUnlockSheetPresented == false
+                        && keyVoxVibesIntroController.isPresented == false
+                        && keyVoxVibesPurchaseController.sheetPresentation == nil
                 },
                 set: { isPresented in
                     if isPresented == false,
                        destination == .main,
-                       ttsPurchaseController.isUnlockSheetPresented == false {
+                       ttsPurchaseController.isUnlockSheetPresented == false,
+                       keyVoxVibesIntroController.isPresented == false,
+                       keyVoxVibesPurchaseController.sheetPresentation == nil {
                         keyVoxSpeakIntroController.dismiss()
                     }
                 }
@@ -91,6 +97,26 @@ struct AppRootView: View {
             KeyVoxSpeakIntroSheetView()
                 .environmentObject(keyVoxSpeakIntroController)
                 .environmentObject(ttsPurchaseController)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: {
+                    destination == .main
+                        && keyVoxVibesIntroController.isPresented
+                        && keyVoxVibesPurchaseController.sheetPresentation == nil
+                },
+                set: { isPresented in
+                    if isPresented == false,
+                       destination == .main,
+                       keyVoxVibesPurchaseController.sheetPresentation == nil {
+                        keyVoxVibesIntroController.dismiss()
+                    }
+                }
+            )
+        ) {
+            KeyVoxVibesIntroSheetView()
+                .environmentObject(keyVoxVibesIntroController)
+                .environmentObject(keyVoxVibesPurchaseController)
         }
         .appUpdatePrompt(activeUpdatePrompt, onUpdate: openUpdate, onLater: dismissOptionalUpdate)
         .onAppear {
@@ -125,6 +151,8 @@ struct AppRootView: View {
         }
         .onChange(of: onboardingStore.hasCompletedOnboardingThisLaunch, initial: false) { _, newValue in
             guard newValue else { return }
+            keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+            keyVoxVibesIntroController.cancelPendingPresentation()
             keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
             keyVoxSpeakIntroController.cancelPendingPresentation()
         }
@@ -155,9 +183,19 @@ struct AppRootView: View {
         if destination == .main,
            onboardingStore.hasCompletedOnboardingThisLaunch == false,
            appUpdateCoordinator.activePrompt == nil {
-            keyVoxSpeakIntroController.schedulePresentationIfEligible()
+            if keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch {
+                keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+                keyVoxSpeakIntroController.cancelPendingPresentation()
+                if keyVoxVibesIntroController.isAutomaticPresentationEligible {
+                    keyVoxVibesIntroController.schedulePresentationIfEligible()
+                }
+            } else {
+                keyVoxVibesIntroController.cancelPendingPresentation()
+                keyVoxSpeakIntroController.schedulePresentationIfEligible()
+            }
         } else {
             keyVoxSpeakIntroController.cancelPendingPresentation()
+            keyVoxVibesIntroController.cancelPendingPresentation()
         }
     }
 
@@ -185,6 +223,8 @@ struct AppRootView: View {
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.keyVoxSpeakIntroController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesIntroController)
         .environmentObject(AppServiceRegistry.shared.appUpdateCoordinator)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)

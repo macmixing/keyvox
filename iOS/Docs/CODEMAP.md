@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-05-01**
+**Last Updated: 2026-05-02**
 
 ## Project Overview
 
@@ -81,6 +81,9 @@ iOS/
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
+│   │   ├── KeyVoxVibes/
+│   │   │   ├── KeyVoxVibesIntroController.swift
+│   │   │   └── KeyVoxVibesPurchaseController.swift
 │   │   ├── Lifecycle/
 │   │   │   ├── AppDelegate.swift
 │   │   │   ├── AppSceneDelegate.swift
@@ -100,6 +103,8 @@ iOS/
 │   │   ├── Presentation/
 │   │   │   ├── InlineWarningRules.swift
 │   │   │   └── KeyVoxSpeakFlowRules.swift
+│   │   ├── Purchases/
+│   │   │   └── StoreUnlockStore.swift
 │   │   ├── Routing/
 │   │   │   ├── AppLaunchRouteStore.swift
 │   │   │   ├── KeyVoxURLRoute.swift
@@ -183,7 +188,7 @@ iOS/
 │   │   ├── Assets.xcassets/
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
-│   │   ├── KeyVoxSpeak.storekit
+│   │   ├── KeyVoxProducts.storekit
 │   │   ├── ReturnToHost.mov
 │   │   ├── TTSVoicePreviews/
 │   │   └── keyvox.icon/
@@ -249,6 +254,14 @@ iOS/
 │   │   │   ├── KeyVoxSpeakSheetView.swift
 │   │   │   ├── KeyVoxSpeakUnlockScene.swift
 │   │   │   └── TTSUnlockSheetView.swift
+│   │   ├── KeyVoxVibes/
+│   │   │   ├── KeyVoxVibesIntroSheetView.swift
+│   │   │   ├── KeyVoxVibesSceneAView.swift
+│   │   │   ├── KeyVoxVibesSceneBView.swift
+│   │   │   ├── KeyVoxVibesSceneCView.swift
+│   │   │   ├── KeyVoxVibesSheetView.swift
+│   │   │   ├── KeyVoxVibesUnlockScene.swift
+│   │   │   └── KeyVoxVibesUnlockSheetView.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingStepRow.swift
 │   │   │   ├── OnboardingFlowView.swift
@@ -460,12 +473,12 @@ Packages/
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/Routing/KeyVoxURLRoute.swift`
-  - Typed app route surface for cold-start recording and copied-text playback launches.
+  - Typed app route surface for cold-start recording, copied-text playback, and locked KeyVox Vibes launches.
 - `KeyVox iOS/App/Routing/KeyVoxURLRouter.swift`
-  - App-owned URL parsing and route dispatch owner for record, TTS, and return-to-host flows.
+  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, and return-to-host flows.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, the KeyVox Speak intro controller, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
   - Normalizes copied-text playback voice selection when PocketTTS install state changes, but does not prewarm PocketTTS; playback owns runtime preparation and teardown.
 - `app-update-policy.json`
@@ -479,6 +492,14 @@ Packages/
 - `KeyVox iOS/App/KeyVoxSpeak/TTSPurchaseController.swift`
   - App-owned one-time unlock and daily-usage owner for copied-text playback.
   - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
+- `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesIntroController.swift`
+  - App-owned cold-launch intro owner for the KeyVox Vibes presentation flow.
+  - Mirrors the KeyVox Speak deferred-launch pattern, refuses to present over onboarding, return-to-host, or recording launches, and can reserve a usage-only scene path for future help entry points.
+- `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesPurchaseController.swift`
+  - App-owned lifetime unlock and local 24-hour trial owner for KeyVox Vibes.
+  - Loads the Vibes StoreKit non-consumable product, owns purchase and restore flows, caches unlock state, records the local trial start date, exposes `canUseVibes`, and forces selected Vibe back to `None` when access expires.
+- `KeyVox iOS/App/Purchases/StoreUnlockStore.swift`
+  - Shared StoreKit non-consumable loading, purchase, restore, and entitlement abstraction used by both KeyVox Speak and KeyVox Vibes purchase controllers.
 - `KeyVox iOS/App/Presentation/KeyVoxSpeakFlowRules.swift`
   - Pure scene-selection and scene-fallback rules shared by the intro sheet, unlock sheet, and the Home help presentation path so branch coverage stays deterministic in tests.
 - `KeyVox iOS/App/Presentation/InlineWarningRules.swift`
@@ -496,7 +517,8 @@ Packages/
   - Root router for launch hold vs return-to-host vs onboarding overlay vs main app.
   - Keeps `MainTabView` mounted under the onboarding overlay so onboarding can fade into the live shell without re-rooting the scene tree.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
-  - Also owns post-onboarding KeyVox Speak intro-sheet presentation so the intro can only appear on the true `.main` route, never over onboarding, return-to-host, or playback-preparation flows.
+  - Also owns post-onboarding KeyVox Speak and KeyVox Vibes intro-sheet presentation so feature intros can only appear on the true `.main` route, never over onboarding, return-to-host, or playback-preparation flows.
+  - Gives KeyVox Vibes first priority when Speak and Vibes both want the same eligible cold launch, deferring Speak to the next eligible launch.
   - Also owns the system update alert presentation and keeps update prompts scoped to the `.main` route so launch-hold, onboarding, return-to-host, and playback-preparation flows remain uninterrupted.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
   - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
@@ -682,7 +704,7 @@ Packages/
 
 - `KeyVox iOS/Views/MainTabView.swift`
   - Four-tab container: Home, Dictionary, Style, Settings.
-  - Adds edge-swipe tab navigation on top of `TabView` and still owns the unlock-sheet presentation surface for the TTS monetization flow.
+  - Adds edge-swipe tab navigation on top of `TabView` and owns unlock-sheet presentation surfaces for KeyVox Speak and KeyVox Vibes monetization flows.
   - Owns the app-shell download confirmation overlay for Home and Settings model downloads so tab bar and toolbar controls are covered while confirmation is active.
 - `KeyVox iOS/Views/ContainingAppTab.swift`
   - Source of truth for app-tab ordering, titles, and previous/next navigation.
@@ -715,12 +737,20 @@ Packages/
   - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
+- `KeyVox iOS/Views/KeyVoxVibes/`
+  - Dedicated feature folder for the shared KeyVox Vibes presentation surface.
+  - `KeyVoxVibesSheetView.swift` owns the shared pager shell, intro/unlock mode selection, bottom CTA area, unlock action, restore action, and close behavior.
+  - `KeyVoxVibesSceneAView.swift`, `KeyVoxVibesSceneBView.swift`, and `KeyVoxVibesSceneCView.swift` own the swipeable intro pages for what Vibes is, what it does, and how the local trial starts.
+  - `KeyVoxVibesUnlockScene.swift` owns the lifetime-unlock scene, including active-trial remaining-time copy.
+  - `KeyVoxVibesIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
+  - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points.
 - `KeyVox iOS/Views/DictionaryTabView/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around the shared `AutoFocusTextField`, feature-local sort state, and the app-owned `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
   - Style tab composition for Lists, Paragraphs, and the KeyVox Vibes section.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
-  - KeyVox Vibes card, style picker, selected style summary, and style description.
+  - KeyVox Vibes card, style picker, selected style summary, style description, examples, and purchase row.
+  - Keeps selected Vibe displayed as `None` until Foundation is available and Vibes access is active.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
@@ -733,7 +763,7 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+TTS.swift`
   - Release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+About.swift`
-  - Rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view.
+  - Rate-and-review, GitHub support, shared Speak/Vibes restore-purchases, version footer, and third-party notices launcher extracted from the settings root view.
 - `KeyVox iOS/Views/Components/DeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/Components/DownloadConfirmation.swift`

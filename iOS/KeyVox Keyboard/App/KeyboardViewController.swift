@@ -12,6 +12,7 @@ final class KeyboardViewController: UIInputViewController {
     let startTTSURL = URL(string: "keyvoxios://tts/start")
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
+    let openVibesURL = URL(string: "keyvoxios://vibes/open")
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
@@ -318,6 +319,12 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleVibesTap() {
         guard appSettingsStore.isVibesAvailable else { return }
+        guard appSettingsStore.canUseVibes else {
+            interactionHaptics.emitMediumIfEnabled()
+            containingAppLauncher.open(openVibesURL)
+            return
+        }
+
         _ = appSettingsStore.advanceSelectedVibe()
         interactionHaptics.emitLightIfEnabled()
         updateUI()

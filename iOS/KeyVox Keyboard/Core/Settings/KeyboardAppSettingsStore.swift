@@ -2,6 +2,10 @@ import Foundation
 import KeyVoxStyleRewrite
 
 final class KeyboardAppSettingsStore {
+    private enum EnvironmentKeys {
+        static let bypassVibesTrial = "KEYVOX_BYPASS_VIBES_TRIAL"
+    }
+
     private let defaults: UserDefaults?
 
     init(defaults: UserDefaults? = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)) {
@@ -16,7 +20,50 @@ final class KeyboardAppSettingsStore {
         FoundationStyleRewriteAvailability.isAvailable
     }
 
+    var canUseVibes: Bool {
+        guard isVibesAvailable else { return false }
+        if isVibesTrialBypassedForCurrentBuild {
+            return true
+        }
+
+        if defaults?.bool(forKey: UserDefaultsKeys.App.isVibesUnlocked) == true {
+            return true
+        }
+
+        guard let trialStartedAt = defaults?.object(forKey: UserDefaultsKeys.App.vibesTrialStartedAt) as? Date else {
+            return false
+        }
+
+        return Date().timeIntervalSince(trialStartedAt) < effectiveVibesTrialDuration
+    }
+
+    private var effectiveVibesTrialDuration: TimeInterval {
+        #if DEBUG
+        let storedDebugDuration = defaults?.double(forKey: UserDefaultsKeys.App.debugVibesTrialDuration) ?? 0
+        if storedDebugDuration > 0 {
+            return storedDebugDuration
+        }
+        #endif
+
+        return TimeInterval(24 * 60 * 60)
+    }
+
+    private var isVibesTrialBypassedForCurrentBuild: Bool {
+        #if DEBUG
+        let value = ProcessInfo.processInfo.environment[EnvironmentKeys.bypassVibesTrial]?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return value == "1" || value == "true" || value == "yes"
+        #else
+        return false
+        #endif
+    }
+
     var selectedVibe: StyleRewriteStyle {
+        guard canUseVibes else {
+            return .none
+        }
+
         guard let rawValue = defaults?.string(forKey: UserDefaultsKeys.selectedVibe),
               let style = StyleRewriteStyle(rawValue: rawValue) else {
             return .none
@@ -31,7 +78,7 @@ final class KeyboardAppSettingsStore {
             return
         }
 
-        let resolvedStyle = style.resolvedForFoundationAvailability(isVibesAvailable)
+        let resolvedStyle = canUseVibes ? style.resolvedForFoundationAvailability(isVibesAvailable) : .none
         guard resolvedStyle != style else { return }
         defaults?.set(resolvedStyle.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         KeyVoxIPCBridge.publishVibeSelectionChanged()
@@ -39,7 +86,7 @@ final class KeyboardAppSettingsStore {
 
     @discardableResult
     func advanceSelectedVibe() -> String {
-        guard isVibesAvailable else {
+        guard canUseVibes else {
             defaults?.set(StyleRewriteStyle.none.rawValue, forKey: UserDefaultsKeys.selectedVibe)
             KeyVoxIPCBridge.publishVibeSelectionChanged()
             return StyleRewriteStyle.none.displayName

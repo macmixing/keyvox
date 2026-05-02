@@ -14,7 +14,8 @@ struct KeyVoxURLRouterTests {
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
-            appTabRouter: harness.appTabRouter
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: false)
@@ -32,7 +33,8 @@ struct KeyVoxURLRouterTests {
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
-            appTabRouter: harness.appTabRouter
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: true)
@@ -50,7 +52,8 @@ struct KeyVoxURLRouterTests {
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
-            appTabRouter: harness.appTabRouter
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
         )
 
         router.handle(route: .startTTS, shouldPresentReturnToHost: false)
@@ -68,7 +71,8 @@ struct KeyVoxURLRouterTests {
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
-            appTabRouter: harness.appTabRouter
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
         )
 
         router.handle(route: .openDictionary, shouldPresentReturnToHost: false)
@@ -84,12 +88,31 @@ struct KeyVoxURLRouterTests {
             transcriptionManager: harness.manager,
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
-            appTabRouter: harness.appTabRouter
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
         )
 
         router.handle(route: .openSettings, shouldPresentReturnToHost: false)
 
         #expect(harness.appTabRouter.selectedTab == .settings)
+    }
+
+    @Test func openVibesRouteSelectsStyleTabAndPresentsSheet() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController
+        )
+
+        router.handle(route: .openVibes, shouldPresentReturnToHost: false)
+
+        #expect(harness.appTabRouter.selectedTab == .style)
+        #expect(harness.vibesPurchaseController.sheetPresentation != nil)
     }
 
     private func makeHarness(
@@ -148,6 +171,12 @@ struct KeyVoxURLRouterTests {
             clipboardTextProvider: { "Test clipboard speech" }
         )
         let appTabRouter = AppTabRouter()
+        let vibesPurchaseController = KeyVoxVibesPurchaseController(
+            defaults: defaults,
+            store: StubStoreUnlockStore(isUnlocked: false),
+            now: { Date(timeIntervalSince1970: 0) },
+            setSelectedVibe: { settingsStore.selectedVibe = $0 }
+        )
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: manager,
             ttsManager: ttsManager,
@@ -160,6 +189,7 @@ struct KeyVoxURLRouterTests {
             ttsManager: ttsManager,
             audioModeCoordinator: audioModeCoordinator,
             appTabRouter: appTabRouter,
+            vibesPurchaseController: vibesPurchaseController,
             purchaseGate: purchaseGate,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
@@ -179,6 +209,7 @@ private final class Harness {
     let ttsManager: TTSManager
     let audioModeCoordinator: AudioModeCoordinator
     let appTabRouter: AppTabRouter
+    let vibesPurchaseController: KeyVoxVibesPurchaseController
     let purchaseGate: StubTTSPurchaseGate
     private let tempRootURL: URL
     private let defaultsSuiteName: String
@@ -188,6 +219,7 @@ private final class Harness {
         ttsManager: TTSManager,
         audioModeCoordinator: AudioModeCoordinator,
         appTabRouter: AppTabRouter,
+        vibesPurchaseController: KeyVoxVibesPurchaseController,
         purchaseGate: StubTTSPurchaseGate,
         tempRootURL: URL,
         defaultsSuiteName: String
@@ -196,6 +228,7 @@ private final class Harness {
         self.ttsManager = ttsManager
         self.audioModeCoordinator = audioModeCoordinator
         self.appTabRouter = appTabRouter
+        self.vibesPurchaseController = vibesPurchaseController
         self.purchaseGate = purchaseGate
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName
@@ -310,6 +343,31 @@ private struct StubTTSEngine: TTSEngine {
         AsyncThrowingStream { continuation in
             continuation.finish()
         }
+    }
+}
+
+private final class StubStoreUnlockStore: StoreUnlockStore {
+    var isUnlocked: Bool
+
+    init(isUnlocked: Bool) {
+        self.isUnlocked = isUnlocked
+    }
+
+    func loadUnlockProduct(productID: String) async throws -> StoreUnlockProduct? {
+        StoreUnlockProduct(id: productID, displayName: "Unlock", displayPrice: "$4.99")
+    }
+
+    func isUnlocked(productID: String) async throws -> Bool {
+        isUnlocked
+    }
+
+    func purchase(productID: String) async throws -> Bool {
+        isUnlocked = true
+        return true
+    }
+
+    func restore(productID: String) async throws -> Bool {
+        isUnlocked
     }
 }
 

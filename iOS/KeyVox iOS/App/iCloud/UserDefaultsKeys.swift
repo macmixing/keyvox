@@ -25,6 +25,9 @@ nonisolated enum UserDefaultsKeys {
         static let isTTSUnlocked = "KeyVox.App.IsTTSUnlocked"
         static let ttsFreeSpeakUsageDayStart = "KeyVox.App.TTSFreeSpeakUsageDayStart"
         static let ttsFreeSpeakUsageCount = "KeyVox.App.TTSFreeSpeakUsageCount"
+        static let isVibesUnlocked = "KeyVox.App.IsVibesUnlocked"
+        static let vibesTrialStartedAt = "KeyVox.App.VibesTrialStartedAt"
+        static let debugVibesTrialDuration = "KeyVox.Debug.VibesTrialDuration"
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let hasCompletedOnboarding = "KeyVox.App.HasCompletedOnboarding"
@@ -33,6 +36,9 @@ nonisolated enum UserDefaultsKeys {
         static let hasSeenKeyVoxSpeakIntro = "KeyVox.App.HasSeenKeyVoxSpeakIntro"
         static let hasUsedKeyVoxSpeak = "KeyVox.App.HasUsedKeyVoxSpeak"
         static let shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch = "KeyVox.App.ShouldShowKeyVoxSpeakIntroOnNextEligibleLaunch"
+        static let hasSeenKeyVoxVibesIntro = "KeyVox.App.HasSeenKeyVoxVibesIntro"
+        static let hasInteractedWithKeyVoxVibes = "KeyVox.App.HasInteractedWithKeyVoxVibes"
+        static let shouldShowKeyVoxVibesIntroOnNextEligibleLaunch = "KeyVox.App.ShouldShowKeyVoxVibesIntroOnNextEligibleLaunch"
     }
 
     enum iCloud {

@@ -12,6 +12,8 @@ struct KeyVoxApp: App {
     @StateObject private var ttsManager: TTSManager
     @StateObject private var ttsPurchaseController: TTSPurchaseController
     @StateObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    @StateObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    @StateObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @StateObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
     @StateObject private var modelManager: ModelManager
@@ -32,6 +34,8 @@ struct KeyVoxApp: App {
         _ttsManager = StateObject(wrappedValue: services.ttsManager)
         _ttsPurchaseController = StateObject(wrappedValue: services.ttsPurchaseController)
         _keyVoxSpeakIntroController = StateObject(wrappedValue: services.keyVoxSpeakIntroController)
+        _keyVoxVibesPurchaseController = StateObject(wrappedValue: services.keyVoxVibesPurchaseController)
+        _keyVoxVibesIntroController = StateObject(wrappedValue: services.keyVoxVibesIntroController)
         _ttsPreviewPlayer = StateObject(wrappedValue: services.ttsPreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
@@ -73,6 +77,8 @@ struct KeyVoxApp: App {
                 .environmentObject(ttsManager)
                 .environmentObject(ttsPurchaseController)
                 .environmentObject(keyVoxSpeakIntroController)
+                .environmentObject(keyVoxVibesPurchaseController)
+                .environmentObject(keyVoxVibesIntroController)
                 .environmentObject(ttsPreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
                 .environmentObject(modelManager)
@@ -99,11 +105,21 @@ struct KeyVoxApp: App {
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )
-                        keyVoxSpeakIntroController.handleAppDidBecomeActive(
-                            onboardingStore: onboardingStore,
-                            isShowingReturnToHost: transcriptionManager.isReturnToHostViewPresented
-                                || appLaunchRouteStore.initialURLRoute == .startRecording
-                        )
+                        keyVoxVibesPurchaseController.refreshTrialStateIfNeeded()
+                        let isShowingReturnToHost = transcriptionManager.isReturnToHostViewPresented
+                            || appLaunchRouteStore.initialURLRoute == .startRecording
+                        if keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch {
+                            keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+                            keyVoxVibesIntroController.handleAppDidBecomeActive(
+                                onboardingStore: onboardingStore,
+                                isShowingReturnToHost: isShowingReturnToHost
+                            )
+                        } else {
+                            keyVoxSpeakIntroController.handleAppDidBecomeActive(
+                                onboardingStore: onboardingStore,
+                                isShowingReturnToHost: isShowingReturnToHost
+                            )
+                        }
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         ttsManager.handleAppDidEnterBackground()

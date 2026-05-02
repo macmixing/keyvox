@@ -132,7 +132,7 @@ final class KeyboardDictationChangeController {
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> Bool {
-        guard appSettingsStore.isVibesAvailable, isApplyingChange == false else {
+        guard appSettingsStore.canUseVibes, isApplyingChange == false else {
             return false
         }
 

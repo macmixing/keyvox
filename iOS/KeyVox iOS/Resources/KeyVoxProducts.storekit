@@ -18,6 +18,21 @@
       "productID" : "com.cueit.keyvox.speak.unlimited",
       "referenceName" : "KeyVox Speak Unlimited",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "KVX_VIBES_UNLOCKED",
+      "localizations" : [
+        {
+          "description" : "Unlock KeyVox Vibes for life.",
+          "displayName" : "KeyVox Vibes Lifetime Unlock",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.cueit.keyvox.vibes.unlocked",
+      "referenceName" : "KeyVox Vibes Lifetime Unlock",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {

@@ -2,30 +2,31 @@ import Combine
 import Foundation
 
 @MainActor
-final class KeyVoxSpeakIntroController: ObservableObject {
+final class KeyVoxVibesIntroController: ObservableObject {
     @Published var isPresented: Bool
-    @Published var introPresentation: KeyVoxSpeakSheetView.IntroPresentation
+    @Published var introPresentation: KeyVoxVibesSheetView.IntroPresentation
 
     private let defaults: UserDefaults
     private let forcePresentation: Bool
+    private let presentationDelayNanoseconds: UInt64
     private var pendingPresentationTask: Task<Void, Never>?
-
-    private let presentationDelayNanoseconds: UInt64 = 1_500_000_000
 
     init(
         defaults: UserDefaults,
-        forcePresentation: Bool = false
+        forcePresentation: Bool = false,
+        presentationDelayNanoseconds: UInt64 = 1_500_000_000
     ) {
         self.defaults = defaults
         self.forcePresentation = forcePresentation
+        self.presentationDelayNanoseconds = presentationDelayNanoseconds
         self.isPresented = false
         self.introPresentation = .full
     }
 
     func markDeferredUntilNextEligibleLaunch() {
         guard hasSeenIntro == false else { return }
-        guard hasUsedKeyVoxSpeak == false else { return }
-        defaults.set(true, forKey: UserDefaultsKeys.App.shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch)
+        guard hasInteractedWithKeyVoxVibes == false else { return }
+        defaults.set(true, forKey: UserDefaultsKeys.App.shouldShowKeyVoxVibesIntroOnNextEligibleLaunch)
     }
 
     func handleAppDidBecomeActive(
@@ -43,7 +44,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         guard onboardingStore.shouldShowOnboarding == false else { return }
         guard onboardingStore.hasCompletedOnboardingThisLaunch == false else { return }
         guard hasSeenIntro == false else { return }
-        guard hasUsedKeyVoxSpeak == false else { return }
+        guard hasInteractedWithKeyVoxVibes == false else { return }
         guard pendingPresentationTask == nil else { return }
 
         pendingPresentationTask = Task { @MainActor [weak self] in
@@ -52,9 +53,9 @@ final class KeyVoxSpeakIntroController: ObservableObject {
             guard Task.isCancelled == false else { return }
             guard shouldShowOnNextEligibleLaunch else { return }
             guard hasSeenIntro == false else { return }
-            guard hasUsedKeyVoxSpeak == false else { return }
+            guard hasInteractedWithKeyVoxVibes == false else { return }
 
-            defaults.set(false, forKey: UserDefaultsKeys.App.shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch)
+            defaults.set(false, forKey: UserDefaultsKeys.App.shouldShowKeyVoxVibesIntroOnNextEligibleLaunch)
             introPresentation = .full
             isPresented = true
             pendingPresentationTask = nil
@@ -77,7 +78,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
             try? await Task.sleep(nanoseconds: self.presentationDelayNanoseconds)
             guard Task.isCancelled == false else { return }
             guard hasSeenIntro == false else { return }
-            guard hasUsedKeyVoxSpeak == false else { return }
+            guard hasInteractedWithKeyVoxVibes == false else { return }
 
             introPresentation = .full
             isPresented = true
@@ -85,9 +86,7 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         }
     }
 
-    func present(
-        introPresentation: KeyVoxSpeakSheetView.IntroPresentation
-    ) {
+    func present(introPresentation: KeyVoxVibesSheetView.IntroPresentation) {
         cancelPendingPresentation()
         self.introPresentation = introPresentation
         isPresented = true
@@ -98,40 +97,33 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         pendingPresentationTask = nil
     }
 
-    func markFeatureUsed() {
-        cancelPendingPresentation()
-        defaults.set(true, forKey: UserDefaultsKeys.App.hasUsedKeyVoxSpeak)
-        defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenKeyVoxSpeakIntro)
-        isPresented = false
-    }
-
     func dismiss() {
         cancelPendingPresentation()
-        defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenKeyVoxSpeakIntro)
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenKeyVoxVibesIntro)
         isPresented = false
     }
 
     var isAutomaticPresentationEligible: Bool {
         shouldShowOnNextEligibleLaunch == false
             && hasSeenIntro == false
-            && hasUsedKeyVoxSpeak == false
+            && hasInteractedWithKeyVoxVibes == false
     }
 
     var wantsPresentationOnEligibleLaunch: Bool {
         (shouldShowOnNextEligibleLaunch || isAutomaticPresentationEligible)
             && hasSeenIntro == false
-            && hasUsedKeyVoxSpeak == false
+            && hasInteractedWithKeyVoxVibes == false
     }
 
     private var hasSeenIntro: Bool {
-        defaults.bool(forKey: UserDefaultsKeys.App.hasSeenKeyVoxSpeakIntro)
+        defaults.bool(forKey: UserDefaultsKeys.App.hasSeenKeyVoxVibesIntro)
     }
 
-    private var hasUsedKeyVoxSpeak: Bool {
-        defaults.bool(forKey: UserDefaultsKeys.App.hasUsedKeyVoxSpeak)
+    private var hasInteractedWithKeyVoxVibes: Bool {
+        defaults.bool(forKey: UserDefaultsKeys.App.hasInteractedWithKeyVoxVibes)
     }
 
     private var shouldShowOnNextEligibleLaunch: Bool {
-        defaults.bool(forKey: UserDefaultsKeys.App.shouldShowKeyVoxSpeakIntroOnNextEligibleLaunch)
+        defaults.bool(forKey: UserDefaultsKeys.App.shouldShowKeyVoxVibesIntroOnNextEligibleLaunch)
     }
 }

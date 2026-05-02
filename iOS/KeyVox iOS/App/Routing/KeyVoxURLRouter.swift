@@ -6,17 +6,20 @@ final class KeyVoxURLRouter {
     private let transcriptionManager: TranscriptionManager
     private let ttsManager: TTSManager
     private let appTabRouter: AppTabRouter
+    private let vibesPurchaseController: KeyVoxVibesPurchaseController
 
     init(
         transcriptionManager: TranscriptionManager,
         ttsManager: TTSManager,
         audioModeCoordinator: AudioModeCoordinator,
-        appTabRouter: AppTabRouter
+        appTabRouter: AppTabRouter,
+        vibesPurchaseController: KeyVoxVibesPurchaseController
     ) {
         self.audioModeCoordinator = audioModeCoordinator
         self.transcriptionManager = transcriptionManager
         self.ttsManager = ttsManager
         self.appTabRouter = appTabRouter
+        self.vibesPurchaseController = vibesPurchaseController
     }
 
     func route(for url: URL) -> KeyVoxURLRoute? {
@@ -43,6 +46,9 @@ final class KeyVoxURLRouter {
             appTabRouter.selectTab(.dictionary, suppressesHaptic: true)
         case .openSettings:
             appTabRouter.selectTab(.settings, suppressesHaptic: true)
+        case .openVibes:
+            appTabRouter.selectTab(.style, suppressesHaptic: true)
+            vibesPurchaseController.presentIntroSheet()
         }
     }
 

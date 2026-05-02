@@ -4,6 +4,7 @@ import SwiftUI
 struct StyleTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @State var isVibeExamplesExpanded = false
     @State var vibeExamplesExpandedContentHeight: CGFloat = 0
 
@@ -35,10 +36,14 @@ struct StyleTabView: View {
                 }
             }
         }
+        .onAppear {
+            keyVoxVibesPurchaseController.refreshTrialStateIfNeeded()
+        }
     }
 }
 
 #Preview {
     StyleTabView()
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
 }

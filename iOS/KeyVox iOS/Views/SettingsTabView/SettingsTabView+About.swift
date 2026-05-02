@@ -78,7 +78,7 @@ extension SettingsTabView {
 
     @ViewBuilder
     var restorePurchasesSection: some View {
-        if ttsPurchaseController.isTTSUnlocked == false {
+        if ttsPurchaseController.isTTSUnlocked == false || keyVoxVibesPurchaseController.isVibesUnlocked == false {
             AppCard {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .center, spacing: 12) {
@@ -102,17 +102,19 @@ extension SettingsTabView {
                             style: .secondary,
                             size: .compact,
                             fontSize: 15,
-                            isEnabled: ttsPurchaseController.isStoreActionInFlight == false,
+                            isEnabled: ttsPurchaseController.isStoreActionInFlight == false
+                                && keyVoxVibesPurchaseController.isStoreActionInFlight == false,
                             action: {
                                 appHaptics.light()
                                 Task {
                                     await ttsPurchaseController.restorePurchases()
+                                    await keyVoxVibesPurchaseController.restorePurchases()
                                 }
                             }
                         )
                     }
 
-                    Text("Restore past purchases for KeyVox Speak access on this Apple account.")
+                    Text("Restore past purchases for KeyVox Speak and KeyVox Vibes access on this Apple account.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }

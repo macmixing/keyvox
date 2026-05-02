@@ -16,6 +16,8 @@ final class AppServiceRegistry {
     let appHaptics: AppHaptics
     let ttsPurchaseController: TTSPurchaseController
     let keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    let keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    let keyVoxVibesIntroController: KeyVoxVibesIntroController
     let ttsPreviewPlayer: TTSPreviewPlayer
     let whisperService: WhisperService
     let parakeetService: ParakeetService
@@ -75,6 +77,19 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxSpeakIntro
         )
+        let keyVoxVibesPurchaseController = KeyVoxVibesPurchaseController(
+            defaults: settingsDefaults,
+            bypassTrial: runtimeFlags.bypassVibesTrial,
+            trialDurationOverride: runtimeFlags.vibesTrialDurationOverride,
+            resetTrial: runtimeFlags.resetVibesTrial,
+            setSelectedVibe: { [weak settingsStore] style in
+                settingsStore?.selectedVibe = style
+            }
+        )
+        let keyVoxVibesIntroController = KeyVoxVibesIntroController(
+            defaults: settingsDefaults,
+            forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
+        )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -97,7 +112,10 @@ final class AppServiceRegistry {
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
         let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
             selectedStyleProvider: {
-                AppSettingsStore.resolvedSelectedVibe(from: settingsDefaults)
+                AppSettingsStore.resolvedSelectedVibe(
+                    from: settingsDefaults,
+                    canUseVibes: keyVoxVibesPurchaseController.canUseVibes
+                )
             },
             artifactStore: styleRewriteArtifactStore
         )
@@ -282,6 +300,8 @@ final class AppServiceRegistry {
         self.appHaptics = appHaptics
         self.ttsPurchaseController = ttsPurchaseController
         self.keyVoxSpeakIntroController = keyVoxSpeakIntroController
+        self.keyVoxVibesPurchaseController = keyVoxVibesPurchaseController
+        self.keyVoxVibesIntroController = keyVoxVibesIntroController
         self.ttsPreviewPlayer = ttsPreviewPlayer
         self.whisperService = whisperService
         self.parakeetService = parakeetService
@@ -302,7 +322,8 @@ final class AppServiceRegistry {
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
             audioModeCoordinator: audioModeCoordinator,
-            appTabRouter: appTabRouter
+            appTabRouter: appTabRouter,
+            vibesPurchaseController: keyVoxVibesPurchaseController
         )
 
         settingsStore.$activeDictationProvider

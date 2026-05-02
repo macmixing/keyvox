@@ -6,6 +6,7 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
     case startTTS
     case openDictionary
     case openSettings
+    case openVibes
 
     init?(url: URL) {
         guard url.scheme?.lowercased() == "keyvoxios" else { return nil }
@@ -35,6 +36,13 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
                 self = .openDictionary
             case "settings":
                 self = .openSettings
+            default:
+                return nil
+            }
+        case "vibes":
+            switch normalizedPath {
+            case "open":
+                self = .openVibes
             default:
                 return nil
             }

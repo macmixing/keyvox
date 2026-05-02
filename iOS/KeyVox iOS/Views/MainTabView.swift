@@ -16,6 +16,8 @@ struct MainTabView: View {
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -52,6 +54,47 @@ struct MainTabView: View {
         ) {
             TTSUnlockSheetView()
                 .environmentObject(ttsPurchaseController)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { keyVoxVibesPurchaseController.sheetPresentation != nil },
+                set: { isPresented in
+                    if isPresented == false {
+                        keyVoxVibesPurchaseController.dismissSheet()
+                    }
+                }
+            )
+        ) {
+            switch keyVoxVibesPurchaseController.sheetPresentation {
+            case .intro(let presentation):
+                KeyVoxVibesSheetView(
+                    mode: .intro(
+                        presentation: presentation,
+                        onTryNow: {
+                            keyVoxVibesIntroController.dismiss()
+                            keyVoxVibesPurchaseController.startTrial()
+                        },
+                        onDismiss: {
+                            keyVoxVibesIntroController.dismiss()
+                            keyVoxVibesPurchaseController.dismissSheet()
+                        }
+                    )
+                )
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .info(let presentation):
+                KeyVoxVibesSheetView(
+                    mode: .info(
+                        presentation: presentation,
+                        onDismiss: {
+                            keyVoxVibesPurchaseController.dismissSheet()
+                        }
+                    )
+                )
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .unlock, .none:
+                KeyVoxVibesUnlockSheetView()
+                    .environmentObject(keyVoxVibesPurchaseController)
+            }
         }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             guard appTabRouter.consumeShouldSuppressNextSelectionHaptic() == false else {
@@ -180,4 +223,6 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesIntroController)
 }
