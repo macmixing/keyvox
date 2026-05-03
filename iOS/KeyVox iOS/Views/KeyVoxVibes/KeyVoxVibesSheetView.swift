@@ -218,18 +218,22 @@ struct KeyVoxVibesSheetView: View {
         animationTask?.cancel()
 
         animationTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(0.2))
-            guard !Task.isCancelled else { return }
+            do {
+                try await Task.sleep(for: .seconds(0.2))
 
-            withAnimation(.easeIn(duration: 0.4)) {
-                tabViewOpacity = 1
-            }
+                withAnimation(.easeIn(duration: 0.4)) {
+                    tabViewOpacity = 1
+                }
 
-            try? await Task.sleep(for: .seconds(0.5))
-            guard !Task.isCancelled else { return }
+                try await Task.sleep(for: .seconds(0.5))
 
-            withAnimation(.easeIn(duration: 0.4)) {
-                buttonOpacity = 1
+                withAnimation(.easeIn(duration: 0.4)) {
+                    buttonOpacity = 1
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                return
             }
         }
     }
