@@ -27,6 +27,7 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 - 🚀 Fast local transcription (no cloud transcription path)
 - 🌍 Includes on-device Whisper and Parakeet transcription models 
 - 🖥️ Parakeet works on Sonoma and later, Whisper works on Ventura and later. Both on iOS 18.6+.
+- ♥️ On-device, reversible writing styles (iOS)
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
@@ -40,6 +41,8 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 - 🎙️ Hold-to-talk dictation with optional hands-free mode on macOS
 - 🎙️ Tap-to-talk dictation on iPhone
 - 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
+- ♥️ KeyVox Vibes (iOS) - Pick a style, change your mind later
+- 🔈 KeyVox Speak (iOS) - On-device text-to-speech with 8 AI voices to choose from
 - ⚙️ Configurable trigger binding (Option, Command, Control, or Fn), synced across devices
 - 📓 Optional auto-paragraph splitting with Lists preferences with sync
 - 🧱 Deterministic list formatting and safe text post-processing
@@ -49,6 +52,25 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
 
 https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
+
+## What is KeyVox Vibes? (iOS)
+
+**Choose a style. Change your mind.** KeyVox Vibes lets you apply local, on-device writing styles to dictated text from the KeyVox keyboard. Pick None, Casual, Polished, or Chill before dictation ends, and KeyVox applies that Vibe before inserting your text.
+
+### Long Press to Vibe
+
+Vibes are reversible when the latest inserted dictation is untouched:
+
+- **Long press the Vibes key** to undo the last Vibe change
+- **Tap to choose another Vibe, then long press** to restyle the same untouched text
+
+This means you can dictate first, decide later, and switch between clean dictation and styled text without re-recording.
+
+### Local and Private
+
+Vibes run on-device using Apple Intelligence and KeyVox's deterministic formatting pipeline. None keeps normal post-processed dictation, Casual removes filler words, Polished rewrites toward a professional tone, and Chill removes filler words and uses lowercase with limited punctuation.
+
+KeyVox Vibes requires supported Apple Intelligence/Foundation Models availability. You can try Vibes for 24 hours, then unlock KeyVox Vibes once and use it for life.
 
 ## What is KeyVox Speak? (iOS)
 
@@ -123,6 +145,7 @@ iOS
 
 - Custom Dictionary entries can be added on either platform and will sync across devices via iCloud.
 - Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
+- On iPhone, long press the Paragraphs or Lists keyboard key to undo/redo deterministic formatting on the latest untouched dictation.
 
 ## KeyVox Speak (iOS) - Coming Soon!
 
