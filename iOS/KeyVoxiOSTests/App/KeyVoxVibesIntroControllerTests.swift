@@ -26,6 +26,32 @@ struct KeyVoxVibesIntroControllerTests {
         #expect(controller.isPresented == false)
     }
 
+    @Test func delayedScheduleCanRecoverAfterEligibilityFlipsBeforePresentation() async throws {
+        let harness = makeHarness(hasCompletedOnboarding: true)
+        defer { harness.cleanup() }
+        var isFoundationRewriteAvailable = true
+        let presentationDelayNanoseconds: UInt64 = 5_000_000
+        let controller = KeyVoxVibesIntroController(
+            defaults: harness.defaults,
+            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
+            presentationDelayNanoseconds: presentationDelayNanoseconds
+        )
+
+        controller.schedulePresentationIfEligible()
+        isFoundationRewriteAvailable = false
+        try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
+        await settlePresentationTask()
+
+        #expect(controller.isPresented == false)
+
+        isFoundationRewriteAvailable = true
+        controller.schedulePresentationIfEligible()
+        try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
+        await settlePresentationTask()
+
+        #expect(controller.isPresented == true)
+    }
+
     @Test func doesNotShowOverOnboarding() async throws {
         let harness = makeHarness(hasCompletedOnboarding: false)
         defer { harness.cleanup() }
