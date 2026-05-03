@@ -210,6 +210,7 @@ final class KeyboardViewController: UIInputViewController {
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
             selectedVibeTitle: appSettingsStore.selectedVibeTitle,
+            selectedVibeStyle: appSettingsStore.selectedVibeStyle,
             isVibesAvailable: appSettingsStore.isVibesAvailable,
             isAutoParagraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
             isListFormattingEnabled: appSettingsStore.isListFormattingEnabled,

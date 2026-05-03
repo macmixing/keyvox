@@ -16,6 +16,10 @@ final class KeyboardAppSettingsStore {
         selectedVibe.displayName
     }
 
+    var selectedVibeStyle: StyleRewriteStyle {
+        selectedVibe
+    }
+
     var isVibesAvailable: Bool {
         FoundationStyleRewriteAvailability.isAvailable
     }

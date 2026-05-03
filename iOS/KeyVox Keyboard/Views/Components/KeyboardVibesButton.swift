@@ -1,3 +1,4 @@
+import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardVibesButton: UIControl {
@@ -14,6 +15,13 @@ final class KeyboardVibesButton: UIControl {
             titleLabel.text = title
             updateNoneIconVisibility()
             updateAccessibility()
+        }
+    }
+
+    var selectedVibeStyle: StyleRewriteStyle = .none {
+        didSet {
+            updateNoneIconVisibility()
+            updateVisualState(animated: false)
         }
     }
 
@@ -179,7 +187,7 @@ final class KeyboardVibesButton: UIControl {
     }
 
     private func updateNoneIconVisibility() {
-        noneIconImageView.isHidden = title != "None"
+        noneIconImageView.isHidden = selectedVibeStyle != .none
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
@@ -215,6 +223,6 @@ final class KeyboardVibesButton: UIControl {
     }
 
     private var isShowingSelectedVibe: Bool {
-        title.isEmpty == false && title != "None"
+        selectedVibeStyle != .none
     }
 }

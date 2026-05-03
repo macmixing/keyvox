@@ -1,3 +1,4 @@
+import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardRootView: UIView {
@@ -118,6 +119,7 @@ final class KeyboardRootView: UIView {
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
         selectedVibeTitle: String,
+        selectedVibeStyle: StyleRewriteStyle,
         isVibesAvailable: Bool,
         isAutoParagraphsEnabled: Bool,
         isListFormattingEnabled: Bool,
@@ -171,6 +173,7 @@ final class KeyboardRootView: UIView {
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
         vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
         vibesButton.title = selectedVibeTitle
+        vibesButton.selectedVibeStyle = selectedVibeStyle
         speakButton.isSpeaking = state.isTTSPlaybackActive
         speakButton.isTrackpadModeActive = isTrackpadModeActive
         speakButton.isEnabled = shouldEnableSpeak && !isTrackpadModeActive
