@@ -22,8 +22,11 @@ struct KeyVoxVibesSceneCView: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 24)
 
-                    LogoBarView(size: 64)
-                        .padding(.bottom, 16)
+                    Image("vibes-logo-fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 64, height: 64)
+                        .padding(.bottom, 12)
 
                     Text("Vibes Are for Life")
                         .font(.appFont(31, variant: .medium))
@@ -31,7 +34,7 @@ struct KeyVoxVibesSceneCView: View {
                         .multilineTextAlignment(.center)
                         .padding(.bottom, 6)
 
-                    Text("Try them for a day. Unlock once when you’re ready.")
+                    Text("Try for a day. Unlock for a lifetime.")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)

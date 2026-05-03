@@ -12,9 +12,12 @@ extension StyleTabView {
                             .fill(AppTheme.accent.opacity(0.4))
                             .frame(width: 32, height: 32)
 
-                        Image(systemName: "apple.intelligence")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.yellow)
+                        Image("vibes-logo-bare")
+                            .resizable()
+                            .renderingMode(.template)
+                            .scaledToFit()
+                            .foregroundStyle(.yellow)
+                            .frame(width: 18, height: 18)
                     }
 
                     VStack(alignment: .leading, spacing: 4) {

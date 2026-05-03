@@ -11,14 +11,14 @@ struct KeyVoxVibesSceneAView: View {
                     Spacer(minLength: 24)
 
                     LogoBarView(size: 74)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 15)
 
                     Text("KeyVox Vibes")
                         .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .padding(.bottom, 6)
 
-                    Text("On-device writing styles for your dictated words.")
+                    Text("On-device, reversible writing styles.")
                         .font(.appFont(20, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -31,8 +31,8 @@ struct KeyVoxVibesSceneAView: View {
                     }
                     .padding(.bottom, 18)
 
-                    Text("Built with Apple Intelligence and KeyVox formatting rules.")
-                        .font(.appFont(16, variant: .light))
+                    Text("Vibes are currently supported for English only.")
+                        .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .multilineTextAlignment(.center)
 

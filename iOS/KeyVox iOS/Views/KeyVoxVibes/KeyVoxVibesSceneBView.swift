@@ -24,22 +24,17 @@ struct KeyVoxVibesSceneBView: View {
                     Spacer(minLength: 20)
 
                     HStack(spacing: 14) {
-                        ZStack {
-                            Circle()
-                                .fill(AppTheme.accent.opacity(0.4))
-                                .frame(width: 52, height: 52)
-
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 24, weight: .medium))
-                                .foregroundStyle(.yellow)
-                        }
+                        Image("vibes-logo-circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 52, height: 52)
 
                         VStack(alignment: .leading, spacing: -4) {
-                            Text("Long Press to Vibe")
+                            Text("Set the Vibe")
                                 .font(.appFont(33, variant: .medium))
                                 .foregroundStyle(.white)
 
-                            Text("No commitment. Change your mind after dictation.")
+                            Text("Long Press to Vibe, repeat to undo.")
                                 .font(.appFont(17, variant: .light))
                                 .foregroundStyle(.white.opacity(0.7))
                         }
@@ -53,7 +48,7 @@ struct KeyVoxVibesSceneBView: View {
                         }
                     }
 
-                    Text("Vibes are currently supported for English only.")
+                    Text("Built with Apple Intelligence.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)

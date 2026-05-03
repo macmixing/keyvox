@@ -24,7 +24,10 @@ struct KeyVoxVibesUnlockScene: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 20)
 
-                    LogoBarView(size: 60)
+                    Image("vibes-logo-fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 60, height: 60)
                         .padding(.bottom, 14)
 
                     Text("Want to Keep Vibing?")
