@@ -87,6 +87,9 @@ struct KeyVoxVibesSceneCView: View {
             guard visible else { return }
             startEntranceIfNeeded()
         }
+        .onDisappear {
+            stopEntrance()
+        }
     }
 
     private func detailSpotlight(_ detail: Detail) -> some View {
