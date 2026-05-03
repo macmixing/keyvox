@@ -54,6 +54,7 @@ final class KeyVoxVibesIntroController: ObservableObject {
 
         pendingPresentationTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            defer { pendingPresentationTask = nil }
             try? await Task.sleep(nanoseconds: self.presentationDelayNanoseconds)
             guard Task.isCancelled == false else { return }
             guard shouldShowOnNextEligibleLaunch else { return }
@@ -64,7 +65,6 @@ final class KeyVoxVibesIntroController: ObservableObject {
             defaults.set(false, forKey: UserDefaultsKeys.App.shouldShowKeyVoxVibesIntroOnNextEligibleLaunch)
             introPresentation = .full
             isPresented = true
-            pendingPresentationTask = nil
         }
     }
 
@@ -81,6 +81,7 @@ final class KeyVoxVibesIntroController: ObservableObject {
 
         pendingPresentationTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            defer { pendingPresentationTask = nil }
             try? await Task.sleep(nanoseconds: self.presentationDelayNanoseconds)
             guard Task.isCancelled == false else { return }
             guard isFoundationRewriteAvailable() else { return }
@@ -89,7 +90,6 @@ final class KeyVoxVibesIntroController: ObservableObject {
 
             introPresentation = .full
             isPresented = true
-            pendingPresentationTask = nil
         }
     }
 
