@@ -61,7 +61,8 @@ struct KeyVoxVibesSceneAView: View {
         .padding(.horizontal, 24)
         .onChange(of: isVisible, initial: true) { _, visible in
             guard visible else {
-                resetEntrance()
+                stopEntrance()
+                finishEntrance()
                 return
             }
             startEntranceIfNeeded()
@@ -149,14 +150,13 @@ struct KeyVoxVibesSceneAView: View {
         animationTask = nil
     }
 
-    private func resetEntrance() {
-        stopEntrance()
-        hasAnimated = false
-        logoOpacity = 0
-        logoScale = 0.7
-        titleOpacity = 0
-        subtitleOpacity = 0
-        rowRevealProgress = 0
-        disclosureOpacity = 0
+    private func finishEntrance() {
+        guard hasAnimated else { return }
+        logoOpacity = 1
+        logoScale = 1.0
+        titleOpacity = 1
+        subtitleOpacity = 1
+        rowRevealProgress = StyleRewriteStyle.allCases.count
+        disclosureOpacity = 1
     }
 }
