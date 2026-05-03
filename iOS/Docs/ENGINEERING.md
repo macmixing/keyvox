@@ -431,6 +431,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.ShouldShowKeyVoxSpeakIntroOnNextEligibleLaunch`
 - `KeyVox.App.IsVibesUnlocked`
 - `KeyVox.App.VibesTrialStartedAt`
+- `KeyVox.Debug.VibesTrialDuration`
+  - stores the debug Vibes trial duration used by the Vibes controller and is cleared when the debug trial is reset
 - `KeyVox.App.HasSeenKeyVoxVibesIntro`
 - `KeyVox.App.HasInteractedWithKeyVoxVibes`
 - `KeyVox.App.ShouldShowKeyVoxVibesIntroOnNextEligibleLaunch`
