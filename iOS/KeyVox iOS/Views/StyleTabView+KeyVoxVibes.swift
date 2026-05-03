@@ -122,7 +122,7 @@ extension StyleTabView {
 
             Text("Vibes are currently supported for English only.")
                 .font(.appFont(13, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }
@@ -155,13 +155,13 @@ extension StyleTabView {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(example.style.displayName)
                         .font(.appFont(17))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.yellow)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
 
                     Text(example.text)
                         .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }

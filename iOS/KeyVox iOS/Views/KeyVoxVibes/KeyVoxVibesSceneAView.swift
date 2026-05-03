@@ -35,20 +35,20 @@ struct KeyVoxVibesSceneAView: View {
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
                         .opacity(subtitleOpacity)
-                        .padding(.bottom, 22)
+                        .padding(.bottom, 10)
 
-                    VStack(spacing: 10) {
+                    VStack(spacing: 4) {
                         ForEach(Array(StyleRewriteStyle.allCases.enumerated()), id: \.element.id) { index, style in
                             exampleRow(style)
                                 .opacity(index < rowRevealProgress ? 1 : 0)
                                 .offset(y: index < rowRevealProgress ? 0 : 10)
                         }
                     }
-                    .padding(.bottom, 18)
+                    .padding(.bottom, 10)
 
                     Text("Vibes are currently supported for English only.")
                         .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .opacity(disclosureOpacity)
 
@@ -67,27 +67,25 @@ struct KeyVoxVibesSceneAView: View {
     }
 
     private func exampleRow(_ style: StyleRewriteStyle) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(style.displayName)
-                .font(.appFont(16, variant: .medium))
-                .foregroundStyle(.white)
+        HStack(alignment: .top, spacing: 14) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.indigo.opacity(0.7))
+                .frame(width: 3)
 
-            Text(style.exampleText)
-                .font(.appFont(15, variant: .light))
-                .foregroundStyle(.yellow)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(style.displayName)
+                    .font(.appFont(17, variant: .medium))
+                    .foregroundStyle(.yellow.opacity(0.7))
+
+                Text(style.exampleText)
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                .fill(AppTheme.rowFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                        .stroke(AppTheme.rowStroke, lineWidth: 1)
-            )
-        )
+        .padding(.vertical, 7)
     }
 
     private func startEntranceIfNeeded() {

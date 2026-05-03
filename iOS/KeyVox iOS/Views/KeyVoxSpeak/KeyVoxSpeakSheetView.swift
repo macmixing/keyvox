@@ -90,9 +90,6 @@ struct KeyVoxSpeakSheetView: View {
                     .opacity(tabViewOpacity)
 
                     VStack(spacing: 8) {
-                        Divider()
-                            .overlay(.white.opacity(0.14))
-
                         switch mode {
                         case .intro(_, let onTryNow, _):
                             AppActionButton(

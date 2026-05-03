@@ -120,9 +120,6 @@ struct KeyVoxVibesSheetView: View {
         switch mode {
         case .intro(_, let onTryNow, _):
             VStack(spacing: 8) {
-                Divider()
-                    .overlay(.white.opacity(0.14))
-
                 AppActionButton(
                     title: "Try Now",
                     style: .primary,
@@ -138,9 +135,6 @@ struct KeyVoxVibesSheetView: View {
             EmptyView()
         case .unlock:
             VStack(spacing: 8) {
-                Divider()
-                    .overlay(.white.opacity(0.14))
-
                 AppActionButton(
                     title: purchaseButtonTitle,
                     style: .primary,
