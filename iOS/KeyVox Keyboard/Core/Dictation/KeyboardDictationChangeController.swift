@@ -203,6 +203,10 @@ final class KeyboardDictationChangeController {
             return false
         }
 
+        if appSettingsStore.canUseVibes == false {
+            session.currentStyle = .none
+        }
+
         let targetState = targetDeterministicState(from: currentState, kind: kind)
         guard let replacementText = session.deterministicVariants[targetState],
               let renderedText = await renderedText(
