@@ -64,7 +64,6 @@ final class AppServiceRegistry {
             baseDirectoryURL: dictionaryBaseDirectory
         )
         let runtimeFlags = RuntimeFlags()
-        let settingsStore = AppSettingsStore(defaults: settingsDefaults)
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
         let appTabRouter = AppTabRouter()
@@ -77,15 +76,21 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxSpeakIntro
         )
+        var settingsStoreReference: AppSettingsStore?
         let keyVoxVibesPurchaseController = KeyVoxVibesPurchaseController(
             defaults: settingsDefaults,
             bypassTrial: runtimeFlags.bypassVibesTrial,
             trialDurationOverride: runtimeFlags.vibesTrialDurationOverride,
             resetTrial: runtimeFlags.resetVibesTrial,
-            setSelectedVibe: { [weak settingsStore] style in
-                settingsStore?.selectedVibe = style
+            setSelectedVibe: { style in
+                settingsStoreReference?.selectedVibe = style
             }
         )
+        let settingsStore = AppSettingsStore(
+            defaults: settingsDefaults,
+            canUseVibesProvider: { keyVoxVibesPurchaseController.canUseVibes }
+        )
+        settingsStoreReference = settingsStore
         let keyVoxVibesIntroController = KeyVoxVibesIntroController(
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro,
