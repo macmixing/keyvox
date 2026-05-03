@@ -31,7 +31,7 @@ struct KeyVoxVibesSceneCView: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 24)
 
-                    Image("vibes-logo-fill")
+                    Image("vibes-circle-fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 64, height: 64)

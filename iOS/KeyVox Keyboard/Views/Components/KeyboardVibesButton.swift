@@ -6,7 +6,7 @@ final class KeyboardVibesButton: UIControl {
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let contentStackView = UIStackView()
-    private let noneIconImageView = UIImageView(image: UIImage(named: "vibes-logo-bare")?.withRenderingMode(.alwaysTemplate))
+    private let noneIconImageView = UIImageView(image: UIImage(named: "vibes-logo")?.withRenderingMode(.alwaysTemplate))
     private let titleLabel = UILabel()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 

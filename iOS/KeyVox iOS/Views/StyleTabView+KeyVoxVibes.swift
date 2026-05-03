@@ -12,7 +12,7 @@ extension StyleTabView {
                             .fill(AppTheme.accent.opacity(0.4))
                             .frame(width: 32, height: 32)
 
-                        Image("vibes-logo-bare")
+                        Image("vibes-logo")
                             .resizable()
                             .renderingMode(.template)
                             .scaledToFit()

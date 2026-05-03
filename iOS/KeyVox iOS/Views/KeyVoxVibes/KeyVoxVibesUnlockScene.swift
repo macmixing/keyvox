@@ -33,7 +33,7 @@ struct KeyVoxVibesUnlockScene: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 20)
 
-                    Image("vibes-logo-fill")
+                    Image("vibes-circle-fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 60, height: 60)

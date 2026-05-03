@@ -32,7 +32,7 @@ struct KeyVoxVibesSceneBView: View {
                     Spacer(minLength: 20)
 
                     HStack(spacing: 14) {
-                        Image("vibes-logo-circle")
+                        Image("keyvox-vibes")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 52, height: 52)
@@ -90,7 +90,7 @@ struct KeyVoxVibesSceneBView: View {
                     .frame(width: 34, height: 34)
 
                 if flow.id == 0 {
-                    Image("vibes-logo-bare")
+                    Image("vibes-logo")
                         .resizable()
                         .renderingMode(.template)
                         .scaledToFit()
