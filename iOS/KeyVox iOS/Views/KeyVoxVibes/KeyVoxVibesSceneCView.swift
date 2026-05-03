@@ -47,7 +47,7 @@ struct KeyVoxVibesSceneCView: View {
                         .padding(.bottom, 6)
 
                     Text("Try for a day. Unlock for a lifetime.")
-                        .font(.appFont(18, variant: .light))
+                        .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
                         .opacity(subtitleOpacity)

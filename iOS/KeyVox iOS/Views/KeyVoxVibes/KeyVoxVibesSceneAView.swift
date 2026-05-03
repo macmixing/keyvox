@@ -17,21 +17,20 @@ struct KeyVoxVibesSceneAView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 0) {
-                    Spacer(minLength: 24)
+                    Spacer(minLength: 0)
 
                     LogoBarView(size: 74)
                         .opacity(logoOpacity)
                         .scaleEffect(logoScale)
-                        .padding(.bottom, 15)
+                        .padding(.bottom, 10)
 
                     Text("KeyVox Vibes")
                         .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .opacity(titleOpacity)
-                        .padding(.bottom, 6)
 
                     Text("On-device, reversible writing styles.")
-                        .font(.appFont(20, variant: .light))
+                        .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
                         .opacity(subtitleOpacity)
@@ -52,7 +51,7 @@ struct KeyVoxVibesSceneAView: View {
                         .multilineTextAlignment(.center)
                         .opacity(disclosureOpacity)
 
-                    Spacer(minLength: 42)
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
@@ -67,24 +66,25 @@ struct KeyVoxVibesSceneAView: View {
     }
 
     private func exampleRow(_ style: StyleRewriteStyle) -> some View {
-        HStack(alignment: .top, spacing: 14) {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(style.displayName)
+                .font(.appFont(17, variant: .medium))
+                .foregroundStyle(.yellow.opacity(0.7))
+
+            Text(style.exampleText)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.white)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.leading, 17)
+        .padding(.top, -3)
+        .background(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(Color.indigo.opacity(0.7))
                 .frame(width: 3)
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(style.displayName)
-                    .font(.appFont(17, variant: .medium))
-                    .foregroundStyle(.yellow.opacity(0.7))
-
-                Text(style.exampleText)
-                    .font(.appFont(15, variant: .light))
-                    .foregroundStyle(.white)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.trailing, 10)
         .padding(.vertical, 7)
     }
 

@@ -49,7 +49,7 @@ struct KeyVoxVibesUnlockScene: View {
                         .padding(.bottom, 6)
 
                     Text(subtitle)
-                        .font(.appFont(18, variant: .light))
+                        .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
                         .opacity(subtitleOpacity)
