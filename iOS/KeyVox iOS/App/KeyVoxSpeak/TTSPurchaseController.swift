@@ -272,8 +272,8 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
                         await MainActor.run {
                             self.applyUnlockState(isUnlocked)
                         }
+                        await transaction.finish()
                     }
-                    await transaction.finish()
                 case .unverified:
                     break
                 }
