@@ -60,7 +60,10 @@ struct KeyVoxVibesSceneAView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
         .onChange(of: isVisible, initial: true) { _, visible in
-            guard visible else { return }
+            guard visible else {
+                resetEntrance()
+                return
+            }
             startEntranceIfNeeded()
         }
     }
@@ -144,5 +147,16 @@ struct KeyVoxVibesSceneAView: View {
     private func stopEntrance() {
         animationTask?.cancel()
         animationTask = nil
+    }
+
+    private func resetEntrance() {
+        stopEntrance()
+        hasAnimated = false
+        logoOpacity = 0
+        logoScale = 0.7
+        titleOpacity = 0
+        subtitleOpacity = 0
+        rowRevealProgress = 0
+        disclosureOpacity = 0
     }
 }
