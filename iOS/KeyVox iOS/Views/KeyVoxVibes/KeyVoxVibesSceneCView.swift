@@ -53,14 +53,22 @@ struct KeyVoxVibesSceneCView: View {
                         .opacity(subtitleOpacity)
                         .padding(.bottom, 18)
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: 0) {
                         ForEach(Self.details) { detail in
-                            detailRow(detail)
+                            detailSpotlight(detail)
                                 .opacity(detail.id < rowRevealProgress ? 1 : 0)
-                                .offset(y: detail.id < rowRevealProgress ? 0 : 10)
+                                .offset(y: detail.id < rowRevealProgress ? 0 : 12)
+
+                            if detail.id < Self.details.count - 1 {
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.12))
+                                    .frame(height: 1)
+                                    .padding(.horizontal, 32)
+                                    .opacity(detail.id + 1 < rowRevealProgress ? 1 : 0)
+                            }
                         }
                     }
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 14)
 
                     Text("One-time purchase. No subscription.")
                         .font(.appFont(15, variant: .light))
@@ -81,36 +89,25 @@ struct KeyVoxVibesSceneCView: View {
         }
     }
 
-    private func detailRow(_ detail: Detail) -> some View {
-        HStack(spacing: 14) {
+    private func detailSpotlight(_ detail: Detail) -> some View {
+        VStack(spacing: 4) {
             Image(systemName: detail.icon)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(.yellow)
-                .frame(width: 32)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(detail.title)
-                    .font(.appFont(17, variant: .medium))
-                    .foregroundStyle(.white)
+            Text(detail.title)
+                .font(.appFont(16, variant: .medium))
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
 
-                Text(detail.subtitle)
-                    .font(.appFont(15, variant: .light))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 0)
+            Text(detail.subtitle)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.white.opacity(0.55))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 14)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                .fill(AppTheme.rowFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                        .stroke(AppTheme.rowStroke, lineWidth: 1)
-            )
-        )
     }
 
     private func startEntranceIfNeeded() {
