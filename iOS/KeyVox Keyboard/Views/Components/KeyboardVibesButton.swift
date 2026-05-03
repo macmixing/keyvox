@@ -203,38 +203,18 @@ final class KeyboardVibesButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: isShowingSelectedVibe ? pressedActiveForegroundColor() : KeyboardStyle.keyLabelColor
+                foreground: isShowingSelectedVibe ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: isShowingSelectedVibe ? activeForegroundColor() : KeyboardStyle.keyLabelColor
+            foreground: isShowingSelectedVibe ? KeyboardStyle.activeForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
         )
     }
 
     private var isShowingSelectedVibe: Bool {
         title.isEmpty == false && title != "None"
-    }
-
-    private func activeForegroundColor() -> UIColor {
-        guard traitCollection.userInterfaceStyle == .light else {
-            return .systemYellow
-        }
-
-        return UIColor(red: 0.72, green: 0.50, blue: 0, alpha: 1)
-    }
-
-    private func pressedActiveForegroundColor() -> UIColor {
-        guard traitCollection.userInterfaceStyle == .light else {
-            return UIColor(red: 0.78, green: 0.58, blue: 0, alpha: 1)
-        }
-
-        let increasedContrastLightTraits = UITraitCollection { traits in
-            traits.userInterfaceStyle = .light
-            traits.accessibilityContrast = .high
-        }
-        return UIColor.systemYellow.resolvedColor(with: increasedContrastLightTraits)
     }
 }
