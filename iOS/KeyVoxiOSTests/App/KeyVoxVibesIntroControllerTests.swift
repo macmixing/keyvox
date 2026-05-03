@@ -15,6 +15,17 @@ struct KeyVoxVibesIntroControllerTests {
         #expect(controller.isPresented == true)
     }
 
+    @Test func doesNotScheduleWhenFoundationUnavailable() async throws {
+        let harness = makeHarness(hasCompletedOnboarding: true)
+        defer { harness.cleanup() }
+
+        let controller = makeController(harness: harness, isFoundationRewriteAvailable: false)
+        controller.schedulePresentationIfEligible()
+        await settlePresentationTask()
+
+        #expect(controller.isPresented == false)
+    }
+
     @Test func doesNotShowOverOnboarding() async throws {
         let harness = makeHarness(hasCompletedOnboarding: false)
         defer { harness.cleanup() }
@@ -68,9 +79,13 @@ struct KeyVoxVibesIntroControllerTests {
         )
     }
 
-    private func makeController(harness: KeyVoxVibesIntroHarness) -> KeyVoxVibesIntroController {
+    private func makeController(
+        harness: KeyVoxVibesIntroHarness,
+        isFoundationRewriteAvailable: Bool = true
+    ) -> KeyVoxVibesIntroController {
         KeyVoxVibesIntroController(
             defaults: harness.defaults,
+            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
             presentationDelayNanoseconds: 0
         )
     }

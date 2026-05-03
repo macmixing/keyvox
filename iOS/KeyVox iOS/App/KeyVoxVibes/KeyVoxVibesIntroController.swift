@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import KeyVoxStyleRewrite
 
 @MainActor
 final class KeyVoxVibesIntroController: ObservableObject {
@@ -8,16 +9,19 @@ final class KeyVoxVibesIntroController: ObservableObject {
 
     private let defaults: UserDefaults
     private let forcePresentation: Bool
+    private let isFoundationRewriteAvailable: () -> Bool
     private let presentationDelayNanoseconds: UInt64
     private var pendingPresentationTask: Task<Void, Never>?
 
     init(
         defaults: UserDefaults,
         forcePresentation: Bool = false,
+        isFoundationRewriteAvailable: @escaping () -> Bool = { FoundationStyleRewriteAvailability.isAvailable },
         presentationDelayNanoseconds: UInt64 = 1_500_000_000
     ) {
         self.defaults = defaults
         self.forcePresentation = forcePresentation
+        self.isFoundationRewriteAvailable = isFoundationRewriteAvailable
         self.presentationDelayNanoseconds = presentationDelayNanoseconds
         self.isPresented = false
         self.introPresentation = .full
@@ -43,6 +47,7 @@ final class KeyVoxVibesIntroController: ObservableObject {
         guard isShowingReturnToHost == false else { return }
         guard onboardingStore.shouldShowOnboarding == false else { return }
         guard onboardingStore.hasCompletedOnboardingThisLaunch == false else { return }
+        guard isFoundationRewriteAvailable() else { return }
         guard hasSeenIntro == false else { return }
         guard hasInteractedWithKeyVoxVibes == false else { return }
         guard pendingPresentationTask == nil else { return }
@@ -52,6 +57,7 @@ final class KeyVoxVibesIntroController: ObservableObject {
             try? await Task.sleep(nanoseconds: self.presentationDelayNanoseconds)
             guard Task.isCancelled == false else { return }
             guard shouldShowOnNextEligibleLaunch else { return }
+            guard isFoundationRewriteAvailable() else { return }
             guard hasSeenIntro == false else { return }
             guard hasInteractedWithKeyVoxVibes == false else { return }
 
@@ -77,6 +83,7 @@ final class KeyVoxVibesIntroController: ObservableObject {
             guard let self else { return }
             try? await Task.sleep(nanoseconds: self.presentationDelayNanoseconds)
             guard Task.isCancelled == false else { return }
+            guard isFoundationRewriteAvailable() else { return }
             guard hasSeenIntro == false else { return }
             guard hasInteractedWithKeyVoxVibes == false else { return }
 
@@ -104,13 +111,15 @@ final class KeyVoxVibesIntroController: ObservableObject {
     }
 
     var isAutomaticPresentationEligible: Bool {
-        shouldShowOnNextEligibleLaunch == false
+        isFoundationRewriteAvailable()
+            && shouldShowOnNextEligibleLaunch == false
             && hasSeenIntro == false
             && hasInteractedWithKeyVoxVibes == false
     }
 
     var wantsPresentationOnEligibleLaunch: Bool {
-        (shouldShowOnNextEligibleLaunch || isAutomaticPresentationEligible)
+        isFoundationRewriteAvailable()
+            && (shouldShowOnNextEligibleLaunch || isAutomaticPresentationEligible)
             && hasSeenIntro == false
             && hasInteractedWithKeyVoxVibes == false
     }

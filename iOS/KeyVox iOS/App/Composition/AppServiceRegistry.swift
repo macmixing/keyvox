@@ -88,7 +88,8 @@ final class AppServiceRegistry {
         )
         let keyVoxVibesIntroController = KeyVoxVibesIntroController(
             defaults: settingsDefaults,
-            forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
+            forcePresentation: runtimeFlags.forceKeyVoxVibesIntro,
+            isFoundationRewriteAvailable: { FoundationStyleRewriteAvailability.isAvailable }
         )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
