@@ -22,6 +22,7 @@ struct KeyVoxVibesSheetView: View {
         case unlock(onDismiss: () -> Void)
     }
 
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController
     @State private var selectedScene = Scene.a
@@ -206,10 +207,8 @@ struct KeyVoxVibesSheetView: View {
         switch mode {
         case .intro(_, _, let onDismiss):
             onDismiss()
-        case .info(_, let onDismiss):
-            onDismiss()
-        case .unlock(let onDismiss):
-            onDismiss()
+        case .info, .unlock:
+            dismiss()
         }
     }
 
