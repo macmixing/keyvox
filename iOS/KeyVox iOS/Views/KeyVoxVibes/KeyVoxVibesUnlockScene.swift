@@ -18,6 +18,15 @@ struct KeyVoxVibesUnlockScene: View {
 
     let isVisible: Bool
 
+    @State private var logoOpacity: Double = 0
+    @State private var logoScale: CGFloat = 0.7
+    @State private var titleOpacity: Double = 0
+    @State private var subtitleOpacity: Double = 0
+    @State private var rowRevealProgress: Int = 0
+    @State private var footerOpacity: Double = 0
+    @State private var animationTask: Task<Void, Never>?
+    @State private var hasAnimated = false
+
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
@@ -28,29 +37,36 @@ struct KeyVoxVibesUnlockScene: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 60, height: 60)
+                        .opacity(logoOpacity)
+                        .scaleEffect(logoScale)
                         .padding(.bottom, 14)
 
                     Text("Want to Keep Vibing?")
                         .font(.appFont(30, variant: .medium))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
+                        .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
                     Text(subtitle)
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
+                        .opacity(subtitleOpacity)
                         .padding(.bottom, 16)
 
                     VStack(spacing: 0) {
                         ForEach(Self.benefits) { benefit in
                             benefitSpotlight(benefit)
+                                .opacity(benefit.id < rowRevealProgress ? 1 : 0)
+                                .offset(y: benefit.id < rowRevealProgress ? 0 : 12)
 
                             if benefit.id < Self.benefits.count - 1 {
                                 Rectangle()
                                     .fill(Color.white.opacity(0.12))
                                     .frame(height: 1)
                                     .padding(.horizontal, 32)
+                                    .opacity(benefit.id + 1 < rowRevealProgress ? 1 : 0)
                             }
                         }
                     }
@@ -60,6 +76,7 @@ struct KeyVoxVibesUnlockScene: View {
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .opacity(footerOpacity)
 
                     Spacer(minLength: 16)
                 }
@@ -69,6 +86,10 @@ struct KeyVoxVibesUnlockScene: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
+        .onChange(of: isVisible, initial: true) { _, visible in
+            guard visible else { return }
+            startEntranceIfNeeded()
+        }
     }
 
     private var subtitle: String {
@@ -98,5 +119,63 @@ struct KeyVoxVibesUnlockScene: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
+    }
+
+    private func startEntranceIfNeeded() {
+        guard !hasAnimated else { return }
+        hasAnimated = true
+
+        stopEntrance()
+        logoOpacity = 0
+        logoScale = 0.7
+        titleOpacity = 0
+        subtitleOpacity = 0
+        rowRevealProgress = 0
+        footerOpacity = 0
+
+        animationTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.2))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
+                logoOpacity = 1
+                logoScale = 1.0
+            }
+
+            try? await Task.sleep(for: .seconds(0.35))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.4)) {
+                titleOpacity = 1
+            }
+
+            try? await Task.sleep(for: .seconds(0.15))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.4)) {
+                subtitleOpacity = 1
+            }
+
+            for index in Self.benefits.indices {
+                try? await Task.sleep(for: .seconds(0.12))
+                guard !Task.isCancelled else { return }
+
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.82)) {
+                    rowRevealProgress = index + 1
+                }
+            }
+
+            try? await Task.sleep(for: .seconds(0.18))
+            guard !Task.isCancelled else { return }
+
+            withAnimation(.easeOut(duration: 0.35)) {
+                footerOpacity = 1
+            }
+        }
+    }
+
+    private func stopEntrance() {
+        animationTask?.cancel()
+        animationTask = nil
     }
 }
