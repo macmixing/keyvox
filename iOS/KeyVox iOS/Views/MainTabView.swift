@@ -15,6 +15,8 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
@@ -44,7 +46,7 @@ struct MainTabView: View {
         .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         .sheet(
             isPresented: Binding(
-                get: { ttsPurchaseController.isUnlockSheetPresented },
+                get: { canPresentFeatureSheets && ttsPurchaseController.isUnlockSheetPresented },
                 set: { isPresented in
                     if isPresented == false {
                         ttsPurchaseController.dismissUnlockSheet()
@@ -57,7 +59,7 @@ struct MainTabView: View {
         }
         .sheet(
             isPresented: Binding(
-                get: { keyVoxVibesPurchaseController.sheetPresentation != nil },
+                get: { canPresentFeatureSheets && keyVoxVibesPurchaseController.sheetPresentation != nil },
                 set: { isPresented in
                     if isPresented == false {
                         keyVoxVibesPurchaseController.dismissSheet()
@@ -209,6 +211,12 @@ struct MainTabView: View {
         appTabRouter.selectedTab
     }
 
+    private var canPresentFeatureSheets: Bool {
+        onboardingStore.shouldShowOnboarding == false
+            && onboardingStore.hasCompletedOnboardingThisLaunch == false
+            && ttsManager.isPlaybackPreparationViewPresented == false
+    }
+
 }
 
 #Preview {
@@ -218,6 +226,7 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.onboardingStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)

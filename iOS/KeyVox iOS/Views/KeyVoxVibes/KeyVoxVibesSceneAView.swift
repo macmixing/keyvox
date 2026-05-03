@@ -33,7 +33,7 @@ struct KeyVoxVibesSceneAView: View {
 
                     Text("Vibes are currently supported for English only.")
                         .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.yellow.opacity(0.72))
+                        .foregroundStyle(.white.opacity(0.7))
                         .multilineTextAlignment(.center)
 
                     Spacer(minLength: 42)
