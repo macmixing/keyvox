@@ -197,14 +197,34 @@ final class KeyboardSettingsToggleButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: KeyboardStyle.keyLabelColor
+                foreground: isOn ? pressedActiveForegroundColor() : KeyboardStyle.keyLabelColor
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: isOn ? .systemYellow : KeyboardStyle.keyLabelColor
+            foreground: isOn ? activeForegroundColor() : KeyboardStyle.keyLabelColor
         )
+    }
+
+    private func activeForegroundColor() -> UIColor {
+        guard traitCollection.userInterfaceStyle == .light else {
+            return .systemYellow
+        }
+
+        return UIColor(red: 0.72, green: 0.50, blue: 0, alpha: 1)
+    }
+
+    private func pressedActiveForegroundColor() -> UIColor {
+        guard traitCollection.userInterfaceStyle == .light else {
+            return UIColor(red: 0.78, green: 0.58, blue: 0, alpha: 1)
+        }
+
+        let increasedContrastLightTraits = UITraitCollection { traits in
+            traits.userInterfaceStyle = .light
+            traits.accessibilityContrast = .high
+        }
+        return UIColor.systemYellow.resolvedColor(with: increasedContrastLightTraits)
     }
 }
