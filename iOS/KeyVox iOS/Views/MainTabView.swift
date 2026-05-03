@@ -15,7 +15,11 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
+    @EnvironmentObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -42,7 +46,7 @@ struct MainTabView: View {
         .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         .sheet(
             isPresented: Binding(
-                get: { ttsPurchaseController.isUnlockSheetPresented },
+                get: { canPresentFeatureSheets && ttsPurchaseController.isUnlockSheetPresented },
                 set: { isPresented in
                     if isPresented == false {
                         ttsPurchaseController.dismissUnlockSheet()
@@ -52,6 +56,47 @@ struct MainTabView: View {
         ) {
             TTSUnlockSheetView()
                 .environmentObject(ttsPurchaseController)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { canPresentFeatureSheets && keyVoxVibesPurchaseController.sheetPresentation != nil },
+                set: { isPresented in
+                    if isPresented == false {
+                        keyVoxVibesPurchaseController.dismissSheet()
+                    }
+                }
+            )
+        ) {
+            switch keyVoxVibesPurchaseController.sheetPresentation {
+            case .intro(let presentation):
+                KeyVoxVibesSheetView(
+                    mode: .intro(
+                        presentation: presentation,
+                        onTryNow: {
+                            keyVoxVibesIntroController.dismiss()
+                            keyVoxVibesPurchaseController.startTrial()
+                        },
+                        onDismiss: {
+                            keyVoxVibesIntroController.dismiss()
+                            keyVoxVibesPurchaseController.dismissSheet()
+                        }
+                    )
+                )
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .info(let presentation):
+                KeyVoxVibesSheetView(
+                    mode: .info(
+                        presentation: presentation,
+                        onDismiss: {
+                            keyVoxVibesPurchaseController.dismissSheet()
+                        }
+                    )
+                )
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .unlock, .none:
+                KeyVoxVibesUnlockSheetView()
+                    .environmentObject(keyVoxVibesPurchaseController)
+            }
         }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             guard appTabRouter.consumeShouldSuppressNextSelectionHaptic() == false else {
@@ -166,6 +211,12 @@ struct MainTabView: View {
         appTabRouter.selectedTab
     }
 
+    private var canPresentFeatureSheets: Bool {
+        onboardingStore.shouldShowOnboarding == false
+            && onboardingStore.hasCompletedOnboardingThisLaunch == false
+            && ttsManager.isPlaybackPreparationViewPresented == false
+    }
+
 }
 
 #Preview {
@@ -175,9 +226,12 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
         .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.onboardingStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
         .environmentObject(AppServiceRegistry.shared.audioModeCoordinator)
         .environmentObject(AppServiceRegistry.shared.ttsManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.keyVoxVibesIntroController)
 }

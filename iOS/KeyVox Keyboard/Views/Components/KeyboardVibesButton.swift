@@ -1,16 +1,27 @@
+import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardVibesButton: UIControl {
     private let backgroundView = UIView()
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
+    private let contentStackView = UIStackView()
+    private let noneIconImageView = UIImageView(image: UIImage(named: "vibes-logo")?.withRenderingMode(.alwaysTemplate))
     private let titleLabel = UILabel()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 
     var title = "" {
         didSet {
             titleLabel.text = title
+            updateNoneIconVisibility()
             updateAccessibility()
+        }
+    }
+
+    var selectedVibeStyle: StyleRewriteStyle = .none {
+        didSet {
+            updateNoneIconVisibility()
+            updateVisualState(animated: false)
         }
     }
 
@@ -76,6 +87,17 @@ final class KeyboardVibesButton: UIControl {
         tintOverlay.clipsToBounds = true
         tintOverlay.isUserInteractionEnabled = false
 
+        contentStackView.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.axis = .horizontal
+        contentStackView.alignment = .center
+        contentStackView.spacing = 4
+        contentStackView.isUserInteractionEnabled = false
+
+        noneIconImageView.translatesAutoresizingMaskIntoConstraints = false
+        noneIconImageView.contentMode = .scaleAspectFit
+        noneIconImageView.isUserInteractionEnabled = false
+        noneIconImageView.isHidden = true
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
         titleLabel.font = KeyboardStyle.specialKeyFont
@@ -87,7 +109,9 @@ final class KeyboardVibesButton: UIControl {
         addSubview(backgroundView)
         backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
-        addSubview(titleLabel)
+        contentStackView.addArrangedSubview(noneIconImageView)
+        contentStackView.addArrangedSubview(titleLabel)
+        addSubview(contentStackView)
         _ = borderRenderer
 
         NSLayoutConstraint.activate([
@@ -106,11 +130,16 @@ final class KeyboardVibesButton: UIControl {
             tintOverlay.topAnchor.constraint(equalTo: backgroundView.topAnchor),
             tintOverlay.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
+            noneIconImageView.widthAnchor.constraint(equalToConstant: 14),
+            noneIconImageView.heightAnchor.constraint(equalToConstant: 14),
+
+            contentStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            contentStackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            contentStackView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 8),
+            contentStackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
         ])
+
+        updateNoneIconVisibility()
     }
 
     private func observeBorderAppearanceChanges() {
@@ -133,7 +162,8 @@ final class KeyboardVibesButton: UIControl {
             self.backgroundView.layer.shadowRadius = shadow.radius
             self.backgroundView.layer.shadowOffset = shadow.offset
             self.titleLabel.textColor = colors.foreground
-            self.titleLabel.alpha = self.isTrackpadModeActive ? 0 : 1
+            self.noneIconImageView.tintColor = colors.foreground
+            self.contentStackView.alpha = self.isTrackpadModeActive ? 0 : 1
         }
 
         if animated {
@@ -154,6 +184,10 @@ final class KeyboardVibesButton: UIControl {
 
     private func updateAccessibility() {
         accessibilityLabel = title.isEmpty ? "KeyVox Vibes" : title
+    }
+
+    private func updateNoneIconVisibility() {
+        noneIconImageView.isHidden = selectedVibeStyle != .none
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
@@ -177,14 +211,18 @@ final class KeyboardVibesButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: KeyboardStyle.keyLabelColor
+                foreground: isShowingSelectedVibe ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: KeyboardStyle.keyLabelColor
+            foreground: isShowingSelectedVibe ? KeyboardStyle.activeForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
         )
+    }
+
+    private var isShowingSelectedVibe: Bool {
+        selectedVibeStyle != .none
     }
 }

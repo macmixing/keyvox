@@ -197,14 +197,14 @@ final class KeyboardSettingsToggleButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: KeyboardStyle.keyLabelColor
+                foreground: isOn ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: isOn ? .systemYellow : KeyboardStyle.keyLabelColor
+            foreground: isOn ? KeyboardStyle.activeForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
         )
     }
 }

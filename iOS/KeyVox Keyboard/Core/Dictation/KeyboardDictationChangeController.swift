@@ -132,7 +132,7 @@ final class KeyboardDictationChangeController {
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> Bool {
-        guard appSettingsStore.isVibesAvailable, isApplyingChange == false else {
+        guard appSettingsStore.canUseVibes, isApplyingChange == false else {
             return false
         }
 
@@ -201,6 +201,10 @@ final class KeyboardDictationChangeController {
         ) else {
             activeSession = nil
             return false
+        }
+
+        if appSettingsStore.canUseVibes == false {
+            session.currentStyle = .none
         }
 
         let targetState = targetDeterministicState(from: currentState, kind: kind)

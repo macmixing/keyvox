@@ -52,7 +52,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../KeyVox iOS/Resources/KeyVoxSpeak.storekit">
+         identifier = "../../KeyVox iOS/Resources/KeyVoxProducts.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

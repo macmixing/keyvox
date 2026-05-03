@@ -178,7 +178,6 @@ struct KeyVoxSpeakSceneBView: View {
         disclosureOpacity = 0
 
         animationTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(0.15))
             guard !Task.isCancelled else { return }
 
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {

@@ -2,71 +2,9 @@ import Combine
 import Foundation
 import StoreKit
 
-struct TTSUnlockStoreProduct: Equatable {
-    let id: String
-    let displayName: String
-    let displayPrice: String
-}
-
-protocol TTSUnlockStore {
-    func loadUnlockProduct(productID: String) async throws -> TTSUnlockStoreProduct?
-    func isUnlocked(productID: String) async throws -> Bool
-    func purchase(productID: String) async throws -> Bool
-    func restore(productID: String) async throws -> Bool
-}
-
-struct AppStoreTTSUnlockStore: TTSUnlockStore {
-    func loadUnlockProduct(productID: String) async throws -> TTSUnlockStoreProduct? {
-        let products = try await Product.products(for: [productID])
-        guard let product = products.first(where: { $0.id == productID }) else {
-            return nil
-        }
-
-        return TTSUnlockStoreProduct(
-            id: product.id,
-            displayName: product.displayName,
-            displayPrice: product.displayPrice
-        )
-    }
-
-    func isUnlocked(productID: String) async throws -> Bool {
-        for await verificationResult in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = verificationResult else { continue }
-            guard transaction.productID == productID else { continue }
-            guard transaction.revocationDate == nil else { continue }
-            return true
-        }
-
-        return false
-    }
-
-    func purchase(productID: String) async throws -> Bool {
-        let products = try await Product.products(for: [productID])
-        guard let product = products.first(where: { $0.id == productID }) else {
-            return false
-        }
-
-        let result = try await product.purchase()
-
-        switch result {
-        case .success(let verificationResult):
-            guard case .verified(let transaction) = verificationResult else {
-                return false
-            }
-            await transaction.finish()
-            return true
-        case .userCancelled, .pending:
-            return false
-        @unknown default:
-            return false
-        }
-    }
-
-    func restore(productID: String) async throws -> Bool {
-        try await AppStore.sync()
-        return try await isUnlocked(productID: productID)
-    }
-}
+typealias TTSUnlockStoreProduct = StoreUnlockProduct
+typealias TTSUnlockStore = StoreUnlockStore
+typealias AppStoreTTSUnlockStore = AppStoreUnlockStore
 
 @MainActor
 protocol TTSPurchaseGating {
@@ -334,8 +272,8 @@ final class TTSPurchaseController: ObservableObject, TTSPurchaseGating {
                         await MainActor.run {
                             self.applyUnlockState(isUnlocked)
                         }
+                        await transaction.finish()
                     }
-                    await transaction.finish()
                 case .unverified:
                     break
                 }

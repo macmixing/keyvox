@@ -80,6 +80,26 @@ enum KeyboardStyle {
     static let keyLabelColor = UIColor.label
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
+    static func activeForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
+        guard traitCollection.userInterfaceStyle == .light else {
+            return .systemYellow
+        }
+
+        return UIColor(red: 0.72, green: 0.50, blue: 0, alpha: 1)
+    }
+
+    static func pressedActiveForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
+        guard traitCollection.userInterfaceStyle == .light else {
+            return UIColor(red: 0.78, green: 0.58, blue: 0, alpha: 1)
+        }
+
+        let increasedContrastLightTraits = UITraitCollection { traits in
+            traits.userInterfaceStyle = .light
+            traits.accessibilityContrast = .high
+        }
+        return UIColor.systemYellow.resolvedColor(with: increasedContrastLightTraits)
+    }
+
     static let keyFont = UIFont.systemFont(ofSize: 22, weight: .regular)
     static let specialKeyFont = UIFont.systemFont(ofSize: 17)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
