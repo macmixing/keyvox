@@ -11,3 +11,15 @@ public struct ListPatternMarker {
         self.contentStart = contentStart
     }
 }
+
+enum ListPatternMarkerBounds {
+    static func markerTokenEnd(for marker: ListPatternMarker, in nsText: NSString) -> Int {
+        var index = marker.markerTokenStart
+        while index < nsText.length {
+            let character = nsText.substring(with: NSRange(location: index, length: 1))
+            guard character.rangeOfCharacter(from: .alphanumerics) != nil || character == "-" else { break }
+            index += 1
+        }
+        return index
+    }
+}

@@ -32,6 +32,15 @@ public enum DictionaryBuiltInEntries {
                 "Keyvox Speak",
             ]
         ),
+        DictionaryBuiltInEntry(
+            id: UUID(uuidString: "31E89C39-A1E7-4736-8FBB-706B87D926D2")!,
+            phrase: "KeyVox Vibes",
+            aliases: [
+                "Kivok Vibes",
+                "Kivox Vibes",
+                "Keyvox Vibes",
+            ]
+        ),
     ]
 
     public static let entries: [DictionaryEntry] = builtIns.map {

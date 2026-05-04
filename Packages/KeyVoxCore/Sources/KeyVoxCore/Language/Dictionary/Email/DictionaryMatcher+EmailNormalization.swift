@@ -275,6 +275,7 @@ extension DictionaryMatcher {
 
     #if DEBUG
     private func logEmailNormalization(_ message: String) {
+        guard TranscriptionPostProcessingDebugLogging.isEnabled else { return }
         print("[KVXEmailNorm] \(message)")
     }
 

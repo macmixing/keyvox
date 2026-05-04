@@ -163,7 +163,7 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: true
         )
 
-        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak")
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
         XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, true)
         XCTAssertEqual(result.finalText, "My app is called KeyVox")
         XCTAssertEqual(recorded, ["My app is called KeyVox"])
@@ -367,7 +367,7 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak")
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
         XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, false)
     }
 

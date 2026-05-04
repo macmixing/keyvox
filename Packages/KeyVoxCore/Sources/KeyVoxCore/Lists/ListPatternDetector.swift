@@ -194,6 +194,7 @@ public struct ListPatternDetector {
     }
 
     private func logDetector(_ message: String) {
+        guard TranscriptionPostProcessingDebugLogging.isEnabled else { return }
         print("[KVXListDetector] \(message)")
     }
     #endif

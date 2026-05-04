@@ -107,6 +107,30 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(keyvoxOutput, "I am using KeyVox Speak.")
     }
 
+    func testAppliesBuiltInVibesProductNameDictionaryEntryWithoutUserEntry() {
+        let processor = TranscriptionPostProcessor()
+
+        let kivokOutput = processor.process(
+            "I am using Kivok Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let kivoxOutput = processor.process(
+            "I am using Kivox Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let keyvoxOutput = processor.process(
+            "I am using Keyvox Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(kivokOutput, "I am using KeyVox Vibes.")
+        XCTAssertEqual(kivoxOutput, "I am using KeyVox Vibes.")
+        XCTAssertEqual(keyvoxOutput, "I am using KeyVox Vibes.")
+    }
+
     func testBuiltInAppNameDictionaryEntryWinsOverUserDuplicate() {
         let processor = TranscriptionPostProcessor()
         let entries = [
@@ -220,6 +244,43 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "Where did you say 2. pause in step 3. where you talked about it?")
     }
+
+    func testDoesNotFormatShortSpokenVersionDecimalAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm probably going to release version one point two next week.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "I'm probably going to release version one point two next week.")
+    }
+
+    func testDoesNotFormatCompoundSpokenQuantityAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Essentially I'm able to pull one month every thirty two hours.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Essentially I'm able to pull one month every thirty two hours.")
+    }
+
+    func testDoesNotFormatMultiTokenSpokenQuantityAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Essentially I'm able to pull one hundred two hours.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Essentially I'm able to pull one hundred two hours.")
+    }
+
     func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
         let processor = TranscriptionPostProcessor()
 

@@ -301,6 +301,31 @@ public final class DictationPipeline {
         renderMode: ListRenderMode,
         languageCode: String?
     ) -> [DictationPipelineResult.DeterministicTextVariant] {
+        #if DEBUG
+        return TranscriptionPostProcessingDebugLogging.$isEnabled.withValue(false) {
+            makeDeterministicVariants(
+                rawText: rawText,
+                dictionaryEntries: dictionaryEntries,
+                renderMode: renderMode,
+                languageCode: languageCode
+            )
+        }
+        #else
+        return makeDeterministicVariants(
+            rawText: rawText,
+            dictionaryEntries: dictionaryEntries,
+            renderMode: renderMode,
+            languageCode: languageCode
+        )
+        #endif
+    }
+
+    private func makeDeterministicVariants(
+        rawText: String,
+        dictionaryEntries: [DictionaryEntry],
+        renderMode: ListRenderMode,
+        languageCode: String?
+    ) -> [DictationPipelineResult.DeterministicTextVariant] {
         let noParagraphsNoLists = postProcessor.process(
             rawText,
             dictionaryEntries: dictionaryEntries,

@@ -264,6 +264,11 @@ public struct ListPatternRunSelector {
                 to: next,
                 in: nsText,
                 languageCode: languageCode
+            ) && !looksLikeLocalizedDecimalSpan(
+                from: previous,
+                to: next,
+                in: nsText,
+                languageCode: languageCode
             ) && isCredibleAdjacentMarkerCadence(from: previous, to: next, in: nsText)
         }
 
@@ -383,6 +388,28 @@ public struct ListPatternRunSelector {
         return middleTokens.allSatisfy { token in
             token.isNumeric || token.isConnectorSymbol || token.text == firstConnector.text
         }
+    }
+
+    private func looksLikeLocalizedDecimalSpan(
+        from previous: ListPatternMarker,
+        to next: ListPatternMarker,
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
+        guard next.markerTokenStart > previous.markerTokenStart else { return false }
+        guard !markerHasExplicitDelimiter(previous, in: nsText, languageCode: languageCode) else { return false }
+        guard !markerHasExplicitDelimiter(next, in: nsText, languageCode: languageCode) else { return false }
+
+        let spanEnd = ListPatternMarkerBounds.markerTokenEnd(for: next, in: nsText)
+        guard spanEnd > previous.markerTokenStart else { return false }
+
+        let span = nsText
+            .substring(with: NSRange(location: previous.markerTokenStart, length: spanEnd - previous.markerTokenStart))
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !span.isEmpty else { return false }
+
+        return ListPatternMarkerParser.parsesLocalizedFractionalNumber(span, languageCode: languageCode)
     }
 
     private func shouldPrefer(
