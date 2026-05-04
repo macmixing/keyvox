@@ -220,6 +220,19 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "Where did you say 2. pause in step 3. where you talked about it?")
     }
+
+    func testDoesNotFormatShortSpokenVersionDecimalAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm probably going to release version one point two next week.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "I'm probably going to release version one point two next week.")
+    }
+
     func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
         let processor = TranscriptionPostProcessor()
 

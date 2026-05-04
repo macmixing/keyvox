@@ -56,20 +56,16 @@ struct ListPatternMarkerParser {
         return formatterWithoutLock(for: locale)
     }
 
-    private static func resolveLocale(from languageCode: String?) -> Locale {
+    private static func candidateLocales(from languageCode: String?) -> [Locale] {
         guard let languageCode = languageCode?.replacingOccurrences(of: "_", with: "-") else {
-            return .current
+            return [.current]
         }
 
         let locale = Locale(identifier: languageCode)
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .spellOut
-        formatter.locale = locale
-        guard let sample = formatter.string(from: NSNumber(value: 21)),
-              sample.range(of: #"\d"#, options: .regularExpression) == nil else {
-            return .current
+        guard locale.identifier != Locale.current.identifier else {
+            return [locale]
         }
-        return locale
+        return [locale, .current]
     }
 
     static func parseMarkerValue(_ rawToken: String, languageCode: String? = nil) -> Int? {
@@ -89,16 +85,43 @@ struct ListPatternMarkerParser {
             return value
         }
 
-        let locale = resolveLocale(from: languageCode)
+        for locale in candidateLocales(from: languageCode) {
+            formattersLock.lock()
+            let numberFormatter = formatterWithoutLock(for: locale)
+            let parsed = numberFormatter.number(from: token)
+            let value = parsed?.intValue
+            let roundTrip = value.flatMap { numberFormatter.string(from: NSNumber(value: $0)) }
+            formattersLock.unlock()
 
-        formattersLock.lock()
-        defer { formattersLock.unlock() }
-        let numberFormatter = formatterWithoutLock(for: locale)
-        guard let parsed = numberFormatter.number(from: token) else { return nil }
-        let value = parsed.intValue
-        guard let roundTrip = numberFormatter.string(from: NSNumber(value: value)) else { return nil }
-        guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { return nil }
-        return value
+            guard let value, let roundTrip else { continue }
+            guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { continue }
+            return value
+        }
+
+        return nil
+    }
+
+    static func parsesLocalizedFractionalNumber(_ rawToken: String, languageCode: String? = nil) -> Bool {
+        let token = rawToken
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        guard !token.isEmpty else { return false }
+        guard !token.allSatisfy(\.isNumber) else { return false }
+
+        for locale in candidateLocales(from: languageCode) {
+            formattersLock.lock()
+            let numberFormatter = formatterWithoutLock(for: locale)
+            let parsed = numberFormatter.number(from: token)
+            let roundTrip = parsed.flatMap { numberFormatter.string(from: $0) }
+            formattersLock.unlock()
+
+            guard let parsed, let roundTrip else { continue }
+            guard parsed.decimalValue != Decimal(parsed.intValue) else { continue }
+            guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { continue }
+            return true
+        }
+
+        return false
     }
 
     static func hasExplicitDelimitedMarkerPrefix(in text: String, languageCode: String?) -> Bool {
