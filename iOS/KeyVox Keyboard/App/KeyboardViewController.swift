@@ -13,6 +13,7 @@ final class KeyboardViewController: UIInputViewController {
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
+    let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
@@ -66,6 +67,7 @@ final class KeyboardViewController: UIInputViewController {
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {
         didSet {
+            updateTranscriptionLandingHapticStart(previousState: oldValue)
             updateUI()
         }
     }
@@ -90,6 +92,7 @@ final class KeyboardViewController: UIInputViewController {
     var hostDidBecomeActiveObserver: NSObjectProtocol?
     var hasConfiguredControllerBindings = false
     var isPresentationBound = false
+    var transcriptionLandingStartedAt: Date?
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -489,5 +492,30 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         dictationChangeController.recordInsertedDictation(insertion)
+        emitDelayedTranscriptionLandingHapticIfNeeded()
+    }
+
+    private func updateTranscriptionLandingHapticStart(previousState: KeyboardState) {
+        if keyboardState == .transcribing {
+            if previousState != .transcribing {
+                transcriptionLandingStartedAt = Date()
+            }
+            return
+        }
+
+        if previousState == .transcribing {
+            transcriptionLandingStartedAt = nil
+        }
+    }
+
+    private func emitDelayedTranscriptionLandingHapticIfNeeded() {
+        guard let transcriptionLandingStartedAt else { return }
+        self.transcriptionLandingStartedAt = nil
+
+        guard Date().timeIntervalSince(transcriptionLandingStartedAt) > delayedTranscriptionLandingHapticThreshold else {
+            return
+        }
+
+        interactionHaptics.emitMediumIfEnabled()
     }
 }
