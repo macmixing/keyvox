@@ -1,5 +1,11 @@
 import Foundation
 
+#if DEBUG
+enum TranscriptionPostProcessingDebugLogging {
+    @TaskLocal static var isEnabled = true
+}
+#endif
+
 @MainActor
 public final class TranscriptionPostProcessor {
     private let dictionaryMatcher = DictionaryMatcher()
@@ -42,10 +48,12 @@ public final class TranscriptionPostProcessor {
 
         #if DEBUG
         logPipelineStage("input", text)
-        print(
-            "[KVXPost] settings listFormattingEnabled=\(listFormattingEnabled) " +
-            "renderMode=\(renderMode) dictionaryEntries=\(dictionaryEntries.count)"
-        )
+        if TranscriptionPostProcessingDebugLogging.isEnabled {
+            print(
+                "[KVXPost] settings listFormattingEnabled=\(listFormattingEnabled) " +
+                "renderMode=\(renderMode) dictionaryEntries=\(dictionaryEntries.count)"
+            )
+        }
         #endif
 
         updateDictionaryEntries(dictionaryEntries)
@@ -56,7 +64,7 @@ public final class TranscriptionPostProcessor {
 
         let matchResult = dictionaryMatcher.apply(to: emailNormalizedInput)
         #if DEBUG
-        if matchResult.stats.attempted > 0 {
+        if TranscriptionPostProcessingDebugLogging.isEnabled, matchResult.stats.attempted > 0 {
             print(
                 "[DictionaryMatcher] attempts=\(matchResult.stats.attempted) accepted=\(matchResult.stats.accepted) " +
                 "lowScore=\(matchResult.stats.rejectedLowScore) ambiguity=\(matchResult.stats.rejectedAmbiguity) " +
@@ -186,6 +194,7 @@ public final class TranscriptionPostProcessor {
     )
 
     private func logPipelineStage(_ stage: String, _ value: String) {
+        guard TranscriptionPostProcessingDebugLogging.isEnabled else { return }
         let summary = debugTextSummary(value)
         if rawDebugTextLoggingEnabled {
             let escaped = truncatedDebugEscaped(value, maxCharacters: 400)
