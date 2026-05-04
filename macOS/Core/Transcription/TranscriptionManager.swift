@@ -246,6 +246,7 @@ class TranscriptionManager: ObservableObject {
 
     private func cancelQuickTapRecording() {
         audioRecorder.stopRecording { _ in }
+        vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
         isLocked = false
         stopRequestedAt = nil
         activeStopRequestID = nil
