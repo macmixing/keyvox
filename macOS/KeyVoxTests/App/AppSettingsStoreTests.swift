@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import KeyVoxStyleRewrite
 @testable import KeyVox
 
 @MainActor
@@ -20,6 +21,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertNil(store.updateAlertLastShown)
         XCTAssertNil(store.updateAlertSnoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .whisper)
+        XCTAssertEqual(store.selectedVibe, .none)
     }
 
     func testInitHydratesPersistedValuesAndClampsStoredVolume() {
@@ -38,8 +40,9 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set(lastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
         defaults.set(snoozedUntil, forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
         defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        defaults.set(StyleRewriteStyle.chill.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
-        let store = AppSettingsStore(defaults: defaults)
+        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
 
         XCTAssertTrue(store.hasCompletedOnboarding)
         XCTAssertEqual(store.triggerBinding, .leftCommand)
@@ -51,6 +54,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.updateAlertLastShown, lastShown)
         XCTAssertEqual(store.updateAlertSnoozedUntil, snoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .parakeet)
+        XCTAssertEqual(store.selectedVibe, .chill)
     }
 
     func testInitFallsBackToWhisperWhenPersistedParakeetIsUnsupportedOnCurrentOS() {
@@ -104,6 +108,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.listFormattingEnabled = false
         store.isSoundEnabled = false
         store.selectedMicrophoneUID = "usb-mic"
+        store.selectedVibe = .casual
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
         store.activeDictationProvider = .parakeet
@@ -114,6 +119,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool, false)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool, false)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedVibe), StyleRewriteStyle.casual.rawValue)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)
@@ -182,6 +188,37 @@ final class AppSettingsStoreTests: XCTestCase {
     func testActiveDictationProviderMapsToExpectedModelID() {
         XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.whisper.modelID, .whisperBase)
         XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.parakeet.modelID, .parakeetTdtV3)
+    }
+
+    func testSelectedVibeResolvesToNoneWhenFoundationUnavailable() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
+
+        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { false })
+
+        XCTAssertEqual(store.selectedVibe, .none)
+    }
+
+    func testAdvanceSelectedVibeCyclesWhenFoundationAvailable() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
+
+        XCTAssertEqual(store.advanceSelectedVibe(), .casual)
+        XCTAssertEqual(store.advanceSelectedVibe(), .polished)
+        XCTAssertEqual(store.advanceSelectedVibe(), .chill)
+        XCTAssertEqual(store.advanceSelectedVibe(), .none)
+    }
+
+    func testAdvanceSelectedVibeReturnsNoneWhenFoundationUnavailable() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { false })
+        store.selectedVibe = .chill
+
+        XCTAssertEqual(store.advanceSelectedVibe(), .none)
+        XCTAssertEqual(store.selectedVibe, .none)
     }
 
     func testActiveDictationProviderSupportedCasesHideParakeetOnVentura() {

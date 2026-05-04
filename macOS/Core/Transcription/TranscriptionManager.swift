@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import ApplicationServices
 import KeyVoxCore
+import KeyVoxStyleRewrite
 
 @MainActor
 class TranscriptionManager: ObservableObject {
@@ -28,6 +29,10 @@ class TranscriptionManager: ObservableObject {
     private let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
+    private lazy var vibesCoordinator = MacVibesCoordinator(appSettings: appSettings)
+    private lazy var dictationChangeController = MacDictationChangeController(
+        vibesCoordinator: vibesCoordinator
+    )
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: provider,
         postProcessor: postProcessor,
@@ -51,11 +56,19 @@ class TranscriptionManager: ObservableObject {
         },
         pasteText: { text in
             PasteService.shared.pasteText(text)
+        },
+        processOutputText: { [weak self] text in
+            guard let self else { return .unchanged(text) }
+            return await self.vibesCoordinator.processOutputText(text)
         }
     )
     private var isLocked = false
     private var cachedCapsLockIsOn = false
+    private var triggerPressedAt: Date?
+    private var triggerTapClassifier = MacTriggerTapClassifier()
+    private var pendingSingleTapWorkItem: DispatchWorkItem?
     private var cancellables = Set<AnyCancellable>()
+    private let quickTapMaximumDuration: TimeInterval = 0.22
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
     private let microphoneSilenceWarningDelay: TimeInterval = 0.5
@@ -162,6 +175,8 @@ class TranscriptionManager: ObservableObject {
         #endif
         
         playSound(named: "Bottle") // Cancel sound
+        pendingSingleTapWorkItem?.cancel()
+        pendingSingleTapWorkItem = nil
         audioRecorder.stopRecording { _ in }
         provider.cancelTranscription()
         isLocked = false
@@ -192,6 +207,7 @@ class TranscriptionManager: ObservableObject {
         }
 
         if isPressed {
+            triggerPressedAt = Date()
             if state == .idle {
                 startRecording()
             } else if state == .recording && isLocked {
@@ -208,14 +224,100 @@ class TranscriptionManager: ObservableObject {
                     print("Hands-free mode LOCKED")
                     #endif
                 } else if !isLocked {
-                    stopRecordingAndTranscribe()
+                    if shouldHandleReleaseAsQuickTap() {
+                        cancelQuickTapRecording()
+                        handleQuickTriggerTap()
+                    } else {
+                        stopRecordingAndTranscribe()
+                    }
                 }
             }
+            triggerPressedAt = nil
         }
 
         updateOverlayHandsFreeVisualState()
     }
-    
+
+    private func shouldHandleReleaseAsQuickTap() -> Bool {
+        guard let triggerPressedAt else { return false }
+        return Date().timeIntervalSince(triggerPressedAt) <= quickTapMaximumDuration
+    }
+
+    private var selectedRecordingVibeTitle: String? {
+        let style = vibesCoordinator.selectedVibe
+        guard style != .none else { return nil }
+        return style.displayName
+    }
+
+    private func cancelQuickTapRecording() {
+        audioRecorder.stopRecording { _ in }
+        isLocked = false
+        stopRequestedAt = nil
+        activeStopRequestID = nil
+        OverlayManager.shared.hide()
+        state = .idle
+    }
+
+    private func handleQuickTriggerTap() {
+        guard vibesCoordinator.canUseVibes else {
+            appSettings.selectedVibe = .none
+            return
+        }
+
+        switch triggerTapClassifier.registerQuickTap(at: Date()) {
+        case .none:
+            break
+        case .scheduleSingleTap:
+            pendingSingleTapWorkItem?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                Task { @MainActor in
+                    await self?.performSingleVibeTap()
+                }
+            }
+            pendingSingleTapWorkItem = workItem
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + triggerTapClassifier.doubleTapInterval,
+                execute: workItem
+            )
+        case .doubleTap:
+            pendingSingleTapWorkItem?.cancel()
+            pendingSingleTapWorkItem = nil
+            let nextStyle = vibesCoordinator.advanceSelectedVibe()
+            guard nextStyle != .none || vibesCoordinator.canUseVibes else { return }
+            OverlayManager.shared.showVibePill(title: nextStyle.displayName)
+        }
+    }
+
+    private func performSingleVibeTap() async {
+        pendingSingleTapWorkItem = nil
+        guard vibesCoordinator.canUseVibes else {
+            appSettings.selectedVibe = .none
+            return
+        }
+
+        let didApply = await dictationChangeController.applyLongPressChange(
+            onProcessingStart: { [weak self] in
+                guard let self else { return }
+                OverlayManager.shared.showVibePill(
+                    title: self.vibesCoordinator.selectedVibe.displayName,
+                    state: .processing,
+                    duration: nil
+                )
+            },
+            onProcessingEnd: {}
+        )
+
+        if didApply {
+            OverlayManager.shared.showVibePill(
+                title: dictationChangeController.currentStyle.displayName,
+                state: .completed,
+                duration: 0.72
+            )
+        } else {
+            OverlayManager.shared.showVibePill(title: vibesCoordinator.selectedVibe.displayName)
+        }
+    }
+
     private func startRecording() {
         guard case .idle = state else { return }
         modelDownloader.refreshModelStatus()
@@ -230,15 +332,21 @@ class TranscriptionManager: ObservableObject {
             return
         }
 
+        pendingSingleTapWorkItem?.cancel()
+        pendingSingleTapWorkItem = nil
         playSound(named: "Morse") // Start sound
 
         state = .recording
         WarningManager.shared.hide()
         updateOverlayHandsFreeVisualState()
-        OverlayManager.shared.show(recorder: audioRecorder)
+        OverlayManager.shared.show(
+            recorder: audioRecorder,
+            selectedVibeTitle: selectedRecordingVibeTitle
+        )
         audioRecorder.startRecording()
+        vibesCoordinator.prewarmForUpcomingDictationIfNeeded()
     }
-    
+
     private var stopRequestedAt: Date?
     private var activeStopRequestID: UUID?
     
@@ -317,7 +425,11 @@ class TranscriptionManager: ObservableObject {
             self.state = .transcribing
             
             // Transition overlay to transcription ripples only when we have frames to process.
-            OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
+            OverlayManager.shared.show(
+                recorder: self.audioRecorder,
+                isTranscribing: true,
+                selectedVibeTitle: self.selectedRecordingVibeTitle
+            )
             
             let useDictionaryHintPrompt = DictionaryHintPromptGate.shouldUseHintPrompt(
                 lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
@@ -335,6 +447,7 @@ class TranscriptionManager: ObservableObject {
                 let transcribeDuration = pipelineResult.inferenceDuration
                 #if DEBUG
                 print("2. Provider inference: \(String(format: "%.3f", transcribeDuration))s")
+                self.logTextTransformationSpeedProfile(pipelineResult)
                 #endif
                 
                 DispatchQueue.main.async {
@@ -357,6 +470,7 @@ class TranscriptionManager: ObservableObject {
                         pipelineResult.finalText,
                         forKey: UserDefaultsKeys.App.lastTranscription
                     )
+                    self.dictationChangeController.recordInsertedDictation(pipelineResult)
 
                     let pasteDuration = pipelineResult.pasteDuration
                     #if DEBUG
@@ -394,4 +508,36 @@ class TranscriptionManager: ObservableObject {
             sound.play()
         }
     }
+
+    #if DEBUG
+    private func logTextTransformationSpeedProfile(_ result: DictationPipelineResult) {
+        let duration = String(format: "%.3f", result.textTransformationDuration)
+        let style = result.textTransformationStyleIdentifier ?? "none"
+        let mode = result.textTransformationProcessingMode.map { " mode=\($0)" } ?? ""
+        let chunkSummary = " style=\(style)\(mode) chunks=\(result.textTransformationChunkCount)"
+        let finalTextSuffix = " finalText=\(escapedDebugText(result.finalText))"
+        if let errorDescription = result.textTransformationErrorDescription {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=false error=\(errorDescription)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        } else {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=\(result.textTransformationApplied)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        }
+    }
+
+    private func escapedDebugText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+    }
+    #endif
 }

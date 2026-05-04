@@ -6,7 +6,7 @@ let package = Package(
     name: "KeyVoxStyleRewrite",
     platforms: [
         .iOS("18.0"),
-        .macOS(.v14)
+        .macOS(.v13)
     ],
     products: [
         .library(

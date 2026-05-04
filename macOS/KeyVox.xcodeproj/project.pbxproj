@@ -13,6 +13,14 @@
 		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
 		8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000012FD1000100AA0001 /* KeyVoxCore */; };
 		8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000022FD1000100AA0001 /* KeyVoxCore */; };
+		E90000012FE1000100AA0001 /* MacVibesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */; };
+		E90000022FE1000100AA0001 /* MacDictationChangeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000122FE1000100AA0001 /* MacDictationChangeController.swift */; };
+		E90000032FE1000100AA0001 /* MacTriggerTapClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */; };
+		E90000042FE1000100AA0001 /* VibePillOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000142FE1000100AA0001 /* VibePillOverlay.swift */; };
+		E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */; };
+		E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */; };
+		E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */; };
+		E90000072FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -319,6 +327,12 @@
 		F30000332FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLaunchNoticeServiceTests.swift; sourceTree = "<group>"; };
 		F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateApplicationsPrereflightTests.swift; sourceTree = "<group>"; };
 		F30000372FC2000100AA0001 /* AppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActionButton.swift; sourceTree = "<group>"; };
+		E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesCoordinator.swift; sourceTree = "<group>"; };
+		E90000122FE1000100AA0001 /* MacDictationChangeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationChangeController.swift; sourceTree = "<group>"; };
+		E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTriggerTapClassifier.swift; sourceTree = "<group>"; };
+		E90000142FE1000100AA0001 /* VibePillOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillOverlay.swift; sourceTree = "<group>"; };
+		E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTriggerTapClassifierTests.swift; sourceTree = "<group>"; };
+		E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedVibeLabel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -327,6 +341,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
+				E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,6 +350,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
+				E90000072FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -391,6 +407,7 @@
 			isa = PBXGroup;
 			children = (
 				C13000002F92000100AA0001 /* Transcription */,
+				E90000102FE1000100AA0001 /* Vibes */,
 				9D4000012F4E000100AA0001 /* Audio */,
 				8E6D05CA2F3C51D6003BD458 /* Services */,
 				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
@@ -429,6 +446,7 @@
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
 				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
+				E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
 			path = Components;
@@ -444,6 +462,7 @@
 				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
 				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
 				8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
+				E90000142FE1000100AA0001 /* VibePillOverlay.swift */,
 				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
 			);
@@ -542,6 +561,7 @@
 				AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */,
 				AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */,
 				AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */,
+				E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */,
 				AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */,
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
@@ -691,6 +711,16 @@
 			path = Transcription;
 			sourceTree = "<group>";
 		};
+		E90000102FE1000100AA0001 /* Vibes */ = {
+			isa = PBXGroup;
+			children = (
+				E90000122FE1000100AA0001 /* MacDictationChangeController.swift */,
+				E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */,
+				E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */,
+			);
+			path = Vibes;
+			sourceTree = "<group>";
+		};
 		E18000042FA4000100AA0001 /* iCloud */ = {
 			isa = PBXGroup;
 			children = (
@@ -755,6 +785,7 @@
 			name = KeyVox;
 			packageProductDependencies = (
 				A10000012FD1000100AA0001 /* KeyVoxCore */,
+				E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */,
 			);
 			productName = KeyVox;
 			productReference = 8EE0045A2F3BA59900BBAB30 /* KeyVox.app */;
@@ -776,6 +807,7 @@
 			name = KeyVoxTests;
 			packageProductDependencies = (
 				A10000022FD1000100AA0001 /* KeyVoxCore */,
+				E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */,
 			);
 			productName = KeyVoxTests;
 			productReference = 8EE602882F412B920094EC16 /* KeyVoxTests.xctest */;
@@ -813,6 +845,7 @@
 				8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */,
 				8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */,
+				E90000202FE1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */,
 			);
 			productRefGroup = 8EE0045B2F3BA59900BBAB30 /* Products */;
 			projectDirPath = "";
@@ -899,6 +932,11 @@
 				8E57FBA02F3E444B00935A26 /* SettingsView+More.swift in Sources */,
 				D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Style.swift in Sources */,
+				E90000012FE1000100AA0001 /* MacVibesCoordinator.swift in Sources */,
+				E90000022FE1000100AA0001 /* MacDictationChangeController.swift in Sources */,
+				E90000032FE1000100AA0001 /* MacTriggerTapClassifier.swift in Sources */,
+				E90000042FE1000100AA0001 /* VibePillOverlay.swift in Sources */,
+				E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
 				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,
 				8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */,
@@ -999,6 +1037,7 @@
 				AB3000302F60000100AA0001 /* ModelDownloaderTests.swift in Sources */,
 				AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */,
 				8E9E38262F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift in Sources */,
+				E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */,
 				AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1337,6 +1376,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
 		};
+		E90000202FE1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxStyleRewrite;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1347,6 +1390,14 @@
 		A10000022FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
+		};
+		E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KeyVoxStyleRewrite;
+		};
+		E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KeyVoxStyleRewrite;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
