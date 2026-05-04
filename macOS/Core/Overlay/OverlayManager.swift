@@ -327,6 +327,8 @@ class OverlayManager {
     private func hideVibeLabelWindow() {
         vibeLabelTitle = nil
         guard let panel = vibeLabelWindow, panel.isVisible else { return }
+        vibeLabelHideWorkItem?.cancel()
+        vibeLabelHideWorkItem = nil
         NSAnimationContext.runAnimationGroup { context in
             context.duration = vibeLabelExitDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
