@@ -77,7 +77,8 @@ final class MacDictationChangeController {
         }
         log(
             "apply requested currentStyle=\(session.currentStyle.styleIdentifier) " +
-            "targetStyle=\(targetStyle.styleIdentifier) currentText=\(escapedDebugText(session.currentText))"
+            "targetStyle=\(targetStyle.styleIdentifier)" +
+            rawTextDebugField("currentText", session.currentText)
         )
 
         guard let replacementText = await replacementText(
@@ -100,7 +101,10 @@ final class MacDictationChangeController {
         session.currentStyle = targetStyle
         session.variants[targetStyle] = replacementText
         activeSession = session
-        log("apply succeeded style=\(targetStyle.styleIdentifier) finalText=\(escapedDebugText(replacementText))")
+        log(
+            "apply succeeded style=\(targetStyle.styleIdentifier)" +
+            rawTextDebugField("finalText", replacementText)
+        )
         return true
     }
 
@@ -123,12 +127,18 @@ final class MacDictationChangeController {
         onProcessingEnd: @escaping () -> Void
     ) async -> String? {
         if let cachedText = session.variants[targetStyle] {
-            log("replacement cached style=\(targetStyle.styleIdentifier) finalText=\(escapedDebugText(cachedText))")
+            log(
+                "replacement cached style=\(targetStyle.styleIdentifier)" +
+                rawTextDebugField("finalText", cachedText)
+            )
             return cachedText
         }
 
         guard targetStyle != .none else {
-            log("replacement restored style=none finalText=\(escapedDebugText(session.originalText))")
+            log(
+                "replacement restored style=none" +
+                rawTextDebugField("finalText", session.originalText)
+            )
             return session.originalText
         }
 
@@ -166,9 +176,19 @@ final class MacDictationChangeController {
             "transform duration=\(duration)s applied=\(result.applied) " +
             "style=\(result.styleIdentifier)\(mode) chunks=\(result.chunkCount)" +
             errorSummary +
-            " original=\(escapedDebugText(result.originalText)) finalText=\(escapedDebugText(result.finalText))"
+            rawTextDebugField("original", result.originalText) +
+            rawTextDebugField("finalText", result.finalText)
         )
         #endif
+    }
+
+    private var rawDebugTextLoggingEnabled: Bool {
+        ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+    }
+
+    private func rawTextDebugField(_ label: String, _ text: String) -> String {
+        guard rawDebugTextLoggingEnabled else { return "" }
+        return " \(label)=\(escapedDebugText(text))"
     }
 
     private func escapedDebugText(_ text: String) -> String {
