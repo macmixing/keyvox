@@ -1,6 +1,6 @@
 import Foundation
 
-struct MacTriggerTapClassifier {
+nonisolated struct MacTriggerTapClassifier {
     enum Event: Equatable {
         case none
         case scheduleSingleTap

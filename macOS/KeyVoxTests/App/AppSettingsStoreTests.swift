@@ -100,7 +100,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let lastShown = makeDate(year: 2026, month: 2, day: 10)
         let snoozedUntil = makeDate(year: 2026, month: 2, day: 20)
-        let store = AppSettingsStore(defaults: defaults)
+        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
 
         store.hasCompletedOnboarding = true
         store.triggerBinding = .rightCommand
