@@ -28,4 +28,14 @@ final class MacTriggerTapClassifierTests: XCTestCase {
 
         XCTAssertEqual(event, .scheduleSingleTap)
     }
+
+    func testTapAfterDoubleTapResetsState() {
+        var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
+        _ = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10))
+        XCTAssertEqual(classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.2)), .doubleTap)
+
+        let event = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.2))
+
+        XCTAssertEqual(event, .scheduleSingleTap)
+    }
 }
