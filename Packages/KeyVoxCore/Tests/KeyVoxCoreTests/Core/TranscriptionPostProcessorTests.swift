@@ -269,6 +269,18 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Essentially I'm able to pull one month every thirty two hours.")
     }
 
+    func testDoesNotFormatMultiTokenSpokenQuantityAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Essentially I'm able to pull one hundred two hours.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Essentially I'm able to pull one hundred two hours.")
+    }
+
     func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
         let processor = TranscriptionPostProcessor()
 

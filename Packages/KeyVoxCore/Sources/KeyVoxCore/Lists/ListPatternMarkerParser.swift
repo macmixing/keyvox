@@ -362,33 +362,43 @@ struct ListPatternMarkerParser {
         var filtered: [ListPatternMarker] = []
         filtered.reserveCapacity(markers.count)
         for marker in markers {
-            if let previous = filtered.last,
-               marker.markerTokenStart == previous.contentStart,
-               localizedIntegerSpan(from: previous, through: marker, in: nsText, languageCode: languageCode) {
-                continue
-            }
             filtered.append(marker)
+            if let spanRange = localizedIntegerSpanRangeEndingAtLast(
+                in: filtered,
+                nsText: nsText,
+                languageCode: languageCode
+            ) {
+                filtered.removeSubrange(spanRange)
+            }
         }
         return filtered
     }
 
-    private func localizedIntegerSpan(
-        from previous: ListPatternMarker,
-        through marker: ListPatternMarker,
-        in nsText: NSString,
+    private func localizedIntegerSpanRangeEndingAtLast(
+        in markers: [ListPatternMarker],
+        nsText: NSString,
         languageCode: String?
-    ) -> Bool {
+    ) -> Range<Int>? {
+        guard markers.count > 1, let marker = markers.last else { return nil }
         let spanEnd = markerTokenEnd(for: marker, in: nsText)
-        guard spanEnd > previous.markerTokenStart else { return false }
+        guard spanEnd > marker.markerTokenStart else { return nil }
 
-        let span = nsText.substring(
-            with: NSRange(location: previous.markerTokenStart, length: spanEnd - previous.markerTokenStart)
-        )
-        return Self.matchesLocalizedIntegerValue(
-            span,
-            value: previous.number + marker.number,
-            languageCode: languageCode
-        )
+        for startIndex in stride(from: markers.count - 2, through: 0, by: -1) {
+            let startMarker = markers[startIndex]
+            let span = nsText.substring(
+                with: NSRange(location: startMarker.markerTokenStart, length: spanEnd - startMarker.markerTokenStart)
+            )
+            let markerValueSum = markers[startIndex...].reduce(0) { $0 + $1.number }
+            if Self.matchesLocalizedIntegerValue(span, value: markerValueSum, languageCode: languageCode) {
+                return startIndex..<markers.count
+            }
+            if let parsedValue = Self.parseLocalizedNumberValue(span, languageCode: languageCode),
+               Self.matchesLocalizedIntegerValue(span, value: parsedValue, languageCode: languageCode) {
+                return startIndex..<markers.count
+            }
+        }
+
+        return nil
     }
 
     private func markerTokenEnd(for marker: ListPatternMarker, in nsText: NSString) -> Int {
