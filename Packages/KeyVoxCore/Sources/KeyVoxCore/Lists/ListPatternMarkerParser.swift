@@ -124,6 +124,30 @@ struct ListPatternMarkerParser {
         return false
     }
 
+    static func matchesLocalizedIntegerValue(
+        _ rawToken: String,
+        value: Int,
+        languageCode: String? = nil
+    ) -> Bool {
+        let token = rawToken
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        guard !token.isEmpty else { return false }
+
+        for locale in candidateLocales(from: languageCode) {
+            formattersLock.lock()
+            let numberFormatter = formatterWithoutLock(for: locale)
+            let roundTrip = numberFormatter.string(from: NSNumber(value: value))
+            formattersLock.unlock()
+
+            guard let roundTrip else { continue }
+            guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { continue }
+            return true
+        }
+
+        return false
+    }
+
     static func hasExplicitDelimitedMarkerPrefix(in text: String, languageCode: String?) -> Bool {
         guard let marker = leadingMarker(in: text, languageCode: languageCode) else { return false }
         let nsText = text as NSString
@@ -272,7 +296,7 @@ struct ListPatternMarkerParser {
             deduped.append(marker)
         }
 
-        return deduped
+        return removingLocalizedCompoundContinuations(from: deduped, in: nsText, languageCode: languageCode)
     }
 
     private static func normalizedSpokenToken(_ token: String) -> String {
@@ -326,6 +350,55 @@ struct ListPatternMarkerParser {
         }
 
         return nil
+    }
+
+    private func removingLocalizedCompoundContinuations(
+        from markers: [ListPatternMarker],
+        in nsText: NSString,
+        languageCode: String?
+    ) -> [ListPatternMarker] {
+        guard markers.count > 1 else { return markers }
+
+        var filtered: [ListPatternMarker] = []
+        filtered.reserveCapacity(markers.count)
+        for marker in markers {
+            if let previous = filtered.last,
+               marker.markerTokenStart == previous.contentStart,
+               localizedIntegerSpan(from: previous, through: marker, in: nsText, languageCode: languageCode) {
+                continue
+            }
+            filtered.append(marker)
+        }
+        return filtered
+    }
+
+    private func localizedIntegerSpan(
+        from previous: ListPatternMarker,
+        through marker: ListPatternMarker,
+        in nsText: NSString,
+        languageCode: String?
+    ) -> Bool {
+        let spanEnd = markerTokenEnd(for: marker, in: nsText)
+        guard spanEnd > previous.markerTokenStart else { return false }
+
+        let span = nsText.substring(
+            with: NSRange(location: previous.markerTokenStart, length: spanEnd - previous.markerTokenStart)
+        )
+        return Self.matchesLocalizedIntegerValue(
+            span,
+            value: previous.number + marker.number,
+            languageCode: languageCode
+        )
+    }
+
+    private func markerTokenEnd(for marker: ListPatternMarker, in nsText: NSString) -> Int {
+        var index = marker.markerTokenStart
+        while index < nsText.length {
+            let character = nsText.substring(with: NSRange(location: index, length: 1))
+            guard character.rangeOfCharacter(from: .alphanumerics) != nil || character == "-" else { break }
+            index += 1
+        }
+        return index
     }
 
     private func contentStart(afterTokenRange tokenRange: NSRange, in nsText: NSString) -> Int? {

@@ -233,6 +233,18 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "I'm probably going to release version one point two next week.")
     }
 
+    func testDoesNotFormatCompoundSpokenQuantityAsList() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Essentially I'm able to pull one month every thirty two hours.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Essentially I'm able to pull one month every thirty two hours.")
+    }
+
     func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
         let processor = TranscriptionPostProcessor()
 
