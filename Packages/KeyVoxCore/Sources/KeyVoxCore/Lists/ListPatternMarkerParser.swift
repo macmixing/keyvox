@@ -380,7 +380,7 @@ struct ListPatternMarkerParser {
         languageCode: String?
     ) -> Range<Int>? {
         guard markers.count > 1, let marker = markers.last else { return nil }
-        let spanEnd = markerTokenEnd(for: marker, in: nsText)
+        let spanEnd = ListPatternMarkerBounds.markerTokenEnd(for: marker, in: nsText)
         guard spanEnd > marker.markerTokenStart else { return nil }
 
         for startIndex in stride(from: markers.count - 2, through: 0, by: -1) {
@@ -399,16 +399,6 @@ struct ListPatternMarkerParser {
         }
 
         return nil
-    }
-
-    private func markerTokenEnd(for marker: ListPatternMarker, in nsText: NSString) -> Int {
-        var index = marker.markerTokenStart
-        while index < nsText.length {
-            let character = nsText.substring(with: NSRange(location: index, length: 1))
-            guard character.rangeOfCharacter(from: .alphanumerics) != nil || character == "-" else { break }
-            index += 1
-        }
-        return index
     }
 
     private func contentStart(afterTokenRange tokenRange: NSRange, in nsText: NSString) -> Int? {
