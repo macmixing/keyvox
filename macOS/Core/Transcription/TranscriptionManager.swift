@@ -33,6 +33,11 @@ class TranscriptionManager: ObservableObject {
     private lazy var dictationChangeController = MacDictationChangeController(
         vibesCoordinator: vibesCoordinator
     )
+    private lazy var vibeTriggerActionController = MacVibesTriggerActionController(
+        appSettings: appSettings,
+        vibesCoordinator: vibesCoordinator,
+        dictationChangeController: dictationChangeController
+    )
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: provider,
         postProcessor: postProcessor,
@@ -64,11 +69,7 @@ class TranscriptionManager: ObservableObject {
     )
     private var isLocked = false
     private var cachedCapsLockIsOn = false
-    private var triggerPressedAt: Date?
-    private var triggerTapClassifier = MacTriggerTapClassifier()
-    private var pendingSingleTapWorkItem: DispatchWorkItem?
     private var cancellables = Set<AnyCancellable>()
-    private let quickTapMaximumDuration: TimeInterval = 0.22
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
     private let microphoneSilenceWarningDelay: TimeInterval = 0.5
@@ -175,8 +176,7 @@ class TranscriptionManager: ObservableObject {
         #endif
         
         playSound(named: "Bottle") // Cancel sound
-        pendingSingleTapWorkItem?.cancel()
-        pendingSingleTapWorkItem = nil
+        vibeTriggerActionController.cancelPendingSingleTap()
         audioRecorder.stopRecording { _ in }
         provider.cancelTranscription()
         isLocked = false
@@ -207,7 +207,7 @@ class TranscriptionManager: ObservableObject {
         }
 
         if isPressed {
-            triggerPressedAt = Date()
+            vibeTriggerActionController.noteTriggerPressed()
             if state == .idle {
                 startRecording()
             } else if state == .recording && isLocked {
@@ -224,23 +224,18 @@ class TranscriptionManager: ObservableObject {
                     print("Hands-free mode LOCKED")
                     #endif
                 } else if !isLocked {
-                    if shouldHandleReleaseAsQuickTap() {
+                    if vibeTriggerActionController.shouldHandleReleaseAsQuickTap() {
                         cancelQuickTapRecording()
-                        handleQuickTriggerTap()
+                        vibeTriggerActionController.handleQuickTap()
                     } else {
                         stopRecordingAndTranscribe()
                     }
                 }
             }
-            triggerPressedAt = nil
+            vibeTriggerActionController.clearTriggerPress()
         }
 
         updateOverlayHandsFreeVisualState()
-    }
-
-    private func shouldHandleReleaseAsQuickTap() -> Bool {
-        guard let triggerPressedAt else { return false }
-        return Date().timeIntervalSince(triggerPressedAt) <= quickTapMaximumDuration
     }
 
     private var selectedRecordingVibeTitle: String? {
@@ -258,66 +253,6 @@ class TranscriptionManager: ObservableObject {
         state = .idle
     }
 
-    private func handleQuickTriggerTap() {
-        guard vibesCoordinator.canUseVibes else {
-            appSettings.selectedVibe = .none
-            return
-        }
-
-        switch triggerTapClassifier.registerQuickTap(at: Date()) {
-        case .none:
-            break
-        case .scheduleSingleTap:
-            pendingSingleTapWorkItem?.cancel()
-            let workItem = DispatchWorkItem { [weak self] in
-                Task { @MainActor in
-                    await self?.performSingleVibeTap()
-                }
-            }
-            pendingSingleTapWorkItem = workItem
-            DispatchQueue.main.asyncAfter(
-                deadline: .now() + triggerTapClassifier.doubleTapInterval,
-                execute: workItem
-            )
-        case .doubleTap:
-            pendingSingleTapWorkItem?.cancel()
-            pendingSingleTapWorkItem = nil
-            let nextStyle = vibesCoordinator.advanceSelectedVibe()
-            guard nextStyle != .none || vibesCoordinator.canUseVibes else { return }
-            OverlayManager.shared.showVibePill(title: nextStyle.displayName)
-        }
-    }
-
-    private func performSingleVibeTap() async {
-        pendingSingleTapWorkItem = nil
-        guard vibesCoordinator.canUseVibes else {
-            appSettings.selectedVibe = .none
-            return
-        }
-
-        let didApply = await dictationChangeController.applyLongPressChange(
-            onProcessingStart: { [weak self] in
-                guard let self else { return }
-                OverlayManager.shared.showVibePill(
-                    title: self.vibesCoordinator.selectedVibe.displayName,
-                    state: .processing,
-                    duration: nil
-                )
-            },
-            onProcessingEnd: {}
-        )
-
-        if didApply {
-            OverlayManager.shared.showVibePill(
-                title: dictationChangeController.currentStyle.displayName,
-                state: .completed,
-                duration: 0.72
-            )
-        } else {
-            OverlayManager.shared.showVibePill(title: vibesCoordinator.selectedVibe.displayName)
-        }
-    }
-
     private func startRecording() {
         guard case .idle = state else { return }
         modelDownloader.refreshModelStatus()
@@ -332,8 +267,7 @@ class TranscriptionManager: ObservableObject {
             return
         }
 
-        pendingSingleTapWorkItem?.cancel()
-        pendingSingleTapWorkItem = nil
+        vibeTriggerActionController.cancelPendingSingleTap()
         playSound(named: "Morse") // Start sound
 
         state = .recording

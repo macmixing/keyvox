@@ -57,7 +57,8 @@ KeyVox/
 │   │   ├── Vibes/
 │   │   │   ├── MacVibesCoordinator.swift
 │   │   │   ├── MacDictationChangeController.swift
-│   │   │   └── MacTriggerTapClassifier.swift
+│   │   │   ├── MacTriggerTapClassifier.swift
+│   │   │   └── MacVibesTriggerActionController.swift
 │   │   ├── Services/
 │   │   │   ├── Paste/
 │   │   │   │   ├── Accessibility/
@@ -220,6 +221,8 @@ KeyVox/
   - Caches generated Vibe variants so repeated apply/undo hops do not re-transform already generated text.
 - `Core/Vibes/MacTriggerTapClassifier.swift`
   - Small deterministic helper for single-tap vs double-tap classification.
+- `Core/Vibes/MacVibesTriggerActionController.swift`
+  - Owns quick-tap press timing, pending single-tap work, Vibe apply/undo dispatch, and double-tap Vibe cycling outside `TranscriptionManager`.
 - `Core/Services/Paste/PasteService.swift`
   - Owns paste insertion plus latest untouched insertion verification/replacement used by Mac Vibes apply/undo.
   - Verifies the focused text range before replacement and falls back conservatively when Accessibility cannot prove the text is still safe to mutate.

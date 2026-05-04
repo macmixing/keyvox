@@ -16,6 +16,7 @@
 		E90000012FE1000100AA0001 /* MacVibesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */; };
 		E90000022FE1000100AA0001 /* MacDictationChangeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000122FE1000100AA0001 /* MacDictationChangeController.swift */; };
 		E90000032FE1000100AA0001 /* MacTriggerTapClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */; };
+		E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */; };
 		E90000042FE1000100AA0001 /* VibePillOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000142FE1000100AA0001 /* VibePillOverlay.swift */; };
 		E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */; };
 		E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */; };
@@ -330,6 +331,7 @@
 		E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesCoordinator.swift; sourceTree = "<group>"; };
 		E90000122FE1000100AA0001 /* MacDictationChangeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationChangeController.swift; sourceTree = "<group>"; };
 		E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTriggerTapClassifier.swift; sourceTree = "<group>"; };
+		E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesTriggerActionController.swift; sourceTree = "<group>"; };
 		E90000142FE1000100AA0001 /* VibePillOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillOverlay.swift; sourceTree = "<group>"; };
 		E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTriggerTapClassifierTests.swift; sourceTree = "<group>"; };
 		E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedVibeLabel.swift; sourceTree = "<group>"; };
@@ -716,6 +718,7 @@
 			children = (
 				E90000122FE1000100AA0001 /* MacDictationChangeController.swift */,
 				E90000132FE1000100AA0001 /* MacTriggerTapClassifier.swift */,
+				E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */,
 				E90000112FE1000100AA0001 /* MacVibesCoordinator.swift */,
 			);
 			path = Vibes;
@@ -935,6 +938,7 @@
 				E90000012FE1000100AA0001 /* MacVibesCoordinator.swift in Sources */,
 				E90000022FE1000100AA0001 /* MacDictationChangeController.swift in Sources */,
 				E90000032FE1000100AA0001 /* MacTriggerTapClassifier.swift in Sources */,
+				E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */,
 				E90000042FE1000100AA0001 /* VibePillOverlay.swift in Sources */,
 				E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
