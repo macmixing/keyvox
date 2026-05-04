@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.7] - 2026-05-04
+
+List parsing and built-in dictionary refinements for shared dictation.
+
+### Includes
+
+- Updated shared list detection to keep localized spoken decimal/version phrases inline instead of treating adjacent number words as list markers.
+- Updated spoken-number marker parsing so compound quantity phrases stay intact when a later number word is part of the same localized integer.
+- Added `KeyVox Vibes` as a package-owned built-in dictionary entry with observed alias variants, including prompt-hint coverage alongside existing built-in product names.
+- Quieted shared DEBUG post-processing logs during deterministic variant generation while preserving normal live pipeline observability.
+
+### Notes
+
+- `1.0.7` bumps the tracked engine version for `KeyVoxCore` to cover shared list false-positive fixes, the `KeyVox Vibes` built-in dictionary entry, and deterministic-variant logging behavior used by both app clients.
+
 ## [1.0.6] - 2026-04-25
 
 Built-in app and product dictionary handling for shared dictation.
