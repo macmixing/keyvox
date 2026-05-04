@@ -245,13 +245,23 @@ class TranscriptionManager: ObservableObject {
     }
 
     private func cancelQuickTapRecording() {
-        audioRecorder.stopRecording { _ in }
-        vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
-        isLocked = false
-        stopRequestedAt = nil
-        activeStopRequestID = nil
-        OverlayManager.shared.hide()
-        state = .idle
+        let stopRequestID = UUID()
+        stopRequestedAt = Date()
+        activeStopRequestID = stopRequestID
+        state = .stopping
+        isLocked = true
+
+        audioRecorder.stopRecording { [weak self] _ in
+            guard let self else { return }
+            guard self.activeStopRequestID == stopRequestID else { return }
+            self.vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
+            self.isLocked = false
+            self.stopRequestedAt = nil
+            self.activeStopRequestID = nil
+            OverlayManager.shared.hide()
+            self.state = .idle
+            self.updateOverlayHandsFreeVisualState()
+        }
     }
 
     private func startRecording() {
