@@ -97,11 +97,11 @@ final class DictionaryStoreTests: XCTestCase {
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
             XCTAssertEqual(store.entries, [])
-            XCTAssertEqual(store.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak")
+            XCTAssertEqual(store.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
 
             let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
             XCTAssertEqual(reloaded.entries, [])
-            XCTAssertEqual(reloaded.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak")
+            XCTAssertEqual(reloaded.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
         }
     }
 

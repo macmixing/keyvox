@@ -107,6 +107,30 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(keyvoxOutput, "I am using KeyVox Speak.")
     }
 
+    func testAppliesBuiltInVibesProductNameDictionaryEntryWithoutUserEntry() {
+        let processor = TranscriptionPostProcessor()
+
+        let kivokOutput = processor.process(
+            "I am using Kivok Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let kivoxOutput = processor.process(
+            "I am using Kivox Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let keyvoxOutput = processor.process(
+            "I am using Keyvox Vibes.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(kivokOutput, "I am using KeyVox Vibes.")
+        XCTAssertEqual(kivoxOutput, "I am using KeyVox Vibes.")
+        XCTAssertEqual(keyvoxOutput, "I am using KeyVox Vibes.")
+    }
+
     func testBuiltInAppNameDictionaryEntryWinsOverUserDuplicate() {
         let processor = TranscriptionPostProcessor()
         let entries = [
