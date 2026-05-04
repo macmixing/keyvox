@@ -292,11 +292,9 @@ class PasteService {
             return false
         }
 
-        usleep(1000)
-
         let replacementLength = (replacementText as NSString).length
         let insertedRange = CFRange(location: range.location, length: replacementLength)
-        guard axInspector.stringForRange(insertedRange, element: element) == replacementText else {
+        guard waitForAXReplacement(replacementText, in: insertedRange, element: element) else {
             #if DEBUG
             print("[PasteService] replacement ax verification failed")
             #endif
@@ -310,6 +308,25 @@ class PasteService {
             #endif
         }
         return true
+    }
+
+    private func waitForAXReplacement(
+        _ replacementText: String,
+        in range: CFRange,
+        element: AXUIElement
+    ) -> Bool {
+        var delay: useconds_t = 1_000
+        let timeout = Date().addingTimeInterval(0.12)
+
+        while Date() < timeout {
+            if axInspector.stringForRange(range, element: element) == replacementText {
+                return true
+            }
+            usleep(delay)
+            delay = min(delay * 2, 16_000)
+        }
+
+        return axInspector.stringForRange(range, element: element) == replacementText
     }
 
     private func replaceSelectedRangeViaMenuFallback(_ replacementText: String) -> Bool {
