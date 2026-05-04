@@ -91,6 +91,7 @@ KeyVox/
 │   │   ├── UpdatePromptOverlay.swift
 │   │   ├── Updates/
 │   │   ├── Settings/
+│   │   │   └── SettingsVibesCard.swift
 │   │   └── Warnings/
 │   ├── Resources/
 │   ├── KeyVoxTests/
@@ -626,7 +627,9 @@ KeyVox/
   - Dictation provider selection plus install/remove/progress/error UI for model-backed providers.
 - `Views/Settings/SettingsView+Style.swift`
   - Style tab with standalone Lists and Paragraphs cards backed by persisted `listFormattingEnabled` and `autoParagraphsEnabled`.
-  - Shows the KeyVox Vibes card only when Foundation rewrite is available; Vibes are device-local on Mac and have no Mac paywall.
+  - Composes the KeyVox Vibes card only when Foundation rewrite is available; Vibes are device-local on Mac and have no Mac paywall.
+- `Views/Settings/SettingsVibesCard.swift`
+  - KeyVox Vibes settings card with the Vibe selector, package-owned examples, and trigger-key usage hint.
 - `Views/Settings/SettingsView+More.swift`
   - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
 - `Views/Warnings/*`
