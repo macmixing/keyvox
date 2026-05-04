@@ -15,9 +15,8 @@ nonisolated struct MacTriggerTapClassifier {
     }
 
     mutating func registerQuickTap(at date: Date) -> Event {
-        defer { lastTapAt = date }
-
         guard let lastTapAt else {
+            self.lastTapAt = date
             return .scheduleSingleTap
         }
 
@@ -26,6 +25,7 @@ nonisolated struct MacTriggerTapClassifier {
             return .doubleTap
         }
 
+        self.lastTapAt = date
         return .scheduleSingleTap
     }
 }
