@@ -257,9 +257,9 @@ class PasteService {
             return nil
         }
 
-        if let currentIdentity = frontmostAppIdentity(),
-           let lastInsertionAppIdentity,
-           !appIdentityMatches(currentIdentity, lastInsertionAppIdentity) {
+        guard let currentIdentity = frontmostAppIdentity(),
+              let lastInsertionAppIdentity,
+              appIdentityMatches(currentIdentity, lastInsertionAppIdentity) else {
             return nil
         }
 
