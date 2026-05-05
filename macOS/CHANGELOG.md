@@ -6,6 +6,31 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.0.10] - 2026-05-04
+
+Ships shared dictation engine updates from the iOS release line to macOS, focused on built-in KeyVox dictionary handling, safer post-processing, and the Parakeet prompt-priming fix.
+
+### Changed
+
+- Updated the bundled `KeyVoxCore` package to `1.0.8` with shared built-in dictionary entries for `KeyVox` and `KeyVox Speak`, centralized dictionary hint prompt construction, refined list parsing, and deterministic post-processing variants.
+- Updated the bundled `KeyVoxParakeet` package to `1.0.3` with unsupported decoder prompt priming removed from the Parakeet runtime.
+- Moved effective dictionary ownership into the shared dictation pipeline so macOS still decides audio eligibility for dictionary hinting while `KeyVoxCore` owns built-in entries, prompt content, dictionary matching, and prompt-echo suppression.
+- Updated macOS engineering documentation and codemap notes for the shared dictionary ownership model.
+
+### Fixed
+
+- Fixed Parakeet dictation corruption where dictionary prompt text could advance decoder state before audio decoding and cause the beginning of words to be dropped or mangled.
+- Fixed app and product name correction so `KeyVox` and `KeyVox Speak` can be corrected through hidden built-in dictionary entries without requiring visible user dictionary entries.
+- Refined shared list-marker parsing and post-processing so dictated text is less likely to be misread as structured list content.
+- Preserved dictionary correction through the post-transcription matcher path when provider prompt hinting is unavailable or disabled.
+
+### Package versions
+
+KeyVox macOS 1.0.10:
+- KeyVoxCore       1.0.8
+- KeyVoxWhisper    1.0.0
+- KeyVoxParakeet   1.0.3
+
 ## [1.0.9] - 2026-04-22
 
 ### Changed
