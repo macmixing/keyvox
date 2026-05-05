@@ -32,12 +32,6 @@ extension ParakeetService {
                 return
             }
 
-            if useDictionaryHintPrompt {
-                parakeet.params.initialPrompt = self.dictionaryHintPrompt
-            } else {
-                parakeet.params.initialPrompt = ""
-            }
-
             let paragraphChunker = self.paragraphChunker
 
             do {

@@ -60,20 +60,12 @@ final class ParakeetServiceTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testUpdateDictionaryHintPromptTrimsWhitespace() {
-        let service = ParakeetService()
-
-        service.updateDictionaryHintPrompt("  cueboard  ")
-
-        XCTAssertEqual(service.dictionaryHintPrompt, "cueboard")
-    }
-
     func testWarmupLoadsParakeetOffMainThread() throws {
         let modelURL = try makeModelDirectory()
         let expectation = expectation(description: "warmup loader invoked")
         let service = ParakeetService(
             modelURLResolver: { modelURL },
-            parakeetLoader: { _, _ in
+            parakeetLoader: { _ in
                 XCTAssertFalse(Thread.isMainThread)
                 expectation.fulfill()
                 throw NSError(domain: "ParakeetServiceTests", code: 1)

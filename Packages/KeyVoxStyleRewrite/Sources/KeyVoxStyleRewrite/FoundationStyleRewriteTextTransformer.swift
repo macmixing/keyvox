@@ -4,6 +4,14 @@ import Foundation
 import FoundationModels
 #endif
 
+#if canImport(FoundationModels)
+@available(iOS 26.0, macOS 26.0, visionOS 26.0, *)
+@Generable
+private struct FoundationStyleRewriteGeneratedResponse {
+    let value: String
+}
+#endif
+
 public struct FoundationTextTransformTokenCounter: TextTransformTokenCounting {
     private let fallbackTokenCounter: any TextTransformTokenCounting
 
@@ -388,6 +396,7 @@ private final class FoundationStyleRewriteChunkResponder: TextTransformChunkResp
 
             let response = try await session.respond(
                 to: request.prompt(for: chunk.text),
+                generating: FoundationStyleRewriteGeneratedResponse.self,
                 options: GenerationOptions(
                     sampling: .greedy,
                     temperature: 0,
@@ -395,16 +404,12 @@ private final class FoundationStyleRewriteChunkResponder: TextTransformChunkResp
                 )
             )
 
-            if FoundationStyleRewriteOutputPolicy.isRefusalOrMetaResponse(response.content) {
-                throw FoundationStyleRewriteError.refusal
-            }
-
-            return response.content
-        } catch LanguageModelSession.GenerationError.refusal {
+            return response.content.value
+        } catch LanguageModelSession.GenerationError.refusal(_, _) {
             throw FoundationStyleRewriteError.refusal
-        } catch LanguageModelSession.GenerationError.guardrailViolation {
+        } catch LanguageModelSession.GenerationError.guardrailViolation(_) {
             throw FoundationStyleRewriteError.guardrailViolation
-        } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
+        } catch LanguageModelSession.GenerationError.exceededContextWindowSize(_) {
             throw FoundationStyleRewriteError.exceededContextWindow
         } catch {
             throw FoundationStyleRewriteError.generationFailed(String(describing: error))
@@ -545,44 +550,5 @@ private extension TextTransformResult {
             errors: errors,
             processingMode: nextMode
         )
-    }
-}
-
-enum FoundationStyleRewriteOutputPolicy {
-    static func isRefusalOrMetaResponse(_ text: String) -> Bool {
-        let normalized = text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-
-        guard !normalized.isEmpty else { return false }
-
-        let refusalLeadIns = [
-            "i cannot",
-            "i can't",
-            "i am unable",
-            "i'm unable",
-            "i’m unable",
-            "i am sorry",
-            "i'm sorry",
-            "i’m sorry",
-            "sorry,"
-        ]
-        guard refusalLeadIns.contains(where: { normalized.hasPrefix($0) }) else {
-            return false
-        }
-
-        let taskTerms = [
-            "format",
-            "rewrite",
-            "transform",
-            "edit",
-            "provided",
-            "request",
-            "text",
-            "content",
-            "offensive",
-            "inappropriate"
-        ]
-        return taskTerms.contains(where: normalized.contains)
     }
 }

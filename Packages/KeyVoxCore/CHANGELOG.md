@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.8] - 2026-05-05
+
+Removed Parakeet dictionary prompt forwarding from the shared service layer.
+
+### Includes
+
+- Updated `ParakeetService` so shared dictionary hint prompt updates are ignored for Parakeet instead of being forwarded into the Parakeet decoder.
+- Simplified Parakeet warmup and model loading so Core no longer captures or passes prompt text into `KeyVoxParakeet`.
+- Kept the shared dictation provider API intact while leaving dictionary correction to the existing post-transcription matcher path.
+- Updated Parakeet service coverage for the prompt-free loader shape.
+
+### Notes
+
+- `1.0.8` bumps the tracked engine version for `KeyVoxCore` to cover the shared-service side of removing unsupported Parakeet prompt hinting while preserving dictionary matching.
+
 ## [1.0.7] - 2026-05-04
 
 List parsing and built-in dictionary refinements for shared dictation.

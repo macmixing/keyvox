@@ -57,18 +57,6 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertTrue(request.promptPrefix.contains("use normal sentence capitalization for that remaining first word"))
     }
 
-    func testFoundationOutputPolicyFlagsMetaRefusal() {
-        XCTAssertTrue(FoundationStyleRewriteOutputPolicy.isRefusalOrMetaResponse(
-            "I cannot format the text you provided."
-        ))
-    }
-
-    func testFoundationOutputPolicyAllowsOrdinaryCannotSentence() {
-        XCTAssertFalse(FoundationStyleRewriteOutputPolicy.isRefusalOrMetaResponse(
-            "i cannot believe this happened"
-        ))
-    }
-
     func testStyleFoundationRewriteEligibility() {
         XCTAssertFalse(StyleRewriteStyle.none.usesFoundationRewrite)
         XCTAssertTrue(StyleRewriteStyle.polished.usesFoundationRewrite)
