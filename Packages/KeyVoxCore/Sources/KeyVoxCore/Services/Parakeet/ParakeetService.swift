@@ -4,7 +4,7 @@ import KeyVoxParakeet
 
 @MainActor
 public final class ParakeetService: ObservableObject, DictationProvider {
-    typealias ParakeetLoader = (_ modelURL: URL, _ initialPrompt: String) throws -> Parakeet?
+    typealias ParakeetLoader = (_ modelURL: URL) throws -> Parakeet?
 
     struct WarmupHandle {
         let id: UUID
@@ -21,7 +21,6 @@ public final class ParakeetService: ObservableObject, DictationProvider {
     var warmupHandle: WarmupHandle?
 
     var parakeet: Parakeet?
-    var dictionaryHintPrompt = ""
     var transcriptionTask: Task<Void, Never>?
     let paragraphChunker = AudioParagraphChunker()
 
@@ -52,9 +51,6 @@ public final class ParakeetService: ObservableObject, DictationProvider {
     }
 
     public func updateDictionaryHintPrompt(_ prompt: String) {
-        let cleanedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        dictionaryHintPrompt = cleanedPrompt
-        parakeet?.params.initialPrompt = cleanedPrompt
     }
 
     func resolvedModelURL() -> URL? {

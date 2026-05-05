@@ -34,11 +34,10 @@ extension ParakeetService {
         guard let modelURL = resolvedModelURL() else { return nil }
 
         let warmupID = UUID()
-        let initialPrompt = dictionaryHintPrompt
         let loader = parakeetLoader
         let task = Task.detached(priority: .userInitiated) {
             do {
-                return try loader(modelURL, initialPrompt)
+                return try loader(modelURL)
             } catch {
                 #if DEBUG
                 print("ParakeetService: Warmup skipped (\(error.localizedDescription)).")
@@ -90,13 +89,10 @@ extension ParakeetService {
         }
 
         parakeet = warmedParakeet
-        parakeet?.params.initialPrompt = dictionaryHintPrompt
     }
 
-    nonisolated static func makeParakeet(modelURL: URL, initialPrompt: String) throws -> Parakeet? {
-        var params = ParakeetParams.default
-        params.initialPrompt = initialPrompt
-        return try Parakeet(fromModelURL: modelURL, withParams: params)
+    nonisolated static func makeParakeet(modelURL: URL) throws -> Parakeet? {
+        try Parakeet(fromModelURL: modelURL, withParams: .default)
     }
 
     private func logModelUnloadedIfNeeded(_ parakeet: Parakeet?) {

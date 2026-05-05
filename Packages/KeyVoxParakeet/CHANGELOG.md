@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-05-05
+
+Removed unsupported Parakeet prompt priming from the runtime.
+
+### Includes
+
+- Removed `initialPrompt` from `ParakeetParams` so package consumers can no longer configure natural-language prompt text for the Parakeet TDT decoder.
+- Removed the Core ML decoder path that tokenized prompt text and advanced decoder state before audio decoding.
+- Removed prompt-tokenization support from `ParakeetVocabulary`, leaving vocabulary handling focused on token lookup, classification, and decoded text assembly.
+- Updated package docs and release tracking to reflect that Parakeet dictionary handling should not use decoder prompt priming.
+
+### Notes
+
+- `1.0.3` bumps the tracked runtime version for `KeyVoxParakeet` to cover removal of the unsupported prompt-priming behavior that could corrupt the start of decoded words.
+
 ## [1.0.2] - 2026-04-14
 
 Parakeet decoder timing and no-speech gating refinements for short cue-like hallucinations.

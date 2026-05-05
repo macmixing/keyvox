@@ -27,7 +27,7 @@ It provides a package-owned API boundary for Parakeet model loading, runtime lif
 - inference configuration through `ParakeetParams`
 - runtime lifecycle and request invalidation through `ParakeetRuntime`
 - Core ML backend loading and decoding under `ParakeetCoreML/`
-- vocabulary loading and prompt tokenization through `ParakeetVocabulary`
+- vocabulary loading through `ParakeetVocabulary`
 - package-owned Parakeet error types and segment models
 
 ## What Does Not Live Here
@@ -50,11 +50,11 @@ Those concerns belong in other package or app boundaries. `KeyVoxParakeet` stays
 - `Sources/KeyVoxParakeet/Parakeet.swift`
   Public wrapper for loading a model, running transcription, cancelling, and unloading.
 - `Sources/KeyVoxParakeet/ParakeetParams.swift`
-  Public inference options such as language, initial prompt, timestamps, and alternatives.
+  Public inference options such as language, timestamps, and alternatives.
 - `Sources/KeyVoxParakeet/ParakeetRuntime.swift`
   Internal runtime ownership, backend selection, request invalidation, and unload behavior.
 - `Sources/KeyVoxParakeet/ParakeetVocabulary.swift`
-  Vocabulary loading, token classification, and prompt token support.
+  Vocabulary loading and token classification.
 - `Sources/KeyVoxParakeet/ParakeetError.swift`
   Package-owned runtime and initialization errors.
 - `Sources/KeyVoxParakeet/Segment.swift`
@@ -84,7 +84,6 @@ It is responsible for:
 `ParakeetParams` holds public inference configuration for:
 
 - `languageCode`
-- `initialPrompt`
 - `enableTimestamps`
 - `maxAlternatives`
 
@@ -119,9 +118,7 @@ The package hides that implementation behind the internal runtime backend protoc
 `ParakeetVocabulary` loads the packaged vocabulary JSON from the model directory and supports:
 
 - token lookup by ID
-- ID lookup by token
 - token classification
-- greedy prompt tokenization
 
 This keeps vocabulary logic out of the app layer and close to the Parakeet runtime that depends on it.
 
@@ -144,7 +141,6 @@ func transcribe(audioFrames: [Float], modelURL: URL) async throws -> [ParakeetSe
         fromModelURL: modelURL,
         withParams: ParakeetParams(
             languageCode: "en",
-            initialPrompt: "",
             enableTimestamps: false,
             maxAlternatives: 1
         )
@@ -169,7 +165,6 @@ The package includes focused runtime coverage under `Tests/KeyVoxParakeetTests/`
 - cancellation behavior
 - metadata mapping
 - decoder projection helpers
-- vocabulary prompt tokenization
 
 Run the package tests with:
 

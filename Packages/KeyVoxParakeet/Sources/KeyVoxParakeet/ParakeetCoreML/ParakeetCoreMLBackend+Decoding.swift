@@ -46,7 +46,6 @@ extension ParakeetCoreMLBackend {
         let encoderStepInput = try makeFloat32Array(shape: [1, Constants.encoderChannelCount, 1])
         let decoderStepInput = try makeFloat32Array(shape: [1, Constants.decoderHiddenSize, 1])
         var decoderStep = try initialDecoderStep()
-        decoderStep = try applyInitialPromptIfNeeded(params.initialPrompt, to: decoderStep)
         var emittedTokens: [EmittedToken] = []
         emittedTokens.reserveCapacity(min(encoderFrames.frameCount * 2, Constants.maxTokenCountPerChunk))
 
@@ -201,23 +200,6 @@ extension ParakeetCoreMLBackend {
             relativeStartTimeMilliseconds: textTiming.startMilliseconds,
             relativeEndTimeMilliseconds: textTiming.endMilliseconds
         )
-    }
-
-    func applyInitialPromptIfNeeded(_ prompt: String, to decoderStep: DecoderStep) throws -> DecoderStep {
-        let promptTokenIDs = vocabulary.promptTokenIDs(from: prompt)
-        guard !promptTokenIDs.isEmpty else { return decoderStep }
-
-        var primedDecoderStep = decoderStep
-        if let startOfContextTokenID = vocabulary.tokenID(forExactToken: "<|startofcontext|>") {
-            primedDecoderStep = try runDecoder(targetID: startOfContextTokenID, state: primedDecoderStep.state)
-        }
-
-        for tokenID in promptTokenIDs {
-            primedDecoderStep = try runDecoder(targetID: tokenID, state: primedDecoderStep.state)
-        }
-
-        debugLog("Applied prompt hint with \(promptTokenIDs.count) tokens")
-        return primedDecoderStep
     }
 
     func initialDecoderStep() throws -> DecoderStep {
