@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.2] - 2026-05-06
+
+Fixes warm keyboard dictation handoff in Messages edit mode so recording starts immediately, missed IPC state updates are reconciled, and completed transcription text is inserted into the edited message field.
+
+### Fixed
+
+- Fixed a Messages edit-mode keyboard dictation handoff where warm recordings could appear flatlined, remain stuck transcribing, or fail to insert text when recording state or transcription-ready notifications were missed.
+
+### Package versions
+
+KeyVox iOS 1.1.2
+  KeyVoxCore       1.0.8
+  KeyVoxWhisper    1.0.0
+  KeyVoxParakeet   1.0.3
+  KeyVoxTTS        1.0.0
+
 ## [1.1.1] - 2026-05-05
 
 Ships a focused Parakeet dictation fix that removes unsupported prompt priming from the iOS Parakeet path while preserving dictionary correction through post-transcription matching.
