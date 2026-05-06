@@ -23,7 +23,7 @@ struct KeyboardDictationControllerTests {
         #expect(scheduler.scheduledDelays == [5.0])
     }
 
-    @Test func warmSessionSchedulesGracePeriodBeforeOpeningContainingApp() {
+    @Test func warmSessionStartsRecordingImmediatelyBeforeGraceFallback() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = true
         let scheduler = KeyboardActionSchedulerSpy()
@@ -36,6 +36,9 @@ struct KeyboardDictationControllerTests {
         )
 
         controller.handleMicTap()
+
+        #expect(controller.state == .recording)
+
         scheduler.runScheduledAction(after: 0.5)
 
         #expect(controller.state == .waitingForApp)
@@ -58,6 +61,29 @@ struct KeyboardDictationControllerTests {
 
         controller.handleMicTap()
         ipcManager.onRecordingStarted?()
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(controller.state == .recording)
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
+    @Test func warmSessionGracePeriodAdoptsRecordingStateWhenStartNotificationIsMissed() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = true
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+
+        controller.handleMicTap()
+
+        #expect(controller.state == .recording)
+
+        ipcManager.currentRecordingStateValue = .recording
         scheduler.runScheduledAction(after: 0.5)
 
         #expect(controller.state == .recording)
@@ -101,6 +127,74 @@ struct KeyboardDictationControllerTests {
         #expect(appLauncher.openedURLs.isEmpty)
     }
 
+    @Test func transcribingReconciliationInsertsTextWhenReadyNotificationIsMissed() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.reconciledRecordingStateValue = .recording
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+        var receivedText: String?
+
+        controller.onTranscriptionReady = { text in
+            receivedText = text
+        }
+
+        controller.handleMicTap()
+        ipcManager.reconciledRecordingStateValue = .idle
+        ipcManager.currentTranscriptionValue = "Edited message text"
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(receivedText == "Edited message text")
+        #expect(controller.state == .idle)
+    }
+
+    @Test func transcribingReconciliationRetriesStopWhileSharedStateIsStillTranscribing() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.reconciledRecordingStateValue = .recording
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+
+        controller.handleMicTap()
+        ipcManager.reconciledRecordingStateValue = .transcribing
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(controller.state == .transcribing)
+        #expect(ipcManager.sendStopCommandCallCount == 2)
+    }
+
+    @Test func transcribingReconciliationStopsRetryingAfterRetryLimit() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.reconciledRecordingStateValue = .recording
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start"),
+            maxTranscriptionReconciliationRetries: 1
+        )
+
+        controller.handleMicTap()
+        ipcManager.reconciledRecordingStateValue = .transcribing
+        scheduler.runScheduledAction(after: 0.5)
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(controller.state == .idle)
+        #expect(ipcManager.sendStopCommandCallCount == 2)
+    }
+
     @Test func transcriptionReadyForwardsTextAndResetsState() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         let scheduler = KeyboardActionSchedulerSpy()
@@ -135,6 +229,7 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
     var hadRecentTTSPlaybackValue = false
     var currentRecordingStateValue = KeyboardState.idle
     var reconciledRecordingStateValue = KeyboardState.idle
+    var currentTranscriptionValue: String?
 
     var registerObserversCallCount = 0
     var unregisterObserversCallCount = 0
@@ -168,6 +263,10 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
 
     func reconciledRecordingStateIfNeeded() -> KeyboardState {
         reconciledRecordingStateValue
+    }
+
+    func currentTranscription() -> String? {
+        currentTranscriptionValue
     }
 
     func isSessionWarm() -> Bool {

@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-05-05
+
+Ships a focused Parakeet dictation fix that removes unsupported prompt priming from the iOS Parakeet path while preserving dictionary correction through post-transcription matching.
+
+### Fixed
+
+- Fixed a Parakeet dictation failure where dictionary prompt text could corrupt the decoder state before audio decoding and cause the beginning of words to be dropped or mangled.
+- Removed Parakeet dictionary hint forwarding from the shared iOS dictation service path so Parakeet starts decoding from its normal blank-token state.
+- Preserved dictionary correction behavior through the existing shared dictionary matcher instead of relying on unsupported Parakeet prompt hinting.
+
+### Package versions
+
+KeyVox iOS 1.1.1
+  KeyVoxCore       1.0.8
+  KeyVoxWhisper    1.0.0
+  KeyVoxParakeet   1.0.3
+  KeyVoxTTS        1.0.0
+
 ## [1.1.0] - 2026-04-24
 
 Ships KeyVox Speak as a major iPhone release with local copied-text playback, a new Share extension, keyboard playback controls, native Shortcuts integration, PocketTTS model management, StoreKit unlock support, and shared dictation/runtime refinements.

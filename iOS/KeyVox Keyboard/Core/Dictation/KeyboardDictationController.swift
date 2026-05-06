@@ -30,6 +30,7 @@ protocol KeyboardDictationIPCManaging: AnyObject {
     func sendCancelCommand()
     func currentRecordingState() -> KeyboardState
     func reconciledRecordingStateIfNeeded() -> KeyboardState
+    func currentTranscription() -> String?
     func isSessionWarm() -> Bool
     func hasBluetoothAudioRoute() -> Bool
     func hadRecentTTSPlayback() -> Bool
@@ -72,9 +73,12 @@ final class KeyboardDictationController {
     private let warmSessionGracePeriod: TimeInterval
     private let warmSessionGracePeriodAfterTTSPlayback: TimeInterval
     private let warmSessionGracePeriodWithBluetoothAudio: TimeInterval
+    private let maxTranscriptionReconciliationRetries: Int
 
     private var waitingForAppTimeoutAction: KeyboardScheduledAction?
     private var gracePeriodAction: KeyboardScheduledAction?
+    private var transcriptionReconciliationAction: KeyboardScheduledAction?
+    private var transcriptionReconciliationRetryCount = 0
 
     private(set) var state: KeyboardState = .idle {
         didSet {
@@ -90,7 +94,8 @@ final class KeyboardDictationController {
         waitingTimeoutDuration: TimeInterval = 5,
         warmSessionGracePeriod: TimeInterval = 0.5,
         warmSessionGracePeriodAfterTTSPlayback: TimeInterval = 0.5,
-        warmSessionGracePeriodWithBluetoothAudio: TimeInterval = 1.5
+        warmSessionGracePeriodWithBluetoothAudio: TimeInterval = 1.5,
+        maxTranscriptionReconciliationRetries: Int = 10
     ) {
         self.ipcManager = ipcManager
         self.scheduleAction = scheduleAction
@@ -100,6 +105,7 @@ final class KeyboardDictationController {
         self.warmSessionGracePeriod = warmSessionGracePeriod
         self.warmSessionGracePeriodAfterTTSPlayback = warmSessionGracePeriodAfterTTSPlayback
         self.warmSessionGracePeriodWithBluetoothAudio = warmSessionGracePeriodWithBluetoothAudio
+        self.maxTranscriptionReconciliationRetries = maxTranscriptionReconciliationRetries
         configureIPC()
     }
 
@@ -133,6 +139,7 @@ final class KeyboardDictationController {
 
     func handleCancelTap() {
         cancelWaitingTimeout()
+        cancelTranscriptionReconciliation()
         ipcManager.sendCancelCommand()
         state = .idle
     }
@@ -147,6 +154,7 @@ final class KeyboardDictationController {
 
             if ipcManager.isSessionWarm() {
                 ipcManager.sendStartCommand()
+                handleRecordingStarted()
                 scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
             } else {
                 openContainingApp(startRecordingURL)
@@ -154,12 +162,14 @@ final class KeyboardDictationController {
         case .recording:
             state = .transcribing
             ipcManager.sendStopCommand()
+            scheduleTranscriptionReconciliation()
         case .speaking, .pausedSpeaking:
             state = .waitingForApp
             scheduleWaitingTimeout()
 
             if ipcManager.isSessionWarm() {
                 ipcManager.sendStartCommand()
+                handleRecordingStarted()
                 scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
             } else {
                 openContainingApp(startRecordingURL)
@@ -173,6 +183,7 @@ final class KeyboardDictationController {
         waitingForAppTimeoutAction?.cancel()
         waitingForAppTimeoutAction = nil
         cancelGracePeriod()
+        cancelTranscriptionReconciliation()
     }
 
     private func configureIPC() {
@@ -199,10 +210,12 @@ final class KeyboardDictationController {
         cancelWaitingTimeout()
         cancelGracePeriod()
         state = .transcribing
+        scheduleTranscriptionReconciliation()
     }
 
     private func handleTranscriptionReady(_ text: String) {
         cancelWaitingTimeout()
+        cancelTranscriptionReconciliation()
         onTranscriptionReady?(text)
         state = .idle
     }
@@ -210,6 +223,7 @@ final class KeyboardDictationController {
     private func handleNoSpeech() {
         cancelWaitingTimeout()
         cancelGracePeriod()
+        cancelTranscriptionReconciliation()
         state = .idle
     }
 
@@ -230,8 +244,12 @@ final class KeyboardDictationController {
     private func scheduleWarmSessionGracePeriod(after delay: TimeInterval) {
         cancelGracePeriod()
         gracePeriodAction = scheduleAction(delay) { [weak self] in
-            guard let self, self.state == .waitingForApp else { return }
-            guard self.ipcManager.currentRecordingState() != .recording else { return }
+            guard let self, self.state == .waitingForApp || self.state == .recording else { return }
+            guard self.ipcManager.currentRecordingState() != .recording else {
+                self.handleRecordingStarted()
+                return
+            }
+            self.state = .waitingForApp
             self.openContainingApp(self.startRecordingURL)
         }
     }
@@ -239,6 +257,50 @@ final class KeyboardDictationController {
     private func cancelGracePeriod() {
         gracePeriodAction?.cancel()
         gracePeriodAction = nil
+    }
+
+    private func scheduleTranscriptionReconciliation() {
+        cancelTranscriptionReconciliation(resetRetryCount: false)
+        transcriptionReconciliationAction = scheduleAction(warmSessionGracePeriod) { [weak self] in
+            guard let self, self.state == .transcribing else { return }
+
+            switch self.ipcManager.reconciledRecordingStateIfNeeded() {
+            case .idle:
+                self.transcriptionReconciliationRetryCount = 0
+                guard let text = self.ipcManager.currentTranscription(),
+                      !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    self.handleNoSpeech()
+                    return
+                }
+                self.handleTranscriptionReady(text)
+            case .recording, .transcribing:
+                guard self.canRetryTranscriptionReconciliation() else { return }
+                self.ipcManager.sendStopCommand()
+                self.scheduleTranscriptionReconciliation()
+            case .waitingForApp, .preparingPlayback, .speaking, .pausedSpeaking:
+                guard self.canRetryTranscriptionReconciliation() else { return }
+                self.scheduleTranscriptionReconciliation()
+            }
+        }
+    }
+
+    private func canRetryTranscriptionReconciliation() -> Bool {
+        transcriptionReconciliationRetryCount += 1
+        guard transcriptionReconciliationRetryCount <= maxTranscriptionReconciliationRetries else {
+            cancelTranscriptionReconciliation()
+            state = .idle
+            return false
+        }
+
+        return true
+    }
+
+    private func cancelTranscriptionReconciliation(resetRetryCount: Bool = true) {
+        transcriptionReconciliationAction?.cancel()
+        transcriptionReconciliationAction = nil
+        if resetRetryCount {
+            transcriptionReconciliationRetryCount = 0
+        }
     }
 
     private func effectiveWarmSessionGracePeriod() -> TimeInterval {

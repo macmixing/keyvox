@@ -54,6 +54,7 @@ final class KeyboardIPCManager {
     }
 
     func sendStartCommand() {
+        KeyVoxIPCBridge.removeTranscription()
         setRecordingState("waitingForApp")
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.startRecording)
     }
@@ -156,6 +157,10 @@ final class KeyboardIPCManager {
 
     func hadRecentTTSPlayback() -> Bool {
         KeyVoxIPCBridge.hadRecentTTSPlayback()
+    }
+
+    func currentTranscription() -> String? {
+        latestTranscription()
     }
 
     func reconcileKeyboardStateIfNeeded() -> KeyboardState {
