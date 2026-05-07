@@ -25,6 +25,9 @@
 		8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
 		8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
+		9B5100012FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
+		9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
+		9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +113,7 @@
 				Core/Dictation/KeyboardCallObserver.swift,
 				Core/Dictation/KeyboardDictationChangeController.swift,
 				Core/Dictation/KeyboardDictationController.swift,
+				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
 				Core/Feedback/KeyboardInteractionHaptics.swift,
 				Core/Feedback/KeyboardKeypressHaptics.swift,
@@ -304,6 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
+				9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,6 +329,7 @@
 				8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */,
 				8ED2F10A2F7F4F1C00256F9E /* KeyVoxTTS in Frameworks */,
 				8EB365C72F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
+				9B5100012FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,6 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
+				9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,6 +427,7 @@
 			name = "KeyVox Keyboard";
 			packageProductDependencies = (
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
+				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 			);
 			productName = "KeyVox Keyboard";
 			productReference = 8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */;
@@ -473,6 +481,7 @@
 				8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */,
 				9A7000022FA6000100AA0001 /* ZIPFoundation */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
+				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 			);
 			productName = KeyVox;
 			productReference = 8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */;
@@ -497,6 +506,7 @@
 			name = "KeyVox iOSTests";
 			packageProductDependencies = (
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
+				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 			);
 			productName = KeyVoxTests;
 			productReference = 8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */;
@@ -545,6 +555,7 @@
 				8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */,
 				8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				8EB365C62F9F20D300EBD9A2 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */,
+				9B5100022FB1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLocalInference" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8E9E38532F5BF1F000EAFA72 /* Products */;
@@ -1214,6 +1225,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxTTS;
 		};
+		9B5100022FB1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLocalInference" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxLocalInference;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1259,6 +1274,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		9B5100032FB1000100AA0001 /* KeyVoxLocalInference */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B5100022FB1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLocalInference" */;
+			productName = KeyVoxLocalInference;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

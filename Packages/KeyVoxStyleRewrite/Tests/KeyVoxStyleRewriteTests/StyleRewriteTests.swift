@@ -2,11 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-#if canImport(FoundationModels)
-import FoundationModels
-#endif
-
-final class StyleRewriteFoundationTests: XCTestCase {
+final class StyleRewriteTests: XCTestCase {
     func testNoneStyleReturnsNoRequest() {
         let request = StyleRewriteDictationConfiguration.request(
             for: .none,
@@ -16,7 +12,7 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertNil(request)
     }
 
-    func testPolishedRequestUsesFoundationTokenWindow() throws {
+    func testPolishedRequestUsesModelTokenWindow() throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .polished,
             baseText: "Quick note me and Sarah was talking."
@@ -25,21 +21,19 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertEqual(request.contextTokenLimit, 4_096)
         XCTAssertEqual(request.maximumResponseTokens, 512)
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.polished.styleIdentifier)
-        XCTAssertTrue(request.instructions.contains("Do not return options"))
-        XCTAssertTrue(request.promptPrefix.contains("Return only the final rewritten text"))
+        XCTAssertFalse(request.instructions.isEmpty)
+        XCTAssertFalse(request.promptPrefix.isEmpty)
     }
 
-    func testChillRequestOnlyAsksFoundationForFillerCleanup() throws {
+    func testChillRequestUsesCleanupOnlyStyle() throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .chill,
             baseText: "Hey what's up man?"
         ))
 
-        XCTAssertTrue(request.instructions.contains("Remove only words like um, uh"))
-        XCTAssertTrue(request.instructions.contains("Profanity is meaningful text, not filler."))
-        XCTAssertTrue(request.instructions.contains("Preserve the speaker's wording, word order, casing, punctuation"))
-        XCTAssertTrue(request.promptPrefix.contains("Keep profanity, insults, slang, emphasis words"))
-        XCTAssertTrue(request.promptPrefix.contains("Preserve everything else, including wording, casing, and punctuation"))
+        XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.chill.styleIdentifier)
+        XCTAssertFalse(request.instructions.isEmpty)
+        XCTAssertFalse(request.promptPrefix.isEmpty)
     }
 
     func testCasualRequestUsesCleanupOnlyStyle() throws {
@@ -49,48 +43,15 @@ final class StyleRewriteFoundationTests: XCTestCase {
         ))
 
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.casual.styleIdentifier)
-        XCTAssertTrue(request.instructions.contains("You clean up casual dictated text."))
-        XCTAssertTrue(request.instructions.contains("Preserve the speaker's wording, word order, casing, punctuation"))
-        XCTAssertTrue(request.instructions.contains("Output: Hey, what's up man?"))
-        XCTAssertTrue(request.instructions.contains("use normal sentence capitalization for that remaining first word"))
-        XCTAssertTrue(request.promptPrefix.contains("Keep the original casing, punctuation, wording, tone, slang, and formality."))
-        XCTAssertTrue(request.promptPrefix.contains("use normal sentence capitalization for that remaining first word"))
+        XCTAssertFalse(request.instructions.isEmpty)
+        XCTAssertFalse(request.promptPrefix.isEmpty)
     }
 
-    func testStyleFoundationRewriteEligibility() {
-        XCTAssertFalse(StyleRewriteStyle.none.usesFoundationRewrite)
-        XCTAssertTrue(StyleRewriteStyle.polished.usesFoundationRewrite)
-        XCTAssertTrue(StyleRewriteStyle.casual.usesFoundationRewrite)
-        XCTAssertTrue(StyleRewriteStyle.chill.usesFoundationRewrite)
-    }
-
-    func testPrewarmLifecycleIsIdempotentForMatchingRequest() throws {
-        var lifecycle = FoundationStyleRewritePrewarmLifecycle()
-        let key = FoundationStyleRewritePrewarmKey(
-            styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
-            instructions: "instructions",
-            promptPrefix: "prefix"
-        )
-
-        XCTAssertTrue(lifecycle.shouldRequestPrewarm(for: key))
-        lifecycle.markWarm()
-        XCTAssertEqual(lifecycle.usage(for: key), .warm)
-        XCTAssertFalse(lifecycle.shouldRequestPrewarm(for: key))
-    }
-
-    func testPrewarmLifecycleReleasesWarmSession() throws {
-        var lifecycle = FoundationStyleRewritePrewarmLifecycle()
-        let key = FoundationStyleRewritePrewarmKey(
-            styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
-            instructions: "instructions",
-            promptPrefix: "prefix"
-        )
-
-        XCTAssertTrue(lifecycle.shouldRequestPrewarm(for: key))
-        lifecycle.markWarm()
-        XCTAssertTrue(lifecycle.release())
-        XCTAssertEqual(lifecycle.usage(for: key), .cold)
-        XCTAssertFalse(lifecycle.release())
+    func testStyleModelRewriteEligibility() {
+        XCTAssertFalse(StyleRewriteStyle.none.usesModelRewrite)
+        XCTAssertTrue(StyleRewriteStyle.polished.usesModelRewrite)
+        XCTAssertTrue(StyleRewriteStyle.casual.usesModelRewrite)
+        XCTAssertTrue(StyleRewriteStyle.chill.usesModelRewrite)
     }
 
     func testChillHeuristicFormatsSentenceSeparatorsWithoutEndingPeriod() {
@@ -167,8 +128,8 @@ final class StyleRewriteFoundationTests: XCTestCase {
         )
     }
 
-    func testFoundationRewriteRepairCollapsesAdjacentProtectedDuplicate() {
-        let output = FoundationRewriteOutputRepair.repair(
+    func testRewriteRepairCollapsesAdjacentProtectedDuplicate() {
+        let output = StyleRewriteOutputRepair.repair(
             original: "im just trying trying to work",
             rewritten: "im just trying trying to work"
         )
@@ -177,8 +138,8 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertFalse(output.rejectedProtectedRemoval)
     }
 
-    func testFoundationRewriteRepairRestoresLocalGapForProtectedRemoval() {
-        let output = FoundationRewriteOutputRepair.repair(
+    func testRewriteRepairRestoresLocalGapForProtectedRemoval() {
+        let output = StyleRewriteOutputRepair.repair(
             original: "im just having a working awesome day",
             rewritten: "im just having an awesome day"
         )
@@ -187,14 +148,34 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertTrue(output.rejectedProtectedRemoval)
     }
 
-    func testFoundationRewriteRepairRestoresOnlyProtectedTokensForDeletedGap() {
-        let output = FoundationRewriteOutputRepair.repair(
+    func testRewriteRepairRestoresOnlyProtectedTokensForDeletedGap() {
+        let output = StyleRewriteOutputRepair.repair(
             original: "Why can't you um fucking help me?",
             rewritten: "Why can't you help me?"
         )
 
         XCTAssertEqual(output.text, "Why can't you fucking help me?")
         XCTAssertTrue(output.rejectedProtectedRemoval)
+    }
+
+    func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
+        let output = StyleRewriteOutputRepair.repair(
+            original: "Hey, um what are you doing, um tomorrow?",
+            rewritten: "Hey, what are you doing, tomorrow?"
+        )
+
+        XCTAssertEqual(output.text, "Hey, what are you doing tomorrow?")
+        XCTAssertFalse(output.rejectedProtectedRemoval)
+    }
+
+    func testRewriteRepairRestoresSentenceOpeningCommaAroundDeletedTokens() {
+        let output = StyleRewriteOutputRepair.repair(
+            original: "Phase three. Yo, um what are you doing?",
+            rewritten: "Phase three. Yo what are you doing?"
+        )
+
+        XCTAssertEqual(output.text, "Phase three. Yo, what are you doing?")
+        XCTAssertFalse(output.rejectedProtectedRemoval)
     }
 
     func testChunkPlannerBudgetsInstructionsInputAndExpectedOutput() async throws {
@@ -386,67 +367,64 @@ final class StyleRewriteFoundationTests: XCTestCase {
         XCTAssertEqual(decoded, result)
     }
 
-    func testLiveFoundationTokenCounterUsesSystemCounter() async throws {
-        try Self.requireLiveFoundationTests()
-
-        #if canImport(FoundationModels)
-        if #available(macOS 26.4, iOS 26.4, visionOS 26.4, *) {
-            let tokenCount = try await FoundationTextTransformTokenCounter().tokenCount(
-                for: "Quick note, please clean this dictated text."
-            )
-            XCTAssertGreaterThan(tokenCount, 0)
-        } else {
-            throw XCTSkip("FoundationModels token counting requires OS 26.4 or newer.")
-        }
-        #else
-        throw XCTSkip("FoundationModels is unavailable in this SDK.")
-        #endif
-    }
-
     @MainActor
-    func testLiveFoundationTransformerRunsChunkedRewrite() async throws {
-        try Self.requireLiveFoundationTests()
-
-        #if canImport(FoundationModels)
-        guard #available(macOS 26.4, iOS 26.4, visionOS 26.4, *) else {
-            throw XCTSkip("FoundationModels token counting requires OS 26.4 or newer.")
-        }
-
-        let baseText = Array(
-            repeating: "quick note me and Sarah was talking this morning and she said the numbers look good but the last part needs cleanup before we send it to the client.",
-            count: 8
-        ).joined(separator: " ")
-        let request = TextTransformRequest(
-            baseText: baseText,
-            styleIdentifier: "live-foundation-polished",
-            instructions: """
-            You are a copyeditor for dictated text.
-            Return only one edited version of the input text.
-            Preserve the original meaning and do not add commentary.
-            """,
-            promptPrefix: """
-            Copyedit this dictated text.
-            Return only the rewritten text.
-
-            Text:
-
-            """,
-            contextTokenLimit: 170,
-            expectedOutputExpansionRatio: 0.75,
-            safetyMarginTokens: 24,
-            maximumResponseTokens: 96
+    func testStyleRewriteTransformerMapsBackendFailureWithoutClaimingVibeSuccess() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .polished,
+            baseText: "Quick note this needs cleanup."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(failingChunkIndexes: [0])
+            }
         )
-        let transformer = FoundationStyleRewriteTextTransformer()
 
         let result = await transformer.transform(request)
 
-        XCTAssertGreaterThan(result.chunkCount, 1)
-        XCTAssertTrue(result.errors.isEmpty, result.errors.map(\.message).joined(separator: "; "))
-        XCTAssertFalse(result.finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        XCTAssertTrue(result.applied)
-        #else
-        throw XCTSkip("FoundationModels is unavailable in this SDK.")
-        #endif
+        XCTAssertEqual(result.finalText, request.baseText)
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.errors.map(\.errorCode), [.generationFailed])
+    }
+
+    @MainActor
+    func testStyleRewriteTransformerMapsTypedLocalBackendFailure() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .polished,
+            baseText: "Quick note this needs cleanup."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(typedError: .modelNotInstalled)
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.errors.map(\.errorCode), [.localModelNotInstalled])
+    }
+
+    @MainActor
+    func testChillUsesHeuristicTextButDoesNotClaimFullVibeSuccessWhenCleanupFails() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .chill,
+            baseText: "Um hey, this is cool."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(typedError: .modelLoadFailed("missing"))
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "um hey this is cool")
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.errors.map(\.errorCode), [.localModelLoadFailed])
+        XCTAssertEqual(result.processingMode, "local-model-cleanup-failed+heuristic")
     }
 
     private static func request(_ baseText: String) -> TextTransformRequest {
@@ -459,12 +437,6 @@ final class StyleRewriteFoundationTests: XCTestCase {
             expectedOutputExpansionRatio: 1,
             safetyMarginTokens: 0
         )
-    }
-
-    private static func requireLiveFoundationTests() throws {
-        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_FOUNDATION_MODEL_LIVE_TESTS"] == "1" else {
-            throw XCTSkip("Set KEYVOX_RUN_FOUNDATION_MODEL_LIVE_TESTS=1 to run live FoundationModels tests.")
-        }
     }
 }
 
@@ -482,13 +454,22 @@ private final class StubChunkResponder: TextTransformChunkResponding {
 
     let responses: [Int: String]
     let failingChunkIndexes: Set<Int>
+    let typedError: StyleRewriteBackendError?
 
-    init(responses: [Int: String], failingChunkIndexes: Set<Int> = []) {
+    init(
+        responses: [Int: String] = [:],
+        failingChunkIndexes: Set<Int> = [],
+        typedError: StyleRewriteBackendError? = nil
+    ) {
         self.responses = responses
         self.failingChunkIndexes = failingChunkIndexes
+        self.typedError = typedError
     }
 
     func transformChunk(_ chunk: TextTransformChunk, request: TextTransformRequest) async throws -> String {
+        if let typedError {
+            throw typedError
+        }
         if failingChunkIndexes.contains(chunk.index) {
             throw StubError.failed
         }

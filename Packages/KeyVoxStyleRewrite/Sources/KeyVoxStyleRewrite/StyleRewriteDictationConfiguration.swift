@@ -47,7 +47,7 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
         }
     }
 
-    public var usesFoundationRewrite: Bool {
+    public var usesModelRewrite: Bool {
         switch self {
         case .none:
             return false
@@ -56,8 +56,8 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
         }
     }
 
-    public func resolvedForFoundationAvailability(_ isFoundationAvailable: Bool) -> StyleRewriteStyle {
-        if usesFoundationRewrite && !isFoundationAvailable {
+    public func resolvedForModelAvailability(_ isModelAvailable: Bool) -> StyleRewriteStyle {
+        if usesModelRewrite && !isModelAvailable {
             return .none
         }
 
@@ -66,7 +66,7 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
 }
 
 public enum StyleRewriteDictationConfiguration {
-    public static let foundationContextTokenLimit = 4_096
+    public static let modelContextTokenLimit = 4_096
     public static let defaultMaximumResponseTokens = 512
     private static let contextualFormattingExamples = """
     Input: I bought that for four hundred and ninety nine dollars.
@@ -85,7 +85,7 @@ public enum StyleRewriteDictationConfiguration {
     public static func request(
         for style: StyleRewriteStyle,
         baseText: String,
-        contextTokenLimit: Int = foundationContextTokenLimit,
+        contextTokenLimit: Int = modelContextTokenLimit,
         maximumResponseTokens: Int = defaultMaximumResponseTokens
     ) -> TextTransformRequest? {
         switch style {
@@ -117,37 +117,70 @@ public enum StyleRewriteDictationConfiguration {
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
-        TextTransformRequest(
+        return TextTransformRequest(
             baseText: baseText,
             styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
             instructions: """
-            You are a copyeditor for dictated text.
+            You copyedit dictated text.
             Return exactly one edited version of the input text.
-            Do not return options, alternatives, commentary, analysis, markdown, labels, or explanations.
             Return only the edited text.
-            Do not wrap the entire edited text in quotation marks.
-            Make minimal readability edits while preserving the speaker's original wording, structure, opening phrase, message type, tone, and level of formality.
-            Keep conversational framing such as quick note, also, one more thing, and for context when it helps preserve the speaker's intent.
-            Do not convert the text into a letter, email, memo, list, or any other format unless that format is already explicit in the input.
-            Do not add greetings, sign-offs, names, placeholders, headings, bullets, reminders, tasks, or requests that were not already in the text.
-            Keep names, numbers, URLs, email addresses, emoji, symbols, and code-like text unchanged.
-            Format dictated dates, dollar amounts, and numbers correctly in context, such as years, quantities, prices, and calendar dates.
-            Remove filler words, false starts, and disfluencies such as um, uh, like, you know, I mean, and repeated starts when they do not add meaning.
-            Fix punctuation, casing, repeated words, and obvious transcription errors only when the intended correction is clear from context.
-            Prefer minimal edits over dramatic rewrites.
+            Make polished corrections that fix clear dictated-text issues.
+            Remove non-meaningful filler words, false starts, and speech disfluencies such as um, uh, like, you know, I mean, and repeated starts when they do not add meaning, even when transcription did not add commas or they appear before descriptive modifiers.
+            Correct clear grammar, subject-verb agreement, punctuation, casing, repeated words, obvious transcription errors, dictated dates, dollar amounts, and numbers.
+            Polished copyediting should fix clear grammar errors even when that changes the original wording.
+            Do not leave a clear grammar or disfluency issue unchanged only to preserve the original wording.
+            Never duplicate an input phrase that appears only once.
+            Correct subject-verb agreement when the subject and verb clearly disagree.
+            Preserve the speaker's meaning, opener, structure, sentence type, message type, tone, formality, emotional wording, names, URLs, email addresses, emoji, symbols, and code-like text.
+            Never add greetings, sign-offs, names, placeholders, headings, bullets, commentary, labels, or explanations.
+            If removing a word would change meaning, keep it.
 
             Examples:
-            \(contextualFormattingExamples)
 
-            Return only the rewritten text.
+            Input: Hey, um, are you okay?
+            Output: Hey, are you okay?
+
+            Input: Phase three. Yo, um what are you doing?
+            Output: Phase three. Yo, what are you doing?
+
+            Input: Hey, um what are you doing, um tomorrow?
+            Output: Hey, what are you doing tomorrow?
+
+            Input: Yo, um what are you doing?
+            Output: Yo, what are you doing?
+
+            Input: Um, what's up?
+            Output: What's up?
+
+            Input: I am, like, trying to figure out dinner.
+            Output: I am trying to figure out dinner.
+
+            Input: Are you um feeling this vibe? It's like pretty polished. Try it out.
+            Output: Are you feeling this vibe? It's pretty polished. Try it out.
+
+            Input: Why can't you fucking help me?
+            Output: Why can't you help me?
+
+            Input: Let's meet on May third.
+            Output: Let's meet on May 3rd.
+
+            Input: I bought that for four hundred and ninety nine dollars.
+            Output: I bought that for $499.
+
+            Input: Me and Sarah was talking about the launch.
+            Output: Me and Sarah were talking about the launch.
             """,
             promptPrefix: """
-            Copyedit this dictated text with minimal changes.
-            Return only the final rewritten text.
-            Do not wrap the final rewritten text in quotation marks.
-            Preserve the same opener, structure, tone, and message type.
-            Keep emoji and symbols if they are present.
-            Format dates, dollar amounts, and numbers correctly in context.
+            Copyedit this dictated text.
+            Apply polished copyediting.
+            Remove non-meaningful filler words, false starts, and speech disfluencies such as um, uh, like, you know, I mean, and repeated starts when they do not add meaning, even when transcription did not add commas or they appear before descriptive modifiers.
+            Correct clear grammar, subject-verb agreement, punctuation, casing, dictated dates, dollar amounts, and numbers.
+            Polished copyediting should fix clear grammar errors even when that changes the original wording.
+            Do not leave a clear grammar or disfluency issue unchanged only to preserve the original wording.
+            Never duplicate an input phrase that appears only once.
+            Correct subject-verb agreement when the subject and verb clearly disagree.
+            Preserve meaning, opener, structure, tone, and emotional wording.
+            Return only the edited text.
 
             Text:
 
@@ -164,7 +197,7 @@ public enum StyleRewriteDictationConfiguration {
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
-        TextTransformRequest(
+        return TextTransformRequest(
             baseText: baseText,
             styleIdentifier: StyleRewriteStyle.casual.styleIdentifier,
             instructions: """
@@ -175,7 +208,9 @@ public enum StyleRewriteDictationConfiguration {
             Do not paraphrase, summarize, improve, soften, intensify, reformat, recase, or make the text more casual.
             Do not replace words or phrases with synonyms.
             Do not add words, greetings, sign-offs, names, placeholders, headings, commentary, labels, or explanations.
+            Keep every meaningful input word from beginning to end.
             Remove only words like um, uh, accidental repeated starts, and clear speech stumbles that do not add meaning.
+            Remove commas that only separated removed speech disfluencies.
             If removing a disfluency exposes the real start of a sentence, use normal sentence capitalization for that remaining first word.
             Do not remove profanity, insults, slang, emphasis words, emotionally charged words, names, numbers, URLs, email addresses, emoji, symbols, or code-like text.
             Format dictated dates, dollar amounts, and numbers correctly in context, such as years, quantities, prices, and calendar dates.
@@ -190,6 +225,12 @@ public enum StyleRewriteDictationConfiguration {
             Input: I am, like, trying to figure out dinner.
             Output: I am trying to figure out dinner.
 
+            Input: Phase three. Yo, um what are you doing?
+            Output: Phase three. Yo, what are you doing?
+
+            Input: Hey, um what are you doing, um tomorrow?
+            Output: Hey, what are you doing tomorrow?
+
             Input: Why can't you fucking help me?
             Output: Why can't you fucking help me?
 
@@ -198,6 +239,8 @@ public enum StyleRewriteDictationConfiguration {
             promptPrefix: """
             Remove only obvious speech disfluencies from this dictated text.
             Keep the original casing, punctuation, wording, tone, slang, and formality.
+            Keep every meaningful input word from beginning to end.
+            Remove commas that only separated removed speech disfluencies.
             If removing a disfluency exposes the real start of a sentence, use normal sentence capitalization for that remaining first word.
             Keep profanity, insults, slang, emphasis words, and emotionally charged words.
             Keep emoji and symbols if they are present.
@@ -220,52 +263,22 @@ public enum StyleRewriteDictationConfiguration {
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
-        TextTransformRequest(
+        let cleanupRequest = casualRequest(
+            baseText: baseText,
+            contextTokenLimit: contextTokenLimit,
+            maximumResponseTokens: maximumResponseTokens
+        )
+
+        return TextTransformRequest(
             baseText: baseText,
             styleIdentifier: StyleRewriteStyle.chill.styleIdentifier,
-            instructions: """
-            You remove only obvious speech disfluencies from dictated text.
-            Return exactly one cleaned copy of the input text.
-            Return only the cleaned text.
-            Preserve the speaker's wording, word order, casing, punctuation, sentence type, message type, tone, slang, and formality.
-            Do not paraphrase, summarize, improve, soften, intensify, reformat, recase, or make the text more casual.
-            Do not replace words or phrases with synonyms.
-            Do not add words, greetings, sign-offs, names, placeholders, headings, commentary, labels, or explanations.
-            Remove only words like um, uh, accidental repeated starts, and clear speech stumbles that do not add meaning.
-            Do not remove profanity, insults, slang, emphasis words, emotionally charged words, names, numbers, URLs, email addresses, emoji, symbols, or code-like text.
-            Format dictated dates, dollar amounts, and numbers correctly in context, such as years, quantities, prices, and calendar dates.
-            Profanity is meaningful text, not filler.
-            If you are unsure whether a word is filler or meaningful, keep it.
-            Keep normal spaces between words and preserve the complete cleaned copy from beginning to end.
-
-            Examples:
-            Input: Um hey, what's up man?
-            Output: hey, what's up man?
-
-            Input: I am, like, trying to figure out dinner.
-            Output: I am trying to figure out dinner.
-
-            Input: Why can't you fucking help me?
-            Output: Why can't you fucking help me?
-
-            \(contextualFormattingExamples)
-            """,
-            promptPrefix: """
-            Remove only obvious speech disfluencies from this dictated text.
-            Keep profanity, insults, slang, emphasis words, and emotionally charged words.
-            Keep emoji and symbols if they are present.
-            Format dates, dollar amounts, and numbers correctly in context.
-            Preserve everything else, including wording, casing, and punctuation.
-            If unsure whether a word is filler or meaningful, keep it.
-            Return only the complete cleaned text.
-
-            Text:
-
-            """,
-            contextTokenLimit: contextTokenLimit,
-            expectedOutputExpansionRatio: 0.75,
-            safetyMarginTokens: 384,
-            maximumResponseTokens: maximumResponseTokens
+            instructions: cleanupRequest.instructions,
+            promptPrefix: cleanupRequest.promptPrefix,
+            promptSuffix: cleanupRequest.promptSuffix,
+            contextTokenLimit: cleanupRequest.contextTokenLimit,
+            expectedOutputExpansionRatio: cleanupRequest.expectedOutputExpansionRatio,
+            safetyMarginTokens: cleanupRequest.safetyMarginTokens,
+            maximumResponseTokens: cleanupRequest.maximumResponseTokens
         )
     }
 }

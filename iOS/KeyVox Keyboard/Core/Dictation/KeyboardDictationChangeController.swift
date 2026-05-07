@@ -34,7 +34,7 @@ final class KeyboardDictationChangeController {
 
     private let textInputController: KeyboardTextInputController
     private let artifactStore: KeyboardDictationChangeArtifactStore
-    private let textTransformer = FoundationStyleRewriteTextTransformer()
+    private let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
     private let appSettingsStore: KeyboardAppSettingsStore
 
     private var activeSession: Session?

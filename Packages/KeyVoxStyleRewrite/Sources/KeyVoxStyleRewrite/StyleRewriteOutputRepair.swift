@@ -1,11 +1,32 @@
 import Foundation
 
-enum FoundationRewriteOutputRepair {
+enum StyleRewriteOutputRepair {
     private static let protectedSuffix = "ing"
 
     struct Result: Equatable {
         let text: String
         let rejectedProtectedRemoval: Bool
+    }
+
+    static func repairDeletedSeparatorPunctuation(original: String, rewritten: String) -> String {
+        let originalTokens = wordTokens(in: original)
+        let rewrittenTokens = wordTokens(in: rewritten)
+        guard !originalTokens.isEmpty, !rewrittenTokens.isEmpty else {
+            return rewritten
+        }
+
+        let commaRemoved = removeCommaSeparatorsIntroducedByDeletion(
+            originalTokens: originalTokens,
+            rewrittenTokens: rewrittenTokens,
+            original: original,
+            rewritten: rewritten
+        )
+        return restoreSentenceOpeningCommasRemovedWithDeletedTokens(
+            originalTokens: originalTokens,
+            rewrittenTokens: wordTokens(in: commaRemoved),
+            original: original,
+            rewritten: commaRemoved
+        )
     }
 
     static func repair(original: String, rewritten: String) -> Result {
@@ -16,7 +37,11 @@ enum FoundationRewriteOutputRepair {
         }
 
         let collapsedRewritten = collapseAdjacentProtectedDuplicates(in: rewritten, tokens: rewrittenTokens)
-        let outputTokens = wordTokens(in: collapsedRewritten)
+        let punctuationRepaired = repairDeletedSeparatorPunctuation(
+            original: original,
+            rewritten: collapsedRewritten
+        )
+        let outputTokens = wordTokens(in: punctuationRepaired)
         let matches = matchOriginalTokens(originalTokens, to: outputTokens)
         let protectedIndexes = Set(originalTokens.indices.filter { index in
             matches[index] == nil
@@ -29,7 +54,7 @@ enum FoundationRewriteOutputRepair {
         })
 
         guard !protectedIndexes.isEmpty else {
-            return Result(text: collapsedRewritten, rejectedProtectedRemoval: false)
+            return Result(text: punctuationRepaired, rejectedProtectedRemoval: false)
         }
 
         let edits = replacementEdits(
@@ -37,7 +62,7 @@ enum FoundationRewriteOutputRepair {
             rewrittenTokens: outputTokens,
             matchedRewrittenIndexes: matches,
             protectedIndexes: protectedIndexes,
-            text: collapsedRewritten
+            text: punctuationRepaired
         )
         guard !edits.isEmpty else {
             log(
@@ -49,7 +74,7 @@ enum FoundationRewriteOutputRepair {
         logRepair(edits)
 
         return Result(
-            text: apply(edits: edits, to: collapsedRewritten),
+            text: apply(edits: edits, to: punctuationRepaired),
             rejectedProtectedRemoval: true
         )
     }
@@ -179,6 +204,140 @@ enum FoundationRewriteOutputRepair {
         }
 
         return remove(ranges: ranges, from: text)
+    }
+
+    private static func removeCommaSeparatorsIntroducedByDeletion(
+        originalTokens: [WordToken],
+        rewrittenTokens: [WordToken],
+        original: String,
+        rewritten: String
+    ) -> String {
+        guard originalTokens.count > 1, rewrittenTokens.count > 1 else {
+            return rewritten
+        }
+
+        let matches = matchOriginalTokens(originalTokens, to: rewrittenTokens)
+        let originalIndexByRewrittenIndex = Dictionary(
+            uniqueKeysWithValues: matches.map { ($0.value, $0.key) }
+        )
+        var edits: [Range<String.Index>] = []
+
+        for rewrittenIndex in rewrittenTokens.indices.dropLast() {
+            let nextRewrittenIndex = rewrittenIndex + 1
+            guard rewrittenIndex > rewrittenTokens.startIndex,
+                  let originalIndex = originalIndexByRewrittenIndex[rewrittenIndex],
+                  let nextOriginalIndex = originalIndexByRewrittenIndex[nextRewrittenIndex],
+                  nextOriginalIndex > originalIndex + 1 else {
+                continue
+            }
+
+            let separatorRange = rewrittenTokens[rewrittenIndex].range.upperBound
+                ..< rewrittenTokens[nextRewrittenIndex].range.lowerBound
+            let separator = String(rewritten[separatorRange])
+            guard isCommaWhitespaceSeparator(separator) else {
+                continue
+            }
+
+            let originalGapRange = originalTokens[originalIndex].range.upperBound
+                ..< originalTokens[nextOriginalIndex].range.lowerBound
+            let originalGap = String(original[originalGapRange])
+            guard originalGap.contains(","), !wordTokens(in: originalGap).isEmpty else {
+                continue
+            }
+
+            edits.append(separatorRange)
+        }
+
+        guard !edits.isEmpty else {
+            return rewritten
+        }
+
+        var repaired = rewritten
+        for range in edits.sorted(by: { $0.lowerBound > $1.lowerBound }) {
+            repaired.replaceSubrange(range, with: " ")
+        }
+        return repaired
+    }
+
+    private static func restoreSentenceOpeningCommasRemovedWithDeletedTokens(
+        originalTokens: [WordToken],
+        rewrittenTokens: [WordToken],
+        original: String,
+        rewritten: String
+    ) -> String {
+        guard originalTokens.count > 1, rewrittenTokens.count > 1 else {
+            return rewritten
+        }
+
+        let matches = matchOriginalTokens(originalTokens, to: rewrittenTokens)
+        let originalIndexByRewrittenIndex = Dictionary(
+            uniqueKeysWithValues: matches.map { ($0.value, $0.key) }
+        )
+        var edits: [Range<String.Index>] = []
+
+        for rewrittenIndex in rewrittenTokens.indices.dropLast() {
+            let nextRewrittenIndex = rewrittenIndex + 1
+            guard let originalIndex = originalIndexByRewrittenIndex[rewrittenIndex],
+                  let nextOriginalIndex = originalIndexByRewrittenIndex[nextRewrittenIndex],
+                  nextOriginalIndex > originalIndex + 1,
+                  isSentenceOpeningToken(originalTokens[originalIndex], in: original) else {
+                continue
+            }
+
+            let separatorRange = rewrittenTokens[rewrittenIndex].range.upperBound
+                ..< rewrittenTokens[nextRewrittenIndex].range.lowerBound
+            guard String(rewritten[separatorRange]).allSatisfy(\.isWhitespace) else {
+                continue
+            }
+
+            let originalGapRange = originalTokens[originalIndex].range.upperBound
+                ..< originalTokens[nextOriginalIndex].range.lowerBound
+            guard startsWithComma(String(original[originalGapRange])),
+                  !wordTokens(in: String(original[originalGapRange])).isEmpty else {
+                continue
+            }
+
+            edits.append(separatorRange)
+        }
+
+        guard !edits.isEmpty else {
+            return rewritten
+        }
+
+        var repaired = rewritten
+        for range in edits.sorted(by: { $0.lowerBound > $1.lowerBound }) {
+            repaired.replaceSubrange(range, with: ", ")
+        }
+        return repaired
+    }
+
+    private static func startsWithComma(_ text: String) -> Bool {
+        text.drop(while: \.isWhitespace).first == ","
+    }
+
+    private static func isSentenceOpeningToken(_ token: WordToken, in text: String) -> Bool {
+        var index = token.range.lowerBound
+        while index > text.startIndex {
+            let previous = text.index(before: index)
+            if text[previous].isWhitespace {
+                index = previous
+                continue
+            }
+            return text[previous] == "." || text[previous] == "?" || text[previous] == "!"
+        }
+        return true
+    }
+
+    private static func isCommaWhitespaceSeparator(_ text: String) -> Bool {
+        var hasComma = false
+        for character in text {
+            if character == "," {
+                hasComma = true
+            } else if !character.isWhitespace {
+                return false
+            }
+        }
+        return hasComma
     }
 
     private static func remove(

@@ -93,17 +93,17 @@ struct AppSettingsStoreTests {
         defaults.removePersistentDomain(forName: #function)
         defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
+        let store = AppSettingsStore(defaults: defaults, isModelRewriteAvailable: { true })
 
         #expect(store.selectedVibe == .polished)
     }
 
-    @Test func selectedVibeRestoresNoneWhenFoundationRewriteIsUnavailable() {
+    @Test func selectedVibeRestoresNoneWhenModelRewriteIsUnavailable() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { false })
+        let store = AppSettingsStore(defaults: defaults, isModelRewriteAvailable: { false })
 
         #expect(store.selectedVibe == .none)
         #expect(defaults.string(forKey: UserDefaultsKeys.selectedVibe) == StyleRewriteStyle.none.rawValue)
@@ -116,7 +116,7 @@ struct AppSettingsStoreTests {
 
         let style = AppSettingsStore.resolvedSelectedVibe(
             from: defaults,
-            isFoundationRewriteAvailable: true,
+            isModelRewriteAvailable: true,
             canUseVibes: false
         )
 
@@ -130,7 +130,7 @@ struct AppSettingsStoreTests {
 
         let store = AppSettingsStore(
             defaults: defaults,
-            isFoundationRewriteAvailable: { true },
+            isModelRewriteAvailable: { true },
             canUseVibesProvider: { false }
         )
 

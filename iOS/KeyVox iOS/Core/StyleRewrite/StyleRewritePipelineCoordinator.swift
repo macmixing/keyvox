@@ -6,27 +6,27 @@ import KeyVoxStyleRewrite
 final class StyleRewritePipelineCoordinator {
     private let selectedStyleProvider: () -> StyleRewriteStyle
     private let artifactStore: StyleRewriteLatestArtifactStore
-    private let textTransformer = FoundationStyleRewriteTextTransformer()
+    private let textTransformer: any DictationTextTransforming
 
     init(
         selectedStyleProvider: @escaping () -> StyleRewriteStyle,
-        artifactStore: StyleRewriteLatestArtifactStore
+        artifactStore: StyleRewriteLatestArtifactStore,
+        textTransformer: any DictationTextTransforming
     ) {
         self.selectedStyleProvider = selectedStyleProvider
         self.artifactStore = artifactStore
+        self.textTransformer = textTransformer
     }
 
     func prewarmForUpcomingDictationIfNeeded() {
         let style = selectedStyleProvider()
-        guard style.usesFoundationRewrite else {
+        guard style.usesModelRewrite else {
             log("prewarm skipped reason=style style=\(style.styleIdentifier)")
-            textTransformer.releasePrewarmSession(reason: "style-\(style.styleIdentifier)")
             return
         }
 
         guard let request = transformRequest(for: "") else {
             log("prewarm skipped reason=no-request style=\(style.styleIdentifier)")
-            textTransformer.releasePrewarmSession(reason: "no-request")
             return
         }
 
@@ -35,12 +35,7 @@ final class StyleRewritePipelineCoordinator {
 
     func processOutputText(_ baseText: String) async -> DictationPipelineTextProcessingResult {
         guard let request = transformRequest(for: baseText) else {
-            textTransformer.releasePrewarmSession(reason: "no-transform-request")
             return .unchanged(baseText)
-        }
-
-        defer {
-            textTransformer.releasePrewarmSession(reason: "transform-finished")
         }
 
         let result = await textTransformer.transform(request)
@@ -57,9 +52,7 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
-    func releasePrewarmSession(reason: String) {
-        textTransformer.releasePrewarmSession(reason: reason)
-    }
+    func releasePrewarmSession(reason: String) {}
 
     func recordLatestArtifact(from result: DictationPipelineResult, selectedText: String) {
         guard !result.wasLikelyNoSpeech else {

@@ -154,6 +154,22 @@ nonisolated enum SharedPaths {
             .appendingPathComponent("Voices", isDirectory: true)
     }
 
+    static func localRewriteRootDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("rewrite", isDirectory: true)
+    }
+
+    static func localRewriteModelDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        localRewriteRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("qwen2-5-0-5b-instruct", isDirectory: true)
+    }
+
+    static func localRewriteModelStagingDirectoryURL(fileManager: FileManager = .default) -> URL? {
+        localRewriteRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent(".staging", isDirectory: true)
+            .appendingPathComponent("qwen2-5-0-5b-instruct", isDirectory: true)
+    }
+
     static func ttsRequestURL(fileManager: FileManager = .default) -> URL? {
         ttsDirectoryURL(fileManager: fileManager)?
             .appendingPathComponent("request.json", isDirectory: false)

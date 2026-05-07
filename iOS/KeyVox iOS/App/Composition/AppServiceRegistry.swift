@@ -2,6 +2,7 @@ import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
+import KeyVoxLocalInference
 import KeyVoxStyleRewrite
 
 @MainActor
@@ -24,6 +25,7 @@ final class AppServiceRegistry {
     let activeProviderRouter: SwitchableDictationProvider
     let ttsManager: TTSManager
     let pocketTTSModelManager: PocketTTSModelManager
+    let localRewriteModelManager: LocalRewriteModelManager
     let styleRewritePipelineCoordinator: StyleRewritePipelineCoordinator
     let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
@@ -94,7 +96,7 @@ final class AppServiceRegistry {
         let keyVoxVibesIntroController = KeyVoxVibesIntroController(
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro,
-            isFoundationRewriteAvailable: { FoundationStyleRewriteAvailability.isAvailable }
+            isModelRewriteAvailable: { true }
         )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
@@ -116,6 +118,15 @@ final class AppServiceRegistry {
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
+        let localRewriteModelManager = LocalRewriteModelManager(fileManager: fileManager)
+        let localRewriteInferenceService = LocalRewriteInferenceService(
+            modelURLProvider: { [weak localRewriteModelManager] in
+                localRewriteModelManager?.installedModelURL()
+            }
+        )
+        let localStyleRewriteTextTransformer = LocalStyleRewriteTextTransformer(
+            inferenceService: localRewriteInferenceService
+        )
         let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
             selectedStyleProvider: {
                 AppSettingsStore.resolvedSelectedVibe(
@@ -123,7 +134,8 @@ final class AppServiceRegistry {
                     canUseVibes: keyVoxVibesPurchaseController.canUseVibes
                 )
             },
-            artifactStore: styleRewriteArtifactStore
+            artifactStore: styleRewriteArtifactStore,
+            textTransformer: localStyleRewriteTextTransformer
         )
         var ttsManagerRef: TTSManager?
         let recorder = AudioRecorder(
@@ -234,6 +246,11 @@ final class AppServiceRegistry {
                 ttsManager?.unloadRuntimeImmediately(reason: .assetInvalidated)
             }
         }
+        localRewriteModelManager.onDidInvalidateInstalledModel = { [weak localRewriteInferenceService] in
+            Task { @MainActor [weak localRewriteInferenceService] in
+                await localRewriteInferenceService?.unload()
+            }
+        }
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
@@ -314,6 +331,7 @@ final class AppServiceRegistry {
         self.activeProviderRouter = activeProviderRouter
         self.ttsManager = ttsManager
         self.pocketTTSModelManager = pocketTTSModelManager
+        self.localRewriteModelManager = localRewriteModelManager
         self.styleRewritePipelineCoordinator = styleRewritePipelineCoordinator
         self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager

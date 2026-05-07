@@ -15,11 +15,11 @@ struct KeyVoxVibesIntroControllerTests {
         #expect(controller.isPresented == true)
     }
 
-    @Test func doesNotScheduleWhenFoundationUnavailable() async throws {
+    @Test func doesNotScheduleWhenModelUnavailable() async throws {
         let harness = makeHarness(hasCompletedOnboarding: true)
         defer { harness.cleanup() }
 
-        let controller = makeController(harness: harness, isFoundationRewriteAvailable: false)
+        let controller = makeController(harness: harness, isModelRewriteAvailable: false)
         controller.schedulePresentationIfEligible()
         await settlePresentationTask()
 
@@ -29,22 +29,22 @@ struct KeyVoxVibesIntroControllerTests {
     @Test func delayedScheduleCanRecoverAfterEligibilityFlipsBeforePresentation() async throws {
         let harness = makeHarness(hasCompletedOnboarding: true)
         defer { harness.cleanup() }
-        var isFoundationRewriteAvailable = true
+        var isModelRewriteAvailable = true
         let presentationDelayNanoseconds: UInt64 = 5_000_000
         let controller = KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
+            isModelRewriteAvailable: { isModelRewriteAvailable },
             presentationDelayNanoseconds: presentationDelayNanoseconds
         )
 
         controller.schedulePresentationIfEligible()
-        isFoundationRewriteAvailable = false
+        isModelRewriteAvailable = false
         try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
         await settlePresentationTask()
 
         #expect(controller.isPresented == false)
 
-        isFoundationRewriteAvailable = true
+        isModelRewriteAvailable = true
         controller.schedulePresentationIfEligible()
         try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
         await settlePresentationTask()
@@ -107,11 +107,11 @@ struct KeyVoxVibesIntroControllerTests {
 
     private func makeController(
         harness: KeyVoxVibesIntroHarness,
-        isFoundationRewriteAvailable: Bool = true
+        isModelRewriteAvailable: Bool = true
     ) -> KeyVoxVibesIntroController {
         KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
+            isModelRewriteAvailable: { isModelRewriteAvailable },
             presentationDelayNanoseconds: 0
         )
     }

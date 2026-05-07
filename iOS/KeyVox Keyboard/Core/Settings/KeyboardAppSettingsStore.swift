@@ -21,7 +21,7 @@ final class KeyboardAppSettingsStore {
     }
 
     var isVibesAvailable: Bool {
-        FoundationStyleRewriteAvailability.isAvailable
+        true
     }
 
     var canUseVibes: Bool {
@@ -73,7 +73,7 @@ final class KeyboardAppSettingsStore {
             return .none
         }
 
-        return style.resolvedForFoundationAvailability(isVibesAvailable)
+        return style.resolvedForModelAvailability(isVibesAvailable)
     }
 
     func normalizeSelectedVibeIfNeeded() {
@@ -82,7 +82,7 @@ final class KeyboardAppSettingsStore {
             return
         }
 
-        let resolvedStyle = canUseVibes ? style.resolvedForFoundationAvailability(isVibesAvailable) : .none
+        let resolvedStyle = canUseVibes ? style.resolvedForModelAvailability(isVibesAvailable) : .none
         guard resolvedStyle != style else { return }
         defaults?.set(resolvedStyle.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         KeyVoxIPCBridge.publishVibeSelectionChanged()

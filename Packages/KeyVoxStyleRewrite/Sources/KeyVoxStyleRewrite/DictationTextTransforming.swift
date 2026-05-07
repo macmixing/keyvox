@@ -40,11 +40,11 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
 
 public enum TextTransformErrorCode: String, Codable, Equatable, Sendable {
     case emptyResponse
-    case foundationModelsUnavailable
-    case foundationRefusal
-    case foundationGuardrailViolation
-    case foundationExceededContextWindow
-    case foundationGenerationFailed
+    case localModelNotInstalled
+    case localModelLoadFailed
+    case localModelGenerationFailed
+    case localModelPromptTooLong
+    case localModelCancelled
     case generationFailed
 }
 
@@ -247,4 +247,42 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
 public protocol DictationTextTransforming: AnyObject {
     func prewarm(request: TextTransformRequest)
     func transform(_ request: TextTransformRequest) async -> TextTransformResult
+}
+
+public enum StyleRewriteBackendError: Error, Equatable, Sendable, CustomStringConvertible {
+    case modelNotInstalled
+    case modelLoadFailed(String)
+    case promptTooLong(String)
+    case generationFailed(String)
+    case cancelled
+
+    public var description: String {
+        switch self {
+        case .modelNotInstalled:
+            return "localModelNotInstalled"
+        case let .modelLoadFailed(message):
+            return "localModelLoadFailed(\(message))"
+        case let .promptTooLong(message):
+            return "localModelPromptTooLong(\(message))"
+        case let .generationFailed(message):
+            return "localModelGenerationFailed(\(message))"
+        case .cancelled:
+            return "localModelCancelled"
+        }
+    }
+
+    var errorCode: TextTransformErrorCode {
+        switch self {
+        case .modelNotInstalled:
+            return .localModelNotInstalled
+        case .modelLoadFailed:
+            return .localModelLoadFailed
+        case .promptTooLong:
+            return .localModelPromptTooLong
+        case .generationFailed:
+            return .localModelGenerationFailed
+        case .cancelled:
+            return .localModelCancelled
+        }
+    }
 }

@@ -103,7 +103,7 @@ public final class TextTransformChunkRunner {
                     duration: Date().timeIntervalSince(chunkStart),
                     usedFallbackText: usedFallbackText
                 ))
-            } catch let error as FoundationStyleRewriteError {
+            } catch let error as StyleRewriteBackendError {
                 output += chunk.text + chunk.separatorAfter
                 errors.append(TextTransformErrorSummary(
                     chunkIndex: chunk.index,

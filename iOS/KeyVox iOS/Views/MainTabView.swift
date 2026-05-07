@@ -224,6 +224,7 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)
