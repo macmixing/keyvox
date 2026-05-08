@@ -123,8 +123,13 @@ final class AppServiceRegistry {
             modelURLProvider: { [weak localRewriteModelManager] in
                 localRewriteModelManager?.installedModelURL()
             },
-            adapterURLProvider: { [weak localRewriteModelManager] in
-                localRewriteModelManager?.polishedLoRAURL()
+            adapterURLProvider: { [weak localRewriteModelManager] adapter in
+                switch adapter {
+                case .polished:
+                    return localRewriteModelManager?.polishedLoRAURL()
+                case .casual:
+                    return localRewriteModelManager?.casualLoRAURL()
+                }
             }
         )
         let localStyleRewriteTextTransformer = LocalStyleRewriteTextTransformer(

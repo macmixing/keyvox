@@ -1,32 +1,39 @@
 import Foundation
 import KeyVoxLocalInference
 
+enum LocalRewriteAdapterKind {
+    case polished
+    case casual
+}
+
 @MainActor
 final class LocalRewriteInferenceService {
+    typealias AdapterURLProvider = (LocalRewriteAdapterKind) -> URL?
+
     private let modelURLProvider: () -> URL?
-    private let adapterURLProvider: () -> URL?
+    private let adapterURLProvider: AdapterURLProvider
     private var loadedModelURL: URL?
     private var loadedAdapterURL: URL?
     private var loadedModel: LlamaCPULanguageModel?
 
     init(
         modelURLProvider: @escaping () -> URL?,
-        adapterURLProvider: @escaping () -> URL? = { nil }
+        adapterURLProvider: @escaping AdapterURLProvider = { _ in nil }
     ) {
         self.modelURLProvider = modelURLProvider
         self.adapterURLProvider = adapterURLProvider
     }
 
-    func model(usesPolishedLoRA: Bool = false) throws -> LlamaCPULanguageModel {
+    func model(adapter: LocalRewriteAdapterKind? = nil) throws -> LlamaCPULanguageModel {
         guard let modelURL = modelURLProvider() else {
             throw LocalRewriteInferenceServiceError.modelNotInstalled
         }
         let adapterURL: URL?
-        if usesPolishedLoRA {
-            guard let polishedAdapterURL = adapterURLProvider() else {
-                throw LocalRewriteInferenceServiceError.polishedAdapterNotInstalled
+        if let adapter {
+            guard let resolvedAdapterURL = adapterURLProvider(adapter) else {
+                throw LocalRewriteInferenceServiceError.adapterNotInstalled(adapter)
             }
-            adapterURL = polishedAdapterURL
+            adapterURL = resolvedAdapterURL
         } else {
             adapterURL = nil
         }
@@ -55,5 +62,5 @@ final class LocalRewriteInferenceService {
 
 enum LocalRewriteInferenceServiceError: Error {
     case modelNotInstalled
-    case polishedAdapterNotInstalled
+    case adapterNotInstalled(LocalRewriteAdapterKind)
 }

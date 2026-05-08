@@ -35,13 +35,13 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
             throw StyleRewriteBackendError.modelNotInstalled
         }
 
-        let requestsPolishedLoRA = request.styleIdentifier == StyleRewriteStyle.polished.styleIdentifier
+        let adapterKind = Self.adapterKind(for: request.styleIdentifier)
         let model: LlamaCPULanguageModel
         do {
-            model = try inferenceService.model(usesPolishedLoRA: requestsPolishedLoRA)
-        } catch LocalRewriteInferenceServiceError.polishedAdapterNotInstalled {
-            logPolishedLoRAMissing(styleIdentifier: request.styleIdentifier, chunkIndex: chunk.index)
-            throw StyleRewriteBackendError.modelLoadFailed("polishedAdapterNotInstalled")
+            model = try inferenceService.model(adapter: adapterKind)
+        } catch LocalRewriteInferenceServiceError.adapterNotInstalled(let adapter) {
+            logLoRAMissing(styleIdentifier: request.styleIdentifier, chunkIndex: chunk.index, adapter: adapter)
+            throw StyleRewriteBackendError.modelLoadFailed("\(adapter.logLabel)AdapterNotInstalled")
         } catch LocalRewriteInferenceServiceError.modelNotInstalled {
             throw StyleRewriteBackendError.modelNotInstalled
         } catch {
@@ -50,14 +50,10 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
 
         do {
             let localRequest = LocalLanguageModelGenerationRequest(
-                systemPrompt: requestsPolishedLoRA
-                    ? StyleRewriteDictationConfiguration.polishedLoRASystemPrompt
-                    : request.instructions,
-                userPrompt: requestsPolishedLoRA
-                    ? chunk.text
-                    : request.prompt(for: chunk.text),
+                systemPrompt: systemPrompt(for: request, adapterKind: adapterKind),
+                userPrompt: adapterKind == nil ? request.prompt(for: chunk.text) : chunk.text,
                 maximumTokenCount: maximumResponseTokens(for: request, chunk: chunk),
-                addsSpecialTokens: !requestsPolishedLoRA
+                addsSpecialTokens: adapterKind == nil
             )
             let result = try await model.generate(
                 localRequest,
@@ -72,7 +68,7 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
                 result.metrics,
                 styleIdentifier: request.styleIdentifier,
                 chunkIndex: chunk.index,
-                usesPolishedLoRA: requestsPolishedLoRA
+                adapterKind: adapterKind
             )
             return result.text
         } catch let error as LocalLanguageModelError {
@@ -111,11 +107,36 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
         }
     }
 
+    private static func adapterKind(for styleIdentifier: String) -> LocalRewriteAdapterKind? {
+        switch styleIdentifier {
+        case StyleRewriteStyle.polished.styleIdentifier:
+            return .polished
+        case StyleRewriteStyle.casual.styleIdentifier, StyleRewriteStyle.chill.styleIdentifier:
+            return .casual
+        default:
+            return nil
+        }
+    }
+
+    private func systemPrompt(
+        for request: TextTransformRequest,
+        adapterKind: LocalRewriteAdapterKind?
+    ) -> String {
+        switch adapterKind {
+        case .polished:
+            return StyleRewriteDictationConfiguration.polishedLoRASystemPrompt
+        case .casual:
+            return StyleRewriteDictationConfiguration.casualLoRASystemPrompt
+        case nil:
+            return request.instructions
+        }
+    }
+
     private func logMetrics(
         _ metrics: LocalLanguageModelGenerationMetrics,
         styleIdentifier: String,
         chunkIndex: Int,
-        usesPolishedLoRA: Bool
+        adapterKind: LocalRewriteAdapterKind?
     ) {
         #if DEBUG
         let loadDuration = metrics.loadDuration.map { String(format: "%.3f", $0) } ?? "cached"
@@ -124,7 +145,7 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
             "[StyleRewriteLocal] style=%@ chunk=%d lora=%@ load=%@ inputTokens=%d outputTokens=%d prefill=%.3f decode=%.3f total=%.3f tokPerSecond=%@",
             styleIdentifier,
             chunkIndex,
-            usesPolishedLoRA ? "polished-alpha-021" : "none",
+            adapterKind?.logLabel ?? "none",
             loadDuration,
             metrics.inputTokenCount,
             metrics.outputTokenCount,
@@ -136,13 +157,29 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
         #endif
     }
 
-    private func logPolishedLoRAMissing(styleIdentifier: String, chunkIndex: Int) {
+    private func logLoRAMissing(
+        styleIdentifier: String,
+        chunkIndex: Int,
+        adapter: LocalRewriteAdapterKind
+    ) {
         #if DEBUG
         NSLog(
-            "[StyleRewriteLocal] style=%@ chunk=%d lora=missing",
+            "[StyleRewriteLocal] style=%@ chunk=%d lora=%@ missing",
             styleIdentifier,
-            chunkIndex
+            chunkIndex,
+            adapter.logLabel
         )
         #endif
+    }
+}
+
+private extension LocalRewriteAdapterKind {
+    var logLabel: String {
+        switch self {
+        case .polished:
+            return "polished-alpha-021"
+        case .casual:
+            return "casual-alpha-1"
+        }
     }
 }

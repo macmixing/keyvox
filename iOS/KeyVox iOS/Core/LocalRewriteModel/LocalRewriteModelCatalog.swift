@@ -18,6 +18,8 @@ enum LocalRewriteModelCatalog {
     static let manifestFilename = "install-manifest.json"
     static let polishedLoRAFilename = "polished-alpha-021-lora.gguf"
     static let polishedLoRAResourceName = "polished-alpha-021-lora"
+    static let casualLoRAFilename = "casual-alpha-1-lora.gguf"
+    static let casualLoRAResourceName = "casual-alpha-1-lora"
     static let polishedLoRAResourceExtension = "gguf"
     static let polishedLoRAResourceSubdirectory = "LocalRewriteAdapters"
 

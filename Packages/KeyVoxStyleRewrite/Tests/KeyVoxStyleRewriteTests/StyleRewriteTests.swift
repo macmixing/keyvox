@@ -32,8 +32,8 @@ final class StyleRewriteTests: XCTestCase {
         ))
 
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.chill.styleIdentifier)
-        XCTAssertFalse(request.instructions.isEmpty)
-        XCTAssertFalse(request.promptPrefix.isEmpty)
+        XCTAssertEqual(request.instructions, StyleRewriteDictationConfiguration.casualLoRASystemPrompt)
+        XCTAssertTrue(request.promptPrefix.isEmpty)
     }
 
     func testCasualRequestUsesCleanupOnlyStyle() throws {
@@ -43,8 +43,8 @@ final class StyleRewriteTests: XCTestCase {
         ))
 
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.casual.styleIdentifier)
-        XCTAssertFalse(request.instructions.isEmpty)
-        XCTAssertFalse(request.promptPrefix.isEmpty)
+        XCTAssertEqual(request.instructions, StyleRewriteDictationConfiguration.casualLoRASystemPrompt)
+        XCTAssertTrue(request.promptPrefix.isEmpty)
     }
 
     func testStyleModelRewriteEligibility() {

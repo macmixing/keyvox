@@ -1,0 +1,9 @@
+{
+  "run": "casual-alpha-1",
+  "status": "candidate",
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "dataset": "ModelTraining/datasets/casual/casual-alpha-1-base",
+  "adapter_checkpoint": "ModelTraining/artifacts/current/casual-lora-alpha-1/adapters/casual-alpha-1/adapters.safetensors",
+  "runtime_gguf": "ModelTraining/artifacts/current/casual-lora-alpha-1/adapters/casual-alpha-1/casual-alpha-1-lora.gguf",
+  "portable_from_this_mac": true
+}
