@@ -214,6 +214,11 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             expected: "Why can't you fucking help me?"
         ),
         LiveStylePromptCase(
+            style: .casual,
+            input: "Why can't you um fucking help me?",
+            expected: "Why can't you fucking help me?"
+        ),
+        LiveStylePromptCase(
             style: .polished,
             input: "Why can't you fucking help me?",
             expected: "Why can't you help me?"
@@ -222,6 +227,21 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             style: .chill,
             input: "Why can't you fucking help me?",
             expected: "why cant you fucking help me?"
+        ),
+        LiveStylePromptCase(
+            style: .chill,
+            input: "Why can't you um fucking help me?",
+            expected: "why cant you fucking help me?"
+        ),
+        LiveStylePromptCase(
+            style: .casual,
+            input: "I'm just having a working awesome day.",
+            expected: "I'm just having a working awesome day."
+        ),
+        LiveStylePromptCase(
+            style: .chill,
+            input: "I'm just having a working awesome day.",
+            expected: "im just having a working awesome day"
         ),
         LiveStylePromptCase(
             style: .casual,

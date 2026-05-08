@@ -67,17 +67,18 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         )
         let runnerResult = await runner.transform(request)
         let cleanupSucceeded = runnerResult.errors.isEmpty
-        let repairedCleanup = cleanupSucceeded
-            ? StyleRewriteOutputRepair.repair(original: request.baseText, rewritten: runnerResult.finalText)
+        let punctuationRepairedCleanup = cleanupSucceeded
+            ? StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+                original: request.baseText,
+                rewritten: runnerResult.finalText
+            )
             : nil
         let sourceText = cleanupSucceeded
-            ? repairedCleanup?.text ?? runnerResult.finalText
+            ? punctuationRepairedCleanup ?? runnerResult.finalText
             : request.baseText
         let processingMode: String
         if !cleanupSucceeded {
             processingMode = "local-model-cleanup-failed+heuristic"
-        } else if repairedCleanup?.rejectedProtectedRemoval == true {
-            processingMode = "local-model-cleanup-repaired+heuristic"
         } else {
             processingMode = "local-model-cleanup+heuristic"
         }
@@ -122,19 +123,13 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         request: TextTransformRequest,
         result: TextTransformResult
     ) -> TextTransformResult {
-        let repaired = StyleRewriteOutputRepair.repair(
+        let finalText = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
             original: request.baseText,
             rewritten: result.finalText
         )
-        let finalText = repaired.text
-        let processingMode: String
-        if repaired.rejectedProtectedRemoval {
-            processingMode = "local-model-cleanup-repaired"
-        } else if result.errors.isEmpty {
-            processingMode = "local-model-cleanup"
-        } else {
-            processingMode = "local-model-cleanup-partial"
-        }
+        let processingMode = result.errors.isEmpty
+            ? "local-model-cleanup"
+            : "local-model-cleanup-partial"
 
         return TextTransformResult(
             originalText: request.baseText,

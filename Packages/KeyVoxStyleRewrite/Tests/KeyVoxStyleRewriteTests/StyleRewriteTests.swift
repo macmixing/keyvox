@@ -128,54 +128,22 @@ final class StyleRewriteTests: XCTestCase {
         )
     }
 
-    func testRewriteRepairCollapsesAdjacentProtectedDuplicate() {
-        let output = StyleRewriteOutputRepair.repair(
-            original: "im just trying trying to work",
-            rewritten: "im just trying trying to work"
-        )
-
-        XCTAssertEqual(output.text, "im just trying to work")
-        XCTAssertFalse(output.rejectedProtectedRemoval)
-    }
-
-    func testRewriteRepairRestoresLocalGapForProtectedRemoval() {
-        let output = StyleRewriteOutputRepair.repair(
-            original: "im just having a working awesome day",
-            rewritten: "im just having an awesome day"
-        )
-
-        XCTAssertEqual(output.text, "im just having a working awesome day")
-        XCTAssertTrue(output.rejectedProtectedRemoval)
-    }
-
-    func testRewriteRepairRestoresOnlyProtectedTokensForDeletedGap() {
-        let output = StyleRewriteOutputRepair.repair(
-            original: "Why can't you um fucking help me?",
-            rewritten: "Why can't you help me?"
-        )
-
-        XCTAssertEqual(output.text, "Why can't you fucking help me?")
-        XCTAssertTrue(output.rejectedProtectedRemoval)
-    }
-
     func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
-        let output = StyleRewriteOutputRepair.repair(
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
             original: "Hey, um what are you doing, um tomorrow?",
             rewritten: "Hey, what are you doing, tomorrow?"
         )
 
-        XCTAssertEqual(output.text, "Hey, what are you doing tomorrow?")
-        XCTAssertFalse(output.rejectedProtectedRemoval)
+        XCTAssertEqual(output, "Hey, what are you doing tomorrow?")
     }
 
     func testRewriteRepairRestoresSentenceOpeningCommaAroundDeletedTokens() {
-        let output = StyleRewriteOutputRepair.repair(
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
             original: "Phase three. Yo, um what are you doing?",
             rewritten: "Phase three. Yo what are you doing?"
         )
 
-        XCTAssertEqual(output.text, "Phase three. Yo, what are you doing?")
-        XCTAssertFalse(output.rejectedProtectedRemoval)
+        XCTAssertEqual(output, "Phase three. Yo, what are you doing?")
     }
 
     func testChunkPlannerBudgetsInstructionsInputAndExpectedOutput() async throws {
