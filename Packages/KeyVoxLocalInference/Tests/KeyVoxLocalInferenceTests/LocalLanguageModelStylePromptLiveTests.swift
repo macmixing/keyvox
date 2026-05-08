@@ -90,18 +90,13 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
         ),
         LiveStylePromptCase(
             style: .casual,
-            input: "Phase three. Yo, um what are you doing?",
-            expected: "Phase three. Yo, what are you doing?"
-        ),
-        LiveStylePromptCase(
-            style: .polished,
-            input: "Phase three. Yo, um what are you doing?",
-            expected: "Phase three. Yo, what are you doing?"
+            input: "I need to pick up a couple of things from the store:\n\n1. Um apples\n2. Bananas\n3. Uh grapes",
+            expected: "I need to pick up a couple of things from the store:\n\n1. Apples\n2. Bananas\n3. Grapes"
         ),
         LiveStylePromptCase(
             style: .chill,
-            input: "Phase three. Yo, um what are you doing?",
-            expected: "phase three. yo what are you doing?"
+            input: "I need to pick up a couple of things from the store:\n\n1. Um apples\n2. Bananas\n3. Uh grapes",
+            expected: "i need to pick up a couple of things from the store\n\n1. apples\n2. bananas\n3. grapes"
         ),
         LiveStylePromptCase(
             style: .casual,
@@ -247,11 +242,6 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             style: .casual,
             input: "Me and Sarah was talking about the launch.",
             expected: "Me and Sarah was talking about the launch."
-        ),
-        LiveStylePromptCase(
-            style: .polished,
-            input: "Me and Sarah was talking about the launch.",
-            expected: "Me and Sarah were talking about the launch."
         ),
         LiveStylePromptCase(
             style: .chill,

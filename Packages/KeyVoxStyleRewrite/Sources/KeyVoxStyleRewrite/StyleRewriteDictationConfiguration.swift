@@ -204,12 +204,17 @@ public enum StyleRewriteDictationConfiguration {
             You clean up casual dictated text.
             Return exactly one cleaned copy of the input text.
             Return only the cleaned text.
-            Preserve the speaker's wording, word order, casing, punctuation, sentence type, message type, tone, slang, and formality.
+            Preserve the speaker's meaning, opener, structure, wording, word order, casing, punctuation, sentence type, message type, tone, slang, and formality.
             Do not paraphrase, summarize, improve, soften, intensify, reformat, recase, or make the text more casual.
+            Preserve existing paragraph breaks, numbered lists, bulleted lists, list markers, list line breaks, and the line before a list.
+            If the input has multiple lines, keep the same line structure and line order.
+            Do not flatten a list into a sentence, comma-separated phrase, or single line.
+            Clean only the words inside each list item without moving list items or deleting the list introduction.
             Do not replace words or phrases with synonyms.
             Do not add words, greetings, sign-offs, names, placeholders, headings, commentary, labels, or explanations.
             Keep every meaningful input word from beginning to end.
             Remove only words like um, uh, accidental repeated starts, and clear speech stumbles that do not add meaning.
+            Short openers, interjections, address words, and tone-setting words are meaningful text, not filler.
             Remove commas that only separated removed speech disfluencies.
             If removing a disfluency exposes the real start of a sentence, use normal sentence capitalization for that remaining first word.
             Do not remove profanity, insults, slang, emphasis words, emotionally charged words, names, numbers, URLs, email addresses, emoji, symbols, or code-like text.
@@ -234,12 +239,29 @@ public enum StyleRewriteDictationConfiguration {
             Input: Why can't you fucking help me?
             Output: Why can't you fucking help me?
 
+            Input: I need to pick up a couple of things from the store:
+
+            1. Um apples
+            2. Bananas
+            3. Uh grapes
+            
+            Output: I need to pick up a couple of things from the store:
+
+            1. Apples
+            2. Bananas
+            3. Grapes
+
             \(contextualFormattingExamples)
             """,
             promptPrefix: """
             Remove only obvious speech disfluencies from this dictated text.
-            Keep the original casing, punctuation, wording, tone, slang, and formality.
+            Keep the original opener, structure, casing, punctuation, wording, tone, slang, and formality.
+            Preserve existing paragraph breaks, numbered lists, bulleted lists, list markers, list line breaks, and the line before a list.
+            If the input has multiple lines, keep the same line structure and line order.
+            Do not flatten a list into a sentence, comma-separated phrase, or single line.
+            Clean only the words inside each list item without moving list items or deleting the list introduction.
             Keep every meaningful input word from beginning to end.
+            Short openers, interjections, address words, and tone-setting words are meaningful text, not filler.
             Remove commas that only separated removed speech disfluencies.
             If removing a disfluency exposes the real start of a sentence, use normal sentence capitalization for that remaining first word.
             Keep profanity, insults, slang, emphasis words, and emotionally charged words.
