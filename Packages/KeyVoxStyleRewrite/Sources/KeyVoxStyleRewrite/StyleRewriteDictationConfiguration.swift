@@ -68,6 +68,7 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
 public enum StyleRewriteDictationConfiguration {
     public static let modelContextTokenLimit = 4_096
     public static let defaultMaximumResponseTokens = 512
+    public static let polishedLoRASystemPrompt = "Polish this dictated text. Remove spoken filler and false starts. Convert ain't to standard English. Preserve meaning, structure, and paragraph breaks. Do not drop, duplicate, merge, reorder, or replace paragraph content. Use numerals where appropriate. Output only the result."
     private static let contextualFormattingExamples = """
     Input: I bought that for four hundred and ninety nine dollars.
     Output: I bought that for $499.
@@ -120,87 +121,8 @@ public enum StyleRewriteDictationConfiguration {
         return TextTransformRequest(
             baseText: baseText,
             styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
-            instructions: """
-            You copyedit dictated text.
-            Return exactly one edited version of the input text.
-            Return only the edited text.
-            Edit in this order:
-            Remove spoken filler and disfluencies from the whole input, including um, uh, the filler word like, you know, I mean, and repeated starts.
-            Remove filler after punctuation and keep the sentence that follows it.
-            When a sentence begins with spoken filler, delete only the filler and keep that sentence's meaningful words.
-            In requests, delete like before please.
-            Delete standalone like when removing it does not change the speaker's meaning.
-            Keep every meaningful word and phrase around removed filler.
-            Repair spacing and punctuation after filler is removed.
-            Copyedit clear grammar, subject-verb agreement, casing, repeated words, obvious transcription errors, dictated dates, dollar amounts, and numbers.
-            Preserve the speaker's meaning, structure, sentence type, message type, tone, formality, emotional wording, profanity, names, URLs, email addresses, emoji, symbols, and code-like text.
-            Preserve meaningful openers and short meaningful interjections.
-            Do not summarize, soften, censor, reorder, split, merge, add, or duplicate content.
-            Never add greetings, sign-offs, names, placeholders, headings, bullets, commentary, labels, or explanations.
-
-            Examples:
-
-            Input: Hey, um, are you okay?
-            Output: Hey, are you okay?
-
-            Input: Hey, um what are you doing, um tomorrow?
-            Output: Hey, what are you doing tomorrow?
-
-            Input: Yo, um what are you doing?
-            Output: Yo, what are you doing?
-
-            Input: Um, what's up?
-            Output: What's up?
-
-            Input: We made it. Um, please send the file.
-            Output: We made it. Please send the file.
-
-            Input: Is everything okay? Um, are you still having trouble?
-            Output: Is everything okay? Are you still having trouble?
-
-            Input: I am, like, trying to figure out dinner.
-            Output: I am trying to figure out dinner.
-
-            Input: Are you um feeling this vibe? It's like pretty polished. Try it out.
-            Output: Are you feeling this vibe? It's pretty polished. Try it out.
-
-            Input: I don't know why, um, this keeps happening.
-            Output: I don't know why this keeps happening.
-
-            Input: I don't know why, um, you're making this harder, but can you like please stop?
-            Output: I don't know why you're making this harder, but can you please stop?
-
-            Input: I don't get why, um, you're being so rude, but can you like please stop?
-            Output: I don't get why you're being so rude, but can you please stop?
-
-            Input: Are you um feeling this vibe? It's like pretty polished. Try it out.
-            Output: Are you feeling this vibe? It's pretty polished. Try it out.
-
-            Input: Let's meet on May third.
-            Output: Let's meet on May 3rd.
-
-            Input: I bought that for four hundred and ninety nine dollars.
-            Output: I bought that for $499.
-
-            Input: Me and Sarah was talking about the launch.
-            Output: Me and Sarah were talking about the launch.
-            """,
-            promptPrefix: """
-            Copyedit this dictated text.
-            Remove spoken filler first, then apply polished copyediting.
-            Remove filler such as um, uh, the filler word like, you know, I mean, and repeated starts from the whole text.
-            Remove filler after punctuation and keep the sentence that follows it.
-            When a sentence begins with spoken filler, delete only the filler and keep that sentence's meaningful words.
-            In requests, delete like before please.
-            Delete standalone like when removing it does not change the speaker's meaning.
-            Keep every meaningful word around removed filler.
-            Preserve meaning, structure, sentence type, tone, emotional wording, profanity, and meaningful openers.
-            Do not summarize, soften, censor, split, merge, add, or duplicate content.
-            Return only the edited text.
-
-            Text:
-
-            """,
+            instructions: polishedLoRASystemPrompt,
+            promptPrefix: "",
             contextTokenLimit: contextTokenLimit,
             expectedOutputExpansionRatio: 0.75,
             safetyMarginTokens: 384,
@@ -228,6 +150,7 @@ public enum StyleRewriteDictationConfiguration {
             Clean only the words inside each list item without moving list items or deleting the list introduction.
             Do not replace words or phrases with synonyms.
             Do not add words, greetings, sign-offs, names, placeholders, headings, commentary, labels, or explanations.
+            Do not add dates, times, days, objects, or context that is not present in the input.
             Keep every meaningful input word from beginning to end.
             Remove only words like um, uh, accidental repeated starts, and clear speech stumbles that do not add meaning.
             Short openers, interjections, address words, and tone-setting words are meaningful text, not filler.
@@ -277,6 +200,7 @@ public enum StyleRewriteDictationConfiguration {
             Do not flatten a list into a sentence, comma-separated phrase, or single line.
             Clean only the words inside each list item without moving list items or deleting the list introduction.
             Keep every meaningful input word from beginning to end.
+            Do not add dates, times, days, objects, or context that is not present in the input.
             Short openers, interjections, address words, and tone-setting words are meaningful text, not filler.
             Remove commas that only separated removed speech disfluencies.
             If removing a disfluency exposes the real start of a sentence, use normal sentence capitalization for that remaining first word.

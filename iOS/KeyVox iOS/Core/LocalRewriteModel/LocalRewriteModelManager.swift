@@ -43,6 +43,34 @@ final class LocalRewriteModelManager: ObservableObject {
         return finalArtifactURL()
     }
 
+    func polishedLoRAURL() -> URL? {
+        if let bundledAdapterURL = bundledPolishedLoRAURL() {
+            return bundledAdapterURL
+        }
+
+        return installedPolishedLoRAURL()
+    }
+
+    private func bundledPolishedLoRAURL() -> URL? {
+        Bundle.main.url(
+            forResource: LocalRewriteModelCatalog.polishedLoRAResourceName,
+            withExtension: LocalRewriteModelCatalog.polishedLoRAResourceExtension,
+            subdirectory: LocalRewriteModelCatalog.polishedLoRAResourceSubdirectory
+        )
+    }
+
+    private func installedPolishedLoRAURL() -> URL? {
+        guard isModelReady() else { return nil }
+        guard let adapterURL = finalRootURL()?.appendingPathComponent(
+            LocalRewriteModelCatalog.polishedLoRAFilename,
+            isDirectory: false
+        ) else {
+            return nil
+        }
+
+        return fileManager.fileExists(atPath: adapterURL.path) ? adapterURL : nil
+    }
+
     func isModelReady() -> Bool {
         guard let manifestURL = manifestURL(),
               let artifactURL = finalArtifactURL(),

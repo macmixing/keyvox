@@ -122,6 +122,9 @@ final class AppServiceRegistry {
         let localRewriteInferenceService = LocalRewriteInferenceService(
             modelURLProvider: { [weak localRewriteModelManager] in
                 localRewriteModelManager?.installedModelURL()
+            },
+            adapterURLProvider: { [weak localRewriteModelManager] in
+                localRewriteModelManager?.polishedLoRAURL()
             }
         )
         let localStyleRewriteTextTransformer = LocalStyleRewriteTextTransformer(

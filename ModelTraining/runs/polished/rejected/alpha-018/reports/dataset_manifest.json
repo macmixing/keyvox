@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "bad_grammar_aint": 39,
+    "bad_grammar_aint_context": 14,
+    "live_regression": 89
+  },
+  "purpose": "continuation from alpha-017 for paragraph preservation with live-regression guards",
+  "test_count": 6,
+  "train_count": 130,
+  "valid_count": 6,
+  "version": "polished-alpha-018"
+}

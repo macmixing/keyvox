@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "bad_grammar_aint": 39,
+    "bad_grammar_aint_context": 14,
+    "live_regression": 73
+  },
+  "purpose": "continuation from alpha-010 for ain't repairs with live-regression guards",
+  "test_count": 6,
+  "train_count": 114,
+  "valid_count": 6,
+  "version": "polished-alpha-017"
+}

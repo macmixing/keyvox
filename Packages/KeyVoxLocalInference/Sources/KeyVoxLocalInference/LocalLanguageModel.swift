@@ -101,6 +101,9 @@ public struct LocalLanguageModelGenerationResult: Equatable, Sendable {
 public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringConvertible {
     case modelFileMissing
     case modelLoadFailed
+    case adapterFileMissing
+    case adapterLoadFailed
+    case adapterAttachFailed(code: Int32)
     case contextCreateFailed
     case tokenizerFailed
     case promptTooLong(inputTokenCount: Int, contextTokenLimit: Int)
@@ -114,6 +117,12 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
             return "modelFileMissing"
         case .modelLoadFailed:
             return "modelLoadFailed"
+        case .adapterFileMissing:
+            return "adapterFileMissing"
+        case .adapterLoadFailed:
+            return "adapterLoadFailed"
+        case let .adapterAttachFailed(code):
+            return "adapterAttachFailed(code=\(code))"
         case .contextCreateFailed:
             return "contextCreateFailed"
         case .tokenizerFailed:
@@ -140,17 +149,31 @@ public protocol LocalLanguageModelGenerating: Sendable {
 }
 
 public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @unchecked Sendable {
+    private static let installQuietLlamaLogging: Void = {
+        llama_log_set({ _, _, _ in }, nil)
+    }()
+
     private let modelURL: URL
+    public let adapterURL: URL?
     private let fileManager: FileManager
     private let inferenceQueue: DispatchQueue
+    private let adapterScale: Float
     private var loadedModel: LlamaLoadedModel?
+
+    public var hasLoRAAdapter: Bool {
+        adapterURL != nil
+    }
 
     public init(
         modelURL: URL,
+        adapterURL: URL? = nil,
+        adapterScale: Float = 1.0,
         fileManager: FileManager = .default,
         inferenceQueue: DispatchQueue = DispatchQueue(label: "com.cueit.keyvox.local-inference.llama-cpu")
     ) {
         self.modelURL = modelURL
+        self.adapterURL = adapterURL
+        self.adapterScale = adapterScale
         self.fileManager = fileManager
         self.inferenceQueue = inferenceQueue
     }
@@ -277,6 +300,8 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     }
 
     private func loadModelIfNeeded(configuration: LocalLanguageModelConfiguration) throws -> LlamaLoadedModel {
+        _ = Self.installQuietLlamaLogging
+
         if let loadedModel {
             return loadedModel
         }
@@ -319,14 +344,61 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
             throw LocalLanguageModelError.contextCreateFailed
         }
 
+        let adapter = try loadAdapterIfNeeded(model: model, context: context)
+
         let loaded = LlamaLoadedModel(
             model: model,
             context: context,
             vocab: llama_model_get_vocab(model),
+            adapter: adapter,
             lastLoadDuration: Date().timeIntervalSince(start)
         )
         loadedModel = loaded
         return loaded
+    }
+
+    private func loadAdapterIfNeeded(model: OpaquePointer, context: OpaquePointer) throws -> OpaquePointer? {
+        guard let adapterURL else {
+            return nil
+        }
+
+        guard fileManager.fileExists(atPath: adapterURL.path) else {
+            llama_free(context)
+            llama_model_free(model)
+            throw LocalLanguageModelError.adapterFileMissing
+        }
+
+        let adapter = adapterURL.path.withCString { path in
+            llama_adapter_lora_init(model, path)
+        }
+
+        guard let adapter else {
+            llama_free(context)
+            llama_model_free(model)
+            throw LocalLanguageModelError.adapterLoadFailed
+        }
+
+        var adapters: [OpaquePointer?] = [adapter]
+        var scales: [Float] = [adapterScale]
+        let status = adapters.withUnsafeMutableBufferPointer { adapterBuffer in
+            scales.withUnsafeMutableBufferPointer { scaleBuffer in
+                llama_set_adapters_lora(
+                    context,
+                    adapterBuffer.baseAddress,
+                    adapterBuffer.count,
+                    scaleBuffer.baseAddress
+                )
+            }
+        }
+
+        guard status == 0 else {
+            llama_adapter_lora_free(adapter)
+            llama_free(context)
+            llama_model_free(model)
+            throw LocalLanguageModelError.adapterAttachFailed(code: status)
+        }
+
+        return adapter
     }
 
     private func formattedPrompt(
@@ -546,21 +618,28 @@ private final class LlamaLoadedModel {
     let model: OpaquePointer
     let context: OpaquePointer
     let vocab: OpaquePointer
+    let adapter: OpaquePointer?
     var lastLoadDuration: TimeInterval?
 
     init(
         model: OpaquePointer,
         context: OpaquePointer,
         vocab: OpaquePointer,
+        adapter: OpaquePointer?,
         lastLoadDuration: TimeInterval?
     ) {
         self.model = model
         self.context = context
         self.vocab = vocab
+        self.adapter = adapter
         self.lastLoadDuration = lastLoadDuration
     }
 
     deinit {
+        if let adapter {
+            llama_set_adapters_lora(context, nil, 0, nil)
+            llama_adapter_lora_free(adapter)
+        }
         llama_free(context)
         llama_model_free(model)
     }

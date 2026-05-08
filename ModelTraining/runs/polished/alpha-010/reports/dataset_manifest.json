@@ -1,0 +1,83 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "runtime_prompt_file": "ModelTraining/prompts/polished/polished_runtime_short.txt",
+  "splits": {
+    "test": {
+      "categories": {
+        "code_like_preservation": 5,
+        "email_note_cleanup": 4,
+        "expanded_live_regression": 103,
+        "filler_after_punctuation": 31,
+        "filler_removal": 54,
+        "grammar_repair": 12,
+        "live_regression": 51,
+        "long_form_stress": 4,
+        "long_rambly_cleanup": 65,
+        "meaning_preservation": 22,
+        "medium_edit": 49,
+        "minimal_edit": 14,
+        "number_repair": 136,
+        "numeric_stress": 136,
+        "punctuation_repair": 12,
+        "question_request_cleanup": 27,
+        "rambly_filler_cleanup": 36,
+        "repeated_start": 10,
+        "short_filler_cleanup": 16,
+        "structure_preservation": 13
+      },
+      "count": 800
+    },
+    "train": {
+      "categories": {
+        "code_like_preservation": 62,
+        "email_note_cleanup": 48,
+        "expanded_live_regression": 999,
+        "filler_after_punctuation": 314,
+        "filler_removal": 565,
+        "grammar_repair": 123,
+        "live_regression": 473,
+        "long_form_stress": 49,
+        "long_rambly_cleanup": 583,
+        "meaning_preservation": 204,
+        "medium_edit": 488,
+        "minimal_edit": 121,
+        "number_repair": 1384,
+        "numeric_stress": 1471,
+        "punctuation_repair": 122,
+        "question_request_cleanup": 291,
+        "rambly_filler_cleanup": 338,
+        "repeated_start": 97,
+        "short_filler_cleanup": 120,
+        "structure_preservation": 148
+      },
+      "count": 8000
+    },
+    "valid": {
+      "categories": {
+        "code_like_preservation": 5,
+        "email_note_cleanup": 5,
+        "expanded_live_regression": 101,
+        "filler_after_punctuation": 34,
+        "filler_removal": 53,
+        "grammar_repair": 12,
+        "live_regression": 52,
+        "long_form_stress": 5,
+        "long_rambly_cleanup": 57,
+        "meaning_preservation": 20,
+        "medium_edit": 49,
+        "minimal_edit": 12,
+        "number_repair": 135,
+        "numeric_stress": 152,
+        "punctuation_repair": 11,
+        "question_request_cleanup": 29,
+        "rambly_filler_cleanup": 33,
+        "repeated_start": 9,
+        "short_filler_cleanup": 11,
+        "structure_preservation": 15
+      },
+      "count": 800
+    }
+  },
+  "style": "polished",
+  "system_prompt_file": "ModelTraining/prompts/polished/polished_runtime_short.txt"
+}

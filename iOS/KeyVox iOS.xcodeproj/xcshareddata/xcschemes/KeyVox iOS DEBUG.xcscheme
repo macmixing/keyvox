@@ -106,7 +106,7 @@
          <EnvironmentVariable
             key = "KEYVOX_RESET_VIBES_TRIAL"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <StoreKitConfigurationFileReference

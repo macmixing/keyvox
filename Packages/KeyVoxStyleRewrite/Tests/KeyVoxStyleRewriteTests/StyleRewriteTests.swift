@@ -21,8 +21,8 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(request.contextTokenLimit, 4_096)
         XCTAssertEqual(request.maximumResponseTokens, 512)
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.polished.styleIdentifier)
-        XCTAssertFalse(request.instructions.isEmpty)
-        XCTAssertFalse(request.promptPrefix.isEmpty)
+        XCTAssertEqual(request.instructions, StyleRewriteDictationConfiguration.polishedLoRASystemPrompt)
+        XCTAssertTrue(request.promptPrefix.isEmpty)
     }
 
     func testChillRequestUsesCleanupOnlyStyle() throws {
