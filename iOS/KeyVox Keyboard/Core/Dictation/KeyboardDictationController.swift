@@ -274,25 +274,19 @@ final class KeyboardDictationController {
                 }
                 self.handleTranscriptionReady(text)
             case .recording, .transcribing:
-                guard self.canRetryTranscriptionReconciliation() else { return }
-                self.ipcManager.sendStopCommand()
+                if self.shouldResendStopForTranscriptionReconciliation() {
+                    self.ipcManager.sendStopCommand()
+                }
                 self.scheduleTranscriptionReconciliation()
             case .waitingForApp, .preparingPlayback, .speaking, .pausedSpeaking:
-                guard self.canRetryTranscriptionReconciliation() else { return }
                 self.scheduleTranscriptionReconciliation()
             }
         }
     }
 
-    private func canRetryTranscriptionReconciliation() -> Bool {
+    private func shouldResendStopForTranscriptionReconciliation() -> Bool {
         transcriptionReconciliationRetryCount += 1
-        guard transcriptionReconciliationRetryCount <= maxTranscriptionReconciliationRetries else {
-            cancelTranscriptionReconciliation()
-            state = .idle
-            return false
-        }
-
-        return true
+        return transcriptionReconciliationRetryCount <= maxTranscriptionReconciliationRetries
     }
 
     private func cancelTranscriptionReconciliation(resetRetryCount: Bool = true) {
