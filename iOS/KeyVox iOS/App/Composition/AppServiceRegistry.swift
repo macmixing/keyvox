@@ -291,6 +291,11 @@ final class AppServiceRegistry {
         keyboardBridge.onDisableSessionCommand = {
             transcriptionManager.handleDisableSessionCommand()
         }
+        keyboardBridge.onStyleRewriteRequestCommand = {
+            Task { @MainActor in
+                await styleRewritePipelineCoordinator.handleKeyboardStyleRewriteRequest()
+            }
+        }
         keyboardBridge.onStartTTSCommand = {
             audioModeCoordinator.handleStartTTSFromPendingRequest()
         }

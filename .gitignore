@@ -19,3 +19,6 @@ Vendor/StyleRewrite/*.xcframework/
 
 # Marketing artifacts
 Tools/Marketing/
+
+# Fine-tuning artifacts
+ft/
