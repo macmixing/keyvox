@@ -11,7 +11,7 @@ struct KeyVoxVibesUnlockScene: View {
     private static let benefits: [Benefit] = [
         Benefit(id: 0, icon: "infinity", title: "Vibe Forever", subtitle: "Unlock once and keep every built-in Vibe."),
         Benefit(id: 1, icon: "hand.tap.fill", title: "Long Press Included", subtitle: "Restyle or undo the latest untouched dictation."),
-        Benefit(id: 2, icon: "lock.fill", title: "Always Private", subtitle: "Vibes run locally with Apple Intelligence.")
+        Benefit(id: 2, icon: "lock.fill", title: "Always Private", subtitle: "Vibes AI runs locally on this device.")
     ]
 
     @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController

@@ -97,7 +97,7 @@ The share extension does **not** own:
 ## Platform and Target Requirements
 
 - Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
-- KeyVox Vibes is an iOS app feature gated by Foundation Models availability at runtime; the broader iOS app remains installable below iOS 26 and must fall back to normal post-processed dictation text when the transform lane is unavailable.
+- KeyVox Vibes runs through the local Vibes model path and is supported on the app's iOS 18.6+ deployment target.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
   - `BGTaskSchedulerPermittedIdentifiers = ["com.cueit.keyvox.model-download"]`

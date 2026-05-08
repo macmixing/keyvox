@@ -15,36 +15,15 @@ struct KeyVoxVibesIntroControllerTests {
         #expect(controller.isPresented == true)
     }
 
-    @Test func doesNotScheduleWhenModelUnavailable() async throws {
+    @Test func delayedScheduleStillPresentsWhenEligibilityStaysValid() async throws {
         let harness = makeHarness(hasCompletedOnboarding: true)
         defer { harness.cleanup() }
-
-        let controller = makeController(harness: harness, isModelRewriteAvailable: false)
-        controller.schedulePresentationIfEligible()
-        await settlePresentationTask()
-
-        #expect(controller.isPresented == false)
-    }
-
-    @Test func delayedScheduleCanRecoverAfterEligibilityFlipsBeforePresentation() async throws {
-        let harness = makeHarness(hasCompletedOnboarding: true)
-        defer { harness.cleanup() }
-        var isModelRewriteAvailable = true
         let presentationDelayNanoseconds: UInt64 = 5_000_000
         let controller = KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isModelRewriteAvailable: { isModelRewriteAvailable },
             presentationDelayNanoseconds: presentationDelayNanoseconds
         )
 
-        controller.schedulePresentationIfEligible()
-        isModelRewriteAvailable = false
-        try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
-        await settlePresentationTask()
-
-        #expect(controller.isPresented == false)
-
-        isModelRewriteAvailable = true
         controller.schedulePresentationIfEligible()
         try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
         await settlePresentationTask()
@@ -105,13 +84,9 @@ struct KeyVoxVibesIntroControllerTests {
         )
     }
 
-    private func makeController(
-        harness: KeyVoxVibesIntroHarness,
-        isModelRewriteAvailable: Bool = true
-    ) -> KeyVoxVibesIntroController {
+    private func makeController(harness: KeyVoxVibesIntroHarness) -> KeyVoxVibesIntroController {
         KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isModelRewriteAvailable: { isModelRewriteAvailable },
             presentationDelayNanoseconds: 0
         )
     }

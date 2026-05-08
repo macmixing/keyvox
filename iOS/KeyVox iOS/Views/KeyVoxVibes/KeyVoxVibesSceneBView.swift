@@ -61,7 +61,7 @@ struct KeyVoxVibesSceneBView: View {
                         }
                     }
 
-                    Text("Built with Apple Intelligence.")
+                    Text("Built with the local Vibes model.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)
