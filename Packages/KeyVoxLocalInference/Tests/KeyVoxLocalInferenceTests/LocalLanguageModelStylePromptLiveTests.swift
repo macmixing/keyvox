@@ -19,8 +19,12 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             chunkResponderProvider: { _ in responder }
         )
         var failures: [String] = []
+        let styleFilter = ProcessInfo.processInfo.environment["KEYVOX_LIVE_STYLE_FILTER"]
 
         for testCase in Self.cases {
+            if let styleFilter, testCase.style.rawValue != styleFilter {
+                continue
+            }
             let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
                 for: testCase.style,
                 baseText: testCase.input
@@ -134,11 +138,6 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             expected: "Phase three. Yo, what are you doing tomorrow?"
         ),
         LiveStylePromptCase(
-            style: .polished,
-            input: "Phase three. Yo, uh what are you doing tomorrow?",
-            expected: "Phase three. Yo, what are you doing tomorrow?"
-        ),
-        LiveStylePromptCase(
             style: .chill,
             input: "Phase three. Yo, uh what are you doing tomorrow?",
             expected: "phase three. yo what are you doing tomorrow?"
@@ -204,6 +203,16 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             expected: "Are you feeling this vibe? It's pretty polished. Try it out."
         ),
         LiveStylePromptCase(
+            style: .polished,
+            input: "I don't know why, um, you're acting like such a fucking idiot, but can you like please um stop?",
+            expected: "I don't know why you're acting like such a fucking idiot, but can you please stop?"
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "Hey, what's going on? Um, are you having any problems?",
+            expected: "Hey, what's going on? Are you having any problems?"
+        ),
+        LiveStylePromptCase(
             style: .chill,
             input: "I am, like, trying to figure out dinner.",
             expected: "i am trying to figure out dinner"
@@ -217,11 +226,6 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
             style: .casual,
             input: "Why can't you um fucking help me?",
             expected: "Why can't you fucking help me?"
-        ),
-        LiveStylePromptCase(
-            style: .polished,
-            input: "Why can't you fucking help me?",
-            expected: "Why can't you help me?"
         ),
         LiveStylePromptCase(
             style: .chill,

@@ -124,24 +124,24 @@ public enum StyleRewriteDictationConfiguration {
             You copyedit dictated text.
             Return exactly one edited version of the input text.
             Return only the edited text.
-            Make polished corrections that fix clear dictated-text issues.
-            Remove non-meaningful filler words, false starts, and speech disfluencies such as um, uh, like, you know, I mean, and repeated starts when they do not add meaning, even when transcription did not add commas or they appear before descriptive modifiers.
-            Correct clear grammar, subject-verb agreement, punctuation, casing, repeated words, obvious transcription errors, dictated dates, dollar amounts, and numbers.
-            Polished copyediting should fix clear grammar errors even when that changes the original wording.
-            Do not leave a clear grammar or disfluency issue unchanged only to preserve the original wording.
-            Never duplicate an input phrase that appears only once.
-            Correct subject-verb agreement when the subject and verb clearly disagree.
-            Preserve the speaker's meaning, opener, structure, sentence type, message type, tone, formality, emotional wording, names, URLs, email addresses, emoji, symbols, and code-like text.
+            Edit in this order:
+            Remove spoken filler and disfluencies from the whole input, including um, uh, the filler word like, you know, I mean, and repeated starts.
+            Remove filler after punctuation and keep the sentence that follows it.
+            When a sentence begins with spoken filler, delete only the filler and keep that sentence's meaningful words.
+            In requests, delete like before please.
+            Delete standalone like when removing it does not change the speaker's meaning.
+            Keep every meaningful word and phrase around removed filler.
+            Repair spacing and punctuation after filler is removed.
+            Copyedit clear grammar, subject-verb agreement, casing, repeated words, obvious transcription errors, dictated dates, dollar amounts, and numbers.
+            Preserve the speaker's meaning, structure, sentence type, message type, tone, formality, emotional wording, profanity, names, URLs, email addresses, emoji, symbols, and code-like text.
+            Preserve meaningful openers and short meaningful interjections.
+            Do not summarize, soften, censor, reorder, split, merge, add, or duplicate content.
             Never add greetings, sign-offs, names, placeholders, headings, bullets, commentary, labels, or explanations.
-            If removing a word would change meaning, keep it.
 
             Examples:
 
             Input: Hey, um, are you okay?
             Output: Hey, are you okay?
-
-            Input: Phase three. Yo, um what are you doing?
-            Output: Phase three. Yo, what are you doing?
 
             Input: Hey, um what are you doing, um tomorrow?
             Output: Hey, what are you doing tomorrow?
@@ -152,14 +152,29 @@ public enum StyleRewriteDictationConfiguration {
             Input: Um, what's up?
             Output: What's up?
 
+            Input: We made it. Um, please send the file.
+            Output: We made it. Please send the file.
+
+            Input: Is everything okay? Um, are you still having trouble?
+            Output: Is everything okay? Are you still having trouble?
+
             Input: I am, like, trying to figure out dinner.
             Output: I am trying to figure out dinner.
 
             Input: Are you um feeling this vibe? It's like pretty polished. Try it out.
             Output: Are you feeling this vibe? It's pretty polished. Try it out.
 
-            Input: Why can't you fucking help me?
-            Output: Why can't you help me?
+            Input: I don't know why, um, this keeps happening.
+            Output: I don't know why this keeps happening.
+
+            Input: I don't know why, um, you're making this harder, but can you like please stop?
+            Output: I don't know why you're making this harder, but can you please stop?
+
+            Input: I don't get why, um, you're being so rude, but can you like please stop?
+            Output: I don't get why you're being so rude, but can you please stop?
+
+            Input: Are you um feeling this vibe? It's like pretty polished. Try it out.
+            Output: Are you feeling this vibe? It's pretty polished. Try it out.
 
             Input: Let's meet on May third.
             Output: Let's meet on May 3rd.
@@ -172,14 +187,15 @@ public enum StyleRewriteDictationConfiguration {
             """,
             promptPrefix: """
             Copyedit this dictated text.
-            Apply polished copyediting.
-            Remove non-meaningful filler words, false starts, and speech disfluencies such as um, uh, like, you know, I mean, and repeated starts when they do not add meaning, even when transcription did not add commas or they appear before descriptive modifiers.
-            Correct clear grammar, subject-verb agreement, punctuation, casing, dictated dates, dollar amounts, and numbers.
-            Polished copyediting should fix clear grammar errors even when that changes the original wording.
-            Do not leave a clear grammar or disfluency issue unchanged only to preserve the original wording.
-            Never duplicate an input phrase that appears only once.
-            Correct subject-verb agreement when the subject and verb clearly disagree.
-            Preserve meaning, opener, structure, tone, and emotional wording.
+            Remove spoken filler first, then apply polished copyediting.
+            Remove filler such as um, uh, the filler word like, you know, I mean, and repeated starts from the whole text.
+            Remove filler after punctuation and keep the sentence that follows it.
+            When a sentence begins with spoken filler, delete only the filler and keep that sentence's meaningful words.
+            In requests, delete like before please.
+            Delete standalone like when removing it does not change the speaker's meaning.
+            Keep every meaningful word around removed filler.
+            Preserve meaning, structure, sentence type, tone, emotional wording, profanity, and meaningful openers.
+            Do not summarize, soften, censor, split, merge, add, or duplicate content.
             Return only the edited text.
 
             Text:
