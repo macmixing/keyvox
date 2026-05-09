@@ -388,6 +388,7 @@ final class KeyboardViewController: UIInputViewController {
             guard let self else { return }
             let didApply = await self.dictationChangeController.applyLongPressChange(
                 onProcessingStart: { [weak self] in
+                    self?.interactionHaptics.emitMediumIfEnabled()
                     self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
