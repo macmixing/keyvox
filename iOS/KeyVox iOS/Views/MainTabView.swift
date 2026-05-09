@@ -94,7 +94,10 @@ struct MainTabView: View {
                     )
                 )
                     .environmentObject(keyVoxVibesPurchaseController)
-            case .unlock, .none:
+            case .unlock(let initialScene):
+                KeyVoxVibesUnlockSheetView(initialScene: initialScene)
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .none:
                 KeyVoxVibesUnlockSheetView()
                     .environmentObject(keyVoxVibesPurchaseController)
             }

@@ -310,7 +310,9 @@ extension StyleTabView {
     private func handleKeyVoxVibesCardAction() {
         appHaptics.light()
 
-        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+        if keyVoxVibesPurchaseController.hasTrialEnded && isVibesAIInstalled == false {
+            keyVoxVibesPurchaseController.presentUnlockSheet(initialScene: .unlock)
+        } else if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
             keyVoxVibesPurchaseController.presentModelRecoverySheet()
         } else if keyVoxVibesPurchaseController.hasTrialStarted {
             keyVoxVibesPurchaseController.presentUnlockSheet()

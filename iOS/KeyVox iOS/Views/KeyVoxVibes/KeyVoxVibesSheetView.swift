@@ -20,7 +20,7 @@ struct KeyVoxVibesSheetView: View {
     enum Mode {
         case intro(presentation: IntroPresentation = .full, onTryNow: () -> Void, onDismiss: () -> Void)
         case info(presentation: IntroPresentation = .usageOnly, onDismiss: () -> Void)
-        case unlock(onDismiss: () -> Void)
+        case unlock(initialScene: Scene = .b, onDismiss: () -> Void)
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -52,8 +52,8 @@ struct KeyVoxVibesSheetView: View {
             presentation.initialScene
         case .info(let presentation, _):
             presentation.initialScene
-        case .unlock:
-            .b
+        case .unlock(let initialScene, _):
+            initialScene
         }
     }
 
@@ -112,7 +112,7 @@ struct KeyVoxVibesSheetView: View {
         .onDisappear {
             animationTask?.cancel()
             animationTask = nil
-            if case .unlock(let onDismiss) = mode {
+            if case .unlock(_, let onDismiss) = mode {
                 onDismiss()
             } else if case .info(_, let onDismiss) = mode {
                 onDismiss()

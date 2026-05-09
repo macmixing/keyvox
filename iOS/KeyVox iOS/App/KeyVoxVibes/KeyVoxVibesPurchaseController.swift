@@ -8,7 +8,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     enum SheetPresentation: Equatable {
         case intro(KeyVoxVibesSheetView.IntroPresentation)
         case info(KeyVoxVibesSheetView.IntroPresentation)
-        case unlock
+        case unlock(initialScene: KeyVoxVibesSheetView.Scene = .b)
     }
 
     nonisolated static let unlockProductID = "com.cueit.keyvox.vibes.unlocked"
@@ -175,21 +175,21 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
     }
 
-    func presentUnlockSheet() {
+    func presentUnlockSheet(initialScene: KeyVoxVibesSheetView.Scene = .b) {
         refreshTrialStateIfNeeded()
         guard isVibesUnlocked == false else {
             dismissSheet()
             return
         }
 
-        sheetPresentation = .unlock
+        sheetPresentation = .unlock(initialScene: initialScene)
     }
 
     func presentModelRecoverySheet() {
         refreshTrialStateIfNeeded()
 
         if isVibesUnlocked {
-            sheetPresentation = .unlock
+            sheetPresentation = .unlock(initialScene: .unlock)
         } else {
             sheetPresentation = .intro(.trialStart)
         }
@@ -201,7 +201,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         if isVibesUnlocked {
             sheetPresentation = .info(.usageOnly)
         } else if hasTrialStarted {
-            sheetPresentation = .unlock
+            sheetPresentation = .unlock(initialScene: .b)
         } else {
             sheetPresentation = .intro(.full)
         }
