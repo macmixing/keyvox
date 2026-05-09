@@ -1,0 +1,10 @@
+{
+  "run": "casual-alpha-3",
+  "status": "current",
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "dataset": "ModelTraining/datasets/casual/casual-alpha-3-continuation-time-money-guards",
+  "resume_adapter": "ModelTraining/artifacts/current/casual-lora-alpha-2/adapters/casual-alpha-2/adapters.safetensors",
+  "adapter_checkpoint": "ModelTraining/artifacts/current/casual-lora-alpha-3/adapters/casual-alpha-3/adapters.safetensors",
+  "runtime_gguf": "ModelTraining/artifacts/current/casual-lora-alpha-3/adapters/casual-alpha-3/casual-alpha-3-lora.gguf",
+  "portable_from_this_mac": true
+}

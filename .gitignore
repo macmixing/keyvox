@@ -19,3 +19,7 @@ Vendor/StyleRewrite/*.xcframework/
 
 # Marketing artifacts
 Tools/Marketing/
+
+# Model training artifacts
+/ModelTraining/artifacts/
+/ModelTraining/models/

@@ -8,7 +8,10 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     enum SheetPresentation: Equatable {
         case intro(KeyVoxVibesSheetView.IntroPresentation)
         case info(KeyVoxVibesSheetView.IntroPresentation)
-        case unlock
+        case unlock(
+            initialScene: KeyVoxVibesSheetView.Scene = .b,
+            primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction = .purchase
+        )
     }
 
     nonisolated static let unlockProductID = "com.cueit.keyvox.vibes.unlocked"
@@ -141,7 +144,11 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     func startTrial() {
         guard isVibesUnlocked == false else { return }
         guard hasTrialStarted == false else {
-            presentUnlockSheet()
+            if isTrialActive {
+                dismissSheet()
+            } else {
+                presentUnlockSheet()
+            }
             return
         }
 
@@ -171,14 +178,26 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
     }
 
-    func presentUnlockSheet() {
+    func presentUnlockSheet(initialScene: KeyVoxVibesSheetView.Scene = .b) {
         refreshTrialStateIfNeeded()
         guard isVibesUnlocked == false else {
             dismissSheet()
             return
         }
 
-        sheetPresentation = .unlock
+        sheetPresentation = .unlock(initialScene: initialScene)
+    }
+
+    func presentModelRecoverySheet() {
+        refreshTrialStateIfNeeded()
+
+        if isVibesUnlocked {
+            sheetPresentation = .unlock(initialScene: .unlock, primaryAction: .continueWhenVibesAIReady)
+        } else if isTrialActive {
+            sheetPresentation = .intro(.activeTrialRecovery)
+        } else {
+            sheetPresentation = .intro(.trialStart)
+        }
     }
 
     func presentHelpSheet() {
@@ -187,7 +206,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         if isVibesUnlocked {
             sheetPresentation = .info(.usageOnly)
         } else if hasTrialStarted {
-            sheetPresentation = .unlock
+            sheetPresentation = .unlock(initialScene: .b)
         } else {
             sheetPresentation = .intro(.full)
         }

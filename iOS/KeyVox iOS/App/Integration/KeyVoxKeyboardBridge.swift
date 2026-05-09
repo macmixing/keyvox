@@ -8,6 +8,7 @@ final class KeyVoxKeyboardBridge {
     var onStopRecordingCommand: (() -> Void)?
     var onCancelRecordingCommand: (() -> Void)?
     var onDisableSessionCommand: (() -> Void)?
+    var onStyleRewriteRequestCommand: (() -> Void)?
     var onStartTTSCommand: (() -> Void)?
     var onStopTTSCommand: (() -> Void)?
     var onPauseTTSCommand: (() -> Void)?
@@ -25,6 +26,7 @@ final class KeyVoxKeyboardBridge {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.cancelRecording)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.disableSession)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.styleRewriteRequested)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.startTTS)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.stopTTS)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.pauseTTS)
@@ -196,6 +198,8 @@ final class KeyVoxKeyboardBridge {
                 self.onCancelRecordingCommand?()
             case KeyVoxIPCBridge.Notification.disableSession:
                 self.onDisableSessionCommand?()
+            case KeyVoxIPCBridge.Notification.styleRewriteRequested:
+                self.onStyleRewriteRequestCommand?()
             case KeyVoxIPCBridge.Notification.startTTS:
                 self.onStartTTSCommand?()
             case KeyVoxIPCBridge.Notification.stopTTS:

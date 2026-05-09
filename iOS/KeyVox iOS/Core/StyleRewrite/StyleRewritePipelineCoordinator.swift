@@ -6,27 +6,27 @@ import KeyVoxStyleRewrite
 final class StyleRewritePipelineCoordinator {
     private let selectedStyleProvider: () -> StyleRewriteStyle
     private let artifactStore: StyleRewriteLatestArtifactStore
-    private let textTransformer = FoundationStyleRewriteTextTransformer()
+    private let textTransformer: any DictationTextTransforming
 
     init(
         selectedStyleProvider: @escaping () -> StyleRewriteStyle,
-        artifactStore: StyleRewriteLatestArtifactStore
+        artifactStore: StyleRewriteLatestArtifactStore,
+        textTransformer: any DictationTextTransforming
     ) {
         self.selectedStyleProvider = selectedStyleProvider
         self.artifactStore = artifactStore
+        self.textTransformer = textTransformer
     }
 
     func prewarmForUpcomingDictationIfNeeded() {
         let style = selectedStyleProvider()
-        guard style.usesFoundationRewrite else {
+        guard style.usesModelRewrite else {
             log("prewarm skipped reason=style style=\(style.styleIdentifier)")
-            textTransformer.releasePrewarmSession(reason: "style-\(style.styleIdentifier)")
             return
         }
 
         guard let request = transformRequest(for: "") else {
             log("prewarm skipped reason=no-request style=\(style.styleIdentifier)")
-            textTransformer.releasePrewarmSession(reason: "no-request")
             return
         }
 
@@ -35,12 +35,7 @@ final class StyleRewritePipelineCoordinator {
 
     func processOutputText(_ baseText: String) async -> DictationPipelineTextProcessingResult {
         guard let request = transformRequest(for: baseText) else {
-            textTransformer.releasePrewarmSession(reason: "no-transform-request")
             return .unchanged(baseText)
-        }
-
-        defer {
-            textTransformer.releasePrewarmSession(reason: "transform-finished")
         }
 
         let result = await textTransformer.transform(request)
@@ -57,8 +52,56 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
-    func releasePrewarmSession(reason: String) {
-        textTransformer.releasePrewarmSession(reason: reason)
+    func releasePrewarmSession(reason: String) {}
+
+    func handleKeyboardStyleRewriteRequest() async {
+        guard let request = KeyVoxIPCBridge.consumeStyleRewriteRequest() else {
+            return
+        }
+
+        guard let style = StyleRewriteStyle(rawValue: request.styleIdentifier) else {
+            KeyVoxIPCBridge.writeStyleRewriteResponse(
+                KeyVoxStyleRewriteIPCResponse(
+                    id: request.id,
+                    text: nil,
+                    duration: 0,
+                    applied: false,
+                    chunkCount: 0,
+                    errorMessage: "invalidStyle"
+                )
+            )
+            return
+        }
+
+        guard let transformRequest = StyleRewriteDictationConfiguration.request(
+            for: style,
+            baseText: request.baseText
+        ) else {
+            KeyVoxIPCBridge.writeStyleRewriteResponse(
+                KeyVoxStyleRewriteIPCResponse(
+                    id: request.id,
+                    text: request.baseText,
+                    duration: 0,
+                    applied: false,
+                    chunkCount: request.baseText.isEmpty ? 0 : 1,
+                    errorMessage: nil
+                )
+            )
+            return
+        }
+
+        let result = await textTransformer.transform(transformRequest)
+        let errorMessage = result.errors.map(\.message).joined(separator: "; ").nilIfEmpty
+        KeyVoxIPCBridge.writeStyleRewriteResponse(
+            KeyVoxStyleRewriteIPCResponse(
+                id: request.id,
+                text: result.finalText,
+                duration: result.duration,
+                applied: result.applied,
+                chunkCount: result.chunkCount,
+                errorMessage: errorMessage
+            )
+        )
     }
 
     func recordLatestArtifact(from result: DictationPipelineResult, selectedText: String) {

@@ -28,6 +28,12 @@ enum KeyboardModelAvailability {
             .appendingPathComponent("Voices", isDirectory: true)
     }
 
+    private static func localRewriteModelDirectoryURL(fileManager: FileManager) -> URL? {
+        modelsDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("rewrite", isDirectory: true)
+            .appendingPathComponent("qwen2-5-0-5b-instruct", isDirectory: true)
+    }
+
     static func isInstalled(fileManager: FileManager = .default) -> Bool {
         guard let containerURL = fileManager.containerURL(
             forSecurityApplicationGroupIdentifier: KeyVoxIPCBridge.appGroupID
@@ -50,6 +56,21 @@ enum KeyboardModelAvailability {
         }
 
         return true
+    }
+
+    static func isVibesAIInstalled(fileManager: FileManager = .default) -> Bool {
+        guard let rootDirectoryURL = localRewriteModelDirectoryURL(fileManager: fileManager) else {
+            return false
+        }
+
+        let requiredPaths = [
+            "install-manifest.json",
+            "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        ]
+
+        return requiredPaths.allSatisfy { relativePath in
+            fileManager.fileExists(atPath: rootDirectoryURL.appendingPathComponent(relativePath).path)
+        }
     }
 
     static func resolvedTTSVoiceID(

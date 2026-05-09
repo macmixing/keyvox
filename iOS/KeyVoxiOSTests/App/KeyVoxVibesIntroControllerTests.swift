@@ -15,36 +15,15 @@ struct KeyVoxVibesIntroControllerTests {
         #expect(controller.isPresented == true)
     }
 
-    @Test func doesNotScheduleWhenFoundationUnavailable() async throws {
+    @Test func delayedScheduleStillPresentsWhenEligibilityStaysValid() async throws {
         let harness = makeHarness(hasCompletedOnboarding: true)
         defer { harness.cleanup() }
-
-        let controller = makeController(harness: harness, isFoundationRewriteAvailable: false)
-        controller.schedulePresentationIfEligible()
-        await settlePresentationTask()
-
-        #expect(controller.isPresented == false)
-    }
-
-    @Test func delayedScheduleCanRecoverAfterEligibilityFlipsBeforePresentation() async throws {
-        let harness = makeHarness(hasCompletedOnboarding: true)
-        defer { harness.cleanup() }
-        var isFoundationRewriteAvailable = true
         let presentationDelayNanoseconds: UInt64 = 5_000_000
         let controller = KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
             presentationDelayNanoseconds: presentationDelayNanoseconds
         )
 
-        controller.schedulePresentationIfEligible()
-        isFoundationRewriteAvailable = false
-        try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
-        await settlePresentationTask()
-
-        #expect(controller.isPresented == false)
-
-        isFoundationRewriteAvailable = true
         controller.schedulePresentationIfEligible()
         try? await Task.sleep(nanoseconds: presentationDelayNanoseconds * 2)
         await settlePresentationTask()
@@ -105,13 +84,9 @@ struct KeyVoxVibesIntroControllerTests {
         )
     }
 
-    private func makeController(
-        harness: KeyVoxVibesIntroHarness,
-        isFoundationRewriteAvailable: Bool = true
-    ) -> KeyVoxVibesIntroController {
+    private func makeController(harness: KeyVoxVibesIntroHarness) -> KeyVoxVibesIntroController {
         KeyVoxVibesIntroController(
             defaults: harness.defaults,
-            isFoundationRewriteAvailable: { isFoundationRewriteAvailable },
             presentationDelayNanoseconds: 0
         )
     }

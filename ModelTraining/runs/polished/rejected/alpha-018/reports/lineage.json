@@ -1,0 +1,28 @@
+{
+  "run": "polished-alpha-018",
+  "status": "rejected",
+  "base_run": {
+    "id": "polished-alpha-010",
+    "run": "ModelTraining/runs/polished/alpha-010",
+    "dataset": "ModelTraining/datasets/polished/alpha-010-base",
+    "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-010/adapters/polished-alpha-010/adapters.safetensors"
+  },
+  "continuation_runs": [
+    {
+      "id": "polished-alpha-017",
+      "run": "ModelTraining/runs/polished/alpha-017",
+      "dataset": "ModelTraining/datasets/polished/alpha-017-continuation-aint",
+      "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-017/adapters/polished-alpha-017/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/polished-lora-alpha-017/adapters/polished-alpha-017/polished-alpha-017-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-018",
+      "run": "ModelTraining/runs/polished/rejected/alpha-018",
+      "dataset": "ModelTraining/datasets/polished/rejected/alpha-018-continuation-paragraphs",
+      "checkpoint": "ModelTraining/artifacts/rejected/polished-lora-alpha-018/adapters/polished-alpha-018/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/rejected/polished-lora-alpha-018/adapters/polished-alpha-018/polished-alpha-018-lora.gguf"
+    }
+  ],
+  "bundled_runtime_artifact": null,
+  "portable_from_this_mac": true
+}

@@ -91,6 +91,38 @@ struct KeyVoxVibesPurchaseControllerTests {
         #expect(controller.canUseVibes == true)
     }
 
+    @Test func activeTrialModelRecoveryStartsSceneCVariant() async throws {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        let controller = makeController(harness: harness)
+        await settleAsyncWork()
+
+        controller.startTrial()
+        controller.presentModelRecoverySheet()
+
+        #expect(controller.sheetPresentation == .intro(.activeTrialRecovery))
+    }
+
+    @Test func unlockedModelRecoveryUsesContinueCTA() async throws {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+        harness.defaults.set(true, forKey: UserDefaultsKeys.App.isVibesUnlocked)
+        harness.store.isUnlocked = true
+
+        let controller = makeController(harness: harness)
+        await settleAsyncWork()
+
+        controller.presentModelRecoverySheet()
+
+        #expect(
+            controller.sheetPresentation == .unlock(
+                initialScene: .unlock,
+                primaryAction: .continueWhenVibesAIReady
+            )
+        )
+    }
+
     private func makeController(harness: KeyVoxVibesPurchaseHarness) -> KeyVoxVibesPurchaseController {
         KeyVoxVibesPurchaseController(
             defaults: harness.defaults,

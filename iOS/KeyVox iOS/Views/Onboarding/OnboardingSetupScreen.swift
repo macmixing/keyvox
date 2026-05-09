@@ -305,8 +305,8 @@ struct OnboardingSetupScreen: View {
         switch confirmation {
         case .dictationModel(let modelID):
             modelManager.downloadModel(withID: modelID)
-        case .sharedTTSModel, .ttsVoice, .ttsVoiceWithSharedModel:
-            // Onboarding only confirms dictation model downloads; TTS download confirmations are owned by the app shell or Speak sheet.
+        case .keyVoxVibesAI, .sharedTTSModel, .ttsVoice, .ttsVoiceWithSharedModel:
+            // Onboarding only confirms dictation model downloads; other download confirmations are owned by their feature surfaces.
             break
         }
     }

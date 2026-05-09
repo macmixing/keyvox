@@ -1,6 +1,18 @@
 import SwiftUI
 
 struct KeyVoxVibesSceneCView: View {
+    @Environment(\.appHaptics) private var appHaptics
+    @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject private var localRewriteModelManager: LocalRewriteModelManager
+
+    private static var installCardAnimation: Animation {
+        Animation.spring(response: 0.62, dampingFraction: 0.88)
+    }
+
+    private static var installCardCollapseDelayNanoseconds: UInt64 {
+        700_000_000
+    }
+
     private struct Detail: Identifiable {
         let id: Int
         let icon: String
@@ -15,6 +27,8 @@ struct KeyVoxVibesSceneCView: View {
     ]
 
     let isVisible: Bool
+    let variant: KeyVoxVibesSheetView.SceneCVariant
+    let onDownloadRequested: (PendingDownloadConfirmation) -> Void
 
     @State private var logoOpacity: Double = 0
     @State private var logoScale: CGFloat = 0.7
@@ -23,6 +37,10 @@ struct KeyVoxVibesSceneCView: View {
     @State private var rowRevealProgress: Int = 0
     @State private var footerOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
+    @State private var displayedInstallState: LocalRewriteModelInstallState?
+    @State private var isInstallCardVisible = false
+    @State private var installCardHeight: CGFloat = 0
+    @State private var installCardCollapseTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
     var body: some View {
@@ -70,6 +88,8 @@ struct KeyVoxVibesSceneCView: View {
                     }
                     .padding(.bottom, 14)
 
+                    installCardSlot
+
                     Text("One-time purchase. No subscription.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
@@ -86,9 +106,14 @@ struct KeyVoxVibesSceneCView: View {
         .onChange(of: isVisible, initial: true) { _, visible in
             guard visible else { return }
             startEntranceIfNeeded()
+            syncInstallCardVisibility(for: localRewriteModelManager.installState)
+        }
+        .onChange(of: localRewriteModelManager.installState) { _, newState in
+            syncInstallCardVisibility(for: newState)
         }
         .onDisappear {
             stopEntrance()
+            installCardCollapseTask?.cancel()
         }
     }
 
@@ -103,14 +128,188 @@ struct KeyVoxVibesSceneCView: View {
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
-            Text(detail.subtitle)
+            Text(subtitle(for: detail))
                 .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(subtitleStyle(for: detail))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
+    }
+
+    private func subtitle(for detail: Detail) -> String {
+        guard variant == .activeTrialRecovery,
+              detail.id == 0 else {
+            return detail.subtitle
+        }
+
+        return "You’re using Vibes for a day, you have \(vibesPurchaseController.trialRemainingText) left."
+    }
+
+    private func subtitleStyle(for detail: Detail) -> Color {
+        guard variant == .activeTrialRecovery,
+              detail.id == 0 else {
+            return .white.opacity(0.55)
+        }
+
+        return .yellow
+    }
+
+    private var installCardSlot: some View {
+        vibesAIInstallCard
+            .opacity(isInstallCardVisible ? footerOpacity : 0)
+            .frame(height: isInstallCardVisible ? installCardHeight : 0, alignment: .top)
+            .padding(.bottom, isInstallCardVisible ? 14 : 0)
+            .clipped()
+            .allowsHitTesting(isInstallCardVisible)
+            .accessibilityHidden(!isInstallCardVisible)
+            .animation(Self.installCardAnimation, value: isInstallCardVisible)
+            .animation(Self.installCardAnimation, value: installCardHeight)
+            .background(alignment: .top) {
+                if displayedInstallState != nil {
+                    installCardMeasurement
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var vibesAIInstallCard: some View {
+        if let displayedInstallState {
+            ModelDownloaderCardView(
+                iconSystemName: "arrowshape.down.fill",
+                title: "Install Vibes AI",
+                subtitle: nil,
+                statusText: vibesAIInstallStatusText(for: displayedInstallState),
+                progress: vibesAIProgress(for: displayedInstallState),
+                progressText: vibesAIProgressText(for: displayedInstallState),
+                errorText: vibesAIErrorText(for: displayedInstallState),
+                actionTitle: vibesAIActionTitle(for: displayedInstallState),
+                actionStyle: .primary,
+                isActionEnabled: true,
+                action: handleVibesAIAction
+            )
+        }
+    }
+
+    private var installCardMeasurement: some View {
+        vibesAIInstallCard
+            .fixedSize(horizontal: false, vertical: true)
+            .hidden()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            updateInstallCardHeight(geometry.size.height)
+                        }
+                        .onChange(of: geometry.size.height) { _, newHeight in
+                            updateInstallCardHeight(newHeight)
+                        }
+                }
+            )
+    }
+
+    private func shouldShowInstallCard(for state: LocalRewriteModelInstallState) -> Bool {
+        switch state {
+        case .ready:
+            return false
+        case .notInstalled, .downloading, .installing, .failed:
+            return true
+        }
+    }
+
+    private func vibesAIInstallStatusText(for state: LocalRewriteModelInstallState) -> String {
+        switch state {
+        case .notInstalled:
+            return "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
+        case .downloading:
+            return "Downloading KeyVox Vibes AI."
+        case .installing:
+            return "Installing KeyVox Vibes AI."
+        case .ready:
+            return "KeyVox Vibes AI is installed and ready."
+        case .failed:
+            return "Install failed."
+        }
+    }
+
+    private func vibesAIProgress(for state: LocalRewriteModelInstallState) -> Double? {
+        switch state {
+        case .downloading(let progress), .installing(let progress):
+            return progress
+        case .notInstalled, .ready, .failed:
+            return nil
+        }
+    }
+
+    private func vibesAIProgressText(for state: LocalRewriteModelInstallState) -> String? {
+        guard let progress = vibesAIProgress(for: state) else { return nil }
+        return "\(Int((progress * 100).rounded()))%"
+    }
+
+    private func vibesAIErrorText(for state: LocalRewriteModelInstallState) -> String? {
+        if case .failed(let message) = state {
+            return message
+        }
+        return nil
+    }
+
+    private func vibesAIActionTitle(for state: LocalRewriteModelInstallState) -> String? {
+        switch state {
+        case .notInstalled:
+            return "Download"
+        case .failed:
+            return "Repair"
+        case .downloading, .installing, .ready:
+            return nil
+        }
+    }
+
+    private func updateInstallCardHeight(_ newHeight: CGFloat) {
+        guard newHeight > 0 else { return }
+        guard abs(installCardHeight - newHeight) > 0.5 else { return }
+        installCardHeight = newHeight
+    }
+
+    private func syncInstallCardVisibility(for state: LocalRewriteModelInstallState) {
+        if shouldShowInstallCard(for: state) {
+            installCardCollapseTask?.cancel()
+            displayedInstallState = state
+
+            guard isInstallCardVisible == false else { return }
+            withAnimation(Self.installCardAnimation) {
+                isInstallCardVisible = true
+            }
+            return
+        }
+
+        guard displayedInstallState != nil || isInstallCardVisible else { return }
+        installCardCollapseTask?.cancel()
+
+        withAnimation(Self.installCardAnimation) {
+            isInstallCardVisible = false
+        }
+
+        installCardCollapseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: Self.installCardCollapseDelayNanoseconds)
+            guard Task.isCancelled == false else { return }
+            displayedInstallState = nil
+        }
+    }
+
+    private func handleVibesAIAction() {
+        appHaptics.light()
+
+        switch localRewriteModelManager.installState {
+        case .notInstalled:
+            onDownloadRequested(.keyVoxVibesAI)
+        case .failed:
+            localRewriteModelManager.downloadModel()
+        case .downloading, .installing, .ready:
+            break
+        }
     }
 
     private func startEntranceIfNeeded() {

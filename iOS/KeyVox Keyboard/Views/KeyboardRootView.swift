@@ -118,8 +118,9 @@ final class KeyboardRootView: UIView {
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
-        selectedVibeTitle: String,
-        selectedVibeStyle: StyleRewriteStyle,
+        displayedVibeTitle: String,
+        displayedVibeStyle: StyleRewriteStyle,
+        isDisplayedVibeApplied: Bool,
         isVibesAvailable: Bool,
         isAutoParagraphsEnabled: Bool,
         isListFormattingEnabled: Bool,
@@ -172,8 +173,9 @@ final class KeyboardRootView: UIView {
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
         vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
-        vibesButton.title = selectedVibeTitle
-        vibesButton.selectedVibeStyle = selectedVibeStyle
+        vibesButton.title = displayedVibeTitle
+        vibesButton.displayedVibeStyle = displayedVibeStyle
+        vibesButton.isDisplayedVibeApplied = isDisplayedVibeApplied
         speakButton.isSpeaking = state.isTTSPlaybackActive
         speakButton.isTrackpadModeActive = isTrackpadModeActive
         speakButton.isEnabled = shouldEnableSpeak && !isTrackpadModeActive

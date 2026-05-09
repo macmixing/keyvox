@@ -52,13 +52,24 @@ public struct ChillHeuristicFormatter: Sendable {
                 continue
             }
 
-            for character in characters[index..<tokenEnd] {
+            var tokenIndex = index
+            while tokenIndex < tokenEnd {
+                let character = characters[tokenIndex]
                 if isSentenceBoundary(character) {
                     appendSegment(current.joined(), terminator: character == "?" ? "?" : ".", to: &segments)
                     current.removeAll(keepingCapacity: true)
                 } else {
-                    current.append(replacement(for: character))
+                    let previousIndex = tokenIndex > index ? characters.index(before: tokenIndex) : nil
+                    let nextIndex = characters.index(after: tokenIndex)
+                    current.append(
+                        replacement(
+                            for: character,
+                            previous: previousIndex.map { characters[$0] },
+                            next: nextIndex < tokenEnd ? characters[nextIndex] : nil
+                        )
+                    )
                 }
+                tokenIndex = characters.index(after: tokenIndex)
             }
             index = tokenEnd
         }
@@ -138,8 +149,18 @@ public struct ChillHeuristicFormatter: Sendable {
             .joined(separator: " ")
     }
 
-    private func replacement(for character: Character) -> String {
+    private func replacement(
+        for character: Character,
+        previous: Character? = nil,
+        next: Character? = nil
+    ) -> String {
         if character.isLetter || character.isNumber || character.isWhitespace {
+            return String(character)
+        }
+
+        if character == ":",
+           previous?.isNumber == true,
+           next?.isNumber == true {
             return String(character)
         }
 

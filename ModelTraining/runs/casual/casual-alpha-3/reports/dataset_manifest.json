@@ -1,0 +1,19 @@
+{
+  "categories": {
+    "grammar_preservation": 70,
+    "keep_like_remove_filler": 50,
+    "list_preservation": 20,
+    "numeric_formatting": 110,
+    "profanity_slang_preservation": 40,
+    "spoken_time_formatting": 565,
+    "structure_preservation": 45
+  },
+  "counts": {
+    "test": 90,
+    "total": 900,
+    "train": 720,
+    "valid": 90
+  },
+  "seed": 4203,
+  "version": "casual-alpha-3"
+}

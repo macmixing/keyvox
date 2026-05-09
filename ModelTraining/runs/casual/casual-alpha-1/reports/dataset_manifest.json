@@ -1,0 +1,22 @@
+{
+  "categories": {
+    "filler_cleanup": 502,
+    "gauntlet_structure": 112,
+    "grammar_preservation": 305,
+    "keep_like_remove_filler": 173,
+    "like_preservation": 252,
+    "list_preservation": 222,
+    "long_mixed": 77,
+    "numeric_formatting": 285,
+    "profanity_slang_preservation": 228,
+    "structure_preservation": 244
+  },
+  "counts": {
+    "test": 200,
+    "total": 2400,
+    "train": 2000,
+    "valid": 200
+  },
+  "seed": 4101,
+  "version": "casual-alpha-1"
+}
