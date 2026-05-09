@@ -20,7 +20,12 @@ struct KeyVoxVibesSheetView: View {
     enum Mode {
         case intro(presentation: IntroPresentation = .full, onTryNow: () -> Void, onDismiss: () -> Void)
         case info(presentation: IntroPresentation = .usageOnly, onDismiss: () -> Void)
-        case unlock(initialScene: Scene = .b, onDismiss: () -> Void)
+        case unlock(initialScene: Scene = .b, primaryAction: UnlockPrimaryAction = .purchase, onDismiss: () -> Void)
+    }
+
+    enum UnlockPrimaryAction: Equatable {
+        case purchase
+        case continueWhenVibesAIReady
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -52,7 +57,7 @@ struct KeyVoxVibesSheetView: View {
             presentation.initialScene
         case .info(let presentation, _):
             presentation.initialScene
-        case .unlock(let initialScene, _):
+        case .unlock(let initialScene, _, _):
             initialScene
         }
     }
@@ -112,7 +117,7 @@ struct KeyVoxVibesSheetView: View {
         .onDisappear {
             animationTask?.cancel()
             animationTask = nil
-            if case .unlock(_, let onDismiss) = mode {
+            if case .unlock(_, _, let onDismiss) = mode {
                 onDismiss()
             } else if case .info(_, let onDismiss) = mode {
                 onDismiss()
@@ -149,8 +154,8 @@ struct KeyVoxVibesSheetView: View {
                     fillsWidth: true,
                     size: .compact,
                     fontSize: 22,
-                    isEnabled: vibesPurchaseController.isStoreActionInFlight == false,
-                    action: purchaseUnlock
+                    isEnabled: isUnlockPrimaryActionEnabled,
+                    action: handleUnlockPrimaryAction
                 )
 
                 Button(action: restorePurchases) {
@@ -168,6 +173,10 @@ struct KeyVoxVibesSheetView: View {
     }
 
     private var purchaseButtonTitle: String {
+        if unlockPrimaryAction == .continueWhenVibesAIReady {
+            return "Continue"
+        }
+
         if vibesPurchaseController.isVibesUnlocked {
             return "Unlocked"
         }
@@ -177,6 +186,23 @@ struct KeyVoxVibesSheetView: View {
         }
 
         return "Unlock"
+    }
+
+    private var unlockPrimaryAction: UnlockPrimaryAction {
+        if case .unlock(_, let primaryAction, _) = mode {
+            return primaryAction
+        }
+
+        return .purchase
+    }
+
+    private var isUnlockPrimaryActionEnabled: Bool {
+        switch unlockPrimaryAction {
+        case .purchase:
+            return vibesPurchaseController.isStoreActionInFlight == false
+        case .continueWhenVibesAIReady:
+            return isVibesAIReady
+        }
     }
 
     private var isVibesAIReady: Bool {
@@ -252,6 +278,16 @@ struct KeyVoxVibesSheetView: View {
         appHaptics.light()
         Task {
             await vibesPurchaseController.purchaseVibesUnlock()
+        }
+    }
+
+    private func handleUnlockPrimaryAction() {
+        switch unlockPrimaryAction {
+        case .purchase:
+            purchaseUnlock()
+        case .continueWhenVibesAIReady:
+            guard isVibesAIReady else { return }
+            dismissSheet()
         }
     }
 

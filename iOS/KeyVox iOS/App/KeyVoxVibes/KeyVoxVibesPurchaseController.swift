@@ -8,7 +8,10 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     enum SheetPresentation: Equatable {
         case intro(KeyVoxVibesSheetView.IntroPresentation)
         case info(KeyVoxVibesSheetView.IntroPresentation)
-        case unlock(initialScene: KeyVoxVibesSheetView.Scene = .b)
+        case unlock(
+            initialScene: KeyVoxVibesSheetView.Scene = .b,
+            primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction = .purchase
+        )
     }
 
     nonisolated static let unlockProductID = "com.cueit.keyvox.vibes.unlocked"
@@ -189,7 +192,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         refreshTrialStateIfNeeded()
 
         if isVibesUnlocked {
-            sheetPresentation = .unlock(initialScene: .unlock)
+            sheetPresentation = .unlock(initialScene: .unlock, primaryAction: .continueWhenVibesAIReady)
         } else {
             sheetPresentation = .intro(.trialStart)
         }
