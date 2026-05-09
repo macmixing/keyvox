@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-04-29**
+**Last Updated: 2026-05-09**
 
 ## Design Philosophy
 
@@ -30,11 +30,13 @@ The containing app owns:
 - app-owned haptics
 - settings and iCloud sync
 - model installation, validation, and recovery
+- local Vibes model installation, validation, bundled adapter lookup, and inference
 - copied-text playback voice installation and validation
 - microphone capture and session warmth
 - interrupted-capture recovery
 - dictation pipeline ownership
 - KeyVox Vibes style rewrite coordination
+- keyboard-originated Vibes rewrite IPC handling
 - copied-text TTS request ownership
 - copied-text playback, replay, and pause/resume state
 - playback-preparation and return-to-host readiness gating
@@ -52,6 +54,8 @@ The keyboard extension owns:
 - warm/cold launch handoff into the containing app
 - keyboard-owned copied-text speak control and transport state
 - text insertion into host apps
+- Vibes selection/status UI
+- latest-insertion Vibes revert/restyle transport through the containing app
 - keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
 
 The keyboard extension does **not** own:
@@ -59,6 +63,7 @@ The keyboard extension does **not** own:
 - model lifecycle
 - microphone permissions
 - model downloads
+- local Vibes model loading or inference
 - dictionary logic
 - transcription post-processing policy
 - KeyVox Vibes style rewrite policy
@@ -97,7 +102,7 @@ The share extension does **not** own:
 ## Platform and Target Requirements
 
 - Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
-- KeyVox Vibes runs through the local Vibes model path and is supported on the app's iOS 18.6+ deployment target.
+- KeyVox Vibes runs through the local Vibes model and LoRA adapter path, so it is supported on the app's iOS 18.6+ deployment target.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
   - `BGTaskSchedulerPermittedIdentifiers = ["com.cueit.keyvox.model-download"]`
@@ -130,6 +135,9 @@ It builds and wires:
 - `SwitchableDictationProvider`
 - `TranscriptionPostProcessor`
 - `ModelManager`
+- `LocalRewriteModelManager`
+- `LocalRewriteInferenceService`
+- `LocalStyleRewriteTextTransformer`
 - `KeyVoxKeyboardBridge`
 - `TranscriptionManager`
 - `StyleRewritePipelineCoordinator`
@@ -156,7 +164,7 @@ Service ownership rules:
 - Views present state and call actions, but do not become alternate sources of truth.
 - IPC contracts remain centralized in `KeyVoxIPCBridge`.
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
-- `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. The app owns the branded feature lifecycle; the package owns reusable transform mechanics.
+- `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. It also wires keyboard style rewrite IPC into the same app-owned local inference path. The app owns branded feature lifecycle and model runtime ownership; the packages own reusable transform and local inference mechanics.
 - `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
 
 ### Containing App Source Layout
@@ -174,6 +182,13 @@ Service ownership rules:
 - `Purchases/` owns shared StoreKit non-consumable plumbing used by app-owned purchase controllers.
 - `Stats/` owns app-local weekly usage aggregation.
 - `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
+
+`KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
+
+- `ModelDownloader/` owns dictation model install, validation, recovery, and background download behavior.
+- `LocalRewriteModel/` owns the Vibes rewrite base model catalog, foreground install state, manifest validation, SHA-256 checks, bundled adapter lookup, and installed-model invalidation.
+- `StyleRewrite/` owns the app adapter from dictation output and keyboard IPC requests into the reusable style rewrite and local inference packages.
+- `TTS/`, `Audio/`, and `Transcription/` remain isolated by runtime domain.
 
 ## Root Routing and Onboarding Contract
 
@@ -267,7 +282,7 @@ Behavior:
 - `KEYVOX_BYPASS_VIBES_TRIAL` bypasses the Vibes trial/unlock gate in debug builds
 - the flag allows the app and keyboard extension to use Vibes without starting the local 24-hour trial
 - the flag must not change production monetization policy
-- Foundation availability still gates whether the Vibes feature is available
+- local rewrite model availability still gates whether model-backed Vibes can run
 
 ### KeyVox Vibes Trial Duration Runtime Flag
 
@@ -598,7 +613,7 @@ Cold path:
 - disabling a session during an utterance defers shutdown until the current work finishes
 - the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
 - session timing may disable monitoring immediately, after the configured idle timeout, or never; changing from `Never` to a timed preset must re-arm an idle timeout when an active idle session is currently monitored/idle
-- KeyVox Vibes prewarm is tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so the retained Foundation session must be released after the transform attempt or cancellation path finishes
+- KeyVox Vibes warmth hooks are tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so prewarm/release calls must stay utterance-scoped even though the current local rewrite prewarm hook is a no-op
 
 ### Safety Rules
 
@@ -905,9 +920,9 @@ The reusable implementation package remains `KeyVoxStyleRewrite`, matching the s
 Current styles:
 
 - `None`: bypasses style rewrite and inserts the normal post-processed dictation text.
-- `Casual`: Foundation cleanup only. It removes obvious speech disfluencies while preserving original casing, punctuation, wording, tone, slang, profanity, sentence type, and formality.
-- `Polished`: Foundation copyedit. It performs a minimal readability pass while preserving the message type, opening phrase, structure, tone, and level of formality.
-- `Chill`: Foundation cleanup plus deterministic formatting. Foundation is used only to remove disfluencies, then `ChillHeuristicFormatter` lowercases and applies the limited-punctuation Chill output shape.
+- `Casual`: local LoRA cleanup. It removes clear filler except the word `like`, preserves slang, profanity, grammar, meaning, lists, and paragraph breaks, and formats clear numbers, dates, money, and percentages.
+- `Polished`: local LoRA copyedit. It performs a medium readability pass that removes spoken filler and false starts, converts `ain't` to standard English, preserves meaning, structure, lists, and paragraph breaks, and uses numerals where appropriate.
+- `Chill`: casual local LoRA cleanup plus deterministic formatting. The casual adapter performs the cleanup pass, then `ChillHeuristicFormatter` lowercases and applies the limited-punctuation Chill output shape.
 
 Ordering is intentionally `None`, `Casual`, `Polished`, `Chill`.
 The Style tab remains named `Style` because it also owns list and paragraph settings; the feature card inside the tab is branded `KeyVox Vibes`.
@@ -919,11 +934,11 @@ The containing app observes that notification and refreshes `AppSettingsStore.se
 Tap changes only the selected Vibe.
 Before the local trial starts or the lifetime unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
 Before access is active, tapping the keyboard Vibes key emits the keyboard's medium no-op haptic and opens `keyvoxios://vibes/open`; the keyboard does not cycle to a paid Vibe.
-Vibes access requires both Foundation availability and `KeyVoxVibesPurchaseController.canUseVibes`.
+Vibes access requires `KeyVoxVibesPurchaseController.canUseVibes`; model-backed rewrites also require a ready local rewrite model and the required adapter.
 When access is unavailable or an active local trial expires, the resolved selected Vibe is forced to `None`.
-Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, regenerating from the original base text, and replacing the active insertion.
+Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, asking the containing app to regenerate from the original base text when a model-backed Vibe is needed, and replacing the active insertion.
 The keyboard does not transform arbitrary selected host-app text because the iOS text proxy can provide incomplete selected/context text.
-The keyboard still does not own prompt configuration, general rewrite policy, recording, or app-level artifact creation.
+The keyboard still does not own prompt configuration, general rewrite policy, local rewrite model loading, recording, or app-level artifact creation.
 
 The keyboard Lists key writes `KeyVox.ListFormattingEnabled` in App Group defaults and posts the shared list-formatting Darwin notification.
 The containing app observes that notification and refreshes `AppSettingsStore.listFormattingEnabled` so the Style tab remains in sync.
@@ -940,11 +955,18 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - `TextTransformResult` carries final text, style identifier, duration, applied flag, chunk count, per-chunk timings, typed error summaries, and processing mode metadata.
 - `TextTransformChunkPlanner` budgets every model call as instructions + prompt wrapper + input chunk + expected output + safety margin.
 - chunk planning prefers semantic boundaries first, then word-level splits when a segment exceeds budget.
-- Foundation token counting is used when available on iOS/macOS 26.4+, with conservative approximate fallback when unavailable or when counting throws.
-- `FoundationStyleRewriteTextTransformer` owns Foundation Models integration, warm/cold session usage, refusal detection, chunk execution, full fallback policy, and processing-mode metadata.
-- `FoundationRewriteOutputRepair` repairs meaningful token removals after Foundation cleanup using token/gap analysis rather than app-side semantic word lists.
-- `ChillHeuristicFormatter` owns deterministic Chill casing and punctuation after optional Foundation cleanup.
+- `StyleRewriteTextTransformTokenCounter` uses conservative approximate token counting for local model chunk planning.
+- `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, Polished separator repair, and the Chill cleanup-plus-heuristic path.
+- `StyleRewriteOutputRepair` repairs deleted separator punctuation after model cleanup without taking ownership of semantic rewrite policy.
+- `ChillHeuristicFormatter` owns deterministic Chill casing and punctuation after optional local-model cleanup.
 - `DictationUtteranceArtifact` and `DictationTextVariantArtifact` are package-owned serializable models so the app can cache the latest utterance without inventing iOS-only artifact shapes.
+
+`Packages/KeyVoxLocalInference` owns reusable local model mechanics:
+
+- `LlamaCPULanguageModel` wraps llama.cpp CPU inference for GGUF chat models and optional LoRA adapters.
+- generation requests can use either a raw prompt or a system/user chat prompt.
+- model loading is cached per `LlamaCPULanguageModel` instance, while each generation clears llama memory before running.
+- the package installs quiet llama logging, supports task cancellation, attaches LoRA adapters, performs prompt-too-long checks, uses greedy decoding, exposes load/prefill/decode/total timing metrics, and supports explicit unload.
 
 ### Dictation Pipeline Style Hook
 
@@ -961,9 +983,9 @@ This keeps the keyboard insertion path unchanged while still making speed-profil
 
 Failure policy:
 
-- no selected request, `None`, missing Foundation support, unavailable model, refusal, guardrail failure, or required full fallback inserts the post-processed base text
+- no selected request, `None`, unavailable local rewrite model, missing required adapter, generation failure, prompt-too-long, or required full fallback inserts the post-processed base text
 - chunk-level failures that do not require full fallback use the base text for only the failed chunk and record the error
-- Foundation refusal or guardrail output must never replace user dictation with refusal text
+- model errors must never replace user dictation with an error or diagnostic string
 
 ### iOS KeyVox Vibes Runtime Ownership
 
@@ -972,10 +994,42 @@ It owns:
 
 - reading the selected Vibe from `AppSettingsStore`
 - building `TextTransformRequest` values through `StyleRewriteDictationConfiguration`
-- invoking `FoundationStyleRewriteTextTransformer`
+- invoking the app-owned local style rewrite transformer
 - translating `TextTransformResult` into `DictationPipelineTextProcessingResult`
 - writing latest-utterance artifacts through `StyleRewriteLatestArtifactStore`
-- requesting and releasing Foundation prewarm sessions
+- handling keyboard style rewrite IPC requests through the same transformer path
+- forwarding prewarm and release calls through the transformer contract
+
+`LocalRewriteModelManager` is the containing-app owner for the local Vibes rewrite base model.
+
+- current base model: `Qwen2.5-0.5B-Instruct`
+- current source repository: `Qwen/Qwen2.5-0.5B-Instruct-GGUF`
+- current artifact: `qwen2.5-0.5b-instruct-q4_k_m.gguf`
+- expected installed artifact size: `491,400,032` bytes
+- install readiness requires the model file plus `install-manifest.json` with matching model ID, artifact filename, expected SHA-256, and installed SHA-256
+- delete invalidates the installed local model and asks the local inference service to unload
+
+LoRA adapter ownership:
+
+- adapters are app resources under `Resources/LocalRewriteAdapters`
+- Polished uses `polished-alpha-021-lora.gguf`
+- Casual and Chill share `casual-alpha-3-lora.gguf`
+- adapter URLs resolve from the app bundle first, with installed-directory fallback for development/repair paths
+- a missing required adapter is a model-load failure for that Vibe, not permission to silently run a different prompt path
+
+`LocalRewriteInferenceService` owns the app-local inference cache.
+
+- it builds `LlamaCPULanguageModel` with the installed base model URL and requested adapter URL
+- it keeps one cached model identity at a time, keyed by base model URL plus adapter URL
+- it unloads when the local rewrite model is invalidated
+
+`LocalStyleRewriteTextTransformer` maps style requests into local inference:
+
+- Polished maps to the polished adapter and the short polished LoRA system prompt
+- Casual maps to the casual adapter and the short casual LoRA system prompt
+- Chill maps to the casual adapter and the short casual LoRA system prompt before deterministic Chill formatting
+- local generation uses a 4,096-token context, two CPU threads, two batch threads, and a batch token cap up to 512
+- debug logs use `[StyleRewriteLocal]` and include style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
 The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
@@ -1016,7 +1070,7 @@ The restore card remains visible until both lifetime unlocks are owned.
 - derives display text from `StyleRewriteStyle`
 - cycles through `None`, `Casual`, `Polished`, `Chill`
 - posts the shared Vibes selection-change Darwin notification
-- exposes Foundation availability so the key can disappear in non-Vibes environments
+- exposes Vibes platform availability as always true now that the Foundation-only gate is gone
 - exposes Vibes access state from app-local unlock/trial defaults so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
 - reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
@@ -1028,7 +1082,7 @@ The restore card remains visible until both lifetime unlocks are owned.
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
 - treats `None` as the original post-processed base text
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, and cached rendered variants
-- regenerates Vibe variants from the current deterministic base text rather than morphing from the currently displayed style
+- regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
 - applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
 - replaces only when the active insertion still matches the untouched session
@@ -1043,18 +1097,23 @@ Long-press rules:
 - generated variants may temporarily drive the logo indicator into processing state
 - if the user edits, deletes, moves away from, or otherwise invalidates the active insertion, long press no-ops
 
-### Foundation Prewarm Lifecycle
+`KeyboardLocalStyleRewriteTextTransformer` is the keyboard-side transport for long-press model-backed Vibes rewrites.
 
-Prewarm is best-effort and utterance-scoped:
+- it writes `KeyVoxStyleRewriteIPCRequest` through `KeyVoxIPCBridge`
+- it waits for the matching `KeyVoxStyleRewriteIPCResponse`
+- it reports processing mode `app-ipc`
+- it falls back to the request base text on timeout, cancellation, empty response, or error
+- it does not load the local rewrite model or adapters inside the keyboard extension
+
+### Local Rewrite Warmth Lifecycle
+
+Prewarm is best-effort and utterance-scoped at the transformer contract level:
 
 - after `AudioRecorder.startRecording()` succeeds, `TranscriptionManager` asks the style coordinator to prewarm for the selected style
 - prewarm never blocks mic activation, URL handling, recorder startup, or audio capture
-- `None` and non-Foundation paths skip prewarm
-- Foundation-backed styles prewarm with an empty-base request for the selected style instructions and prompt wrapper
-- repeated prewarm calls for the same request are idempotent during the active utterance
-- transform logs whether it used a warm or cold Foundation session
-- after transform success, fallback, stale utterance, empty capture, unavailable dictation model, or utterance cancellation, the retained prewarm session is released
-- releasing only clears KeyVox's retained session reference; Foundation's internal model cache remains system-managed
+- `None` skips prewarm
+- local rewrite prewarm currently routes through a no-op package hook, while the real local model cache is demand-warmed by generation and explicitly unloaded on model invalidation
+- repeated prewarm/release calls must remain harmless because `TranscriptionManager` still owns the lifecycle hooks
 
 ### KeyVox Vibes Instrumentation
 
@@ -1066,13 +1125,12 @@ It reports:
 - applied flag
 - error summary when present
 - style identifier
-- processing mode such as `foundation-cleanup+warm`, `foundation-cleanup-repaired+heuristic`, or `heuristic`
+- processing mode such as `local-model`, `local-model-cleanup`, `local-model-cleanup+heuristic`, `local-model-cleanup-failed+heuristic`, `app-ipc`, or `heuristic`
 - chunk count
 - final inserted text when `KVX_DEBUG_LOG_RAW_TEXT=1`
 - injection trigger duration and total end-to-end latency
 
-The Foundation transformer also logs prewarm requested/skipped/completed, prewarm duration, warm/cold transform usage, and prewarm session release.
-When a cleanup repair restores a protected token gap, `FoundationRewriteOutputRepair` logs the protected token list and replacement gap in debug builds.
+`LocalStyleRewriteTextTransformer` also logs `[StyleRewriteLocal]` lines in debug builds with style, chunk, LoRA label, load duration or cached state, token counts, prefill/decode/total time, and decode tokens per second.
 
 ### iCloud Sync Rules
 
@@ -1205,7 +1263,7 @@ Implementation split:
   - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
-  - `Vibes/` owns Vibes-specific keyboard UI only; latest-insertion long-press behavior lives with dictation because paragraph/list undo is not part of the Vibes entitlement boundary
+  - Vibes-specific keyboard UI lives in the top-row button component, while latest-insertion long-press behavior lives with dictation because paragraph/list undo is not part of the Vibes entitlement boundary
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
 - `KeyboardLayoutGeometry.swift` and `KeyboardTopRowAccessoryLayout.swift` belong in `Core/`, not `Views/`, because they are shared layout math rather than renderable views
 

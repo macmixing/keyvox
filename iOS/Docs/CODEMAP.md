@@ -1,12 +1,12 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-05-02**
+**Last Updated: 2026-05-09**
 
 ## Project Overview
 
 KeyVox iOS ships as four cooperating targets:
 
-- The containing app owns onboarding, settings, model lifecycle, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
-- The keyboard extension owns the visible custom keyboard, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, and keyboard-only interaction behavior.
+- The containing app owns onboarding, settings, dictation model lifecycle, local Vibes model lifecycle, bundled Vibes adapter lookup, local style rewrite inference, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
+- The keyboard extension owns the visible custom keyboard, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, Vibes selection/status UI, latest-insertion editability tracking, and keyboard-only interaction behavior. For model-backed Vibes rewrites, it requests work from the containing app instead of loading the local rewrite model itself.
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
@@ -23,25 +23,28 @@ The current default runtime flow is:
 6. After onboarding, the main app shell owns ongoing model management, style/settings changes, weekly usage, and session controls.
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
-9. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-10. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
-11. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
+9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe.
+10. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
+11. A later keyboard Vibes long press may restyle or revert only the latest untouched KeyVox insertion by sending an app-IPC rewrite request; the containing app runs the model and returns the replacement text.
+12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
+13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
 ## Architecture
 
-- **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, model background downloads, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
+- **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
-- **`../Packages/KeyVoxStyleRewrite/`**: Foundation-backed dictation style transform package, token-aware chunk planning, output repair, Chill heuristic formatting, latest-utterance artifact models, and package tests for transform behavior.
+- **`../Packages/KeyVoxLocalInference/`**: llama.cpp-backed local GGUF inference package with chat-template formatting, optional LoRA adapter attachment, quiet llama logging, cancellation, greedy decoding, token accounting, and opt-in live model tests.
+- **`../Packages/KeyVoxStyleRewrite/`**: reusable dictation style transform package, style request construction, token-aware chunk planning, model-response orchestration, output repair, Chill heuristic formatting, latest-utterance artifact models, and package tests for transform behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, KeyVox Vibes artifact persistence, iCloud sync, weekly stats, model lifecycle, copied-text playback policy and lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
 - **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
 
 ## Contributor Notes
 
 - Keep iOS-only platform behavior inside the iOS targets. Reusable speech, text, and dictionary logic should remain in `KeyVoxCore`.
-- Keep the keyboard extension thin. It should transport commands, render keyboard UI, insert final text, and perform artifact-scoped Vibes changes only for untouched KeyVox insertions; it must not become an alternate owner of dictation recording, app onboarding, or broad arbitrary host-text transformation.
+- Keep the keyboard extension thin. It should transport commands, render keyboard UI, insert final text, and perform artifact-scoped Vibes changes only for untouched KeyVox insertions by asking the containing app to rewrite; it must not become an alternate owner of dictation recording, app onboarding, local rewrite model loading, or broad arbitrary host-text transformation.
 - Keep app-extension and app-widget contracts centralized in `KeyVoxIPCBridge`; do not duplicate App Group keys, timestamps, or Darwin notification names.
 - Keep onboarding state separate from settings state. `OnboardingStore` is the routing owner for onboarding progress and launch flags.
 - Keep the keyboard root layout stable. The warning toolbar is intentionally layered as an overlay instead of participating in the main keyboard stack layout.
@@ -101,7 +104,9 @@ iOS/
 │   │   │   ├── OnboardingStore.swift
 │   │   │   └── RuntimeFlags.swift
 │   │   ├── Presentation/
+│   │   │   ├── AppTypography.swift
 │   │   │   ├── InlineWarningRules.swift
+│   │   │   ├── KeyboardObserver.swift
 │   │   │   └── KeyVoxSpeakFlowRules.swift
 │   │   ├── Purchases/
 │   │   │   └── StoreUnlockStore.swift
@@ -144,6 +149,11 @@ iOS/
 │   │   │   ├── ModelManager+InstallLifecycle.swift
 │   │   │   ├── ModelManager+Support.swift
 │   │   │   └── ModelManager+Validation.swift
+│   │   ├── LocalRewriteModel/
+│   │   │   ├── LocalRewriteModelCatalog.swift
+│   │   │   ├── LocalRewriteModelInstallManifest.swift
+│   │   │   ├── LocalRewriteModelInstallState.swift
+│   │   │   └── LocalRewriteModelManager.swift
 │   │   ├── TTS/
 │   │   │   ├── AudioModeCoordinator.swift
 │   │   │   ├── PocketTTSAssetLocator.swift
@@ -172,6 +182,8 @@ iOS/
 │   │   │       ├── TTSPlaybackCoordinator+Scheduling.swift
 │   │   │       └── TTSPlaybackCoordinatorBufferingPolicy.swift
 │   │   ├── StyleRewrite/
+│   │   │   ├── LocalRewriteInferenceService.swift
+│   │   │   ├── LocalStyleRewriteTextTransformer.swift
 │   │   │   ├── StyleRewriteLatestArtifactStore.swift
 │   │   │   └── StyleRewritePipelineCoordinator.swift
 │   │   └── Transcription/
@@ -284,6 +296,8 @@ iOS/
 │   │   ├── Dictation/
 │   │   │   ├── AudioIndicatorDriver.swift
 │   │   │   ├── KeyboardCallObserver.swift
+│   │   │   ├── KeyboardDictationChangeController.swift
+│   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
 │   │   ├── Feedback/
 │   │   │   ├── KeyboardHapticsSettingsStore.swift
@@ -304,7 +318,6 @@ iOS/
 │   │   │   ├── KeyboardIPCManager.swift
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
-│   │   ├── Vibes/
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardModelAvailability.swift
 │   │   ├── KeyboardState.swift
@@ -405,6 +418,11 @@ iOS/
 ├── Launch Screen.storyboard
 └── LaunchLogo.png
 
+Resources/
+└── LocalRewriteAdapters/
+    ├── casual-alpha-3-lora.gguf
+    └── polished-alpha-021-lora.gguf
+
 Packages/
 ├── KeyVoxCore/
 │   ├── Sources/KeyVoxCore/
@@ -414,12 +432,22 @@ Packages/
 │   ├── Sources/KeyVoxStyleRewrite/
 │   │   ├── ChillHeuristicFormatter.swift
 │   │   ├── DictationTextTransforming.swift
-│   │   ├── FoundationRewriteOutputRepair.swift
-│   │   ├── FoundationStyleRewriteTextTransformer.swift
 │   │   ├── StyleRewriteDictationConfiguration.swift
+│   │   ├── StyleRewriteOutputRepair.swift
+│   │   ├── StyleRewriteTextTransformer.swift
 │   │   └── TextTransformChunkPlanner.swift
 │   └── Tests/KeyVoxStyleRewriteTests/
-│       └── StyleRewriteFoundationTests.swift
+│       └── StyleRewriteTests.swift
+├── KeyVoxLocalInference/
+│   ├── Package.swift
+│   ├── Sources/KeyVoxLocalInference/
+│   │   └── LocalLanguageModel.swift
+│   └── Tests/KeyVoxLocalInferenceTests/
+│       ├── LocalLanguageModelCasualPromptLiveTests.swift
+│       ├── LocalLanguageModelLiveTestSupport.swift
+│       ├── LocalLanguageModelPolishedGauntletLiveTests.swift
+│       ├── LocalLanguageModelTests.swift
+│       └── LocalLanguageModelVibePromptLiveTests.swift
 └── KeyVoxTTS/
     ├── Package.swift
     ├── Sources/KeyVoxTTS/
@@ -478,7 +506,7 @@ Packages/
   - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, and return-to-host flows.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, model, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
   - Normalizes the persisted active provider back to a ready model when install state changes.
   - Normalizes copied-text playback voice selection when PocketTTS install state changes, but does not prewarm PocketTTS; playback owns runtime preparation and teardown.
 - `app-update-policy.json`
@@ -504,6 +532,10 @@ Packages/
   - Pure scene-selection and scene-fallback rules shared by the intro sheet, unlock sheet, and the Home help presentation path so branch coverage stays deterministic in tests.
 - `KeyVox iOS/App/Presentation/InlineWarningRules.swift`
   - Pure warning-visibility rules shared by onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install surfaces so Wi-Fi warning coverage stays deterministic in iOS tests.
+- `KeyVox iOS/App/Presentation/AppTypography.swift`
+  - App-wide typography helpers for SwiftUI surfaces that should share the same app font treatment.
+- `KeyVox iOS/App/Presentation/KeyboardObserver.swift`
+  - App-side keyboard-presentation observer used by text-entry flows such as onboarding and dictionary editing.
 - `KeyVox iOS/App/Stats/WeeklyWordStatsStore.swift`
   - App-owned local weekly usage aggregator consumed by Home, settings-adjacent surfaces, and Live Activity mirroring.
 - `KeyVox iOS/App/Feedback/AppHaptics.swift`
@@ -558,7 +590,7 @@ Packages/
 ### Shared State, IPC, and Session Surfaces
 
 - `KeyVox iOS/App/Integration/KeyVoxIPCBridge.swift`
-  - Source of truth for App Group defaults keys, TTS playback state and request state, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, keyboard settings-change signaling, and Darwin notification names.
+  - Source of truth for App Group defaults keys, TTS playback state and request state, style rewrite IPC request/response storage, replay-related shared request storage, shortcut-staged pending route storage, keyboard onboarding presentation/access timestamps, shared live-meter file transport, shared forced-update state, keyboard settings-change signaling, and Darwin notification names.
 - `KeyVox iOS/App/Integration/KeyVoxTTSRequest.swift`
   - Dependency-free shared copied-text playback request model and enums used by both the containing app and share extension to keep the JSON handoff contract compile-time safe.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
@@ -568,7 +600,7 @@ Packages/
 - `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
   - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
-  - App-side IPC endpoint for start/stop/cancel/disable-session commands and extension-facing state publishing.
+  - App-side IPC endpoint for start/stop/cancel/disable-session/style-rewrite commands and extension-facing state publishing.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`
   - App-side owner that mirrors session state and weekly-word count into the widget extension through ActivityKit.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift`
@@ -599,6 +631,18 @@ Packages/
   - Strict readiness validation for rooted installed artifacts and install manifests.
 - `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelCatalog.swift`
+  - App-local catalog for the Vibes rewrite base model and bundled adapter filenames.
+  - Current base model is `Qwen2.5-0.5B-Instruct` from `Qwen/Qwen2.5-0.5B-Instruct-GGUF`, artifact `qwen2.5-0.5b-instruct-q4_k_m.gguf`, with strict SHA-256 validation and a 491,400,032-byte expected size.
+  - Current bundled adapters are `polished-alpha-021-lora.gguf` and `casual-alpha-3-lora.gguf`.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelManager.swift`
+  - Containing-app owner for local Vibes model install state, foreground download, staging/finalization, manifest validation, SHA-256 integrity checks, delete/repair-style cleanup, and adapter URL resolution.
+  - Resolves LoRA adapters from bundled app resources first and falls back to the installed model directory only when needed.
+  - Invalidates the local inference service when the installed base model is deleted or replaced.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelInstallManifest.swift`
+  - Durable manifest for the installed local rewrite model identity, source repository, artifact filename, expected hash, installed hash, file size, and install date.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelInstallState.swift`
+  - User-facing install state for not-installed, downloading, installing, ready, and failed local Vibes model states.
 
 ### Copied Text Playback and PocketTTS
 
@@ -635,33 +679,41 @@ Packages/
 
 - `Packages/KeyVoxStyleRewrite/`
   - Shared style-transform package used by the iOS app.
-  - Owns `TextTransformRequest`, `TextTransformResult`, chunk timings, typed error summaries, latest-utterance artifact models, style configuration, token-aware chunk planning, Foundation-backed generation, refusal/fallback policy, output repair, and deterministic Chill formatting.
+  - Owns `TextTransformRequest`, `TextTransformResult`, chunk timings, typed error summaries, latest-utterance artifact models, style configuration, token-aware chunk planning, model-response orchestration, fallback/error policy, output repair, and deterministic Chill formatting.
   - Keeps the package name generic (`KeyVoxStyleRewrite`) while the iOS app presents the feature as `KeyVox Vibes`.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/StyleRewriteDictationConfiguration.swift`
   - Defines the persisted style enum and request construction.
   - Current style order is `None`, `Casual`, `Polished`, `Chill`.
   - `None` produces no transform request.
-  - `Casual` asks Foundation only for filler/disfluency cleanup while preserving original casing, punctuation, wording, tone, slang, and formality.
-  - `Polished` asks Foundation for a minimal professional copyedit without changing the message type or adding letter/email structure.
-  - `Chill` uses Foundation only for cleanup, then applies deterministic lowercase/limited-punctuation formatting through `ChillHeuristicFormatter`.
+  - `Casual` uses the casual LoRA prompt for light cleanup, preserving slang, profanity, grammar, meaning, lists, paragraph breaks, and the word `like`, while formatting clear numbers, dates, money, and percentages.
+  - `Polished` uses the polished LoRA prompt for a medium readability pass that removes spoken filler and false starts, standardizes `ain't`, preserves meaning/structure/paragraph breaks, and uses numerals where appropriate.
+  - `Chill` uses the casual LoRA prompt for cleanup, then applies deterministic lowercase/limited-punctuation formatting through `ChillHeuristicFormatter`.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/TextTransformChunkPlanner.swift`
   - Plans chunks before model calls using a budget of instructions, prompt wrapper, input chunk, expected output expansion, and safety margin within the configured context window.
   - Prefers semantic boundaries, then falls back to word-level splits when one segment is too large.
-  - Uses Foundation token counting when available and a conservative approximate counter when token counting is unavailable or throws.
-- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/FoundationStyleRewriteTextTransformer.swift`
-  - Foundation Models-backed transformer.
-  - Tracks warm vs cold prewarm usage in processing metadata.
-  - Falls back to the post-processed base text when Foundation is unavailable, refuses, hits guardrails, or otherwise requires full fallback.
+  - Uses a conservative approximate counter through `StyleRewriteTextTransformTokenCounter`.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/StyleRewriteTextTransformer.swift`
+  - Generic chunk-runner-backed transformer used by the app and keyboard IPC client.
+  - Applies the model response, style-specific processing modes, Casual cleanup metadata, Polished separator repair, and Chill cleanup-plus-heuristic path.
+  - Falls back to the post-processed base text when the local model is unavailable, prompt input is too long, generation fails, or otherwise requires full fallback.
   - For chunk-level errors that do not require full fallback, keeps the failed chunk as base text and records chunk errors.
-- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/FoundationRewriteOutputRepair.swift`
-  - Repairs model cleanup output when Foundation drops protected meaningful tokens while removing surrounding disfluency.
-  - Uses token/gap analysis instead of app-side semantic word lists.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/StyleRewriteOutputRepair.swift`
+  - Repairs deleted separator punctuation after model cleanup without taking ownership of semantic rewrite policy.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/ChillHeuristicFormatter.swift`
-  - Deterministic Chill formatter after optional Foundation cleanup.
+  - Deterministic Chill formatter after optional local-model cleanup.
   - Lowercases, removes unsupported punctuation, preserves emoji, symbol characters, and email-shaped inline tokens, keeps question marks where sentence boundaries require them, separates interior sentence boundaries with periods, and leaves the final cluster without a trailing period unless it is a question.
+- `Packages/KeyVoxLocalInference/Sources/KeyVoxLocalInference/LocalLanguageModel.swift`
+  - llama.cpp-backed local CPU inference wrapper for GGUF chat models and optional LoRA adapters.
+  - Owns model/context creation, adapter attachment, quiet llama logging, prompt formatting through the model chat template, tokenization, prompt-too-long checks, greedy decoding, cancellation, cache clearing, unload, and generation metrics.
+- `KeyVox iOS/Core/StyleRewrite/LocalRewriteInferenceService.swift`
+  - App-owned local inference cache for the installed Vibes base model plus the currently requested LoRA adapter.
+  - Provides the cached `LlamaCPULanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.
+- `KeyVox iOS/Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift`
+  - iOS adapter from `KeyVoxStyleRewrite` chunk requests into `KeyVoxLocalInference`.
+  - Maps Polished to `polished-alpha-021`, maps Casual and Chill to `casual-alpha-3`, sends short LoRA prompts, and logs local inference load/prefill/decode/total timing in debug builds.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
-  - Resolves the current `AppSettingsStore` style, creates transform requests, triggers best-effort prewarm after recording starts, releases the retained Foundation session after a transform or fallback, converts package results into `DictationPipelineTextProcessingResult`, and records latest-utterance artifacts.
+  - Resolves the current `AppSettingsStore` style, creates transform requests, forwards prewarm/release calls through the transformer contract, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift`
   - App Group latest-artifact persistence for the most recent dictation.
   - Stores raw provider text, post-processed base text, selected inserted text, selected style identifier, variant timing/error metadata, inference duration, transform duration, and creation date.
@@ -750,7 +802,7 @@ Packages/
   - Style tab composition for Lists, Paragraphs, and the KeyVox Vibes section.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - KeyVox Vibes card, style picker, selected style summary, style description, examples, and purchase row.
-  - Keeps selected Vibe displayed as `None` until Foundation is available and Vibes access is active.
+  - Keeps selected Vibe displayed as `None` until Vibes access is active and exposes the local Vibes model install/download/delete surface.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
@@ -791,7 +843,10 @@ Packages/
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationChangeController.swift`
   - Keyboard-local artifact-scoped changer for the latest untouched KeyVox dictation insertion.
-  - Records the inserted dictation session from the latest App Group artifact, reverts/restyles Vibes when available, applies deterministic paragraph/list state changes outside the Vibes entitlement boundary, caches rendered variants, and refuses to operate after the insertion no longer matches the active session.
+  - Records the inserted dictation session from the latest App Group artifact, reverts/restyles Vibes by using the keyboard's app-IPC style rewrite transformer when available, applies deterministic paragraph/list state changes outside the Vibes entitlement boundary, caches rendered variants, and refuses to operate after the insertion no longer matches the active session.
+- `KeyVox Keyboard/Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift`
+  - Keyboard-side style rewrite transport that writes a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
+  - Keeps local rewrite model execution out of the extension.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
 - `KeyVox Keyboard/Core/Transport/KeyboardTTSController.swift`
@@ -829,7 +884,7 @@ Packages/
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
   - Keyboard Vibes selector key used in the top-row accessory area.
-  - Displays the selected vibe name and visually follows the normal key palette/pressed outline behavior.
+  - Displays the selected/current Vibe label and the active/editable status tint for the latest insertion while following the normal key palette/pressed outline behavior.
 - `KeyVox Keyboard/Views/Components/KeyboardSettingsToggleButton.swift`
   - Reusable top-row settings icon key for keyboard controls backed by containing-app settings or containing-app shortcuts.
   - Uses normal key styling and indicates enabled state through icon tint instead of a permanently pressed visual state.
@@ -858,7 +913,9 @@ Packages/
 - `KeyVoxiOSTests/Core/Transcription/`
   - Transcription/session lifecycle and interrupted-capture recovery behavior.
 - `Packages/KeyVoxStyleRewrite/Tests/KeyVoxStyleRewriteTests/`
-  - Package-level coverage for style request construction, Foundation refusal/meta-response detection, prewarm lifecycle state, token-aware chunk planning, chunk fallback/stitching, latest-utterance artifact serialization, Chill heuristics, output repair, and opt-in live Foundation smoke coverage.
+  - Package-level coverage for style request construction, token-aware chunk planning, chunk fallback/stitching, latest-utterance artifact serialization, Chill heuristics, and output repair.
+- `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`
+  - Package-level coverage for local prompt formatting, adapter-aware generation behavior, and opt-in live model prompt suites for Polished, Casual, and the Polished gauntlet.
 
 ## Change Tracking
 
