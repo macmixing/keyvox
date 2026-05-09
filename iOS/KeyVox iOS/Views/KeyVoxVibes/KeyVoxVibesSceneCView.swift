@@ -37,7 +37,6 @@ struct KeyVoxVibesSceneCView: View {
     @State private var animationTask: Task<Void, Never>?
     @State private var displayedInstallState: LocalRewriteModelInstallState?
     @State private var isInstallCardVisible = false
-    @State private var installCardHeight: CGFloat = 0
     @State private var installCardCollapseTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
@@ -136,21 +135,15 @@ struct KeyVoxVibesSceneCView: View {
         .padding(.vertical, 10)
     }
 
+    @ViewBuilder
     private var installCardSlot: some View {
-        vibesAIInstallCard
-            .opacity(isInstallCardVisible ? footerOpacity : 0)
-            .frame(height: isInstallCardVisible ? installCardHeight : 0, alignment: .top)
-            .padding(.bottom, isInstallCardVisible ? 14 : 0)
-            .clipped()
-            .allowsHitTesting(isInstallCardVisible)
-            .accessibilityHidden(!isInstallCardVisible)
-            .animation(Self.installCardAnimation, value: isInstallCardVisible)
-            .animation(Self.installCardAnimation, value: installCardHeight)
-            .background(alignment: .top) {
-                if displayedInstallState != nil {
-                    installCardMeasurement
-                }
-            }
+        if isInstallCardVisible {
+            vibesAIInstallCard
+                .opacity(installCardOpacity)
+                .padding(.bottom, 14)
+                .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
+                .animation(Self.installCardAnimation, value: installCardOpacity)
+        }
     }
 
     @ViewBuilder
@@ -170,25 +163,6 @@ struct KeyVoxVibesSceneCView: View {
                 action: handleVibesAIAction
             )
         }
-    }
-
-    private var installCardMeasurement: some View {
-        vibesAIInstallCard
-            .fixedSize(horizontal: false, vertical: true)
-            .hidden()
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-            .background(
-                GeometryReader { geometry in
-                    Color.clear
-                        .onAppear {
-                            updateInstallCardHeight(geometry.size.height)
-                        }
-                        .onChange(of: geometry.size.height) { _, newHeight in
-                            updateInstallCardHeight(newHeight)
-                        }
-                }
-            )
     }
 
     private func shouldShowInstallCard(for state: LocalRewriteModelInstallState) -> Bool {
@@ -247,10 +221,13 @@ struct KeyVoxVibesSceneCView: View {
         }
     }
 
-    private func updateInstallCardHeight(_ newHeight: CGFloat) {
-        guard newHeight > 0 else { return }
-        guard abs(installCardHeight - newHeight) > 0.5 else { return }
-        installCardHeight = newHeight
+    private var installCardOpacity: Double {
+        switch displayedInstallState {
+        case .downloading, .installing, .failed:
+            return 1
+        case .notInstalled, .ready, .none:
+            return footerOpacity
+        }
     }
 
     private func syncInstallCardVisibility(for state: LocalRewriteModelInstallState) {
