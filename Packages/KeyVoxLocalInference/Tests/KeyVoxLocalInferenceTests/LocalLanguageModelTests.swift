@@ -65,6 +65,19 @@ final class LocalLanguageModelTests: XCTestCase {
         }
     }
 
+    func testPrepareMissingModelProducesTypedFailure() async {
+        let model = LlamaCPULanguageModel(
+            modelURL: URL(fileURLWithPath: "/tmp/keyvox-missing-local-model.gguf")
+        )
+
+        do {
+            _ = try await model.prepare()
+            XCTFail("Expected missing model failure.")
+        } catch {
+            XCTAssertEqual(error as? LocalLanguageModelError, .modelFileMissing)
+        }
+    }
+
     func testLiveLocalModelGeneratesWhenEnabled() async throws {
         guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_MODEL_LIVE_TESTS"] == "1" else {
             throw XCTSkip("Set KEYVOX_RUN_LOCAL_MODEL_LIVE_TESTS=1 to run the live local model test.")

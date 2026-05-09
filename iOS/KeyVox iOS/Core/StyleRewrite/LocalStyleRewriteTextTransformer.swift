@@ -14,7 +14,31 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
     }
 
     func prewarm(request: TextTransformRequest) {
-        transformer.prewarm(request: request)
+        let adapterKind = localRewriteAdapterKind(for: request.styleIdentifier)
+        Task { @MainActor [inferenceService] in
+            do {
+                let model = try inferenceService.model(adapter: adapterKind)
+                let result = try await model.prepare(
+                    configuration: LocalLanguageModelConfiguration(
+                        contextTokenLimit: request.contextTokenLimit,
+                        threadCount: 2,
+                        batchThreadCount: 2,
+                        batchTokenCount: min(max(request.contextTokenLimit, 1), 512)
+                    )
+                )
+                logPrewarm(
+                    styleIdentifier: request.styleIdentifier,
+                    adapterKind: adapterKind,
+                    loadDuration: result.loadDuration
+                )
+            } catch {
+                logPrewarmFailure(
+                    styleIdentifier: request.styleIdentifier,
+                    adapterKind: adapterKind,
+                    error: error
+                )
+            }
+        }
     }
 
     func transform(_ request: TextTransformRequest) async -> TextTransformResult {
@@ -35,7 +59,7 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
             throw StyleRewriteBackendError.modelNotInstalled
         }
 
-        let adapterKind = Self.adapterKind(for: request.styleIdentifier)
+        let adapterKind = localRewriteAdapterKind(for: request.styleIdentifier)
         let model: LlamaCPULanguageModel
         do {
             model = try inferenceService.model(adapter: adapterKind)
@@ -107,17 +131,6 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
         }
     }
 
-    private static func adapterKind(for styleIdentifier: String) -> LocalRewriteAdapterKind? {
-        switch styleIdentifier {
-        case StyleRewriteStyle.polished.styleIdentifier:
-            return .polished
-        case StyleRewriteStyle.casual.styleIdentifier, StyleRewriteStyle.chill.styleIdentifier:
-            return .casual
-        default:
-            return nil
-        }
-    }
-
     private func systemPrompt(
         for request: TextTransformRequest,
         adapterKind: LocalRewriteAdapterKind?
@@ -171,6 +184,48 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
         )
         #endif
     }
+}
+
+private func localRewriteAdapterKind(for styleIdentifier: String) -> LocalRewriteAdapterKind? {
+    switch styleIdentifier {
+    case StyleRewriteStyle.polished.styleIdentifier:
+        return .polished
+    case StyleRewriteStyle.casual.styleIdentifier, StyleRewriteStyle.chill.styleIdentifier:
+        return .casual
+    default:
+        return nil
+    }
+}
+
+private func logPrewarm(
+    styleIdentifier: String,
+    adapterKind: LocalRewriteAdapterKind?,
+    loadDuration: TimeInterval?
+) {
+    #if DEBUG
+    let loadDurationText = loadDuration.map { String(format: "%.3f", $0) } ?? "cached"
+    NSLog(
+        "[StyleRewriteLocal] prewarm style=%@ lora=%@ load=%@",
+        styleIdentifier,
+        adapterKind?.logLabel ?? "none",
+        loadDurationText
+    )
+    #endif
+}
+
+private func logPrewarmFailure(
+    styleIdentifier: String,
+    adapterKind: LocalRewriteAdapterKind?,
+    error: Error
+) {
+    #if DEBUG
+    NSLog(
+        "[StyleRewriteLocal] prewarm style=%@ lora=%@ error=%@",
+        styleIdentifier,
+        adapterKind?.logLabel ?? "none",
+        String(describing: error)
+    )
+    #endif
 }
 
 private extension LocalRewriteAdapterKind {

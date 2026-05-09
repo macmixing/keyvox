@@ -718,7 +718,7 @@ Packages/
   - Provides the cached `LlamaCPULanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.
 - `KeyVox iOS/Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift`
   - iOS adapter from `KeyVoxStyleRewrite` chunk requests into `KeyVoxLocalInference`.
-  - Maps Polished to `polished-alpha-021`, maps Casual and Chill to `casual-alpha-3`, sends short LoRA prompts, and logs local inference load/prefill/decode/total timing in debug builds.
+  - Maps Polished to `polished-alpha-021`, maps Casual and Chill to `casual-alpha-3`, prewarms the selected model/adapter without generating text, sends short LoRA prompts, and logs local inference load/prefill/decode/total timing in debug builds.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
   - Resolves the current `AppSettingsStore` style, creates transform requests, forwards prewarm/release calls through the transformer contract, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.

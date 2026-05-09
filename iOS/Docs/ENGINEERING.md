@@ -613,7 +613,7 @@ Cold path:
 - disabling a session during an utterance defers shutdown until the current work finishes
 - the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
 - session timing may disable monitoring immediately, after the configured idle timeout, or never; changing from `Never` to a timed preset must re-arm an idle timeout when an active idle session is currently monitored/idle
-- KeyVox Vibes warmth hooks are tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so prewarm/release calls must stay utterance-scoped even though the current local rewrite prewarm hook is a no-op
+- KeyVox Vibes warmth hooks are tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so prewarm/release calls must stay utterance-scoped and must not become session-level model retention policy
 
 ### Safety Rules
 
@@ -965,7 +965,7 @@ The keys use the same symbols as the Style tab and show setting state through ic
 
 - `LlamaCPULanguageModel` wraps llama.cpp CPU inference for GGUF chat models and optional LoRA adapters.
 - generation requests can use either a raw prompt or a system/user chat prompt.
-- model loading is cached per `LlamaCPULanguageModel` instance, while each generation clears llama memory before running.
+- model loading is cached per `LlamaCPULanguageModel` instance, explicit prepare can load the model and adapter before generation, and each generation clears llama memory before running.
 - the package installs quiet llama logging, supports task cancellation, attaches LoRA adapters, performs prompt-too-long checks, uses greedy decoding, exposes load/prefill/decode/total timing metrics, and supports explicit unload.
 
 `Packages/KeyVoxVibesAdapters` owns bundled KeyVox-trained adapter assets:
@@ -1035,8 +1035,9 @@ LoRA adapter ownership:
 - Polished maps to the polished adapter and the short polished LoRA system prompt
 - Casual maps to the casual adapter and the short casual LoRA system prompt
 - Chill maps to the casual adapter and the short casual LoRA system prompt before deterministic Chill formatting
+- prewarm maps the selected Vibe to the same adapter as generation and calls local inference prepare without producing text
 - local generation uses a 4,096-token context, two CPU threads, two batch threads, and a batch token cap up to 512
-- debug logs use `[StyleRewriteLocal]` and include style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
+- debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
 The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
@@ -1119,8 +1120,10 @@ Prewarm is best-effort and utterance-scoped at the transformer contract level:
 - after `AudioRecorder.startRecording()` succeeds, `TranscriptionManager` asks the style coordinator to prewarm for the selected style
 - prewarm never blocks mic activation, URL handling, recorder startup, or audio capture
 - `None` skips prewarm
-- local rewrite prewarm currently routes through a no-op package hook, while the real local model cache is demand-warmed by generation and explicitly unloaded on model invalidation
-- repeated prewarm/release calls must remain harmless because `TranscriptionManager` still owns the lifecycle hooks
+- local rewrite prewarm prepares the selected style's base model and adapter without generating text
+- successful prewarm consumes the cold-load duration so the following generation reports the model as cached
+- model invalidation still explicitly unloads the local model cache
+- repeated prewarm/release calls must remain harmless because `TranscriptionManager` owns the lifecycle hooks
 
 ### KeyVox Vibes Instrumentation
 

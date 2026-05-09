@@ -98,6 +98,14 @@ public struct LocalLanguageModelGenerationResult: Equatable, Sendable {
     }
 }
 
+public struct LocalLanguageModelPreparationResult: Equatable, Sendable {
+    public let loadDuration: TimeInterval?
+
+    public init(loadDuration: TimeInterval?) {
+        self.loadDuration = loadDuration
+    }
+}
+
 public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringConvertible {
     case modelFileMissing
     case modelLoadFailed
@@ -140,6 +148,8 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
 }
 
 public protocol LocalLanguageModelGenerating: Sendable {
+    func prepare(configuration: LocalLanguageModelConfiguration) async throws -> LocalLanguageModelPreparationResult
+
     func generate(
         _ request: LocalLanguageModelGenerationRequest,
         configuration: LocalLanguageModelConfiguration
@@ -204,6 +214,21 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         }
     }
 
+    public func prepare(
+        configuration: LocalLanguageModelConfiguration = LocalLanguageModelConfiguration()
+    ) async throws -> LocalLanguageModelPreparationResult {
+        try await withCheckedThrowingContinuation { continuation in
+            inferenceQueue.async { [self] in
+                do {
+                    let result = try prepareSynchronously(configuration: configuration)
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
     public func unload() async {
         await withCheckedContinuation { continuation in
             inferenceQueue.async { [self] in
@@ -211,6 +236,21 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
                 continuation.resume()
             }
         }
+    }
+
+    private func prepareSynchronously(
+        configuration: LocalLanguageModelConfiguration
+    ) throws -> LocalLanguageModelPreparationResult {
+        let loaded = try loadModelIfNeeded(configuration: configuration)
+        let loadDuration = loaded.lastLoadDuration
+        loaded.lastLoadDuration = nil
+        llama_set_n_threads(
+            loaded.context,
+            Int32(max(configuration.threadCount, 1)),
+            Int32(max(configuration.batchThreadCount, 1))
+        )
+        llama_memory_clear(llama_get_memory(loaded.context), true)
+        return LocalLanguageModelPreparationResult(loadDuration: loadDuration)
     }
 
     private func generateSynchronously(
