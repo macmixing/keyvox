@@ -11,10 +11,31 @@ struct KeyVoxVibesSheetView: View {
     struct IntroPresentation: Equatable {
         let displayedScenes: [Scene]
         let initialScene: Scene
+        let sceneCVariant: SceneCVariant
 
         static let full = IntroPresentation(displayedScenes: [.a, .b, .c], initialScene: .a)
         static let usageOnly = IntroPresentation(displayedScenes: [.b], initialScene: .b)
         static let trialStart = IntroPresentation(displayedScenes: [.a, .b, .c], initialScene: .c)
+        static let activeTrialRecovery = IntroPresentation(
+            displayedScenes: [.a, .b, .c],
+            initialScene: .c,
+            sceneCVariant: .activeTrialRecovery
+        )
+
+        init(
+            displayedScenes: [Scene],
+            initialScene: Scene,
+            sceneCVariant: SceneCVariant = .standard
+        ) {
+            self.displayedScenes = displayedScenes
+            self.initialScene = initialScene
+            self.sceneCVariant = sceneCVariant
+        }
+    }
+
+    enum SceneCVariant: Equatable {
+        case standard
+        case activeTrialRecovery
     }
 
     enum Mode {
@@ -59,6 +80,15 @@ struct KeyVoxVibesSheetView: View {
             presentation.initialScene
         case .unlock(let initialScene, _, _):
             initialScene
+        }
+    }
+
+    private var sceneCVariant: SceneCVariant {
+        switch mode {
+        case .intro(let presentation, _, _), .info(let presentation, _):
+            presentation.sceneCVariant
+        case .unlock:
+            .standard
         }
     }
 
@@ -262,6 +292,7 @@ struct KeyVoxVibesSheetView: View {
         case .c:
             KeyVoxVibesSceneCView(
                 isVisible: selectedScene == .c,
+                variant: sceneCVariant,
                 onDownloadRequested: { pendingDownloadConfirmation = $0 }
             )
         case .unlock:

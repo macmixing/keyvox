@@ -193,6 +193,8 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
 
         if isVibesUnlocked {
             sheetPresentation = .unlock(initialScene: .unlock, primaryAction: .continueWhenVibesAIReady)
+        } else if isTrialActive {
+            sheetPresentation = .intro(.activeTrialRecovery)
         } else {
             sheetPresentation = .intro(.trialStart)
         }

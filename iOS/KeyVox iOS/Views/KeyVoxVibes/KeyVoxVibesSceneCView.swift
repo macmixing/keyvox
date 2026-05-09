@@ -2,6 +2,7 @@ import SwiftUI
 
 struct KeyVoxVibesSceneCView: View {
     @Environment(\.appHaptics) private var appHaptics
+    @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject private var localRewriteModelManager: LocalRewriteModelManager
 
     private static var installCardAnimation: Animation {
@@ -26,6 +27,7 @@ struct KeyVoxVibesSceneCView: View {
     ]
 
     let isVisible: Bool
+    let variant: KeyVoxVibesSheetView.SceneCVariant
     let onDownloadRequested: (PendingDownloadConfirmation) -> Void
 
     @State private var logoOpacity: Double = 0
@@ -126,14 +128,32 @@ struct KeyVoxVibesSceneCView: View {
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
-            Text(detail.subtitle)
+            Text(subtitle(for: detail))
                 .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(subtitleStyle(for: detail))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
+    }
+
+    private func subtitle(for detail: Detail) -> String {
+        guard variant == .activeTrialRecovery,
+              detail.id == 0 else {
+            return detail.subtitle
+        }
+
+        return "You’re using Vibes for a day, you have \(vibesPurchaseController.trialRemainingText) left."
+    }
+
+    private func subtitleStyle(for detail: Detail) -> Color {
+        guard variant == .activeTrialRecovery,
+              detail.id == 0 else {
+            return .white.opacity(0.55)
+        }
+
+        return .yellow
     }
 
     private var installCardSlot: some View {
