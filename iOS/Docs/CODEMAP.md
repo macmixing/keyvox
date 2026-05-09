@@ -25,7 +25,7 @@ The current default runtime flow is:
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe.
 10. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-11. A later keyboard Vibes long press may restyle or revert only the latest untouched KeyVox insertion by sending an app-IPC rewrite request; the containing app runs the model and returns the replacement text.
+11. A later keyboard Vibes long press may restyle or revert only the latest untouched KeyVox insertion by sending an app-IPC rewrite request; the containing app runs the model and returns the replacement text. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
@@ -217,6 +217,7 @@ iOS/
 │   │   │   ├── SettingsTabView+General.swift
 │   │   │   ├── SettingsTabView+Models.swift
 │   │   │   ├── SettingsTabView+TTS.swift
+│   │   │   ├── SettingsTabView+VibesAI.swift
 │   │   │   └── SettingsTabView.swift
 │   │   ├── StyleTabView+KeyVoxVibes.swift
 │   │   ├── StyleTabView.swift
@@ -239,6 +240,7 @@ iOS/
 │   │   │   ├── InlineWarningRow.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── LoopingVideoPlayer.swift
+│   │   │   ├── ModelDownloaderCardView.swift
 │   │   │   ├── ModelDownloadProgress.swift
 │   │   │   ├── NativeActivityIndicator.swift
 │   │   │   ├── PlaybackVoicePickerMenu.swift
@@ -506,9 +508,9 @@ Packages/
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/Routing/KeyVoxURLRoute.swift`
-  - Typed app route surface for cold-start recording, copied-text playback, and locked KeyVox Vibes launches.
+  - Typed app route surface for cold-start recording, copied-text playback, locked KeyVox Vibes launches, and Vibes trial-start launches.
 - `KeyVox iOS/App/Routing/KeyVoxURLRouter.swift`
-  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, and return-to-host flows.
+  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, Vibes trial-start, and return-to-host flows.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
@@ -799,8 +801,9 @@ Packages/
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/KeyVoxVibes/`
   - Dedicated feature folder for the shared KeyVox Vibes presentation surface.
-  - `KeyVoxVibesSheetView.swift` owns the shared pager shell, intro/unlock mode selection, bottom CTA area, unlock action, restore action, and close behavior.
+  - `KeyVoxVibesSheetView.swift` owns the shared pager shell, intro/unlock/info mode selection, bottom CTA area, model-availability CTA rules, sheet-level Vibes AI download confirmation, unlock action, restore action, and close behavior.
   - `KeyVoxVibesSceneAView.swift`, `KeyVoxVibesSceneBView.swift`, and `KeyVoxVibesSceneCView.swift` own the swipeable intro pages for what Vibes is, what it does, and how the local trial starts.
+  - `KeyVoxVibesSceneCView.swift` also owns the compact Vibes AI install card shown when the local model is missing, including progress/error presentation, confirmed download requests, repair action, and graceful collapse when install readiness arrives.
   - `KeyVoxVibesUnlockScene.swift` owns the lifetime-unlock scene, including active-trial remaining-time copy.
   - `KeyVoxVibesIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points.
@@ -810,7 +813,7 @@ Packages/
   - Style tab composition for Lists, Paragraphs, and the KeyVox Vibes section.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - KeyVox Vibes card, style picker, selected style summary, style description, examples, and purchase row.
-  - Keeps selected Vibe displayed as `None` until Vibes access is active and exposes the local Vibes model install/download/delete surface.
+  - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
@@ -822,12 +825,16 @@ Packages/
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+TTS.swift`
   - Release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
+- `KeyVox iOS/Views/SettingsTabView/SettingsTabView+VibesAI.swift`
+  - Release-facing `KeyVox Vibes AI` model card placed below the dictation model card, with download/delete/repair actions, confirmation handoff, install progress, percentage text, failure copy, and animated progress collapse.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+About.swift`
   - Rate-and-review, GitHub support, shared Speak/Vibes restore-purchases, version footer, and third-party notices launcher extracted from the settings root view.
 - `KeyVox iOS/Views/Components/DeletionConfirmation.swift`
   - Shared destructive-delete confirmation component used by the settings model sections.
 - `KeyVox iOS/Views/Components/DownloadConfirmation.swift`
-  - Shared non-destructive download confirmation component used before model and voice downloads. It carries separate copy for Whisper Base, Parakeet TDT v3, the Speak engine, individual Speak voices, and combined first-use Speak engine-plus-voice setup.
+  - Shared non-destructive download confirmation component used before model and voice downloads. It carries separate copy for Whisper Base, Parakeet TDT v3, KeyVox Vibes AI, the Speak engine, individual Speak voices, and combined first-use Speak engine-plus-voice setup.
+- `KeyVox iOS/Views/Components/ModelDownloaderCardView.swift`
+  - Compact reusable app-styled model downloader card with title/action row, subtitle/status text, right-aligned progress percentage, progress bar, and error text. Scene C uses it for the inline Vibes AI install surface.
 - `KeyVox iOS/Views/Components/AppUpdatePrompt.swift`
   - Shared custom update prompt component used by the root app shell instead of the native system alert so optional and forced update prompts match the app's modal overlay styling.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
@@ -838,7 +845,7 @@ Packages/
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
+  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes trial-start launch, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
   - Responder-chain URL launcher used by the extension whenever it needs to wake the containing app for cold dictation or copied-text playback handoff.
 - `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
@@ -865,7 +872,7 @@ Packages/
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
 - `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
-  - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, and posts shared Darwin notifications so the containing app can refresh visible settings.
+  - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
@@ -875,7 +882,7 @@ Packages/
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationHeuristics.swift`
   - Host-text capitalization preservation for direct typing and inserted dictation paths.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
-  - Lightweight rooted-install gate used by the extension toolbar for Whisper and Parakeet availability.
+  - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns row 3 and row 4 live width calculations driven from the measured key grid.
@@ -883,7 +890,7 @@ Packages/
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
   - With Vibes available, aligns Speak over `2`, Dictionary over `3`, Paragraphs over `4`, Lists over `5`, Caps Lock over `6`, the two-key-wide Vibes key across `7` and `8`, and the logo bar over the far-right `9`/`0` area.
-  - Without Vibes available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps.
+  - Without the Vibes feature available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps. Missing local Vibes AI readiness gates cycling but does not hide the key.
   - Mirrors the control strip for the left-handed layout setting without changing typed symbol order.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.

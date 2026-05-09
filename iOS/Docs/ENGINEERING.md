@@ -31,6 +31,7 @@ The containing app owns:
 - settings and iCloud sync
 - model installation, validation, and recovery
 - local Vibes model installation, validation, bundled adapter lookup, and inference
+- KeyVox Vibes AI download/delete/repair surfaces in Settings and Vibes Scene C
 - copied-text playback voice installation and validation
 - microphone capture and session warmth
 - interrupted-capture recovery
@@ -64,6 +65,7 @@ The keyboard extension does **not** own:
 - microphone permissions
 - model downloads
 - local Vibes model loading or inference
+- KeyVox Vibes AI downloads, deletion, or repair
 - dictionary logic
 - transcription post-processing policy
 - KeyVox Vibes style rewrite policy
@@ -348,11 +350,11 @@ Any user-facing model or voice download must be confirmed before the manager sta
 Rules:
 
 - `DownloadConfirmation.swift` owns the shared confirmation styling and the per-resource title/message copy.
-- Confirmation copy must stay specific to the requested resource: Whisper Base, Parakeet TDT v3, the shared Speak engine, an individual Speak voice, or the combined first-use Speak engine plus selected voice.
+- Confirmation copy must stay specific to the requested resource: Whisper Base, Parakeet TDT v3, KeyVox Vibes AI, the shared Speak engine, an individual Speak voice, or the combined first-use Speak engine plus selected voice.
 - Confirmations must disclose the pinned approximate download size for that resource path.
 - Home and Settings must route download requests through the `MainTabView`-owned confirmation overlay so the overlay covers tab content, the navigation toolbar, and the tab bar.
-- The KeyVox Speak sheet must own its own sheet-level confirmation overlay so scene content, the pinned bottom CTA section, and sheet chrome are covered while confirmation is active.
-- Scene C and `KeyVoxSpeakInstallCardView` must request confirmation from the sheet instead of starting downloads directly.
+- The KeyVox Speak and KeyVox Vibes sheets must own their own sheet-level confirmation overlays so scene content, the pinned bottom CTA section, and sheet chrome are covered while confirmation is active.
+- Vibes Scene C and `KeyVoxSpeakInstallCardView` must request confirmation from their sheet instead of starting downloads directly.
 - When the shared Speak engine is already ready, the KeyVox Speak install card must request the voice-only confirmation; it should request the combined engine-plus-voice confirmation only when the shared Speak engine is missing.
 - Repair actions may continue to run through the existing repair paths; this confirmation contract is for user-started downloads.
 
@@ -934,6 +936,7 @@ The containing app observes that notification and refreshes `AppSettingsStore.se
 Tap changes only the selected Vibe.
 Before the local trial starts or the lifetime unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
 Before access is active, tapping the keyboard Vibes key emits the keyboard's medium no-op haptic and opens `keyvoxios://vibes/open`; the keyboard does not cycle to a paid Vibe.
+Before the local Vibes model is installed, tapping the keyboard Vibes key keeps the selected Vibe resolved to `None`, emits the medium no-op haptic, and opens `keyvoxios://vibes/trial-start` so Scene C can show the install surface.
 Vibes access requires `KeyVoxVibesPurchaseController.canUseVibes`; model-backed rewrites also require a ready local rewrite model and the required adapter.
 When access is unavailable or an active local trial expires, the resolved selected Vibe is forced to `None`.
 Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, asking the containing app to regenerate from the original base text when a model-backed Vibe is needed, and replacing the active insertion.
@@ -1015,6 +1018,8 @@ It owns:
 - expected installed artifact size: `491,400,032` bytes
 - install readiness requires the model file plus `install-manifest.json` with matching model ID, artifact filename, expected SHA-256, and installed SHA-256
 - delete invalidates the installed local model and asks the local inference service to unload
+- Settings exposes the main `KeyVox Vibes AI` download/delete/repair card beneath the dictation model card
+- Vibes Scene C exposes a compact install card when the model is not ready, using sheet-owned download confirmation before starting a user-requested download
 
 LoRA adapter ownership:
 
@@ -1063,12 +1068,28 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 
 `KeyVoxVibesSheetView` owns the shared Vibes sheet shell.
 
-- intro mode shows scenes A, B, and C with a `Try Now` CTA
+- intro mode shows scenes A, B, and C
+- when Vibes AI is installed, each intro scene shows `Try Now` and starts the local trial as before
+- when Vibes AI is missing, scene A advances with `Get Started`, scene B advances with `Next`, and scene C keeps `Try Now` disabled until install readiness arrives
+- Scene C owns the inline Vibes AI install card and routes user-started downloads through the sheet-level confirmation overlay
 - unlock mode shows the usage refresher scene and the unlock scene with a dynamic App Store price button
 - per-sheet restore checks the Vibes entitlement
 
 Settings restore is shared across KeyVox Speak and KeyVox Vibes.
 The restore card remains visible until both lifetime unlocks are owned.
+
+### KeyVox Vibes AI Settings Surface
+
+`SettingsTabView+VibesAI` owns the release-facing `KeyVox Vibes AI` card.
+
+- the card lives directly below the dictation model card
+- not-installed copy tells the user to install Vibes AI first and includes the pinned approximate size
+- ready copy confirms Vibes AI is installed and ready
+- download requests set the shared `PendingDownloadConfirmation.keyVoxVibesAI` value before `LocalRewriteModelManager.downloadModel()` starts
+- ready state exposes a destructive delete action through the shared deletion confirmation path
+- failed state exposes repair through the local rewrite model manager
+- downloading and installing states show status text, a right-aligned yellow percentage, and `ModelDownloadProgress`
+- the progress area measures its own height and collapses after a delay so completion does not snap the card closed
 
 ### Keyboard App Settings Runtime Ownership
 
@@ -1076,10 +1097,11 @@ The restore card remains visible until both lifetime unlocks are owned.
 
 - reads and writes `KeyVox.SelectedVibe` from App Group defaults
 - derives display text from `StyleRewriteStyle`
-- cycles through `None`, `Casual`, `Polished`, `Chill`
+- cycles through `None`, `Casual`, `Polished`, `Chill` only when Vibes access and local Vibes AI readiness are both available
 - posts the shared Vibes selection-change Darwin notification
 - exposes Vibes platform availability as always true now that the Foundation-only gate is gone
 - exposes Vibes access state from app-local unlock/trial defaults so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
+- checks local Vibes AI install readiness from the rooted model artifact and manifest so missing-model taps open the trial-start/install flow instead of cycling
 - reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
 - reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
@@ -1104,6 +1126,9 @@ Long-press rules:
 - cached variants replace instantly
 - generated variants may temporarily drive the logo indicator into processing state
 - if the user edits, deletes, moves away from, or otherwise invalidates the active insertion, long press no-ops
+
+`KeyboardModelAvailability` remains a lightweight file-presence gate for extension UI decisions.
+For Vibes AI it only checks the App Group rooted install manifest and GGUF artifact; it does not load, validate, or run the local rewrite model.
 
 `KeyboardLocalStyleRewriteTextTransformer` is the keyboard-side transport for long-press model-backed Vibes rewrites.
 
@@ -1315,7 +1340,8 @@ Current symbol layout rules:
 - the space bar consumes the remaining row-4 width
 - the left accessory slot is derived from the live `1` key geometry and swaps statically between Settings and Cancel
 - with Vibes available, top-row Speak aligns over `2`, Dictionary aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
-- with Vibes unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
+- with the Vibes feature unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
+- with Vibes available but Vibes AI not installed, the Vibes key stays visible and taps route to the app-owned install/trial-start flow instead of cycling styles
 - the left-handed keyboard layout setting mirrors the control strip while leaving typed symbol order unchanged
 - top-row accessory slots are allocated from the logo edge inward so adding or removing feature keys does not leave empty holes
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise
@@ -1399,7 +1425,8 @@ Current app-owned surfaces:
 - `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
 - `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper; the pure `KeyVoxSpeakFlowRules` resolver now lives under `App/Presentation/` so scene selection and fallback behavior stay separate from component rendering
-- `DownloadConfirmation`: shared non-destructive confirmation overlay for user-started model and voice downloads; app-shell surfaces route through `MainTabView`, while the KeyVox Speak sheet owns a sheet-level instance so pinned CTA controls are covered
+- `DownloadConfirmation`: shared non-destructive confirmation overlay for user-started model and voice downloads; app-shell surfaces route through `MainTabView`, while KeyVox Speak and KeyVox Vibes sheets own sheet-level instances so pinned CTA controls are covered
+- `ModelDownloaderCardView`: compact reusable model-download card for portable install surfaces, with title/action alignment, optional subtitle, status row, right-aligned progress percentage, progress bar, and error text
 - `AppUpdatePrompt`: shared custom update overlay presented from `AppRootView` so optional and forced update prompts match the app modal style and cover the mounted app shell instead of using the native system alert
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
@@ -1408,6 +1435,7 @@ Current app-owned surfaces:
 - `SettingsTabView+General`: session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view
 - `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection plus per-model install actions and uninstalled model size display
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
+- `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch, with a top-right dismiss affordance that returns the app to Home while preserving the containing app as the route/session owner
