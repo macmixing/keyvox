@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxVibesAdapters
 
 struct LocalRewriteModelArtifact: Equatable, Sendable {
     let filename: String
@@ -16,12 +17,8 @@ struct LocalRewriteModelDescriptor: Equatable, Sendable {
 
 enum LocalRewriteModelCatalog {
     static let manifestFilename = "install-manifest.json"
-    static let polishedLoRAFilename = "polished-alpha-021-lora.gguf"
-    static let polishedLoRAResourceName = "polished-alpha-021-lora"
-    static let casualLoRAFilename = "casual-alpha-3-lora.gguf"
-    static let casualLoRAResourceName = "casual-alpha-3-lora"
-    static let polishedLoRAResourceExtension = "gguf"
-    static let polishedLoRAResourceSubdirectory = "LocalRewriteAdapters"
+    static let polishedLoRAFilename = KeyVoxVibesAdapterCatalog.polished.filename
+    static let casualLoRAFilename = KeyVoxVibesAdapterCatalog.casual.filename
 
     static let descriptor = LocalRewriteModelDescriptor(
         id: "qwen2-5-0-5b-instruct",

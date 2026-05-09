@@ -37,6 +37,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
 - **`../Packages/KeyVoxLocalInference/`**: llama.cpp-backed local GGUF inference package with chat-template formatting, optional LoRA adapter attachment, quiet llama logging, cancellation, greedy decoding, token accounting, and opt-in live model tests.
+- **`../Packages/KeyVoxVibesAdapters/`**: bundled KeyVox-trained LoRA adapter resources and typed adapter catalog used by the app's local Vibes model manager.
 - **`../Packages/KeyVoxStyleRewrite/`**: reusable dictation style transform package, style request construction, token-aware chunk planning, model-response orchestration, output repair, Chill heuristic formatting, latest-utterance artifact models, and package tests for transform behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, KeyVox Vibes artifact persistence, iCloud sync, weekly stats, model lifecycle, copied-text playback policy and lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
 - **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
@@ -418,15 +419,19 @@ iOS/
 ├── Launch Screen.storyboard
 └── LaunchLogo.png
 
-Resources/
-└── LocalRewriteAdapters/
-    ├── casual-alpha-3-lora.gguf
-    └── polished-alpha-021-lora.gguf
-
 Packages/
 ├── KeyVoxCore/
 │   ├── Sources/KeyVoxCore/
 │   └── Tests/KeyVoxCoreTests/
+├── KeyVoxVibesAdapters/
+│   ├── Package.swift
+│   ├── Sources/KeyVoxVibesAdapters/
+│   │   ├── KeyVoxVibesAdapterCatalog.swift
+│   │   └── Resources/Adapters/
+│   │       ├── casual-alpha-3-lora.gguf
+│   │       └── polished-alpha-021-lora.gguf
+│   └── Tests/KeyVoxVibesAdaptersTests/
+│       └── KeyVoxVibesAdapterCatalogTests.swift
 ├── KeyVoxStyleRewrite/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxStyleRewrite/
@@ -632,12 +637,12 @@ Packages/
 - `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelCatalog.swift`
-  - App-local catalog for the Vibes rewrite base model and bundled adapter filenames.
+  - App-local catalog for the Vibes rewrite base model and package-provided bundled adapter filenames.
   - Current base model is `Qwen2.5-0.5B-Instruct` from `Qwen/Qwen2.5-0.5B-Instruct-GGUF`, artifact `qwen2.5-0.5b-instruct-q4_k_m.gguf`, with strict SHA-256 validation and a 491,400,032-byte expected size.
-  - Current bundled adapters are `polished-alpha-021-lora.gguf` and `casual-alpha-3-lora.gguf`.
+  - Current bundled adapters are provided by `KeyVoxVibesAdapters`: `polished-alpha-021-lora.gguf` and `casual-alpha-3-lora.gguf`.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelManager.swift`
   - Containing-app owner for local Vibes model install state, foreground download, staging/finalization, manifest validation, SHA-256 integrity checks, delete/repair-style cleanup, and adapter URL resolution.
-  - Resolves LoRA adapters from bundled app resources first and falls back to the installed model directory only when needed.
+  - Resolves LoRA adapters from the bundled `KeyVoxVibesAdapters` package first and falls back to the installed model directory only when needed.
   - Invalidates the local inference service when the installed base model is deleted or replaced.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelInstallManifest.swift`
   - Durable manifest for the installed local rewrite model identity, source repository, artifact filename, expected hash, installed hash, file size, and install date.
@@ -705,6 +710,9 @@ Packages/
 - `Packages/KeyVoxLocalInference/Sources/KeyVoxLocalInference/LocalLanguageModel.swift`
   - llama.cpp-backed local CPU inference wrapper for GGUF chat models and optional LoRA adapters.
   - Owns model/context creation, adapter attachment, quiet llama logging, prompt formatting through the model chat template, tokenization, prompt-too-long checks, greedy decoding, cancellation, cache clearing, unload, and generation metrics.
+- `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/KeyVoxVibesAdapterCatalog.swift`
+  - Typed catalog for bundled KeyVox Vibes LoRA adapters.
+  - Exposes adapter IDs, filenames, compatible base-model ID, and `Bundle.module` resource URL lookup for Polished and Casual.
 - `KeyVox iOS/Core/StyleRewrite/LocalRewriteInferenceService.swift`
   - App-owned local inference cache for the installed Vibes base model plus the currently requested LoRA adapter.
   - Provides the cached `LlamaCPULanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.

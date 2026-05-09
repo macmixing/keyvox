@@ -968,6 +968,13 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - model loading is cached per `LlamaCPULanguageModel` instance, while each generation clears llama memory before running.
 - the package installs quiet llama logging, supports task cancellation, attaches LoRA adapters, performs prompt-too-long checks, uses greedy decoding, exposes load/prefill/decode/total timing metrics, and supports explicit unload.
 
+`Packages/KeyVoxVibesAdapters` owns bundled KeyVox-trained adapter assets:
+
+- `KeyVoxVibesAdapterCatalog` exposes typed descriptors for Polished and Casual adapters.
+- adapter descriptors include adapter kind, adapter ID, filename, and compatible base model ID.
+- adapter resources live under `Resources/Adapters`, are copied by SwiftPM, and resolve through `Bundle.module`.
+- this package owns product-specific adapter artifacts; `KeyVoxLocalInference` remains a generic local inference runtime.
+
 ### Dictation Pipeline Style Hook
 
 The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
@@ -1011,10 +1018,10 @@ It owns:
 
 LoRA adapter ownership:
 
-- adapters are app resources under `Resources/LocalRewriteAdapters`
+- adapters are resources in `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters`
 - Polished uses `polished-alpha-021-lora.gguf`
 - Casual and Chill share `casual-alpha-3-lora.gguf`
-- adapter URLs resolve from the app bundle first, with installed-directory fallback for development/repair paths
+- adapter URLs resolve from `KeyVoxVibesAdapters` first, with installed-directory fallback for development/repair paths
 - a missing required adapter is a model-load failure for that Vibe, not permission to silently run a different prompt path
 
 `LocalRewriteInferenceService` owns the app-local inference cache.

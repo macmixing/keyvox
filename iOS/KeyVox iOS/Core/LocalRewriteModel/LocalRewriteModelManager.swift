@@ -1,6 +1,7 @@
 import Combine
 import CryptoKit
 import Foundation
+import KeyVoxVibesAdapters
 
 @MainActor
 final class LocalRewriteModelManager: ObservableObject {
@@ -44,9 +45,7 @@ final class LocalRewriteModelManager: ObservableObject {
     }
 
     func polishedLoRAURL() -> URL? {
-        if let bundledAdapterURL = bundledLoRAURL(
-            resourceName: LocalRewriteModelCatalog.polishedLoRAResourceName
-        ) {
+        if let bundledAdapterURL = KeyVoxVibesAdapterCatalog.url(for: .polished) {
             return bundledAdapterURL
         }
 
@@ -54,21 +53,11 @@ final class LocalRewriteModelManager: ObservableObject {
     }
 
     func casualLoRAURL() -> URL? {
-        if let bundledAdapterURL = bundledLoRAURL(
-            resourceName: LocalRewriteModelCatalog.casualLoRAResourceName
-        ) {
+        if let bundledAdapterURL = KeyVoxVibesAdapterCatalog.url(for: .casual) {
             return bundledAdapterURL
         }
 
         return installedLoRAURL(filename: LocalRewriteModelCatalog.casualLoRAFilename)
-    }
-
-    private func bundledLoRAURL(resourceName: String) -> URL? {
-        Bundle.main.url(
-            forResource: resourceName,
-            withExtension: LocalRewriteModelCatalog.polishedLoRAResourceExtension,
-            subdirectory: LocalRewriteModelCatalog.polishedLoRAResourceSubdirectory
-        )
     }
 
     private func installedLoRAURL(filename: String) -> URL? {
