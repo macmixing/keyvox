@@ -94,6 +94,12 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "2+2=4")
     }
 
+    func testChillHeuristicPreservesColonBetweenNumbers() {
+        let output = ChillHeuristicFormatter().format("Meet at 5:45 and keep the ratio 16:9, but remove this: colon.")
+
+        XCTAssertEqual(output, "meet at 5:45 and keep the ratio 16:9 but remove this colon")
+    }
+
     func testChillHeuristicPreservesEmailAddress() {
         let output = ChillHeuristicFormatter().format("dom@example.com")
 
