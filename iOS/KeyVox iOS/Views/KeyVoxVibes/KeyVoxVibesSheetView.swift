@@ -239,7 +239,10 @@ struct KeyVoxVibesSheetView: View {
                 onDownloadRequested: { pendingDownloadConfirmation = $0 }
             )
         case .unlock:
-            KeyVoxVibesUnlockScene(isVisible: selectedScene == .unlock)
+            KeyVoxVibesUnlockScene(
+                isVisible: selectedScene == .unlock,
+                onDownloadRequested: { pendingDownloadConfirmation = $0 }
+            )
         }
     }
 
