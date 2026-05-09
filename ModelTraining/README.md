@@ -27,6 +27,13 @@ This folder contains the source-of-truth training materials for local model adap
 - Continuation dataset: `datasets/polished/alpha-021-continuation-long-numerics`
 - Runtime app resource: `Resources/LocalRewriteAdapters/polished-alpha-021-lora.gguf`
 
+## Current Casual Adapter
+
+- Current run: `runs/casual/casual-alpha-3`
+- Base dataset: `datasets/casual/casual-alpha-1-base`
+- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`
+- Runtime app resource: `Resources/LocalRewriteAdapters/casual-alpha-3-lora.gguf`
+
 ## Polished Run Status
 
 - Current: `runs/polished/alpha-021`

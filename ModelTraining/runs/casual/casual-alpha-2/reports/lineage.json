@@ -1,0 +1,10 @@
+{
+  "run": "casual-alpha-2",
+  "status": "candidate",
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "dataset": "ModelTraining/datasets/casual/casual-alpha-2-continuation-times",
+  "resume_adapter": "ModelTraining/artifacts/current/casual-lora-alpha-1/adapters/casual-alpha-1/adapters.safetensors",
+  "adapter_checkpoint": "ModelTraining/artifacts/current/casual-lora-alpha-2/adapters/casual-alpha-2/adapters.safetensors",
+  "runtime_gguf": "ModelTraining/artifacts/current/casual-lora-alpha-2/adapters/casual-alpha-2/casual-alpha-2-lora.gguf",
+  "portable_from_this_mac": true
+}

@@ -18,6 +18,7 @@ Chill is an accessory to Casual. The Casual LoRA owns the cleanup behavior. Chil
 - Preserve list structure, numbering, bullets, and item order.
 - Remove filler inside list items without flattening the list.
 - Format numbers, dates, money, and percentages correctly when context is clear.
+- Format spoken hour-minute times when dictation leaves them as words.
 - Leave clean text unchanged when there is nothing meaningful to clean.
 - Make only light cleanup changes.
 

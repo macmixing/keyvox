@@ -59,6 +59,59 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
     }
 
     @MainActor
+    func testLiveCasualSpokenTimeCoverageWhenEnabled() async throws {
+        let tester = try Self.makeTester()
+        defer {
+            Task { await tester.unload() }
+        }
+
+        let cases: [CasualLiveCase] = [
+            CasualLiveCase(
+                input: "Hey, can you meet me for lunch tomorrow at three fifteen?",
+                requiredFragments: ["3:15"],
+                forbiddenFragments: ["3:10", "three fifteen"]
+            ),
+            CasualLiveCase(
+                input: "Hey, can you meet me for lunch tomorrow at four forty five?",
+                requiredFragments: ["4:45"],
+                forbiddenFragments: ["4:05", "four forty five"]
+            ),
+            CasualLiveCase(
+                input: "Uh remind me to check the build at seven twenty five.",
+                requiredFragments: ["7:25"],
+                forbiddenFragments: ["seven twenty five", "7:20"]
+            ),
+            CasualLiveCase(
+                input: "Like can we talk at two oh five about the keyboard?",
+                requiredFragments: ["Like can we talk at 2:05"],
+                forbiddenFragments: ["two oh five", "2:50"]
+            ),
+            CasualLiveCase(
+                input: "Sarah and me was going to meet at eleven thirty five.",
+                requiredFragments: ["Sarah and me was going to meet at 11:35"],
+                forbiddenFragments: ["Sarah and I", "eleven thirty five"]
+            ),
+            CasualLiveCase(
+                input: "I ain't showing up before twelve fifty.",
+                requiredFragments: ["I ain't showing up before 12:50"],
+                forbiddenFragments: ["I'm not", "twelve fifty"]
+            ),
+            CasualLiveCase(
+                input: "This shit needs to be done by nine forty.",
+                requiredFragments: ["This shit needs to be done by 9:40"],
+                forbiddenFragments: ["nine forty"]
+            ),
+            CasualLiveCase(
+                input: "Move the follow up to six fifty five and keep it casual.",
+                requiredFragments: ["6:55"],
+                forbiddenFragments: ["six fifty five"]
+            ),
+        ]
+
+        try await tester.assertCases(cases)
+    }
+
+    @MainActor
     func testLiveCasualGauntletWhenEnabled() async throws {
         let tester = try Self.makeTester()
         defer {
