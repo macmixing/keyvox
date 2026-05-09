@@ -141,7 +141,11 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     func startTrial() {
         guard isVibesUnlocked == false else { return }
         guard hasTrialStarted == false else {
-            presentUnlockSheet()
+            if isTrialActive {
+                dismissSheet()
+            } else {
+                presentUnlockSheet()
+            }
             return
         }
 
@@ -179,6 +183,16 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
 
         sheetPresentation = .unlock
+    }
+
+    func presentModelRecoverySheet() {
+        refreshTrialStateIfNeeded()
+
+        if isVibesUnlocked {
+            sheetPresentation = .unlock
+        } else {
+            sheetPresentation = .intro(.trialStart)
+        }
     }
 
     func presentHelpSheet() {

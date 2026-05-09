@@ -39,13 +39,15 @@ extension StyleTabView {
                             .accessibilityLabel("Learn about KeyVox Vibes")
                         }
 
-                        Text(displayedSelectedVibe.displayName)
-                            .font(.appFont(17))
-                            .foregroundStyle(.yellow)
+                        if shouldShowVibeSelector {
+                            Text(displayedSelectedVibe.displayName)
+                                .font(.appFont(17))
+                                .foregroundStyle(.yellow)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if isVibesAIInstalled {
+                    if shouldShowVibeSelector {
                         Menu {
                             Picker("", selection: keyVoxVibesSelection) {
                                 ForEach(StyleRewriteStyle.allCases) { style in
@@ -59,12 +61,25 @@ extension StyleTabView {
                                 .foregroundStyle(.yellow)
                         }
                         .padding(.top, 2)
-                    } else {
-                        Text("Install Vibes AI")
-                            .font(.appFont(14))
-                            .foregroundStyle(.white.opacity(0.5))
-                            .padding(.top, 2)
+                    } else if let actionTitle = keyVoxVibesActionTitle {
+                        AppActionButton(
+                            title: actionTitle,
+                            style: .primary,
+                            size: .compact,
+                            fontSize: 15,
+                            isEnabled: isKeyVoxVibesActionEnabled,
+                            action: handleKeyVoxVibesCardAction
+                        )
+                        .padding(.top, 2)
                     }
+                }
+
+                if let statusText = keyVoxVibesStatusText {
+                    Text(statusText)
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Divider()
@@ -91,8 +106,6 @@ extension StyleTabView {
                     .buttonStyle(.plain)
                     .accessibilityLabel(isVibeExamplesExpanded ? "Hide vibe examples" : "Show vibe examples")
                 }
-
-                keyVoxVibesUnlockSection
 
                 vibeExamplesExpandedContent
                     .frame(height: isVibeExamplesExpanded ? vibeExamplesExpandedContentHeight : 0, alignment: .top)
@@ -216,37 +229,6 @@ extension StyleTabView {
         )
     }
 
-    @ViewBuilder
-    private var keyVoxVibesUnlockSection: some View {
-        if !keyVoxVibesPurchaseController.isVibesUnlocked {
-            Divider()
-                .overlay(.white.opacity(0.22))
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .center, spacing: 12) {
-                    Text("KeyVox Vibes Unlock")
-                        .font(.appFont(17))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    AppActionButton(
-                        title: vibesUnlockButtonTitle,
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 15,
-                        isEnabled: keyVoxVibesPurchaseController.isStoreActionInFlight == false,
-                        action: handleVibesUnlockAction
-                    )
-                }
-
-                Text(vibesUnlockStatusText)
-                    .font(.appFont(14, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
     private var displayedSelectedVibe: StyleRewriteStyle {
         keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled ? settingsStore.selectedVibe : .none
     }
@@ -255,20 +237,53 @@ extension StyleTabView {
         localRewriteModelManager.isModelReady()
     }
 
-    private var vibesUnlockButtonTitle: String {
-        keyVoxVibesPurchaseController.hasTrialStarted ? "Unlock" : "Try Now"
+    private var shouldShowVibeSelector: Bool {
+        keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled
     }
 
-    private var vibesUnlockStatusText: String {
-        if keyVoxVibesPurchaseController.isTrialActive {
+    private var keyVoxVibesStatusText: String? {
+        if keyVoxVibesPurchaseController.isTrialActive && isVibesAIInstalled {
             return "You’re using Vibes for a day, you have \(keyVoxVibesPurchaseController.trialRemainingText) left."
         }
 
+        if shouldShowVibeSelector {
+            return nil
+        }
+
+        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+            return "Download Vibes AI to use your Vibes."
+        }
+
         if keyVoxVibesPurchaseController.hasTrialEnded {
-            return "Unlock KeyVox Vibes once and use it for life."
+            return "Unlock and get Vibes for life."
         }
 
         return "Try out KeyVox Vibes for 24 hours."
+    }
+
+    private var keyVoxVibesActionTitle: String? {
+        if shouldShowVibeSelector {
+            return nil
+        }
+
+        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+            return "Download"
+        }
+
+        if keyVoxVibesPurchaseController.hasTrialStarted {
+            return "Unlock"
+        }
+
+        return "Try Now"
+    }
+
+    private var isKeyVoxVibesActionEnabled: Bool {
+        guard keyVoxVibesPurchaseController.hasTrialStarted,
+              keyVoxVibesPurchaseController.canUseVibes == false else {
+            return true
+        }
+
+        return keyVoxVibesPurchaseController.isStoreActionInFlight == false
     }
 
     private func selectVibe(_ style: StyleRewriteStyle) {
@@ -292,9 +307,12 @@ extension StyleTabView {
         settingsStore.selectedVibe = style
     }
 
-    private func handleVibesUnlockAction() {
+    private func handleKeyVoxVibesCardAction() {
         appHaptics.light()
-        if keyVoxVibesPurchaseController.hasTrialStarted {
+
+        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+            keyVoxVibesPurchaseController.presentModelRecoverySheet()
+        } else if keyVoxVibesPurchaseController.hasTrialStarted {
             keyVoxVibesPurchaseController.presentUnlockSheet()
         } else {
             keyVoxVibesPurchaseController.presentIntroSheet()
