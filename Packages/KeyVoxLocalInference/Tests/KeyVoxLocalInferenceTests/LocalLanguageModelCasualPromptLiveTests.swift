@@ -176,20 +176,20 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
 
     @MainActor
     private static func makeTester() throws -> CasualLiveTester {
-        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_LFM_STYLE_TESTS"] == "1" else {
-            throw XCTSkip("Set KEYVOX_RUN_LOCAL_LFM_STYLE_TESTS=1 to run live local style prompt tests.")
+        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_STYLE_TESTS"] == "1" else {
+            throw XCTSkip("Set KEYVOX_RUN_LOCAL_STYLE_TESTS=1 to run live local style prompt tests.")
         }
-        guard let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_MODEL_PATH"] else {
-            throw XCTSkip("Set KEYVOX_LOCAL_LFM_MODEL_PATH to a local GGUF file.")
+        guard let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_MODEL_PATH"] else {
+            throw XCTSkip("Set KEYVOX_LOCAL_MODEL_PATH to a local GGUF file.")
         }
-        guard let adapterPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_ADAPTER_PATH"] else {
-            throw XCTSkip("Set KEYVOX_LOCAL_LFM_ADAPTER_PATH to a local Casual adapter GGUF file.")
+        guard let adapterPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_ADAPTER_PATH"] else {
+            throw XCTSkip("Set KEYVOX_LOCAL_ADAPTER_PATH to a local Casual adapter GGUF file.")
         }
 
         return CasualLiveTester(
             modelURL: URL(fileURLWithPath: modelPath),
             adapterURL: URL(fileURLWithPath: adapterPath),
-            adapterScale: ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_ADAPTER_SCALE"]
+            adapterScale: ProcessInfo.processInfo.environment["KEYVOX_LOCAL_ADAPTER_SCALE"]
                 .flatMap(Float.init) ?? 1.0
         )
     }

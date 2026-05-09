@@ -65,12 +65,12 @@ final class LocalLanguageModelTests: XCTestCase {
         }
     }
 
-    func testLiveLFMModelGeneratesWhenEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_LFM_LIVE_TESTS"] == "1" else {
-            throw XCTSkip("Set KEYVOX_RUN_LOCAL_LFM_LIVE_TESTS=1 to run the live local model test.")
+    func testLiveLocalModelGeneratesWhenEnabled() async throws {
+        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_MODEL_LIVE_TESTS"] == "1" else {
+            throw XCTSkip("Set KEYVOX_RUN_LOCAL_MODEL_LIVE_TESTS=1 to run the live local model test.")
         }
-        guard let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_MODEL_PATH"] else {
-            throw XCTSkip("Set KEYVOX_LOCAL_LFM_MODEL_PATH to a local GGUF file.")
+        guard let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_MODEL_PATH"] else {
+            throw XCTSkip("Set KEYVOX_LOCAL_MODEL_PATH to a local GGUF file.")
         }
 
         let model = LlamaCPULanguageModel(modelURL: URL(fileURLWithPath: modelPath))

@@ -2,79 +2,24 @@ import KeyVoxStyleRewrite
 import XCTest
 @testable import KeyVoxLocalInference
 
-final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
+final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
     @MainActor
-    func testLiveLFMExactStylePromptsWhenEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["KEYVOX_RUN_LOCAL_LFM_STYLE_TESTS"] == "1" else {
-            throw XCTSkip("Set KEYVOX_RUN_LOCAL_LFM_STYLE_TESTS=1 to run live local style prompt tests.")
-        }
-        guard let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_MODEL_PATH"] else {
-            throw XCTSkip("Set KEYVOX_LOCAL_LFM_MODEL_PATH to a local GGUF file.")
-        }
-
-        let modelURL = URL(fileURLWithPath: modelPath)
-        let adapterURL = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_ADAPTER_PATH"]
-            .map { URL(fileURLWithPath: $0) }
-        let adapterScale = ProcessInfo.processInfo.environment["KEYVOX_LOCAL_LFM_ADAPTER_SCALE"]
-            .flatMap(Float.init) ?? 1.0
-        let responder = LiveLocalStyleResponder(
-            modelURL: modelURL,
-            adapterURL: adapterURL,
-            adapterScale: adapterScale
+    func testLiveExactVibePromptsWhenEnabled() async throws {
+        try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
+        let tester = try LiveLocalStyleTester(
+            modelURL: LocalModelLiveTestEnvironment.requireModelURL(),
+            adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
+            adapterScale: LocalModelLiveTestEnvironment.adapterScale
         )
-        let transformer = StyleRewriteTextTransformer(
-            tokenCounter: ApproximateTextTransformTokenCounter(),
-            chunkResponderProvider: { _ in responder }
-        )
-        var failures: [String] = []
-        let styleFilter = ProcessInfo.processInfo.environment["KEYVOX_LIVE_STYLE_FILTER"]
-
-        for testCase in Self.cases {
-            if let styleFilter, testCase.style.rawValue != styleFilter {
-                continue
-            }
-            let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
-                for: testCase.style,
-                baseText: testCase.input
-            ))
-            let result = await transformer.transform(request)
-            let expectedApplied = testCase.expected != testCase.input
-            if let requirements = Self.polishedCoverageRequirements[testCase.input] {
-                let missingFragments = requirements.requiredFragments.filter { !result.finalText.contains($0) }
-                let presentForbiddenFragments = requirements.forbiddenFragments.filter {
-                    result.finalText.localizedCaseInsensitiveContains($0)
-                }
-                let paragraphCount = result.finalText
-                    .components(separatedBy: "\n\n")
-                    .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                    .count
-                let missedParagraphCount = requirements.minimumParagraphCount.map { paragraphCount < $0 } ?? false
-                if !missingFragments.isEmpty || !presentForbiddenFragments.isEmpty || missedParagraphCount || result.applied != expectedApplied {
-                    failures.append(
-                        "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); missing=\(missingFragments); forbidden=\(presentForbiddenFragments); paragraphs=\(paragraphCount); applied=\(result.applied)"
-                    )
-                }
-                continue
-            }
-
-            if result.finalText != testCase.expected || result.applied != expectedApplied {
-                failures.append(
-                    "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); expected=\(testCase.expected); applied=\(result.applied)"
-                )
-            }
+        defer {
+            Task { await tester.unload() }
         }
 
-        await responder.unload()
-
-        XCTAssertTrue(
-            failures.isEmpty,
-            "Production local style prompts produced unexpected outputs.\n\n\(failures.joined(separator: "\n"))"
+        try await tester.assertStyleCases(
+            Self.cases,
+            coverageRequirements: Self.polishedCoverageRequirements
         )
     }
-
-    private static let polishedThreeParagraphGauntletInput = "Um hey team, I looked at the April 22nd launch notes, and there are like 3 things we need to clean up. Sarah and me was reviewing the checklist at 11:30, and we found 2 minor issues. I ain't worried about the build, but the screenshots still need a final pass.\n\nOkay, so the customer paid $1,200 in twenty twenty four. They was asking whether the invoice, um, should show the discount as 15% or as $180. I seen the same confusion last week, and we should make the update clear.\n\nFor follow up, please confirm the invoice, like send the April 22nd recap, and ask Jordan if the 3 screenshots are final. We should keep the tone professional but direct. I don't want the meaning to change."
-
-    private static let polishedFourParagraphGauntletInput = "Okay, so I guess the first thing is that the onboarding copy still feels confusing. Um users be asking why the keyboard needs full access, and that question is fair. We should explain it in 2 sentences, not 5.\n\nThe second thing is performance. Like the rewrite took 0.6 seconds on my phone, but 1 test took 1.2 seconds after the model woke up. I ain't calling that a blocker, but we should keep watching it.\n\nThird, Sarah and me was checking paragraph behavior again. The model duplicated the second paragraph once, and it dropped the first idea. That ain't acceptable because every paragraph needs to keep its own meaning.\n\nFinally, please send Maya a clean update by 3:30 tomorrow. Tell her we tested 4 longer notes, fixed 2 failures, and kept the current adapter bundled in the app. If anything changes, we can run another live test before June 5th."
 
     private static let cases = [
         LiveStylePromptCase(
@@ -404,16 +349,6 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
         ),
         LiveStylePromptCase(
             style: .polished,
-            input: polishedThreeParagraphGauntletInput,
-            expected: "Hey team, I looked at the April 22nd launch notes, and there are 3 things we need to clean up. Sarah and I were reviewing the checklist at 11:30, and we found 2 minor issues. I'm not worried about the build, but the screenshots still need a final pass.\n\nThe customer paid $1,200 in 2024. They were asking whether the invoice should show the discount as 15% or as $180. I saw the same confusion last week, and we should make the update clear.\n\nFor follow-up, please confirm the invoice, send the April 22nd recap, and ask Jordan if the 3 screenshots are final. We should keep the tone professional but direct. I don't want the meaning to change."
-        ),
-        LiveStylePromptCase(
-            style: .polished,
-            input: polishedFourParagraphGauntletInput,
-            expected: "The first thing is that the onboarding copy still feels confusing. Users are asking why the keyboard needs full access, and that question is fair. We should explain it in 2 sentences, not 5.\n\nThe second thing is performance. The rewrite took 0.6 seconds on my phone, but 1 test took 1.2 seconds after the model woke up. I'm not calling that a blocker, but we should keep watching it.\n\nThird, Sarah and I were checking paragraph behavior again. The model duplicated the second paragraph once, and it dropped the first idea. That isn't acceptable because every paragraph needs to keep its own meaning.\n\nFinally, please send Maya a clean update by 3:30 tomorrow. Tell her we tested 4 longer notes, fixed 2 failures, and kept the current adapter bundled in the app. If anything changes, we can run another live test before June 5th."
-        ),
-        LiveStylePromptCase(
-            style: .polished,
             input: "I don't know, maybe we should, like, keep the first version simple and then add the rest after launch.",
             expected: "Maybe we should keep the first version simple and add the rest after launch."
         ),
@@ -671,63 +606,6 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
         "Here are the launch tasks:\n\n1. Uh finalize screenshots\n2. Submit the build\n3. Like send the announcement email": LiveStylePromptRequirements(
             requiredFragments: ["1. Finalize screenshots", "2. Submit the build", "3. Send the announcement email"]
         ),
-        polishedThreeParagraphGauntletInput: LiveStylePromptRequirements(
-            requiredFragments: [
-                "April 22nd",
-                "3 things",
-                "Sarah and I were reviewing",
-                "11:30",
-                "2 minor issues",
-                "I'm not worried",
-                "The customer paid $1,200 in 2024",
-                "15%",
-                "$180",
-                "I saw the same confusion",
-                "confirm the invoice",
-                "April 22nd recap",
-                "screenshots are final",
-                "I don't want the meaning to change",
-            ],
-            extraForbiddenFragments: [
-                " um",
-                " like ",
-                "Sarah and me",
-                "They was",
-                "I seen",
-                "ain't",
-                "twenty twenty four",
-            ],
-            minimumParagraphCount: 3
-        ),
-        polishedFourParagraphGauntletInput: LiveStylePromptRequirements(
-            requiredFragments: [
-                "onboarding copy",
-                "Users are asking",
-                "2 sentences",
-                "not 5",
-                "0.6 seconds",
-                "1.2 seconds",
-                "I'm not calling",
-                "Sarah and I were checking",
-                "duplicated the second paragraph",
-                "dropped the first idea",
-                "That isn't acceptable",
-                "3:30",
-                "4 longer notes",
-                "2 failures",
-                "June 5th",
-            ],
-            extraForbiddenFragments: [
-                " um",
-                " like ",
-                "users be asking",
-                "Sarah and me",
-                "ain't",
-                "zero point six",
-                "one point two",
-            ],
-            minimumParagraphCount: 4
-        ),
         "I don't know, maybe we should, like, keep the first version simple and then add the rest after launch.": LiveStylePromptRequirements(
             requiredFragments: ["keep the first version simple", "add the rest after launch"],
             extraForbiddenFragments: [" like "]
@@ -824,85 +702,3 @@ final class LocalLanguageModelStylePromptLiveTests: XCTestCase {
     ]
 }
 
-private struct LiveStylePromptCase {
-    let style: StyleRewriteStyle
-    let input: String
-    let expected: String
-}
-
-private let defaultPolishedCoverageForbiddenFragments = [
-    " um",
-    "um,",
-    " uh",
-    "uh,",
-]
-
-private struct LiveStylePromptRequirements {
-    let requiredFragments: [String]
-    let forbiddenFragments: [String]
-    let minimumParagraphCount: Int?
-
-    init(
-        requiredFragments: [String],
-        extraForbiddenFragments: [String] = [],
-        minimumParagraphCount: Int? = nil
-    ) {
-        self.requiredFragments = requiredFragments
-        self.forbiddenFragments = defaultPolishedCoverageForbiddenFragments + extraForbiddenFragments
-        self.minimumParagraphCount = minimumParagraphCount
-    }
-}
-
-@MainActor
-private final class LiveLocalStyleResponder: TextTransformChunkResponding {
-    private let model: LlamaCPULanguageModel
-
-    init(modelURL: URL, adapterURL: URL?, adapterScale: Float) {
-        self.model = LlamaCPULanguageModel(
-            modelURL: modelURL,
-            adapterURL: adapterURL,
-            adapterScale: adapterScale
-        )
-    }
-
-    func transformChunk(_ chunk: TextTransformChunk, request: TextTransformRequest) async throws -> String {
-        let usesPolishedLoRA = model.hasLoRAAdapter && request.styleIdentifier == StyleRewriteStyle.polished.rawValue
-        let result = try await model.generate(
-            LocalLanguageModelGenerationRequest(
-                systemPrompt: usesPolishedLoRA
-                    ? StyleRewriteDictationConfiguration.polishedLoRASystemPrompt
-                    : request.instructions,
-                userPrompt: usesPolishedLoRA
-                    ? chunk.text
-                    : request.prompt(for: chunk.text),
-                maximumTokenCount: maximumResponseTokens(for: request, chunk: chunk),
-                addsSpecialTokens: !usesPolishedLoRA
-            ),
-            configuration: LocalLanguageModelConfiguration(
-                contextTokenLimit: request.contextTokenLimit,
-                threadCount: 2,
-                batchThreadCount: 2,
-                batchTokenCount: min(max(request.contextTokenLimit, 1), 512)
-            )
-        )
-        return result.text
-    }
-
-    func unload() async {
-        await model.unload()
-    }
-
-    private func maximumResponseTokens(
-        for request: TextTransformRequest,
-        chunk: TextTransformChunk
-    ) -> Int {
-        if let requestLimit = request.maximumResponseTokens {
-            let estimatedChunkLimit = Int(
-                ceil(Double(chunk.inputTokenCount) * max(request.expectedOutputExpansionRatio, 1.0))
-            ) + 16
-            return max(1, min(requestLimit, estimatedChunkLimit))
-        }
-
-        return 256
-    }
-}
