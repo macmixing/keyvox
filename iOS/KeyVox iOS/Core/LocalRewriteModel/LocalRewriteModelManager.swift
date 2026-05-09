@@ -5,6 +5,8 @@ import KeyVoxVibesAdapters
 
 @MainActor
 final class LocalRewriteModelManager: ObservableObject {
+    private static let downloadProgressPublishInterval: Duration = .milliseconds(50)
+
     typealias DownloadClosure = @Sendable (
         URL,
         @escaping @Sendable (LocalRewriteModelDownloadProgressSnapshot) -> Void
@@ -19,6 +21,8 @@ final class LocalRewriteModelManager: ObservableObject {
     let download: DownloadClosure
     var installTask: Task<Void, Never>?
     var onDidInvalidateInstalledModel: (() -> Void)?
+    private var pendingDownloadProgress: Double?
+    private var downloadProgressPublishTask: Task<Void, Never>?
 
     init(
         fileManager: FileManager = .default,
@@ -108,7 +112,10 @@ final class LocalRewriteModelManager: ObservableObject {
     }
 
     private func performDownloadModel() async {
-        defer { installTask = nil }
+        defer {
+            resetDownloadProgressPublishing()
+            installTask = nil
+        }
 
         do {
             guard let stagingRootURL = stagingRootURL(),
@@ -119,6 +126,7 @@ final class LocalRewriteModelManager: ObservableObject {
                 throw LocalRewriteModelInstallError.appGroupUnavailable
             }
 
+            resetDownloadProgressPublishing()
             setState(.downloading(progress: 0))
             try prepareCleanDirectory(stagingRootURL)
             let temporaryURL = try await download(descriptor.artifact.remoteURL) { [weak self] snapshot in
@@ -127,10 +135,11 @@ final class LocalRewriteModelManager: ObservableObject {
                         snapshot: snapshot,
                         fallbackExpectedBytes: self?.descriptor.artifact.progressTotalBytes ?? 1
                     )
-                    self?.setState(.downloading(progress: min(max(progress, 0), 0.92)))
+                    self?.publishDownloadProgress(progress)
                 }
             }
 
+            flushDownloadProgress()
             setState(.installing(progress: 0.93))
             try fileManager.createDirectory(
                 at: stagingArtifactURL.deletingLastPathComponent(),
@@ -198,6 +207,37 @@ final class LocalRewriteModelManager: ObservableObject {
 
     private func setFailure(_ message: String) {
         setState(.failed(message: message))
+    }
+
+    private func publishDownloadProgress(_ progress: Double) {
+        pendingDownloadProgress = min(max(progress, 0), 0.92)
+
+        guard downloadProgressPublishTask == nil else { return }
+        downloadProgressPublishTask = Task { @MainActor [weak self] in
+            while let self, let progress = self.pendingDownloadProgress {
+                self.pendingDownloadProgress = nil
+                self.setState(.downloading(progress: progress))
+                try? await Task.sleep(for: Self.downloadProgressPublishInterval)
+            }
+
+            self?.downloadProgressPublishTask = nil
+        }
+    }
+
+    private func flushDownloadProgress() {
+        if let pendingDownloadProgress {
+            self.pendingDownloadProgress = nil
+            setState(.downloading(progress: pendingDownloadProgress))
+        }
+
+        downloadProgressPublishTask?.cancel()
+        downloadProgressPublishTask = nil
+    }
+
+    private func resetDownloadProgressPublishing() {
+        pendingDownloadProgress = nil
+        downloadProgressPublishTask?.cancel()
+        downloadProgressPublishTask = nil
     }
 
     private func prepareCleanDirectory(_ url: URL) throws {
