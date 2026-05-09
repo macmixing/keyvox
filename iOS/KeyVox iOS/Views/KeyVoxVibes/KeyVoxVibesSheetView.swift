@@ -26,6 +26,8 @@ struct KeyVoxVibesSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject private var localRewriteModelManager: LocalRewriteModelManager
+    @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State private var selectedScene = Scene.a
     @State private var buttonOpacity: Double = 0
     @State private var tabViewOpacity: Double = 0
@@ -100,6 +102,7 @@ struct KeyVoxVibesSheetView: View {
                 }
             }
             .navigationTitle("")
+            .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         }
         .interactiveDismissDisabled()
         .onAppear {
@@ -123,12 +126,15 @@ struct KeyVoxVibesSheetView: View {
         case .intro(_, let onTryNow, _):
             VStack(spacing: 8) {
                 AppActionButton(
-                    title: "Try Now",
+                    title: introActionTitle,
                     style: .primary,
                     fillsWidth: true,
                     size: .compact,
                     fontSize: 22,
-                    action: onTryNow
+                    isEnabled: isIntroActionEnabled,
+                    action: {
+                        handleIntroAction(onTryNow: onTryNow)
+                    }
                 )
             }
             .padding(.horizontal, 20)
@@ -173,6 +179,53 @@ struct KeyVoxVibesSheetView: View {
         return "Unlock"
     }
 
+    private var isVibesAIReady: Bool {
+        localRewriteModelManager.isModelReady()
+    }
+
+    private var introActionTitle: String {
+        guard isVibesAIReady == false else {
+            return "Try Now"
+        }
+
+        switch selectedScene {
+        case .a:
+            return "Get Started"
+        case .b:
+            return "Next"
+        case .c, .unlock:
+            return "Try Now"
+        }
+    }
+
+    private var isIntroActionEnabled: Bool {
+        isVibesAIReady || selectedScene != .c
+    }
+
+    private func handleIntroAction(onTryNow: () -> Void) {
+        guard isVibesAIReady == false else {
+            onTryNow()
+            return
+        }
+
+        switch selectedScene {
+        case .a:
+            advanceIntro(to: .b)
+        case .b:
+            advanceIntro(to: .c)
+        case .c, .unlock:
+            break
+        }
+    }
+
+    private func advanceIntro(to scene: Scene) {
+        guard displayedScenes.contains(scene) else { return }
+        appHaptics.light()
+        withAnimation(.easeInOut(duration: 0.22)) {
+            selectedScene = scene
+        }
+    }
+
     @ViewBuilder
     private func sceneView(for scene: Scene) -> some View {
         switch scene {
@@ -181,7 +234,10 @@ struct KeyVoxVibesSheetView: View {
         case .b:
             KeyVoxVibesSceneBView(isVisible: selectedScene == .b)
         case .c:
-            KeyVoxVibesSceneCView(isVisible: selectedScene == .c)
+            KeyVoxVibesSceneCView(
+                isVisible: selectedScene == .c,
+                onDownloadRequested: { pendingDownloadConfirmation = $0 }
+            )
         case .unlock:
             KeyVoxVibesUnlockScene(isVisible: selectedScene == .unlock)
         }
@@ -200,6 +256,15 @@ struct KeyVoxVibesSheetView: View {
         appHaptics.light()
         Task {
             await vibesPurchaseController.restorePurchases()
+        }
+    }
+
+    private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
+        switch confirmation {
+        case .keyVoxVibesAI:
+            localRewriteModelManager.downloadModel()
+        case .dictationModel, .sharedTTSModel, .ttsVoice, .ttsVoiceWithSharedModel:
+            break
         }
     }
 
