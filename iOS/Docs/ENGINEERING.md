@@ -1058,6 +1058,7 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - `canUseVibes` is true only while the lifetime unlock is owned or the local trial is active
 - trial expiration immediately resolves selected Vibe to `None`
 - unlock state, trial start date, intro state, and interacted state are app-local defaults, not iCloud-synced settings
+- model-recovery presentation differs by access state: an active trial with missing Vibes AI opens Scene C directly with the install card and remaining-trial context, while an unlocked user with missing Vibes AI opens the unlock scene directly with a model-gated continue CTA
 
 `KeyVoxVibesIntroController` owns cold-launch intro scheduling.
 
@@ -1072,11 +1073,20 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - when Vibes AI is installed, each intro scene shows `Try Now` and starts the local trial as before
 - when Vibes AI is missing, scene A advances with `Get Started`, scene B advances with `Next`, and scene C keeps `Try Now` disabled until install readiness arrives
 - Scene C owns the inline Vibes AI install card and routes user-started downloads through the sheet-level confirmation overlay
-- unlock mode shows the usage refresher scene and the unlock scene with a dynamic App Store price button
+- active-trial missing-model recovery starts on Scene C and swaps the first detail subtitle to the same remaining-trial semantic used by the Style tab card
+- unlock mode normally shows the usage refresher scene and the unlock scene with a dynamic App Store price button
+- direct unlock-scene recovery is reserved for missing-model paths that should skip the refresher page: expired trials without the model still purchase from the unlock scene, while already-unlocked users get a `Continue` CTA that stays disabled until Vibes AI is ready
 - per-sheet restore checks the Vibes entitlement
 
 Settings restore is shared across KeyVox Speak and KeyVox Vibes.
 The restore card remains visible until both lifetime unlocks are owned.
+
+`KeyVoxVibesAccessMatrix` is the semantic source of truth for the Style tab Vibes card.
+
+- inputs are Vibes access state, local Vibes AI install state, and the selected Vibe
+- outputs are main-card content, visible card control, card action, destination start, destination dynamic text class, and destination CTA class
+- tests assert the matrix semantics instead of raw UI copy so copy edits do not break behavior coverage
+- the Style tab maps the matrix output back to user-facing copy and controller calls
 
 ### KeyVox Vibes AI Settings Surface
 

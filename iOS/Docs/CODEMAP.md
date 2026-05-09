@@ -86,6 +86,7 @@ iOS/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
 │   │   ├── KeyVoxVibes/
+│   │   │   ├── KeyVoxVibesAccessMatrix.swift
 │   │   │   ├── KeyVoxVibesIntroController.swift
 │   │   │   └── KeyVoxVibesPurchaseController.swift
 │   │   ├── Lifecycle/
@@ -530,6 +531,9 @@ Packages/
 - `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesIntroController.swift`
   - App-owned cold-launch intro owner for the KeyVox Vibes presentation flow.
   - Mirrors the KeyVox Speak deferred-launch pattern, refuses to present over onboarding, return-to-host, or recording launches, and can reserve a usage-only scene path for future help entry points.
+- `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesAccessMatrix.swift`
+  - Semantic access/model-state matrix for the Style tab Vibes card.
+  - Resolves access state plus local Vibes AI availability into card content, visible control, card action, destination start scene, dynamic text class, and destination CTA without coupling tests to display copy.
 - `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesPurchaseController.swift`
   - App-owned lifetime unlock and local 24-hour trial owner for KeyVox Vibes.
   - Loads the Vibes StoreKit non-consumable product, owns purchase and restore flows, caches unlock state, records the local trial start date, exposes `canUseVibes`, and forces selected Vibe back to `None` when access expires.
@@ -803,16 +807,17 @@ Packages/
   - Dedicated feature folder for the shared KeyVox Vibes presentation surface.
   - `KeyVoxVibesSheetView.swift` owns the shared pager shell, intro/unlock/info mode selection, bottom CTA area, model-availability CTA rules, sheet-level Vibes AI download confirmation, unlock action, restore action, and close behavior.
   - `KeyVoxVibesSceneAView.swift`, `KeyVoxVibesSceneBView.swift`, and `KeyVoxVibesSceneCView.swift` own the swipeable intro pages for what Vibes is, what it does, and how the local trial starts.
-  - `KeyVoxVibesSceneCView.swift` also owns the compact Vibes AI install card shown when the local model is missing, including progress/error presentation, confirmed download requests, repair action, and graceful collapse when install readiness arrives.
+  - `KeyVoxVibesSceneCView.swift` also owns the compact Vibes AI install card shown when the local model is missing, including progress/error presentation, confirmed download requests, repair action, graceful collapse when install readiness arrives, and the active-trial recovery subtitle variant.
   - `KeyVoxVibesUnlockScene.swift` owns the lifetime-unlock scene, including active-trial remaining-time copy.
   - `KeyVoxVibesIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
-  - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points.
+  - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points, including direct unlock-scene recovery and model-gated continue behavior when an unlocked user is missing Vibes AI.
 - `KeyVox iOS/Views/DictionaryTabView/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around the shared `AutoFocusTextField`, feature-local sort state, and the app-owned `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
   - Style tab composition for Lists, Paragraphs, and the KeyVox Vibes section.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - KeyVox Vibes card, style picker, selected style summary, style description, examples, and purchase row.
+  - Consumes `KeyVoxVibesAccessMatrix` so main-card content, CTA visibility, card actions, recovery destinations, and dynamic trial/unlock text stay centralized and testable without string assertions.
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.

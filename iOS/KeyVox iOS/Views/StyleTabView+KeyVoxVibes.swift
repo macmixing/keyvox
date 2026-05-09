@@ -230,7 +230,7 @@ extension StyleTabView {
     }
 
     private var displayedSelectedVibe: StyleRewriteStyle {
-        keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled ? settingsStore.selectedVibe : .none
+        keyVoxVibesMatrix.displayedSelectedVibe
     }
 
     private var isVibesAIInstalled: Bool {
@@ -238,43 +238,37 @@ extension StyleTabView {
     }
 
     private var shouldShowVibeSelector: Bool {
-        keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled
+        keyVoxVibesMatrix.showsVibeSelector
     }
 
     private var keyVoxVibesStatusText: String? {
-        if keyVoxVibesPurchaseController.isTrialActive && isVibesAIInstalled {
+        if keyVoxVibesMatrix.dynamicText == .mainCardTrialRemaining {
             return "You’re using Vibes for a day, you have \(keyVoxVibesPurchaseController.trialRemainingText) left."
         }
 
-        if shouldShowVibeSelector {
+        switch keyVoxVibesMatrix.mainCardContent {
+        case .downloadRequired:
+            return "Download Vibes AI to use your Vibes."
+        case .unlockOffer:
+            return "Unlock and get Vibes for life."
+        case .trialOffer:
+            return "Try out KeyVox Vibes for 24 hours."
+        case .selectedVibe:
             return nil
         }
-
-        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
-            return "Download Vibes AI to use your Vibes."
-        }
-
-        if keyVoxVibesPurchaseController.hasTrialEnded {
-            return "Unlock and get Vibes for life."
-        }
-
-        return "Try out KeyVox Vibes for 24 hours."
     }
 
     private var keyVoxVibesActionTitle: String? {
-        if shouldShowVibeSelector {
+        switch keyVoxVibesMatrix.cardControl {
+        case .change:
             return nil
-        }
-
-        if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+        case .download:
             return "Download"
-        }
-
-        if keyVoxVibesPurchaseController.hasTrialStarted {
+        case .unlock:
             return "Unlock"
+        case .tryNow:
+            return "Try Now"
         }
-
-        return "Try Now"
     }
 
     private var isKeyVoxVibesActionEnabled: Bool {
@@ -310,19 +304,34 @@ extension StyleTabView {
     private func handleKeyVoxVibesCardAction() {
         appHaptics.light()
 
-        if keyVoxVibesPurchaseController.hasTrialEnded && isVibesAIInstalled == false {
+        switch keyVoxVibesMatrix.cardAction {
+        case .openUnlockScene:
             keyVoxVibesPurchaseController.presentUnlockSheet(initialScene: .unlock)
-        } else if keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled == false {
+        case .openSceneCRecovery, .openUnlockedModelRecovery:
             keyVoxVibesPurchaseController.presentModelRecoverySheet()
-        } else if keyVoxVibesPurchaseController.hasTrialStarted {
+        case .openUnlockFlow:
             keyVoxVibesPurchaseController.presentUnlockSheet()
-        } else {
+        case .openIntroFlow:
             keyVoxVibesPurchaseController.presentIntroSheet()
+        case .openVibeSelector:
+            break
         }
     }
 
     private func handleVibesHelpAction() {
         appHaptics.light()
         keyVoxVibesPurchaseController.presentHelpSheet()
+    }
+
+    private var keyVoxVibesMatrix: KeyVoxVibesAccessMatrix {
+        KeyVoxVibesAccessMatrix.resolve(
+            accessState: KeyVoxVibesAccessMatrix.accessState(
+                isVibesUnlocked: keyVoxVibesPurchaseController.isVibesUnlocked,
+                hasTrialStarted: keyVoxVibesPurchaseController.hasTrialStarted,
+                isTrialActive: keyVoxVibesPurchaseController.isTrialActive
+            ),
+            modelState: KeyVoxVibesAccessMatrix.modelState(isVibesAIInstalled: isVibesAIInstalled),
+            selectedVibe: settingsStore.selectedVibe
+        )
     }
 }
