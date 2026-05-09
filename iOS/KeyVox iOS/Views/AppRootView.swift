@@ -227,6 +227,7 @@ struct AppRootView: View {
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesIntroController)
         .environmentObject(AppServiceRegistry.shared.appUpdateCoordinator)
         .environmentObject(AppServiceRegistry.shared.modelManager)
+        .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)

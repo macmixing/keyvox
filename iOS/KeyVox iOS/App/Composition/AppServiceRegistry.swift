@@ -2,6 +2,7 @@ import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
+import KeyVoxLocalInference
 import KeyVoxStyleRewrite
 
 @MainActor
@@ -24,6 +25,7 @@ final class AppServiceRegistry {
     let activeProviderRouter: SwitchableDictationProvider
     let ttsManager: TTSManager
     let pocketTTSModelManager: PocketTTSModelManager
+    let localRewriteModelManager: LocalRewriteModelManager
     let styleRewritePipelineCoordinator: StyleRewritePipelineCoordinator
     let audioModeCoordinator: AudioModeCoordinator
     let modelManager: ModelManager
@@ -93,8 +95,7 @@ final class AppServiceRegistry {
         settingsStoreReference = settingsStore
         let keyVoxVibesIntroController = KeyVoxVibesIntroController(
             defaults: settingsDefaults,
-            forcePresentation: runtimeFlags.forceKeyVoxVibesIntro,
-            isFoundationRewriteAvailable: { FoundationStyleRewriteAvailability.isAvailable }
+            forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
@@ -116,14 +117,32 @@ final class AppServiceRegistry {
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
+        let localRewriteModelManager = LocalRewriteModelManager(fileManager: fileManager)
+        let localRewriteInferenceService = LocalRewriteInferenceService(
+            modelURLProvider: { [weak localRewriteModelManager] in
+                localRewriteModelManager?.installedModelURL()
+            },
+            adapterURLProvider: { [weak localRewriteModelManager] adapter in
+                switch adapter {
+                case .polished:
+                    return localRewriteModelManager?.polishedLoRAURL()
+                case .casual:
+                    return localRewriteModelManager?.casualLoRAURL()
+                }
+            }
+        )
+        let localStyleRewriteTextTransformer = LocalStyleRewriteTextTransformer(
+            inferenceService: localRewriteInferenceService
+        )
         let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
             selectedStyleProvider: {
                 AppSettingsStore.resolvedSelectedVibe(
                     from: settingsDefaults,
-                    canUseVibes: keyVoxVibesPurchaseController.canUseVibes
+                    canUseVibes: keyVoxVibesPurchaseController.canUseVibes && localRewriteModelManager.isModelReady()
                 )
             },
-            artifactStore: styleRewriteArtifactStore
+            artifactStore: styleRewriteArtifactStore,
+            textTransformer: localStyleRewriteTextTransformer
         )
         var ttsManagerRef: TTSManager?
         let recorder = AudioRecorder(
@@ -234,6 +253,11 @@ final class AppServiceRegistry {
                 ttsManager?.unloadRuntimeImmediately(reason: .assetInvalidated)
             }
         }
+        localRewriteModelManager.onDidInvalidateInstalledModel = { [weak localRewriteInferenceService] in
+            Task { @MainActor [weak localRewriteInferenceService] in
+                await localRewriteInferenceService?.unload()
+            }
+        }
         let audioModeCoordinator = AudioModeCoordinator(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
@@ -273,6 +297,11 @@ final class AppServiceRegistry {
         }
         keyboardBridge.onDisableSessionCommand = {
             transcriptionManager.handleDisableSessionCommand()
+        }
+        keyboardBridge.onStyleRewriteRequestCommand = {
+            Task { @MainActor in
+                await styleRewritePipelineCoordinator.handleKeyboardStyleRewriteRequest()
+            }
         }
         keyboardBridge.onStartTTSCommand = {
             audioModeCoordinator.handleStartTTSFromPendingRequest()
@@ -314,6 +343,7 @@ final class AppServiceRegistry {
         self.activeProviderRouter = activeProviderRouter
         self.ttsManager = ttsManager
         self.pocketTTSModelManager = pocketTTSModelManager
+        self.localRewriteModelManager = localRewriteModelManager
         self.styleRewritePipelineCoordinator = styleRewritePipelineCoordinator
         self.audioModeCoordinator = audioModeCoordinator
         self.modelManager = modelManager

@@ -18,6 +18,11 @@ final class KeyboardDictationChangeController {
         let style: StyleRewriteStyle
     }
 
+    private enum DisplaySource {
+        case selectedPreference
+        case activeInsertion
+    }
+
     private struct Session {
         var sourceText: String
         var originalText: String
@@ -34,11 +39,38 @@ final class KeyboardDictationChangeController {
 
     private let textInputController: KeyboardTextInputController
     private let artifactStore: KeyboardDictationChangeArtifactStore
-    private let textTransformer = FoundationStyleRewriteTextTransformer()
+    private let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
     private let appSettingsStore: KeyboardAppSettingsStore
 
     private var activeSession: Session?
     private var isApplyingChange = false
+    private var displaySource: DisplaySource = .selectedPreference
+
+    var displayedVibeTitle: String {
+        displayedVibeStyle.displayName
+    }
+
+    var displayedVibeStyle: StyleRewriteStyle {
+        switch displaySource {
+        case .selectedPreference:
+            return appSettingsStore.selectedVibe
+        case .activeInsertion:
+            return activeSession?.currentStyle ?? appSettingsStore.selectedVibe
+        }
+    }
+
+    var isDisplayedVibeAppliedToCurrentInsertion: Bool {
+        guard let activeSession else {
+            return false
+        }
+
+        let currentDisplayedStyle = displayedVibeStyle
+        return currentDisplayedStyle == activeSession.currentStyle
+            && textInputController.currentTextMatchesUntouchedInsertion(
+                activeSession.currentText,
+                documentContextBeforeInsertion: activeSession.documentContextBeforeInput
+            )
+    }
 
     init(
         textInputController: KeyboardTextInputController,
@@ -51,6 +83,8 @@ final class KeyboardDictationChangeController {
     }
 
     func recordInsertedDictation(_ insertion: KeyboardTextInsertionResult) {
+        displaySource = .selectedPreference
+
         guard let artifact = artifactStore.latestArtifact() else {
             activeSession = Session(
                 sourceText: insertion.sourceText,
@@ -147,7 +181,7 @@ final class KeyboardDictationChangeController {
             session.currentText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
-            activeSession = nil
+            invalidateActiveSession()
             return false
         }
 
@@ -166,7 +200,7 @@ final class KeyboardDictationChangeController {
             with: replacementText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
-            activeSession = nil
+            invalidateActiveSession()
             return false
         }
 
@@ -175,7 +209,12 @@ final class KeyboardDictationChangeController {
         session.currentStyle = targetStyle
         cacheRenderedText(replacementText, style: targetStyle, session: &session)
         activeSession = session
+        displaySource = .activeInsertion
         return true
+    }
+
+    func showSelectedVibePreference() {
+        displaySource = .selectedPreference
     }
 
     func applyDeterministicLongPressChange(
@@ -199,7 +238,7 @@ final class KeyboardDictationChangeController {
             session.currentText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
-            activeSession = nil
+            invalidateActiveSession()
             return false
         }
 
@@ -225,7 +264,7 @@ final class KeyboardDictationChangeController {
                 with: renderedText,
                 documentContextBeforeInsertion: session.documentContextBeforeInput
             ) else {
-                activeSession = nil
+                invalidateActiveSession()
                 return false
             }
         }
@@ -251,6 +290,10 @@ final class KeyboardDictationChangeController {
         }
 
         return selectedStyle
+    }
+
+    private func invalidateActiveSession() {
+        activeSession = nil
     }
 
     private func targetDeterministicState(

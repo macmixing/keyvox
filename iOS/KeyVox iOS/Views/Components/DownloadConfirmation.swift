@@ -2,6 +2,7 @@ import SwiftUI
 
 enum PendingDownloadConfirmation: Identifiable, Equatable {
     case dictationModel(DictationModelID)
+    case keyVoxVibesAI
     case sharedTTSModel
     case ttsVoice(AppSettingsStore.TTSVoice)
     case ttsVoiceWithSharedModel(AppSettingsStore.TTSVoice)
@@ -10,6 +11,8 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
         switch self {
         case .dictationModel(let modelID):
             return "dictation-\(modelID.rawValue)"
+        case .keyVoxVibesAI:
+            return "keyvox-vibes-ai"
         case .sharedTTSModel:
             return "tts-shared"
         case .ttsVoice(let voice):
@@ -28,6 +31,8 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
             case .parakeetTdtV3:
                 return "Download Parakeet v3?"
             }
+        case .keyVoxVibesAI:
+            return "Download KeyVox Vibes AI?"
         case .sharedTTSModel:
             return "Download Speak Engine?"
         case .ttsVoice(let voice):
@@ -46,6 +51,8 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
             case .parakeetTdtV3:
                 return "Download the Parakeet v3 dictation model (~480 MB) for faster on-device dictation on this device?"
             }
+        case .keyVoxVibesAI:
+            return "Download KeyVox Vibes AI (~491 MB) to use KeyVox Vibes on this device?"
         case .sharedTTSModel:
             return "Download the KeyVox Speak engine (~642 MB) to speak copied text on this device?"
         case .ttsVoice(let voice):

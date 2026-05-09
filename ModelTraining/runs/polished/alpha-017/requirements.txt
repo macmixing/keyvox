@@ -1,0 +1,3 @@
+mlx-lm[train]
+huggingface_hub
+

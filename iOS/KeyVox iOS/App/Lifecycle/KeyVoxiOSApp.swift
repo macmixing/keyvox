@@ -16,6 +16,7 @@ struct KeyVoxApp: App {
     @StateObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @StateObject private var ttsPreviewPlayer: TTSPreviewPlayer
     @StateObject private var pocketTTSModelManager: PocketTTSModelManager
+    @StateObject private var localRewriteModelManager: LocalRewriteModelManager
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
@@ -38,6 +39,7 @@ struct KeyVoxApp: App {
         _keyVoxVibesIntroController = StateObject(wrappedValue: services.keyVoxVibesIntroController)
         _ttsPreviewPlayer = StateObject(wrappedValue: services.ttsPreviewPlayer)
         _pocketTTSModelManager = StateObject(wrappedValue: services.pocketTTSModelManager)
+        _localRewriteModelManager = StateObject(wrappedValue: services.localRewriteModelManager)
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
@@ -81,6 +83,7 @@ struct KeyVoxApp: App {
                 .environmentObject(keyVoxVibesIntroController)
                 .environmentObject(ttsPreviewPlayer)
                 .environmentObject(pocketTTSModelManager)
+                .environmentObject(localRewriteModelManager)
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)

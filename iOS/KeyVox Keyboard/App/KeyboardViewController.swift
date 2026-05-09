@@ -13,6 +13,7 @@ final class KeyboardViewController: UIInputViewController {
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
+    let openVibesTrialStartURL = URL(string: "keyvoxios://vibes/trial-start")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
@@ -141,6 +142,16 @@ final class KeyboardViewController: UIInputViewController {
         KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
     }
 
+    override func textDidChange(_ textInput: UITextInput?) {
+        super.textDidChange(textInput)
+        updateVibesAppliedVisualState()
+    }
+
+    override func selectionDidChange(_ textInput: UITextInput?) {
+        super.selectionDidChange(textInput)
+        updateVibesAppliedVisualState()
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         guard extensionHostIsActive else { return }
@@ -212,8 +223,9 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
-            selectedVibeTitle: appSettingsStore.selectedVibeTitle,
-            selectedVibeStyle: appSettingsStore.selectedVibeStyle,
+            displayedVibeTitle: dictationChangeController.displayedVibeTitle,
+            displayedVibeStyle: dictationChangeController.displayedVibeStyle,
+            isDisplayedVibeApplied: dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion,
             isVibesAvailable: appSettingsStore.isVibesAvailable,
             isAutoParagraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
             isListFormattingEnabled: appSettingsStore.isListFormattingEnabled,
@@ -323,6 +335,14 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleVibesTap() {
         guard appSettingsStore.isVibesAvailable else { return }
+        guard appSettingsStore.isVibesAIInstalled else {
+            _ = appSettingsStore.advanceSelectedVibe()
+            interactionHaptics.emitMediumIfEnabled()
+            containingAppLauncher.open(openVibesTrialStartURL)
+            updateUI()
+            return
+        }
+
         guard appSettingsStore.canUseVibes else {
             interactionHaptics.emitMediumIfEnabled()
             containingAppLauncher.open(openVibesURL)
@@ -330,6 +350,7 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         _ = appSettingsStore.advanceSelectedVibe()
+        dictationChangeController.showSelectedVibePreference()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
     }
@@ -367,6 +388,7 @@ final class KeyboardViewController: UIInputViewController {
             guard let self else { return }
             let didApply = await self.dictationChangeController.applyLongPressChange(
                 onProcessingStart: { [weak self] in
+                    self?.interactionHaptics.emitMediumIfEnabled()
                     self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
@@ -378,6 +400,7 @@ final class KeyboardViewController: UIInputViewController {
                 }
             )
             if didApply {
+                self.updateUI()
                 self.interactionHaptics.emitSuccessIfEnabled()
             } else {
                 self.interactionHaptics.emitMediumIfEnabled()
@@ -444,7 +467,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @discardableResult
     func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
-        textInputController.handleKeyActivation(
+        let didHandle = textInputController.handleKeyActivation(
             kind,
             symbolPage: &symbolPage,
             resetCapsLockStateIfNeeded: { [weak self] in
@@ -454,6 +477,10 @@ final class KeyboardViewController: UIInputViewController {
                 self?.advanceToNextInputMode()
             }
         )
+        if didHandle {
+            updateVibesAppliedVisualState()
+        }
+        return didHandle
     }
 
     func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
@@ -469,6 +496,7 @@ final class KeyboardViewController: UIInputViewController {
                     self?.textInputController.adjustCursorPosition(by: offset)
                 }
             )
+            updateVibesAppliedVisualState()
         case .ended, .cancelled:
             isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
@@ -493,6 +521,12 @@ final class KeyboardViewController: UIInputViewController {
 
         dictationChangeController.recordInsertedDictation(insertion)
         emitDelayedTranscriptionLandingHapticIfNeeded()
+    }
+
+    private func updateVibesAppliedVisualState() {
+        rootContainerView?.vibesButton.title = dictationChangeController.displayedVibeTitle
+        rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
+        rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
     }
 
     private func updateTranscriptionLandingHapticStart(previousState: KeyboardState) {

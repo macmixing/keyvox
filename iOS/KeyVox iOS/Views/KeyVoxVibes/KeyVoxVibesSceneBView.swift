@@ -12,7 +12,7 @@ struct KeyVoxVibesSceneBView: View {
         Flow(id: 0, icon: "keyboard.fill", title: "Choose Before Dictation", subtitle: "Tap the Vibes key before you stop recording and KeyVox applies that Vibe."),
         Flow(id: 1, icon: "hand.tap.fill", title: "Long Press to Vibe", subtitle: "Change the latest untouched dictation in the text box."),
         Flow(id: 2, icon: "arrow.uturn.backward.circle.fill", title: "Undo the Last Change", subtitle: "Long press again to return to the previous Vibe."),
-        Flow(id: 3, icon: "lock.fill", title: "Local First", subtitle: "Text stays on device and uses the same keyboard flow you already know.")
+        Flow(id: 3, icon: "lock.fill", title: "Local First", subtitle: "Vibes AI doesn't rely on the cloud. Your words stay on your device.")
     ]
 
     let isVisible: Bool
@@ -60,13 +60,6 @@ struct KeyVoxVibesSceneBView: View {
                                 .offset(y: flow.id < rowRevealProgress ? 0 : 10)
                         }
                     }
-
-                    Text("Built with Apple Intelligence.")
-                        .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.yellow.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 14)
-                        .opacity(disclosureOpacity)
 
                     Spacer(minLength: 48)
                 }

@@ -18,9 +18,15 @@ final class KeyboardVibesButton: UIControl {
         }
     }
 
-    var selectedVibeStyle: StyleRewriteStyle = .none {
+    var displayedVibeStyle: StyleRewriteStyle = .none {
         didSet {
             updateNoneIconVisibility()
+            updateVisualState(animated: false)
+        }
+    }
+
+    var isDisplayedVibeApplied = true {
+        didSet {
             updateVisualState(animated: false)
         }
     }
@@ -187,7 +193,7 @@ final class KeyboardVibesButton: UIControl {
     }
 
     private func updateNoneIconVisibility() {
-        noneIconImageView.isHidden = selectedVibeStyle != .none
+        noneIconImageView.isHidden = displayedVibeStyle != .none
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
@@ -223,6 +229,6 @@ final class KeyboardVibesButton: UIControl {
     }
 
     private var isShowingSelectedVibe: Bool {
-        selectedVibeStyle != .none
+        isDisplayedVibeApplied
     }
 }

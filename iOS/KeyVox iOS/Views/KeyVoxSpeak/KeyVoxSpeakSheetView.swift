@@ -225,7 +225,7 @@ struct KeyVoxSpeakSheetView: View {
 
     private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
         switch confirmation {
-        case .dictationModel:
+        case .dictationModel, .keyVoxVibesAI:
             break
         case .sharedTTSModel:
             pocketTTSModelManager.downloadSharedModel()

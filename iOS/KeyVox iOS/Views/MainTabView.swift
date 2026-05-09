@@ -15,6 +15,7 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
@@ -93,7 +94,10 @@ struct MainTabView: View {
                     )
                 )
                     .environmentObject(keyVoxVibesPurchaseController)
-            case .unlock, .none:
+            case .unlock(let initialScene, let primaryAction):
+                KeyVoxVibesUnlockSheetView(initialScene: initialScene, primaryAction: primaryAction)
+                    .environmentObject(keyVoxVibesPurchaseController)
+            case .none:
                 KeyVoxVibesUnlockSheetView()
                     .environmentObject(keyVoxVibesPurchaseController)
             }
@@ -187,6 +191,8 @@ struct MainTabView: View {
         switch confirmation {
         case .dictationModel(let modelID):
             modelManager.deleteModel(withID: modelID)
+        case .keyVoxVibesAI:
+            localRewriteModelManager.deleteModel()
         case .sharedTTSModel:
             pocketTTSModelManager.deleteSharedModel()
         case .ttsVoice(let voice):
@@ -198,6 +204,8 @@ struct MainTabView: View {
         switch confirmation {
         case .dictationModel(let modelID):
             modelManager.downloadModel(withID: modelID)
+        case .keyVoxVibesAI:
+            localRewriteModelManager.downloadModel()
         case .sharedTTSModel:
             pocketTTSModelManager.downloadSharedModel()
         case .ttsVoice(let voice):
@@ -224,6 +232,7 @@ struct MainTabView: View {
         .environmentObject(AppServiceRegistry.shared.transcriptionManager)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.appTabRouter)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)

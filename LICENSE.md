@@ -35,6 +35,9 @@ Notable third-party items include:
 - OpenAI Whisper code/model weights (MIT)
 - NVIDIA `parakeet-tdt-0.6b-v3` model artifacts downloaded by the app (CC BY 4.0), using Apple-platform Core ML artifacts distributed via FluidInference
 - Kyutai `pocket-tts` model artifacts, voice prompts, and tokenizer model downloaded by the app for PocketTTS playback (CC BY 4.0), using Apple-platform Core ML artifacts distributed via FluidInference
+- `llama.cpp` / ggml local inference runtime (MIT)
+- Qwen `Qwen2.5-0.5B-Instruct` model artifact downloaded by the app for local Vibes rewrite inference (Apache License 2.0)
+- KeyVox-trained Vibes LoRA adapter artifacts bundled in `Packages/KeyVoxVibesAdapters`; these are product-specific model adapter assets for Qwen-based local Vibes rewriting and are excluded from this repository's MIT source-code license
 - Pronunciation data derived from CMUdict (BSD-2-Clause style notice/disclaimer)
 - Pronunciation data derived from SCOWL (custom permissive notice text)
 - Kanit font (`OFL-1.1`)
@@ -69,6 +72,9 @@ The following files and assets are **NOT licensed under the MIT License** and re
 
 4. `macOS/Resources/logo.png`  
    The standalone KeyVox logo artwork used in repository branding.
+
+5. `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/`
+   The KeyVox-trained Vibes LoRA adapter artifacts, including bundled Polished and Casual adapters. These model adapter assets are product-specific KeyVox artifacts and are not MIT-licensed source code.
 
 These visual elements represent the unique brand identity of KeyVox and are reserved for current and future commercial use.
 

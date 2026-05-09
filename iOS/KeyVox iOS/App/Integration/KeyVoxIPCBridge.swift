@@ -23,6 +23,22 @@ enum KeyVoxTTSState: String, Codable, Equatable {
     case error
 }
 
+struct KeyVoxStyleRewriteIPCRequest: Codable, Equatable {
+    let id: UUID
+    let styleIdentifier: String
+    let baseText: String
+    let createdAt: Date
+}
+
+struct KeyVoxStyleRewriteIPCResponse: Codable, Equatable {
+    let id: UUID
+    let text: String?
+    let duration: TimeInterval
+    let applied: Bool
+    let chunkCount: Int
+    let errorMessage: String?
+}
+
 enum KeyVoxIPCBridge {
     static let appGroupID = "group.com.cueit.keyvox"
     static let keyboardBundleIdentifier = "com.cueit.keyvox.ios.keyboard"
@@ -46,6 +62,8 @@ enum KeyVoxIPCBridge {
         static let appUpdateRequired = "appUpdateRequired"
         static let pendingURLRoute = "pendingURLRoute"
         static let latestDictationArtifactData = "KeyVox.StyleRewrite.LatestDictationArtifactData"
+        static let pendingStyleRewriteRequestData = "KeyVox.StyleRewrite.PendingRequestData"
+        static let pendingStyleRewriteResponseData = "KeyVox.StyleRewrite.PendingResponseData"
     }
 
     private enum LiveMeterPacket {
@@ -79,6 +97,7 @@ enum KeyVoxIPCBridge {
         static let vibeSelectionChanged = "com.cueit.keyvox.vibeSelectionChanged"
         static let listFormattingChanged = "com.cueit.keyvox.listFormattingChanged"
         static let autoParagraphsChanged = "com.cueit.keyvox.autoParagraphsChanged"
+        static let styleRewriteRequested = "com.cueit.keyvox.styleRewriteRequested"
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
@@ -208,6 +227,40 @@ enum KeyVoxIPCBridge {
     static func clearTTSRequest(fileManager: FileManager = .default) {
         guard let requestURL = ttsRequestURL(fileManager: fileManager) else { return }
         try? fileManager.removeItem(at: requestURL)
+    }
+
+    static func writeStyleRewriteRequest(_ request: KeyVoxStyleRewriteIPCRequest) {
+        guard let data = try? JSONEncoder().encode(request) else { return }
+        defaults?.removeObject(forKey: Key.pendingStyleRewriteResponseData)
+        defaults?.set(data, forKey: Key.pendingStyleRewriteRequestData)
+        postDarwinNotification(named: Notification.styleRewriteRequested)
+    }
+
+    static func consumeStyleRewriteRequest() -> KeyVoxStyleRewriteIPCRequest? {
+        guard let data = defaults?.data(forKey: Key.pendingStyleRewriteRequestData),
+              let request = try? JSONDecoder().decode(KeyVoxStyleRewriteIPCRequest.self, from: data) else {
+            return nil
+        }
+
+        defaults?.removeObject(forKey: Key.pendingStyleRewriteRequestData)
+        return request
+    }
+
+    static func writeStyleRewriteResponse(_ response: KeyVoxStyleRewriteIPCResponse) {
+        guard let data = try? JSONEncoder().encode(response) else { return }
+        defaults?.set(data, forKey: Key.pendingStyleRewriteResponseData)
+    }
+
+    static func currentStyleRewriteResponse() -> KeyVoxStyleRewriteIPCResponse? {
+        guard let data = defaults?.data(forKey: Key.pendingStyleRewriteResponseData) else {
+            return nil
+        }
+
+        return try? JSONDecoder().decode(KeyVoxStyleRewriteIPCResponse.self, from: data)
+    }
+
+    static func clearStyleRewriteResponse() {
+        defaults?.removeObject(forKey: Key.pendingStyleRewriteResponseData)
     }
 
     static func writePendingURLRoute(_ urlString: String) {

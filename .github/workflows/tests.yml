@@ -95,13 +95,11 @@ jobs:
       - name: Enforce KeyVoxCore coverage
         run: Tools/Quality/check_keyvoxcore_coverage.sh "${{ steps.keyvoxcore-tests.outputs.coverage_path }}"
 
-  style-rewrite-package-tests:
-    runs-on: macos-26
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Run KeyVoxStyleRewrite package tests
         run: swift test --package-path Packages/KeyVoxStyleRewrite --scratch-path /tmp/keyvox-style-rewrite-ci
+
+      - name: Run KeyVoxLocalInference package tests
+        run: swift test --package-path Packages/KeyVoxLocalInference --scratch-path /tmp/keyvox-local-inference-ci
+
+      - name: Run KeyVoxVibesAdapters package tests
+        run: swift test --package-path Packages/KeyVoxVibesAdapters --scratch-path /tmp/keyvox-vibes-adapters-ci

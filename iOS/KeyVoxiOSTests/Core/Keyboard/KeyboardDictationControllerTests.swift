@@ -173,7 +173,7 @@ struct KeyboardDictationControllerTests {
         #expect(ipcManager.sendStopCommandCallCount == 2)
     }
 
-    @Test func transcribingReconciliationStopsRetryingAfterRetryLimit() {
+    @Test func transcribingReconciliationKeepsWaitingAfterStopRetryLimit() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.reconciledRecordingStateValue = .recording
         let scheduler = KeyboardActionSchedulerSpy()
@@ -190,8 +190,9 @@ struct KeyboardDictationControllerTests {
         ipcManager.reconciledRecordingStateValue = .transcribing
         scheduler.runScheduledAction(after: 0.5)
         scheduler.runScheduledAction(after: 0.5)
+        scheduler.runScheduledAction(after: 0.5)
 
-        #expect(controller.state == .idle)
+        #expect(controller.state == .transcribing)
         #expect(ipcManager.sendStopCommandCallCount == 2)
     }
 
