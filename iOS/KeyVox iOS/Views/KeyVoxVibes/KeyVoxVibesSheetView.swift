@@ -14,6 +14,7 @@ struct KeyVoxVibesSheetView: View {
 
         static let full = IntroPresentation(displayedScenes: [.a, .b, .c], initialScene: .a)
         static let usageOnly = IntroPresentation(displayedScenes: [.b], initialScene: .b)
+        static let trialStart = IntroPresentation(displayedScenes: [.a, .b, .c], initialScene: .c)
     }
 
     enum Mode {

@@ -13,6 +13,7 @@ final class KeyboardViewController: UIInputViewController {
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
+    let openVibesTrialStartURL = URL(string: "keyvoxios://vibes/trial-start")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
@@ -334,6 +335,14 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleVibesTap() {
         guard appSettingsStore.isVibesAvailable else { return }
+        guard appSettingsStore.isVibesAIInstalled else {
+            _ = appSettingsStore.advanceSelectedVibe()
+            interactionHaptics.emitMediumIfEnabled()
+            containingAppLauncher.open(openVibesTrialStartURL)
+            updateUI()
+            return
+        }
+
         guard appSettingsStore.canUseVibes else {
             interactionHaptics.emitMediumIfEnabled()
             containingAppLauncher.open(openVibesURL)

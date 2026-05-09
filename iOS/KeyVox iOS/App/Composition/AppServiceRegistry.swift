@@ -138,7 +138,7 @@ final class AppServiceRegistry {
             selectedStyleProvider: {
                 AppSettingsStore.resolvedSelectedVibe(
                     from: settingsDefaults,
-                    canUseVibes: keyVoxVibesPurchaseController.canUseVibes
+                    canUseVibes: keyVoxVibesPurchaseController.canUseVibes && localRewriteModelManager.isModelReady()
                 )
             },
             artifactStore: styleRewriteArtifactStore,

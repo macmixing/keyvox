@@ -45,19 +45,26 @@ extension StyleTabView {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Menu {
-                        Picker("", selection: keyVoxVibesSelection) {
-                            ForEach(StyleRewriteStyle.allCases) { style in
-                                Text(style.displayName).tag(style)
+                    if isVibesAIInstalled {
+                        Menu {
+                            Picker("", selection: keyVoxVibesSelection) {
+                                ForEach(StyleRewriteStyle.allCases) { style in
+                                    Text(style.displayName).tag(style)
+                                }
                             }
+                            .pickerStyle(.inline)
+                        } label: {
+                            Text("Change")
+                                .font(.appFont(16))
+                                .foregroundStyle(.yellow)
                         }
-                        .pickerStyle(.inline)
-                    } label: {
-                        Text("Change")
-                            .font(.appFont(16))
-                            .foregroundStyle(.yellow)
+                        .padding(.top, 2)
+                    } else {
+                        Text("Install Vibes AI")
+                            .font(.appFont(14))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .padding(.top, 2)
                     }
-                    .padding(.top, 2)
                 }
 
                 Divider()
@@ -241,7 +248,11 @@ extension StyleTabView {
     }
 
     private var displayedSelectedVibe: StyleRewriteStyle {
-        keyVoxVibesPurchaseController.canUseVibes ? settingsStore.selectedVibe : .none
+        keyVoxVibesPurchaseController.canUseVibes && isVibesAIInstalled ? settingsStore.selectedVibe : .none
+    }
+
+    private var isVibesAIInstalled: Bool {
+        localRewriteModelManager.isModelReady()
     }
 
     private var vibesUnlockButtonTitle: String {
@@ -262,6 +273,11 @@ extension StyleTabView {
 
     private func selectVibe(_ style: StyleRewriteStyle) {
         guard style != .none else {
+            settingsStore.selectedVibe = .none
+            return
+        }
+
+        guard isVibesAIInstalled else {
             settingsStore.selectedVibe = .none
             return
         }

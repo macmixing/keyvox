@@ -24,6 +24,10 @@ final class KeyboardAppSettingsStore {
         true
     }
 
+    var isVibesAIInstalled: Bool {
+        KeyboardModelAvailability.isVibesAIInstalled()
+    }
+
     var canUseVibes: Bool {
         guard isVibesAvailable else { return false }
         if isVibesTrialBypassedForCurrentBuild {
@@ -64,7 +68,7 @@ final class KeyboardAppSettingsStore {
     }
 
     var selectedVibe: StyleRewriteStyle {
-        guard canUseVibes else {
+        guard canUseVibes, isVibesAIInstalled else {
             return .none
         }
 
@@ -82,7 +86,7 @@ final class KeyboardAppSettingsStore {
             return
         }
 
-        let resolvedStyle = canUseVibes ? style.resolvedForModelAvailability(isVibesAvailable) : .none
+        let resolvedStyle = canUseVibes && isVibesAIInstalled ? style : .none
         guard resolvedStyle != style else { return }
         defaults?.set(resolvedStyle.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         KeyVoxIPCBridge.publishVibeSelectionChanged()
@@ -90,7 +94,7 @@ final class KeyboardAppSettingsStore {
 
     @discardableResult
     func advanceSelectedVibe() -> String {
-        guard canUseVibes else {
+        guard canUseVibes, isVibesAIInstalled else {
             defaults?.set(StyleRewriteStyle.none.rawValue, forKey: UserDefaultsKeys.selectedVibe)
             KeyVoxIPCBridge.publishVibeSelectionChanged()
             return StyleRewriteStyle.none.displayName

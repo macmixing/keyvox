@@ -5,6 +5,7 @@ struct StyleTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
+    @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
     @State var isVibeExamplesExpanded = false
     @State var vibeExamplesExpandedContentHeight: CGFloat = 0
 
@@ -44,4 +45,5 @@ struct StyleTabView: View {
     StyleTabView()
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
+        .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
 }
