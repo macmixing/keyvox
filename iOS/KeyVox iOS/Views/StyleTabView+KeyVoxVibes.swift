@@ -86,7 +86,6 @@ extension StyleTabView {
                 }
 
                 keyVoxVibesUnlockSection
-                localRewriteModelSection
 
                 vibeExamplesExpandedContent
                     .frame(height: isVibeExamplesExpanded ? vibeExamplesExpandedContentHeight : 0, alignment: .top)
@@ -241,106 +240,8 @@ extension StyleTabView {
         }
     }
 
-    @ViewBuilder
-    private var localRewriteModelSection: some View {
-        Divider()
-            .overlay(.white.opacity(0.22))
-
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Local Vibes Model")
-                        .font(.appFont(17))
-                        .foregroundStyle(.white)
-
-                    Text(localRewriteModelStatusText)
-                        .font(.appFont(13, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                localRewriteModelActionButton
-            }
-
-            if let progress = localRewriteModelProgress {
-                ModelDownloadProgress(progress: progress, showLabel: false)
-            }
-
-            if case .failed(let message) = localRewriteModelManager.installState {
-                Text(message)
-                    .font(.appFont(12, variant: .light))
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var localRewriteModelActionButton: some View {
-        switch localRewriteModelManager.installState {
-        case .notInstalled:
-            AppActionButton(
-                title: "Download",
-                style: .primary,
-                size: .compact,
-                fontSize: 15,
-                action: handleLocalRewriteModelDownloadAction
-            )
-        case .failed:
-            AppActionButton(
-                title: "Retry",
-                style: .primary,
-                size: .compact,
-                fontSize: 15,
-                action: handleLocalRewriteModelDownloadAction
-            )
-        case .ready:
-            AppActionButton(
-                title: "Delete",
-                style: .destructive,
-                size: .compact,
-                fontSize: 15,
-                action: handleLocalRewriteModelDeleteAction
-            )
-        case .downloading, .installing:
-            AppActionButton(
-                title: "Working",
-                style: .primary,
-                size: .compact,
-                fontSize: 15,
-                isEnabled: false,
-                action: {}
-            )
-        }
-    }
-
     private var displayedSelectedVibe: StyleRewriteStyle {
         keyVoxVibesPurchaseController.canUseVibes ? settingsStore.selectedVibe : .none
-    }
-
-    private var localRewriteModelStatusText: String {
-        switch localRewriteModelManager.installState {
-        case .notInstalled:
-            return "Download the local CPU model before testing Vibes."
-        case .downloading:
-            return "Downloading the local Vibes model."
-        case .installing:
-            return "Installing the local Vibes model."
-        case .ready:
-            return "Local CPU model installed."
-        case .failed:
-            return "Local Vibes model is not installed."
-        }
-    }
-
-    private var localRewriteModelProgress: Double? {
-        switch localRewriteModelManager.installState {
-        case .downloading(let progress), .installing(let progress):
-            return progress
-        case .notInstalled, .ready, .failed:
-            return nil
-        }
     }
 
     private var vibesUnlockButtonTitle: String {
@@ -387,15 +288,5 @@ extension StyleTabView {
     private func handleVibesHelpAction() {
         appHaptics.light()
         keyVoxVibesPurchaseController.presentHelpSheet()
-    }
-
-    private func handleLocalRewriteModelDownloadAction() {
-        appHaptics.light()
-        localRewriteModelManager.downloadModel()
-    }
-
-    private func handleLocalRewriteModelDeleteAction() {
-        appHaptics.light()
-        localRewriteModelManager.deleteModel()
     }
 }

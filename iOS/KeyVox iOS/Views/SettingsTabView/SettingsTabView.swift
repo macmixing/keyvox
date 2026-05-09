@@ -4,6 +4,7 @@ struct SettingsTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
@@ -12,6 +13,10 @@ struct SettingsTabView: View {
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State var isModelSectionExpanded = false
     @State var modelExpandedContentHeight: CGFloat = 0
+    @State var displayedVibesAIInstallState: LocalRewriteModelInstallState?
+    @State var isVibesAIInstallContentVisible = false
+    @State var vibesAIInstallCollapseTask: Task<Void, Never>?
+    @State var vibesAIInstallContentHeight: CGFloat = 0
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
@@ -40,6 +45,7 @@ struct SettingsTabView: View {
                 keyboardSection
                 audioSection
                 activeModelSection
+                vibesAISection
                 ttsSection
                 rateAndReviewSection
                 supportSection
@@ -85,6 +91,7 @@ struct SettingsTabView: View {
     )
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)
+        .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.ttsPurchaseController)
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)

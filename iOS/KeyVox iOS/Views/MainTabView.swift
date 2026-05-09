@@ -15,6 +15,7 @@ struct MainTabView: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
+    @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
@@ -187,6 +188,8 @@ struct MainTabView: View {
         switch confirmation {
         case .dictationModel(let modelID):
             modelManager.deleteModel(withID: modelID)
+        case .keyVoxVibesAI:
+            localRewriteModelManager.deleteModel()
         case .sharedTTSModel:
             pocketTTSModelManager.deleteSharedModel()
         case .ttsVoice(let voice):
@@ -198,6 +201,8 @@ struct MainTabView: View {
         switch confirmation {
         case .dictationModel(let modelID):
             modelManager.downloadModel(withID: modelID)
+        case .keyVoxVibesAI:
+            localRewriteModelManager.downloadModel()
         case .sharedTTSModel:
             pocketTTSModelManager.downloadSharedModel()
         case .ttsVoice(let voice):

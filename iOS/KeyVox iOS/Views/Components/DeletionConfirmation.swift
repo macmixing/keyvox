@@ -2,6 +2,7 @@ import SwiftUI
 
 enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     case dictationModel(DictationModelID)
+    case keyVoxVibesAI
     case sharedTTSModel
     case ttsVoice(AppSettingsStore.TTSVoice)
 
@@ -9,6 +10,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
         switch self {
         case .dictationModel(let modelID):
             return "dictation-\(modelID.rawValue)"
+        case .keyVoxVibesAI:
+            return "keyvox-vibes-ai"
         case .sharedTTSModel:
             return "tts-shared"
         case .ttsVoice(let voice):
@@ -20,6 +23,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
         switch self {
         case .dictationModel:
             return "Delete Dictation Model?"
+        case .keyVoxVibesAI:
+            return "Delete KeyVox Vibes AI?"
         case .sharedTTSModel:
             return "Delete Speak Engine?"
         case .ttsVoice:
@@ -31,6 +36,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
         switch self {
         case .dictationModel(let modelID):
             return "Delete the \(modelID.provider.displayName) model from this device?"
+        case .keyVoxVibesAI:
+            return "Delete KeyVox Vibes AI from this device?"
         case .sharedTTSModel:
             return "Delete the KeyVox Speak engine and all downloaded voices from this device?"
         case .ttsVoice(let voice):
