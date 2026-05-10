@@ -40,7 +40,7 @@ Attribution: Based on Kyutai's `pocket-tts` text-to-speech model. The Apple-plat
 ### llama.cpp / ggml (binary XCFramework)
 - Upstream: <https://github.com/ggml-org/llama.cpp>
 - License: MIT
-- Note: bundled through `Packages/KeyVoxLocalInference` for CPU-only local Vibes rewrite inference
+- Note: bundled through `Packages/KeyVoxLocalInference` for local Vibes rewrite inference. The vendored XCFramework is sourced from the official llama.cpp `b9093` Apple release artifact and includes the Metal backend used by Mac Vibes GPU offload.
 
 Copyright (c) Georgi Gerganov and the llama.cpp contributors
 
@@ -49,7 +49,7 @@ Copyright (c) Georgi Gerganov and the llama.cpp contributors
 - GGUF distribution: <https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF>
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: KeyVox downloads the `qwen2.5-0.5b-instruct-q4_k_m.gguf` artifact at runtime for local CPU-only Vibes rewrite inference.
+- Note: KeyVox downloads the `qwen2.5-0.5b-instruct-q4_k_m.gguf` artifact at runtime for local Vibes rewrite inference.
 
 Attribution: Based on Alibaba Cloud's `Qwen2.5-0.5B-Instruct` model.
 

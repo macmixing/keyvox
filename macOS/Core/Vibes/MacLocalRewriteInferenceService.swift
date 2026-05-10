@@ -40,7 +40,11 @@ final class MacLocalRewriteInferenceService {
         }
 
         if loadedModelURL != modelURL || loadedAdapterURL != adapterURL {
-            loadedModel = LlamaCPULanguageModel(modelURL: modelURL, adapterURL: adapterURL)
+            loadedModel = LlamaCPULanguageModel(
+                modelURL: modelURL,
+                adapterURL: adapterURL,
+                gpuOffloadMode: .automatic
+            )
             loadedModelURL = modelURL
             loadedAdapterURL = adapterURL
         }

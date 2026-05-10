@@ -156,7 +156,8 @@ final class LiveLocalStyleResponder: TextTransformChunkResponding {
         self.model = LlamaCPULanguageModel(
             modelURL: modelURL,
             adapterURL: adapterURL,
-            adapterScale: adapterScale
+            adapterScale: adapterScale,
+            gpuOffloadMode: .automatic
         )
     }
 

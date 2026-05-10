@@ -11,6 +11,14 @@ final class LocalLanguageModelTests: XCTestCase {
         XCTAssertEqual(configuration.batchTokenCount, 512)
     }
 
+    func testGPUOffloadModesAreEquatable() {
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.disabled, .disabled)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.automatic, .automatic)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.allLayers, .allLayers)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.layerCount(12), .layerCount(12))
+        XCTAssertNotEqual(LocalLanguageModelGPUOffloadMode.layerCount(12), .layerCount(13))
+    }
+
     func testMetricsComputeDecodeTokensPerSecond() {
         let metrics = LocalLanguageModelGenerationMetrics(
             loadDuration: 0.5,
@@ -86,7 +94,10 @@ final class LocalLanguageModelTests: XCTestCase {
             throw XCTSkip("Set KEYVOX_LOCAL_MODEL_PATH to a local GGUF file.")
         }
 
-        let model = LlamaCPULanguageModel(modelURL: URL(fileURLWithPath: modelPath))
+        let model = LlamaCPULanguageModel(
+            modelURL: URL(fileURLWithPath: modelPath),
+            gpuOffloadMode: .automatic
+        )
         let result = try await model.generate(
             LocalLanguageModelGenerationRequest(
                 prompt: "Return only the word ready.",
