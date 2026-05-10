@@ -7,43 +7,59 @@ struct SettingsVibesCard: View {
     let downloadAction: () -> Void
     let repairAction: () -> Void
 
+    @State private var isVibeExamplesExpanded = false
+    @State private var vibeExamplesExpandedContentHeight: CGFloat = 0
+
+    private static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             SettingsCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    SettingsRow(
-                        assetIcon: "vibes-logo",
-                        title: MacVibesSettingsCopy.cardTitle,
-                        subtitle: MacVibesSettingsCopy.cardSubtitle
-                    ) {
-                        cardControl
+                VStack(alignment: .leading, spacing: 16) {
+                    headerContent
+
+                    if shouldShowStatusContent {
+                        statusContent
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.22))
+                        .overlay(.white.opacity(0.22))
 
-                    statusContent
+                    HStack(alignment: .top, spacing: 12) {
+                        Text(matrix.displayedSelectedVibe.description)
+                            .font(.appFont(15, variant: .light))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if matrix.showsVibeSelector {
-                        Divider()
-                            .background(Color.white.opacity(0.22))
+                        Button {
+                            withAnimation(Self.sectionExpansionAnimation) {
+                                isVibeExamplesExpanded.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isVibeExamplesExpanded ? "chevron.down" : "chevron.right")
+                                .font(.system(size: 28, weight: .heavy))
+                                .foregroundStyle(.yellow)
+                                .frame(width: 56, height: 56)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(
+                            isVibeExamplesExpanded
+                            ? MacVibesSettingsCopy.hideExamplesAccessibilityLabel
+                            : MacVibesSettingsCopy.showExamplesAccessibilityLabel
+                        )
                     }
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(StyleRewriteStyle.allCases) { style in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(style.displayName)
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundStyle(.white)
-
-                                Text(style.exampleText)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(MacAppTheme.accent)
-                                    .fixedSize(horizontal: false, vertical: true)
+                    vibeExamplesExpandedContent
+                        .frame(height: isVibeExamplesExpanded ? vibeExamplesExpandedContentHeight : 0, alignment: .top)
+                        .clipped()
+                        .allowsHitTesting(isVibeExamplesExpanded)
+                        .accessibilityHidden(!isVibeExamplesExpanded)
+                        .background(alignment: .top) {
+                            if isVibeExamplesExpanded || vibeExamplesExpandedContentHeight == 0 {
+                                vibeExamplesExpandedContentMeasurement
                             }
                         }
-                    }
-                    .padding(.horizontal, 10)
                 }
             }
 
@@ -55,6 +71,33 @@ struct SettingsVibesCard: View {
                 )
                 Spacer()
             }
+        }
+    }
+
+    private var headerContent: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(MacAppTheme.accent.opacity(0.4))
+                    .frame(width: 32, height: 32)
+
+                Image("vibes-logo")
+                    .resizable()
+                    .renderingMode(.template)
+                    .scaledToFit()
+                    .foregroundStyle(MacAppTheme.accent)
+                    .frame(width: 18, height: 18)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(MacVibesSettingsCopy.cardTitle)
+                    .font(.appFont(18))
+                    .foregroundStyle(.white)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            cardControl
+                .padding(.top, 2)
         }
     }
 
@@ -100,9 +143,10 @@ struct SettingsVibesCard: View {
     private var statusContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(matrix.statusText)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.white.opacity(0.7))
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if let progress = matrix.progress {
                 ModelDownloadProgress(progress: progress)
@@ -126,6 +170,108 @@ struct SettingsVibesCard: View {
         case .downloadRequired, .installFailed, .selectedVibe:
             return ""
         }
+    }
+
+    private var shouldShowStatusContent: Bool {
+        if matrix.progress != nil || matrix.errorMessage != nil {
+            return true
+        }
+
+        switch matrix.mainCardContent {
+        case .selectedVibe:
+            return false
+        case .downloadRequired, .downloading, .installing, .installFailed:
+            return true
+        }
+    }
+
+    private var vibeExamplesExpandedContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Divider()
+                .overlay(.white.opacity(0.22))
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(Array(vibeExamples.enumerated()), id: \.element.style) { index, example in
+                    vibeExampleRow(example)
+
+                    if index < vibeExamples.count - 1 {
+                        Divider()
+                            .overlay(.white.opacity(0.22))
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                    }
+                }
+            }
+        }
+    }
+
+    private var vibeExamplesExpandedContentMeasurement: some View {
+        vibeExamplesExpandedContent
+            .fixedSize(horizontal: false, vertical: true)
+            .hidden()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            updateVibeExamplesExpandedContentHeight(geometry.size.height)
+                        }
+                        .onChange(of: geometry.size.height) { newHeight in
+                            updateVibeExamplesExpandedContentHeight(newHeight)
+                        }
+                }
+            )
+    }
+
+    private func vibeExampleRow(_ example: VibeExample) -> some View {
+        Button {
+            guard matrix.showsVibeSelector else { return }
+            selectedVibe = example.style
+        } label: {
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(example.style.displayName)
+                        .font(.appFont(17))
+                        .foregroundStyle(.yellow)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+
+                    Text(example.text)
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: example.style == matrix.displayedSelectedVibe ? "checkmark.circle.fill" : "checkmark.circle.dotted")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(example.style == matrix.displayedSelectedVibe ? .green : .white)
+            }
+            .padding(.leading, 10)
+            .padding(.trailing, 15)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(.plain)
+    }
+
+    private func updateVibeExamplesExpandedContentHeight(_ newHeight: CGFloat) {
+        guard abs(vibeExamplesExpandedContentHeight - newHeight) > 0.5 else { return }
+        vibeExamplesExpandedContentHeight = newHeight
+    }
+
+    private var vibeExamples: [VibeExample] {
+        StyleRewriteStyle.allCases.map { style in
+            VibeExample(style: style, text: style.exampleText)
+        }
+    }
+
+    private struct VibeExample: Hashable {
+        let style: StyleRewriteStyle
+        let text: String
     }
 }
 

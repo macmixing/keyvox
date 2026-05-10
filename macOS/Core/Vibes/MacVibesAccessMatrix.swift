@@ -146,6 +146,8 @@ enum MacVibesSettingsCopy {
     static let downloadAction = "Download"
     static let repairAction = "Repair"
     static let deleteAction = "Delete"
+    static let showExamplesAccessibilityLabel = "Show vibe examples"
+    static let hideExamplesAccessibilityLabel = "Hide vibe examples"
     static let triggerTip = "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes."
     static let deleteConfirmationTitle = "Delete KeyVox Vibes AI?"
     static let deleteConfirmationMessage = "KeyVox Vibes AI will be removed from this Mac."
