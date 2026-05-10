@@ -18,6 +18,11 @@ class TranscriptionManager: ObservableObject {
         case transcribing
         case error(String)
     }
+
+    private enum StopRequestPurpose {
+        case quickTapCancellation
+        case transcription
+    }
     
     let keyboardMonitor = KeyboardMonitor.shared
     private let appSettings: AppSettingsStore
@@ -177,6 +182,7 @@ class TranscriptionManager: ObservableObject {
         guard state == .recording || state == .stopping || state == .transcribing else { return }
         activeStopRequestID = nil
         stopRequestedAt = nil
+        activeStopRequestPurpose = nil
         
         #if DEBUG
         print("!! ESCAPE pressed: Aborting session !!")
@@ -210,13 +216,16 @@ class TranscriptionManager: ObservableObject {
         }
 
         if isPressed {
-            vibeTriggerActionController.noteTriggerPressed(at: timestamp)
             if state == .idle {
+                vibeTriggerActionController.noteTriggerPressed(at: timestamp)
                 startRecording()
             } else if state == .recording && isLocked {
+                vibeTriggerActionController.noteTriggerPressed(at: timestamp)
                 // If we are locked and press the key again, stop recording
                 isLocked = false
                 stopRecordingAndTranscribe()
+            } else if state != .recording {
+                vibeTriggerActionController.clearTriggerPress()
             }
         } else {
             // Key released
@@ -242,6 +251,11 @@ class TranscriptionManager: ObservableObject {
     }
 
     private func handleTriggerDuringPendingStop(isPressed: Bool, timestamp: TimeInterval) {
+        guard activeStopRequestPurpose == .quickTapCancellation else {
+            vibeTriggerActionController.clearTriggerPress()
+            return
+        }
+
         if isPressed {
             vibeTriggerActionController.noteTriggerPressed(at: timestamp)
             return
@@ -263,6 +277,7 @@ class TranscriptionManager: ObservableObject {
         let stopRequestID = UUID()
         stopRequestedAt = Date()
         activeStopRequestID = stopRequestID
+        activeStopRequestPurpose = .quickTapCancellation
         state = .stopping
         isLocked = true
 
@@ -273,6 +288,7 @@ class TranscriptionManager: ObservableObject {
             self.isLocked = false
             self.stopRequestedAt = nil
             self.activeStopRequestID = nil
+            self.activeStopRequestPurpose = nil
             OverlayManager.shared.hide()
             self.state = .idle
             self.updateOverlayHandsFreeVisualState()
@@ -309,6 +325,7 @@ class TranscriptionManager: ObservableObject {
 
     private var stopRequestedAt: Date?
     private var activeStopRequestID: UUID?
+    private var activeStopRequestPurpose: StopRequestPurpose?
     
     private func stopRecordingAndTranscribe() {
         guard case .recording = state else { return }
@@ -318,6 +335,7 @@ class TranscriptionManager: ObservableObject {
         let stopRequestID = UUID()
         stopRequestedAt = startTime
         activeStopRequestID = stopRequestID
+        activeStopRequestPurpose = .transcription
         state = .stopping
         #if DEBUG
         print("--- Speed Profile Start ---")
@@ -332,6 +350,7 @@ class TranscriptionManager: ObservableObject {
             guard self.activeStopRequestID == stopRequestID else { return }
             self.activeStopRequestID = nil
             self.stopRequestedAt = nil
+            self.activeStopRequestPurpose = nil
             
             // Root Cause Fix: Bluetooth HFP/SCO to A2DP switching delay.
             // NSSound cannot play into a Bluetooth Voice channel (HFP).
