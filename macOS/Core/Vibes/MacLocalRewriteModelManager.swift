@@ -155,7 +155,7 @@ final class MacLocalRewriteModelManager: ObservableObject {
             try? fileManager.removeItem(at: stagingRootURL())
             setState(.ready)
         } catch is CancellationError {
-            setFailure(MacVibesSettingsCopy.downloadCancelled)
+            setFailure(MacLocalRewriteModelManagerCopy.downloadCancelled)
         } catch {
             setFailure(Self.userFacingErrorMessage(for: error))
         }
@@ -299,7 +299,7 @@ final class MacLocalRewriteModelManager: ObservableObject {
         if let installError = error as? MacLocalRewriteModelInstallError {
             return installError.localizedDescription
         }
-        return MacVibesSettingsCopy.downloadFailed
+        return MacLocalRewriteModelManagerCopy.downloadFailed
     }
 
     nonisolated static func defaultDownload(
@@ -362,9 +362,15 @@ enum MacLocalRewriteModelInstallError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .integrityCheckFailed:
-            return MacVibesSettingsCopy.integrityCheckFailed
+            return MacLocalRewriteModelManagerCopy.integrityCheckFailed
         }
     }
+}
+
+private enum MacLocalRewriteModelManagerCopy {
+    static let downloadFailed = "Vibes model download failed. Check your network/storage and retry."
+    static let downloadCancelled = "Vibes model download was cancelled."
+    static let integrityCheckFailed = "Downloaded Vibes model did not match the expected SHA-256."
 }
 
 struct MacLocalRewriteModelDownloadProgressSnapshot: Sendable {

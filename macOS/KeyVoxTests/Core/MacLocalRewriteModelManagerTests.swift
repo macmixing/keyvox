@@ -47,7 +47,7 @@ final class MacLocalRewriteModelManagerTests: XCTestCase {
         await installTask.value
 
         XCTAssertFalse(manager.isModelReady())
-        XCTAssertEqual(manager.errorMessage, MacVibesSettingsCopy.integrityCheckFailed)
+        XCTAssertEqual(manager.errorMessage, MacLocalRewriteModelInstallError.integrityCheckFailed.localizedDescription)
     }
 
     func testDeleteModelInvalidatesInstalledModel() async throws {
