@@ -116,11 +116,12 @@ final class MacLocalRewriteModelManager: ObservableObject {
 
             let temporaryURL = try await download(descriptor.artifact.remoteURL) { [weak self] snapshot in
                 Task { @MainActor [weak self] in
+                    guard let self, self.canPublishDownloadProgress else { return }
                     let progress = Self.progressFraction(
                         snapshot: snapshot,
-                        fallbackExpectedBytes: self?.descriptor.artifact.progressTotalBytes ?? 1
+                        fallbackExpectedBytes: self.descriptor.artifact.progressTotalBytes
                     )
-                    self?.publishDownloadProgress(progress)
+                    self.publishDownloadProgress(progress)
                 }
             }
 
@@ -199,6 +200,13 @@ final class MacLocalRewriteModelManager: ObservableObject {
 
     private func setFailure(_ message: String) {
         setState(.failed(message: message))
+    }
+
+    private var canPublishDownloadProgress: Bool {
+        if case .downloading = installState {
+            return true
+        }
+        return false
     }
 
     private func publishDownloadProgress(_ progress: Double) {

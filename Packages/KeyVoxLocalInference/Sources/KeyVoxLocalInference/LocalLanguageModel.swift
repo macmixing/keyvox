@@ -168,10 +168,14 @@ public protocol LocalLanguageModelGenerating: Sendable {
 public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @unchecked Sendable {
     public typealias DiagnosticLogHandler = @Sendable (String) -> Void
 
-    private static let initializeLlamaRuntime: Void = {
+    private static let initializeCoreRuntime: Void = {
         llama_log_set({ _, _, _ in }, nil)
-        ggml_backend_load_all()
         llama_backend_init()
+    }()
+
+    private static let initializeGPUBackends: Void = {
+        _ = initializeCoreRuntime
+        ggml_backend_load_all()
     }()
 
     private let modelURL: URL
@@ -365,8 +369,6 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     }
 
     private func loadModelIfNeeded(configuration: LocalLanguageModelConfiguration) throws -> LlamaLoadedModel {
-        _ = Self.initializeLlamaRuntime
-
         if let loadedModel {
             return loadedModel
         }
@@ -374,6 +376,8 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         guard fileManager.fileExists(atPath: modelURL.path) else {
             throw LocalLanguageModelError.modelFileMissing
         }
+
+        _ = Self.initializeCoreRuntime
 
         let loaded = try loadModelWithFallbackIfNeeded(configuration: configuration)
         loadedModel = loaded
@@ -488,7 +492,11 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
             return false
         }
 
-        _ = Self.initializeLlamaRuntime
+        guard !ProcessInfo.processInfo.isRunningUnderXCTest else {
+            return false
+        }
+
+        _ = Self.initializeGPUBackends
         return llama_supports_gpu_offload()
         #else
         return false
@@ -497,7 +505,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
 
     private static func backendDeviceSummaryForDiagnostics() -> String {
         #if os(macOS)
-        _ = Self.initializeLlamaRuntime
+        _ = Self.initializeGPUBackends
         let deviceCount = ggml_backend_dev_count()
         guard deviceCount > 0 else {
             return "count=0"
@@ -826,6 +834,12 @@ final class LocalInferenceCancellationToken: @unchecked Sendable {
         if currentValue {
             throw LocalLanguageModelError.cancelled
         }
+    }
+}
+
+private extension ProcessInfo {
+    var isRunningUnderXCTest: Bool {
+        environment["XCTestConfigurationFilePath"] != nil
     }
 }
 
