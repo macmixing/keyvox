@@ -53,7 +53,7 @@ File-level ownership and locations are intentionally maintained in one place: [`
 - Supported macOS range: macOS 13.5 and newer.
 - KeyVox uses accessory activation policy on Ventura/Sonoma and early Sequoia builds (`< 15.6`) to avoid menu bar collision/regression behavior.
 - Parakeet provider availability is additionally runtime-gated by OS support (`macOS 14+`), and unsupported persisted selections normalize back to Whisper.
-- Mac Vibes local rewrite inference requests GPU offload through `KeyVoxLocalInference`, but the package runtime only allows GPU offload on macOS 15 and newer. macOS 13.5-14.x always runs Vibes local rewrite on CPU.
+- Mac Vibes local rewrite inference requests GPU offload through `KeyVoxLocalInference`, but the package runtime only allows GPU offload on macOS Sequoia (15) and newer. macOS Ventura/Sonoma (13.5-14.x) always runs Vibes local rewrite on CPU.
 - iOS also consumes `KeyVoxLocalInference`, but GPU offload remains unavailable there; the package reports CPU-only support outside macOS.
 
 For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
@@ -94,8 +94,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - The local inference service keeps the loaded model cached until the installed model is invalidated/deleted/replaced or the app exits. Keeping the local rewrite model resident is the intended Mac latency tradeoff.
 - `MacLocalStyleRewriteTextTransformer` owns debug instrumentation for prewarm, missing LoRA adapters, generation metrics, and local rewrite failures.
 - `KeyVoxLocalInference` owns GPU diagnostics and fallback logs. Expected behavior:
-  - macOS 15+: automatic mode may report Metal/GPU backend when available, with CPU fallback on load/context failure
-  - macOS 13.5-14.x: automatic mode resolves to CPU-only because platform GPU support is disabled before device enumeration
+  - macOS Sequoia (15)+: automatic mode may report Metal/GPU backend when available, with CPU fallback on load/context failure
+  - macOS Ventura/Sonoma (13.5-14.x): automatic mode resolves to CPU-only because platform GPU support is disabled before device enumeration
   - non-macOS platforms: CPU-only
 
 ## Post-Processing Order

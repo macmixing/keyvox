@@ -239,7 +239,7 @@ KeyVox/
   - Resolves bundled LoRA adapters through `KeyVoxVibesAdapters` before falling back to installed adapter paths.
 - `Core/Vibes/MacLocalRewriteInferenceService.swift`
   - Caches the loaded local rewrite model per model URL and adapter URL.
-  - Requests automatic GPU offload from `KeyVoxLocalInference`; the package runtime gates that to macOS 15 and newer, with macOS 13.5-14.x remaining CPU-only.
+  - Requests automatic GPU offload from `KeyVoxLocalInference`; the package runtime gates that to macOS Sequoia (15) and newer, with macOS Ventura/Sonoma (13.5-14.x) remaining CPU-only.
 - `Core/Vibes/MacLocalStyleRewriteTextTransformer.swift`
   - Bridges shared style rewrite requests into Mac local inference.
   - Maps `polished` to the polished LoRA and `casual`/`chill` to the casual LoRA.
@@ -712,7 +712,7 @@ KeyVox/
 
 - Compatibility target: **macOS Ventura (13.5) and newer**
 - Parakeet provider availability: **runtime-gated to macOS 14 and newer**
-- Mac Vibes local rewrite GPU policy: **macOS 15 and newer may use Metal/GPU offload; macOS 13.5-14.x is CPU-only**
+- Mac Vibes local rewrite GPU policy: **macOS Sequoia (15) and newer may use Metal/GPU offload; macOS Ventura/Sonoma (13.5-14.x) is CPU-only**
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
 - Local Vibes AI artifact name: `qwen2.5-0.5b-instruct-q4_k_m.gguf`
