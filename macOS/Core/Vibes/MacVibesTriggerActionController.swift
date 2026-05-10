@@ -41,6 +41,14 @@ final class MacVibesTriggerActionController {
         pendingSingleTapWorkItem = nil
     }
 
+    func shouldSuppressRecordingStartForPotentialDoubleTap(
+        at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime
+    ) -> Bool {
+        guard vibesCoordinator.canUseVibes else { return false }
+        guard pendingSingleTapWorkItem != nil else { return false }
+        return triggerTapClassifier.isAwaitingSecondTap(at: timestamp)
+    }
+
     func handleQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         guard vibesCoordinator.canUseVibes else {
             return
@@ -65,7 +73,7 @@ final class MacVibesTriggerActionController {
             cancelPendingSingleTap()
             let nextStyle = vibesCoordinator.advanceSelectedVibe()
             guard nextStyle != .none || vibesCoordinator.canUseVibes else { return }
-            OverlayManager.shared.showVibePill(title: nextStyle.displayName)
+            OverlayManager.shared.showVibeCyclePill(title: nextStyle.displayName)
         }
     }
 

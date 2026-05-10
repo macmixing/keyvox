@@ -20,6 +20,17 @@ final class MacTriggerTapClassifierTests: XCTestCase {
         XCTAssertEqual(event, .doubleTap)
     }
 
+    func testAwaitingSecondTapOnlyAppliesInsideDoubleTapWindow() {
+        var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
+
+        XCTAssertFalse(classifier.isAwaitingSecondTap(at: 10))
+
+        _ = classifier.registerQuickTap(at: 10)
+
+        XCTAssertTrue(classifier.isAwaitingSecondTap(at: 10.2))
+        XCTAssertFalse(classifier.isAwaitingSecondTap(at: 10.5))
+    }
+
     func testSecondQuickTapOutsideWindowSchedulesNewSingleTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
         _ = classifier.registerQuickTap(at: 10)

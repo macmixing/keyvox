@@ -34,6 +34,7 @@
 		E910000A2FE2000100AA0001 /* MacLocalRewriteModelManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E910001A2FE2000100AA0001 /* MacLocalRewriteModelManagerTests.swift */; };
 		E910000F2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */; };
 		E91000102FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E910001C2FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift */; };
+		E92000012FE3000100AA0001 /* VibePillPresentationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */; };
 		E910000B2FE2000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = E91000212FE2000100AA0001 /* KeyVoxLocalInference */; };
 		E910000C2FE2000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = E91000222FE2000100AA0001 /* KeyVoxLocalInference */; };
 		E910000D2FE2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = E91000232FE2000100AA0001 /* KeyVoxVibesAdapters */; };
@@ -365,6 +366,7 @@
 		E910001A2FE2000100AA0001 /* MacLocalRewriteModelManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelManagerTests.swift; sourceTree = "<group>"; };
 		E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesReadinessPrewarmer.swift; sourceTree = "<group>"; };
 		E910001C2FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesReadinessPrewarmerTests.swift; sourceTree = "<group>"; };
+		E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillPresentationControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -606,6 +608,7 @@
 				AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */,
 				AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */,
 				AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */,
+				E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1108,6 +1111,7 @@
 				E91000092FE2000100AA0001 /* MacVibesCoordinatorTests.swift in Sources */,
 				E91000102FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift in Sources */,
 				E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */,
+				E92000012FE3000100AA0001 /* VibePillPresentationControllerTests.swift in Sources */,
 				AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

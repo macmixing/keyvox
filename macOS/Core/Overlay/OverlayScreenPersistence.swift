@@ -17,17 +17,25 @@ final class OverlayScreenPersistence {
     }
 
     func resolvedOriginForShow(panel: NSPanel) -> NSPoint {
+        resolvedOriginForShow(panelSize: panel.frame.size, fallbackPanel: panel)
+    }
+
+    func resolvedOriginForShow(panelSize: CGSize) -> NSPoint {
+        resolvedOriginForShow(panelSize: panelSize, fallbackPanel: nil)
+    }
+
+    private func resolvedOriginForShow(panelSize: CGSize, fallbackPanel: NSPanel?) -> NSPoint {
         // Prefer the persisted display when still connected; otherwise keep continuity on current fallback display.
         let preferredKey = loadPreferredDisplayKey()
         if let preferredKey,
            let preferredScreen = screen(forDisplayKey: preferredKey) {
             isUsingFallbackDisplay = false
-            let origin = savedOrigin(for: preferredKey) ?? defaultOrigin(for: panel, on: preferredScreen)
-            return clampedOrigin(origin, for: panel, on: preferredScreen)
+            let origin = savedOrigin(for: preferredKey) ?? defaultOrigin(for: panelSize, on: preferredScreen)
+            return clampedOrigin(origin, panelSize: panelSize, on: preferredScreen)
         }
 
-        guard let fallbackScreen = panel.screen ?? NSScreen.main ?? NSScreen.screens.first else {
-            return panel.frame.origin
+        guard let fallbackScreen = fallbackPanel?.screen ?? NSScreen.main ?? NSScreen.screens.first else {
+            return fallbackPanel?.frame.origin ?? .zero
         }
 
         isUsingFallbackDisplay = OverlayScreenPersistenceLogic.shouldUseFallbackDisplay(
@@ -37,10 +45,10 @@ final class OverlayScreenPersistence {
 
         if let fallbackKey = displayKey(for: fallbackScreen),
            let origin = savedOrigin(for: fallbackKey) {
-            return clampedOrigin(origin, for: panel, on: fallbackScreen)
+            return clampedOrigin(origin, panelSize: panelSize, on: fallbackScreen)
         }
 
-        return clampedOrigin(defaultOrigin(for: panel, on: fallbackScreen), for: panel, on: fallbackScreen)
+        return clampedOrigin(defaultOrigin(for: panelSize, on: fallbackScreen), panelSize: panelSize, on: fallbackScreen)
     }
 
     func persistPanelLocation(_ panel: NSPanel) {
@@ -110,17 +118,25 @@ final class OverlayScreenPersistence {
     }
 
     private func defaultOrigin(for panel: NSPanel, on screen: NSScreen) -> NSPoint {
+        defaultOrigin(for: panel.frame.size, on: screen)
+    }
+
+    private func defaultOrigin(for panelSize: CGSize, on screen: NSScreen) -> NSPoint {
         let rect = screen.visibleFrame
         return NSPoint(
-            x: rect.midX - (panel.frame.width / 2),
+            x: rect.midX - (panelSize.width / 2),
             y: rect.minY + defaultVerticalOffset
         )
     }
 
     private func clampedOrigin(_ origin: NSPoint, for panel: NSPanel, on screen: NSScreen) -> NSPoint {
+        clampedOrigin(origin, panelSize: panel.frame.size, on: screen)
+    }
+
+    private func clampedOrigin(_ origin: NSPoint, panelSize: CGSize, on screen: NSScreen) -> NSPoint {
         OverlayScreenPersistenceLogic.clampedOrigin(
             origin: origin,
-            panelSize: panel.frame.size,
+            panelSize: panelSize,
             visibleFrame: screen.visibleFrame,
             edgeInset: panelEdgeInset
         )
@@ -216,6 +232,13 @@ final class OverlayScreenPersistence {
 }
 
 enum OverlayScreenPersistenceLogic {
+    static func centeredOrigin(panelSize: CGSize, referenceFrame: CGRect) -> NSPoint {
+        NSPoint(
+            x: referenceFrame.midX - (panelSize.width / 2),
+            y: referenceFrame.midY - (panelSize.height / 2)
+        )
+    }
+
     static func clampedOrigin(
         origin: NSPoint,
         panelSize: CGSize,

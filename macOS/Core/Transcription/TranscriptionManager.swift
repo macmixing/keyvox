@@ -218,6 +218,9 @@ class TranscriptionManager: ObservableObject {
         if isPressed {
             if state == .idle {
                 vibeTriggerActionController.noteTriggerPressed(at: timestamp)
+                if vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp) {
+                    return
+                }
                 startRecording()
             } else if state == .recording && isLocked {
                 vibeTriggerActionController.noteTriggerPressed(at: timestamp)
@@ -243,6 +246,11 @@ class TranscriptionManager: ObservableObject {
                         stopRecordingAndTranscribe()
                     }
                 }
+            }
+            if state == .idle,
+               vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp),
+               vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+                vibeTriggerActionController.handleQuickTap(at: timestamp)
             }
             vibeTriggerActionController.clearTriggerPress()
         }

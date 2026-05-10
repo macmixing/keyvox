@@ -20,11 +20,14 @@ class OverlayManager {
     }
 
     private var window: OverlayPanel?
+    private var vibeCyclePillWindow: NSPanel?
     private var vibeLabelWindow: NSPanel?
     private var vibeLabelTitle: String?
     private var vibeLabelHideWorkItem: DispatchWorkItem?
     private var visibilityManager = OverlayVisibilityManager()
     private var pendingHideWorkItem: DispatchWorkItem?
+    private var vibeCyclePillHideWorkItem: DispatchWorkItem?
+    private var vibeCyclePillVisibilityController = VibeCyclePillVisibilityController()
     private var moveObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -164,6 +167,62 @@ class OverlayManager {
             pendingHideWorkItem = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: workItem)
         }
+    }
+
+    func showVibeCyclePill(
+        title: String,
+        state: LogoBarView.VibePillState = .normal,
+        duration: TimeInterval? = 0.9
+    ) {
+        vibeCyclePillHideWorkItem?.cancel()
+        vibeCyclePillHideWorkItem = nil
+
+        let visibilityController = VibeCyclePillVisibilityController()
+        vibeCyclePillVisibilityController = visibilityController
+
+        let panel = vibeCyclePillWindow ?? makeVibeCyclePillWindow()
+        vibeCyclePillWindow = panel
+        panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
+            title: title,
+            state: state,
+            visibilityController: visibilityController
+        ))
+        panel.alphaValue = 1
+        resizePanel(panel, to: LogoBarView.vibePillPanelSize)
+        panel.setFrameOrigin(resolvedVibeCyclePillOrigin(for: panel))
+        panel.orderFrontRegardless()
+
+        DispatchQueue.main.async {
+            visibilityController.present()
+        }
+
+        guard let duration else { return }
+        let workItem = DispatchWorkItem { [weak self, weak visibilityController] in
+            guard let self,
+                  let visibilityController,
+                  self.vibeCyclePillVisibilityController === visibilityController else {
+                return
+            }
+
+            visibilityController.dismiss()
+            let removalWorkItem = DispatchWorkItem { [weak self, weak visibilityController] in
+                guard let self,
+                      let visibilityController,
+                      self.vibeCyclePillVisibilityController === visibilityController else {
+                    return
+                }
+
+                self.vibeCyclePillWindow?.orderOut(nil)
+                self.vibeCyclePillHideWorkItem = nil
+            }
+            self.vibeCyclePillHideWorkItem = removalWorkItem
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + VibePillPresentationMetrics.panelRemovalDelay,
+                execute: removalWorkItem
+            )
+        }
+        vibeCyclePillHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: workItem)
     }
 
     func setHandsFreeLocked(_ isLocked: Bool) {
@@ -311,6 +370,38 @@ class OverlayManager {
         panel.hasShadow = false
         panel.ignoresMouseEvents = true
         return panel
+    }
+
+    private func makeVibeCyclePillWindow() -> NSPanel {
+        let panel = NSPanel(
+            contentRect: NSRect(origin: .zero, size: LogoBarView.vibePillPanelSize),
+            styleMask: [.nonactivatingPanel, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isFloatingPanel = true
+        panel.level = .floating
+        panel.isReleasedWhenClosed = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = false
+        panel.ignoresMouseEvents = true
+        return panel
+    }
+
+    private func resolvedVibeCyclePillOrigin(for panel: NSPanel) -> NSPoint {
+        if let referencePanel = window, referencePanel.isVisible {
+            return OverlayScreenPersistenceLogic.centeredOrigin(
+                panelSize: panel.frame.size,
+                referenceFrame: referencePanel.frame
+            )
+        }
+
+        let recordingOverlayOrigin = screenPersistence.resolvedOriginForShow(panelSize: RecordingOverlay.panelSize)
+        let referenceFrame = CGRect(origin: recordingOverlayOrigin, size: RecordingOverlay.panelSize)
+        return OverlayScreenPersistenceLogic.centeredOrigin(
+            panelSize: panel.frame.size,
+            referenceFrame: referenceFrame
+        )
     }
 
     private func attachVibeLabelWindow(_ labelPanel: NSPanel, to parentPanel: NSPanel) {
