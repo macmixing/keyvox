@@ -28,6 +28,7 @@ class OverlayManager {
     private var pendingHideWorkItem: DispatchWorkItem?
     private var vibeCyclePillHideWorkItem: DispatchWorkItem?
     private var vibeCyclePillVisibilityController = VibeCyclePillVisibilityController()
+    private var hasConfiguredVibeCyclePillContent = false
     private var moveObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -177,24 +178,20 @@ class OverlayManager {
         vibeCyclePillHideWorkItem?.cancel()
         vibeCyclePillHideWorkItem = nil
 
-        let visibilityController = VibeCyclePillVisibilityController()
-        vibeCyclePillVisibilityController = visibilityController
-
         let panel = vibeCyclePillWindow ?? makeVibeCyclePillWindow()
+        let visibilityController = vibeCyclePillVisibilityController
         vibeCyclePillWindow = panel
-        panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
-            title: title,
-            state: state,
-            visibilityController: visibilityController
-        ))
+        if !hasConfiguredVibeCyclePillContent {
+            panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
+                visibilityController: visibilityController
+            ))
+            hasConfiguredVibeCyclePillContent = true
+        }
+        visibilityController.present(title: title, state: state)
         panel.alphaValue = 1
         resizePanel(panel, to: LogoBarView.vibePillPanelSize)
         panel.setFrameOrigin(resolvedVibeCyclePillOrigin(for: panel))
         panel.orderFrontRegardless()
-
-        DispatchQueue.main.async {
-            visibilityController.present()
-        }
 
         guard let duration else { return }
         let workItem = DispatchWorkItem { [weak self, weak visibilityController] in
