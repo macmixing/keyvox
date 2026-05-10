@@ -383,7 +383,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     private func loadModelWithFallbackIfNeeded(configuration: LocalLanguageModelConfiguration) throws -> LlamaLoadedModel {
         let gpuSupport = Self.supportsGPUOffloadForCurrentPlatform()
         let requestedGPULayers = requestedGPULayerCount(gpuSupport: gpuSupport)
-        let deviceSummary = Self.backendDeviceSummaryForDiagnostics()
+        let deviceSummary = gpuSupport ? Self.backendDeviceSummaryForDiagnostics() : "skipped"
 
         if let requestedGPULayers {
             diagnosticLog(
@@ -483,6 +483,11 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
 
     private static func supportsGPUOffloadForCurrentPlatform() -> Bool {
         #if os(macOS)
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        guard osVersion.majorVersion >= 15 else {
+            return false
+        }
+
         _ = Self.initializeLlamaRuntime
         return llama_supports_gpu_offload()
         #else

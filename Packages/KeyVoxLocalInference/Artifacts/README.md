@@ -13,7 +13,7 @@
 
 ## Why This Artifact Is Vendored
 
-KeyVox uses this framework through `KeyVoxLocalInference` for local Vibes rewrite inference. The `b9093` artifact includes the Metal backend needed for Mac Vibes GPU offload. The Swift runtime still gates GPU layer offload to macOS, so iOS slices remain vendored for compatibility but KeyVox does not request iOS GPU offload.
+KeyVox uses this framework through `KeyVoxLocalInference` for local Vibes rewrite inference. The `b9093` artifact includes the Metal backend needed for Mac Vibes GPU offload. The Swift runtime gates GPU layer offload to macOS 15 and newer; older macOS releases and all iOS builds intentionally stay CPU-only.
 
 ## Retained Slices
 
@@ -43,11 +43,11 @@ ditto /tmp/keyvox-llama-b9093-trimmed.xcframework Packages/KeyVoxLocalInference/
 
 ## Validation Notes
 
-The Mac live inference proof for this artifact should report a Metal backend similar to:
+On macOS 15 and newer, the Mac live inference proof for this artifact should report a Metal backend similar to:
 
 ```text
 gpu-offload mode=automatic supported=true action=attempt layers=-1 devices=count=3 [0:MTL0:Apple M2,1:BLAS:Accelerate,2:CPU:Apple M2]
 gpu-offload mode=automatic backend=gpu layers=-1
 ```
 
-If that log shows no `MTL` device, the vendored artifact or llama backend initialization path is wrong.
+On older macOS releases, the runtime should instead log CPU fallback before enumerating Metal devices. If a macOS 15+ log shows no `MTL` device, the vendored artifact or llama backend initialization path is wrong.
