@@ -49,6 +49,14 @@ final class MacVibesTriggerActionController {
         return triggerTapClassifier.isAwaitingSecondTap(at: timestamp)
     }
 
+    func shouldDeferRecordingStartForVisibleCyclePill(isCyclePillVisible: Bool) -> Bool {
+        vibesCoordinator.canUseVibes && isCyclePillVisible
+    }
+
+    var quickTapDecisionDelay: TimeInterval {
+        quickTapMaximumDuration
+    }
+
     func handleQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         guard vibesCoordinator.canUseVibes else {
             return

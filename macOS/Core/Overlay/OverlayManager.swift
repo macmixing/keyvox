@@ -225,6 +225,10 @@ class OverlayManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: workItem)
     }
 
+    var isVibeCyclePillVisible: Bool {
+        vibeCyclePillWindow?.isVisible == true
+    }
+
     func setHandsFreeLocked(_ isLocked: Bool) {
         visibilityManager.isHandsFreeLocked = isLocked
     }

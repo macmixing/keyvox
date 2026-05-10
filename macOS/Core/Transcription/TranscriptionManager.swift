@@ -74,6 +74,7 @@ class TranscriptionManager: ObservableObject {
     )
     private var isLocked = false
     private var cachedCapsLockIsOn = false
+    private var deferredRecordingStartWorkItem: DispatchWorkItem?
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
@@ -189,6 +190,7 @@ class TranscriptionManager: ObservableObject {
         #endif
         
         playSound(named: "Bottle") // Cancel sound
+        cancelDeferredRecordingStart()
         vibeTriggerActionController.cancelPendingSingleTap()
         audioRecorder.stopRecording { _ in }
         provider.cancelTranscription()
@@ -221,6 +223,12 @@ class TranscriptionManager: ObservableObject {
                 if vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp) {
                     return
                 }
+                if vibeTriggerActionController.shouldDeferRecordingStartForVisibleCyclePill(
+                    isCyclePillVisible: OverlayManager.shared.isVibeCyclePillVisible
+                ) {
+                    scheduleDeferredRecordingStart()
+                    return
+                }
                 startRecording()
             } else if state == .recording && isLocked {
                 vibeTriggerActionController.noteTriggerPressed(at: timestamp)
@@ -231,6 +239,7 @@ class TranscriptionManager: ObservableObject {
                 vibeTriggerActionController.clearTriggerPress()
             }
         } else {
+            let didCancelDeferredRecordingStart = cancelDeferredRecordingStart()
             // Key released
             if state == .recording {
                 if keyboardMonitor.isShiftPressed {
@@ -248,6 +257,10 @@ class TranscriptionManager: ObservableObject {
                 }
             }
             if state == .idle,
+               didCancelDeferredRecordingStart,
+               vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+                vibeTriggerActionController.handleQuickTap(at: timestamp)
+            } else if state == .idle,
                vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp),
                vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
                 vibeTriggerActionController.handleQuickTap(at: timestamp)
@@ -265,10 +278,12 @@ class TranscriptionManager: ObservableObject {
         }
 
         if isPressed {
+            cancelDeferredRecordingStart()
             vibeTriggerActionController.noteTriggerPressed(at: timestamp)
             return
         }
 
+        cancelDeferredRecordingStart()
         if vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
             vibeTriggerActionController.handleQuickTap(at: timestamp)
         }
@@ -282,6 +297,7 @@ class TranscriptionManager: ObservableObject {
     }
 
     private func cancelQuickTapRecording() {
+        cancelDeferredRecordingStart()
         let stopRequestID = UUID()
         stopRequestedAt = Date()
         activeStopRequestID = stopRequestID
@@ -305,6 +321,7 @@ class TranscriptionManager: ObservableObject {
 
     private func startRecording() {
         guard case .idle = state else { return }
+        cancelDeferredRecordingStart()
         modelDownloader.refreshModelStatus()
         guard provider.isModelReady else {
             OverlayManager.shared.hide()
@@ -329,6 +346,32 @@ class TranscriptionManager: ObservableObject {
         )
         audioRecorder.startRecording()
         vibesCoordinator.prewarmForUpcomingDictationIfNeeded()
+    }
+
+    private func scheduleDeferredRecordingStart() {
+        cancelDeferredRecordingStart()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.deferredRecordingStartWorkItem = nil
+            guard self.state == .idle,
+                  self.keyboardMonitor.isTriggerKeyPressed else {
+                return
+            }
+            self.startRecording()
+        }
+        deferredRecordingStartWorkItem = workItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + vibeTriggerActionController.quickTapDecisionDelay,
+            execute: workItem
+        )
+    }
+
+    @discardableResult
+    private func cancelDeferredRecordingStart() -> Bool {
+        let hadDeferredRecordingStart = deferredRecordingStartWorkItem != nil
+        deferredRecordingStartWorkItem?.cancel()
+        deferredRecordingStartWorkItem = nil
+        return hadDeferredRecordingStart
     }
 
     private var stopRequestedAt: Date?
