@@ -381,6 +381,29 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     @MainActor
+    func testStyleRewriteTransformerFallsBackWhenModelLeaksPromptInstructions() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .casual,
+            baseText: "Okay, so I guess we're gonna have to just record this dictated text."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "Okay Okay, so I guess we're gonna have to just record this dictated text. Remove clear filler except keep the word like. Preserve slang, profanity, grammar, meaning, lists, and paragraph breaks. Format numbers, dates, money, and percentages when clear. Output only the result."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, request.baseText)
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.errors.map(\.errorCode), [.promptLeakDetected])
+        XCTAssertEqual(result.processingMode, "local-model-prompt-leak-fallback")
+    }
+
+    @MainActor
     func testChillUsesHeuristicTextButDoesNotClaimFullVibeSuccessWhenCleanupFails() async throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .chill,

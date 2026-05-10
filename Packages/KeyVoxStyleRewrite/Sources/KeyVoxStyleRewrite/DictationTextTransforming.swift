@@ -45,6 +45,7 @@ public enum TextTransformErrorCode: String, Codable, Equatable, Sendable {
     case localModelGenerationFailed
     case localModelPromptTooLong
     case localModelCancelled
+    case promptLeakDetected
     case generationFailed
 }
 
