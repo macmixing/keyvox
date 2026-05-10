@@ -43,7 +43,6 @@ final class MacVibesTriggerActionController {
 
     func handleQuickTap() {
         guard vibesCoordinator.canUseVibes else {
-            appSettings.selectedVibe = .none
             return
         }
 
@@ -73,7 +72,6 @@ final class MacVibesTriggerActionController {
     private func performSingleVibeTap() async {
         pendingSingleTapWorkItem = nil
         guard vibesCoordinator.canUseVibes else {
-            appSettings.selectedVibe = .none
             return
         }
 

@@ -5,9 +5,16 @@ extension SettingsView {
         VStack(alignment: .leading, spacing: 16) {
             Spacer().frame(height: 4)
 
-            if appSettings.canUseVibes {
-                SettingsVibesCard(selectedVibe: $appSettings.selectedVibe)
-            }
+            SettingsVibesCard(
+                selectedVibe: $appSettings.selectedVibe,
+                installState: localRewriteModelManager.installState,
+                downloadAction: {
+                    localRewriteModelManager.downloadModel()
+                },
+                repairAction: {
+                    localRewriteModelManager.downloadModel()
+                }
+            )
 
             SettingsCard {
                 SettingsRow(

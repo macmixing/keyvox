@@ -42,7 +42,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
         defaults.set(StyleRewriteStyle.chill.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
+        let store = AppSettingsStore(defaults: defaults)
 
         XCTAssertTrue(store.hasCompletedOnboarding)
         XCTAssertEqual(store.triggerBinding, .leftCommand)
@@ -100,7 +100,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let lastShown = makeDate(year: 2026, month: 2, day: 10)
         let snoozedUntil = makeDate(year: 2026, month: 2, day: 20)
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
+        let store = AppSettingsStore(defaults: defaults)
 
         store.hasCompletedOnboarding = true
         store.triggerBinding = .rightCommand
@@ -190,20 +190,20 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(AppSettingsStore.ActiveDictationProvider.parakeet.modelID, .parakeetTdtV3)
     }
 
-    func testSelectedVibeResolvesToNoneWhenFoundationUnavailable() {
+    func testSelectedVibeHydratesWithoutAvailabilityGate() {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
         defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { false })
+        let store = AppSettingsStore(defaults: defaults)
 
-        XCTAssertEqual(store.selectedVibe, .none)
+        XCTAssertEqual(store.selectedVibe, .polished)
     }
 
-    func testAdvanceSelectedVibeCyclesWhenFoundationAvailable() {
+    func testAdvanceSelectedVibeCycles() {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { true })
+        let store = AppSettingsStore(defaults: defaults)
 
         XCTAssertEqual(store.advanceSelectedVibe(), .casual)
         XCTAssertEqual(store.advanceSelectedVibe(), .polished)
@@ -211,10 +211,10 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.advanceSelectedVibe(), .none)
     }
 
-    func testAdvanceSelectedVibeReturnsNoneWhenFoundationUnavailable() {
+    func testAdvanceSelectedVibeDoesNotDependOnAvailability() {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let store = AppSettingsStore(defaults: defaults, isFoundationRewriteAvailable: { false })
+        let store = AppSettingsStore(defaults: defaults)
         store.selectedVibe = .chill
 
         XCTAssertEqual(store.advanceSelectedVibe(), .none)

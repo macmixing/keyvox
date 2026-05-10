@@ -5,26 +5,17 @@ import KeyVoxStyleRewrite
 @MainActor
 final class MacVibesCoordinator {
     private let appSettings: AppSettingsStore
-    private let textTransformer: FoundationStyleRewriteTextTransformer
-    private let isFoundationRewriteAvailable: () -> Bool
+    private let textTransformer: any DictationTextTransforming
+    private let isModelReady: () -> Bool
 
     init(
         appSettings: AppSettingsStore,
-        isFoundationRewriteAvailable: @escaping () -> Bool = { FoundationStyleRewriteAvailability.isAvailable }
-    ) {
-        self.appSettings = appSettings
-        self.textTransformer = FoundationStyleRewriteTextTransformer()
-        self.isFoundationRewriteAvailable = isFoundationRewriteAvailable
-    }
-
-    init(
-        appSettings: AppSettingsStore,
-        textTransformer: FoundationStyleRewriteTextTransformer,
-        isFoundationRewriteAvailable: @escaping () -> Bool = { FoundationStyleRewriteAvailability.isAvailable }
+        textTransformer: any DictationTextTransforming,
+        isModelReady: @escaping () -> Bool
     ) {
         self.appSettings = appSettings
         self.textTransformer = textTransformer
-        self.isFoundationRewriteAvailable = isFoundationRewriteAvailable
+        self.isModelReady = isModelReady
     }
 
     var selectedVibe: StyleRewriteStyle {
@@ -32,13 +23,12 @@ final class MacVibesCoordinator {
     }
 
     var canUseVibes: Bool {
-        isFoundationRewriteAvailable()
+        isModelReady()
     }
 
     @discardableResult
     func advanceSelectedVibe() -> StyleRewriteStyle {
         guard canUseVibes else {
-            appSettings.selectedVibe = .none
             return .none
         }
 
@@ -47,7 +37,7 @@ final class MacVibesCoordinator {
 
     func prewarmForUpcomingDictationIfNeeded() {
         let style = selectedVibe
-        guard style.usesFoundationRewrite,
+        guard style.usesModelRewrite,
               let request = StyleRewriteDictationConfiguration.request(for: style, baseText: "") else {
             log("prewarm skipped reason=style style=\(style.styleIdentifier)")
             return
@@ -58,7 +48,7 @@ final class MacVibesCoordinator {
 
     func processOutputText(_ text: String) async -> DictationPipelineTextProcessingResult {
         let style = selectedVibe
-        guard style.usesFoundationRewrite else {
+        guard style.usesModelRewrite else {
             return .unchanged(text)
         }
 
@@ -98,15 +88,11 @@ final class MacVibesCoordinator {
     }
 
     func releasePrewarmSession(reason: String) {
-        textTransformer.releasePrewarmSession(reason: reason)
+        _ = reason
     }
 
     private func resolvedStyle(_ style: StyleRewriteStyle) -> StyleRewriteStyle {
-        let resolved = style.resolvedForFoundationAvailability(isFoundationRewriteAvailable())
-        if resolved != style {
-            appSettings.selectedVibe = resolved
-        }
-        return resolved
+        style.resolvedForModelAvailability(isModelReady())
     }
 
     private func log(_ message: @autoclosure () -> String) {

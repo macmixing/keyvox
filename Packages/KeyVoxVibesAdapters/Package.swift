@@ -6,7 +6,7 @@ let package = Package(
     name: "KeyVoxVibesAdapters",
     platforms: [
         .iOS(.v18),
-        .macOS(.v15),
+        .macOS(.v13),
     ],
     products: [
         .library(

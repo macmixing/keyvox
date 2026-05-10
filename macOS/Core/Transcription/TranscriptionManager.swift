@@ -29,7 +29,7 @@ class TranscriptionManager: ObservableObject {
     private let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
-    private lazy var vibesCoordinator = MacVibesCoordinator(appSettings: appSettings)
+    private let vibesCoordinator: MacVibesCoordinator
     private lazy var dictationChangeController = MacDictationChangeController(
         vibesCoordinator: vibesCoordinator
     )
@@ -83,6 +83,7 @@ class TranscriptionManager: ObservableObject {
             modelDownloader: .shared,
             audioRecorder: AudioRecorder(),
             serviceRegistry: .shared,
+            vibesCoordinator: AppServiceRegistry.shared.vibesCoordinator,
             postProcessor: TranscriptionPostProcessor()
         )
     }
@@ -92,6 +93,7 @@ class TranscriptionManager: ObservableObject {
         modelDownloader: ModelDownloader,
         audioRecorder: AudioRecorder,
         serviceRegistry: AppServiceRegistry,
+        vibesCoordinator: MacVibesCoordinator,
         postProcessor: TranscriptionPostProcessor
     ) {
         self.appSettings = appSettings
@@ -102,6 +104,7 @@ class TranscriptionManager: ObservableObject {
         self.parakeetService = serviceRegistry.parakeetService
         self.dictionaryStore = serviceRegistry.dictionaryStore
         self.weeklyWordStatsStore = serviceRegistry.weeklyWordStatsStore
+        self.vibesCoordinator = vibesCoordinator
         self.postProcessor = postProcessor
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()

@@ -121,14 +121,6 @@ final class AppSettingsStore: ObservableObject {
 
     @Published var selectedVibe: StyleRewriteStyle {
         didSet {
-            let normalized = Self.resolvedSelectedVibe(
-                selectedVibe,
-                isFoundationAvailable: isFoundationRewriteAvailable()
-            )
-            guard selectedVibe == normalized else {
-                selectedVibe = normalized
-                return
-            }
             defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         }
     }
@@ -170,7 +162,6 @@ final class AppSettingsStore: ObservableObject {
 
     private let defaults: UserDefaults
     private let osVersion: OperatingSystemVersion
-    private let isFoundationRewriteAvailable: () -> Bool
     private let defaultSoundVolume: Double = 0.1
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
@@ -178,12 +169,10 @@ final class AppSettingsStore: ObservableObject {
 
     init(
         defaults: UserDefaults = .standard,
-        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion,
-        isFoundationRewriteAvailable: @escaping () -> Bool = { FoundationStyleRewriteAvailability.isAvailable }
+        osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
     ) {
         self.defaults = defaults
         self.osVersion = osVersion
-        self.isFoundationRewriteAvailable = isFoundationRewriteAvailable
 
         hasCompletedOnboarding = defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding)
 
@@ -207,10 +196,7 @@ final class AppSettingsStore: ObservableObject {
         selectedMicrophoneUID = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
         if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
            let style = StyleRewriteStyle(rawValue: raw) {
-            selectedVibe = Self.resolvedSelectedVibe(
-                style,
-                isFoundationAvailable: isFoundationRewriteAvailable()
-            )
+            selectedVibe = style
         } else {
             selectedVibe = .none
         }
@@ -233,25 +219,14 @@ final class AppSettingsStore: ObservableObject {
     }
 
     var canUseVibes: Bool {
-        isFoundationRewriteAvailable()
+        true
     }
 
     func normalizeSelectedVibeForCurrentAvailability() {
-        let normalized = Self.resolvedSelectedVibe(
-            selectedVibe,
-            isFoundationAvailable: isFoundationRewriteAvailable()
-        )
-        guard selectedVibe != normalized else { return }
-        selectedVibe = normalized
     }
 
     @discardableResult
     func advanceSelectedVibe() -> StyleRewriteStyle {
-        guard isFoundationRewriteAvailable() else {
-            selectedVibe = .none
-            return .none
-        }
-
         let styles = StyleRewriteStyle.allCases
         guard styles.isEmpty == false else { return selectedVibe }
         let currentIndex = styles.firstIndex(of: selectedVibe) ?? 0
@@ -282,10 +257,4 @@ final class AppSettingsStore: ObservableObject {
         provider.isSupported(osVersion: osVersion) ? provider : .whisper
     }
 
-    private static func resolvedSelectedVibe(
-        _ style: StyleRewriteStyle,
-        isFoundationAvailable: Bool
-    ) -> StyleRewriteStyle {
-        style.resolvedForFoundationAvailability(isFoundationAvailable)
-    }
 }
