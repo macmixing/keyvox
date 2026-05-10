@@ -106,21 +106,27 @@ final class LocalLanguageModelTests: XCTestCase {
             modelURL: URL(fileURLWithPath: modelPath),
             gpuOffloadMode: .automatic
         )
-        let result = try await model.generate(
-            LocalLanguageModelGenerationRequest(
-                prompt: "Return only the word ready.",
-                maximumTokenCount: 8
-            ),
-            configuration: LocalLanguageModelConfiguration(
-                contextTokenLimit: 512,
-                threadCount: 2,
-                batchThreadCount: 2,
-                batchTokenCount: 128
+        do {
+            let result = try await model.generate(
+                LocalLanguageModelGenerationRequest(
+                    prompt: "Return only the word ready.",
+                    maximumTokenCount: 8
+                ),
+                configuration: LocalLanguageModelConfiguration(
+                    contextTokenLimit: 512,
+                    threadCount: 2,
+                    batchThreadCount: 2,
+                    batchTokenCount: 128
+                )
             )
-        )
+            await model.unload()
 
-        XCTAssertFalse(result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        XCTAssertGreaterThan(result.metrics.outputTokenCount, 0)
+            XCTAssertFalse(result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            XCTAssertGreaterThan(result.metrics.outputTokenCount, 0)
+        } catch {
+            await model.unload()
+            throw error
+        }
     }
 
 }
