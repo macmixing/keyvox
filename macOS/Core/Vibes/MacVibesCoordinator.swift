@@ -36,7 +36,11 @@ final class MacVibesCoordinator {
     }
 
     func prewarmForUpcomingDictationIfNeeded() {
-        let style = selectedVibe
+        prewarm(style: selectedVibe)
+    }
+
+    func prewarm(style: StyleRewriteStyle) {
+        let style = resolvedStyle(style)
         guard style.usesModelRewrite,
               let request = StyleRewriteDictationConfiguration.request(for: style, baseText: "") else {
             log("prewarm skipped reason=style style=\(style.styleIdentifier)")
