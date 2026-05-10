@@ -14,6 +14,11 @@ class OverlayVisibilityManager: ObservableObject {
 class OverlayManager {
     static let shared = OverlayManager()
 
+    enum VibePillPlacement {
+        case savedOverlayOrigin
+        case currentOverlayCenter
+    }
+
     private var window: OverlayPanel?
     private var vibeLabelWindow: NSPanel?
     private var vibeLabelTitle: String?
@@ -97,10 +102,12 @@ class OverlayManager {
     func showVibePill(
         title: String,
         state: LogoBarView.VibePillState = .normal,
-        duration: TimeInterval? = 0.9
+        duration: TimeInterval? = 0.9,
+        placement: VibePillPlacement = .savedOverlayOrigin
     ) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
+        let hadExistingPanel = window != nil
         let panelWasVisible = window?.isVisible ?? false
 
         if window == nil {
@@ -132,7 +139,9 @@ class OverlayManager {
             ))
             configurePanelCallbacks(panel)
             if !panelWasVisible {
-                panel.setFrameOrigin(screenPersistence.resolvedOriginForShow(panel: panel))
+                if placement != .currentOverlayCenter || !hadExistingPanel {
+                    panel.setFrameOrigin(screenPersistence.resolvedOriginForShow(panel: panel))
+                }
             }
             panel.orderFrontRegardless()
         }

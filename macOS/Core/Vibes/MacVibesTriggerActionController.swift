@@ -81,7 +81,8 @@ final class MacVibesTriggerActionController {
                 OverlayManager.shared.showVibePill(
                     title: self.vibesCoordinator.selectedVibe.displayName,
                     state: .processing,
-                    duration: nil
+                    duration: nil,
+                    placement: .currentOverlayCenter
                 )
             },
             onProcessingEnd: {}
@@ -91,10 +92,14 @@ final class MacVibesTriggerActionController {
             OverlayManager.shared.showVibePill(
                 title: dictationChangeController.currentStyle.displayName,
                 state: .completed,
-                duration: 0.72
+                duration: 0.72,
+                placement: .currentOverlayCenter
             )
         } else {
-            OverlayManager.shared.showVibePill(title: vibesCoordinator.selectedVibe.displayName)
+            OverlayManager.shared.showVibePill(
+                title: vibesCoordinator.selectedVibe.displayName,
+                placement: .currentOverlayCenter
+            )
         }
     }
 }
