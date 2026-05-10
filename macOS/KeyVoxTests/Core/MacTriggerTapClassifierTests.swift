@@ -6,35 +6,35 @@ final class MacTriggerTapClassifierTests: XCTestCase {
     func testFirstQuickTapSchedulesSingleTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
 
-        let event = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10))
+        let event = classifier.registerQuickTap(at: 10)
 
         XCTAssertEqual(event, .scheduleSingleTap)
     }
 
     func testSecondQuickTapInsideWindowProducesDoubleTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
-        _ = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10))
+        _ = classifier.registerQuickTap(at: 10)
 
-        let event = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.2))
+        let event = classifier.registerQuickTap(at: 10.2)
 
         XCTAssertEqual(event, .doubleTap)
     }
 
     func testSecondQuickTapOutsideWindowSchedulesNewSingleTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
-        _ = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10))
+        _ = classifier.registerQuickTap(at: 10)
 
-        let event = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.5))
+        let event = classifier.registerQuickTap(at: 10.5)
 
         XCTAssertEqual(event, .scheduleSingleTap)
     }
 
     func testTapAfterDoubleTapResetsState() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
-        _ = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10))
-        XCTAssertEqual(classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.2)), .doubleTap)
+        _ = classifier.registerQuickTap(at: 10)
+        XCTAssertEqual(classifier.registerQuickTap(at: 10.2), .doubleTap)
 
-        let event = classifier.registerQuickTap(at: Date(timeIntervalSince1970: 10.2))
+        let event = classifier.registerQuickTap(at: 10.2)
 
         XCTAssertEqual(event, .scheduleSingleTap)
     }

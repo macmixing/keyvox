@@ -115,9 +115,13 @@ class TranscriptionManager: ObservableObject {
     deinit {}
 
     private func setupBindings() {
-        keyboardMonitor.$isTriggerKeyPressed
-            .sink { [weak self] isPressed in
-                self?.handleTriggerKey(isPressed: isPressed)
+        keyboardMonitor.$triggerKeyEvent
+            .compactMap { $0 }
+            .sink { [weak self] event in
+                self?.handleTriggerKey(
+                    isPressed: event.isPressed,
+                    timestamp: event.timestamp
+                )
             }
             .store(in: &cancellables)
 
@@ -188,14 +192,10 @@ class TranscriptionManager: ObservableObject {
         state = .idle
     }
     
-    private func handleTriggerKey(isPressed: Bool) {
+    private func handleTriggerKey(isPressed: Bool, timestamp: TimeInterval) {
         guard appSettings.hasCompletedOnboarding else { return }
         guard stopRequestedAt == nil else {
-            #if DEBUG
-            if isPressed {
-                print("Trigger ignored while recorder stop finalization is pending.")
-            }
-            #endif
+            handleTriggerDuringPendingStop(isPressed: isPressed, timestamp: timestamp)
             updateOverlayHandsFreeVisualState()
             return
         }
@@ -210,7 +210,7 @@ class TranscriptionManager: ObservableObject {
         }
 
         if isPressed {
-            vibeTriggerActionController.noteTriggerPressed()
+            vibeTriggerActionController.noteTriggerPressed(at: timestamp)
             if state == .idle {
                 startRecording()
             } else if state == .recording && isLocked {
@@ -227,9 +227,9 @@ class TranscriptionManager: ObservableObject {
                     print("Hands-free mode LOCKED")
                     #endif
                 } else if !isLocked {
-                    if vibeTriggerActionController.shouldHandleReleaseAsQuickTap() {
+                    if vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
                         cancelQuickTapRecording()
-                        vibeTriggerActionController.handleQuickTap()
+                        vibeTriggerActionController.handleQuickTap(at: timestamp)
                     } else {
                         stopRecordingAndTranscribe()
                     }
@@ -239,6 +239,18 @@ class TranscriptionManager: ObservableObject {
         }
 
         updateOverlayHandsFreeVisualState()
+    }
+
+    private func handleTriggerDuringPendingStop(isPressed: Bool, timestamp: TimeInterval) {
+        if isPressed {
+            vibeTriggerActionController.noteTriggerPressed(at: timestamp)
+            return
+        }
+
+        if vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+            vibeTriggerActionController.handleQuickTap(at: timestamp)
+        }
+        vibeTriggerActionController.clearTriggerPress()
     }
 
     private var selectedRecordingVibeTitle: String? {

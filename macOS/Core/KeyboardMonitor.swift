@@ -82,6 +82,11 @@ struct KeyboardModifierStateMachine {
     }
 }
 
+struct KeyboardTriggerEvent: Equatable {
+    let isPressed: Bool
+    let timestamp: TimeInterval
+}
+
 @MainActor
 final class KeyboardMonitor: ObservableObject {
 
@@ -95,6 +100,7 @@ final class KeyboardMonitor: ObservableObject {
     @Published var isTriggerKeyPressed = false
     @Published var isShiftPressed = false
     @Published var isCapsLockOn = false
+    @Published private(set) var triggerKeyEvent: KeyboardTriggerEvent?
 
     /// Current trigger binding snapshot mirrored from `AppSettingsStore`.
     @Published private(set) var triggerBinding: TriggerBinding
@@ -200,11 +206,19 @@ final class KeyboardMonitor: ObservableObject {
         let newState = modifierState.isTriggerPressed(binding: triggerBinding)
         let newShiftState = event.modifierFlags.contains(.shift)
         let newCapsLockState = event.modifierFlags.contains(.capsLock)
+        let triggerStateChanged = newState != isTriggerKeyPressed
 
         if newState != isTriggerKeyPressed || newShiftState != isShiftPressed || newCapsLockState != isCapsLockOn {
             isTriggerKeyPressed = newState
             isShiftPressed = newShiftState
             isCapsLockOn = newCapsLockState
+        }
+
+        if triggerStateChanged {
+            triggerKeyEvent = KeyboardTriggerEvent(
+                isPressed: newState,
+                timestamp: event.timestamp
+            )
         }
     }
 

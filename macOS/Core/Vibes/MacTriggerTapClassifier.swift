@@ -8,24 +8,24 @@ nonisolated struct MacTriggerTapClassifier {
     }
 
     let doubleTapInterval: TimeInterval
-    private var lastTapAt: Date?
+    private var lastTapAt: TimeInterval?
 
-    init(doubleTapInterval: TimeInterval = 0.28) {
+    init(doubleTapInterval: TimeInterval = 0.85) {
         self.doubleTapInterval = doubleTapInterval
     }
 
-    mutating func registerQuickTap(at date: Date) -> Event {
+    mutating func registerQuickTap(at timestamp: TimeInterval) -> Event {
         guard let lastTapAt else {
-            self.lastTapAt = date
+            self.lastTapAt = timestamp
             return .scheduleSingleTap
         }
 
-        if date.timeIntervalSince(lastTapAt) <= doubleTapInterval {
+        if timestamp - lastTapAt <= doubleTapInterval {
             self.lastTapAt = nil
             return .doubleTap
         }
 
-        self.lastTapAt = date
+        self.lastTapAt = timestamp
         return .scheduleSingleTap
     }
 }

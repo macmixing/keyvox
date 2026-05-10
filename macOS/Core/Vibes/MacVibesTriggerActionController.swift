@@ -7,7 +7,7 @@ final class MacVibesTriggerActionController {
     private let vibesCoordinator: MacVibesCoordinator
     private let dictationChangeController: MacDictationChangeController
     private let quickTapMaximumDuration: TimeInterval
-    private var triggerPressedAt: Date?
+    private var triggerPressedAt: TimeInterval?
     private var triggerTapClassifier = MacTriggerTapClassifier()
     private var pendingSingleTapWorkItem: DispatchWorkItem?
 
@@ -15,7 +15,7 @@ final class MacVibesTriggerActionController {
         appSettings: AppSettingsStore,
         vibesCoordinator: MacVibesCoordinator,
         dictationChangeController: MacDictationChangeController,
-        quickTapMaximumDuration: TimeInterval = 0.22
+        quickTapMaximumDuration: TimeInterval = 0.50
     ) {
         self.appSettings = appSettings
         self.vibesCoordinator = vibesCoordinator
@@ -23,17 +23,17 @@ final class MacVibesTriggerActionController {
         self.quickTapMaximumDuration = quickTapMaximumDuration
     }
 
-    func noteTriggerPressed(at date: Date = Date()) {
-        triggerPressedAt = date
+    func noteTriggerPressed(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        triggerPressedAt = timestamp
     }
 
     func clearTriggerPress() {
         triggerPressedAt = nil
     }
 
-    func shouldHandleReleaseAsQuickTap(at date: Date = Date()) -> Bool {
+    func shouldHandleReleaseAsQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
         guard let triggerPressedAt else { return false }
-        return date.timeIntervalSince(triggerPressedAt) <= quickTapMaximumDuration
+        return timestamp - triggerPressedAt <= quickTapMaximumDuration
     }
 
     func cancelPendingSingleTap() {
@@ -41,12 +41,12 @@ final class MacVibesTriggerActionController {
         pendingSingleTapWorkItem = nil
     }
 
-    func handleQuickTap() {
+    func handleQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         guard vibesCoordinator.canUseVibes else {
             return
         }
 
-        switch triggerTapClassifier.registerQuickTap(at: Date()) {
+        switch triggerTapClassifier.registerQuickTap(at: timestamp) {
         case .none:
             break
         case .scheduleSingleTap:
