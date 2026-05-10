@@ -66,8 +66,9 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
 }
 
 public enum StyleRewriteDictationConfiguration {
-    public static let modelContextTokenLimit = 4_096
-    public static let defaultMaximumResponseTokens = 512
+    public static let modelContextTokenLimit = 32_768
+    public static let modelMaximumGenerationTokenLimit = 8_192
+    public static let defaultMaximumResponseTokens = modelMaximumGenerationTokenLimit
     public static let polishedLoRASystemPrompt = "Polish this dictated text. Remove spoken filler and false starts. Convert ain't to standard English. Preserve meaning, structure, and paragraph breaks. Do not drop, duplicate, merge, reorder, or replace paragraph content. Use numerals where appropriate. Output only the result."
     public static let casualLoRASystemPrompt = "Lightly clean this dictated text. Remove clear filler except keep the word like. Preserve slang, profanity, grammar, meaning, lists, and paragraph breaks. Format numbers, dates, money, and percentages when clear. Output only the result."
 

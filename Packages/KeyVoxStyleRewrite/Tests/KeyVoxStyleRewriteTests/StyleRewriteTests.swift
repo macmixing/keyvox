@@ -18,8 +18,8 @@ final class StyleRewriteTests: XCTestCase {
             baseText: "Quick note me and Sarah was talking."
         ))
 
-        XCTAssertEqual(request.contextTokenLimit, 4_096)
-        XCTAssertEqual(request.maximumResponseTokens, 512)
+        XCTAssertEqual(request.contextTokenLimit, StyleRewriteDictationConfiguration.modelContextTokenLimit)
+        XCTAssertEqual(request.maximumResponseTokens, StyleRewriteDictationConfiguration.modelMaximumGenerationTokenLimit)
         XCTAssertEqual(request.styleIdentifier, StyleRewriteStyle.polished.styleIdentifier)
         XCTAssertEqual(request.instructions, StyleRewriteDictationConfiguration.polishedLoRASystemPrompt)
         XCTAssertTrue(request.promptPrefix.isEmpty)
@@ -171,6 +171,30 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(plan.chunks.map(\.text), ["one two three", "four five six", "seven eight"])
     }
 
+    func testChunkPlannerAlsoHonorsMaximumResponseTokens() async throws {
+        let request = TextTransformRequest(
+            baseText: "one two three four five six seven eight nine ten",
+            styleIdentifier: "test-style",
+            instructions: "",
+            promptPrefix: "",
+            contextTokenLimit: 32_768,
+            expectedOutputExpansionRatio: 1,
+            safetyMarginTokens: 0,
+            maximumResponseTokens: 19
+        )
+        let planner = TextTransformChunkPlanner(tokenCounter: WordTokenCounter())
+
+        let plan = await planner.planChunks(for: request)
+
+        XCTAssertEqual(plan.maximumInputTokensPerChunk, 3)
+        XCTAssertEqual(plan.chunks.map(\.text), [
+            "one two three",
+            "four five six",
+            "seven eight nine",
+            "ten",
+        ])
+    }
+
     func testChunkPlannerPrefersSentenceBoundariesWithinBudget() async throws {
         let request = Self.request("Alpha one. Beta two. Gamma three.")
         let planner = TextTransformChunkPlanner(tokenCounter: WordTokenCounter())
@@ -230,6 +254,24 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertTrue(result.applied)
         XCTAssertEqual(result.errors.map(\.chunkIndex), [1])
         XCTAssertEqual(result.chunkTimings.map(\.usedFallbackText), [false, true])
+    }
+
+    @MainActor
+    func testChunkRunnerTreatsOutputTruncationAsFallback() async throws {
+        let request = Self.request("Alpha one.")
+        let responder = StubChunkResponder(
+            typedError: .outputTruncated("maximumTokenCount")
+        )
+        let runner = TextTransformChunkRunner(
+            planner: TextTransformChunkPlanner(tokenCounter: WordTokenCounter()),
+            responder: responder
+        )
+
+        let result = await runner.transform(request)
+
+        XCTAssertEqual(result.finalText, request.baseText)
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.errors.map(\.errorCode), [.localModelOutputTruncated])
     }
 
     func testDictationUtteranceArtifactRoundTripsThroughJSON() throws {

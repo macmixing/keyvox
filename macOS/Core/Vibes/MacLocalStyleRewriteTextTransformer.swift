@@ -130,6 +130,8 @@ private final class MacLocalStyleRewriteChunkResponder: TextTransformChunkRespon
             return .promptTooLong(error.description)
         case .cancelled:
             return .cancelled
+        case .outputTruncated:
+            return .outputTruncated(error.description)
         case .tokenizerFailed, .decodeFailed, .emptyOutput:
             return .generationFailed(error.description)
         }

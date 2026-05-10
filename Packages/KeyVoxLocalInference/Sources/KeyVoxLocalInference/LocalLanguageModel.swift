@@ -69,6 +69,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
     public let loadDuration: TimeInterval?
     public let inputTokenCount: Int
     public let outputTokenCount: Int
+    public let reachedMaximumTokenCount: Bool
     public let prefillDuration: TimeInterval
     public let decodeDuration: TimeInterval
     public let totalDuration: TimeInterval
@@ -77,6 +78,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
         loadDuration: TimeInterval?,
         inputTokenCount: Int,
         outputTokenCount: Int,
+        reachedMaximumTokenCount: Bool = false,
         prefillDuration: TimeInterval,
         decodeDuration: TimeInterval,
         totalDuration: TimeInterval
@@ -84,6 +86,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
         self.loadDuration = loadDuration
         self.inputTokenCount = inputTokenCount
         self.outputTokenCount = outputTokenCount
+        self.reachedMaximumTokenCount = reachedMaximumTokenCount
         self.prefillDuration = prefillDuration
         self.decodeDuration = decodeDuration
         self.totalDuration = totalDuration
@@ -124,6 +127,7 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
     case promptTooLong(inputTokenCount: Int, contextTokenLimit: Int)
     case decodeFailed(code: Int32)
     case emptyOutput
+    case outputTruncated(maximumTokenCount: Int)
     case cancelled
 
     public var description: String {
@@ -148,6 +152,8 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
             return "decodeFailed(code=\(code))"
         case .emptyOutput:
             return "emptyOutput"
+        case let .outputTruncated(maximumTokenCount):
+            return "outputTruncated(maximumTokenCount=\(maximumTokenCount))"
         case .cancelled:
             return "cancelled"
         }
@@ -354,6 +360,9 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         guard !trimmedText.isEmpty else {
             throw LocalLanguageModelError.emptyOutput
         }
+        guard outputTokenCount < max(request.maximumTokenCount, 1) else {
+            throw LocalLanguageModelError.outputTruncated(maximumTokenCount: max(request.maximumTokenCount, 1))
+        }
 
         return LocalLanguageModelGenerationResult(
             text: trimmedText,
@@ -361,6 +370,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
                 loadDuration: loadDuration,
                 inputTokenCount: promptTokens.count,
                 outputTokenCount: outputTokenCount,
+                reachedMaximumTokenCount: false,
                 prefillDuration: prefillDuration,
                 decodeDuration: decodeDuration,
                 totalDuration: totalDuration

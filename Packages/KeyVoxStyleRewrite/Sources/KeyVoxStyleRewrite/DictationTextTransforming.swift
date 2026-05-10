@@ -44,6 +44,7 @@ public enum TextTransformErrorCode: String, Codable, Equatable, Sendable {
     case localModelLoadFailed
     case localModelGenerationFailed
     case localModelPromptTooLong
+    case localModelOutputTruncated
     case localModelCancelled
     case promptLeakDetected
     case generationFailed
@@ -254,6 +255,7 @@ public enum StyleRewriteBackendError: Error, Equatable, Sendable, CustomStringCo
     case modelNotInstalled
     case modelLoadFailed(String)
     case promptTooLong(String)
+    case outputTruncated(String)
     case generationFailed(String)
     case cancelled
 
@@ -265,6 +267,8 @@ public enum StyleRewriteBackendError: Error, Equatable, Sendable, CustomStringCo
             return "localModelLoadFailed(\(message))"
         case let .promptTooLong(message):
             return "localModelPromptTooLong(\(message))"
+        case let .outputTruncated(message):
+            return "localModelOutputTruncated(\(message))"
         case let .generationFailed(message):
             return "localModelGenerationFailed(\(message))"
         case .cancelled:
@@ -280,6 +284,8 @@ public enum StyleRewriteBackendError: Error, Equatable, Sendable, CustomStringCo
             return .localModelLoadFailed
         case .promptTooLong:
             return .localModelPromptTooLong
+        case .outputTruncated:
+            return .localModelOutputTruncated
         case .generationFailed:
             return .localModelGenerationFailed
         case .cancelled:

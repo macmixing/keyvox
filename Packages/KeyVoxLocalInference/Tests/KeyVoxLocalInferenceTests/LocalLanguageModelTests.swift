@@ -30,6 +30,14 @@ final class LocalLanguageModelTests: XCTestCase {
         )
 
         XCTAssertEqual(metrics.decodeTokensPerSecond, 10)
+        XCTAssertFalse(metrics.reachedMaximumTokenCount)
+    }
+
+    func testOutputTruncatedErrorIsTyped() {
+        XCTAssertEqual(
+            LocalLanguageModelError.outputTruncated(maximumTokenCount: 12).description,
+            "outputTruncated(maximumTokenCount=12)"
+        )
     }
 
     func testStructuredChatRequestStoresSeparateSystemAndUserPrompts() {
