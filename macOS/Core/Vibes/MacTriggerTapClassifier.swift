@@ -19,6 +19,10 @@ nonisolated struct MacTriggerTapClassifier {
         return timestamp - lastTapAt <= doubleTapInterval
     }
 
+    mutating func reset() {
+        lastTapAt = nil
+    }
+
     mutating func registerQuickTap(at timestamp: TimeInterval) -> Event {
         guard let lastTapAt else {
             self.lastTapAt = timestamp

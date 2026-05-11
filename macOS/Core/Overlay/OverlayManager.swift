@@ -28,7 +28,10 @@ class OverlayManager {
     private var pendingHideWorkItem: DispatchWorkItem?
     private var vibeCyclePillHideWorkItem: DispatchWorkItem?
     private var vibeCyclePillVisibilityController = VibeCyclePillVisibilityController()
-    private var hasConfiguredVibeCyclePillContent = false
+    private weak var configuredVibeCyclePillContentPanel: NSPanel?
+    private weak var activeVibeCyclePillPanel: NSPanel?
+    private var visibleVibePillTitle: String?
+    private var visibleVibePillState: LogoBarView.VibePillState?
     private var moveObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -46,6 +49,7 @@ class OverlayManager {
     ) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
+        resetVibeCyclePillState(orderOutVisiblePanel: true)
         let panelWasVisible = window?.isVisible ?? false
 
         if window == nil {
@@ -80,6 +84,9 @@ class OverlayManager {
             isTranscribing: isTranscribing,
             visibilityManager: visibilityManager
         ))
+        if configuredVibeCyclePillContentPanel === window {
+            configuredVibeCyclePillContentPanel = nil
+        }
 
         visibilityManager.shouldDismiss = false
         if !panelWasVisible {
@@ -111,6 +118,7 @@ class OverlayManager {
     ) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
+        resetVibeCyclePillState(orderOutVisiblePanel: true)
         let hadExistingPanel = window != nil
         let panelWasVisible = window?.isVisible ?? false
 
@@ -136,11 +144,16 @@ class OverlayManager {
         if let panel = window {
             resizePanel(panel, to: LogoBarView.vibePillPanelSize)
             hideVibeLabelWindow()
+            visibleVibePillTitle = title
+            visibleVibePillState = state
             panel.contentView = NSHostingView(rootView: VibePillOverlay(
                 title: title,
                 state: state,
                 visibilityManager: visibilityManager
             ))
+            if configuredVibeCyclePillContentPanel === panel {
+                configuredVibeCyclePillContentPanel = nil
+            }
             configurePanelCallbacks(panel)
             if !panelWasVisible {
                 if placement != .currentOverlayCenter || !hadExistingPanel {
@@ -177,21 +190,58 @@ class OverlayManager {
     ) {
         vibeCyclePillHideWorkItem?.cancel()
         vibeCyclePillHideWorkItem = nil
+        pendingHideWorkItem?.cancel()
+        pendingHideWorkItem = nil
 
-        let panel = vibeCyclePillWindow ?? makeVibeCyclePillWindow()
+        let adoptedPillState = visibleStandaloneVibePillState()
+        let isContinuingVisibleCycle = visiblePrimaryVibeCyclePillPanel() != nil ||
+            visibleAuxiliaryVibeCyclePillPanel() != nil
+        let panel = adoptedPillState?.panel
+            ?? visiblePrimaryVibeCyclePillPanel()
+            ?? visibleAuxiliaryVibeCyclePillPanel()
+            ?? vibeCyclePillWindow
+            ?? makeVibeCyclePillWindow()
         let visibilityController = vibeCyclePillVisibilityController
-        vibeCyclePillWindow = panel
-        if !hasConfiguredVibeCyclePillContent {
-            panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
-                visibilityController: visibilityController
-            ))
-            hasConfiguredVibeCyclePillContent = true
+        activeVibeCyclePillPanel = panel
+        if panel === window {
+            if let auxiliaryPanel = vibeCyclePillWindow, auxiliaryPanel !== panel {
+                auxiliaryPanel.orderOut(nil)
+            }
+            vibeCyclePillWindow = nil
+        } else {
+            vibeCyclePillWindow = panel
         }
-        visibilityController.present(title: title, state: state)
+        if let adoptedPillState {
+            visibilityController.adoptVisiblePill(
+                title: adoptedPillState.title,
+                state: adoptedPillState.state
+            )
+        }
+        if configuredVibeCyclePillContentPanel !== panel {
+            panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
+                visibilityController: visibilityController,
+                adoptsVisiblePill: adoptedPillState != nil,
+                onAdoptedAppear: adoptedPillState == nil ? nil : {
+                    visibilityController.present(title: title, state: state)
+                }
+            ))
+            configuredVibeCyclePillContentPanel = panel
+        }
+        visibleVibePillTitle = nil
+        visibleVibePillState = nil
         panel.alphaValue = 1
         resizePanel(panel, to: LogoBarView.vibePillPanelSize)
-        panel.setFrameOrigin(resolvedVibeCyclePillOrigin(for: panel))
+        if panel !== window {
+            panel.setFrameOrigin(resolvedVibeCyclePillOrigin(for: panel))
+        }
         panel.orderFrontRegardless()
+        if adoptedPillState == nil {
+            if isContinuingVisibleCycle {
+                visibilityController.continueVisibleCycle(title: title, state: state)
+            } else {
+                visibilityController.present(title: title, state: state)
+            }
+        }
 
         guard let duration else { return }
         let workItem = DispatchWorkItem { [weak self, weak visibilityController] in
@@ -209,7 +259,8 @@ class OverlayManager {
                     return
                 }
 
-                self.vibeCyclePillWindow?.orderOut(nil)
+                self.activeVibeCyclePillPanel?.orderOut(nil)
+                self.activeVibeCyclePillPanel = nil
                 self.vibeCyclePillHideWorkItem = nil
             }
             self.vibeCyclePillHideWorkItem = removalWorkItem
@@ -223,7 +274,15 @@ class OverlayManager {
     }
 
     var isVibeCyclePillVisible: Bool {
-        vibeCyclePillWindow?.isVisible == true
+        visiblePrimaryVibeCyclePillPanel() != nil ||
+            visibleAuxiliaryVibeCyclePillPanel() != nil
+    }
+
+    func prepareVibePillCycleHandoff() -> Bool {
+        guard visibleStandaloneVibePillState() != nil else { return false }
+        pendingHideWorkItem?.cancel()
+        pendingHideWorkItem = nil
+        return true
     }
 
     func setHandsFreeLocked(_ isLocked: Bool) {
@@ -236,6 +295,7 @@ class OverlayManager {
 
     func hide() {
         pendingHideWorkItem?.cancel()
+        resetVibeCyclePillState(orderOutVisiblePanel: false)
         motionController.cancelPendingMotionAnimations(panel: window)
         hideVibeLabelWindow()
 
@@ -246,10 +306,67 @@ class OverlayManager {
 
         let workItem = DispatchWorkItem { [weak self] in
             self?.window?.orderOut(nil)
+            self?.visibleVibePillTitle = nil
+            self?.visibleVibePillState = nil
             self?.pendingHideWorkItem = nil
         }
         pendingHideWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + hideAnimationCompletionDelay, execute: workItem)
+    }
+
+    private func resetVibeCyclePillState(orderOutVisiblePanel: Bool) {
+        vibeCyclePillHideWorkItem?.cancel()
+        vibeCyclePillHideWorkItem = nil
+
+        if orderOutVisiblePanel,
+           let panel = activeVibeCyclePillPanel,
+           panel !== window {
+            panel.orderOut(nil)
+        }
+
+        if orderOutVisiblePanel,
+           let panel = vibeCyclePillWindow,
+           panel !== window {
+            panel.orderOut(nil)
+        }
+
+        activeVibeCyclePillPanel = nil
+        vibeCyclePillWindow = nil
+        configuredVibeCyclePillContentPanel = nil
+        vibeCyclePillVisibilityController = VibeCyclePillVisibilityController()
+    }
+
+    private func visibleStandaloneVibePillState() -> (
+        panel: NSPanel,
+        title: String,
+        state: LogoBarView.VibePillState
+    )? {
+        guard let panel = window,
+              panel.isVisible,
+              panel.contentView is NSHostingView<VibePillOverlay>,
+              let title = visibleVibePillTitle,
+              let state = visibleVibePillState else {
+            return nil
+        }
+        return (panel, title, state)
+    }
+
+    private func visiblePrimaryVibeCyclePillPanel() -> NSPanel? {
+        guard let panel = window,
+              panel.isVisible,
+              panel.contentView is NSHostingView<VibeCyclePillOverlay> else {
+            return nil
+        }
+        return panel
+    }
+
+    private func visibleAuxiliaryVibeCyclePillPanel() -> NSPanel? {
+        guard let panel = vibeCyclePillWindow,
+              panel.isVisible,
+              panel.contentView is NSHostingView<VibeCyclePillOverlay> else {
+            return nil
+        }
+        return panel
     }
 
     private func configurePanelCallbacks(_ panel: OverlayPanel) {

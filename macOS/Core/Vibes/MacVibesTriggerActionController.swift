@@ -53,6 +53,10 @@ final class MacVibesTriggerActionController {
         vibesCoordinator.canUseVibes && isCyclePillVisible
     }
 
+    func shouldDeferRecordingStartForVibePillCycleHandoff(isVibePillVisible: Bool) -> Bool {
+        vibesCoordinator.canUseVibes && isVibePillVisible
+    }
+
     var quickTapDecisionDelay: TimeInterval {
         quickTapMaximumDuration
     }
@@ -87,6 +91,7 @@ final class MacVibesTriggerActionController {
 
     private func performSingleVibeTap() async {
         pendingSingleTapWorkItem = nil
+        triggerTapClassifier.reset()
         guard vibesCoordinator.canUseVibes else {
             return
         }

@@ -223,6 +223,12 @@ class TranscriptionManager: ObservableObject {
                 if vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp) {
                     return
                 }
+                if vibeTriggerActionController.shouldDeferRecordingStartForVibePillCycleHandoff(
+                    isVibePillVisible: OverlayManager.shared.prepareVibePillCycleHandoff()
+                ) {
+                    scheduleDeferredRecordingStart()
+                    return
+                }
                 if vibeTriggerActionController.shouldDeferRecordingStartForVisibleCyclePill(
                     isCyclePillVisible: OverlayManager.shared.isVibeCyclePillVisible
                 ) {
