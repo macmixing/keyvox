@@ -38,7 +38,7 @@ struct OnboardingView: View {
                     VStack(spacing: 4) {
                         Text("Welcome to KeyVox")
                             .font(.appFont(32))
-                            .foregroundColor(MacAppTheme.accent)
+                            .foregroundColor(.white)
 
                         Text("Let's get you set up in three quick steps.")
                             .font(.appFont(14, variant: .light))
