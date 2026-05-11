@@ -355,21 +355,22 @@ struct SidebarItem: View {
 }
 
 // MARK: - Status Badge
+/// Compact status badge with yellow text and caller-controlled capsule background.
 struct StatusBadge: View {
     let title: String
-    let color: Color
+    let backgroundColor: Color
     
     var body: some View {
         Text(title.uppercased())
             .font(.appFont(9))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(color.opacity(0.15))
+            .background(backgroundColor.opacity(0.15))
             .foregroundColor(.yellow)
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(color.opacity(0.3), lineWidth: 1)
+                    .stroke(backgroundColor.opacity(0.3), lineWidth: 1)
             )
     }
 }

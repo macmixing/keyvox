@@ -95,7 +95,7 @@ struct SettingsVibesCard: View {
                 action: repairAction
             )
         case .progress:
-            StatusBadge(title: progressBadgeTitle, color: .yellow)
+            StatusBadge(title: progressBadgeTitle, backgroundColor: .yellow)
                 .frame(width: 84)
         case .change:
             Picker("", selection: $selectedVibe) {

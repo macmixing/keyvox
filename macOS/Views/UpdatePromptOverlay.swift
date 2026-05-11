@@ -24,7 +24,7 @@ struct UpdatePromptOverlay: View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
                 if let versionBadgeTitle {
-                    StatusBadge(title: versionBadgeTitle, color: MacAppTheme.accent)
+                    StatusBadge(title: versionBadgeTitle, backgroundColor: MacAppTheme.accent)
                 }
             }
 
