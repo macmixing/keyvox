@@ -279,7 +279,14 @@ final class AppUpdateCoordinator: ObservableObject {
             applicationsPrereflight.stageResumeAfterApplicationsMove(
                 preferredDisplayKey: AppUpdateDisplayCoordinator.shared.preferredDisplayKeyForResume
             )
-            NSWorkspace.shared.open(destinationURL)
+            guard NSWorkspace.shared.open(destinationURL) else {
+                NSLog("[AppUpdateCoordinator] Failed to reopen KeyVox from Applications at %@", destinationURL.path)
+                applicationsPrereflight.clearResumeAfterApplicationsMove()
+                state = .failed
+                statusMessage = "KeyVox could not reopen from Applications."
+                failureMessage = "KeyVox was moved to Applications, but macOS could not reopen it. Open KeyVox from Applications and try the update again."
+                return
+            }
             AppProcessTerminator.terminateImmediately()
         } catch {
             state = .failed

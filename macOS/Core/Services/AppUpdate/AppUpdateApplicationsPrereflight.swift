@@ -55,6 +55,11 @@ struct AppUpdateApplicationsPrereflight {
         consumeResumeAfterApplicationsMoveContext() != nil
     }
 
+    func clearResumeAfterApplicationsMove() {
+        defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterAfterApplicationsMove)
+        defaults.removeObject(forKey: UserDefaultsKeys.App.resumeUpdaterPreferredDisplayKey)
+    }
+
     func moveCurrentAppToApplications(bundleURL: URL = Bundle.main.bundleURL) throws -> URL {
         let sourceURL = bundleURL.standardizedFileURL
         let destinationURL = destinationURL(for: sourceURL)
