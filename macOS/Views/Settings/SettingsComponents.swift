@@ -112,7 +112,7 @@ struct SettingsRow<Accessory: View>: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 iconView
@@ -141,12 +141,12 @@ struct SettingsRow<Accessory: View>: View {
         case .system(let name):
             Image(systemName: name)
                 .font(.appFont(20))
-                .foregroundColor(MacAppTheme.accent)
+                .foregroundColor(.yellow)
         case .assetTemplate(let name):
             Image(name)
                 .resizable()
                 .renderingMode(.template)
-                .foregroundColor(MacAppTheme.accent)
+                .foregroundColor(.yellow)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
         }
@@ -277,13 +277,13 @@ struct DeveloperLinkCard: View {
                 .cornerRadius(12)
         case .assetTemplate(let name):
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 Image(name)
                     .resizable()
                     .renderingMode(.template)
-                    .foregroundColor(.yellow.opacity(0.85))
+                    .foregroundColor(.yellow)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 26, height: 26)
             }
@@ -305,7 +305,7 @@ struct DeveloperLinkCard: View {
             }
         case .systemImage(let name):
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 Image(systemName: name)

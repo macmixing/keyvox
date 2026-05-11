@@ -156,12 +156,12 @@ extension SettingsView {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .audioHeaderCenter, spacing: 16) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 12)
+                        Circle()
                             .fill(MacAppTheme.iconFill)
                             .frame(width: 44, height: 44)
                         Image(systemName: "mic.fill")
                             .font(.appFont(20))
-                            .foregroundColor(MacAppTheme.accent)
+                            .foregroundColor(.yellow)
                     }
                     .alignmentGuide(.audioHeaderCenter) { dimensions in
                         dimensions[VerticalAlignment.center]
@@ -202,12 +202,12 @@ extension SettingsView {
         SettingsCard {
             HStack(alignment: .audioHeaderCenter, spacing: 16) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    Circle()
                         .fill(MacAppTheme.iconFill)
                         .frame(width: 44, height: 44)
                     Image(systemName: "speaker.wave.2.fill")
                         .font(.appFont(20))
-                        .foregroundColor(MacAppTheme.accent)
+                        .foregroundColor(.yellow)
                 }
                 .alignmentGuide(.audioHeaderCenter) { dimensions in
                     dimensions[VerticalAlignment.center]

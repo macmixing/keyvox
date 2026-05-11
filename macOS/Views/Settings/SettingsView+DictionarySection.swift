@@ -16,13 +16,13 @@ extension SettingsView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .center, spacing: 12) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 12)
+                            Circle()
                                 .fill(MacAppTheme.iconFill)
                                 .frame(width: 44, height: 44)
 
                             Image(systemName: "text.book.closed.fill")
                                 .font(.appFont(20))
-                                .foregroundColor(MacAppTheme.accent)
+                                .foregroundColor(.yellow)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {

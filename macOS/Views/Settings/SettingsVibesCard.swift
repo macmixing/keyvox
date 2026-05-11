@@ -42,7 +42,7 @@ struct SettingsVibesCard: View {
     private var headerContent: some View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
 
@@ -50,7 +50,7 @@ struct SettingsVibesCard: View {
                     .resizable()
                     .renderingMode(.template)
                     .scaledToFit()
-                    .foregroundStyle(MacAppTheme.accent)
+                    .foregroundStyle(.yellow)
                     .frame(width: 24, height: 24)
             }
 
