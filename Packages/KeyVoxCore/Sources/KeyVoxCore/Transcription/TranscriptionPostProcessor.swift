@@ -12,6 +12,7 @@ public final class TranscriptionPostProcessor {
     private let listFormattingEngine = ListFormattingEngine()
     private let laughterNormalizer = LaughterNormalizer()
     private let characterSpamNormalizer = CharacterSpamNormalizer()
+    private let asteriskCensorshipArtifactNormalizer = AsteriskCensorshipArtifactNormalizer()
     private let timeExpressionNormalizer = TimeExpressionNormalizer()
     private let dateNormalizer = DateNormalizer()
     private let mathExpressionNormalizer = MathExpressionNormalizer()
@@ -106,7 +107,11 @@ public final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("characterSpamNormalized", characterSpamNormalized)
         #endif
-        let timeNormalized = normalizeTimeExpressions(in: characterSpamNormalized)
+        let asteriskCensorshipNormalized = asteriskCensorshipArtifactNormalizer.normalize(in: characterSpamNormalized)
+        #if DEBUG
+        logPipelineStage("asteriskCensorshipNormalized", asteriskCensorshipNormalized)
+        #endif
+        let timeNormalized = normalizeTimeExpressions(in: asteriskCensorshipNormalized)
         #if DEBUG
         logPipelineStage("timeNormalized", timeNormalized)
         #endif
