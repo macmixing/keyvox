@@ -6,13 +6,6 @@ struct UpdateHeaderCard: View {
     let statusMessage: String
     let state: AppUpdateState
 
-    private var badgeTitle: String {
-        if let targetVersion, !targetVersion.isEmpty {
-            return "v\(targetVersion)"
-        }
-        return "v\(currentVersion)"
-    }
-
     var body: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 12) {
@@ -26,9 +19,6 @@ struct UpdateHeaderCard: View {
                             .foregroundColor(.secondary)
                     }
 
-                    Spacer()
-
-                    StatusBadge(title: badgeTitle, color: MacAppTheme.accent)
                 }
 
                 HStack {
@@ -39,7 +29,7 @@ struct UpdateHeaderCard: View {
                     if let targetVersion, state != .completed {
                         Text("Update: v\(targetVersion)")
                             .font(.appFont(11))
-                            .foregroundColor(MacAppTheme.accent)
+                            .foregroundColor(.yellow)
                     }
                 }
             }
