@@ -50,6 +50,7 @@ class WindowManager: ObservableObject {
     @Published var onboardingWindow: NSWindow?
     @Published var updateWindow: NSWindow?
     @Published var postUpdateNoticeWindow: NSWindow?
+    @Published var vibesIntroWindow: NSWindow?
     
     private init() {} // Private init for singleton
 
@@ -58,6 +59,7 @@ class WindowManager: ObservableObject {
         let candidateWindows = [
             postUpdateNoticeWindow,
             updateWindow,
+            vibesIntroWindow,
             onboardingWindow
         ]
 
@@ -109,6 +111,7 @@ class WindowManager: ObservableObject {
             self.onboardingWindow = nil
             // Open settings centered immediately after onboarding
             self.openSettings(centered: true)
+            KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
         }, openSettings: {
             self.openSettings()
         }, beginMicrophoneAuthorization: {
@@ -222,6 +225,19 @@ struct KeyVoxApp: App {
     private let appServiceRegistry = AppServiceRegistry.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
+    static func presentVibesIntroIfEligibleAfterUpdateGate() {
+        guard AppSettingsStore.shared.hasCompletedOnboarding else { return }
+        guard AppUpdateCoordinator.shared.postUpdateNoticeVersion == nil else { return }
+        guard AppUpdateService.shared.hasCompletedInitialAutomaticUpdateCheck else { return }
+        guard AppUpdateService.shared.hasAvailableUpdateForCurrentVersion == false else { return }
+
+        MacVibesIntroController.shared.scheduleColdLaunchPresentationIfNeeded(
+            hasCompletedOnboarding: true
+        ) {
+            WindowManager.shared.showVibesIntroWindow(initialScene: .a)
+        }
+    }
+
     nonisolated static func shouldUseAccessoryActivationPolicy(
         osVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion
     ) -> Bool {
@@ -246,12 +262,17 @@ struct KeyVoxApp: App {
         DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {
             if !AppSettingsStore.shared.hasCompletedOnboarding {
                 WindowManager.shared.showOnboarding()
+            } else {
+                KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
             }
         }
 
         Task { @MainActor in
             AppUpdateCoordinator.shared.prepareForLaunch()
-            AppUpdateService.shared.startUpdateTimer()
+            AppUpdateService.shared.startUpdateTimer { didFindAvailableUpdate in
+                guard didFindAvailableUpdate == false else { return }
+                Self.presentVibesIntroIfEligibleAfterUpdateGate()
+            }
             if AppUpdateCoordinator.shared.postUpdateNoticeVersion != nil {
                 WindowManager.shared.showPostUpdateNoticeWindow()
             }

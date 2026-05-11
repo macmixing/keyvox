@@ -55,9 +55,25 @@ struct SettingsVibesCard: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(SettingsVibesCardCopy.cardTitle)
-                    .font(.appFont(18))
-                    .foregroundStyle(.white)
+                HStack(alignment: .center, spacing: 4) {
+                    Text(SettingsVibesCardCopy.cardTitle)
+                        .font(.appFont(18))
+                        .foregroundStyle(.white)
+
+                    Button(action: {
+                        WindowManager.shared.showVibesIntroWindow(initialScene: .b)
+                    }) {
+                        Image(systemName: "questionmark.circle")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(.yellow)
+                            .frame(width: 16, height: 16)
+                            .contentShape(Rectangle())
+                            .padding(8)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 32, height: 32)
+                    .accessibilityLabel(SettingsVibesCardCopy.helpAccessibilityLabel)
+                }
 
                 Text(SettingsVibesCardCopy.cardSubtitle)
                     .font(.appFont(12, variant: .light))
@@ -172,7 +188,7 @@ struct SettingsVibesCard: View {
 
 enum SettingsVibesCardCopy {
     static let cardTitle = "KeyVox Vibes"
-    static let cardSubtitle = "On-device, reversible writing styles."
+    static let cardSubtitle = "On-device, reversible writing styles for Mac & iOS."
     static let pickerAccessibilityLabel = "KeyVox Vibes"
     static let downloadRequiredStatus = "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
     static let downloadingStatus = "Downloading KeyVox Vibes AI."
@@ -184,4 +200,5 @@ enum SettingsVibesCardCopy {
     static let downloadAction = "Download"
     static let repairAction = "Repair"
     static let triggerTip = "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes."
+    static let helpAccessibilityLabel = "Learn about KeyVox Vibes"
 }

@@ -160,6 +160,14 @@
 		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
 		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
 		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
+		F26000012FF1000100AA0001 /* MacVibesIntroController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26000082FF1000100AA0001 /* MacVibesIntroController.swift */; };
+		F26000022FF1000100AA0001 /* MacVibesIntroScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26000092FF1000100AA0001 /* MacVibesIntroScene.swift */; };
+		F26000032FF1000100AA0001 /* MacVibesIntroWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000A2FF1000100AA0001 /* MacVibesIntroWindowView.swift */; };
+		F26000042FF1000100AA0001 /* MacVibesIntroSceneAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000B2FF1000100AA0001 /* MacVibesIntroSceneAView.swift */; };
+		F26000052FF1000100AA0001 /* MacVibesIntroSceneBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000C2FF1000100AA0001 /* MacVibesIntroSceneBView.swift */; };
+		F26000062FF1000100AA0001 /* MacVibesIntroSceneCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000D2FF1000100AA0001 /* MacVibesIntroSceneCView.swift */; };
+		F26000072FF1000100AA0001 /* WindowManager+VibesIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000E2FF1000100AA0001 /* WindowManager+VibesIntro.swift */; };
+		F26000102FF1000100AA0001 /* MacVibesIntroControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */; };
 		F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000012FC2000100AA0001 /* WindowManager+Updates.swift */; };
 		F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */; };
 		F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000062FC2000100AA0001 /* AppReleaseInfo.swift */; };
@@ -348,6 +356,14 @@
 		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
 		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
+		F26000082FF1000100AA0001 /* MacVibesIntroController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroController.swift; sourceTree = "<group>"; };
+		F26000092FF1000100AA0001 /* MacVibesIntroScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroScene.swift; sourceTree = "<group>"; };
+		F260000A2FF1000100AA0001 /* MacVibesIntroWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroWindowView.swift; sourceTree = "<group>"; };
+		F260000B2FF1000100AA0001 /* MacVibesIntroSceneAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroSceneAView.swift; sourceTree = "<group>"; };
+		F260000C2FF1000100AA0001 /* MacVibesIntroSceneBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroSceneBView.swift; sourceTree = "<group>"; };
+		F260000D2FF1000100AA0001 /* MacVibesIntroSceneCView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroSceneCView.swift; sourceTree = "<group>"; };
+		F260000E2FF1000100AA0001 /* WindowManager+VibesIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+VibesIntro.swift"; sourceTree = "<group>"; };
+		F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroControllerTests.swift; sourceTree = "<group>"; };
 		F30000012FC2000100AA0001 /* WindowManager+Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+Updates.swift"; sourceTree = "<group>"; };
 		F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateProgressBar.swift; sourceTree = "<group>"; };
 		F30000062FC2000100AA0001 /* AppReleaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReleaseInfo.swift; sourceTree = "<group>"; };
@@ -434,6 +450,7 @@
 				A11000112FC1000100AA0001 /* WeeklyWordStatsStore.swift */,
 				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
 				F30000012FC2000100AA0001 /* WindowManager+Updates.swift */,
+				F260000E2FF1000100AA0001 /* WindowManager+VibesIntro.swift */,
 				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
 			);
 			path = App;
@@ -506,6 +523,7 @@
 			isa = PBXGroup;
 			children = (
 				8E57FB9B2F3E444B00935A26 /* Settings */,
+				F26000112FF1000100AA0001 /* VibesIntro */,
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				F30000222FC2000100AA0001 /* Updates */,
 				8EC700212F42000100C70001 /* Warnings */,
@@ -603,11 +621,24 @@
 			path = Audio;
 			sourceTree = "<group>";
 		};
+		F26000112FF1000100AA0001 /* VibesIntro */ = {
+			isa = PBXGroup;
+			children = (
+				F26000092FF1000100AA0001 /* MacVibesIntroScene.swift */,
+				F260000A2FF1000100AA0001 /* MacVibesIntroWindowView.swift */,
+				F260000B2FF1000100AA0001 /* MacVibesIntroSceneAView.swift */,
+				F260000C2FF1000100AA0001 /* MacVibesIntroSceneBView.swift */,
+				F260000D2FF1000100AA0001 /* MacVibesIntroSceneCView.swift */,
+			);
+			path = VibesIntro;
+			sourceTree = "<group>";
+		};
 		AB1000032F60000100AA0001 /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */,
 				8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */,
+				F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */,
 				AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */,
 				AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */,
 				AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */,
@@ -782,6 +813,7 @@
 			isa = PBXGroup;
 			children = (
 				E90000122FE1000100AA0001 /* MacDictationChangeController.swift */,
+				F26000082FF1000100AA0001 /* MacVibesIntroController.swift */,
 				E91000152FE2000100AA0001 /* MacLocalRewriteInferenceService.swift */,
 				E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */,
 				E91000122FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift */,
@@ -962,6 +994,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */,
+				F26000072FF1000100AA0001 /* WindowManager+VibesIntro.swift in Sources */,
+				F26000012FF1000100AA0001 /* MacVibesIntroController.swift in Sources */,
+				F26000022FF1000100AA0001 /* MacVibesIntroScene.swift in Sources */,
+				F26000032FF1000100AA0001 /* MacVibesIntroWindowView.swift in Sources */,
+				F26000042FF1000100AA0001 /* MacVibesIntroSceneAView.swift in Sources */,
+				F26000052FF1000100AA0001 /* MacVibesIntroSceneBView.swift in Sources */,
+				F26000062FF1000100AA0001 /* MacVibesIntroSceneCView.swift in Sources */,
 				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
@@ -1087,6 +1126,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F26000102FF1000100AA0001 /* MacVibesIntroControllerTests.swift in Sources */,
 				F30000362FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift in Sources */,
 				F30000322FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift in Sources */,
 				F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */,
