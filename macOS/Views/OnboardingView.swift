@@ -293,6 +293,6 @@ struct OnboardingStepRow<Content: View>: View {
     }
 
     private var isActionDisabled: Bool {
-        isCompleted || (title == "AI Model Setup" && buttonTitle == "Downloading...")
+        isCompleted || (stepNumber == 1 && buttonTitle == "Downloading...")
     }
 }
