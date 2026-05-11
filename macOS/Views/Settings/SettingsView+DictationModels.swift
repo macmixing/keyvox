@@ -20,6 +20,8 @@ private struct DictationModelsCard: View {
     @State private var modelExpandedContentHeight: CGFloat = 0
 
     private static let sectionExpansionAnimation = Animation.spring(response: 0.32, dampingFraction: 0.86)
+    // Ignore sub-point geometry jitter while still reacting to real content height changes.
+    private static let modelHeightTolerance: CGFloat = 0.5
 
     var body: some View {
         SettingsCard {
@@ -212,7 +214,7 @@ private struct DictationModelsCard: View {
 
     private func updateModelExpandedContentHeight(_ newHeight: CGFloat) {
         guard newHeight > 0 else { return }
-        if abs(modelExpandedContentHeight - newHeight) > 0.5 {
+        if abs(modelExpandedContentHeight - newHeight) > Self.modelHeightTolerance {
             modelExpandedContentHeight = newHeight
         }
     }
