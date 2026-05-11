@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-05-09**
+**Last Updated: 2026-05-11**
 
 ## Design Philosophy
 
@@ -983,7 +983,7 @@ The keys use the same symbols as the Style tab and show setting state through ic
 The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
 
 1. provider inference returns raw text
-2. post-processing produces the canonical base text
+2. post-processing produces the canonical base text, including shared provider-artifact repair
 3. the app-provided `processOutputText` closure may transform that base text
 4. Caps Lock casing override is applied after transformation
 5. final text is recorded and inserted

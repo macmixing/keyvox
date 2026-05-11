@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-05-10**
+**Last Updated: 2026-05-11**
 
 ## Project Overview
 
@@ -141,7 +141,7 @@ KeyVox/
 4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, and binds install-time Parakeet preloading to the downloader.
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
-7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including four-digit quantity grouping.
+7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including model-artifact repair and four-digit quantity grouping.
 8. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
 9. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
 10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
@@ -288,7 +288,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
+  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/model-artifact/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
   - Merges hidden package-owned dictionary entries before matching so app-brand corrections work even when the user has not created visible dictionary entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift`
   - Shared conservative silence/fallback chunking used by both Whisper and Parakeet services.
@@ -303,6 +303,8 @@ KeyVox/
   - Dedicated laughter normalization pass (`ha ha` -> `haha`) separated from time normalization.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/CharacterSpamNormalizer.swift`
   - Collapses model character-spam runs (same non-whitespace character repeated 16+ times) to a single character.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AsteriskCensorshipArtifactNormalizer.swift`
+  - Repairs narrow provider asterisk-censorship artifacts before downstream time/email/website/capitalization finishers.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/WhitespaceNormalizer.swift`
   - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/SentenceCapitalizationNormalizer.swift`
@@ -463,6 +465,8 @@ KeyVox/
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/CharacterSpamNormalizer.swift`
   - A model-noise guard that trims extreme repeated-character runs before downstream punctuation/capitalization finishing passes.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AsteriskCensorshipArtifactNormalizer.swift`
+  - A targeted provider-artifact guard that restores observed leading-f asterisk censorship patterns before downstream cleanup.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ThousandsGroupingNormalizer.swift`
   - Adds grouping separators to quantity-style four-digit numerals while preserving year-like references and protected date/version/phone shapes.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`

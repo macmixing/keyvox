@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-05-10**
+**Last Updated: 2026-05-11**
 
 ## Design Philosophy
 
@@ -31,7 +31,7 @@ KeyVox is organized by responsibility:
 - `Core/Vibes/`: Mac-owned KeyVox Vibes runtime. The Mac path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesReadinessPrewarmer` keeps the ready model warm independently of picker selection, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation apply/undo behavior, `MacVibesTriggerActionController` owns quick-tap action orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). Package-owned hidden dictionary entries live beside user dictionary primitives so app/product naming is corrected through the same matcher pipeline without persisting or displaying those entries as user vocabulary.
-- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Core/Services/`: Paste/injection and update/checking services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, while update feed source selection lives in `UpdateFeedConfig.swift` and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
 - `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
@@ -134,7 +134,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies effective dictionary adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery and package-owned hidden app/product naming entries.
 4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
 5. List formatting applies numeric list rendering when confidence gates pass.
-6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
+6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
 8. Final text is inserted via the paste service, where macOS applies final insertion-time heuristics such as dictionary-aware leading-cap normalization and smart spacing based on the focused target context.
 

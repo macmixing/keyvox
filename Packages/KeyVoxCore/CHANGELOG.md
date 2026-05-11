@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.9] - 2026-05-11
+
+Shared transcription artifact repair for provider-censored output.
+
+### Includes
+
+- Added a focused post-processing normalizer that repairs observed leading-f asterisk censorship artifacts before downstream time, email, website, capitalization, and punctuation finishers run.
+- Wired the repair into `TranscriptionPostProcessor` so both macOS and iOS dictation clients receive the same canonical base text.
+- Added shared-engine regression coverage for the observed double-asterisk and triple-asterisk output shapes.
+
+### Notes
+
+- `1.0.9` bumps the tracked engine version for `KeyVoxCore` to cover the shared provider-artifact repair used by both app clients.
+
+---
+
 ## [1.0.8] - 2026-05-05
 
 Removed Parakeet dictionary prompt forwarding from the shared service layer.

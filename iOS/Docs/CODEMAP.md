@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-05-09**
+**Last Updated: 2026-05-11**
 
 ## Project Overview
 
@@ -10,7 +10,7 @@ KeyVox iOS ships as four cooperating targets:
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, and post-processing order.
+Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, model-artifact repair, and post-processing order.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 
 The current default runtime flow is:
@@ -34,7 +34,7 @@ The current default runtime flow is:
 - **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, silence heuristics, and list formatting behavior.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, model-artifact repair, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
 - **`../Packages/KeyVoxLocalInference/`**: llama.cpp-backed local GGUF inference package with chat-template formatting, optional LoRA adapter attachment, quiet llama logging, cancellation, greedy decoding, token accounting, and opt-in live model tests.
 - **`../Packages/KeyVoxVibesAdapters/`**: bundled KeyVox-trained LoRA adapter resources and typed adapter catalog used by the app's local Vibes model manager.
