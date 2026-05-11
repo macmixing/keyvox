@@ -58,6 +58,10 @@ struct SettingsVibesCard: View {
                 Text(SettingsVibesCardCopy.cardTitle)
                     .font(.appFont(18))
                     .foregroundStyle(.white)
+
+                Text(SettingsVibesCardCopy.cardSubtitle)
+                    .font(.appFont(12, variant: .light))
+                    .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -168,6 +172,7 @@ struct SettingsVibesCard: View {
 
 enum SettingsVibesCardCopy {
     static let cardTitle = "KeyVox Vibes"
+    static let cardSubtitle = "On-device, reversible writing styles."
     static let pickerAccessibilityLabel = "KeyVox Vibes"
     static let downloadRequiredStatus = "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
     static let downloadingStatus = "Downloading KeyVox Vibes AI."
