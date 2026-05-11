@@ -280,7 +280,7 @@ final class AppUpdateCoordinator: ObservableObject {
                 preferredDisplayKey: AppUpdateDisplayCoordinator.shared.preferredDisplayKeyForResume
             )
             NSWorkspace.shared.open(destinationURL)
-            NSApplication.shared.terminate(nil)
+            AppProcessTerminator.terminateImmediately()
         } catch {
             state = .failed
             statusMessage = "KeyVox could not move into Applications."

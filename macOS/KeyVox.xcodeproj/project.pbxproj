@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26000022FF0000100AA0001 /* AppProcessTerminator.swift */; };
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
 		8E37FC672FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E37FC662FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
@@ -199,6 +200,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D26000022FF0000100AA0001 /* AppProcessTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProcessTerminator.swift; sourceTree = "<group>"; };
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
 		8E37FC662FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManagerOnboardingWindowLevelTests.swift; sourceTree = "<group>"; };
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
@@ -440,6 +442,7 @@
 		8E6D05CA2F3C51D6003BD458 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				D26000022FF0000100AA0001 /* AppProcessTerminator.swift */,
 				F30000052FC2000100AA0001 /* AppUpdate */,
 				8F5501022F47010000EE5501 /* AppUpdateLogic.swift */,
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
@@ -958,6 +961,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */,
 				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,

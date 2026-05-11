@@ -57,6 +57,6 @@ struct AppUpdateInstallLauncher {
             try await Task.sleep(nanoseconds: 50_000_000)
         }
 
-        NSApplication.shared.terminate(nil)
+        AppProcessTerminator.terminateImmediately()
     }
 }

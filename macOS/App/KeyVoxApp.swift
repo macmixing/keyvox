@@ -36,7 +36,10 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
             return .terminateCancel
         }
 
-        return .terminateNow
+        Task { @MainActor in
+            AppProcessTerminator.terminateImmediately()
+        }
+        return .terminateCancel
     }
 }
 
