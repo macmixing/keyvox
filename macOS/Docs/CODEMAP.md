@@ -99,7 +99,9 @@ KeyVox/
 │   │   ├── UpdatePromptOverlay.swift
 │   │   ├── Updates/
 │   │   ├── Settings/
-│   │   │   └── SettingsVibesCard.swift
+│   │   │   ├── SettingsVibesCard.swift
+│   │   │   ├── SettingsVibesAIInstallCard.swift
+│   │   │   └── SettingsVibesExamplesSection.swift
 │   │   └── Warnings/
 │   ├── Resources/
 │   ├── KeyVoxTests/
@@ -158,7 +160,7 @@ KeyVox/
   - Applies updater-specific floating-window centering and stoplight hiding.
   - Keeps update-related window policy out of the primary settings/onboarding window code.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
@@ -206,6 +208,7 @@ KeyVox/
   - Feeds recorder-derived indicator samples into `AudioIndicatorDriver` and renders `LogoBarView`.
 - `Views/VibePillOverlay.swift`
   - Thin overlay shell for temporary Vibe feedback pills driven by `OverlayManager`.
+  - Owns standalone pill visibility animation plus the cycle-pill presentation controller and forward flip animation used for double-tap Vibe cycling.
 - `Views/Settings/SettingsView+DictationModels.swift`
   - User-facing `Active Model` settings card for provider selection plus install/remove/progress/error state per model.
   - Falls back to the first ready provider when the persisted active selection is no longer installable/selectable.
@@ -213,14 +216,14 @@ KeyVox/
 - `Views/Settings/SettingsView+Legal.swift`
   - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
 - `Views/Components/ConfirmDeletePromptView.swift`
-  - Reusable destructive confirmation sheet currently used for dictionary-entry deletion.
+  - Reusable destructive confirmation sheet used for dictionary-entry deletion and Vibes AI model deletion.
 
 ### Core Managers
 
 - `Core/Transcription/TranscriptionManager.swift`
   - Orchestrates recording, transcription, and paste.
   - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
-  - Owns trigger press/release orchestration for hold-to-dictate, quick-tap Vibe apply/undo, and double-tap Vibe cycling.
+  - Owns trigger press/release orchestration for hold-to-dictate and delegates Vibes quick-tap apply/undo/cycling behavior to `MacVibesTriggerActionController`.
   - Uses `ModelDownloader` plus the active provider router so recording availability follows the selected installed model instead of Whisper-only readiness.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
@@ -246,6 +249,7 @@ KeyVox/
   - Logs prewarm, LoRA-missing, metrics, and failure diagnostics in debug builds.
 - `Core/Vibes/MacVibesAccessMatrix.swift`
   - Pure settings-state resolver for Mac Vibes install/download/repair/ready UI.
+  - Emits structural state only; user-facing copy stays in the owning settings views.
   - Mac Vibes have no trial, unlock, purchase, restore, or paywall branches.
 - `Core/Vibes/MacDictationChangeController.swift`
   - Captures the latest inserted dictation session and safely applies or undoes Vibes only when the current focused field still contains the untouched insertion before the caret.
@@ -254,6 +258,7 @@ KeyVox/
   - Small deterministic helper for single-tap vs double-tap classification.
 - `Core/Vibes/MacVibesTriggerActionController.swift`
   - Owns quick-tap press timing, pending single-tap work, Vibe apply/undo dispatch, and double-tap Vibe cycling outside `TranscriptionManager`.
+  - Respects `AppSettingsStore.vibesTriggerKeyInteractionsEnabled`; when disabled, trigger-key taps fall through to normal dictation behavior without Vibes single-tap, double-tap, or pill-handoff behavior.
 - `Core/Services/Paste/PasteService.swift`
   - Owns paste insertion plus latest untouched insertion verification/replacement used by Mac Vibes apply/undo.
   - Verifies the focused text range before replacement and falls back conservatively when Accessibility cannot prove the text is still safe to mutate.
@@ -295,6 +300,7 @@ KeyVox/
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
+  - Owns recording overlay windows, standalone Vibe pills, recording-time selected-Vibe labels, and cycle-pill window reuse/handoff.
 - `Core/Overlay/AudioIndicatorDriver.swift`
   - Generic audio-indicator driver for overlay/logo timing.
   - Owns smoothing, stale-sample handling, phase progression, and published timeline state.
@@ -657,11 +663,20 @@ KeyVox/
   - Dictation provider selection plus install/remove/progress/error UI for model-backed providers.
 - `Views/Settings/SettingsView+Style.swift`
   - Style tab with standalone Lists and Paragraphs cards backed by persisted `listFormattingEnabled` and `autoParagraphsEnabled`.
-  - Always composes the KeyVox Vibes card and drives its content from the Mac Vibes local install/access matrix.
+  - Always composes the KeyVox Vibes style card and drives style-picker availability from the Mac Vibes local install/access matrix.
 - `Views/Settings/SettingsVibesCard.swift`
-  - KeyVox Vibes settings card with local Vibes AI download/repair/delete/progress states, the Vibe selector when ready, package-owned examples, and trigger-key usage hint.
+  - Style-tab KeyVox Vibes card with install/readiness status, download/repair/progress controls, the ready-state picker, and a trigger-key usage tip.
+  - Copy lives in `SettingsVibesCardCopy`.
+- `Views/Settings/SettingsVibesExamplesSection.swift`
+  - Expandable style examples section owned by the Style-tab Vibes card.
+  - Uses animated height measurement, white example text, yellow headers/chevron, and full-row selection when enabled.
+  - Copy lives in `SettingsVibesExamplesCopy`.
 - `Views/Settings/SettingsView+More.swift`
   - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
+  - System section composes the Vibes AI install-management card separately from the Style-tab Vibes card.
+- `Views/Settings/SettingsVibesAIInstallCard.swift`
+  - System-tab Vibes AI install-management card for download, repair, delete, progress/error display, and the Vibes trigger-key interactions toggle.
+  - Copy lives in `SettingsVibesAIInstallCardCopy`.
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`
@@ -681,13 +696,14 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, active dictation provider
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, onboarding completion, update prompt timestamps, active dictation provider
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
 - Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
 - List formatting preference key: `KeyVox.ListFormattingEnabled`
 - Selected Vibe preference key: `KeyVox.SelectedVibe`
+- Vibes trigger-key interactions preference key: `KeyVox.VibesTriggerKeyInteractionsEnabled` (defaults to enabled)
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
 - Last transcription cache key: `KeyVox.App.LastTranscription`
 - Active provider key: `KeyVox.App.ActiveDictationProvider`

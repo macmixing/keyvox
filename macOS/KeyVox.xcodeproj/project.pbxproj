@@ -137,6 +137,8 @@
 		E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */; };
 		E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */; };
 		E900000A2FE1000100AA0001 /* SettingsVibesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000182FE1000100AA0001 /* SettingsVibesCard.swift */; };
+		E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */; };
+		E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */; };
 		E91000012FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */; };
 		E91000022FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000122FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift */; };
 		E91000032FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000132FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift */; };
@@ -326,6 +328,8 @@
 		E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedVibeLabel.swift; sourceTree = "<group>"; };
 		E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesTriggerActionController.swift; sourceTree = "<group>"; };
 		E90000182FE1000100AA0001 /* SettingsVibesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesCard.swift; sourceTree = "<group>"; };
+		E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesExamplesSection.swift; sourceTree = "<group>"; };
+		E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesAIInstallCard.swift; sourceTree = "<group>"; };
 		E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelCatalog.swift; sourceTree = "<group>"; };
 		E91000122FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelInstallManifest.swift; sourceTree = "<group>"; };
 		E91000132FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelInstallState.swift; sourceTree = "<group>"; };
@@ -405,6 +409,8 @@
 				8E57FBA32F3E449000935A26 /* SettingsView.swift */,
 				8E57FB952F3E444B00935A26 /* SettingsComponents.swift */,
 				E90000182FE1000100AA0001 /* SettingsVibesCard.swift */,
+				E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */,
+				E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */,
 				8E57FB962F3E444B00935A26 /* SettingsView+Style.swift */,
 				8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */,
 				8E57FB982F3E444B00935A26 /* SettingsView+More.swift */,
@@ -995,6 +1001,8 @@
 				D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Style.swift in Sources */,
 				E900000A2FE1000100AA0001 /* SettingsVibesCard.swift in Sources */,
+				E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */,
+				E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */,
 				E91000052FE2000100AA0001 /* MacLocalRewriteInferenceService.swift in Sources */,
 				E91000012FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift in Sources */,
 				E91000022FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift in Sources */,

@@ -92,8 +92,8 @@ struct SettingsView: View {
         .sheet(isPresented: $isVibesAIDeleteConfirmationPresented) {
             ConfirmDeletePromptView(
                 config: ConfirmDeletePromptConfig(
-                    title: MacVibesSettingsCopy.deleteConfirmationTitle,
-                    message: MacVibesSettingsCopy.deleteConfirmationMessage
+                    title: SettingsVibesAIInstallCardCopy.deleteConfirmationTitle,
+                    message: SettingsVibesAIInstallCardCopy.deleteConfirmationMessage
                 ),
                 onConfirm: {
                     localRewriteModelManager.deleteModel()

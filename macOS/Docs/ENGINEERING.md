@@ -28,7 +28,7 @@ KeyVox is organized by responsibility:
 - `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `WeeklyWordStatsStore`).
 - `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
 - `Core/Transcription/`: Runtime state machine and macOS host-side orchestration (`TranscriptionManager`), with the reusable transcribe -> post-process -> paste boundary extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch.
-- `Core/Vibes/`: Mac-owned KeyVox Vibes runtime. The Mac path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesReadinessPrewarmer` keeps the ready model warm independently of picker selection, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation apply/undo behavior, `MacVibesTriggerActionController` owns quick-tap action orchestration, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
+- `Core/Vibes/`: Mac-owned KeyVox Vibes runtime. The Mac path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesReadinessPrewarmer` keeps the ready model warm independently of picker selection, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation apply/undo behavior, `MacVibesTriggerActionController` owns quick-tap action orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). Package-owned hidden dictionary entries live beside user dictionary primitives so app/product naming is corrected through the same matcher pipeline without persisting or displaying those entries as user vocabulary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
@@ -86,6 +86,11 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - downloading/installing: show progress/status and hide the style picker
   - failed: show failure content and a repair action
   - ready: show the selected Vibe and style picker
+- `MacVibesAccessMatrix` must stay copy-free. It emits structural decisions only; visible strings live in the owning settings views.
+- Mac settings deliberately split Vibes surfaces by concern:
+  - `SettingsVibesCard` in the Style tab owns style selection, status/readiness presentation, expandable examples, and the trigger-key usage tip.
+  - `SettingsVibesExamplesSection` owns the expandable example list, animated height measurement, and example-row selection behavior.
+  - `SettingsVibesAIInstallCard` in the Settings/System section owns install management, delete/repair/progress/error display, and the Vibes trigger-key interactions toggle.
 - `MacVibesCoordinator.canUseVibes` means the local Vibes AI model is installed and ready.
 - `MacVibesCoordinator.selectedVibe` resolves to `.none` while the model is missing, but the persisted selected style is not erased just because the model is unavailable.
 - `MacVibesCoordinator.releasePrewarmSession(reason:)` is intentionally a no-op for local inference.
@@ -97,6 +102,21 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - macOS Sequoia (15)+: automatic mode may report Metal/GPU backend when available, with CPU fallback on load/context failure
   - macOS Ventura/Sonoma (13.5-14.x): automatic mode resolves to CPU-only because platform GPU support is disabled before device enumeration
   - non-macOS platforms: CPU-only
+
+## Mac Vibes Trigger-Key Contract
+
+- Hold-to-dictate remains the primary trigger-key behavior.
+- Vibes trigger-key interactions are an optional layer controlled by `AppSettingsStore.vibesTriggerKeyInteractionsEnabled`, persisted with `KeyVox.VibesTriggerKeyInteractionsEnabled`, and enabled by default.
+- When the Vibes trigger-key interaction setting is off:
+  - single-tap Vibe apply/undo is disabled
+  - double-tap Vibe cycling is disabled
+  - recording-start suppression/defer paths used for visible Vibe pills are disabled
+  - the selected Vibe can still be applied to ordinary dictation output when set permanently in the app
+- When the setting is on and Vibes are ready, quick taps are owned by `MacVibesTriggerActionController`; `MacTriggerTapClassifier` decides whether a quick tap should wait for a possible second tap or complete as a single-tap action.
+- `TranscriptionManager` may defer recording start only for Vibes quick-tap handoff windows. Real dictation must not wait for a Vibe pill to clear.
+- A standalone single-tap pill with no transformable text can be adopted by `OverlayManager.prepareVibePillCycleHandoff()` so the exact visible pill becomes the first cycle pill on double tap.
+- `OverlayManager.showVibeCyclePill` reuses the visible primary/auxiliary cycle panel when possible, schedules animated dismissal separately from panel removal, and keeps cycle-pill positioning centered on the normal recording overlay.
+- `VibeCyclePillVisibilityController` owns the atomic cycle-pill presentation state; `VibeCyclePillOverlay` owns only rendering, entry/exit animation, and the forward flip between cycle states.
 
 ## Post-Processing Order
 
@@ -143,7 +163,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - `App/AppServiceRegistry.swift` supplies downloader `postInstallPreparation` so Parakeet preload happens after a successful install instead of on the first trigger press.
 - `App/AppServiceRegistry.swift` retains `MacVibesReadinessPrewarmer` so an already-installed Vibes model is warmed on startup and a newly installed/reinstalled Vibes model is warmed as soon as it becomes ready.
 - `Views/Settings/SettingsView+DictationModels.swift` is the release-facing `Active Model` settings surface for install, removal, progress, and provider switching.
-- `Views/Settings/SettingsVibesCard.swift` is the release-facing Vibes AI settings surface for install, removal, progress, repair, and style selection.
+- `Views/Settings/SettingsVibesCard.swift` is the Style-tab Vibes surface for style selection, readiness/status, examples, and style-card download/repair/progress affordances.
+- `Views/Settings/SettingsVibesAIInstallCard.swift` is the Settings/System Vibes AI management surface for install, removal, progress, repair, and the trigger-key interactions toggle.
 - `Core/Transcription/TranscriptionManager.swift` persists the last successful final transcription to `UserDefaultsKeys.App.lastTranscription` for the Settings Home tab.
 
 ## Update Feed and Release Checks
@@ -265,7 +286,7 @@ Maintainers can override the update feed locally without changing tracked defaul
 
 - Audio capture hardware/runtime integration paths
 - Global keyboard hook behavior
-- Overlay window rendering/interaction details
+- Overlay window rendering/interaction details; pure overlay state machines such as Vibe pill presentation remain unit-testable
 
 These remain integration/manual-test territory by design.
 
@@ -295,6 +316,7 @@ These remain integration/manual-test territory by design.
 - `Views/VibePillOverlay.swift` is a thin overlay shell for Vibe feedback only; style rewrite, tap classification, and paste replacement stay in `Core/Vibes/` and `Core/Services/Paste/`.
 - `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes. Vibe controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
 - `Core/Vibes/MacVibesAccessMatrix.swift` stays the pure Mac Vibes settings decision surface. Do not add entitlement, trial, purchase, restore, or paywall branches to Mac Vibes.
+- Mac Vibes settings copy belongs beside the view that renders it: `SettingsVibesCardCopy`, `SettingsVibesExamplesCopy`, and `SettingsVibesAIInstallCardCopy`. Do not move user-facing copy into `MacVibesAccessMatrix`.
 - `Core/Vibes/MacVibesReadinessPrewarmer.swift` stays readiness-driven, not selection-driven.
 - `Core/Vibes/MacLocalRewriteInferenceService.swift` stays the Mac-local composition point for model URL, adapter URL, and GPU offload mode. Platform GPU eligibility belongs in `KeyVoxLocalInference`, where it is already logged and tested.
 - Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
