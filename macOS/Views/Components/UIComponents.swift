@@ -86,27 +86,26 @@ struct KeyVoxProgressStyle: ProgressViewStyle {
     }
 }
 
-struct ModelDownloadProgress: View {
+struct LabeledProgressBar: View {
     let progress: Double
-    var showLabel: Bool = true
+    let statusText: String
     
     var body: some View {
         VStack(spacing: 8) {
+            HStack(alignment: .center, spacing: 12) {
+                Text(statusText)
+                    .font(.appFont(12, variant: .light))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("\(Int((progress * 100).rounded()))%")
+                    .font(.appFont(12))
+                    .foregroundStyle(.yellow)
+            }
+
             ProgressView(value: progress)
                 .progressViewStyle(KeyVoxProgressStyle())
                 .frame(height: 6)
-            
-            if showLabel {
-                HStack {
-                    Text("Preparing AI Assets...")
-                        .font(.appFont(10))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .font(.appFont(11))
-                        .foregroundColor(MacAppTheme.accent)
-                }
-            }
         }
     }
 }

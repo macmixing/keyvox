@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State internal var showLegal = false
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
     @State internal var dictionaryDeleteTarget: DictionaryEntry?
+    @State internal var dictationModelDeleteTarget: DictationModelID?
     @State internal var isVibesAIDeleteConfirmationPresented = false
     @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
     @State private var hasVisitedDictionaryTab = false
@@ -86,6 +87,23 @@ struct SettingsView: View {
                 },
                 onCancel: {
                     dictionaryDeleteTarget = nil
+                }
+            )
+        }
+        .sheet(item: $dictationModelDeleteTarget) { modelID in
+            let displayName = DictationModelCatalog.descriptor(for: modelID).displayName
+
+            ConfirmDeletePromptView(
+                config: ConfirmDeletePromptConfig(
+                    title: "Delete \(displayName)?",
+                    message: "\(displayName) will be removed from this Mac."
+                ),
+                onConfirm: {
+                    downloader.deleteModel(withID: modelID)
+                    dictationModelDeleteTarget = nil
+                },
+                onCancel: {
+                    dictationModelDeleteTarget = nil
                 }
             )
         }

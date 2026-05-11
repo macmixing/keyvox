@@ -183,6 +183,21 @@ final class VibePillPresentationControllerTests: XCTestCase {
         XCTAssertEqual(visibleCyclePillWindowCount, 0)
     }
 
+    func testHideOrdersOutVisibleCyclePillPanel() {
+        OverlayManager.shared.showVibeCyclePill(
+            title: "Casual",
+            duration: nil
+        )
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.02))
+        XCTAssertEqual(visibleCyclePillWindowCount, 1)
+
+        OverlayManager.shared.hide()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.02))
+
+        XCTAssertFalse(OverlayManager.shared.isVibeCyclePillVisible)
+        XCTAssertEqual(visibleCyclePillWindowCount, 0)
+    }
+
     func testStandalonePillCanBeAdoptedIntoCyclePill() {
         OverlayManager.shared.showVibePill(
             title: "Casual",

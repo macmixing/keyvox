@@ -265,7 +265,11 @@ private struct StaticLogoView: View {
 
         return ZStack {
             Circle()
-                .stroke(Color.yellow.opacity(0.6), lineWidth: 2 * scale)
+                .fill(Color.black)
+                .overlay(
+                    Circle()
+                        .stroke(Color.yellow.opacity(0.6), lineWidth: 2 * scale)
+                )
                 .frame(width: size, height: size)
                 .shadow(color: .yellow.opacity(0.3), radius: 4 * scale)
 

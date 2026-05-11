@@ -42,7 +42,7 @@ struct SettingsVibesCard: View {
     private var headerContent: some View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
 
@@ -50,7 +50,7 @@ struct SettingsVibesCard: View {
                     .resizable()
                     .renderingMode(.template)
                     .scaledToFit()
-                    .foregroundStyle(MacAppTheme.accent)
+                    .foregroundStyle(.yellow)
                     .frame(width: 24, height: 24)
             }
 
@@ -58,6 +58,10 @@ struct SettingsVibesCard: View {
                 Text(SettingsVibesCardCopy.cardTitle)
                     .font(.appFont(18))
                     .foregroundStyle(.white)
+
+                Text(SettingsVibesCardCopy.cardSubtitle)
+                    .font(.appFont(12, variant: .light))
+                    .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -91,7 +95,7 @@ struct SettingsVibesCard: View {
                 action: repairAction
             )
         case .progress:
-            StatusBadge(title: progressBadgeTitle, color: .yellow)
+            StatusBadge(title: progressBadgeTitle, backgroundColor: .yellow)
                 .frame(width: 84)
         case .change:
             Picker("", selection: $selectedVibe) {
@@ -107,14 +111,14 @@ struct SettingsVibesCard: View {
 
     private var statusContent: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(statusText)
-                .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
             if let progress = matrix.progress {
-                ModelDownloadProgress(progress: progress)
+                LabeledProgressBar(progress: progress, statusText: statusText)
+            } else {
+                Text(statusText)
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let errorMessage = matrix.errorMessage {
@@ -168,6 +172,7 @@ struct SettingsVibesCard: View {
 
 enum SettingsVibesCardCopy {
     static let cardTitle = "KeyVox Vibes"
+    static let cardSubtitle = "On-device, reversible writing styles."
     static let pickerAccessibilityLabel = "KeyVox Vibes"
     static let downloadRequiredStatus = "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
     static let downloadingStatus = "Downloading KeyVox Vibes AI."

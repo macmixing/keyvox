@@ -112,7 +112,7 @@ struct SettingsRow<Accessory: View>: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 iconView
@@ -141,12 +141,12 @@ struct SettingsRow<Accessory: View>: View {
         case .system(let name):
             Image(systemName: name)
                 .font(.appFont(20))
-                .foregroundColor(MacAppTheme.accent)
+                .foregroundColor(.yellow)
         case .assetTemplate(let name):
             Image(name)
                 .resizable()
                 .renderingMode(.template)
-                .foregroundColor(MacAppTheme.accent)
+                .foregroundColor(.yellow)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
         }
@@ -277,13 +277,13 @@ struct DeveloperLinkCard: View {
                 .cornerRadius(12)
         case .assetTemplate(let name):
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 Image(name)
                     .resizable()
                     .renderingMode(.template)
-                    .foregroundColor(.yellow.opacity(0.85))
+                    .foregroundColor(.yellow)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 26, height: 26)
             }
@@ -305,7 +305,7 @@ struct DeveloperLinkCard: View {
             }
         case .systemImage(let name):
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
                 Image(systemName: name)
@@ -355,21 +355,22 @@ struct SidebarItem: View {
 }
 
 // MARK: - Status Badge
+/// Compact status badge with yellow text and caller-controlled capsule background.
 struct StatusBadge: View {
     let title: String
-    let color: Color
+    let backgroundColor: Color
     
     var body: some View {
         Text(title.uppercased())
             .font(.appFont(9))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(color.opacity(0.15))
-            .foregroundColor(color)
+            .background(backgroundColor.opacity(0.15))
+            .foregroundColor(.yellow)
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(color.opacity(0.3), lineWidth: 1)
+                    .stroke(backgroundColor.opacity(0.3), lineWidth: 1)
             )
     }
 }

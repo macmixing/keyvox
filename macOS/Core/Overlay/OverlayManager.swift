@@ -295,7 +295,7 @@ class OverlayManager {
 
     func hide() {
         pendingHideWorkItem?.cancel()
-        resetVibeCyclePillState(orderOutVisiblePanel: false)
+        resetVibeCyclePillState(orderOutVisiblePanel: true)
         motionController.cancelPendingMotionAnimations(panel: window)
         hideVibeLabelWindow()
 

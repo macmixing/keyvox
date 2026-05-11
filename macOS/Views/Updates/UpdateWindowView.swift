@@ -49,9 +49,7 @@ struct UpdateWindowView: View {
 
     private var draggableContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            AnimatedWaveHeader {
-                StatusBadge(title: "Updater", color: MacAppTheme.accent)
-            }
+            AnimatedWaveHeader()
             .padding(.top, 10)
             .background(WindowDragRegion())
 

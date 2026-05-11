@@ -9,7 +9,7 @@ struct PostUpdateNoticeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
-                StatusBadge(title: "Updated", color: MacAppTheme.accent)
+                StatusBadge(title: "Updated", backgroundColor: MacAppTheme.accent)
             }
             .padding(.top, 10)
 

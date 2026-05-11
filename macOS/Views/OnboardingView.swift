@@ -3,7 +3,7 @@ import AppKit
 import AVFoundation
 
 struct OnboardingView: View {
-    static let preferredWindowSize = CGSize(width: 500, height: 560)
+    static let preferredWindowSize = CGSize(width: 560, height: 560)
 
     private struct HeightPreferenceKey: PreferenceKey {
         static var defaultValue: CGFloat = OnboardingView.preferredWindowSize.height
@@ -38,7 +38,7 @@ struct OnboardingView: View {
                     VStack(spacing: 4) {
                         Text("Welcome to KeyVox")
                             .font(.appFont(32))
-                            .foregroundColor(MacAppTheme.accent)
+                            .foregroundColor(.white)
 
                         Text("Let's get you set up in three quick steps.")
                             .font(.appFont(14, variant: .light))
@@ -54,11 +54,11 @@ struct OnboardingView: View {
                         stepNumber: 1,
                         title: "AI Model Setup",
                         description: "OpenAI Whisper Base (~190 MB)",
-                        buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download Now"),
+                        buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download"),
                         action: setupModel
                     ) {
                         if downloader.isDownloading {
-                            ModelDownloadProgress(progress: downloader.progress)
+                            LabeledProgressBar(progress: downloader.progress, statusText: "Downloading AI model.")
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
@@ -75,7 +75,7 @@ struct OnboardingView: View {
                         stepNumber: 2,
                         title: "Microphone Access",
                         description: "KeyVox needs to hear you to transcribe.",
-                        buttonTitle: microphoneStepController.microphoneStepButtonTitle,
+                        buttonTitle: microphoneStepController.isMicStepCompleted ? "Ready" : "Continue",
                         action: requestMicrophoneAccess
                     )
 
@@ -84,7 +84,7 @@ struct OnboardingView: View {
                         stepNumber: 3,
                         title: "Accessibility Access",
                         description: "Required to paste text into other apps.",
-                        buttonTitle: accessibilityAuthorized ? "Authorized" : "Grant Access",
+                        buttonTitle: accessibilityAuthorized ? "Ready" : "Open Settings",
                         action: requestAccessibilityAccess
                     )
                 }
@@ -274,21 +274,13 @@ struct OnboardingStepRow<Content: View>: View {
                 
                 Spacer()
                 
-                Button {
-                    action()
-                } label: {
-                    Text(buttonTitle)
-                        .font(.appFont(12))
-                        .foregroundColor(isCompleted ? .green : .white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(isCompleted ? Color.green : Color.white.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                .buttonStyle(.plain)
-                .disabled(isCompleted || (title == "AI Model Setup" && buttonTitle == "Downloading..."))
+                AppActionButton(
+                    title: buttonTitle,
+                    style: isCompleted ? .secondary : .primary,
+                    minWidth: 104,
+                    isEnabled: !isActionDisabled,
+                    action: action
+                )
             }
             
             extraContent
@@ -298,5 +290,9 @@ struct OnboardingStepRow<Content: View>: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(isCompleted ? Color.green.opacity(0.05) : MacAppTheme.tipFill)
         )
+    }
+
+    private var isActionDisabled: Bool {
+        isCompleted || (stepNumber == 1 && buttonTitle == "Downloading...")
     }
 }
