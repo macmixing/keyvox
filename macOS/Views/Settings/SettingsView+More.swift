@@ -11,20 +11,31 @@ extension SettingsView {
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
 
-                SettingsCard {
-                    SettingsRow(
-                        icon: "keyboard",
-                        title: "Trigger Key",
-                        subtitle: "Hold this key to start recording. Release to transcribe."
-                    ) {
-                        Picker("", selection: $appSettings.triggerBinding) {
-                            ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
-                                Text(binding.displayName).tag(binding)
+                VStack(alignment: .leading, spacing: 10) {
+                    SettingsCard {
+                        SettingsRow(
+                            icon: "keyboard",
+                            title: "Trigger Key",
+                            subtitle: "Hold this key to start recording. Release to transcribe."
+                        ) {
+                            Picker("", selection: $appSettings.triggerBinding) {
+                                ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
+                                    Text(binding.displayName).tag(binding)
+                                }
                             }
+                            .pickerStyle(.menu)
+                            .frame(width: 160)
+                            .labelsHidden()
                         }
-                        .pickerStyle(.menu)
-                        .frame(width: 160)
-                        .labelsHidden()
+                    }
+
+                    HStack {
+                        Spacer()
+                        TipItem(
+                            icon: "shift.fill",
+                            text: "Trigger key + Shift = Hands-free mode"
+                        )
+                        Spacer()
                     }
                 }
             }
