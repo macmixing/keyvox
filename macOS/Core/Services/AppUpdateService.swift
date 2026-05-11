@@ -42,6 +42,8 @@ final class AppUpdateService: ObservableObject {
     static let shared = AppUpdateService()
 
     @Published private(set) var latestRemoteInfo: AppReleaseInfo?
+    @Published private(set) var hasAvailableUpdateForCurrentVersion = false
+    @Published private(set) var hasCompletedInitialAutomaticUpdateCheck = false
 
     private enum ReleaseNotesPreview {
         static let maxLines = 4
@@ -79,9 +81,13 @@ final class AppUpdateService: ObservableObject {
     deinit {}
 
     /// Starts the automatic update polling timer.
-    func startUpdateTimer() {
+    func startUpdateTimer(onInitialAutomaticCheckFinished: ((Bool) -> Void)? = nil) {
         updateTimer?.invalidate()
-        checkForUpdatesIfNeeded()
+        hasCompletedInitialAutomaticUpdateCheck = false
+        checkForUpdatesIfNeeded { [weak self] didFindAvailableUpdate in
+            self?.hasCompletedInitialAutomaticUpdateCheck = true
+            onInitialAutomaticCheckFinished?(didFindAvailableUpdate)
+        }
         restartUpdateTimerIfNeeded()
     }
 
@@ -92,9 +98,10 @@ final class AppUpdateService: ObservableObject {
     }
 
     /// Automatic update check. Respects remote alert toggle and cooldown.
-    func checkForUpdatesIfNeeded() {
+    func checkForUpdatesIfNeeded(onCompletion: ((Bool) -> Void)? = nil) {
         Task { [weak self] in
-            await self?.performUpdateCheck(isManualCheck: false)
+            let didFindAvailableUpdate = await self?.performUpdateCheck(isManualCheck: false) ?? false
+            onCompletion?(didFindAvailableUpdate)
         }
     }
 
@@ -126,49 +133,53 @@ final class AppUpdateService: ObservableObject {
         }
     }
 
-    private func performUpdateCheck(isManualCheck: Bool) async {
+    private func performUpdateCheck(isManualCheck: Bool) async -> Bool {
         if isManualCheck {
             AppUpdateDisplayCoordinator.shared.captureManualCheckDisplay()
         }
 
         if !isManualCheck, suppressNextAutomaticPrompt {
             suppressNextAutomaticPrompt = false
-            return
+            return false
         }
 
         guard let remoteInfo = await fetchLatestVersionInfo() else {
+            hasAvailableUpdateForCurrentVersion = false
             if isManualCheck {
                 showUnavailableUpdatePrompt()
             }
-            return
+            return false
         }
         guard shouldOfferUpdate(remoteInfo: remoteInfo) else {
+            hasAvailableUpdateForCurrentVersion = false
             if isManualCheck {
                 showNoUpdatePrompt()
             }
-            return
+            return false
         }
+        hasAvailableUpdateForCurrentVersion = true
         let updateID = "\(remoteInfo.version)+\(remoteInfo.releasePageURL.absoluteString)"
         let cooldown = max(defaultCheckInterval, 1)
 
         // If user pressed "Later", suppress repeats for this app session.
         if !isManualCheck, suppressedUpdateIDThisSession == updateID {
             if let snoozedUntil = autoPromptSnoozedUntilInSession, nowProvider() < snoozedUntil {
-                return
+                return true
             }
         }
 
         if !isManualCheck {
             if let snoozedUntil = autoPromptSnoozedUntilInSession, nowProvider() < snoozedUntil {
-                return
+                return true
             }
         }
 
-        guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return }
+        guard let prompt = buildPrompt(from: remoteInfo, updateID: updateID, cooldown: cooldown) else { return true }
         if !isManualCheck {
             AppUpdateDisplayCoordinator.shared.captureAutomaticPromptDisplay()
         }
         promptPresenter.show(prompt: prompt)
+        return true
     }
 
     private func buildPrompt(from remoteInfo: AppReleaseInfo, updateID: String, cooldown: TimeInterval) -> UpdatePrompt? {
