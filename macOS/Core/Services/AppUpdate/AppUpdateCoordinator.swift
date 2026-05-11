@@ -139,6 +139,7 @@ final class AppUpdateCoordinator: ObservableObject {
         noticeService.acknowledge(version: version)
         postUpdateNoticeVersion = nil
         WindowManager.shared.hidePostUpdateNoticeWindow()
+        KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
     }
 
     func primaryAction() {

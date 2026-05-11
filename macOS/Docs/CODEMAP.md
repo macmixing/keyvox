@@ -40,6 +40,7 @@ KeyVox/
 │   ├── App/
 │   │   ├── KeyVoxApp.swift
 │   │   ├── WindowManager+Updates.swift
+│   │   ├── WindowManager+VibesIntro.swift
 │   │   ├── AppSettingsStore.swift
 │   │   ├── AppServiceRegistry.swift
 │   │   ├── LoginItemController.swift
@@ -61,6 +62,7 @@ KeyVox/
 │   │   │   ├── MacLocalRewriteModelManager.swift
 │   │   │   ├── MacLocalRewriteInferenceService.swift
 │   │   │   ├── MacLocalStyleRewriteTextTransformer.swift
+│   │   │   ├── MacVibesIntroController.swift
 │   │   │   ├── MacVibesAccessMatrix.swift
 │   │   │   ├── MacVibesCoordinator.swift
 │   │   │   ├── MacVibesReadinessPrewarmer.swift
@@ -97,6 +99,7 @@ KeyVox/
 │   │   ├── RecordingOverlay.swift
 │   │   ├── VibePillOverlay.swift
 │   │   ├── UpdatePromptOverlay.swift
+│   │   ├── VibesIntro/
 │   │   ├── Updates/
 │   │   ├── Settings/
 │   │   │   ├── SettingsVibesCard.swift
@@ -159,6 +162,10 @@ KeyVox/
   - Dedicated updater and post-update notice window lifecycle.
   - Applies updater-specific floating-window centering and stoplight hiding.
   - Keeps update-related window policy out of the primary settings/onboarding window code.
+- `App/WindowManager+VibesIntro.swift`
+  - Dedicated Vibes intro/help window lifecycle.
+  - Hosts the shared Vibes intro window, resolves the SwiftUI fitting size before presentation, and keeps scene-size changes routed through one AppKit resize path.
+  - Opens Settings directly to the Style tab when the intro `Try it` action completes.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -217,6 +224,16 @@ KeyVox/
   - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
 - `Views/Components/ConfirmDeletePromptView.swift`
   - Reusable destructive confirmation sheet used for dictionary-entry deletion and Vibes AI model deletion.
+- `Views/VibesIntro/MacVibesIntroWindowView.swift`
+  - Shared Mac Vibes intro window shell.
+  - Owns the top-right close control, centered footer action, dynamic content-size measurement, Scene B standalone help behavior, and the `Try it` readiness gate.
+- `Views/VibesIntro/MacVibesIntroSceneAView.swift`
+  - Scene A presentation for introducing KeyVox Vibes and style examples.
+- `Views/VibesIntro/MacVibesIntroSceneBView.swift`
+  - Scene B presentation for trigger-key Vibes behavior, tap-to-Vibe, undo, and local-first messaging.
+- `Views/VibesIntro/MacVibesIntroSceneCView.swift`
+  - Scene C presentation for Vibes AI readiness.
+  - Owns the intro install/download card, ready-row copy/icon swap, and shared progress presentation.
 
 ### Core Managers
 
@@ -235,6 +252,9 @@ KeyVox/
 - `Core/Vibes/MacVibesReadinessPrewarmer.swift`
   - Observes the local Vibes AI install state and prewarms the canonical casual rewrite path when the model becomes ready at launch or after reinstall.
   - Deliberately does not depend on `selectedVibe`, so switching between `None` and model-backed styles does not move model loading back onto the first dictation path.
+- `Core/Vibes/MacVibesIntroController.swift`
+  - Owns one-time cold-launch Vibes intro eligibility after main onboarding.
+  - Persists the seen flag and supports the local force-show environment flag used by the Mac debug scheme.
 - `Core/Vibes/MacLocalRewriteModelCatalog.swift`
   - Mac-local source of truth for the Vibes GGUF model descriptor, artifact metadata, install manifest filename, and LoRA adapter filenames.
 - `Core/Vibes/MacLocalRewriteModelManager.swift`
@@ -355,6 +375,7 @@ KeyVox/
 - `Core/Services/AppUpdateService.swift`
   - Fetches the latest GitHub release from the resolved feed, applies session snooze rules, and builds the initial update prompt.
   - Keeps automatic prompt policy separate from the install pipeline.
+  - Publishes initial automatic-check completion and current-version update availability so cold-launch UI can wait behind available updates.
 - `Core/Services/AppUpdateLogic.swift`
   - Pure update release parsing, host allowlist checks, version normalization/comparison, and asset classification.
 - `Core/Services/UpdateFeedConfig.swift`

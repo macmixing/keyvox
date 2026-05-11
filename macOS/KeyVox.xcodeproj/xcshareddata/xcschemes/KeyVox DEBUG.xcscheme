@@ -79,6 +79,11 @@
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KEYVOX_FORCE_KEYVOX_VIBES_INTRO"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
