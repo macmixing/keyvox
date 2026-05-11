@@ -22,6 +22,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertNil(store.updateAlertSnoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .whisper)
         XCTAssertEqual(store.selectedVibe, .none)
+        XCTAssertTrue(store.vibesTriggerKeyInteractionsEnabled)
     }
 
     func testInitHydratesPersistedValuesAndClampsStoredVolume() {
@@ -41,6 +42,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set(snoozedUntil, forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
         defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
         defaults.set(StyleRewriteStyle.chill.rawValue, forKey: UserDefaultsKeys.selectedVibe)
+        defaults.set(false, forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled)
 
         let store = AppSettingsStore(defaults: defaults)
 
@@ -55,6 +57,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.updateAlertSnoozedUntil, snoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .parakeet)
         XCTAssertEqual(store.selectedVibe, .chill)
+        XCTAssertFalse(store.vibesTriggerKeyInteractionsEnabled)
     }
 
     func testInitFallsBackToWhisperWhenPersistedParakeetIsUnsupportedOnCurrentOS() {
@@ -109,6 +112,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.isSoundEnabled = false
         store.selectedMicrophoneUID = "usb-mic"
         store.selectedVibe = .casual
+        store.vibesTriggerKeyInteractionsEnabled = false
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
         store.activeDictationProvider = .parakeet
@@ -120,6 +124,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.isSoundEnabled) as? Bool, false)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedVibe), StyleRewriteStyle.casual.rawValue)
+        XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled) as? Bool, false)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)

@@ -113,14 +113,42 @@ final class MacVibesTriggerActionControllerTests: XCTestCase {
         XCTAssertFalse(missingController.shouldDeferRecordingStartForVibePillCycleHandoff(isVibePillVisible: true))
     }
 
+    func testDisabledTriggerInteractionsDoNotTreatReleasesAsVibeQuickTaps() {
+        let (controller, defaults, suiteName) = makeController(
+            isModelReady: { true },
+            triggerKeyInteractionsEnabled: false
+        )
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        controller.noteTriggerPressed(at: 10)
+
+        XCTAssertFalse(controller.shouldHandleReleaseAsQuickTap(at: 10.1))
+    }
+
+    func testDisabledTriggerInteractionsDoNotSuppressOrDeferRecordingStart() {
+        let (controller, defaults, suiteName) = makeController(
+            isModelReady: { true },
+            triggerKeyInteractionsEnabled: false
+        )
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        controller.handleQuickTap(at: 10)
+
+        XCTAssertFalse(controller.shouldSuppressRecordingStartForPotentialDoubleTap(at: 10.1))
+        XCTAssertFalse(controller.shouldDeferRecordingStartForVisibleCyclePill(isCyclePillVisible: true))
+        XCTAssertFalse(controller.shouldDeferRecordingStartForVibePillCycleHandoff(isVibePillVisible: true))
+    }
+
     private func makeController(
-        isModelReady: @escaping () -> Bool
+        isModelReady: @escaping () -> Bool,
+        triggerKeyInteractionsEnabled: Bool = true
     ) -> (MacVibesTriggerActionController, UserDefaults, String) {
         let suiteName = "MacVibesTriggerActionControllerTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         let settings = AppSettingsStore(defaults: defaults)
         settings.selectedVibe = .casual
+        settings.vibesTriggerKeyInteractionsEnabled = triggerKeyInteractionsEnabled
         let coordinator = MacVibesCoordinator(
             appSettings: settings,
             textTransformer: FakeTriggerActionTextTransformer(),

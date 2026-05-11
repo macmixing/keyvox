@@ -125,6 +125,15 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var vibesTriggerKeyInteractionsEnabled: Bool {
+        didSet {
+            defaults.set(
+                vibesTriggerKeyInteractionsEnabled,
+                forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled
+            )
+        }
+    }
+
     @Published var updateAlertLastShown: Date? {
         didSet {
             defaults.set(updateAlertLastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
@@ -200,6 +209,9 @@ final class AppSettingsStore: ObservableObject {
         } else {
             selectedVibe = .none
         }
+        vibesTriggerKeyInteractionsEnabled = defaults.object(
+            forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled
+        ) as? Bool ?? true
         updateAlertLastShown = defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
         pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)

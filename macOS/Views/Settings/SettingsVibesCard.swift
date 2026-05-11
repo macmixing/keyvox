@@ -309,11 +309,15 @@ enum MacVibesSettingsCopy {
     static let showExamplesAccessibilityLabel = "Show vibe examples"
     static let hideExamplesAccessibilityLabel = "Hide vibe examples"
     static let triggerTip = "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes."
+    static let triggerKeyInteractionsTitle = "Trigger Key Interactions"
+    static let triggerKeyInteractionsSubtitle = "Tap to apply / undo Vibes. Double-tap to cycle Vibes."
+    static let triggerKeyInteractionsAccessibilityLabel = "Vibes trigger key interactions"
     static let deleteConfirmationTitle = "Delete KeyVox Vibes AI?"
     static let deleteConfirmationMessage = "KeyVox Vibes AI will be removed from this Mac."
 }
 
 struct SettingsVibesAIInstallCard: View {
+    @Binding var triggerKeyInteractionsEnabled: Bool
     let installState: MacLocalRewriteModelInstallState
     let downloadAction: () -> Void
     let repairAction: () -> Void
@@ -330,6 +334,11 @@ struct SettingsVibesAIInstallCard: View {
                     actionControl
                 }
 
+                Divider()
+                    .background(Color.white.opacity(0.22))
+
+                triggerKeyInteractionsToggle
+
                 if shouldShowInstallContent {
                     Divider()
                         .background(Color.white.opacity(0.22))
@@ -337,6 +346,27 @@ struct SettingsVibesAIInstallCard: View {
                     installContent
                 }
             }
+        }
+    }
+
+    private var triggerKeyInteractionsToggle: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(MacVibesSettingsCopy.triggerKeyInteractionsTitle)
+                    .font(.appFont(14))
+                    .foregroundStyle(.white)
+
+                Text(MacVibesSettingsCopy.triggerKeyInteractionsSubtitle)
+                    .font(.appFont(12, variant: .light))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Toggle("", isOn: $triggerKeyInteractionsEnabled)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .accessibilityLabel(MacVibesSettingsCopy.triggerKeyInteractionsAccessibilityLabel)
         }
     }
 

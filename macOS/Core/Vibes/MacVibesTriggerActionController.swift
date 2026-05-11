@@ -32,6 +32,7 @@ final class MacVibesTriggerActionController {
     }
 
     func shouldHandleReleaseAsQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
+        guard appSettings.vibesTriggerKeyInteractionsEnabled else { return false }
         guard let triggerPressedAt else { return false }
         return timestamp - triggerPressedAt <= quickTapMaximumDuration
     }
@@ -44,17 +45,20 @@ final class MacVibesTriggerActionController {
     func shouldSuppressRecordingStartForPotentialDoubleTap(
         at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime
     ) -> Bool {
+        guard appSettings.vibesTriggerKeyInteractionsEnabled else { return false }
         guard vibesCoordinator.canUseVibes else { return false }
         guard pendingSingleTapWorkItem != nil else { return false }
         return triggerTapClassifier.isAwaitingSecondTap(at: timestamp)
     }
 
     func shouldDeferRecordingStartForVisibleCyclePill(isCyclePillVisible: Bool) -> Bool {
-        vibesCoordinator.canUseVibes && isCyclePillVisible
+        guard appSettings.vibesTriggerKeyInteractionsEnabled else { return false }
+        return vibesCoordinator.canUseVibes && isCyclePillVisible
     }
 
     func shouldDeferRecordingStartForVibePillCycleHandoff(isVibePillVisible: Bool) -> Bool {
-        vibesCoordinator.canUseVibes && isVibePillVisible
+        guard appSettings.vibesTriggerKeyInteractionsEnabled else { return false }
+        return vibesCoordinator.canUseVibes && isVibePillVisible
     }
 
     var quickTapDecisionDelay: TimeInterval {
@@ -62,6 +66,9 @@ final class MacVibesTriggerActionController {
     }
 
     func handleQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        guard appSettings.vibesTriggerKeyInteractionsEnabled else {
+            return
+        }
         guard vibesCoordinator.canUseVibes else {
             return
         }
