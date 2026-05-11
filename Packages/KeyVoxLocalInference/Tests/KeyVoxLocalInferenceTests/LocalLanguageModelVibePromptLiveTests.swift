@@ -11,14 +11,17 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
             adapterScale: LocalModelLiveTestEnvironment.adapterScale
         )
-        defer {
-            Task { await tester.unload() }
-        }
 
-        try await tester.assertStyleCases(
-            Self.cases,
-            coverageRequirements: Self.polishedCoverageRequirements
-        )
+        do {
+            try await tester.assertStyleCases(
+                Self.cases,
+                coverageRequirements: Self.polishedCoverageRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
     }
 
     private static let cases = [
@@ -701,4 +704,3 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         ),
     ]
 }
-

@@ -47,6 +47,19 @@ extension SettingsView {
 
                 launchAtLoginCard
                 dictationModelsSection
+                SettingsVibesAIInstallCard(
+                    triggerKeyInteractionsEnabled: $appSettings.vibesTriggerKeyInteractionsEnabled,
+                    installState: localRewriteModelManager.installState,
+                    downloadAction: {
+                        localRewriteModelManager.downloadModel()
+                    },
+                    repairAction: {
+                        localRewriteModelManager.downloadModel()
+                    },
+                    deleteAction: {
+                        isVibesAIDeleteConfirmationPresented = true
+                    }
+                )
             }
             
             // More from Developer Section

@@ -27,7 +27,7 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 - 🚀 Fast local transcription (no cloud transcription path)
 - 🌍 Includes on-device Whisper and Parakeet transcription models 
 - 🖥️ Parakeet works on Sonoma and later, Whisper works on Ventura and later. Both on iOS 18.6+.
-- ♥️ On-device, reversible writing styles (iOS)
+- ♥️ On-device, reversible writing styles on macOS and iPhone
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
@@ -41,7 +41,7 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 - 🎙️ Hold-to-talk dictation with optional hands-free mode on macOS
 - 🎙️ Tap-to-talk dictation on iPhone
 - 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
-- ♥️ KeyVox Vibes (iOS) - Pick a style, change your mind later
+- ♥️ KeyVox Vibes (macOS/iOS) - Pick a style, change your mind later
 - 🔈 KeyVox Speak (iOS) - On-device text-to-speech with 8 AI voices to choose from
 - ⚙️ Configurable trigger binding (Option, Command, Control, or Fn), synced across devices
 - 📓 Optional auto-paragraph splitting with Lists preferences with sync
@@ -53,24 +53,27 @@ KeyVox for iPhone brings the same speech-to-text workflow from the Mac app into 
 
 https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 
-## What is KeyVox Vibes? (iOS)
+## What is KeyVox Vibes?
 
-**Choose a style. Change your mind.** KeyVox Vibes lets you apply local, on-device writing styles to dictated text from the KeyVox keyboard. Pick None, Casual, Polished, or Chill before dictation ends, and KeyVox applies that Vibe before inserting your text.
+**Choose a style. Change your mind.** KeyVox Vibes lets you apply local, on-device writing styles to dictated text on Mac and iPhone. Pick None, Casual, Polished, or Chill before dictation ends, and KeyVox applies that Vibe before inserting your text.
 
 ### Long Press to Vibe
 
 Vibes are reversible when the latest inserted dictation is untouched:
 
-- **Long press the Vibes key** to undo the last Vibe change
-- **Tap to choose another Vibe, then long press** to restyle the same untouched text
+- On iPhone, **long press the Vibes key** to undo the last Vibe change.
+- On iPhone, **tap to choose another Vibe, then long press** to restyle the same untouched text.
+- On Mac, **tap the trigger key** to apply or undo the current Vibe, and **double-tap** to cycle Vibes.
 
 This means you can dictate first, decide later, and switch between clean dictation and styled text without re-recording.
 
 ### Local and Private
 
-Vibes run on-device using Apple Intelligence and KeyVox's deterministic formatting pipeline. None keeps normal post-processed dictation, Casual removes filler words, Polished rewrites toward a professional tone, and Chill removes filler words and uses lowercase with limited punctuation.
+Vibes run on-device using KeyVox Vibes AI, a local rewrite model with bundled KeyVox style adapters, plus KeyVox's deterministic formatting pipeline. None keeps normal post-processed dictation, Casual performs light cleanup, Polished rewrites toward a professional tone, and Chill performs cleanup followed by lowercase formatting with limited punctuation.
 
-KeyVox Vibes requires supported Apple Intelligence/Foundation Models availability. You can try Vibes for 24 hours, then unlock KeyVox Vibes once and use it for life.
+On Mac, KeyVox Vibes is free and requires installing KeyVox Vibes AI (~491 MB). Mac Vibes can run on macOS Ventura and later: Sequoia and newer may use Metal/GPU acceleration, while Ventura and Sonoma run Vibes on CPU only.
+
+On iPhone, KeyVox Vibes requires the local Vibes AI model and supported iOS version. You can try Vibes for 24 hours, then unlock KeyVox Vibes once and use it for life.
 
 ## What is KeyVox Speak? (iOS)
 
@@ -105,10 +108,14 @@ macOS
 - macOS Ventura (13.5) or later
 - Apple Silicon recommended (Intel supported)
 - ~190–480 MB of disk space, depending on the installed dictation model
+- Optional KeyVox Vibes AI model is ~491 MB
 
 iOS
 - iOS 18.6 or later
 - ~190–480 MB of disk space, depending on the installed dictation model
+- Optional KeyVox Vibes AI model is ~491 MB
+- Optional KeyVox Speak shared engine is ~642 MB
+- Optional KeyVox Speak voices are ~17-19 MB each
 
 ### Install and Run
 

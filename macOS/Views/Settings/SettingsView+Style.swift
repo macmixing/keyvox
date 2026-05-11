@@ -5,6 +5,17 @@ extension SettingsView {
         VStack(alignment: .leading, spacing: 16) {
             Spacer().frame(height: 4)
 
+            SettingsVibesCard(
+                selectedVibe: $appSettings.selectedVibe,
+                installState: localRewriteModelManager.installState,
+                downloadAction: {
+                    localRewriteModelManager.downloadModel()
+                },
+                repairAction: {
+                    localRewriteModelManager.downloadModel()
+                }
+            )
+
             SettingsCard {
                 SettingsRow(
                     icon: "list.bullet",

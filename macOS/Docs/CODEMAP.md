@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-04-11**
+**Last Updated: 2026-05-10**
 
 ## Project Overview
 
@@ -15,7 +15,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
 - **Tools**: maintainer-only scripts (resource generation, dev helpers)
 - **KeyVoxTests**: app unit tests for deterministic/runtime-safe logic
-- **Packages**: local Swift packages for the shared engine, the `whisper.cpp` wrapper, and the Parakeet Core ML runtime
+- **Packages**: local Swift packages for the shared engine, the `whisper.cpp` wrapper, Parakeet Core ML runtime, local rewrite inference, shared style rewrite contracts, and bundled Vibes LoRA adapters
 
 ## Contributor Notes
 
@@ -54,6 +54,19 @@ KeyVox/
 │   │   ├── ModelDownloader/
 │   │   ├── Transcription/
 │   │   │   └── TranscriptionManager.swift
+│   │   ├── Vibes/
+│   │   │   ├── MacLocalRewriteModelCatalog.swift
+│   │   │   ├── MacLocalRewriteModelInstallManifest.swift
+│   │   │   ├── MacLocalRewriteModelInstallState.swift
+│   │   │   ├── MacLocalRewriteModelManager.swift
+│   │   │   ├── MacLocalRewriteInferenceService.swift
+│   │   │   ├── MacLocalStyleRewriteTextTransformer.swift
+│   │   │   ├── MacVibesAccessMatrix.swift
+│   │   │   ├── MacVibesCoordinator.swift
+│   │   │   ├── MacVibesReadinessPrewarmer.swift
+│   │   │   ├── MacDictationChangeController.swift
+│   │   │   ├── MacTriggerTapClassifier.swift
+│   │   │   └── MacVibesTriggerActionController.swift
 │   │   ├── Services/
 │   │   │   ├── Paste/
 │   │   │   │   ├── Accessibility/
@@ -75,15 +88,20 @@ KeyVox/
 │   │   ├── Components/
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── MacAppTheme.swift
+│   │   │   ├── SelectedVibeLabel.swift
 │   │   │   ├── UIComponents.swift
 │   │   │   ├── SettingsLastTranscriptionCard.swift
 │   │   │   └── ConfirmDeletePromptView.swift
 │   │   ├── StatusMenuView.swift
 │   │   ├── OnboardingView.swift
 │   │   ├── RecordingOverlay.swift
+│   │   ├── VibePillOverlay.swift
 │   │   ├── UpdatePromptOverlay.swift
 │   │   ├── Updates/
 │   │   ├── Settings/
+│   │   │   ├── SettingsVibesCard.swift
+│   │   │   ├── SettingsVibesAIInstallCard.swift
+│   │   │   └── SettingsVibesExamplesSection.swift
 │   │   └── Warnings/
 │   ├── Resources/
 │   ├── KeyVoxTests/
@@ -102,7 +120,10 @@ KeyVox/
 │   │       ├── Audio/
 │   │       └── Resources/Pronunciation/
 │   ├── KeyVoxWhisper/
-│   └── KeyVoxParakeet/
+│   ├── KeyVoxParakeet/
+│   ├── KeyVoxLocalInference/
+│   ├── KeyVoxStyleRewrite/
+│   └── KeyVoxVibesAdapters/
 ├── Tools/
 ├── build/
 └── README.md
@@ -118,11 +139,12 @@ KeyVox/
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
 7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including four-digit quantity grouping.
-8. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
-9. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
-10. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
-11. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
-12. `Views/Components/LogoBarView.swift` is the single branded Mac logo renderer for both standalone logo presentation and overlay-reactive modes.
+8. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
+9. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
+10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
+11. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
+12. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
+13. `Views/Components/LogoBarView.swift` is the single branded Mac logo renderer for both standalone logo presentation, overlay-reactive modes, and Vibe pill presentation.
 
 ## Key Components
 
@@ -138,13 +160,14 @@ KeyVox/
   - Applies updater-specific floating-window centering and stoplight hiding.
   - Keeps update-related window policy out of the primary settings/onboarding window code.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
   - Instantiates `WhisperService`, `ParakeetService`, and `SwitchableDictationProvider`.
   - Normalizes active-provider selection changes back into the runtime only when transcription is idle.
   - Hooks downloader post-install preparation so Parakeet preload happens after install finalization instead of on the first trigger path.
+  - Owns the Mac Vibes local rewrite model manager, inference service, coordinator, and readiness prewarmer.
   - Owns the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator.
 - `App/WeeklyWordStatsStore.swift`
   - Dedicated local weekly-usage store for combined weekly word count plus hidden per-installation contribution totals.
@@ -175,11 +198,17 @@ KeyVox/
   - Shared floating circular add action used by the dictionary settings surface.
 - `Views/Components/LogoBarView.swift`
   - Single branded Mac logo file.
-  - Provides both standalone logo presentation (`LogoBarView(size:)`) and recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`).
+  - Provides standalone logo presentation (`LogoBarView(size:)`), recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`), and Vibe pill presentation (`LogoBarView(vibeTitle:state:)`).
   - Contains the proprietary ring/glow/bar/ripple visual language and visual tuning.
+- `Views/Components/SelectedVibeLabel.swift`
+  - Small recording-time Vibe label shown below the floating logo when a non-None Vibe is selected.
+  - Lives outside `RecordingOverlay` layout so it does not affect the logo panel's position or animation.
 - `Views/RecordingOverlay.swift`
   - Thin overlay shell for visibility animation, panel sizing, and ring-color selection.
   - Feeds recorder-derived indicator samples into `AudioIndicatorDriver` and renders `LogoBarView`.
+- `Views/VibePillOverlay.swift`
+  - Thin overlay shell for temporary Vibe feedback pills driven by `OverlayManager`.
+  - Owns standalone pill visibility animation plus the cycle-pill presentation controller and forward flip animation used for double-tap Vibe cycling.
 - `Views/Settings/SettingsView+DictationModels.swift`
   - User-facing `Active Model` settings card for provider selection plus install/remove/progress/error state per model.
   - Falls back to the first ready provider when the persisted active selection is no longer installable/selectable.
@@ -187,18 +216,52 @@ KeyVox/
 - `Views/Settings/SettingsView+Legal.swift`
   - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
 - `Views/Components/ConfirmDeletePromptView.swift`
-  - Reusable destructive confirmation sheet currently used for dictionary-entry deletion.
+  - Reusable destructive confirmation sheet used for dictionary-entry deletion and Vibes AI model deletion.
 
 ### Core Managers
 
 - `Core/Transcription/TranscriptionManager.swift`
   - Orchestrates recording, transcription, and paste.
   - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
+  - Owns trigger press/release orchestration for hold-to-dictate and delegates Vibes quick-tap apply/undo/cycling behavior to `MacVibesTriggerActionController`.
   - Uses `ModelDownloader` plus the active provider router so recording availability follows the selected installed model instead of Whisper-only readiness.
   - Handles hands-free lock mode and escape cancellation.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
   - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
   - Persists the most recent successful final transcription for the Settings Home tab card.
+- `Core/Vibes/MacVibesCoordinator.swift`
+  - Mac-owned local style rewrite coordinator for KeyVox Vibes.
+  - Resolves the selected Vibe through local model readiness, prewarms requested styles, transforms pipeline output, and keeps release-prewarm behavior a no-op for the local runtime.
+- `Core/Vibes/MacVibesReadinessPrewarmer.swift`
+  - Observes the local Vibes AI install state and prewarms the canonical casual rewrite path when the model becomes ready at launch or after reinstall.
+  - Deliberately does not depend on `selectedVibe`, so switching between `None` and model-backed styles does not move model loading back onto the first dictation path.
+- `Core/Vibes/MacLocalRewriteModelCatalog.swift`
+  - Mac-local source of truth for the Vibes GGUF model descriptor, artifact metadata, install manifest filename, and LoRA adapter filenames.
+- `Core/Vibes/MacLocalRewriteModelManager.swift`
+  - Downloads, stages, validates, promotes, deletes, and publishes install state for the Mac Vibes AI model under Application Support.
+  - Resolves bundled LoRA adapters through `KeyVoxVibesAdapters` before falling back to installed adapter paths.
+- `Core/Vibes/MacLocalRewriteInferenceService.swift`
+  - Caches the loaded local rewrite model per model URL and adapter URL.
+  - Requests automatic GPU offload from `KeyVoxLocalInference`; the package runtime gates that to macOS Sequoia (15) and newer, with macOS Ventura/Sonoma (13.5-14.x) remaining CPU-only.
+- `Core/Vibes/MacLocalStyleRewriteTextTransformer.swift`
+  - Bridges shared style rewrite requests into Mac local inference.
+  - Maps `polished` to the polished LoRA and `casual`/`chill` to the casual LoRA.
+  - Logs prewarm, LoRA-missing, metrics, and failure diagnostics in debug builds.
+- `Core/Vibes/MacVibesAccessMatrix.swift`
+  - Pure settings-state resolver for Mac Vibes install/download/repair/ready UI.
+  - Emits structural state only; user-facing copy stays in the owning settings views.
+  - Mac Vibes have no trial, unlock, purchase, restore, or paywall branches.
+- `Core/Vibes/MacDictationChangeController.swift`
+  - Captures the latest inserted dictation session and safely applies or undoes Vibes only when the current focused field still contains the untouched insertion before the caret.
+  - Caches generated Vibe variants so repeated apply/undo hops do not re-transform already generated text.
+- `Core/Vibes/MacTriggerTapClassifier.swift`
+  - Small deterministic helper for single-tap vs double-tap classification.
+- `Core/Vibes/MacVibesTriggerActionController.swift`
+  - Owns quick-tap press timing, pending single-tap work, Vibe apply/undo dispatch, and double-tap Vibe cycling outside `TranscriptionManager`.
+  - Respects `AppSettingsStore.vibesTriggerKeyInteractionsEnabled`; when disabled, trigger-key taps fall through to normal dictation behavior without Vibes single-tap, double-tap, or pill-handoff behavior.
+- `Core/Services/Paste/PasteService.swift`
+  - Owns paste insertion plus latest untouched insertion verification/replacement used by Mac Vibes apply/undo.
+  - Verifies the focused text range before replacement and falls back conservatively when Accessibility cannot prove the text is still safe to mutate.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
   - Treats the host-provided dictionary-hint flag as an audio/silence eligibility signal, then applies package-owned dictionary availability so built-in entries can participate consistently across macOS and iOS.
@@ -237,6 +300,7 @@ KeyVox/
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
+  - Owns recording overlay windows, standalone Vibe pills, recording-time selected-Vibe labels, and cycle-pill window reuse/handoff.
 - `Core/Overlay/AudioIndicatorDriver.swift`
   - Generic audio-indicator driver for overlay/logo timing.
   - Owns smoothing, stale-sample handling, phase progression, and published timeline state.
@@ -599,8 +663,20 @@ KeyVox/
   - Dictation provider selection plus install/remove/progress/error UI for model-backed providers.
 - `Views/Settings/SettingsView+Style.swift`
   - Style tab with standalone Lists and Paragraphs cards backed by persisted `listFormattingEnabled` and `autoParagraphsEnabled`.
+  - Always composes the KeyVox Vibes style card and drives style-picker availability from the Mac Vibes local install/access matrix.
+- `Views/Settings/SettingsVibesCard.swift`
+  - Style-tab KeyVox Vibes card with install/readiness status, download/repair/progress controls, the ready-state picker, and a trigger-key usage tip.
+  - Copy lives in `SettingsVibesCardCopy`.
+- `Views/Settings/SettingsVibesExamplesSection.swift`
+  - Expandable style examples section owned by the Style-tab Vibes card.
+  - Uses animated height measurement, white example text, yellow headers/chevron, and full-row selection when enabled.
+  - Copy lives in `SettingsVibesExamplesCopy`.
 - `Views/Settings/SettingsView+More.swift`
   - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
+  - System section composes the Vibes AI install-management card separately from the Style-tab Vibes card.
+- `Views/Settings/SettingsVibesAIInstallCard.swift`
+  - System-tab Vibes AI install-management card for download, repair, delete, progress/error display, and the Vibes trigger-key interactions toggle.
+  - Copy lives in `SettingsVibesAIInstallCardCopy`.
 - `Views/Warnings/*`
   - Warning UI and panel orchestration for both system warnings and paste-failure recovery.
 - `Views/Warnings/WarningManager.swift`
@@ -620,12 +696,14 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, onboarding completion, update prompt timestamps, active dictation provider
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, onboarding completion, update prompt timestamps, active dictation provider
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
 - Paragraph style preference key: `KeyVox.AutoParagraphsEnabled`
 - List formatting preference key: `KeyVox.ListFormattingEnabled`
+- Selected Vibe preference key: `KeyVox.SelectedVibe`
+- Vibes trigger-key interactions preference key: `KeyVox.VibesTriggerKeyInteractionsEnabled` (defaults to enabled)
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
 - Last transcription cache key: `KeyVox.App.LastTranscription`
 - Active provider key: `KeyVox.App.ActiveDictationProvider`
@@ -650,8 +728,14 @@ KeyVox/
 
 - Compatibility target: **macOS Ventura (13.5) and newer**
 - Parakeet provider availability: **runtime-gated to macOS 14 and newer**
+- Mac Vibes local rewrite GPU policy: **macOS Sequoia (15) and newer may use Metal/GPU offload; macOS Ventura/Sonoma (13.5-14.x) is CPU-only**
 - App type: menu bar app (`MenuBarExtra`)
 - Local model artifact name: `ggml-base.bin`
+- Local Vibes AI artifact name: `qwen2.5-0.5b-instruct-q4_k_m.gguf`
 - Local packages:
   - `Packages/KeyVoxCore`: extracted shared engine, packaged resources, and reusable tests
   - `Packages/KeyVoxWhisper`: local `whisper.cpp` wrapper package
+  - `Packages/KeyVoxParakeet`: local Parakeet Core ML runtime package
+  - `Packages/KeyVoxLocalInference`: local llama.cpp-backed rewrite inference package
+  - `Packages/KeyVoxStyleRewrite`: shared style rewrite request/transform contracts
+  - `Packages/KeyVoxVibesAdapters`: bundled Vibes LoRA adapter resources

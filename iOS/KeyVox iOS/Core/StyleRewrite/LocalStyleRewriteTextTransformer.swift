@@ -126,6 +126,8 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
             return .promptTooLong(error.description)
         case .cancelled:
             return .cancelled
+        case .outputTruncated:
+            return .outputTruncated(error.description)
         case .tokenizerFailed, .decodeFailed, .emptyOutput:
             return .generationFailed(error.description)
         }

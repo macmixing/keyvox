@@ -10,14 +10,17 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
             adapterScale: LocalModelLiveTestEnvironment.adapterScale
         )
-        defer {
-            Task { await tester.unload() }
-        }
 
-        try await tester.assertStyleCases(
-            Self.cases,
-            coverageRequirements: Self.coverageRequirements
-        )
+        do {
+            try await tester.assertStyleCases(
+                Self.cases,
+                coverageRequirements: Self.coverageRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
     }
 
     private static let polishedThreeParagraphGauntletInput = "Um hey team, I looked at the April 22nd launch notes, and there are like 3 things we need to clean up. Sarah and me was reviewing the checklist at 11:30, and we found 2 minor issues. I ain't worried about the build, but the screenshots still need a final pass.\n\nOkay, so the customer paid $1,200 in twenty twenty four. They was asking whether the invoice, um, should show the discount as 15% or as $180. I seen the same confusion last week, and we should make the update clear.\n\nFor follow up, please confirm the invoice, like send the April 22nd recap, and ask Jordan if the 3 screenshots are final. We should keep the tone professional but direct. I don't want the meaning to change."

@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import ApplicationServices
 import KeyVoxCore
+import KeyVoxStyleRewrite
 
 @MainActor
 class TranscriptionManager: ObservableObject {
@@ -17,6 +18,11 @@ class TranscriptionManager: ObservableObject {
         case transcribing
         case error(String)
     }
+
+    private enum StopRequestPurpose {
+        case quickTapCancellation
+        case transcription
+    }
     
     let keyboardMonitor = KeyboardMonitor.shared
     private let appSettings: AppSettingsStore
@@ -28,6 +34,15 @@ class TranscriptionManager: ObservableObject {
     private let dictionaryStore: DictionaryStore
     private let weeklyWordStatsStore: WeeklyWordStatsStore
     private let postProcessor: TranscriptionPostProcessor
+    private let vibesCoordinator: MacVibesCoordinator
+    private lazy var dictationChangeController = MacDictationChangeController(
+        vibesCoordinator: vibesCoordinator
+    )
+    private lazy var vibeTriggerActionController = MacVibesTriggerActionController(
+        appSettings: appSettings,
+        vibesCoordinator: vibesCoordinator,
+        dictationChangeController: dictationChangeController
+    )
     private lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: provider,
         postProcessor: postProcessor,
@@ -51,10 +66,15 @@ class TranscriptionManager: ObservableObject {
         },
         pasteText: { text in
             PasteService.shared.pasteText(text)
+        },
+        processOutputText: { [weak self] text in
+            guard let self else { return .unchanged(text) }
+            return await self.vibesCoordinator.processOutputText(text)
         }
     )
     private var isLocked = false
     private var cachedCapsLockIsOn = false
+    private var deferredRecordingStartWorkItem: DispatchWorkItem?
     private var cancellables = Set<AnyCancellable>()
     private let bluetoothStopSoundDelay: TimeInterval = 0.2
     private let defaultStopSoundDelay: TimeInterval = 0.0
@@ -69,6 +89,7 @@ class TranscriptionManager: ObservableObject {
             modelDownloader: .shared,
             audioRecorder: AudioRecorder(),
             serviceRegistry: .shared,
+            vibesCoordinator: AppServiceRegistry.shared.vibesCoordinator,
             postProcessor: TranscriptionPostProcessor()
         )
     }
@@ -78,6 +99,7 @@ class TranscriptionManager: ObservableObject {
         modelDownloader: ModelDownloader,
         audioRecorder: AudioRecorder,
         serviceRegistry: AppServiceRegistry,
+        vibesCoordinator: MacVibesCoordinator,
         postProcessor: TranscriptionPostProcessor
     ) {
         self.appSettings = appSettings
@@ -88,6 +110,7 @@ class TranscriptionManager: ObservableObject {
         self.parakeetService = serviceRegistry.parakeetService
         self.dictionaryStore = serviceRegistry.dictionaryStore
         self.weeklyWordStatsStore = serviceRegistry.weeklyWordStatsStore
+        self.vibesCoordinator = vibesCoordinator
         self.postProcessor = postProcessor
         cachedCapsLockIsOn = keyboardMonitor.isCapsLockOn
         setupBindings()
@@ -98,9 +121,13 @@ class TranscriptionManager: ObservableObject {
     deinit {}
 
     private func setupBindings() {
-        keyboardMonitor.$isTriggerKeyPressed
-            .sink { [weak self] isPressed in
-                self?.handleTriggerKey(isPressed: isPressed)
+        keyboardMonitor.$triggerKeyEvent
+            .compactMap { $0 }
+            .sink { [weak self] event in
+                self?.handleTriggerKey(
+                    isPressed: event.isPressed,
+                    timestamp: event.timestamp
+                )
             }
             .store(in: &cancellables)
 
@@ -156,12 +183,15 @@ class TranscriptionManager: ObservableObject {
         guard state == .recording || state == .stopping || state == .transcribing else { return }
         activeStopRequestID = nil
         stopRequestedAt = nil
+        activeStopRequestPurpose = nil
         
         #if DEBUG
         print("!! ESCAPE pressed: Aborting session !!")
         #endif
         
         playSound(named: "Bottle") // Cancel sound
+        cancelDeferredRecordingStart()
+        vibeTriggerActionController.cancelPendingSingleTap()
         audioRecorder.stopRecording { _ in }
         provider.cancelTranscription()
         isLocked = false
@@ -170,14 +200,10 @@ class TranscriptionManager: ObservableObject {
         state = .idle
     }
     
-    private func handleTriggerKey(isPressed: Bool) {
+    private func handleTriggerKey(isPressed: Bool, timestamp: TimeInterval) {
         guard appSettings.hasCompletedOnboarding else { return }
         guard stopRequestedAt == nil else {
-            #if DEBUG
-            if isPressed {
-                print("Trigger ignored while recorder stop finalization is pending.")
-            }
-            #endif
+            handleTriggerDuringPendingStop(isPressed: isPressed, timestamp: timestamp)
             updateOverlayHandsFreeVisualState()
             return
         }
@@ -193,13 +219,33 @@ class TranscriptionManager: ObservableObject {
 
         if isPressed {
             if state == .idle {
+                vibeTriggerActionController.noteTriggerPressed(at: timestamp)
+                if vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp) {
+                    return
+                }
+                if vibeTriggerActionController.shouldDeferRecordingStartForVibePillCycleHandoff(
+                    isVibePillVisible: OverlayManager.shared.prepareVibePillCycleHandoff()
+                ) {
+                    scheduleDeferredRecordingStart()
+                    return
+                }
+                if vibeTriggerActionController.shouldDeferRecordingStartForVisibleCyclePill(
+                    isCyclePillVisible: OverlayManager.shared.isVibeCyclePillVisible
+                ) {
+                    scheduleDeferredRecordingStart()
+                    return
+                }
                 startRecording()
             } else if state == .recording && isLocked {
+                vibeTriggerActionController.noteTriggerPressed(at: timestamp)
                 // If we are locked and press the key again, stop recording
                 isLocked = false
                 stopRecordingAndTranscribe()
+            } else if state != .recording {
+                vibeTriggerActionController.clearTriggerPress()
             }
         } else {
+            let didCancelDeferredRecordingStart = cancelDeferredRecordingStart()
             // Key released
             if state == .recording {
                 if keyboardMonitor.isShiftPressed {
@@ -208,16 +254,80 @@ class TranscriptionManager: ObservableObject {
                     print("Hands-free mode LOCKED")
                     #endif
                 } else if !isLocked {
-                    stopRecordingAndTranscribe()
+                    if vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+                        cancelQuickTapRecording()
+                        vibeTriggerActionController.handleQuickTap(at: timestamp)
+                    } else {
+                        stopRecordingAndTranscribe()
+                    }
                 }
             }
+            if state == .idle,
+               didCancelDeferredRecordingStart,
+               vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+                vibeTriggerActionController.handleQuickTap(at: timestamp)
+            } else if state == .idle,
+               vibeTriggerActionController.shouldSuppressRecordingStartForPotentialDoubleTap(at: timestamp),
+               vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+                vibeTriggerActionController.handleQuickTap(at: timestamp)
+            }
+            vibeTriggerActionController.clearTriggerPress()
         }
 
         updateOverlayHandsFreeVisualState()
     }
-    
+
+    private func handleTriggerDuringPendingStop(isPressed: Bool, timestamp: TimeInterval) {
+        guard activeStopRequestPurpose == .quickTapCancellation else {
+            vibeTriggerActionController.clearTriggerPress()
+            return
+        }
+
+        if isPressed {
+            cancelDeferredRecordingStart()
+            vibeTriggerActionController.noteTriggerPressed(at: timestamp)
+            return
+        }
+
+        cancelDeferredRecordingStart()
+        if vibeTriggerActionController.shouldHandleReleaseAsQuickTap(at: timestamp) {
+            vibeTriggerActionController.handleQuickTap(at: timestamp)
+        }
+        vibeTriggerActionController.clearTriggerPress()
+    }
+
+    private var selectedRecordingVibeTitle: String? {
+        let style = vibesCoordinator.selectedVibe
+        guard style != .none else { return nil }
+        return style.displayName
+    }
+
+    private func cancelQuickTapRecording() {
+        cancelDeferredRecordingStart()
+        let stopRequestID = UUID()
+        stopRequestedAt = Date()
+        activeStopRequestID = stopRequestID
+        activeStopRequestPurpose = .quickTapCancellation
+        state = .stopping
+        isLocked = true
+
+        audioRecorder.stopRecording { [weak self] _ in
+            guard let self else { return }
+            guard self.activeStopRequestID == stopRequestID else { return }
+            self.vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
+            self.isLocked = false
+            self.stopRequestedAt = nil
+            self.activeStopRequestID = nil
+            self.activeStopRequestPurpose = nil
+            OverlayManager.shared.hide()
+            self.state = .idle
+            self.updateOverlayHandsFreeVisualState()
+        }
+    }
+
     private func startRecording() {
         guard case .idle = state else { return }
+        cancelDeferredRecordingStart()
         modelDownloader.refreshModelStatus()
         guard provider.isModelReady else {
             OverlayManager.shared.hide()
@@ -230,17 +340,49 @@ class TranscriptionManager: ObservableObject {
             return
         }
 
+        vibeTriggerActionController.cancelPendingSingleTap()
         playSound(named: "Morse") // Start sound
 
         state = .recording
         WarningManager.shared.hide()
         updateOverlayHandsFreeVisualState()
-        OverlayManager.shared.show(recorder: audioRecorder)
+        OverlayManager.shared.show(
+            recorder: audioRecorder,
+            selectedVibeTitle: selectedRecordingVibeTitle
+        )
         audioRecorder.startRecording()
+        vibesCoordinator.prewarmForUpcomingDictationIfNeeded()
     }
-    
+
+    private func scheduleDeferredRecordingStart() {
+        cancelDeferredRecordingStart()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.deferredRecordingStartWorkItem = nil
+            guard self.state == .idle,
+                  self.keyboardMonitor.isTriggerKeyPressed else {
+                return
+            }
+            self.startRecording()
+        }
+        deferredRecordingStartWorkItem = workItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + vibeTriggerActionController.quickTapDecisionDelay,
+            execute: workItem
+        )
+    }
+
+    @discardableResult
+    private func cancelDeferredRecordingStart() -> Bool {
+        let hadDeferredRecordingStart = deferredRecordingStartWorkItem != nil
+        deferredRecordingStartWorkItem?.cancel()
+        deferredRecordingStartWorkItem = nil
+        return hadDeferredRecordingStart
+    }
+
     private var stopRequestedAt: Date?
     private var activeStopRequestID: UUID?
+    private var activeStopRequestPurpose: StopRequestPurpose?
     
     private func stopRecordingAndTranscribe() {
         guard case .recording = state else { return }
@@ -250,6 +392,7 @@ class TranscriptionManager: ObservableObject {
         let stopRequestID = UUID()
         stopRequestedAt = startTime
         activeStopRequestID = stopRequestID
+        activeStopRequestPurpose = .transcription
         state = .stopping
         #if DEBUG
         print("--- Speed Profile Start ---")
@@ -264,6 +407,7 @@ class TranscriptionManager: ObservableObject {
             guard self.activeStopRequestID == stopRequestID else { return }
             self.activeStopRequestID = nil
             self.stopRequestedAt = nil
+            self.activeStopRequestPurpose = nil
             
             // Root Cause Fix: Bluetooth HFP/SCO to A2DP switching delay.
             // NSSound cannot play into a Bluetooth Voice channel (HFP).
@@ -317,7 +461,11 @@ class TranscriptionManager: ObservableObject {
             self.state = .transcribing
             
             // Transition overlay to transcription ripples only when we have frames to process.
-            OverlayManager.shared.show(recorder: self.audioRecorder, isTranscribing: true)
+            OverlayManager.shared.show(
+                recorder: self.audioRecorder,
+                isTranscribing: true,
+                selectedVibeTitle: self.selectedRecordingVibeTitle
+            )
             
             let useDictionaryHintPrompt = DictionaryHintPromptGate.shouldUseHintPrompt(
                 lastCaptureHadActiveSignal: self.audioRecorder.lastCaptureHadActiveSignal,
@@ -335,6 +483,7 @@ class TranscriptionManager: ObservableObject {
                 let transcribeDuration = pipelineResult.inferenceDuration
                 #if DEBUG
                 print("2. Provider inference: \(String(format: "%.3f", transcribeDuration))s")
+                self.logTextTransformationSpeedProfile(pipelineResult)
                 #endif
                 
                 DispatchQueue.main.async {
@@ -357,6 +506,7 @@ class TranscriptionManager: ObservableObject {
                         pipelineResult.finalText,
                         forKey: UserDefaultsKeys.App.lastTranscription
                     )
+                    self.dictationChangeController.recordInsertedDictation(pipelineResult)
 
                     let pasteDuration = pipelineResult.pasteDuration
                     #if DEBUG
@@ -394,4 +544,36 @@ class TranscriptionManager: ObservableObject {
             sound.play()
         }
     }
+
+    #if DEBUG
+    private func logTextTransformationSpeedProfile(_ result: DictationPipelineResult) {
+        let duration = String(format: "%.3f", result.textTransformationDuration)
+        let style = result.textTransformationStyleIdentifier ?? "none"
+        let mode = result.textTransformationProcessingMode.map { " mode=\($0)" } ?? ""
+        let chunkSummary = " style=\(style)\(mode) chunks=\(result.textTransformationChunkCount)"
+        let finalTextSuffix = " finalText=\(escapedDebugText(result.finalText))"
+        if let errorDescription = result.textTransformationErrorDescription {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=false error=\(errorDescription)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        } else {
+            print(
+                "3. Text transformation: \(duration)s " +
+                "applied=\(result.textTransformationApplied)" +
+                chunkSummary +
+                finalTextSuffix
+            )
+        }
+    }
+
+    private func escapedDebugText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+    }
+    #endif
 }

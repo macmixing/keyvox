@@ -85,13 +85,25 @@ struct SettingsCard<Content: View>: View {
 
 // MARK: - Settings Row
 struct SettingsRow<Accessory: View>: View {
-    let icon: String
+    enum Icon {
+        case system(String)
+        case assetTemplate(String)
+    }
+
+    let icon: Icon
     let title: String
     let subtitle: String
     let accessory: Accessory
     
     init(icon: String, title: String, subtitle: String, @ViewBuilder accessory: () -> Accessory) {
-        self.icon = icon
+        self.icon = .system(icon)
+        self.title = title
+        self.subtitle = subtitle
+        self.accessory = accessory()
+    }
+
+    init(assetIcon: String, title: String, subtitle: String, @ViewBuilder accessory: () -> Accessory) {
+        self.icon = .assetTemplate(assetIcon)
         self.title = title
         self.subtitle = subtitle
         self.accessory = accessory()
@@ -103,9 +115,7 @@ struct SettingsRow<Accessory: View>: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(MacAppTheme.iconFill)
                     .frame(width: 44, height: 44)
-                Image(systemName: icon)
-                    .font(.appFont(20))
-                    .foregroundColor(MacAppTheme.accent)
+                iconView
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -122,6 +132,23 @@ struct SettingsRow<Accessory: View>: View {
             
             accessory
                 .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case .system(let name):
+            Image(systemName: name)
+                .font(.appFont(20))
+                .foregroundColor(MacAppTheme.accent)
+        case .assetTemplate(let name):
+            Image(name)
+                .resizable()
+                .renderingMode(.template)
+                .foregroundColor(MacAppTheme.accent)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 24, height: 24)
         }
     }
 }

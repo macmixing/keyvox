@@ -12,11 +12,14 @@ final class AppServiceRegistry {
     let activeProviderRouter: SwitchableDictationProvider
     let whisperService: WhisperService
     let parakeetService: ParakeetService
+    let localRewriteModelManager: MacLocalRewriteModelManager
+    let vibesCoordinator: MacVibesCoordinator
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
     private var canSwitchActiveProvider: () -> Bool
     private var currentActiveProviderSelection: AppSettingsStore.ActiveDictationProvider
+    private var vibesReadinessPrewarmer: MacVibesReadinessPrewarmer?
     private var cancellables = Set<AnyCancellable>()
     lazy var transcriptionManager: TranscriptionManager = {
         let manager = TranscriptionManager(
@@ -24,6 +27,7 @@ final class AppServiceRegistry {
             modelDownloader: .shared,
             audioRecorder: AudioRecorder(),
             serviceRegistry: self,
+            vibesCoordinator: vibesCoordinator,
             postProcessor: TranscriptionPostProcessor()
         )
 
@@ -42,6 +46,8 @@ final class AppServiceRegistry {
         activeProviderRouter: SwitchableDictationProvider,
         whisperService: WhisperService,
         parakeetService: ParakeetService,
+        localRewriteModelManager: MacLocalRewriteModelManager? = nil,
+        vibesCoordinator: MacVibesCoordinator? = nil,
         weeklyWordStatsStore: WeeklyWordStatsStore,
         weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync,
         iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator,
@@ -53,12 +59,19 @@ final class AppServiceRegistry {
         self.activeProviderRouter = activeProviderRouter
         self.whisperService = whisperService
         self.parakeetService = parakeetService
+        let resolvedLocalRewriteModelManager = localRewriteModelManager ?? MacLocalRewriteModelManager(refreshOnInit: false)
+        self.localRewriteModelManager = resolvedLocalRewriteModelManager
+        self.vibesCoordinator = vibesCoordinator ?? Self.makeVibesCoordinator(
+            appSettings: appSettings,
+            localRewriteModelManager: resolvedLocalRewriteModelManager
+        )
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.canSwitchActiveProvider = canSwitchActiveProvider
         self.currentActiveProviderSelection = initialActiveProviderSelection
         bindActiveProviderSelection()
+        bindVibesReadinessPrewarm()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -83,6 +96,14 @@ final class AppServiceRegistry {
         parakeetService = ParakeetService(
             modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL
         )
+        localRewriteModelManager = MacLocalRewriteModelManager(
+            fileManager: fileManager,
+            appSupportRootURL: appSupportRoot
+        )
+        vibesCoordinator = Self.makeVibesCoordinator(
+            appSettings: appSettings,
+            localRewriteModelManager: localRewriteModelManager
+        )
         activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
         dictationProvider = activeProviderRouter
         weeklyWordStatsStore = WeeklyWordStatsStore()
@@ -101,6 +122,7 @@ final class AppServiceRegistry {
         canSwitchActiveProvider = { true }
         currentActiveProviderSelection = .whisper
         bindActiveProviderSelection()
+        bindVibesReadinessPrewarm()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -136,5 +158,54 @@ final class AppServiceRegistry {
         }
 
         activeProviderRouter.replaceActiveProvider(with: provider)
+    }
+
+    private func bindVibesReadinessPrewarm() {
+        vibesReadinessPrewarmer = MacVibesReadinessPrewarmer(
+            installState: localRewriteModelManager.$installState.eraseToAnyPublisher(),
+            prewarm: { [weak coordinator = vibesCoordinator] style in
+                coordinator?.prewarm(style: style)
+            }
+        )
+    }
+
+    private static func makeVibesCoordinator(
+        appSettings: AppSettingsStore,
+        localRewriteModelManager: MacLocalRewriteModelManager
+    ) -> MacVibesCoordinator {
+        let localRewriteInferenceService = localRewriteInferenceService(for: localRewriteModelManager)
+        let localStyleRewriteTextTransformer = MacLocalStyleRewriteTextTransformer(
+            inferenceService: localRewriteInferenceService
+        )
+        localRewriteModelManager.onDidInvalidateInstalledModel = { [weak localRewriteInferenceService] in
+            Task { @MainActor in
+                await localRewriteInferenceService?.unload()
+            }
+        }
+        return MacVibesCoordinator(
+            appSettings: appSettings,
+            textTransformer: localStyleRewriteTextTransformer,
+            isModelReady: { [weak localRewriteModelManager] in
+                localRewriteModelManager?.isModelReady() ?? false
+            }
+        )
+    }
+
+    private static func localRewriteInferenceService(
+        for localRewriteModelManager: MacLocalRewriteModelManager
+    ) -> MacLocalRewriteInferenceService {
+        MacLocalRewriteInferenceService(
+            modelURLProvider: { [weak localRewriteModelManager] in
+                localRewriteModelManager?.installedModelURL()
+            },
+            adapterURLProvider: { [weak localRewriteModelManager] adapter in
+                switch adapter {
+                case .polished:
+                    return localRewriteModelManager?.polishedLoRAURL()
+                case .casual:
+                    return localRewriteModelManager?.casualLoRAURL()
+                }
+            }
+        )
     }
 }

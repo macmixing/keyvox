@@ -20,6 +20,13 @@ public struct LocalLanguageModelConfiguration: Equatable, Sendable {
     }
 }
 
+public enum LocalLanguageModelGPUOffloadMode: Equatable, Sendable {
+    case disabled
+    case automatic
+    case allLayers
+    case layerCount(Int32)
+}
+
 public struct LocalLanguageModelGenerationRequest: Equatable, Sendable {
     public let prompt: String
     public let systemPrompt: String?
@@ -62,6 +69,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
     public let loadDuration: TimeInterval?
     public let inputTokenCount: Int
     public let outputTokenCount: Int
+    public let reachedMaximumTokenCount: Bool
     public let prefillDuration: TimeInterval
     public let decodeDuration: TimeInterval
     public let totalDuration: TimeInterval
@@ -70,6 +78,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
         loadDuration: TimeInterval?,
         inputTokenCount: Int,
         outputTokenCount: Int,
+        reachedMaximumTokenCount: Bool = false,
         prefillDuration: TimeInterval,
         decodeDuration: TimeInterval,
         totalDuration: TimeInterval
@@ -77,6 +86,7 @@ public struct LocalLanguageModelGenerationMetrics: Equatable, Sendable {
         self.loadDuration = loadDuration
         self.inputTokenCount = inputTokenCount
         self.outputTokenCount = outputTokenCount
+        self.reachedMaximumTokenCount = reachedMaximumTokenCount
         self.prefillDuration = prefillDuration
         self.decodeDuration = decodeDuration
         self.totalDuration = totalDuration
@@ -117,6 +127,7 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
     case promptTooLong(inputTokenCount: Int, contextTokenLimit: Int)
     case decodeFailed(code: Int32)
     case emptyOutput
+    case outputTruncated(maximumTokenCount: Int)
     case cancelled
 
     public var description: String {
@@ -141,6 +152,8 @@ public enum LocalLanguageModelError: Error, Equatable, Sendable, CustomStringCon
             return "decodeFailed(code=\(code))"
         case .emptyOutput:
             return "emptyOutput"
+        case let .outputTruncated(maximumTokenCount):
+            return "outputTruncated(maximumTokenCount=\(maximumTokenCount))"
         case .cancelled:
             return "cancelled"
         }
@@ -159,8 +172,16 @@ public protocol LocalLanguageModelGenerating: Sendable {
 }
 
 public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @unchecked Sendable {
-    private static let installQuietLlamaLogging: Void = {
+    public typealias DiagnosticLogHandler = @Sendable (String) -> Void
+
+    private static let initializeCoreRuntime: Void = {
         llama_log_set({ _, _, _ in }, nil)
+        llama_backend_init()
+    }()
+
+    private static let initializeGPUBackends: Void = {
+        _ = initializeCoreRuntime
+        ggml_backend_load_all()
     }()
 
     private let modelURL: URL
@@ -168,7 +189,17 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     private let fileManager: FileManager
     private let inferenceQueue: DispatchQueue
     private let adapterScale: Float
+    private let gpuOffloadMode: LocalLanguageModelGPUOffloadMode
+    private let diagnosticLog: DiagnosticLogHandler
     private var loadedModel: LlamaLoadedModel?
+
+    private static let defaultDiagnosticLog: DiagnosticLogHandler = { message in
+        #if DEBUG
+        NSLog("[KeyVoxLocalInference] %@", message)
+        #else
+        _ = message
+        #endif
+    }
 
     public var hasLoRAAdapter: Bool {
         adapterURL != nil
@@ -178,14 +209,18 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         modelURL: URL,
         adapterURL: URL? = nil,
         adapterScale: Float = 1.0,
+        gpuOffloadMode: LocalLanguageModelGPUOffloadMode = .disabled,
         fileManager: FileManager = .default,
-        inferenceQueue: DispatchQueue = DispatchQueue(label: "com.cueit.keyvox.local-inference.llama-cpu")
+        inferenceQueue: DispatchQueue = DispatchQueue(label: "com.cueit.keyvox.local-inference.llama-cpu"),
+        diagnosticLog: DiagnosticLogHandler? = nil
     ) {
         self.modelURL = modelURL
         self.adapterURL = adapterURL
         self.adapterScale = adapterScale
+        self.gpuOffloadMode = gpuOffloadMode
         self.fileManager = fileManager
         self.inferenceQueue = inferenceQueue
+        self.diagnosticLog = diagnosticLog ?? Self.defaultDiagnosticLog
     }
 
     public func generate(
@@ -325,6 +360,9 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         guard !trimmedText.isEmpty else {
             throw LocalLanguageModelError.emptyOutput
         }
+        guard outputTokenCount < max(request.maximumTokenCount, 1) else {
+            throw LocalLanguageModelError.outputTruncated(maximumTokenCount: max(request.maximumTokenCount, 1))
+        }
 
         return LocalLanguageModelGenerationResult(
             text: trimmedText,
@@ -332,6 +370,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
                 loadDuration: loadDuration,
                 inputTokenCount: promptTokens.count,
                 outputTokenCount: outputTokenCount,
+                reachedMaximumTokenCount: false,
                 prefillDuration: prefillDuration,
                 decodeDuration: decodeDuration,
                 totalDuration: totalDuration
@@ -340,8 +379,6 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     }
 
     private func loadModelIfNeeded(configuration: LocalLanguageModelConfiguration) throws -> LlamaLoadedModel {
-        _ = Self.installQuietLlamaLogging
-
         if let loadedModel {
             return loadedModel
         }
@@ -350,20 +387,66 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
             throw LocalLanguageModelError.modelFileMissing
         }
 
+        _ = Self.initializeCoreRuntime
+
+        let loaded = try loadModelWithFallbackIfNeeded(configuration: configuration)
+        loadedModel = loaded
+        return loaded
+    }
+
+    private func loadModelWithFallbackIfNeeded(configuration: LocalLanguageModelConfiguration) throws -> LlamaLoadedModel {
+        let gpuSupport = Self.supportsGPUOffloadForCurrentPlatform()
+        let requestedGPULayers = requestedGPULayerCount(gpuSupport: gpuSupport)
+        let deviceSummary = gpuSupport ? Self.backendDeviceSummaryForDiagnostics() : "skipped"
+
+        if let requestedGPULayers {
+            diagnosticLog(
+                "gpu-offload mode=\(gpuOffloadMode.logLabel) supported=\(gpuSupport) action=attempt layers=\(requestedGPULayers) devices=\(deviceSummary)"
+            )
+
+            do {
+                let loaded = try loadModel(
+                    configuration: configuration,
+                    gpuLayerCount: requestedGPULayers
+                )
+                diagnosticLog(
+                    "gpu-offload mode=\(gpuOffloadMode.logLabel) backend=gpu layers=\(requestedGPULayers)"
+                )
+                return loaded
+            } catch LocalLanguageModelError.modelLoadFailed {
+                diagnosticLog(
+                    "gpu-offload mode=\(gpuOffloadMode.logLabel) fallback=cpu reason=modelLoadFailed"
+                )
+            } catch LocalLanguageModelError.contextCreateFailed {
+                diagnosticLog(
+                    "gpu-offload mode=\(gpuOffloadMode.logLabel) fallback=cpu reason=contextCreateFailed"
+                )
+            }
+        } else if gpuOffloadMode != .disabled {
+            diagnosticLog(
+                "gpu-offload mode=\(gpuOffloadMode.logLabel) supported=\(gpuSupport) action=cpu devices=\(deviceSummary)"
+            )
+        }
+
+        let loaded = try loadModel(configuration: configuration, gpuLayerCount: 0)
+        diagnosticLog("gpu-offload mode=\(gpuOffloadMode.logLabel) backend=cpu layers=0")
+        return loaded
+    }
+
+    private func loadModel(
+        configuration: LocalLanguageModelConfiguration,
+        gpuLayerCount: Int32
+    ) throws -> LlamaLoadedModel {
         let start = Date()
         var modelParameters = llama_model_default_params()
-        modelParameters.n_gpu_layers = 0
+        modelParameters.n_gpu_layers = gpuLayerCount
         modelParameters.use_mmap = true
         modelParameters.use_mlock = false
         modelParameters.check_tensors = true
         modelParameters.use_extra_bufts = false
         modelParameters.no_host = false
 
-        var devices: [ggml_backend_dev_t?] = [nil]
-        let model = devices.withUnsafeMutableBufferPointer { devicesBuffer in
-            modelParameters.devices = devicesBuffer.baseAddress
-            return modelURL.path.withCString { llama_model_load_from_file($0, modelParameters) }
-        }
+        let model = modelURL.path.withCString { llama_model_load_from_file($0, modelParameters) }
 
         guard let model else {
             throw LocalLanguageModelError.modelLoadFailed
@@ -375,8 +458,8 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
         contextParameters.n_ubatch = UInt32(max(configuration.batchTokenCount, 1))
         contextParameters.n_threads = Int32(max(configuration.threadCount, 1))
         contextParameters.n_threads_batch = Int32(max(configuration.batchThreadCount, 1))
-        contextParameters.offload_kqv = false
-        contextParameters.op_offload = false
+        contextParameters.offload_kqv = gpuLayerCount != 0
+        contextParameters.op_offload = gpuLayerCount != 0
         contextParameters.embeddings = false
 
         guard let context = llama_init_from_model(model, contextParameters) else {
@@ -386,15 +469,73 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
 
         let adapter = try loadAdapterIfNeeded(model: model, context: context)
 
-        let loaded = LlamaLoadedModel(
+        return LlamaLoadedModel(
             model: model,
             context: context,
             vocab: llama_model_get_vocab(model),
             adapter: adapter,
             lastLoadDuration: Date().timeIntervalSince(start)
         )
-        loadedModel = loaded
-        return loaded
+    }
+
+    private func requestedGPULayerCount(gpuSupport: Bool) -> Int32? {
+        guard gpuSupport else { return nil }
+
+        #if os(macOS)
+        switch gpuOffloadMode {
+        case .disabled:
+            return nil
+        case .automatic, .allLayers:
+            return -1
+        case .layerCount(let layerCount):
+            return max(layerCount, 0)
+        }
+        #else
+        return nil
+        #endif
+    }
+
+    private static func supportsGPUOffloadForCurrentPlatform() -> Bool {
+        #if os(macOS)
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        guard osVersion.majorVersion >= 15 else {
+            return false
+        }
+
+        guard !ProcessInfo.processInfo.isRunningUnderXCTest else {
+            return false
+        }
+
+        _ = Self.initializeGPUBackends
+        return llama_supports_gpu_offload()
+        #else
+        return false
+        #endif
+    }
+
+    private static func backendDeviceSummaryForDiagnostics() -> String {
+        #if os(macOS)
+        _ = Self.initializeGPUBackends
+        let deviceCount = ggml_backend_dev_count()
+        guard deviceCount > 0 else {
+            return "count=0"
+        }
+
+        var entries: [String] = []
+        for index in 0..<deviceCount {
+            guard let device = ggml_backend_dev_get(index) else {
+                entries.append("\(index):missing")
+                continue
+            }
+
+            let name = ggml_backend_dev_name(device).map { String(cString: $0) } ?? "unknown"
+            let description = ggml_backend_dev_description(device).map { String(cString: $0) } ?? "unknown"
+            entries.append("\(index):\(name):\(description)")
+        }
+        return "count=\(deviceCount) [\(entries.joined(separator: ","))]"
+        #else
+        return "unavailable"
+        #endif
     }
 
     private func loadAdapterIfNeeded(model: OpaquePointer, context: OpaquePointer) throws -> OpaquePointer? {
@@ -702,6 +843,27 @@ final class LocalInferenceCancellationToken: @unchecked Sendable {
 
         if currentValue {
             throw LocalLanguageModelError.cancelled
+        }
+    }
+}
+
+private extension ProcessInfo {
+    var isRunningUnderXCTest: Bool {
+        environment["XCTestConfigurationFilePath"] != nil
+    }
+}
+
+private extension LocalLanguageModelGPUOffloadMode {
+    var logLabel: String {
+        switch self {
+        case .disabled:
+            return "disabled"
+        case .automatic:
+            return "automatic"
+        case .allLayers:
+            return "allLayers"
+        case .layerCount(let layerCount):
+            return "layerCount(\(layerCount))"
         }
     }
 }

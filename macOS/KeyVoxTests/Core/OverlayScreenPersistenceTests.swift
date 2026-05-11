@@ -17,6 +17,18 @@ final class OverlayScreenPersistenceTests: XCTestCase {
         XCTAssertTrue(clamped.y == 270)
     }
 
+    func testCenteredOriginAlignsPanelWithReferenceFrameCenter() {
+        let referenceFrame = CGRect(x: 100, y: 200, width: 70, height: 70)
+        let panelSize = CGSize(width: 170, height: 70)
+
+        let origin = OverlayScreenPersistenceLogic.centeredOrigin(
+            panelSize: panelSize,
+            referenceFrame: referenceFrame
+        )
+
+        XCTAssertTrue(origin == NSPoint(x: 50, y: 200))
+    }
+
     func testDecodeOriginPairSupportsDoubleAndNSNumber() {
         let fromDoubles = OverlayScreenPersistenceLogic.decodeOriginPair([12.5, 87.25])
         let fromNumbers = OverlayScreenPersistenceLogic.decodeOriginPair([NSNumber(value: 9.0), NSNumber(value: 4.5)])

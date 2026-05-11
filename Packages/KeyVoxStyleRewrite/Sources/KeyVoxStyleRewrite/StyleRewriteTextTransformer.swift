@@ -50,10 +50,15 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             original: request.baseText,
             rewritten: result.finalText
         )
-        return result.withProcessingMode(
+        let repairedResult = result.withProcessingMode(
             "local-model",
             finalText: finalText,
             applied: finalText != request.baseText && result.errors.isEmpty
+        )
+        return StyleRewritePromptLeakGuard.fallbackIfNeeded(
+            request: request,
+            result: repairedResult,
+            processingMode: "local-model-prompt-leak-fallback"
         )
     }
 
@@ -83,7 +88,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             processingMode = "local-model-cleanup+heuristic"
         }
 
-        return chillResult(
+        let result = chillResult(
             request: request,
             sourceText: sourceText,
             transformStart: transformStart,
@@ -92,6 +97,11 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             errors: runnerResult.errors,
             processingMode: processingMode,
             appliedOverride: cleanupSucceeded ? nil : false
+        )
+        return StyleRewritePromptLeakGuard.fallbackIfNeeded(
+            request: request,
+            result: result,
+            processingMode: "local-model-prompt-leak-fallback"
         )
     }
 
@@ -131,7 +141,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             ? "local-model-cleanup"
             : "local-model-cleanup-partial"
 
-        return TextTransformResult(
+        let repairedResult = TextTransformResult(
             originalText: request.baseText,
             finalText: finalText,
             styleIdentifier: request.styleIdentifier,
@@ -141,6 +151,11 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             chunkTimings: result.chunkTimings,
             errors: result.errors,
             processingMode: processingMode
+        )
+        return StyleRewritePromptLeakGuard.fallbackIfNeeded(
+            request: request,
+            result: repairedResult,
+            processingMode: "local-model-prompt-leak-fallback"
         )
     }
 }

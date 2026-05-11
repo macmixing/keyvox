@@ -11,6 +11,7 @@ struct SettingsView: View {
     @StateObject internal var appSettings = AppSettingsStore.shared
     @StateObject internal var weeklyWordStatsStore = AppServiceRegistry.shared.weeklyWordStatsStore
     @ObservedObject internal var downloader = ModelDownloader.shared
+    @ObservedObject internal var localRewriteModelManager = AppServiceRegistry.shared.localRewriteModelManager
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
     @ObservedObject internal var dictionaryStore = AppServiceRegistry.shared.dictionaryStore
     @StateObject internal var loginItemController = LoginItemController()
@@ -18,6 +19,7 @@ struct SettingsView: View {
     @State internal var showLegal = false
     @State internal var dictionaryEditorMode: DictionaryWordEditorMode?
     @State internal var dictionaryDeleteTarget: DictionaryEntry?
+    @State internal var isVibesAIDeleteConfirmationPresented = false
     @State internal var dictionarySortMode: DictionarySortMode = .alphabetical
     @State private var hasVisitedDictionaryTab = false
 
@@ -84,6 +86,21 @@ struct SettingsView: View {
                 },
                 onCancel: {
                     dictionaryDeleteTarget = nil
+                }
+            )
+        }
+        .sheet(isPresented: $isVibesAIDeleteConfirmationPresented) {
+            ConfirmDeletePromptView(
+                config: ConfirmDeletePromptConfig(
+                    title: SettingsVibesAIInstallCardCopy.deleteConfirmationTitle,
+                    message: SettingsVibesAIInstallCardCopy.deleteConfirmationMessage
+                ),
+                onConfirm: {
+                    localRewriteModelManager.deleteModel()
+                    isVibesAIDeleteConfirmationPresented = false
+                },
+                onCancel: {
+                    isVibesAIDeleteConfirmationPresented = false
                 }
             )
         }

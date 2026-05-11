@@ -6,9 +6,6 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
     @MainActor
     func testLiveCasualCoverageWhenEnabled() async throws {
         let tester = try Self.makeTester()
-        defer {
-            Task { await tester.unload() }
-        }
 
         let cases: [CasualLiveCase] = [
             CasualLiveCase(
@@ -55,15 +52,18 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
             ),
         ]
 
-        try await tester.assertCases(cases)
+        do {
+            try await tester.assertCases(cases)
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
     }
 
     @MainActor
     func testLiveCasualSpokenTimeCoverageWhenEnabled() async throws {
         let tester = try Self.makeTester()
-        defer {
-            Task { await tester.unload() }
-        }
 
         let cases: [CasualLiveCase] = [
             CasualLiveCase(
@@ -108,15 +108,18 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
             ),
         ]
 
-        try await tester.assertCases(cases)
+        do {
+            try await tester.assertCases(cases)
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
     }
 
     @MainActor
     func testLiveCasualGauntletWhenEnabled() async throws {
         let tester = try Self.makeTester()
-        defer {
-            Task { await tester.unload() }
-        }
 
         let cases: [CasualLiveCase] = [
             CasualLiveCase(
@@ -171,7 +174,13 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
             ),
         ]
 
-        try await tester.assertCases(cases)
+        do {
+            try await tester.assertCases(cases)
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
     }
 
     @MainActor

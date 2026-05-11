@@ -179,12 +179,25 @@ public struct TextTransformChunkPlanner: Sendable {
         request: TextTransformRequest,
         promptOverheadTokenCount: Int
     ) -> Int {
-        let usableTokenCount = max(
+        let usableContextTokenCount = max(
             1,
             request.contextTokenLimit - promptOverheadTokenCount - request.safetyMarginTokens
         )
-        let divisor = max(1.0, 1.0 + request.expectedOutputExpansionRatio)
-        return max(1, Int(floor(Double(usableTokenCount) / divisor)))
+        let outputExpansionRatio = max(request.expectedOutputExpansionRatio, 1.0)
+        let contextLimitedInputTokens = max(
+            1,
+            Int(floor(Double(usableContextTokenCount) / (1.0 + outputExpansionRatio)))
+        )
+
+        guard let maximumResponseTokens = request.maximumResponseTokens else {
+            return contextLimitedInputTokens
+        }
+
+        let responseLimitedInputTokens = max(
+            1,
+            Int(floor(Double(max(maximumResponseTokens - 16, 1)) / outputExpansionRatio))
+        )
+        return min(contextLimitedInputTokens, responseLimitedInputTokens)
     }
 
     private func chunks(

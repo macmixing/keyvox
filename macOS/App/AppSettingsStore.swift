@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import KeyVoxStyleRewrite
 
 @MainActor
 final class AppSettingsStore: ObservableObject {
@@ -118,6 +119,21 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var selectedVibe: StyleRewriteStyle {
+        didSet {
+            defaults.set(selectedVibe.rawValue, forKey: UserDefaultsKeys.selectedVibe)
+        }
+    }
+
+    @Published var vibesTriggerKeyInteractionsEnabled: Bool {
+        didSet {
+            defaults.set(
+                vibesTriggerKeyInteractionsEnabled,
+                forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled
+            )
+        }
+    }
+
     @Published var updateAlertLastShown: Date? {
         didSet {
             defaults.set(updateAlertLastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
@@ -187,6 +203,15 @@ final class AppSettingsStore: ObservableObject {
         }
 
         selectedMicrophoneUID = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
+        if let raw = defaults.string(forKey: UserDefaultsKeys.selectedVibe),
+           let style = StyleRewriteStyle(rawValue: raw) {
+            selectedVibe = style
+        } else {
+            selectedVibe = .none
+        }
+        vibesTriggerKeyInteractionsEnabled = defaults.object(
+            forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled
+        ) as? Bool ?? true
         updateAlertLastShown = defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
         pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
@@ -203,6 +228,23 @@ final class AppSettingsStore: ObservableObject {
         let persisted = defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID) ?? ""
         guard persisted != selectedMicrophoneUID else { return }
         selectedMicrophoneUID = persisted
+    }
+
+    var canUseVibes: Bool {
+        true
+    }
+
+    func normalizeSelectedVibeForCurrentAvailability() {
+    }
+
+    @discardableResult
+    func advanceSelectedVibe() -> StyleRewriteStyle {
+        let styles = StyleRewriteStyle.allCases
+        guard styles.isEmpty == false else { return selectedVibe }
+        let currentIndex = styles.firstIndex(of: selectedVibe) ?? 0
+        let nextStyle = styles[(currentIndex + 1) % styles.count]
+        selectedVibe = nextStyle
+        return nextStyle
     }
 
     func applyCloudAutoParagraphsEnabled(_ value: Bool) {
@@ -226,4 +268,5 @@ final class AppSettingsStore: ObservableObject {
     ) -> ActiveDictationProvider {
         provider.isSupported(osVersion: osVersion) ? provider : .whisper
     }
+
 }

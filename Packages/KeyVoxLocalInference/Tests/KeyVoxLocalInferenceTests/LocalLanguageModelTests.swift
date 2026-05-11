@@ -11,6 +11,14 @@ final class LocalLanguageModelTests: XCTestCase {
         XCTAssertEqual(configuration.batchTokenCount, 512)
     }
 
+    func testGPUOffloadModesAreEquatable() {
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.disabled, .disabled)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.automatic, .automatic)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.allLayers, .allLayers)
+        XCTAssertEqual(LocalLanguageModelGPUOffloadMode.layerCount(12), .layerCount(12))
+        XCTAssertNotEqual(LocalLanguageModelGPUOffloadMode.layerCount(12), .layerCount(13))
+    }
+
     func testMetricsComputeDecodeTokensPerSecond() {
         let metrics = LocalLanguageModelGenerationMetrics(
             loadDuration: 0.5,
@@ -22,6 +30,14 @@ final class LocalLanguageModelTests: XCTestCase {
         )
 
         XCTAssertEqual(metrics.decodeTokensPerSecond, 10)
+        XCTAssertFalse(metrics.reachedMaximumTokenCount)
+    }
+
+    func testOutputTruncatedErrorIsTyped() {
+        XCTAssertEqual(
+            LocalLanguageModelError.outputTruncated(maximumTokenCount: 12).description,
+            "outputTruncated(maximumTokenCount=12)"
+        )
     }
 
     func testStructuredChatRequestStoresSeparateSystemAndUserPrompts() {
@@ -86,22 +102,31 @@ final class LocalLanguageModelTests: XCTestCase {
             throw XCTSkip("Set KEYVOX_LOCAL_MODEL_PATH to a local GGUF file.")
         }
 
-        let model = LlamaCPULanguageModel(modelURL: URL(fileURLWithPath: modelPath))
-        let result = try await model.generate(
-            LocalLanguageModelGenerationRequest(
-                prompt: "Return only the word ready.",
-                maximumTokenCount: 8
-            ),
-            configuration: LocalLanguageModelConfiguration(
-                contextTokenLimit: 512,
-                threadCount: 2,
-                batchThreadCount: 2,
-                batchTokenCount: 128
-            )
+        let model = LlamaCPULanguageModel(
+            modelURL: URL(fileURLWithPath: modelPath),
+            gpuOffloadMode: .automatic
         )
+        do {
+            let result = try await model.generate(
+                LocalLanguageModelGenerationRequest(
+                    prompt: "Return only the word ready.",
+                    maximumTokenCount: 8
+                ),
+                configuration: LocalLanguageModelConfiguration(
+                    contextTokenLimit: 512,
+                    threadCount: 2,
+                    batchThreadCount: 2,
+                    batchTokenCount: 128
+                )
+            )
+            await model.unload()
 
-        XCTAssertFalse(result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        XCTAssertGreaterThan(result.metrics.outputTokenCount, 0)
+            XCTAssertFalse(result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            XCTAssertGreaterThan(result.metrics.outputTokenCount, 0)
+        } catch {
+            await model.unload()
+            throw error
+        }
     }
 
 }
