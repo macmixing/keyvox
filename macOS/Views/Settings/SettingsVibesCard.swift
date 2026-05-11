@@ -111,14 +111,14 @@ struct SettingsVibesCard: View {
 
     private var statusContent: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(statusText)
-                .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
             if let progress = matrix.progress {
-                ModelDownloadProgress(progress: progress)
+                LabeledProgressBar(progress: progress, statusText: statusText)
+            } else {
+                Text(statusText)
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let errorMessage = matrix.errorMessage {

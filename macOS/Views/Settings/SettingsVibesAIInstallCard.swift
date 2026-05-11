@@ -85,19 +85,6 @@ struct SettingsVibesAIInstallCard: View {
 
     private var installContent: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 12) {
-                Text(statusText)
-                    .font(.appFont(12, variant: .light))
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                if let percentageText {
-                    Text(percentageText)
-                        .font(.appFont(12))
-                        .foregroundStyle(.yellow)
-                }
-            }
-
             if let errorMessage {
                 Text(errorMessage)
                     .font(.appFont(10))
@@ -106,7 +93,7 @@ struct SettingsVibesAIInstallCard: View {
             }
 
             if let progress {
-                ModelDownloadProgress(progress: progress)
+                LabeledProgressBar(progress: progress, statusText: statusText)
             }
         }
     }
@@ -140,11 +127,6 @@ struct SettingsVibesAIInstallCard: View {
         case .notInstalled, .ready, .failed:
             return nil
         }
-    }
-
-    private var percentageText: String? {
-        guard let progress else { return nil }
-        return "\(Int((progress * 100).rounded()))%"
     }
 
     private var errorMessage: String? {

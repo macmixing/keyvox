@@ -285,21 +285,13 @@ private struct DictationModelCardRow: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack(alignment: .center, spacing: 12) {
+            if installState.isDownloading {
+                LabeledProgressBar(progress: installState.progress, statusText: statusText)
+            } else {
                 Text(statusText)
                     .font(.appFont(13, variant: .light))
                     .foregroundStyle(.white.opacity(0.56))
                     .frame(maxWidth: .infinity, alignment: .leading)
-
-                if installState.isDownloading {
-                    Text(progressPercentageText)
-                        .font(.appFont(14, variant: .medium))
-                        .foregroundStyle(.yellow)
-                }
-            }
-
-            if installState.isDownloading {
-                ModelDownloadProgress(progress: installState.progress, showLabel: false)
             }
 
             if let errorMessage = installState.errorMessage {
@@ -363,10 +355,6 @@ private struct DictationModelCardRow: View {
         }
 
         return DictationModelsCardCopy.notInstalledStatus
-    }
-
-    private var progressPercentageText: String {
-        "\(Int((installState.progress * 100).rounded()))%"
     }
 
     private var approximateSizeText: String? {

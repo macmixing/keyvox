@@ -10,21 +10,7 @@ struct AppUpdateProgressBar: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            ProgressView(value: clampedProgress)
-                .progressViewStyle(KeyVoxProgressStyle())
-                .frame(height: 8)
-
-            HStack(alignment: .firstTextBaseline) {
-                Text(label)
-                    .font(.appFont(11, variant: .light))
-                    .foregroundColor(.secondary)
-
-                Spacer()
-
-                Text("\(Int(clampedProgress * 100))%")
-                    .font(.appFont(11))
-                    .foregroundColor(MacAppTheme.accent)
-            }
+            LabeledProgressBar(progress: clampedProgress, statusText: label)
 
             if let detail, !detail.isEmpty {
                 Text(detail)

@@ -58,7 +58,7 @@ struct OnboardingView: View {
                         action: setupModel
                     ) {
                         if downloader.isDownloading {
-                            ModelDownloadProgress(progress: downloader.progress)
+                            LabeledProgressBar(progress: downloader.progress, statusText: "Downloading AI model.")
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
