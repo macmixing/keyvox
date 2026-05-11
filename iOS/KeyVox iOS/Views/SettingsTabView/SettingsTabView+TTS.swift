@@ -84,10 +84,12 @@ extension SettingsTabView {
                         }
                     }
 
-                Divider()
-                    .overlay(.white.opacity(0.22))
+                if ttsPurchaseController.isTTSUnlocked == false {
+                    Divider()
+                        .overlay(.white.opacity(0.22))
 
-                ttsUnlockRow
+                    ttsUnlockRow
+                }
             }
         }
     }
@@ -152,22 +154,16 @@ extension SettingsTabView {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                if ttsPurchaseController.isTTSUnlocked {
-                    Text("Unlocked")
-                        .font(.appFont(15))
-                        .foregroundStyle(.yellow)
-                } else {
-                    AppActionButton(
-                        title: "Unlock",
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 15,
-                        action: {
-                            appHaptics.light()
-                            ttsPurchaseController.presentUnlockSheet()
-                        }
-                    )
-                }
+                AppActionButton(
+                    title: "Unlock",
+                    style: .primary,
+                    size: .compact,
+                    fontSize: 15,
+                    action: {
+                        appHaptics.light()
+                        ttsPurchaseController.presentUnlockSheet()
+                    }
+                )
             }
 
             Text(ttsUnlockStatusText)
@@ -468,10 +464,6 @@ extension SettingsTabView {
     }
 
     var ttsUnlockStatusText: String {
-        if ttsPurchaseController.isTTSUnlocked {
-            return "Unlimited copied-text playback is enabled on this Apple account."
-        }
-
         let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
         let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
         return "\(remainingFreeSpeaks) free \(noun) left today. Replay stays free for anything already generated."

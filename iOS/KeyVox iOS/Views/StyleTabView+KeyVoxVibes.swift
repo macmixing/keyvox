@@ -194,9 +194,9 @@ extension StyleTabView {
             .padding(.leading, 10)
             .padding(.trailing, 15)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
         .buttonStyle(.plain)
     }
 

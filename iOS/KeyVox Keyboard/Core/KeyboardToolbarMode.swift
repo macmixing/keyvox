@@ -3,6 +3,7 @@ import Foundation
 enum KeyboardToolbarMode {
     case hidden
     case branded
+    case dictationModelWarning
     case fullAccessWarning
     case microphoneWarning
     case phoneCallWarning
@@ -16,7 +17,7 @@ enum KeyboardToolbarMode {
         isUpdateRequired: Bool
     ) -> KeyboardToolbarMode {
         guard isModelInstalled else {
-            return .hidden
+            return .dictationModelWarning
         }
 
         guard isUpdateRequired == false else {
@@ -40,6 +41,8 @@ enum KeyboardToolbarMode {
 
     var warningText: String? {
         switch self {
+        case .dictationModelWarning:
+            return "Install a dictation model"
         case .fullAccessWarning:
             return "Allow Full Access for dictation"
         case .microphoneWarning:

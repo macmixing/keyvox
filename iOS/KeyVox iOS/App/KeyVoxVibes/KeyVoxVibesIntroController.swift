@@ -104,13 +104,17 @@ final class KeyVoxVibesIntroController: ObservableObject {
     }
 
     var isAutomaticPresentationEligible: Bool {
-        shouldShowOnNextEligibleLaunch == false
+        if forcePresentation { return true }
+
+        return shouldShowOnNextEligibleLaunch == false
             && hasSeenIntro == false
             && hasInteractedWithKeyVoxVibes == false
     }
 
     var wantsPresentationOnEligibleLaunch: Bool {
-        (shouldShowOnNextEligibleLaunch || isAutomaticPresentationEligible)
+        if forcePresentation { return true }
+
+        return (shouldShowOnNextEligibleLaunch || isAutomaticPresentationEligible)
             && hasSeenIntro == false
             && hasInteractedWithKeyVoxVibes == false
     }

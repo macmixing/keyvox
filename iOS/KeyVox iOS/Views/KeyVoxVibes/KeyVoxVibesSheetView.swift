@@ -41,7 +41,7 @@ struct KeyVoxVibesSheetView: View {
     enum Mode {
         case intro(presentation: IntroPresentation = .full, onTryNow: () -> Void, onDismiss: () -> Void)
         case info(presentation: IntroPresentation = .usageOnly, onDismiss: () -> Void)
-        case unlock(initialScene: Scene = .b, primaryAction: UnlockPrimaryAction = .purchase, onDismiss: () -> Void)
+        case unlock(initialScene: Scene = .unlock, primaryAction: UnlockPrimaryAction = .purchase, onDismiss: () -> Void)
     }
 
     enum UnlockPrimaryAction: Equatable {
@@ -68,7 +68,7 @@ struct KeyVoxVibesSheetView: View {
         case .info(let presentation, _):
             presentation.displayedScenes
         case .unlock:
-            [.b, .unlock]
+            [.unlock, .b]
         }
     }
 

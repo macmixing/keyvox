@@ -23,7 +23,6 @@ struct KeyVoxVibesSceneCView: View {
     private static let details: [Detail] = [
         Detail(id: 0, icon: "clock.fill", title: "Try for 24 Hours", subtitle: "Start a local one-day trial and use every Vibe."),
         Detail(id: 1, icon: "infinity", title: "Unlock for Life", subtitle: "One purchase keeps Vibes available forever."),
-        Detail(id: 2, icon: "iphone", title: "Device Local", subtitle: "Your selected Vibe stays local to this device.")
     ]
 
     let isVisible: Bool
