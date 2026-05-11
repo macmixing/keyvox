@@ -55,15 +55,15 @@ https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
 
 ## What is KeyVox Vibes?
 
-**Choose a style. Change your mind.** KeyVox Vibes lets you apply local, on-device writing styles to dictated text on Mac and iPhone. Pick None, Casual, Polished, or Chill before dictation ends, and KeyVox applies that Vibe before inserting your text.
+**Choose a style. Change your mind.** KeyVox Vibes lets you apply on-device, reversible writing styles to dictated text on Mac and iPhone. Pick None, Casual, Polished, or Chill before dictation ends, and KeyVox applies that Vibe before inserting your text.
 
-### Long Press to Vibe
+### Long Press or Tap to Vibe
 
 Vibes are reversible when the latest inserted dictation is untouched:
 
-- On iPhone, **long press the Vibes key** to undo the last Vibe change.
-- On iPhone, **tap to choose another Vibe, then long press** to restyle the same untouched text.
-- On Mac, **tap the trigger key** to apply or undo the current Vibe, and **double-tap** to cycle Vibes.
+- 📱 On iPhone, **long press the Vibes key** to undo the last Vibe change.
+- 📱 On iPhone, **tap to choose another Vibe, then long press** to restyle the same untouched text.
+- 💻 On Mac, **tap the trigger key** to apply or undo the current Vibe, and **double-tap** to cycle Vibes.
 
 This means you can dictate first, decide later, and switch between clean dictation and styled text without re-recording.
 
