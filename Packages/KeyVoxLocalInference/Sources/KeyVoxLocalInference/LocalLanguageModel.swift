@@ -8,7 +8,7 @@ public struct LocalLanguageModelConfiguration: Equatable, Sendable {
     public let batchTokenCount: Int
 
     public init(
-        contextTokenLimit: Int = 4_096,
+        contextTokenLimit: Int,
         threadCount: Int = 2,
         batchThreadCount: Int = 2,
         batchTokenCount: Int = 512
@@ -225,7 +225,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
 
     public func generate(
         _ request: LocalLanguageModelGenerationRequest,
-        configuration: LocalLanguageModelConfiguration = LocalLanguageModelConfiguration()
+        configuration: LocalLanguageModelConfiguration
     ) async throws -> LocalLanguageModelGenerationResult {
         let cancellation = LocalInferenceCancellationToken()
 
@@ -250,7 +250,7 @@ public final class LlamaCPULanguageModel: LocalLanguageModelGenerating, @uncheck
     }
 
     public func prepare(
-        configuration: LocalLanguageModelConfiguration = LocalLanguageModelConfiguration()
+        configuration: LocalLanguageModelConfiguration
     ) async throws -> LocalLanguageModelPreparationResult {
         try await withCheckedThrowingContinuation { continuation in
             inferenceQueue.async { [self] in

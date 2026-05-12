@@ -2,10 +2,17 @@ import XCTest
 @testable import KeyVoxLocalInference
 
 final class LocalLanguageModelTests: XCTestCase {
-    func testDefaultConfigurationIsCPUConstrained() {
-        let configuration = LocalLanguageModelConfiguration()
+    private static let testConfiguration = LocalLanguageModelConfiguration(
+        contextTokenLimit: 512,
+        threadCount: 2,
+        batchThreadCount: 2,
+        batchTokenCount: 128
+    )
 
-        XCTAssertEqual(configuration.contextTokenLimit, 4_096)
+    func testConfigurationKeepsCPUDefaultsWithExplicitContextLimit() {
+        let configuration = LocalLanguageModelConfiguration(contextTokenLimit: 512)
+
+        XCTAssertEqual(configuration.contextTokenLimit, 512)
         XCTAssertEqual(configuration.threadCount, 2)
         XCTAssertEqual(configuration.batchThreadCount, 2)
         XCTAssertEqual(configuration.batchTokenCount, 512)
@@ -73,7 +80,8 @@ final class LocalLanguageModelTests: XCTestCase {
                 LocalLanguageModelGenerationRequest(
                     prompt: "Hello",
                     maximumTokenCount: 4
-                )
+                ),
+                configuration: Self.testConfiguration
             )
             XCTFail("Expected missing model failure.")
         } catch {
@@ -87,7 +95,7 @@ final class LocalLanguageModelTests: XCTestCase {
         )
 
         do {
-            _ = try await model.prepare()
+            _ = try await model.prepare(configuration: Self.testConfiguration)
             XCTFail("Expected missing model failure.")
         } catch {
             XCTAssertEqual(error as? LocalLanguageModelError, .modelFileMissing)
@@ -112,12 +120,7 @@ final class LocalLanguageModelTests: XCTestCase {
                     prompt: "Return only the word ready.",
                     maximumTokenCount: 8
                 ),
-                configuration: LocalLanguageModelConfiguration(
-                    contextTokenLimit: 512,
-                    threadCount: 2,
-                    batchThreadCount: 2,
-                    batchTokenCount: 128
-                )
+                configuration: Self.testConfiguration
             )
             await model.unload()
 

@@ -41,4 +41,4 @@ This folder contains the source-of-truth training materials for local model adap
 - Rejected intermediate: `runs/polished/rejected/alpha-018`, `runs/polished/rejected/alpha-022`
 - Rejected dataset: `datasets/polished/rejected/alpha-018-continuation-paragraphs`
 
-The Mac Studio is optional compute. The tracked datasets/configs plus ignored local artifacts are enough to continue training from this Mac when the artifacts are present locally.
+The tracked datasets/configs plus ignored local artifacts are enough to continue training when the artifacts are present locally.

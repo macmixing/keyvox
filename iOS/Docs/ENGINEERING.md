@@ -1041,7 +1041,7 @@ LoRA adapter ownership:
 - Casual maps to the casual adapter and the short casual LoRA system prompt
 - Chill maps to the casual adapter and the short casual LoRA system prompt before deterministic Chill formatting
 - prewarm maps the selected Vibe to the same adapter as generation and calls local inference prepare without producing text
-- local generation uses a 4,096-token context, two CPU threads, two batch threads, and a batch token cap up to 512
+- local generation uses the style request context limit, two CPU threads, two batch threads, and a batch token cap up to 512
 - debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.

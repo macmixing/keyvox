@@ -356,7 +356,7 @@ final class StyleRewriteTests: XCTestCase {
             instructions: "instructions",
             promptPrefix: "prefix",
             promptSuffix: "suffix",
-            contextTokenLimit: 4_096,
+            contextTokenLimit: StyleRewriteDictationConfiguration.modelContextTokenLimit,
             expectedOutputExpansionRatio: 0.75,
             safetyMarginTokens: 384,
             maximumResponseTokens: 512
