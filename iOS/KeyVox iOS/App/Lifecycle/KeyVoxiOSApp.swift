@@ -159,6 +159,11 @@ struct KeyVoxApp: App {
     }
 
     private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
+        if onboardingStore.shouldShowOnboarding, route.isVibesPresentationRoute {
+            Self.log("ignored onboarding route=\(String(describing: route))")
+            return
+        }
+
         Self.log(
             "handle route=\(String(describing: route)) shouldPresentReturnToHost=\(String(shouldPresentReturnToHost))"
         )
@@ -197,5 +202,16 @@ struct KeyVoxApp: App {
         #if DEBUG
         NSLog("[KeyVoxApp] %@", message)
         #endif
+    }
+}
+
+private extension KeyVoxURLRoute {
+    var isVibesPresentationRoute: Bool {
+        switch self {
+        case .openVibes, .openVibesTrialStart:
+            return true
+        case .startRecording, .stopRecording, .startTTS, .openDictionary, .openSettings:
+            return false
+        }
     }
 }
