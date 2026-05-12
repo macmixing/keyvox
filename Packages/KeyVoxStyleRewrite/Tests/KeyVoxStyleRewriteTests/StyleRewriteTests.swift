@@ -94,6 +94,18 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "2+2=4")
     }
 
+    func testChillHeuristicPreservesNumericHyphens() {
+        let output = ChillHeuristicFormatter().format("Call 602-555-0134 on 2026-05-12.")
+
+        XCTAssertEqual(output, "call 602-555-0134 on 2026-05-12")
+    }
+
+    func testChillHeuristicPreservesPostProcessedMathSymbols() {
+        let output = ChillHeuristicFormatter().format("Keep (2 - 2 = 0), 3^2 = 9, 8 / 2, 5 * 4, and 50%.")
+
+        XCTAssertEqual(output, "keep (2 - 2 = 0) 3^2 = 9 8 / 2 5 * 4 and 50%")
+    }
+
     func testChillHeuristicPreservesColonBetweenNumbers() {
         let output = ChillHeuristicFormatter().format("Meet at 5:45 and keep the ratio 16:9, but remove this: colon.")
 

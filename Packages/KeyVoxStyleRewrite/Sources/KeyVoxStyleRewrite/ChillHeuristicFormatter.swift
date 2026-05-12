@@ -55,17 +55,31 @@ public struct ChillHeuristicFormatter: Sendable {
             var tokenIndex = index
             while tokenIndex < tokenEnd {
                 let character = characters[tokenIndex]
-                if isSentenceBoundary(character) {
+                let previousCharacter = tokenIndex > characters.startIndex
+                    ? characters[characters.index(before: tokenIndex)]
+                    : nil
+                let nextIndex = characters.index(after: tokenIndex)
+                let nextCharacter = nextIndex < characters.endIndex ? characters[nextIndex] : nil
+                let previousNonWhitespaceCharacter = previousNonWhitespaceCharacter(before: tokenIndex, in: characters)
+                let nextNonWhitespaceCharacter = nextNonWhitespaceCharacter(after: tokenIndex, in: characters)
+                if isSentenceBoundary(character),
+                   !isProtectedNumericPunctuation(
+                    character,
+                    previous: previousCharacter,
+                    next: nextCharacter,
+                    previousNonWhitespace: previousNonWhitespaceCharacter,
+                    nextNonWhitespace: nextNonWhitespaceCharacter
+                   ) {
                     appendSegment(current.joined(), terminator: character == "?" ? "?" : ".", to: &segments)
                     current.removeAll(keepingCapacity: true)
                 } else {
-                    let previousIndex = tokenIndex > index ? characters.index(before: tokenIndex) : nil
-                    let nextIndex = characters.index(after: tokenIndex)
                     current.append(
                         replacement(
                             for: character,
-                            previous: previousIndex.map { characters[$0] },
-                            next: nextIndex < tokenEnd ? characters[nextIndex] : nil
+                            previous: previousCharacter,
+                            next: nextCharacter,
+                            previousNonWhitespace: previousNonWhitespaceCharacter,
+                            nextNonWhitespace: nextNonWhitespaceCharacter
                         )
                     )
                 }
@@ -152,15 +166,21 @@ public struct ChillHeuristicFormatter: Sendable {
     private func replacement(
         for character: Character,
         previous: Character? = nil,
-        next: Character? = nil
+        next: Character? = nil,
+        previousNonWhitespace: Character? = nil,
+        nextNonWhitespace: Character? = nil
     ) -> String {
         if character.isLetter || character.isNumber || character.isWhitespace {
             return String(character)
         }
 
-        if character == ":",
-           previous?.isNumber == true,
-           next?.isNumber == true {
+        if isProtectedNumericPunctuation(
+            character,
+            previous: previous,
+            next: next,
+            previousNonWhitespace: previousNonWhitespace ?? previous,
+            nextNonWhitespace: nextNonWhitespace ?? next
+        ) {
             return String(character)
         }
 
@@ -182,6 +202,79 @@ public struct ChillHeuristicFormatter: Sendable {
     private func isSentenceBoundary(_ character: Character) -> Bool {
         character == "." || character == "!" || character == "?"
     }
+
+    private func previousNonWhitespaceCharacter(before index: [Character].Index, in characters: [Character]) -> Character? {
+        guard index > characters.startIndex else { return nil }
+        var currentIndex = characters.index(before: index)
+        while currentIndex >= characters.startIndex {
+            let character = characters[currentIndex]
+            if !character.isWhitespace {
+                return character
+            }
+            guard currentIndex > characters.startIndex else { break }
+            currentIndex = characters.index(before: currentIndex)
+        }
+        return nil
+    }
+
+    private func nextNonWhitespaceCharacter(after index: [Character].Index, in characters: [Character]) -> Character? {
+        var currentIndex = characters.index(after: index)
+        while currentIndex < characters.endIndex {
+            let character = characters[currentIndex]
+            if !character.isWhitespace {
+                return character
+            }
+            currentIndex = characters.index(after: currentIndex)
+        }
+        return nil
+    }
+
+    private func isProtectedNumericPunctuation(
+        _ character: Character,
+        previous: Character?,
+        next: Character?,
+        previousNonWhitespace: Character?,
+        nextNonWhitespace: Character?
+    ) -> Bool {
+        if Self.immediateNumericSeparatorPunctuation.contains(character) {
+            return previous?.isNumber == true && next?.isNumber == true
+        }
+
+        if Self.spacedNumericSeparatorPunctuation.contains(character) {
+            return previousNonWhitespace?.isNumber == true && nextNonWhitespace?.isNumber == true
+        }
+
+        if Self.numericOperatorPunctuation.contains(character) {
+            return previousNonWhitespace?.isNumber == true || nextNonWhitespace?.isNumber == true
+        }
+
+        if character == "%",
+           previousNonWhitespace?.isNumber == true || nextNonWhitespace?.isNumber == true {
+            return true
+        }
+
+        if character == "(" {
+            return nextNonWhitespace?.isNumber == true
+        }
+
+        if character == ")" {
+            return previousNonWhitespace?.isNumber == true || previousNonWhitespace == "%"
+        }
+
+        return false
+    }
+
+    private static let immediateNumericSeparatorPunctuation: Set<Character> = [
+        ".", ",", ":"
+    ]
+
+    private static let spacedNumericSeparatorPunctuation: Set<Character> = [
+        "-", "‐", "‑", "–", "—", "/"
+    ]
+
+    private static let numericOperatorPunctuation: Set<Character> = [
+        "-", "‐", "‑", "–", "—", "/", "*"
+    ]
 
     private func protectedInlineToken(in token: String) -> (text: String, trailingPunctuation: Character?)? {
         if let trailingPunctuation = token.last,
