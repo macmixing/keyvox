@@ -14,7 +14,7 @@ This entry establishes the first explicit package version for `KeyVoxLocalInfere
 
 ### Includes
 
-- A package-owned Swift interface for local GGUF language model inference through `LocalLanguageModelGenerating` and `LlamaCPULanguageModel`.
+- A package-owned Swift interface for local GGUF language model inference through `LocalLanguageModelGenerating` and `LlamaLocalLanguageModel`.
 - Vendored `llama.xcframework` binary artifact from the official `ggml-org/llama.cpp` Apple XCFramework release artifact documented in the package artifact provenance notes.
 - Local language model configuration with explicit caller-provided context token limits, thread counts, batch thread counts, and batch token counts.
 - Generation requests for raw prompts and structured system/user prompts, with configurable chat-template and special-token handling.

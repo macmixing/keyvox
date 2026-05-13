@@ -283,10 +283,10 @@ private final class CasualLiveTester {
 private final class CasualLiveResponder: TextTransformChunkResponding {
     private static let casualLoRASystemPrompt = "Lightly clean this dictated text. Remove clear filler except keep the word like. Preserve slang, profanity, grammar, meaning, lists, and paragraph breaks. Format numbers, dates, money, and percentages when clear. Output only the result."
 
-    private let model: LlamaCPULanguageModel
+    private let model: LlamaLocalLanguageModel
 
     init(modelURL: URL, adapterURL: URL, adapterScale: Float) {
-        self.model = LlamaCPULanguageModel(
+        self.model = LlamaLocalLanguageModel(
             modelURL: modelURL,
             adapterURL: adapterURL,
             adapterScale: adapterScale

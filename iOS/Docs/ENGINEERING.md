@@ -966,9 +966,9 @@ The keys use the same symbols as the Style tab and show setting state through ic
 
 `Packages/KeyVoxLocalInference` owns reusable local model mechanics:
 
-- `LlamaCPULanguageModel` wraps llama.cpp CPU inference for GGUF chat models and optional LoRA adapters.
+- `LlamaLocalLanguageModel` wraps llama.cpp local inference for GGUF chat models and optional LoRA adapters.
 - generation requests can use either a raw prompt or a system/user chat prompt.
-- model loading is cached per `LlamaCPULanguageModel` instance, explicit prepare can load the model and adapter before generation, and each generation clears llama memory before running.
+- model loading is cached per `LlamaLocalLanguageModel` instance, explicit prepare can load the model and adapter before generation, and each generation clears llama memory before running.
 - the package installs quiet llama logging, supports task cancellation, attaches LoRA adapters, performs prompt-too-long checks, uses greedy decoding, exposes load/prefill/decode/total timing metrics, and supports explicit unload.
 
 `Packages/KeyVoxVibesAdapters` owns bundled KeyVox-trained adapter assets:
@@ -1031,7 +1031,7 @@ LoRA adapter ownership:
 
 `LocalRewriteInferenceService` owns the app-local inference cache.
 
-- it builds `LlamaCPULanguageModel` with the installed base model URL and requested adapter URL
+- it builds `LlamaLocalLanguageModel` with the installed base model URL and requested adapter URL
 - it keeps one cached model identity at a time, keyed by base model URL plus adapter URL
 - it unloads when the local rewrite model is invalidated
 

@@ -150,10 +150,10 @@ final class LiveLocalStyleTester {
 
 @MainActor
 final class LiveLocalStyleResponder: TextTransformChunkResponding {
-    private let model: LlamaCPULanguageModel
+    private let model: LlamaLocalLanguageModel
 
     init(modelURL: URL, adapterURL: URL?, adapterScale: Float) {
-        self.model = LlamaCPULanguageModel(
+        self.model = LlamaLocalLanguageModel(
             modelURL: modelURL,
             adapterURL: adapterURL,
             adapterScale: adapterScale,

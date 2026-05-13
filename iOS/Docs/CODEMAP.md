@@ -714,14 +714,15 @@ Packages/
   - Deterministic Chill formatter after optional local-model cleanup.
   - Lowercases, removes unsupported punctuation, preserves emoji, symbol characters, and email-shaped inline tokens, keeps question marks where sentence boundaries require them, separates interior sentence boundaries with periods, and leaves the final cluster without a trailing period unless it is a question.
 - `Packages/KeyVoxLocalInference/Sources/KeyVoxLocalInference/LocalLanguageModel.swift`
-  - llama.cpp-backed local CPU inference wrapper for GGUF chat models and optional LoRA adapters.
+  - Public local language model request, result, configuration, error, and generation protocol types.
+  - Implementation lives in the `LlamaLocalLanguageModel*.swift` files.
   - Owns model/context creation, adapter attachment, quiet llama logging, prompt formatting through the model chat template, tokenization, prompt-too-long checks, greedy decoding, cancellation, cache clearing, unload, and generation metrics.
 - `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/KeyVoxVibesAdapterCatalog.swift`
   - Typed catalog for bundled KeyVox Vibes LoRA adapters.
   - Exposes adapter IDs, filenames, compatible base-model ID, and `Bundle.module` resource URL lookup for Polished and Casual.
 - `KeyVox iOS/Core/StyleRewrite/LocalRewriteInferenceService.swift`
   - App-owned local inference cache for the installed Vibes base model plus the currently requested LoRA adapter.
-  - Provides the cached `LlamaCPULanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.
+  - Provides the cached `LlamaLocalLanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.
 - `KeyVox iOS/Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift`
   - iOS adapter from `KeyVoxStyleRewrite` chunk requests into `KeyVoxLocalInference`.
   - Maps Polished to `polished-alpha-021`, maps Casual and Chill to `casual-alpha-3`, prewarms the selected model/adapter without generating text, sends short LoRA prompts, and logs local inference load/prefill/decode/total timing in debug builds.

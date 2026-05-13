@@ -14,7 +14,7 @@ final class LocalRewriteInferenceService {
     private let adapterURLProvider: AdapterURLProvider
     private var loadedModelURL: URL?
     private var loadedAdapterURL: URL?
-    private var loadedModel: LlamaCPULanguageModel?
+    private var loadedModel: LlamaLocalLanguageModel?
 
     init(
         modelURLProvider: @escaping () -> URL?,
@@ -24,7 +24,7 @@ final class LocalRewriteInferenceService {
         self.adapterURLProvider = adapterURLProvider
     }
 
-    func model(adapter: LocalRewriteAdapterKind? = nil) throws -> LlamaCPULanguageModel {
+    func model(adapter: LocalRewriteAdapterKind? = nil) throws -> LlamaLocalLanguageModel {
         guard let modelURL = modelURLProvider() else {
             throw LocalRewriteInferenceServiceError.modelNotInstalled
         }
@@ -39,7 +39,7 @@ final class LocalRewriteInferenceService {
         }
 
         if loadedModelURL != modelURL || loadedAdapterURL != adapterURL {
-            loadedModel = LlamaCPULanguageModel(modelURL: modelURL, adapterURL: adapterURL)
+            loadedModel = LlamaLocalLanguageModel(modelURL: modelURL, adapterURL: adapterURL)
             loadedModelURL = modelURL
             loadedAdapterURL = adapterURL
         }

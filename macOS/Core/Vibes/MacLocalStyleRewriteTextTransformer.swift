@@ -60,7 +60,7 @@ private final class MacLocalStyleRewriteChunkResponder: TextTransformChunkRespon
         }
 
         let adapterKind = macLocalRewriteAdapterKind(for: request.styleIdentifier)
-        let model: LlamaCPULanguageModel
+        let model: LlamaLocalLanguageModel
         do {
             model = try inferenceService.model(adapter: adapterKind)
         } catch MacLocalRewriteInferenceServiceError.adapterNotInstalled(let adapter) {

@@ -9,7 +9,7 @@ final class LocalLanguageModelTests: XCTestCase {
         batchTokenCount: 128
     )
 
-    func testConfigurationKeepsCPUDefaultsWithExplicitContextLimit() {
+    func testConfigurationKeepsDefaultThreadCountsWithExplicitContextLimit() {
         let configuration = LocalLanguageModelConfiguration(contextTokenLimit: 512)
 
         XCTAssertEqual(configuration.contextTokenLimit, 512)
@@ -71,7 +71,7 @@ final class LocalLanguageModelTests: XCTestCase {
     }
 
     func testMissingModelProducesTypedFailure() async {
-        let model = LlamaCPULanguageModel(
+        let model = LlamaLocalLanguageModel(
             modelURL: URL(fileURLWithPath: "/tmp/keyvox-missing-local-model.gguf")
         )
 
@@ -90,7 +90,7 @@ final class LocalLanguageModelTests: XCTestCase {
     }
 
     func testPrepareMissingModelProducesTypedFailure() async {
-        let model = LlamaCPULanguageModel(
+        let model = LlamaLocalLanguageModel(
             modelURL: URL(fileURLWithPath: "/tmp/keyvox-missing-local-model.gguf")
         )
 
@@ -110,7 +110,7 @@ final class LocalLanguageModelTests: XCTestCase {
             throw XCTSkip("Set KEYVOX_LOCAL_MODEL_PATH to a local GGUF file.")
         }
 
-        let model = LlamaCPULanguageModel(
+        let model = LlamaLocalLanguageModel(
             modelURL: URL(fileURLWithPath: modelPath),
             gpuOffloadMode: .automatic
         )

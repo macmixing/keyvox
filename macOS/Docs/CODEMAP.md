@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-05-11**
+**Last Updated: 2026-05-13**
 
 ## Project Overview
 
@@ -125,6 +125,11 @@ KeyVox/
 │   ├── KeyVoxWhisper/
 │   ├── KeyVoxParakeet/
 │   ├── KeyVoxLocalInference/
+│   │   └── Sources/KeyVoxLocalInference/
+│   │       ├── LocalLanguageModel.swift
+│   │       ├── LlamaLocalLanguageModel*.swift
+│   │       ├── LlamaLoadedModel.swift
+│   │       └── LocalInferenceCancellationToken.swift
 │   ├── KeyVoxStyleRewrite/
 │   └── KeyVoxVibesAdapters/
 ├── Tools/
