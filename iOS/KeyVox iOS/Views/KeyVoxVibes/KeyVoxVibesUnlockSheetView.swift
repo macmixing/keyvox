@@ -7,7 +7,7 @@ struct KeyVoxVibesUnlockSheetView: View {
     private let primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction
 
     init(
-        initialScene: KeyVoxVibesSheetView.Scene = .b,
+        initialScene: KeyVoxVibesSheetView.Scene = .unlock,
         primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction = .purchase
     ) {
         self.initialScene = initialScene

@@ -306,7 +306,7 @@ extension StyleTabView {
 
         switch keyVoxVibesMatrix.cardAction {
         case .openUnlockScene:
-            keyVoxVibesPurchaseController.presentUnlockSheet(initialScene: .unlock)
+            keyVoxVibesPurchaseController.presentUnlockSheet()
         case .openSceneCRecovery, .openUnlockedModelRecovery:
             keyVoxVibesPurchaseController.presentModelRecoverySheet()
         case .openUnlockFlow:

@@ -9,7 +9,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         case intro(KeyVoxVibesSheetView.IntroPresentation)
         case info(KeyVoxVibesSheetView.IntroPresentation)
         case unlock(
-            initialScene: KeyVoxVibesSheetView.Scene = .b,
+            initialScene: KeyVoxVibesSheetView.Scene = .unlock,
             primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction = .purchase
         )
     }
@@ -178,7 +178,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
     }
 
-    func presentUnlockSheet(initialScene: KeyVoxVibesSheetView.Scene = .b) {
+    func presentUnlockSheet(initialScene: KeyVoxVibesSheetView.Scene = .unlock) {
         refreshTrialStateIfNeeded()
         guard isVibesUnlocked == false else {
             dismissSheet()
