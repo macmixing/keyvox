@@ -25,13 +25,13 @@
       "internalID" : "KVX_VIBES_UNLOCKED",
       "localizations" : [
         {
-          "description" : "Unlock KeyVox Vibes for life.",
-          "displayName" : "KeyVox Vibes Lifetime Unlock",
+          "description" : "Unlock on-device writing styles for KeyVox.",
+          "displayName" : "KeyVox Vibes Unlock",
           "locale" : "en_US"
         }
       ],
       "productID" : "com.cueit.keyvox.vibes.unlocked",
-      "referenceName" : "KeyVox Vibes Lifetime Unlock",
+      "referenceName" : "KeyVox Vibes Unlock",
       "type" : "NonConsumable"
     }
   ],

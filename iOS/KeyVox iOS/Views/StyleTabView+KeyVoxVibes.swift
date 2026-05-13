@@ -250,7 +250,7 @@ extension StyleTabView {
         case .downloadRequired:
             return "Download Vibes AI to use your Vibes."
         case .unlockOffer:
-            return "Unlock and get Vibes for life."
+            return "Unlock and keep the Vibes flowing."
         case .trialOffer:
             return "Try out KeyVox Vibes for 24 hours."
         case .selectedVibe:

@@ -21,8 +21,8 @@ struct KeyVoxVibesSceneCView: View {
     }
 
     private static let details: [Detail] = [
-        Detail(id: 0, icon: "clock.fill", title: "Try for 24 Hours", subtitle: "Start a local one-day trial and use every Vibe."),
-        Detail(id: 1, icon: "infinity", title: "Unlock for Life", subtitle: "One purchase keeps Vibes available forever."),
+        Detail(id: 0, icon: "clock.fill", title: "Try for 24 Hours", subtitle: "Why not vibe out for a day? You deserve it."),
+        Detail(id: 1, icon: "infinity", title: "No Subscription", subtitle: "Pay once and keep the Vibes going."),
     ]
 
     let isVisible: Bool
@@ -56,14 +56,14 @@ struct KeyVoxVibesSceneCView: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 12)
 
-                    Text("Vibes Are for Life")
+                    Text("Catch the Vibes")
                         .font(.appFont(31, variant: .medium))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Try for a day. Unlock for a lifetime.")
+                    Text("Try today. Unlock tomorrow.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -89,7 +89,7 @@ struct KeyVoxVibesSceneCView: View {
 
                     installCardSlot
 
-                    Text("One-time purchase. No subscription.")
+                    Text("One-time purchase. Try it free first.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .opacity(footerOpacity)

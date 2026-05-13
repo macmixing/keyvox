@@ -100,13 +100,13 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_VIBES_TRIAL_DURATION_SECONDS"
-            value = "300"
-            isEnabled = "NO">
+            value = "10"
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_RESET_VIBES_TRIAL"
             value = "1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <StoreKitConfigurationFileReference

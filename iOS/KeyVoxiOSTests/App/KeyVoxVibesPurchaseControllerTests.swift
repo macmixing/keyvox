@@ -182,7 +182,7 @@ private final class StubVibesUnlockStore: StoreUnlockStore {
     }
 
     func loadUnlockProduct(productID: String) async throws -> StoreUnlockProduct? {
-        StoreUnlockProduct(id: productID, displayName: "KeyVox Vibes Lifetime Unlock", displayPrice: "$4.99")
+        StoreUnlockProduct(id: productID, displayName: "KeyVox Vibes Unlock", displayPrice: "$4.99")
     }
 
     func isUnlocked(productID: String) async throws -> Bool {

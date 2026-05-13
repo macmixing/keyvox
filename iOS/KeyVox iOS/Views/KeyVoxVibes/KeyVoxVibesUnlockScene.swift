@@ -17,7 +17,7 @@ struct KeyVoxVibesUnlockScene: View {
     }
 
     private static let benefits: [Benefit] = [
-        Benefit(id: 0, icon: "infinity", title: "Vibe Forever", subtitle: "Unlock once and keep every built-in Vibe."),
+        Benefit(id: 0, icon: "infinity", title: "Vibe Without Limits", subtitle: "Unlock once and keep using every built-in Vibe."),
         Benefit(id: 1, icon: "hand.tap.fill", title: "Long Press Included", subtitle: "Restyle or undo the latest untouched dictation."),
         Benefit(id: 2, icon: "desktopcomputer", title: "Available on Mac", subtitle: "KeyVox Vibes is also available on Mac.")
     ]
@@ -122,7 +122,7 @@ struct KeyVoxVibesUnlockScene: View {
             return "Your trial has \(vibesPurchaseController.trialRemainingText) left."
         }
 
-        return "Experience Vibes for life."
+        return "Keep the Vibes flowing."
     }
 
     private func benefitSpotlight(_ benefit: Benefit) -> some View {

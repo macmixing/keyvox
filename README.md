@@ -73,7 +73,7 @@ Vibes run on-device using KeyVox Vibes AI, a local rewrite model with bundled Ke
 
 On Mac, KeyVox Vibes is free and requires installing KeyVox Vibes AI (~491 MB). Mac Vibes can run on macOS Ventura and later: Sequoia and newer may use Metal/GPU acceleration, while Ventura and Sonoma run Vibes on CPU only.
 
-On iPhone, KeyVox Vibes requires the local Vibes AI model and supported iOS version. You can try Vibes for 24 hours, then unlock KeyVox Vibes once and use it for life.
+On iPhone, KeyVox Vibes requires the local Vibes AI model and supported iOS version. You can try Vibes for 24 hours, then unlock KeyVox Vibes once and use it without a subscription.
 
 ## What is KeyVox Speak? (iOS)
 

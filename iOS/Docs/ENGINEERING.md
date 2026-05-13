@@ -180,7 +180,7 @@ Service ownership rules:
 - `Feedback/` owns app-scoped haptics and copy-feedback interaction state.
 - `LiveActivity/` owns the ActivityKit mirror layer.
 - `KeyVoxSpeak/` owns the post-onboarding intro controller and copied-text playback purchase gate.
-- `KeyVoxVibes/` owns the post-onboarding intro controller, local trial state, and lifetime purchase gate for KeyVox Vibes.
+- `KeyVoxVibes/` owns the post-onboarding intro controller, local trial state, and purchase gate for KeyVox Vibes.
 - `Purchases/` owns shared StoreKit non-consumable plumbing used by app-owned purchase controllers.
 - `Stats/` owns app-local weekly usage aggregation.
 - `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
@@ -934,7 +934,7 @@ That selector must use `StyleRewriteStyle` from `KeyVoxStyleRewrite` for orderin
 The keyboard writes `KeyVox.SelectedVibe` in the App Group defaults and posts the shared Vibes selection-change Darwin notification.
 The containing app observes that notification and refreshes `AppSettingsStore.selectedVibe` from shared defaults so the Style tab reflects keyboard-side changes.
 Tap changes only the selected Vibe.
-Before the local trial starts or the lifetime unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
+Before the local trial starts or the unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
 Before access is active, tapping the keyboard Vibes key emits the keyboard's medium no-op haptic and opens `keyvoxios://vibes/open`; the keyboard does not cycle to a paid Vibe.
 Before the local Vibes model is installed, tapping the keyboard Vibes key keeps the selected Vibe resolved to `None`, emits the medium no-op haptic, and opens `keyvoxios://vibes/trial-start` so Scene C can show the install surface.
 Vibes access requires `KeyVoxVibesPurchaseController.canUseVibes`; model-backed rewrites also require a ready local rewrite model and the required adapter.
@@ -1052,10 +1052,10 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 
 `KeyVoxVibesPurchaseController` is the containing-app owner for Vibes access.
 
-- the lifetime product identifier is `com.cueit.keyvox.vibes.unlocked`
-- the product is a non-consumable lifetime unlock named `KeyVox Vibes Lifetime Unlock`
+- the unlocked product identifier is `com.cueit.keyvox.vibes.unlocked`
+- the product is a non-consumable unlock named `KeyVox Vibes Unlock`
 - the 24-hour trial is local-only and starts only when the user taps `Try Now`
-- `canUseVibes` is true only while the lifetime unlock is owned or the local trial is active
+- `canUseVibes` is true only while the unlock is owned or the local trial is active
 - trial expiration immediately resolves selected Vibe to `None`
 - unlock state, trial start date, intro state, and interacted state are app-local defaults, not iCloud-synced settings
 - model-recovery presentation differs by access state: an active trial with missing Vibes AI opens Scene C directly with the install card and remaining-trial context, while an unlocked user with missing Vibes AI opens the unlock scene directly with a model-gated continue CTA
@@ -1079,7 +1079,7 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - per-sheet restore checks the Vibes entitlement
 
 Settings restore is shared across KeyVox Speak and KeyVox Vibes.
-The restore card remains visible until both lifetime unlocks are owned.
+The restore card remains visible until both unlocks are owned.
 
 `KeyVoxVibesAccessMatrix` is the semantic source of truth for the Style tab Vibes card.
 
@@ -1196,7 +1196,7 @@ Excluded from iCloud sync:
 - keyboard haptics
 - microphone preference
 - KeyVox Vibes selected style
-- KeyVox Vibes lifetime unlock cache
+- KeyVox Vibes unlock cache
 - KeyVox Vibes local trial state
 - KeyVox Vibes intro/interacted state
 - latest KeyVox Vibes utterance artifact
