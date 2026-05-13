@@ -40,7 +40,7 @@ struct SettingsVibesCard: View {
     }
 
     private var headerContent: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             ZStack {
                 Circle()
                     .fill(MacAppTheme.iconFill)
