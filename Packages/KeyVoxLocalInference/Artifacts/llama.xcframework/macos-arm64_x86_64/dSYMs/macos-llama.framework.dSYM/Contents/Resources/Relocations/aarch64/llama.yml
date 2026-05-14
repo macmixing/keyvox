@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/domesposito/Projects/KeyVox/Packages/KeyVoxLocalInference/Artifacts/llama.xcframework/macos-arm64_x86_64/llama.framework/Versions/A/llama'
+relocations:     []
+...
