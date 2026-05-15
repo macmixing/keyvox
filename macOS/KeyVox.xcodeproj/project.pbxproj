@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26000022FF0000100AA0001 /* AppProcessTerminator.swift */; };
 		8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */; };
 		8E37FC672FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E37FC662FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift */; };
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
@@ -124,6 +123,7 @@
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
 		D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
+		D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26000022FF0000100AA0001 /* AppProcessTerminator.swift */; };
 		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
 		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
 		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
@@ -138,8 +138,6 @@
 		E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */; };
 		E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */; };
 		E900000A2FE1000100AA0001 /* SettingsVibesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000182FE1000100AA0001 /* SettingsVibesCard.swift */; };
-		E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */; };
-		E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */; };
 		E91000012FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */; };
 		E91000022FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000122FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift */; };
 		E91000032FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91000132FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift */; };
@@ -157,6 +155,8 @@
 		E910000F2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */; };
 		E91000102FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E910001C2FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift */; };
 		E92000012FE3000100AA0001 /* VibePillPresentationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */; };
+		E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */; };
+		E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */; };
 		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
 		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
 		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
@@ -208,7 +208,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D26000022FF0000100AA0001 /* AppProcessTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProcessTerminator.swift; sourceTree = "<group>"; };
 		8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceExecutionMocks.swift; sourceTree = "<group>"; };
 		8E37FC662FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManagerOnboardingWindowLevelTests.swift; sourceTree = "<group>"; };
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
@@ -326,6 +325,7 @@
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictationModels.swift"; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
+		D26000022FF0000100AA0001 /* AppProcessTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProcessTerminator.swift; sourceTree = "<group>"; };
 		E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
@@ -338,8 +338,6 @@
 		E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedVibeLabel.swift; sourceTree = "<group>"; };
 		E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesTriggerActionController.swift; sourceTree = "<group>"; };
 		E90000182FE1000100AA0001 /* SettingsVibesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesCard.swift; sourceTree = "<group>"; };
-		E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesExamplesSection.swift; sourceTree = "<group>"; };
-		E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesAIInstallCard.swift; sourceTree = "<group>"; };
 		E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelCatalog.swift; sourceTree = "<group>"; };
 		E91000122FE2000100AA0001 /* MacLocalRewriteModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelInstallManifest.swift; sourceTree = "<group>"; };
 		E91000132FE2000100AA0001 /* MacLocalRewriteModelInstallState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocalRewriteModelInstallState.swift; sourceTree = "<group>"; };
@@ -353,6 +351,8 @@
 		E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesReadinessPrewarmer.swift; sourceTree = "<group>"; };
 		E910001C2FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesReadinessPrewarmerTests.swift; sourceTree = "<group>"; };
 		E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillPresentationControllerTests.swift; sourceTree = "<group>"; };
+		E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesExamplesSection.swift; sourceTree = "<group>"; };
+		E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesAIInstallCard.swift; sourceTree = "<group>"; };
 		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
 		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
@@ -621,18 +621,6 @@
 			path = Audio;
 			sourceTree = "<group>";
 		};
-		F26000112FF1000100AA0001 /* VibesIntro */ = {
-			isa = PBXGroup;
-			children = (
-				F26000092FF1000100AA0001 /* MacVibesIntroScene.swift */,
-				F260000A2FF1000100AA0001 /* MacVibesIntroWindowView.swift */,
-				F260000B2FF1000100AA0001 /* MacVibesIntroSceneAView.swift */,
-				F260000C2FF1000100AA0001 /* MacVibesIntroSceneBView.swift */,
-				F260000D2FF1000100AA0001 /* MacVibesIntroSceneCView.swift */,
-			);
-			path = VibesIntro;
-			sourceTree = "<group>";
-		};
 		AB1000032F60000100AA0001 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -827,6 +815,18 @@
 				E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */,
 			);
 			path = Vibes;
+			sourceTree = "<group>";
+		};
+		F26000112FF1000100AA0001 /* VibesIntro */ = {
+			isa = PBXGroup;
+			children = (
+				F26000092FF1000100AA0001 /* MacVibesIntroScene.swift */,
+				F260000A2FF1000100AA0001 /* MacVibesIntroWindowView.swift */,
+				F260000B2FF1000100AA0001 /* MacVibesIntroSceneAView.swift */,
+				F260000C2FF1000100AA0001 /* MacVibesIntroSceneBView.swift */,
+				F260000D2FF1000100AA0001 /* MacVibesIntroSceneCView.swift */,
+			);
+			path = VibesIntro;
 			sourceTree = "<group>";
 		};
 		F30000052FC2000100AA0001 /* AppUpdate */ = {
@@ -1344,7 +1344,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.10;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1395,7 +1395,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.0.10;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

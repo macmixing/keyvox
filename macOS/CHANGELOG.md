@@ -6,6 +6,52 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-05-14
+
+Introduces KeyVox Vibes on Mac with local writing styles, downloadable Vibes AI model support, trigger-key Vibe controls, a Vibes intro flow, and new shared local rewrite/runtime packages.
+
+### Added
+
+- KeyVox Vibes on Mac, including Casual, Polished, and Chill rewrite modes for dictated text.
+- New shared `KeyVoxStyleRewrite`, `KeyVoxLocalInference`, and `KeyVoxVibesAdapters` packages for local style rewriting, GGUF inference, GPU-aware llama runtime loading, and bundled Vibes LoRA adapters.
+- Downloadable Vibes AI model management on Mac, including install, readiness, repair, delete, SHA-256 validation, staged installation, and local model invalidation handling.
+- Vibes settings cards with style selection, examples, model-install status, progress, repair actions, and trigger-key usage guidance.
+- Trigger-key Vibe interactions so users can tap to apply or undo the selected Vibe on the latest untouched dictation, and double-tap to cycle Vibes.
+- Vibe pill overlays and selected-Vibe labels for recording, cycling, processing, and completion feedback.
+- A dedicated Mac Vibes intro window with animated scenes, Vibes AI download handling, and post-update presentation coordination.
+- Local rewrite prewarming when Vibes AI becomes ready and before upcoming dictation sessions.
+- Vibes branding assets and bundled adapter resources for the Mac target.
+- Model-training datasets, prompts, specs, lineage, and run artifacts for the shipped Casual and Polished Vibes adapters.
+
+### Changed
+
+- Integrated Vibes into the Mac dictation pipeline so selected styles can transform final dictated text before paste insertion.
+- Integrated post-dictation replacement support so Mac can verify the latest untouched insertion and replace it through Accessibility or menu fallback paths.
+- Updated the recording overlay and trigger-key monitor to carry timestamped trigger events, defer recording starts during Vibe tap decisions, and show the selected Vibe during recording and transcription.
+- Updated overlay placement persistence to resolve origins by panel size, support centered Vibe pill placement, and clamp overlay windows more consistently across displays.
+- Updated shared dictation cleanup through `KeyVoxCore` `1.0.9` so observed leading asterisk censorship artifacts are repaired before downstream formatting.
+- Updated the in-app updater flow to track whether an update is available, resume Vibes intro presentation after update gates, and handle move-to-Applications relaunch failures with clearer recovery.
+- Updated updater window and prompt styling around progress, badges, current/update version labels, and post-update notice presentation.
+- Updated macOS docs, project membership, third-party notices, and shared package version tracking for the Vibes runtime and adapter architecture.
+
+### Fixed
+
+- Fixed shared transcription cleanup for observed leading asterisk censorship artifacts before time, email, website, capitalization, and punctuation finishers run.
+- Fixed move-to-Applications updater handoff so KeyVox only terminates after macOS successfully opens the moved app, and clears the staged resume flag if reopening fails.
+- Fixed updater install termination to flush process state before exiting for installer handoff.
+- Fixed replacement of the latest dictated insertion so successful Vibe changes can preserve caret position and restore the clipboard immediately after menu fallback replacement.
+- Fixed overlay positioning support for Vibe pill windows without disturbing the saved recording overlay location.
+
+### Package versions
+
+KeyVox macOS 1.1.0:
+- KeyVoxCore           1.0.9
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.0
+- KeyVoxLocalInference 1.0.0
+- KeyVoxVibesAdapters  1.0.0
+
 ## [1.0.10] - 2026-05-04
 
 Ships shared dictation engine updates from the iOS release line to macOS, focused on built-in KeyVox dictionary handling, safer post-processing, and the Parakeet prompt-priming fix.
