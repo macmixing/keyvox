@@ -6,6 +6,50 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-05-14
+
+Introduces KeyVox Vibes on iPhone with downloadable local rewrite models, keyboard-side rewrite and format controls, a Vibes trial and unlock flow, and new shared rewrite/runtime packages.
+
+### Added
+
+- KeyVox Vibes on iPhone, including Casual, Polished, and Chill rewrite modes for dictated text.
+- New shared `KeyVoxStyleRewrite`, `KeyVoxLocalInference`, and `KeyVoxVibesAdapters` packages for local style rewriting, local GGUF inference, and bundled Vibes LoRA adapters.
+- Downloadable local Vibes AI model management in the app, including install, readiness, repair, and delete handling for the rewrite model.
+- Style tab and keyboard Vibes controls so users can choose a Vibe, apply it after dictation, compare in-app examples, switch between generated variants from the original dictated text, and restore the latest untouched insertion.
+- Keyboard post-dictation format changes for the latest untouched insertion, including reversible Paragraphs and Lists changes from the keyboard.
+- Vibes intro, trial, help, and unlock flows with shared StoreKit purchase and restore handling.
+- A left-handed keyboard control-strip layout option and expanded keyboard accessory controls for Vibes, Dictionary, and Settings.
+- Vibes branding assets, the shared `KeyVoxProducts.storekit` configuration, and local rewrite downloader surfaces in the Style and Settings flows.
+- A delayed transcription landing haptic for the iOS keyboard after dictated text lands.
+- Vibes onboarding and intro-sheet presentation coordination so the first Vibes introduction waits until onboarding and other feature sheets are eligible.
+- Bundled `llama.xcframework` runtime and debug-symbol packaging for the new local inference package.
+
+### Changed
+
+- Integrated local rewrite handling with shared chunk planning, explicit context budgeting, typed local-model errors, output repair, prompt-leak fallback handling, and Chill formatting that preserves meaningful numeric symbols and structure more reliably.
+- Integrated shared local inference runtime support with explicit caller-owned context limits, split llama loading and prompting components, packaged adapter support, and versioned package tracking for the shipped runtime and adapters.
+- Wired Vibes routing, access checks, restore handling, onboarding presentation, intro and unlock sheet defaults, settings, and keyboard state synchronization across the keyboard and containing app.
+- Wired Chill and post-dictation formatting support that preserves meaningful structure and symbols, including paragraphs, lists, email-style tokens, emoji, math-style text, phone numbers, dates, percentages, and numeric separators.
+- Updated shared dictation cleanup so built-in `KeyVox Vibes` name handling, spoken decimal and version phrases, and list-marker parsing stay more stable.
+- Updated KeyVox Speak text cleanup so numbered list markers written like `1)` read more naturally during copied-text playback.
+- Updated Speak settings and sheet flows so setup, unlock, and ready states stay separated, unlocked Speak upsell copy stays hidden, and the keyboard can warn when no dictation model is installed.
+- Updated iOS docs, package changelogs, version tracking, and third-party notices to cover the shipped Vibes runtime, adapters, and architecture.
+
+### Fixed
+
+- Fixed shared transcription cleanup for observed leading asterisk censorship artifacts before downstream formatting runs.
+
+### Package versions
+
+KeyVox iOS 1.2.0
+  KeyVoxCore           1.0.9
+  KeyVoxLocalInference 1.0.0
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.0
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.0
+  KeyVoxWhisper        1.0.0
+
 ## [1.1.2] - 2026-05-06
 
 Fixes warm keyboard dictation handoff in Messages edit mode so recording starts immediately, missed IPC state updates are reconciled, and completed transcription text is inserted into the edited message field.
