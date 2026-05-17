@@ -23,6 +23,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.activeDictationProvider, .whisper)
         XCTAssertEqual(store.selectedVibe, .none)
         XCTAssertTrue(store.vibesTriggerKeyInteractionsEnabled)
+        XCTAssertFalse(store.hideDockIconWhenAllWindowsClosed)
     }
 
     func testInitHydratesPersistedValuesAndClampsStoredVolume() {
@@ -43,6 +44,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
         defaults.set(StyleRewriteStyle.chill.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         defaults.set(false, forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled)
+        defaults.set(true, forKey: UserDefaultsKeys.hideDockIconWhenAllWindowsClosed)
 
         let store = AppSettingsStore(defaults: defaults)
 
@@ -58,6 +60,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.activeDictationProvider, .parakeet)
         XCTAssertEqual(store.selectedVibe, .chill)
         XCTAssertFalse(store.vibesTriggerKeyInteractionsEnabled)
+        XCTAssertTrue(store.hideDockIconWhenAllWindowsClosed)
     }
 
     func testInitFallsBackToWhisperWhenPersistedParakeetIsUnsupportedOnCurrentOS() {
@@ -113,6 +116,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.selectedMicrophoneUID = "usb-mic"
         store.selectedVibe = .casual
         store.vibesTriggerKeyInteractionsEnabled = false
+        store.hideDockIconWhenAllWindowsClosed = true
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
         store.activeDictationProvider = .parakeet
@@ -125,6 +129,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedMicrophoneUID), "usb-mic")
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.selectedVibe), StyleRewriteStyle.casual.rawValue)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled) as? Bool, false)
+        XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.hideDockIconWhenAllWindowsClosed) as? Bool, true)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)

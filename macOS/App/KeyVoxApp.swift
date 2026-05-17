@@ -33,6 +33,7 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
             // Intentional: first quit closes Settings instead of terminating, so
             // users don't accidentally exit KeyVox while actively editing settings.
             settingsWindow.orderOut(nil)
+            DockIconVisibilityController.shared.syncActivationPolicy()
             return .terminateCancel
         }
 
@@ -132,6 +133,7 @@ class WindowManager: ObservableObject {
         self.onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor
@@ -204,6 +206,7 @@ class WindowManager: ObservableObject {
         
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor
@@ -251,12 +254,7 @@ struct KeyVoxApp: App {
     }
     
     init() {
-        // Fix for Ventura/Sonoma < 15.6 menu bar collision and event blocking.
-        if Self.shouldUseAccessoryActivationPolicy() {
-            // Switch to accessory policy for older OS versions to prevent
-            // the status item from blocking the Apple Logo.
-            NSApplication.shared.setActivationPolicy(.accessory)
-        }
+        DockIconVisibilityController.shared.start()
 
         // App initialization
         DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {

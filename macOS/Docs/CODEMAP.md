@@ -44,6 +44,7 @@ KeyVox/
 │   │   ├── AppSettingsStore.swift
 │   │   ├── AppServiceRegistry.swift
 │   │   ├── LoginItemController.swift
+│   │   ├── DockIconVisibilityController.swift
 │   │   ├── WeeklyWordStatsStore.swift
 │   │   ├── UserDefaultsKeys.swift
 │   │   └── iCloud/
@@ -163,6 +164,9 @@ KeyVox/
   - Owns onboarding/settings windows via `WindowManager`.
   - Reopen behavior prefers visible non-settings windows (updater, post-update notice, onboarding) before falling back to Settings.
   - Cancels app termination once to close Settings first when the Settings window is visible.
+- `App/DockIconVisibilityController.swift`
+  - Owns runtime Dock icon visibility by switching between regular and accessory activation policy.
+  - Keeps legacy accessory-only macOS builds (`< 15.6`) on accessory policy and only honors the user hide-Dock preference when no managed KeyVox windows are visible.
 - `App/WindowManager+Updates.swift`
   - Dedicated updater and post-update notice window lifecycle.
   - Applies updater-specific floating-window centering and stoplight hiding.
@@ -172,7 +176,7 @@ KeyVox/
   - Hosts the shared Vibes intro window, resolves the SwiftUI fitting size before presentation, and keeps scene-size changes routed through one AppKit resize path.
   - Opens Settings directly to the Style tab when the intro `Try it` action completes.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
@@ -703,6 +707,7 @@ KeyVox/
   - Copy lives in `SettingsVibesExamplesCopy`.
 - `Views/Settings/SettingsView+More.swift`
   - Settings tab includes Trigger Key, audio controls, system controls, developer cards, and footer actions.
+  - System controls include Launch at Login and the hide-Dock-icon toggle on macOS versions where KeyVox normally has a Dock icon.
   - System section composes the Vibes AI install-management card separately from the Style-tab Vibes card.
 - `Views/Settings/SettingsVibesAIInstallCard.swift`
   - System-tab Vibes AI install-management card for download, repair, delete, progress/error display, and the Vibes trigger-key interactions toggle.
@@ -726,7 +731,7 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, onboarding completion, update prompt timestamps, active dictation provider
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, onboarding completion, update prompt timestamps, active dictation provider
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
@@ -734,6 +739,7 @@ KeyVox/
 - List formatting preference key: `KeyVox.ListFormattingEnabled`
 - Selected Vibe preference key: `KeyVox.SelectedVibe`
 - Vibes trigger-key interactions preference key: `KeyVox.VibesTriggerKeyInteractionsEnabled` (defaults to enabled)
+- Hide Dock icon preference key: `KeyVox.HideDockIconWhenAllWindowsClosed` (defaults to disabled)
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
 - Last transcription cache key: `KeyVox.App.LastTranscription`
 - Active provider key: `KeyVox.App.ActiveDictationProvider`
