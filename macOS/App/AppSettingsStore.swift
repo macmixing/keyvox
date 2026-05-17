@@ -134,6 +134,15 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var hideDockIconWhenAllWindowsClosed: Bool {
+        didSet {
+            defaults.set(
+                hideDockIconWhenAllWindowsClosed,
+                forKey: UserDefaultsKeys.hideDockIconWhenAllWindowsClosed
+            )
+        }
+    }
+
     @Published var updateAlertLastShown: Date? {
         didSet {
             defaults.set(updateAlertLastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
@@ -212,6 +221,9 @@ final class AppSettingsStore: ObservableObject {
         vibesTriggerKeyInteractionsEnabled = defaults.object(
             forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled
         ) as? Bool ?? true
+        hideDockIconWhenAllWindowsClosed = defaults.object(
+            forKey: UserDefaultsKeys.hideDockIconWhenAllWindowsClosed
+        ) as? Bool ?? false
         updateAlertLastShown = defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date
         updateAlertSnoozedUntil = defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date
         pendingUpdatedVersion = defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)

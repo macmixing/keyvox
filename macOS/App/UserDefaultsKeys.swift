@@ -12,6 +12,7 @@ enum UserDefaultsKeys {
     static let selectedMicrophoneUID  = "KeyVox.SelectedMicrophoneUID"
     static let selectedVibe           = "KeyVox.SelectedVibe"
     static let vibesTriggerKeyInteractionsEnabled = "KeyVox.VibesTriggerKeyInteractionsEnabled"
+    static let hideDockIconWhenAllWindowsClosed = "KeyVox.HideDockIconWhenAllWindowsClosed"
     static let hasInitializedMicrophoneDefault = "KeyVox.HasInitializedMicrophoneDefault"
     static let recordingOverlayOrigin = "KeyVox.RecordingOverlayOrigin"
     static let recordingOverlayPreferredDisplayKey = "KeyVox.RecordingOverlayPreferredDisplayKey"

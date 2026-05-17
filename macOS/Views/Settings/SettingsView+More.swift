@@ -154,8 +154,28 @@ extension SettingsView {
                     .foregroundColor(MacAppTheme.accent)
                     .buttonStyle(DepressedButtonStyle())
                 }
+
+                if shouldShowHideDockIconSetting {
+                    Divider()
+                        .background(Color.white.opacity(0.22))
+
+                    SettingsRow(
+                        icon: "dock.rectangle",
+                        title: "Hide Dock Icon",
+                        subtitle: "Hide dock icon when all windows are closed."
+                    ) {
+                        Toggle("", isOn: $appSettings.hideDockIconWhenAllWindowsClosed)
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                            .accessibilityLabel("Hide Dock Icon")
+                    }
+                }
             }
         }
+    }
+
+    private var shouldShowHideDockIconSetting: Bool {
+        !KeyVoxApp.shouldUseAccessoryActivationPolicy()
     }
 
     private func isRecommendedMicrophone(_ microphone: MicrophoneOption) -> Bool {

@@ -47,10 +47,12 @@ extension WindowManager {
                     onDismiss: { [weak window] in
                         window?.close()
                         self.vibesIntroWindow = nil
+                        DockIconVisibilityController.shared.syncActivationPolicy()
                     },
                     onTryIt: { [weak window] in
                         window?.close()
                         self.vibesIntroWindow = nil
+                        DockIconVisibilityController.shared.syncActivationPolicy()
                         self.openSettings(tab: .style)
                     }
                 )
@@ -66,6 +68,7 @@ extension WindowManager {
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor

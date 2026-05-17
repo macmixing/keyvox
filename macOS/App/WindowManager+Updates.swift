@@ -191,11 +191,13 @@ extension WindowManager {
         }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor
     func hideUpdateWindow() {
         updateWindow?.orderOut(nil)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor
@@ -242,11 +244,13 @@ extension WindowManager {
         centerFloatingWindow(window)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor
     func hidePostUpdateNoticeWindow() {
         postUpdateNoticeWindow?.orderOut(nil)
+        DockIconVisibilityController.shared.syncActivationPolicy()
     }
 
     @MainActor

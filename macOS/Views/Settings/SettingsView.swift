@@ -46,7 +46,10 @@ struct SettingsView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Button(action: { NSApp.keyWindow?.orderOut(nil) }) {
+                    Button(action: {
+                        NSApp.keyWindow?.orderOut(nil)
+                        DockIconVisibilityController.shared.syncActivationPolicy()
+                    }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
                             .foregroundColor(MacAppTheme.closeButtonForeground)
