@@ -22,10 +22,10 @@ This folder contains the source-of-truth training materials for local model adap
 
 ## Current Polished Adapter
 
-- Current run: `runs/polished/alpha-023`
+- Current run: `runs/polished/alpha-024`
 - Base dataset: `datasets/polished/alpha-010-base`
-- Continuation dataset: `datasets/polished/alpha-023-continuation-spoken-years`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-023-lora.gguf`
+- Continuation dataset: `datasets/polished/alpha-024-continuation-age-compounds`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-024-lora.gguf`
 
 ## Current Casual Adapter
 
@@ -36,8 +36,8 @@ This folder contains the source-of-truth training materials for local model adap
 
 ## Polished Run Status
 
-- Current: `runs/polished/alpha-021`
-- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`
+- Current: `runs/polished/alpha-024`
+- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`
 - Rejected intermediate: `runs/polished/rejected/alpha-018`, `runs/polished/rejected/alpha-022`
 - Rejected dataset: `datasets/polished/rejected/alpha-018-continuation-paragraphs`
 

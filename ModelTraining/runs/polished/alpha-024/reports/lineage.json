@@ -1,0 +1,68 @@
+{
+  "run": "polished-alpha-024",
+  "status": "candidate",
+  "base": {
+    "id": "polished-alpha-010",
+    "run": "ModelTraining/runs/polished/alpha-010",
+    "dataset": "ModelTraining/datasets/polished/alpha-010-base",
+    "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-010/adapters/polished-alpha-010/adapters.safetensors"
+  },
+  "continuations": [
+    {
+      "id": "polished-alpha-017",
+      "run": "ModelTraining/runs/polished/alpha-017",
+      "dataset": "ModelTraining/datasets/polished/alpha-017-continuation-aint",
+      "continued_from": "ModelTraining/artifacts/archive/polished-lora-alpha-010/adapters/polished-alpha-010/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-017/adapters/polished-alpha-017/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/polished-lora-alpha-017/adapters/polished-alpha-017/polished-alpha-017-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-018",
+      "run": "ModelTraining/runs/polished/rejected/alpha-018",
+      "dataset": "ModelTraining/datasets/polished/rejected/alpha-018-continuation-paragraphs",
+      "continued_from": "ModelTraining/artifacts/archive/polished-lora-alpha-017/adapters/polished-alpha-017/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/rejected/polished-lora-alpha-018/adapters/polished-alpha-018/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/rejected/polished-lora-alpha-018/adapters/polished-alpha-018/polished-alpha-018-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-019",
+      "run": "ModelTraining/runs/polished/alpha-019",
+      "dataset": "ModelTraining/datasets/polished/alpha-019-continuation-numeric-paragraphs",
+      "continued_from": "ModelTraining/artifacts/rejected/polished-lora-alpha-018/adapters/polished-alpha-018/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-019/adapters/polished-alpha-019/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/polished-lora-alpha-019/adapters/polished-alpha-019/polished-alpha-019-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-020",
+      "run": "ModelTraining/runs/polished/alpha-020",
+      "dataset": "ModelTraining/datasets/polished/alpha-020-continuation-paragraph-meaning",
+      "continued_from": "ModelTraining/artifacts/archive/polished-lora-alpha-019/adapters/polished-alpha-019/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/polished-lora-alpha-020/adapters/polished-alpha-020/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/polished-lora-alpha-020/adapters/polished-alpha-020/polished-alpha-020-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-021",
+      "run": "ModelTraining/runs/polished/alpha-021",
+      "dataset": "ModelTraining/datasets/polished/alpha-021-continuation-long-numerics",
+      "continued_from": "ModelTraining/artifacts/archive/polished-lora-alpha-020/adapters/polished-alpha-020/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/current/polished-lora-alpha-021/adapters/polished-alpha-021/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/current/polished-lora-alpha-021/adapters/polished-alpha-021/polished-alpha-021-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-023",
+      "run": "ModelTraining/runs/polished/alpha-023",
+      "dataset": "ModelTraining/datasets/polished/alpha-023-continuation-spoken-years",
+      "continued_from": "ModelTraining/artifacts/current/polished-lora-alpha-021/adapters/polished-alpha-021/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/current/polished-lora-alpha-023/adapters/polished-alpha-023/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/current/polished-lora-alpha-023/adapters/polished-alpha-023/polished-alpha-023-lora.gguf"
+    },
+    {
+      "id": "polished-alpha-024",
+      "run": "ModelTraining/runs/polished/alpha-024",
+      "dataset": "ModelTraining/datasets/polished/alpha-024-continuation-age-compounds",
+      "continued_from": "ModelTraining/artifacts/current/polished-lora-alpha-023/adapters/polished-alpha-023/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/current/polished-lora-alpha-024/adapters/polished-alpha-024/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/current/polished-lora-alpha-024/adapters/polished-alpha-024/polished-alpha-024-lora.gguf"
+    }
+  ]
+}

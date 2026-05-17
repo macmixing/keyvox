@@ -1,0 +1,18 @@
+{
+  "categories": {
+    "age_compound_guard": 24,
+    "age_quantity_guard": 7,
+    "live_regression_guard": 11,
+    "quantity_guard": 20,
+    "spoken_year_2010s": 33,
+    "spoken_year_2020s": 20,
+    "spoken_year_mixed": 4,
+    "spoken_year_sequence": 9,
+    "spoken_year_sweep": 2
+  },
+  "purpose": "continuation from alpha-023 for teen-number age compound precision and quantity guards",
+  "test_count": 5,
+  "train_count": 120,
+  "valid_count": 5,
+  "version": "polished-alpha-024"
+}
