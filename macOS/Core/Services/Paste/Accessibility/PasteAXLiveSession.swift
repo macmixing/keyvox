@@ -16,7 +16,8 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
     private static let notifications: [String] = [
         kAXFocusedUIElementChangedNotification as String,
         kAXSelectedTextChangedNotification as String,
-        kAXValueChangedNotification as String
+        kAXValueChangedNotification as String,
+        kAXTitleChangedNotification as String
     ]
 
     init?(processID: pid_t) {
@@ -80,17 +81,24 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
     }
 
     private func handle(notification: String, element: AXUIElement) {
+        if notification == kAXTitleChangedNotification as String {
+            guard isOpaqueMutationSignal(element) else { return }
+            state.markSignal()
+            return
+        }
+
         guard notification == kAXValueChangedNotification as String ||
-                notification == kAXSelectedTextChangedNotification as String else {
-            return
-        }
+                notification == kAXSelectedTextChangedNotification as String,
+              boolAttribute(element, attribute: kAXFocusedAttribute as String) == true,
+              isTextTarget(element) else { return }
 
-        guard boolAttribute(element, attribute: kAXFocusedAttribute as String) == true else {
-            return
-        }
-
-        guard isTextTarget(element) else { return }
         state.markSignal()
+    }
+
+    private func isOpaqueMutationSignal(_ element: AXUIElement) -> Bool {
+        stringAttribute(element, attribute: kAXTitleAttribute as String) == nil &&
+            stringAttribute(element, attribute: kAXValueAttribute as String) == nil &&
+            selectedTextRange(element) == nil
     }
 
     private func isTextTarget(_ element: AXUIElement) -> Bool {
@@ -119,6 +127,27 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
             return nil
         }
         return ref as? String
+    }
+
+    private func selectedTextRange(_ element: AXUIElement) -> CFRange? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            kAXSelectedTextRangeAttribute as CFString,
+            &ref
+        ) == .success,
+              let value = ref,
+              CFGetTypeID(value) == AXValueGetTypeID() else {
+            return nil
+        }
+
+        let axValue = value as! AXValue
+        var range = CFRange()
+        guard AXValueGetType(axValue) == .cfRange,
+              AXValueGetValue(axValue, .cfRange, &range) else {
+            return nil
+        }
+        return range
     }
 
     private final class State {

@@ -629,12 +629,12 @@ KeyVox/
 - `Core/Services/Paste/MenuFallback/PasteMenuFallbackCoordinator.swift`
   - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
   - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
-  - Binds live AX value-change verification to runtime frontmost PID (with captured target fallback).
+  - Binds live AX value-change verification to runtime frontmost PID with captured target fallback.
 - `Core/Services/Paste/MenuFallback/PasteMenuScanner.swift`
   - Encapsulates menu traversal/discovery for Paste and Undo menu items.
   - Keeps AX identifier/shortcut/title matching and menu-item attribute readers.
 - `Core/Services/Paste/Accessibility/PasteAXLiveSession.swift`
-  - Encapsulates AXObserver lifecycle used for live value-change verification during menu fallback.
+  - Encapsulates AXObserver lifecycle used for live mutation verification during menu fallback.
 - `Core/Services/Paste/Clipboard/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
 - `Core/Services/Paste/Heuristics/PasteCapitalizationHeuristics.swift`
