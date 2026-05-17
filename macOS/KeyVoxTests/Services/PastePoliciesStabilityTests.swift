@@ -38,6 +38,15 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testPlaceholderDOMClassDetection() {
+        XCTAssertTrue(
+            PasteAXInspector.containsPlaceholderDOMClass(["textarea", "new-input-ui", "placeholder"])
+        )
+        XCTAssertFalse(
+            PasteAXInspector.containsPlaceholderDOMClass(["textarea", "new-input-ui"])
+        )
+    }
+
     func testListMultilineOverridePolicyMatchesPreFixBehavior() {
         assertListRenderMode(
             PastePolicies.listRenderMode(
