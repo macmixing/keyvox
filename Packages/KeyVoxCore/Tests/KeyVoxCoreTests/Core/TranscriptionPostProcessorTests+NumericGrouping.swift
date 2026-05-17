@@ -64,6 +64,54 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Yeah, that came out in 2001, right?")
     }
 
+    func testPreservesSpokenSinceYearWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Yo, I haven't seen her since two thousand twelve.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Yo, I haven't seen her since 2012.")
+    }
+
+    func testPreservesSpokenSinceLikeYearWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I haven't seen her since like two thousand twelve.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I haven't seen her since like 2012.")
+    }
+
+    func testPreservesSpokenYearBeforeConfirmationPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm pretty sure that movie came out in two thousand twelve. What do you think?",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure that movie came out in 2012. What do you think?")
+    }
+
+    func testPreservesAdjacentSpokenYearsWithoutGroupingSeparators() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The audit started in two thousand eighteen and wrapped up in two thousand nineteen.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The audit started in 2018 and wrapped up in 2019.")
+    }
+
     func testFormatsQuantityBeforeConfirmationPhrase() {
         let processor = TranscriptionPostProcessor()
 
@@ -74,6 +122,42 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "I need 1,000, right?")
+    }
+
+    func testFormatsSpokenQuantityWithYearLikeValueWhenContextIsQuantity() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I need two thousand twelve tickets and one thousand five labels.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I need 2,012 tickets and 1,005 labels.")
+    }
+
+    func testFormatsSpokenQuantityAfterFillerLikeWhenContextIsQuantity() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I need like two thousand twelve tickets.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I need like 2,012 tickets.")
+    }
+
+    func testPreservesSpokenYearWhileFormattingNearbySpokenQuantity() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I haven't seen her since two thousand twelve, but I still need five thousand tickets.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I haven't seen her since 2012, but I still need 5,000 tickets.")
     }
 
     func testPreservesUncertainSentenceFinalYearReference() {

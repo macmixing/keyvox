@@ -128,34 +128,50 @@ public struct ThousandsGroupingNormalizer {
         }
         guard !words.isEmpty else { return line }
 
-        var replacements: [(range: NSRange, value: Int)] = []
+        let lexicalTokens = lexicalTokens(in: line, range: fullRange)
+        var replacements: [(range: NSRange, value: Int, isLikelyYear: Bool)] = []
         var searchIndex = 0
 
         while searchIndex < words.count {
-            var matchedSpan: (range: NSRange, value: Int, nextIndex: Int)?
+            var matchedSpan: (range: NSRange, value: Int, isLikelyYear: Bool, nextIndex: Int)?
             let upperBound = min(words.count, searchIndex + Self.maximumSpokenQuantityTokenCount)
 
             for endIndex in stride(from: upperBound, through: searchIndex + 1, by: -1) {
                 let candidateWords = Array(words[searchIndex..<endIndex])
                 guard candidateWords[0].text.lowercased() != "and" else { continue }
                 guard wordsAreWhitespaceSeparated(candidateWords, in: nsLine) else { continue }
-                guard let value = spokenQuantityValue(for: candidateWords.map(\.text), formatter: formatter),
+                let candidateText = candidateWords.map(\.text)
+                guard let value = spokenQuantityValue(for: candidateText, formatter: formatter),
                       value >= 1000 else {
+                    continue
+                }
+                if candidateWords.count > 1,
+                   let trimmedValue = spokenQuantityValue(for: candidateText.dropLast(), formatter: formatter),
+                   trimmedValue == value {
                     continue
                 }
 
                 let rangeStart = candidateWords[0].range.location
                 let rangeEnd = NSMaxRange(candidateWords[candidateWords.count - 1].range)
+                let range = NSRange(location: rangeStart, length: rangeEnd - rangeStart)
+                let context = lexicalContext(around: range, in: lexicalTokens)
                 matchedSpan = (
-                    range: NSRange(location: rangeStart, length: rangeEnd - rangeStart),
+                    range: range,
                     value: value,
+                    isLikelyYear: isLikelyYearReference(
+                        value: value,
+                        secondPrevious: context.secondPrevious,
+                        previous: context.previous,
+                        next: context.next,
+                        secondNext: context.secondNext
+                    ),
                     nextIndex: endIndex
                 )
                 break
             }
 
             if let matchedSpan {
-                replacements.append((matchedSpan.range, matchedSpan.value))
+                replacements.append((matchedSpan.range, matchedSpan.value, matchedSpan.isLikelyYear))
                 searchIndex = matchedSpan.nextIndex
             } else {
                 searchIndex += 1
@@ -167,9 +183,10 @@ public struct ThousandsGroupingNormalizer {
         let mutable = NSMutableString(string: line)
         let groupingFormatter = Self.makeGroupingFormatter()
         for replacement in replacements.reversed() {
-            guard let replacementText = groupingFormatter.string(from: NSNumber(value: replacement.value)) else {
-                continue
-            }
+            let replacementText = replacement.isLikelyYear
+                ? String(replacement.value)
+                : groupingFormatter.string(from: NSNumber(value: replacement.value))
+            guard let replacementText else { continue }
             mutable.replaceCharacters(in: replacement.range, with: replacementText)
         }
 
@@ -312,6 +329,20 @@ public struct ThousandsGroupingNormalizer {
         return tokens
     }
 
+    private func lexicalContext(
+        around range: NSRange,
+        in tokens: [LexicalToken]
+    ) -> (secondPrevious: LexicalToken?, previous: LexicalToken?, next: LexicalToken?, secondNext: LexicalToken?) {
+        let previousTokens = tokens.filter { NSMaxRange($0.range) <= range.location }
+        let followingTokens = tokens.filter { $0.range.location >= NSMaxRange(range) }
+        return (
+            secondPrevious: previousTokens.dropLast().last,
+            previous: previousTokens.last,
+            next: followingTokens.first,
+            secondNext: followingTokens.dropFirst().first
+        )
+    }
+
     private func shouldGroup(value: Int, range: NSRange, tokens: [LexicalToken]) -> Bool {
         if !Self.plausibleYearRange.contains(value) {
             return true
@@ -321,12 +352,14 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
+        let secondPrevious = tokenIndex > 1 ? tokens[tokenIndex - 2] : nil
         let previous = tokenIndex > 0 ? tokens[tokenIndex - 1] : nil
         let next = tokenIndex + 1 < tokens.count ? tokens[tokenIndex + 1] : nil
         let secondNext = tokenIndex + 2 < tokens.count ? tokens[tokenIndex + 2] : nil
 
         if isLikelyYearReference(
             value: value,
+            secondPrevious: secondPrevious,
             previous: previous,
             next: next,
             secondNext: secondNext
@@ -351,6 +384,7 @@ public struct ThousandsGroupingNormalizer {
 
     private func isLikelyYearReference(
         value: Int,
+        secondPrevious: LexicalToken?,
         previous: LexicalToken?,
         next: LexicalToken?,
         secondNext: LexicalToken?
@@ -371,6 +405,11 @@ public struct ThousandsGroupingNormalizer {
         }
 
         if previous?.tag == .preposition, next?.tag == .interjection {
+            return true
+        }
+
+        if secondPrevious?.tag == .preposition,
+           previous?.tag == .interjection {
             return true
         }
 
