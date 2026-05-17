@@ -29,6 +29,15 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testQuillBlankDOMClassDetection() {
+        XCTAssertTrue(
+            PasteAXInspector.containsQuillBlankDOMClass(["ql-editor", "textarea", "ql-blank"])
+        )
+        XCTAssertFalse(
+            PasteAXInspector.containsQuillBlankDOMClass(["ql-editor", "textarea"])
+        )
+    }
+
     func testListMultilineOverridePolicyMatchesPreFixBehavior() {
         assertListRenderMode(
             PastePolicies.listRenderMode(

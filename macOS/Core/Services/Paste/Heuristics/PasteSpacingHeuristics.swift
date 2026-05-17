@@ -49,6 +49,13 @@ final class PasteSpacingHeuristics {
             }
         }
 
+        if context == nil {
+            #if DEBUG
+            print("[PasteSpacingHeuristics] suppress_last_insertion_fallback reason=focused_context_missing")
+            #endif
+            return text
+        }
+
         guard shouldInsertLeadingSpaceFromHeuristic(
             firstIncoming: firstIncoming,
             currentIdentity: currentIdentity,
