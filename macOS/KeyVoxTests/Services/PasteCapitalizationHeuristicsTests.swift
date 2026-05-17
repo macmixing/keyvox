@@ -185,7 +185,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
         XCTAssertEqual(output, "hello")
     }
 
-    func testFallbackHeuristicLowercasesWithinTTLForMatchingIdentity() {
+    func testMissingAXContextKeepsCapitalizationWithFallbackSignal() {
         let heuristics = makeRetainedHeuristics(axInspector: MockPasteAXInspector(focusedContext: nil), heuristicTTL: 10)
         let now = Date()
 
@@ -200,7 +200,7 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
             shouldPreserveLeadingCapitalization: { _ in false }
         )
 
-        XCTAssertEqual(output, "hello")
+        XCTAssertEqual(output, "Hello")
     }
 
     func testFallbackHeuristicKeepsCapitalizationAfterTrailingNewLine() {

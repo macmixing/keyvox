@@ -96,7 +96,7 @@ final class PasteSpacingHeuristicsTests: XCTestCase {
         XCTAssertEqual(output, "hello")
     }
 
-    func testFallbackHeuristicInsertsLeadingSpaceWithinTTLForMatchingIdentity() {
+    func testMissingAXContextDoesNotInsertLeadingSpaceFromFallbackSignal() {
         let inspector = MockPasteAXInspector(focusedContext: nil)
         let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
         let now = Date()
@@ -110,7 +110,7 @@ final class PasteSpacingHeuristicsTests: XCTestCase {
             identityMatcher: identityMatcher
         )
 
-        XCTAssertEqual(output, " next")
+        XCTAssertEqual(output, "next")
     }
 
     func testFallbackHeuristicDoesNotInsertWhenTTLExpired() {

@@ -73,7 +73,8 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
         lastInsertedTrailingNonWhitespaceCharacter: Character?,
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool
     ) -> Bool {
-        if let context = axInspector.focusedInsertionContext() {
+        let context = axInspector.focusedInsertionContext()
+        if let context {
             if let caretLocation = context.caretLocation, caretLocation == 0 {
                 return true
             }
@@ -87,6 +88,13 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
                     return isSentenceBoundary(previousNonWhitespaceCharacter)
                 }
             }
+        }
+
+        if context == nil {
+            #if DEBUG
+            print("[PasteCapitalizationHeuristics] suppress_last_insertion_fallback reason=focused_context_missing")
+            #endif
+            return true
         }
 
         if lastInsertedTrailingCharacter?.isNewline == true {

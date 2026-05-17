@@ -25,6 +25,18 @@ final class PasteAXInspector: PasteAXInspecting {
 
         // Best-effort context: selection/caret may be unavailable in some editors.
         let selectedRange = selectedRange(for: focusedElement)
+        if isQuillBlankEditor(focusedElement) {
+            #if DEBUG
+            print("[PasteAXInspector] empty_editor_context source=AXDOMClassList class=ql-blank")
+            #endif
+            return PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 0,
+                previousCharacter: nil,
+                previousNonWhitespaceCharacter: nil
+            )
+        }
+
         let caretLocation = selectedRange.map { max(0, $0.location) }
         let selectionLength = selectedRange.map { max(0, $0.length) }
 
@@ -175,6 +187,22 @@ final class PasteAXInspector: PasteAXInspecting {
 
         guard valueResult == .success, let value = valueRef as? String else { return nil }
         return value
+    }
+
+    private func isQuillBlankEditor(_ element: AXUIElement) -> Bool {
+        guard roleString(for: element) == "AXTextArea" else { return false }
+
+        var classListRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, "AXDOMClassList" as CFString, &classListRef) == .success,
+              let classList = classListRef as? [String] else {
+            return false
+        }
+
+        return Self.containsQuillBlankDOMClass(classList)
+    }
+
+    static func containsQuillBlankDOMClass(_ classList: [String]) -> Bool {
+        classList.contains("ql-blank")
     }
 
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
