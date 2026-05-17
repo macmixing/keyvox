@@ -12,6 +12,10 @@
 		8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085C2F453E1700C5DB85 /* PasteService.swift */; };
 		8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */; };
 		8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */; };
+		8E4B08632FD0000200C5DB85 /* TranscriptionManager+Bindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08622FD0000200C5DB85 /* TranscriptionManager+Bindings.swift */; };
+		8E4B08652FD0000300C5DB85 /* DictationTriggerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08642FD0000300C5DB85 /* DictationTriggerController.swift */; };
+		8E4B08672FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08662FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift */; };
+		8E4B08692FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */; };
 		8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000012FD1000100AA0001 /* KeyVoxCore */; };
 		8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000022FD1000100AA0001 /* KeyVoxCore */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
@@ -214,6 +218,10 @@
 		8E4B085C2F453E1700C5DB85 /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
 		8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppTheme.swift; sourceTree = "<group>"; };
+		8E4B08622FD0000200C5DB85 /* TranscriptionManager+Bindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionManager+Bindings.swift"; sourceTree = "<group>"; };
+		8E4B08642FD0000300C5DB85 /* DictationTriggerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationTriggerController.swift; sourceTree = "<group>"; };
+		8E4B08662FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionManager+RecordingSession.swift"; sourceTree = "<group>"; };
+		8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptionManager+OverlayAndDebug.swift"; sourceTree = "<group>"; };
 		8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		8E57FB952F3E444B00935A26 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponents.swift; sourceTree = "<group>"; };
 		8E57FB962F3E444B00935A26 /* SettingsView+Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Style.swift"; sourceTree = "<group>"; };
@@ -481,6 +489,7 @@
 				9D4000012F4E000100AA0001 /* Audio */,
 				8E6D05CA2F3C51D6003BD458 /* Services */,
 				8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */,
+				8E4B08642FD0000300C5DB85 /* DictationTriggerController.swift */,
 				8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */,
 				C11000002F90000100AA0001 /* ModelDownloader */,
 				9B2000012F4C000100AA0001 /* Overlay */,
@@ -785,6 +794,9 @@
 			isa = PBXGroup;
 			children = (
 				8E4B085E2F45407E00C5DB85 /* TranscriptionManager.swift */,
+				8E4B08622FD0000200C5DB85 /* TranscriptionManager+Bindings.swift */,
+				8E4B08662FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift */,
+				8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -1032,6 +1044,10 @@
 				8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */,
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
 				8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */,
+				8E4B08632FD0000200C5DB85 /* TranscriptionManager+Bindings.swift in Sources */,
+				8E4B08652FD0000300C5DB85 /* DictationTriggerController.swift in Sources */,
+				8E4B08672FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift in Sources */,
+				8E4B08692FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift in Sources */,
 				8E4B085D2F453E1700C5DB85 /* PasteService.swift in Sources */,
 				8E57FB9C2F3E444B00935A26 /* SettingsView+Home.swift in Sources */,
 				8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */,
