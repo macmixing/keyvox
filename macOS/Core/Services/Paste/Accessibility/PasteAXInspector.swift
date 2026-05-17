@@ -36,6 +36,17 @@ final class PasteAXInspector: PasteAXInspecting {
                 previousNonWhitespaceCharacter: nil
             )
         }
+        if isPlaceholderBackedEmptyEditor(focusedElement, selectedRange: selectedRange) {
+            #if DEBUG
+            print("[PasteAXInspector] empty_editor_context source=AXDOMClassList class=placeholder")
+            #endif
+            return PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 0,
+                previousCharacter: nil,
+                previousNonWhitespaceCharacter: nil
+            )
+        }
 
         let caretLocation = selectedRange.map { max(0, $0.location) }
         let selectionLength = selectedRange.map { max(0, $0.length) }
@@ -203,6 +214,33 @@ final class PasteAXInspector: PasteAXInspecting {
 
     static func containsQuillBlankDOMClass(_ classList: [String]) -> Bool {
         classList.contains("ql-blank")
+    }
+
+    private func isPlaceholderBackedEmptyEditor(
+        _ element: AXUIElement,
+        selectedRange: CFRange?
+    ) -> Bool {
+        guard roleString(for: element) == "AXTextArea",
+              selectedRange?.length == 0,
+              let value = valueString(for: element),
+              !value.isEmpty else {
+            return false
+        }
+
+        let nsValue = value as NSString
+        guard selectedRange?.location == nsValue.length else { return false }
+
+        var classListRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, "AXDOMClassList" as CFString, &classListRef) == .success,
+              let classList = classListRef as? [String] else {
+            return false
+        }
+
+        return Self.containsPlaceholderDOMClass(classList)
+    }
+
+    static func containsPlaceholderDOMClass(_ classList: [String]) -> Bool {
+        classList.contains("placeholder")
     }
 
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
