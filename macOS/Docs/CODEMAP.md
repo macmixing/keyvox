@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-05-13**
+**Last Updated: 2026-05-17**
 
 ## Project Overview
 
@@ -55,7 +55,8 @@ KeyVox/
 │   │   │   └── AudioRecorder*.swift
 │   │   ├── ModelDownloader/
 │   │   ├── Transcription/
-│   │   │   └── TranscriptionManager.swift
+│   │   │   └── TranscriptionManager*.swift
+│   │   ├── DictationTriggerController.swift
 │   │   ├── Vibes/
 │   │   │   ├── MacLocalRewriteModelCatalog.swift
 │   │   │   ├── MacLocalRewriteModelInstallManifest.swift
@@ -142,7 +143,7 @@ KeyVox/
 ## Core Runtime Flow
 
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
-2. `Core/Transcription/TranscriptionManager.swift` drives app state: `idle -> recording -> transcribing -> idle`.
+2. `Core/Transcription/TranscriptionManager*.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, and binds install-time Parakeet preloading to the downloader.
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
@@ -247,14 +248,18 @@ KeyVox/
 ### Core Managers
 
 - `Core/Transcription/TranscriptionManager.swift`
-  - Orchestrates recording, transcription, and paste.
-  - Routes transcribe -> post-process -> paste through internal `DictationPipeline` for boundary-testability.
-  - Owns trigger press/release orchestration for hold-to-dictate and delegates Vibes quick-tap apply/undo/cycling behavior to `MacVibesTriggerActionController`.
-  - Uses `ModelDownloader` plus the active provider router so recording availability follows the selected installed model instead of Whisper-only readiness.
-  - Handles hands-free lock mode and escape cancellation.
+  - Owns runtime state, dependencies, active-provider pipeline composition, initialization, and teardown for the macOS dictation manager.
+- `Core/Transcription/TranscriptionManager+Bindings.swift`
+  - Binds keyboard/caps-lock/model readiness publishers into runtime availability, trigger orchestration, and overlay hands-free state.
+- `Core/Transcription/TranscriptionManager+RecordingSession.swift`
+  - Starts/stops recordings, routes transcribe -> post-process -> paste through internal `DictationPipeline`, and records spoken-word totals through `WeeklyWordStatsStore`.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
-  - Records spoken-word totals through `WeeklyWordStatsStore` instead of the general app settings store.
   - Persists the most recent successful final transcription for the Settings Home tab card.
+- `Core/Transcription/TranscriptionManager+OverlayAndDebug.swift`
+  - Keeps overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging out of recording-session flow.
+- `Core/DictationTriggerController.swift`
+  - Owns trigger press/release orchestration, pending-stop handling, deferred recording start, hands-free lock mode, and escape cancellation.
+  - Delegates recording/transcription actions back to `TranscriptionManager` through a narrow runtime protocol and delegates Vibes quick-tap apply/undo/cycling behavior to `MacVibesTriggerActionController`.
 - `Core/Vibes/MacVibesCoordinator.swift`
   - Mac-owned local style rewrite coordinator for KeyVox Vibes.
   - Resolves the selected Vibe through local model readiness, prewarms requested styles, transforms pipeline output, and keeps release-prewarm behavior a no-op for the local runtime.
