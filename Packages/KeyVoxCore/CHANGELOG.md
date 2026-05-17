@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.10] - 2026-05-17
+
+Shared spoken-year and quantity normalization refinements for dictation cleanup.
+
+### Includes
+
+- Updated spoken quantity normalization so plausible spoken year references stay ungrouped when the surrounding lexical context indicates a year.
+- Kept nearby spoken quantities eligible for thousands separators when the surrounding lexical context indicates an amount.
+- Tightened spoken number span selection so ignored trailing tokens are not consumed when adjacent spoken number phrases are normalized.
+- Added shared-engine regression coverage for spoken year references, filler-adjacent spoken years, adjacent spoken years, and nearby spoken quantities.
+
+### Notes
+
+- `1.0.10` bumps the tracked engine version for `KeyVoxCore` to cover shared spoken year and quantity normalization behavior used by both app clients.
+
+---
+
 ## [1.0.9] - 2026-05-11
 
 Shared transcription artifact repair for provider-censored output.
