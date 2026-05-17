@@ -33,6 +33,8 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
 
     private static let polishedQuantityGuardInput = "The team closed twenty two tickets, reviewed twenty eight screenshots, and ordered twenty five labels."
 
+    private static let polishedAgeCompoundRegressionInput = "And it's funny because all of those tools I had years ago came in handy to restore an eighteen year old pair of glasses."
+
     private static let cases = [
         LiveStylePromptCase(
             style: .polished,
@@ -58,6 +60,11 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             style: .polished,
             input: polishedQuantityGuardInput,
             expected: "The team closed 22 tickets, reviewed 28 screenshots, and ordered 25 labels."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedAgeCompoundRegressionInput,
+            expected: "And it's funny because all of those tools I had years ago came in handy to restore an 18-year-old pair of glasses."
         ),
     ]
 
@@ -153,6 +160,15 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
                 "2022",
                 "2028",
                 "2025",
+            ]
+        ),
+        polishedAgeCompoundRegressionInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "18-year-old pair of glasses",
+            ],
+            extraForbiddenFragments: [
+                " an 8-year-old pair of glasses",
+                "eighteen year old",
             ]
         ),
     ]
