@@ -6,6 +6,8 @@ enum PastePolicies {
         "com.apple.MobileSMS"
     ]
 
+    // Only include apps that guarantee a successful menu paste by forcing the payload
+    // into an available text target, even when AX cannot verify the resulting text state.
     static let menuSuccessTrustWithoutAXVerificationBundleIDs: Set<String> = [
         "com.apple.MobileSMS",
         // Numbers accepts Paste into non-text canvas contexts (for example inserting a floating text object),

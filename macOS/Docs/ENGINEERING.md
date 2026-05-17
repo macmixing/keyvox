@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-05-11**
+**Last Updated: 2026-05-17**
 
 ## Design Philosophy
 
@@ -17,6 +17,8 @@ User data is treated as sacred.
 If the clipboard is modified, it must be restored.  
 If behavior changes based on a setting, it must be explicit and predictable.  
 If something could fail, it must fail safely.
+
+Paste failures can cause user-visible data loss. When paste completion cannot be verified, KeyVox must warn the user instead of silently assuming success. Prefer generic, observable verification fixes over hard-coded bundle ID policy. Bundle-specific paste trust rules are reserved for cases where the target app architecture guarantees menu paste into an available text target and must be approved intentionally.
 
 KeyVox is designed to be local-first, transparent, and deterministic.  
 Convenience must never come at the cost of trust.

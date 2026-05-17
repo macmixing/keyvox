@@ -156,6 +156,30 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         XCTAssertEqual(executor.lastLiveSessionProcessID, 42)
     }
 
+    func testActionSucceededKeepsFailureWhenNoVerificationEvidenceIsObserved() {
+        let coordinator = PasteMenuFallbackCoordinator()
+        let executor = MockPasteMenuFallbackExecutor()
+        executor.pasteResult = .actionSucceeded
+        executor.verificationContext = nil
+        executor.verifyInsertionWithoutAXResult = false
+        executor.verifyLiveResult = false
+
+        let result = coordinator.executeMenuFallback(
+            insertionText: "hello",
+            didAccessibilityInsertText: false,
+            targetAppIdentity: identity("com.example.app", 1),
+            menuFallbackExecutor: executor,
+            shouldTrustMenuSuccessWithoutAXVerification: { false },
+            setClipboardStringOnMainThread: { _ in },
+            typeLeadingSpacesOnMainThread: { _ in true }
+        )
+
+        XCTAssertFalse(result.didMenuFallbackInsert)
+        XCTAssertEqual(result.completionEvidence, .none)
+        XCTAssertEqual(executor.verifyInsertionWithoutAXCalls, 1)
+        XCTAssertEqual(executor.verifyLiveSessionCalls, 1)
+    }
+
     func testActionErroredUsesUndoVerificationWhenNoContext() {
         let coordinator = PasteMenuFallbackCoordinator()
         let executor = MockPasteMenuFallbackExecutor()
