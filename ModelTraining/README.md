@@ -22,17 +22,17 @@ This folder contains the source-of-truth training materials for local model adap
 
 ## Current Polished Adapter
 
-- Current run: `runs/polished/alpha-021`
+- Current run: `runs/polished/alpha-023`
 - Base dataset: `datasets/polished/alpha-010-base`
-- Continuation dataset: `datasets/polished/alpha-021-continuation-long-numerics`
-- Runtime app resource: `Resources/LocalRewriteAdapters/polished-alpha-021-lora.gguf`
+- Continuation dataset: `datasets/polished/alpha-023-continuation-spoken-years`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-023-lora.gguf`
 
 ## Current Casual Adapter
 
-- Current run: `runs/casual/casual-alpha-3`
+- Current run: `runs/casual/casual-alpha-4`
 - Base dataset: `datasets/casual/casual-alpha-1-base`
-- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`
-- Runtime app resource: `Resources/LocalRewriteAdapters/casual-alpha-3-lora.gguf`
+- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-4-lora.gguf`
 
 ## Polished Run Status
 

@@ -1,0 +1,16 @@
+{
+  "categories": {
+    "live_regression_guard": 8,
+    "quantity_guard": 20,
+    "spoken_year_2010s": 33,
+    "spoken_year_2020s": 20,
+    "spoken_year_mixed": 4,
+    "spoken_year_sequence": 9,
+    "spoken_year_sweep": 2
+  },
+  "purpose": "continuation from alpha-021 for spoken 2010s year precision and quantity guards",
+  "test_count": 4,
+  "train_count": 88,
+  "valid_count": 4,
+  "version": "polished-alpha-023"
+}

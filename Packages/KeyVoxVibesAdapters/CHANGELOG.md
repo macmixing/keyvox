@@ -17,7 +17,7 @@ This entry establishes the first explicit package version for `KeyVoxVibesAdapte
 - A package-owned adapter catalog through `KeyVoxVibesAdapterCatalog`.
 - Public adapter kind cases for polished and casual Vibes adapters.
 - Adapter descriptors with kind, adapter ID, bundled filename, compatible base model ID, resource name, and resource extension.
-- Bundled GGUF LoRA adapter resources for `polished-alpha-021-lora.gguf` and `casual-alpha-3-lora.gguf`.
+- Bundled GGUF LoRA adapter resources for `polished-alpha-023-lora.gguf` and `casual-alpha-4-lora.gguf`.
 - A shared compatible base model identifier of `qwen2-5-0-5b-instruct` for the cataloged adapters.
 - Descriptor lookup by adapter kind and bundled resource URL resolution through `Bundle.module`.
 - Package coverage that verifies each cataloged adapter resolves to its bundled resource URL and that all cataloged adapters declare the same compatible base model.

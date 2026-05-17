@@ -106,6 +106,26 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
                 requiredFragments: ["6:55"],
                 forbiddenFragments: ["six fifty five"]
             ),
+            CasualLiveCase(
+                input: "It feels like we've been doing this since twenty twelve, but it's only twenty eighteen.",
+                requiredFragments: ["since 2012", "only 2018"],
+                forbiddenFragments: ["2022", "2028", "twenty twelve", "twenty eighteen"]
+            ),
+            CasualLiveCase(
+                input: "I can't believe we haven't done that since what, twenty twelve?",
+                requiredFragments: ["since what, 2012"],
+                forbiddenFragments: ["2022", "twenty twelve"]
+            ),
+            CasualLiveCase(
+                input: "The audit started in twenty eighteen and wrapped up in twenty nineteen.",
+                requiredFragments: ["2018", "2019"],
+                forbiddenFragments: ["2028", "2029", "twenty eighteen", "twenty nineteen"]
+            ),
+            CasualLiveCase(
+                input: "The team closed twenty two tickets, reviewed twenty eight screenshots, and ordered twenty five labels.",
+                requiredFragments: ["22 tickets", "28 screenshots", "25 labels"],
+                forbiddenFragments: ["2022", "2028", "2025"]
+            ),
         ]
 
         do {

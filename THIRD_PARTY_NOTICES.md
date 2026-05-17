@@ -56,8 +56,8 @@ Attribution: Based on Alibaba Cloud's `Qwen2.5-0.5B-Instruct` model.
 ### KeyVox Vibes LoRA adapters (bundled model adapter artifacts)
 - Bundled package: `Packages/KeyVoxVibesAdapters`
 - Bundled files:
-  - `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-021-lora.gguf`
-  - `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-3-lora.gguf`
+  - `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-023-lora.gguf`
+  - `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-4-lora.gguf`
 - Compatible base model: `Qwen2.5-0.5B-Instruct`
 - Upstream base model: <https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct>
 - Base model license: Apache License 2.0

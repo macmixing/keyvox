@@ -1,0 +1,14 @@
+{
+  "categories": {
+    "casual_voice_guard": 8,
+    "quantity_guard": 6,
+    "spoken_year_2010s": 22,
+    "spoken_year_2020s": 10,
+    "spoken_year_mixed": 4
+  },
+  "purpose": "continuation from casual-alpha-3 for spoken 2010s year precision with casual voice guards",
+  "test_count": 4,
+  "train_count": 42,
+  "valid_count": 4,
+  "version": "casual-alpha-4"
+}
