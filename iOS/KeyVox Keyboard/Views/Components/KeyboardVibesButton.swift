@@ -6,9 +6,12 @@ final class KeyboardVibesButton: UIControl {
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let contentStackView = UIStackView()
-    private let noneIconImageView = UIImageView(image: UIImage(named: "vibes-logo")?.withRenderingMode(.alwaysTemplate))
+    private let noneIconBaseImage = UIImage(named: "vibes-logo")
+    private let noneIconImageView = UIImageView()
     private let titleLabel = UILabel()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
+    private var lastRasterizedNoneIconPixelSize = CGSize.zero
+    private var lastRasterizedNoneIconColor: UIColor?
 
     var title = "" {
         didSet {
@@ -57,6 +60,7 @@ final class KeyboardVibesButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateNoneIconImageIfNeeded(for: currentForegroundColor())
     }
 
     override var isHighlighted: Bool {
@@ -103,6 +107,8 @@ final class KeyboardVibesButton: UIControl {
         noneIconImageView.contentMode = .scaleAspectFit
         noneIconImageView.isUserInteractionEnabled = false
         noneIconImageView.isHidden = true
+        noneIconImageView.tintColor = nil
+        noneIconImageView.image = noneIconBaseImage?.withRenderingMode(.alwaysOriginal)
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
@@ -150,6 +156,7 @@ final class KeyboardVibesButton: UIControl {
 
     private func observeBorderAppearanceChanges() {
         registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+            self.resetNoneIconImageCache()
             self.updateVisualState(animated: false)
         }
     }
@@ -168,7 +175,7 @@ final class KeyboardVibesButton: UIControl {
             self.backgroundView.layer.shadowRadius = shadow.radius
             self.backgroundView.layer.shadowOffset = shadow.offset
             self.titleLabel.textColor = colors.foreground
-            self.noneIconImageView.tintColor = colors.foreground
+            self.updateNoneIconImageIfNeeded(for: colors.foreground)
             self.contentStackView.alpha = self.isTrackpadModeActive ? 0 : 1
         }
 
@@ -194,6 +201,46 @@ final class KeyboardVibesButton: UIControl {
 
     private func updateNoneIconVisibility() {
         noneIconImageView.isHidden = displayedVibeStyle != .none
+    }
+
+    private func currentForegroundColor() -> UIColor {
+        colorsForState(isPressed: isHighlighted, isEnabled: isEnabled).foreground
+    }
+
+    private func resetNoneIconImageCache() {
+        lastRasterizedNoneIconPixelSize = .zero
+        lastRasterizedNoneIconColor = nil
+    }
+
+    private func updateNoneIconImageIfNeeded(for tintColor: UIColor) {
+        let size = noneIconImageView.bounds.size
+        guard size.width > 0, size.height > 0 else { return }
+        guard let noneIconBaseImage else { return }
+
+        let scale = window?.screen.scale ?? UIScreen.main.scale
+        let pixelSize = CGSize(width: (size.width * scale).rounded(), height: (size.height * scale).rounded())
+        let resolvedTintColor = tintColor.resolvedColor(with: traitCollection)
+        guard pixelSize != lastRasterizedNoneIconPixelSize ||
+                lastRasterizedNoneIconColor?.isEqual(resolvedTintColor) != true else {
+            return
+        }
+
+        // Rasterize the PDF logo before display; live template-vector tinting has crashed
+        // the keyboard extension's image pipeline on some devices.
+        let rendererFormat = UIGraphicsImageRendererFormat(for: traitCollection)
+        rendererFormat.opaque = false
+        rendererFormat.scale = scale
+
+        let rasterizedImage = UIGraphicsImageRenderer(size: size, format: rendererFormat).image { _ in
+            let rect = CGRect(origin: .zero, size: size)
+            noneIconBaseImage.withRenderingMode(.alwaysOriginal).draw(in: rect)
+            resolvedTintColor.setFill()
+            UIRectFillUsingBlendMode(rect, .sourceIn)
+        }
+
+        lastRasterizedNoneIconPixelSize = pixelSize
+        lastRasterizedNoneIconColor = resolvedTintColor
+        noneIconImageView.image = rasterizedImage.withRenderingMode(.alwaysOriginal)
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
