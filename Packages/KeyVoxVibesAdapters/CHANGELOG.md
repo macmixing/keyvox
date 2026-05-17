@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-05-17
+
+Bundled Vibes adapter refresh for spoken year recognition.
+
+### Includes
+
+- Updated the bundled Polished adapter resource to `polished-alpha-023-lora.gguf`.
+- Updated the bundled Casual adapter resource to `casual-alpha-4-lora.gguf`.
+- Updated the adapter catalog so Polished and Casual resolve to the refreshed bundled adapter resources.
+- Documented the refreshed adapter resources in package and app-facing notices.
+
+### Notes
+
+- `1.0.1` bumps the tracked adapter package version for the bundled spoken-year recognition adapter refresh.
+
+---
+
 ## [1.0.0] - 2026-05-13
 
 Baseline tracked release of the KeyVox Vibes adapters package.

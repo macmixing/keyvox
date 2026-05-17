@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-05-17
+
+Live validation coverage for refreshed Vibes adapters.
+
+### Includes
+
+- Expanded Polished live local-model validation for spoken year recognition and quantity guard coverage.
+- Expanded Casual live local-model validation for spoken year recognition and quantity guard coverage.
+- Aligned live adapter validation with the refreshed bundled Vibes adapter resources.
+
+### Notes
+
+- `1.0.1` bumps the tracked local inference package version for the live validation coverage added around the refreshed Vibes adapter resources.
+
+---
+
 ## [1.0.0] - 2026-05-13
 
 Baseline tracked release of the KeyVox local inference package.

@@ -6,6 +6,28 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.1] - 2026-05-17
+
+Fixes a keyboard extension crash path by rasterizing the Vibes key logo before display, improves Vibes spoken year recognition, and preserves spoken year formatting during shared dictation cleanup.
+
+### Fixed
+
+- Fixed a keyboard extension crash that could prevent affected users from opening the KeyVox keyboard from the globe key when the Vibes logo rendered through live template-vector tinting.
+- Updated the Vibes key none-state logo to render as a cached tinted bitmap before assignment while preserving the existing Vibes key layout, state colors, and behavior.
+- Updated bundled Casual and Polished Vibes adapters so spoken year references are preserved more reliably during local rewrite.
+- Fixed shared dictation cleanup so spoken year references stay ungrouped while nearby spoken quantities can still receive thousands separators.
+
+### Package versions
+
+KeyVox iOS 1.2.1
+  KeyVoxCore           1.0.10
+  KeyVoxLocalInference 1.0.1
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.0
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.1
+  KeyVoxWhisper        1.0.0
+
 ## [1.2.0] - 2026-05-14
 
 Introduces KeyVox Vibes on iPhone with downloadable local rewrite models, keyboard-side rewrite and format controls, a Vibes trial and unlock flow, and new shared rewrite/runtime packages.
