@@ -79,6 +79,9 @@ class PasteService {
         cancelActiveRecoveryOnMainThread()
 
         let targetAppIdentity = frontmostAppIdentity()
+        if let targetAppIdentity {
+            axInspector.prepareApplicationAccessibility(for: targetAppIdentity.pid)
+        }
         let capitalizationNormalizedText = capitalizationHeuristics.normalizeLeadingCapitalizationIfNeeded(
             in: text,
             currentIdentity: targetAppIdentity,

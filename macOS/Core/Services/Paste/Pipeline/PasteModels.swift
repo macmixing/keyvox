@@ -97,6 +97,10 @@ struct PasteMenuFallbackVerificationSnapshot {
         self.valueLength = valueLength
         self.valueText = valueText
     }
+
+    var hasVerificationSignal: Bool {
+        selectedRange != nil || valueLength != nil || valueText != nil
+    }
 }
 
 struct PasteMenuFallbackUndoState {

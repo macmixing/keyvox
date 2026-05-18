@@ -1,6 +1,7 @@
 import Cocoa
 
 protocol PasteAXLiveSessioning {
+    func hasSignal() -> Bool
     func waitForSignal(timeout: TimeInterval, pollInterval: TimeInterval) -> Bool
     func close()
 }
@@ -16,13 +17,12 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
     private static let notifications: [String] = [
         kAXFocusedUIElementChangedNotification as String,
         kAXSelectedTextChangedNotification as String,
-        kAXValueChangedNotification as String,
-        kAXTitleChangedNotification as String
+        kAXValueChangedNotification as String
     ]
 
     init?(processID: pid_t) {
         self.processID = processID
-        self.runLoop = CFRunLoopGetCurrent()
+        self.runLoop = CFRunLoopGetMain()
 
         var createdObserver: AXObserver?
         let error = AXObserverCreate(processID, { _, element, notification, refcon in
@@ -36,7 +36,7 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
         guard error == .success, let createdObserver else { return nil }
         self.observer = createdObserver
         self.runLoopSource = AXObserverGetRunLoopSource(createdObserver)
-        CFRunLoopAddSource(runLoop, runLoopSource, .defaultMode)
+        addObserverSourceToRunLoop()
 
         let appElement = AXUIElementCreateApplication(processID)
         let refcon = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
@@ -49,20 +49,21 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
         close()
     }
 
+    func hasSignal() -> Bool {
+        state.hasSignal()
+    }
+
     func waitForSignal(timeout: TimeInterval, pollInterval: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             if state.hasSignal() {
-                close()
                 return true
             }
             let until = Date().addingTimeInterval(max(0.01, pollInterval))
             RunLoop.current.run(mode: .default, before: until)
         }
 
-        let hadSignal = state.hasSignal()
-        close()
-        return hadSignal
+        return state.hasSignal()
     }
 
     func close() {
@@ -74,31 +75,41 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
             for notification in Self.notifications {
                 _ = AXObserverRemoveNotification(observer, appElement, notification as CFString)
             }
-            CFRunLoopRemoveSource(runLoop, runLoopSource, .defaultMode)
+            removeObserverSourceFromRunLoop()
         }
 
         observer = nil
     }
 
-    private func handle(notification: String, element: AXUIElement) {
-        if notification == kAXTitleChangedNotification as String {
-            guard isOpaqueMutationSignal(element) else { return }
-            state.markSignal()
+    private func addObserverSourceToRunLoop() {
+        if Thread.isMainThread {
+            CFRunLoopAddSource(runLoop, runLoopSource, .defaultMode)
             return
         }
 
+        DispatchQueue.main.sync {
+            CFRunLoopAddSource(runLoop, runLoopSource, .defaultMode)
+        }
+    }
+
+    private func removeObserverSourceFromRunLoop() {
+        if Thread.isMainThread {
+            CFRunLoopRemoveSource(runLoop, runLoopSource, .defaultMode)
+            return
+        }
+
+        DispatchQueue.main.sync {
+            CFRunLoopRemoveSource(runLoop, runLoopSource, .defaultMode)
+        }
+    }
+
+    private func handle(notification: String, element: AXUIElement) {
         guard notification == kAXValueChangedNotification as String ||
                 notification == kAXSelectedTextChangedNotification as String,
               boolAttribute(element, attribute: kAXFocusedAttribute as String) == true,
               isTextTarget(element) else { return }
 
         state.markSignal()
-    }
-
-    private func isOpaqueMutationSignal(_ element: AXUIElement) -> Bool {
-        stringAttribute(element, attribute: kAXTitleAttribute as String) == nil &&
-            stringAttribute(element, attribute: kAXValueAttribute as String) == nil &&
-            selectedTextRange(element) == nil
     }
 
     private func isTextTarget(_ element: AXUIElement) -> Bool {
@@ -127,27 +138,6 @@ final class PasteAXLiveSession: PasteAXLiveSessioning {
             return nil
         }
         return ref as? String
-    }
-
-    private func selectedTextRange(_ element: AXUIElement) -> CFRange? {
-        var ref: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(
-            element,
-            kAXSelectedTextRangeAttribute as CFString,
-            &ref
-        ) == .success,
-              let value = ref,
-              CFGetTypeID(value) == AXValueGetTypeID() else {
-            return nil
-        }
-
-        let axValue = value as! AXValue
-        var range = CFRange()
-        guard AXValueGetType(axValue) == .cfRange,
-              AXValueGetValue(axValue, .cfRange, &range) else {
-            return nil
-        }
-        return range
     }
 
     private final class State {

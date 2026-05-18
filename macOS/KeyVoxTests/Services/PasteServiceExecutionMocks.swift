@@ -160,7 +160,10 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
 
 final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
     func pasteViaMenuBarOnMainThread() -> PasteMenuFallbackAttemptResult { .unavailable }
-    func frontmostProcessIDOnMainThread() -> pid_t? { nil }
+    func liveVerificationProcessIDsOnMainThread(targetProcessID: pid_t?) -> [pid_t] {
+        _ = targetProcessID
+        return []
+    }
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? { nil }
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool {
         _ = context
@@ -179,16 +182,16 @@ final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
         _ = initialUndoState
         return false
     }
-    func startLiveValueChangeVerificationSession(processID: pid_t?) -> PasteAXLiveSessioning? {
-        _ = processID
-        return nil
+    func startLiveValueChangeVerificationSessions(processIDs: [pid_t]) -> [PasteAXLiveSessioning] {
+        _ = processIDs
+        return []
     }
-    func verifyInsertionUsingLiveValueChangeSession(_ session: PasteAXLiveSessioning?) -> Bool {
-        _ = session
+    func verifyInsertionUsingLiveValueChangeSession(_ sessions: [PasteAXLiveSessioning]) -> Bool {
+        _ = sessions
         return false
     }
-    func finishLiveValueChangeVerificationSession(_ session: PasteAXLiveSessioning?) {
-        _ = session
+    func finishLiveValueChangeVerificationSession(_ sessions: [PasteAXLiveSessioning]) {
+        _ = sessions
     }
 }
 
