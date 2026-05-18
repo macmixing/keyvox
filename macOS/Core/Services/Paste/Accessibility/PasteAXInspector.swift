@@ -1,6 +1,7 @@
 import Cocoa
 
 protocol PasteAXInspecting {
+    func prepareApplicationAccessibility(for pid: pid_t)
     func focusedInsertionContext() -> PasteInsertionContext?
     func focusedUIElement() -> AXUIElement?
     func roleString(for element: AXUIElement) -> String?
@@ -17,8 +18,21 @@ protocol PasteAXInspecting {
     ) -> [AXUIElement]
 }
 
+extension PasteAXInspecting {
+    func prepareApplicationAccessibility(for pid: pid_t) {
+        _ = pid
+    }
+}
+
 final class PasteAXInspector: PasteAXInspecting {
     private let maxPreviousNonWhitespaceScanLength = 100
+    private let accessibilityWarmupRetryCount = 5
+    private let accessibilityWarmupRetryDelay: useconds_t = 50_000
+
+    func prepareApplicationAccessibility(for pid: pid_t) {
+        let app = AXUIElementCreateApplication(pid)
+        warmUpAccessibilityTree(app)
+    }
 
     func focusedInsertionContext() -> PasteInsertionContext? {
         guard let focusedElement = focusedUIElement() else { return nil }
@@ -259,6 +273,37 @@ final class PasteAXInspector: PasteAXInspecting {
         maxCandidates: Int = 12
     ) -> [AXUIElement] {
         let app = AXUIElementCreateApplication(pid)
+        let initialCandidates = scanCandidateVerificationElements(
+            app: app,
+            maxDepth: maxDepth,
+            maxNodes: maxNodes,
+            maxCandidates: maxCandidates
+        )
+        guard initialCandidates.isEmpty else { return initialCandidates }
+
+        warmUpAccessibilityTree(app)
+        for _ in 0..<accessibilityWarmupRetryCount {
+            usleep(accessibilityWarmupRetryDelay)
+            let warmedCandidates = scanCandidateVerificationElements(
+                app: app,
+                maxDepth: maxDepth,
+                maxNodes: maxNodes,
+                maxCandidates: maxCandidates
+            )
+            if !warmedCandidates.isEmpty {
+                return warmedCandidates
+            }
+        }
+
+        return []
+    }
+
+    private func scanCandidateVerificationElements(
+        app: AXUIElement,
+        maxDepth: Int,
+        maxNodes: Int,
+        maxCandidates: Int
+    ) -> [AXUIElement] {
         var roots: [AXUIElement] = []
 
         if let focusedWindow = elementAttribute(app, attribute: kAXFocusedWindowAttribute as String) {
@@ -298,6 +343,19 @@ final class PasteAXInspector: PasteAXInspecting {
         }
 
         return out
+    }
+
+    private func warmUpAccessibilityTree(_ app: AXUIElement) {
+        let manualAccessibilityAttribute = "AXManualAccessibility" as CFString
+        let enhancedUserInterfaceAttribute = "AXEnhancedUserInterface" as CFString
+        let enabled = kCFBooleanTrue as CFTypeRef
+
+        AXUIElementSetAttributeValue(app, manualAccessibilityAttribute, enabled)
+        AXUIElementSetAttributeValue(app, enhancedUserInterfaceAttribute, enabled)
+
+        _ = elementAttribute(app, attribute: kAXFocusedWindowAttribute as String)
+        _ = elementsAttribute(app, attribute: kAXWindowsAttribute as String)
+        _ = children(of: app)
     }
 
     private func children(of element: AXUIElement) -> [AXUIElement] {

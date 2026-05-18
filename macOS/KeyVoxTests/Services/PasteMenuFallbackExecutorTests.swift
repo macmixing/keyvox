@@ -141,6 +141,42 @@ final class PasteMenuFallbackExecutorTests: XCTestCase {
         XCTAssertFalse(executor.verifyInsertion(using: context))
     }
 
+    func testCaptureVerificationContextIgnoresDegenerateFocusedElementAndUsesCandidateSignal() {
+        let inspector = MockPasteAXInspector()
+        let focusedElement = makeRetainedElement()
+        let candidateElement = makeRetainedElement()
+        inspector.focusedElement = focusedElement
+        inspector.candidateElements = [candidateElement]
+        inspector.setOptionalRanges([nil, CFRange(location: 7, length: 0)])
+
+        let executor = makeExecutor(inspector: inspector)
+
+        let context = executor.captureVerificationContext()
+
+        XCTAssertEqual(context?.snapshots.count, 1)
+        XCTAssertTrue(context?.snapshots.first?.element === candidateElement)
+        XCTAssertEqual(context?.snapshots.first?.selectedRange?.location, 7)
+        XCTAssertEqual(inspector.candidateVerificationProcessIDs.count, 1)
+    }
+
+    func testCaptureVerificationContextReturnsFocusedSignalWithoutScanningCandidates() {
+        let inspector = MockPasteAXInspector()
+        let focusedElement = makeRetainedElement()
+        let candidateElement = makeRetainedElement()
+        inspector.focusedElement = focusedElement
+        inspector.candidateElements = [candidateElement]
+        inspector.setOptionalRanges([CFRange(location: 3, length: 0)])
+
+        let executor = makeExecutor(inspector: inspector)
+
+        let context = executor.captureVerificationContext()
+
+        XCTAssertEqual(context?.snapshots.count, 1)
+        XCTAssertTrue(context?.snapshots.first?.element === focusedElement)
+        XCTAssertEqual(context?.snapshots.first?.selectedRange?.location, 3)
+        XCTAssertTrue(inspector.candidateVerificationProcessIDs.isEmpty)
+    }
+
     private func makeRetainedElement() -> AXUIElement {
         AXUIElementCreateApplication(ProcessInfo.processInfo.processIdentifier)
     }
@@ -169,6 +205,10 @@ private extension PasteMenuFallbackVerificationOutcome {
 }
 
 private final class MockPasteAXInspector: PasteAXInspecting {
+    var focusedElement: AXUIElement?
+    var candidateElements: [AXUIElement] = []
+    private(set) var candidateVerificationProcessIDs: [pid_t] = []
+
     private var rangeSequence: [CFRange?] = [nil]
     private var rangeIndex = 0
     private var valueLengthSequence: [Int?] = [nil]
@@ -180,6 +220,11 @@ private final class MockPasteAXInspector: PasteAXInspecting {
     func setRange(for element: AXUIElement, values: [CFRange]) {
         _ = element
         rangeSequence = values.map { Optional($0) }
+        rangeIndex = 0
+    }
+
+    func setOptionalRanges(_ values: [CFRange?]) {
+        rangeSequence = values
         rangeIndex = 0
     }
 
@@ -201,7 +246,7 @@ private final class MockPasteAXInspector: PasteAXInspecting {
     }
 
     func focusedInsertionContext() -> PasteInsertionContext? { nil }
-    func focusedUIElement() -> AXUIElement? { nil }
+    func focusedUIElement() -> AXUIElement? { focusedElement }
     func roleString(for element: AXUIElement) -> String? { nil }
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? {
         _ = element
@@ -214,7 +259,11 @@ private final class MockPasteAXInspector: PasteAXInspecting {
         maxNodes: Int,
         maxCandidates: Int
     ) -> [AXUIElement] {
-        []
+        _ = maxDepth
+        _ = maxNodes
+        _ = maxCandidates
+        candidateVerificationProcessIDs.append(pid)
+        return candidateElements
     }
 
     func selectedRange(for element: AXUIElement) -> CFRange? {

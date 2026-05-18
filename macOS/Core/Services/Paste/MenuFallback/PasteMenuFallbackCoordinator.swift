@@ -99,13 +99,14 @@ final class PasteMenuFallbackCoordinator {
                 completionEvidence = .noClipboardPayload
             }
         } else {
-            let liveVerificationProcessID =
-                menuFallbackExecutor.frontmostProcessIDOnMainThread() ?? targetAppIdentity?.pid
-            let liveValueChangeSession = menuFallbackExecutor.startLiveValueChangeVerificationSession(
-                processID: liveVerificationProcessID
+            let liveVerificationProcessIDs = menuFallbackExecutor.liveVerificationProcessIDsOnMainThread(
+                targetProcessID: targetAppIdentity?.pid
+            )
+            let liveValueChangeSessions = menuFallbackExecutor.startLiveValueChangeVerificationSessions(
+                processIDs: liveVerificationProcessIDs
             )
             defer {
-                menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSession)
+                menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSessions)
             }
 
             let menuAttemptResult = menuFallbackExecutor.pasteViaMenuBarOnMainThread()
@@ -140,7 +141,7 @@ final class PasteMenuFallbackCoordinator {
                         }
                     }
                     if !verificationOutcome.didObserveInsertion {
-                        if menuFallbackExecutor.verifyInsertionUsingLiveValueChangeSession(liveValueChangeSession) {
+                        if menuFallbackExecutor.verifyInsertionUsingLiveValueChangeSession(liveValueChangeSessions) {
                             verificationOutcome = .structuralInsertionObserved
                         }
                     }
@@ -250,6 +251,10 @@ final class PasteMenuFallbackCoordinator {
             return false
         }
 
+        return hasElectronFramework(bundleURL: bundleURL)
+    }
+
+    private static func hasElectronFramework(bundleURL: URL) -> Bool {
         let electronFrameworkURL = bundleURL
             .appendingPathComponent("Contents", isDirectory: true)
             .appendingPathComponent("Frameworks", isDirectory: true)

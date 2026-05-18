@@ -115,7 +115,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         executor.verificationContext = sampleVerificationContext()
         executor.verifyInsertionResult = false
         executor.verifyLiveResult = true
-        executor.liveSession = MockLiveSession()
+        executor.liveSessions = [MockLiveSession()]
 
         let result = coordinator.executeMenuFallback(
             insertionText: "hello",
@@ -132,15 +132,15 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         XCTAssertEqual(executor.verifyLiveSessionCalls, 1)
     }
 
-    func testLiveSessionBindsToCurrentFrontmostProcessID() {
+    func testLiveSessionBindsToCurrentVerificationProcessIDs() {
         let coordinator = PasteMenuFallbackCoordinator()
         let executor = MockPasteMenuFallbackExecutor()
         executor.pasteResult = .actionSucceeded
         executor.verificationContext = nil
         executor.verifyInsertionWithoutAXResult = false
         executor.verifyLiveResult = true
-        executor.liveSession = MockLiveSession()
-        executor.frontmostProcessID = 42
+        executor.liveSessions = [MockLiveSession()]
+        executor.liveVerificationProcessIDs = [42, 43]
 
         let result = coordinator.executeMenuFallback(
             insertionText: "hello",
@@ -153,7 +153,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
-        XCTAssertEqual(executor.lastLiveSessionProcessID, 42)
+        XCTAssertEqual(executor.lastLiveSessionProcessIDs, [42, 43])
     }
 
     func testActionSucceededKeepsFailureWhenNoVerificationEvidenceIsObserved() {
@@ -202,13 +202,14 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         XCTAssertEqual(executor.verifyInsertionCalls, 0)
     }
 
-    func testFirstMenuSuccessWarmupSuppressionOnlyAppliesToFirstAttempt() {
+    func testFirstMenuSuccessWarmupSuppressionOnlyAppliesToFirstAttemptWhenVerificationContextExists() {
         let coordinator = PasteMenuFallbackCoordinator(electronFrameworkDetector: { _ in true })
         let identity = identity("com.example.app", 999)
 
         let firstExecutor = MockPasteMenuFallbackExecutor()
         firstExecutor.pasteResult = .actionSucceeded
-        firstExecutor.verifyInsertionWithoutAXResult = false
+        firstExecutor.verificationContext = sampleVerificationContext()
+        firstExecutor.verifyInsertionOutcomeResult = PasteMenuFallbackVerificationOutcome.none
         firstExecutor.verifyLiveResult = false
 
         let first = coordinator.executeMenuFallback(
@@ -223,7 +224,8 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
 
         let secondExecutor = MockPasteMenuFallbackExecutor()
         secondExecutor.pasteResult = .actionSucceeded
-        secondExecutor.verifyInsertionWithoutAXResult = false
+        secondExecutor.verificationContext = sampleVerificationContext()
+        secondExecutor.verifyInsertionOutcomeResult = PasteMenuFallbackVerificationOutcome.none
         secondExecutor.verifyLiveResult = false
 
         let second = coordinator.executeMenuFallback(
@@ -285,9 +287,9 @@ private final class MockPasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
     var verifyInsertionOutcomeResult: PasteMenuFallbackVerificationOutcome?
     var verifyInsertionWithoutAXResult = false
     var verifyLiveResult = false
-    var liveSession: PasteAXLiveSessioning?
-    var frontmostProcessID: pid_t?
-    private(set) var lastLiveSessionProcessID: pid_t?
+    var liveSessions: [PasteAXLiveSessioning] = []
+    var liveVerificationProcessIDs: [pid_t] = []
+    private(set) var lastLiveSessionProcessIDs: [pid_t] = []
 
     private(set) var pasteViaMenuBarCalls = 0
     private(set) var verifyInsertionCalls = 0
@@ -299,8 +301,9 @@ private final class MockPasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         return pasteResult
     }
 
-    func frontmostProcessIDOnMainThread() -> pid_t? {
-        frontmostProcessID
+    func liveVerificationProcessIDsOnMainThread(targetProcessID: pid_t?) -> [pid_t] {
+        _ = targetProcessID
+        return liveVerificationProcessIDs
     }
 
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? {
@@ -338,23 +341,27 @@ private final class MockPasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         return verifyInsertionWithoutAXResult
     }
 
-    func startLiveValueChangeVerificationSession(processID: pid_t?) -> PasteAXLiveSessioning? {
-        lastLiveSessionProcessID = processID
-        return liveSession
+    func startLiveValueChangeVerificationSessions(processIDs: [pid_t]) -> [PasteAXLiveSessioning] {
+        lastLiveSessionProcessIDs = processIDs
+        return liveSessions
     }
 
-    func verifyInsertionUsingLiveValueChangeSession(_ session: PasteAXLiveSessioning?) -> Bool {
-        _ = session
+    func verifyInsertionUsingLiveValueChangeSession(_ sessions: [PasteAXLiveSessioning]) -> Bool {
+        _ = sessions
         verifyLiveSessionCalls += 1
         return verifyLiveResult
     }
 
-    func finishLiveValueChangeVerificationSession(_ session: PasteAXLiveSessioning?) {
-        session?.close()
+    func finishLiveValueChangeVerificationSession(_ sessions: [PasteAXLiveSessioning]) {
+        sessions.forEach { $0.close() }
     }
 }
 
 private final class MockLiveSession: PasteAXLiveSessioning {
+    func hasSignal() -> Bool {
+        true
+    }
+
     func waitForSignal(timeout: TimeInterval, pollInterval: TimeInterval) -> Bool {
         _ = timeout
         _ = pollInterval

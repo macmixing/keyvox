@@ -1,8 +1,9 @@
 import Cocoa
+import Darwin
 
 protocol PasteMenuFallbackExecuting {
     func pasteViaMenuBarOnMainThread() -> PasteMenuFallbackAttemptResult
-    func frontmostProcessIDOnMainThread() -> pid_t?
+    func liveVerificationProcessIDsOnMainThread(targetProcessID: pid_t?) -> [pid_t]
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext?
     func verifyInsertion(using context: PasteMenuFallbackVerificationContext?) -> Bool
     func verifyInsertionOutcome(
@@ -13,14 +14,14 @@ protocol PasteMenuFallbackExecuting {
     func verifyInsertionWithoutAXContextOnMainThread(
         initialUndoState: PasteMenuFallbackUndoState?
     ) -> Bool
-    func startLiveValueChangeVerificationSession(
-        processID: pid_t?
-    ) -> PasteAXLiveSessioning?
+    func startLiveValueChangeVerificationSessions(
+        processIDs: [pid_t]
+    ) -> [PasteAXLiveSessioning]
     func verifyInsertionUsingLiveValueChangeSession(
-        _ session: PasteAXLiveSessioning?
+        _ sessions: [PasteAXLiveSessioning]
     ) -> Bool
     func finishLiveValueChangeVerificationSession(
-        _ session: PasteAXLiveSessioning?
+        _ sessions: [PasteAXLiveSessioning]
     )
 }
 
@@ -54,16 +55,16 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         return outcome
     }
 
-    func frontmostProcessIDOnMainThread() -> pid_t? {
+    func liveVerificationProcessIDsOnMainThread(targetProcessID: pid_t?) -> [pid_t] {
         if Thread.isMainThread {
-            return frontmostProcessID()
+            return liveVerificationProcessIDs(targetProcessID: targetProcessID)
         }
 
-        var processID: pid_t?
+        var processIDs: [pid_t] = []
         DispatchQueue.main.sync {
-            processID = frontmostProcessID()
+            processIDs = liveVerificationProcessIDs(targetProcessID: targetProcessID)
         }
-        return processID
+        return processIDs
     }
 
     func captureVerificationContext() -> PasteMenuFallbackVerificationContext? {
@@ -73,25 +74,39 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         var seen = Set<UInt>()
 
         if let focused = axInspector.focusedUIElement() {
+            let focusedSnapshot = snapshot(for: focused)
             let key = elementHash(focused)
-            if !seen.contains(key) {
+            if !seen.contains(key),
+               focusedSnapshot.hasVerificationSignal {
                 seen.insert(key)
-                snapshots.append(snapshot(for: focused))
+                snapshots.append(focusedSnapshot)
             }
         }
 
-        let discovered = axInspector.candidateVerificationElements(
-            for: frontApp.processIdentifier,
-            maxDepth: 14,
-            maxNodes: 8_000,
-            maxCandidates: 16
-        )
+        if !snapshots.isEmpty {
+            return PasteMenuFallbackVerificationContext(snapshots: snapshots)
+        }
 
-        for element in discovered {
-            let key = elementHash(element)
-            if seen.contains(key) { continue }
-            seen.insert(key)
-            snapshots.append(snapshot(for: element))
+        for processID in verificationProcessIDs(for: frontApp) {
+            let discovered = axInspector.candidateVerificationElements(
+                for: processID,
+                maxDepth: 14,
+                maxNodes: 8_000,
+                maxCandidates: 16
+            )
+
+            for element in discovered {
+                let candidateSnapshot = snapshot(for: element)
+                guard candidateSnapshot.hasVerificationSignal else { continue }
+                let key = elementHash(element)
+                if seen.contains(key) { continue }
+                seen.insert(key)
+                snapshots.append(candidateSnapshot)
+            }
+
+            if !snapshots.isEmpty {
+                return PasteMenuFallbackVerificationContext(snapshots: snapshots)
+            }
         }
 
         guard !snapshots.isEmpty else { return nil }
@@ -161,34 +176,35 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
             return verifyInsertionWithoutAXContext(initialUndoState: initialUndoState)
         }
 
-        var result = false
-        DispatchQueue.main.sync {
-            result = verifyInsertionWithoutAXContext(initialUndoState: initialUndoState)
-        }
-        return result
+        return verifyInsertionWithoutAXContextFromBackground(initialUndoState: initialUndoState)
     }
 
-    func startLiveValueChangeVerificationSession(
-        processID: pid_t?
-    ) -> PasteAXLiveSessioning? {
-        guard let processID else { return nil }
-        return PasteAXLiveSession(processID: processID)
+    func startLiveValueChangeVerificationSessions(
+        processIDs: [pid_t]
+    ) -> [PasteAXLiveSessioning] {
+        processIDs.compactMap { PasteAXLiveSession(processID: $0) }
     }
 
     func verifyInsertionUsingLiveValueChangeSession(
-        _ session: PasteAXLiveSessioning?
+        _ sessions: [PasteAXLiveSessioning]
     ) -> Bool {
-        guard let session else { return false }
-        return session.waitForSignal(
-            timeout: verificationTimeout,
-            pollInterval: verificationPollInterval
-        )
+        guard !sessions.isEmpty else { return false }
+
+        let deadline = Date().addingTimeInterval(verificationTimeout)
+        while Date() < deadline {
+            if sessions.contains(where: { $0.hasSignal() }) {
+                return true
+            }
+            waitForNextVerificationPoll()
+        }
+
+        return sessions.contains(where: { $0.hasSignal() })
     }
 
     func finishLiveValueChangeVerificationSession(
-        _ session: PasteAXLiveSessioning?
+        _ sessions: [PasteAXLiveSessioning]
     ) {
-        session?.close()
+        sessions.forEach { $0.close() }
     }
 
     private func pasteViaMenuBar() -> PasteMenuFallbackAttemptResult {
@@ -282,7 +298,25 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
                 return true
             }
 
-            usleep(useconds_t(verificationPollInterval * 1_000_000))
+            waitForNextVerificationPoll()
+        }
+
+        return false
+    }
+
+    private func verifyInsertionWithoutAXContextFromBackground(
+        initialUndoState: PasteMenuFallbackUndoState?
+    ) -> Bool {
+        guard let initialUndoState else { return false }
+
+        let deadline = Date().addingTimeInterval(verificationTimeout)
+        while Date() < deadline {
+            if let currentUndoState = captureUndoStateOnMainThread(),
+               undoStateChanged(from: initialUndoState, to: currentUndoState) {
+                return true
+            }
+
+            waitForNextVerificationPoll()
         }
 
         return false
@@ -359,11 +393,118 @@ final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {
         oldState.title != newState.title || oldState.isEnabled != newState.isEnabled
     }
 
+    private func waitForNextVerificationPoll() {
+        let interval = max(0.001, verificationPollInterval)
+        if Thread.isMainThread {
+            RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(interval))
+        } else {
+            usleep(useconds_t(interval * 1_000_000))
+        }
+    }
+
     private func elementHash(_ element: AXUIElement) -> UInt {
         UInt(bitPattern: Unmanaged.passUnretained(element).toOpaque())
     }
 
-    private func frontmostProcessID() -> pid_t? {
-        NSWorkspace.shared.frontmostApplication?.processIdentifier
+    private func liveVerificationProcessIDs(targetProcessID: pid_t?) -> [pid_t] {
+        if let frontApp = NSWorkspace.shared.frontmostApplication {
+            return verificationProcessIDs(for: frontApp)
+        }
+
+        if let targetProcessID {
+            return [targetProcessID]
+        }
+
+        return []
+    }
+
+    private func verificationProcessIDs(for frontApp: NSRunningApplication) -> [pid_t] {
+        var processIDs = [frontApp.processIdentifier]
+        var seenProcessIDs = Set(processIDs)
+        guard let frontBundleURL = frontApp.bundleURL else { return processIDs }
+
+        let frontBundlePath = frontBundleURL.standardizedFileURL.path
+        let supportPrefix = frontBundleURL
+            .appendingPathComponent("Contents", isDirectory: true)
+            .appendingPathComponent("Support", isDirectory: true)
+            .standardizedFileURL
+            .path + "/"
+        let bundlePrefix = frontBundlePath + "/"
+
+        let relatedSupportProcessIDs = NSWorkspace.shared.runningApplications
+            .filter { app in
+                guard app.processIdentifier != frontApp.processIdentifier,
+                      let bundlePath = app.bundleURL?.standardizedFileURL.path else {
+                    return false
+                }
+                return bundlePath.hasPrefix(supportPrefix)
+            }
+            .map(\.processIdentifier)
+            .sorted()
+
+        for processID in relatedSupportProcessIDs
+            where seenProcessIDs.insert(processID).inserted && hasAccessibilitySurface(processID: processID) {
+            processIDs.append(processID)
+        }
+
+        for processID in executableProcessIDs(withPathPrefix: bundlePrefix)
+            where seenProcessIDs.insert(processID).inserted && hasAccessibilitySurface(processID: processID) {
+            processIDs.append(processID)
+        }
+
+        return processIDs
+    }
+
+    private func hasAccessibilitySurface(processID: pid_t) -> Bool {
+        let app = AXUIElementCreateApplication(processID)
+        var focusedWindowRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(app, kAXFocusedWindowAttribute as CFString, &focusedWindowRef) == .success,
+           focusedWindowRef != nil {
+            return true
+        }
+
+        var windowsRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(app, kAXWindowsAttribute as CFString, &windowsRef) == .success,
+           let windows = windowsRef as? [AXUIElement],
+           !windows.isEmpty {
+            return true
+        }
+
+        var childrenRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(app, kAXChildrenAttribute as CFString, &childrenRef) == .success,
+           let children = childrenRef as? [AXUIElement],
+           !children.isEmpty {
+            return true
+        }
+
+        return false
+    }
+
+    private func executableProcessIDs(withPathPrefix pathPrefix: String) -> [pid_t] {
+        let processCount = proc_listallpids(nil, 0)
+        guard processCount > 0 else { return [] }
+
+        var processIDs = [pid_t](repeating: 0, count: Int(processCount) + 64)
+        let bytes = proc_listallpids(&processIDs, Int32(processIDs.count * MemoryLayout<pid_t>.stride))
+        guard bytes > 0 else { return [] }
+
+        let returnedCount = Int(bytes) / MemoryLayout<pid_t>.stride
+        return processIDs
+            .prefix(returnedCount)
+            .filter { processID in
+                guard processID > 0,
+                      let executablePath = executablePath(for: processID) else {
+                    return false
+                }
+                return executablePath.hasPrefix(pathPrefix)
+            }
+            .sorted()
+    }
+
+    private func executablePath(for processID: pid_t) -> String? {
+        var buffer = [CChar](repeating: 0, count: 4_096)
+        let byteCount = proc_pidpath(processID, &buffer, UInt32(buffer.count))
+        guard byteCount > 0 else { return nil }
+        return String(cString: buffer)
     }
 }
