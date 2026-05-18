@@ -6,6 +6,47 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-05-18
+
+Refines the Mac Vibes release with updated bundled style adapters, safer spoken-number cleanup, a new Dock icon preference, and more reliable paste behavior in blank web editors and Chromium-style browser surfaces.
+
+### Added
+
+- Added a More settings toggle to hide the Dock icon when all KeyVox windows are closed, while keeping the Dock icon visible whenever managed windows such as Settings, onboarding, updater, post-update notices, or the Vibes intro are open.
+- Added Dock activation-policy management so KeyVox can switch between regular and accessory app modes based on the new Dock icon preference, visible app windows, and the existing older-macOS menu-bar compatibility rule.
+- Added generic Chromium-style paste verification across related renderer and helper processes inside the front app bundle, so successful menu paste can be verified even when the editable field is owned by a nested browser process.
+- Added updated Vibes model-training datasets, lineage, manifests, and run materials for the refreshed Casual and Polished adapters.
+
+### Changed
+
+- Updated the bundled Casual Vibes adapter to `casual-alpha-4`, improving spoken-year handling while preserving the existing time, money, and quantity guards.
+- Updated the bundled Polished Vibes adapter to `polished-alpha-024`, improving spoken-year handling and teen age-compound precision, including cases such as `18-year-old` versus `8-year-old`.
+- Updated shared dictation cleanup through `KeyVoxCore` `1.0.10` so spoken year references remain ungrouped when context indicates a year, while nearby quantities still receive thousands separators when context indicates an amount.
+- Updated shared numeric normalization to handle adjacent spoken-number phrases more precisely so ignored trailing words are not accidentally consumed into a prior number span.
+- Updated Vibes adapter catalog and third-party notices to point at the refreshed bundled Casual and Polished adapter resources.
+- Updated local inference package tracking through `KeyVoxLocalInference` `1.0.1` with live validation coverage for the refreshed Vibes adapters.
+- Updated macOS codemap and engineering notes around paste verification, warning behavior, and bundle-specific paste trust policy.
+- Split Mac transcription manager responsibilities across focused binding, overlay/debug, and recording-session extensions without changing the dictation workflow.
+
+### Fixed
+
+- Fixed blank Quill-style and placeholder-backed web editors so empty editor state is treated as caret position zero with no active selection, preventing hidden placeholder text or stale editor state from affecting capitalization and spacing decisions.
+- Fixed paste spacing and capitalization fallbacks so missing AX context no longer reuses the last successful insertion signal to add a leading space or lowercase the next paste in unrelated opaque web surfaces.
+- Fixed Atlas-style browser paste verification after browser relaunch by finding the related renderer/helper accessibility process that owns the edited text field, without hard-coding the browser bundle ID.
+- Fixed paste warning behavior so menu fallback success still requires observable insertion evidence, preserving recovery warnings when KeyVox cannot verify that paste completed.
+- Fixed paste verifier latency by ignoring degenerate AX snapshots, filtering related helper processes to those with an accessibility surface, and stopping candidate scans as soon as usable verification context is found.
+- Fixed Dock icon visibility updates after app windows are opened, hidden, closed, dismissed, or shown from updater and Vibes intro flows.
+
+### Package versions
+
+KeyVox macOS 1.1.1:
+- KeyVoxCore           1.0.10
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.0
+- KeyVoxLocalInference 1.0.1
+- KeyVoxVibesAdapters  1.0.1
+
 ## [1.1.0] - 2026-05-14
 
 Introduces KeyVox Vibes on Mac with local writing styles, downloadable Vibes AI model support, trigger-key Vibe controls, a Vibes intro flow, and new shared local rewrite/runtime packages.
