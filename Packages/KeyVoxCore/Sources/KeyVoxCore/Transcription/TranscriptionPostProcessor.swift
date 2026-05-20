@@ -37,6 +37,12 @@ public final class TranscriptionPostProcessor {
         dictionaryMatcher.rebuildIndex(entries: effectiveEntries)
     }
 
+    func applyDictionaryEntries(to text: String, dictionaryEntries: [DictionaryEntry]) -> String {
+        guard !text.isEmpty else { return "" }
+        updateDictionaryEntries(dictionaryEntries)
+        return dictionaryMatcher.apply(to: text).text
+    }
+
     public func process(
         _ text: String,
         dictionaryEntries: [DictionaryEntry],

@@ -16,30 +16,15 @@ public enum DictionaryBuiltInEntries {
     public static let builtIns: [DictionaryBuiltInEntry] = [
         DictionaryBuiltInEntry(
             id: UUID(uuidString: "6D904F89-4B45-4E85-9F77-29E7E87BA0F8")!,
-            phrase: "KeyVox",
-            aliases: [
-                "Kivok",
-                "Kivox",
-                "Keyvox",
-            ]
+            phrase: "KeyVox"
         ),
         DictionaryBuiltInEntry(
             id: UUID(uuidString: "71E8F273-336C-4BD4-9F80-59926F0D9529")!,
-            phrase: "KeyVox Speak",
-            aliases: [
-                "Kivok Speak",
-                "Kivox Speak",
-                "Keyvox Speak",
-            ]
+            phrase: "KeyVox Speak"
         ),
         DictionaryBuiltInEntry(
             id: UUID(uuidString: "31E89C39-A1E7-4736-8FBB-706B87D926D2")!,
-            phrase: "KeyVox Vibes",
-            aliases: [
-                "Kivok Vibes",
-                "Kivox Vibes",
-                "Keyvox Vibes",
-            ]
+            phrase: "KeyVox Vibes"
         ),
     ]
 

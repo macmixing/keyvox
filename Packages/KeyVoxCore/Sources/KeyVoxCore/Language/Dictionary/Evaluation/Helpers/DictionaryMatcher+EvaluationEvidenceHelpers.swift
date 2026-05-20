@@ -4,6 +4,9 @@ private enum EvaluationEvidenceConstants {
     static let strongAnchoredMinimumTokenLength = 5
     static let strongAnchoredTextMinimum = 0.70
     static let strongAnchoredPhoneticMinimum = 0.72
+    static let minimumStylizedHeadLength = 4
+    static let stylizedHeadAnchoredTextMinimum = 0.42
+    static let stylizedHeadAnchoredPhoneticMinimum = 0.66
 
     static let moderateAnchoredMinimumTokenLength = 6
     static let moderateAnchoredTextMinimum = 0.60
@@ -66,6 +69,35 @@ extension DictionaryMatcher {
 
         return secondTextSimilarity >= EvaluationEvidenceConstants.strongAnchoredTextMinimum
             || secondPhoneticSimilarity >= EvaluationEvidenceConstants.strongAnchoredPhoneticMinimum
+    }
+
+    func hasExactTailStylizedHeadEvidence(window: [Token], candidate: CompiledEntry) -> Bool {
+        guard window.count == 2, candidate.tokens.count == 2 else { return false }
+        guard window[1].normalized == candidate.tokens[1] else { return false }
+        guard let candidateFirstSurface = candidate.phrase.split(separator: " ").first.map(String.init) else {
+            return false
+        }
+        guard isStylizedSurfaceToken(candidateFirstSurface) else { return false }
+
+        let observedFirst = window[0].normalized
+        let candidateFirst = candidate.tokens[0]
+        guard observedFirst.count >= EvaluationEvidenceConstants.minimumStylizedHeadLength,
+              candidateFirst.count >= EvaluationEvidenceConstants.minimumStylizedHeadLength else { return false }
+        guard observedFirst.first == candidateFirst.first else { return false }
+        guard !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidateFirst)) else { return false }
+
+        let candidateFirstPhonetic = encoder.scoringSignature(for: candidateFirst, lexicon: lexicon)
+        let textSimilarity = scorer.similarity(lhs: observedFirst, rhs: candidateFirst)
+        let phoneticSimilarity = max(
+            scorer.similarity(lhs: window[0].phonetic, rhs: candidateFirstPhonetic),
+            scorer.similarity(
+                lhs: encoder.fallbackSignature(for: observedFirst),
+                rhs: encoder.fallbackSignature(for: candidateFirst)
+            )
+        )
+
+        return textSimilarity >= EvaluationEvidenceConstants.stylizedHeadAnchoredTextMinimum
+            || phoneticSimilarity >= EvaluationEvidenceConstants.stylizedHeadAnchoredPhoneticMinimum
     }
 
     func hasModerateAnchoredTwoTokenEvidence(window: [Token], candidate: CompiledEntry) -> Bool {
@@ -151,5 +183,14 @@ extension DictionaryMatcher {
         }
 
         return 0
+    }
+
+    private func isStylizedSurfaceToken(_ token: String) -> Bool {
+        let scalars = Array(token.unicodeScalars)
+        guard let firstScalar = scalars.first else { return false }
+        return scalars.contains { scalar in
+            guard scalar.properties.isUppercase else { return false }
+            return scalar != firstScalar
+        }
     }
 }

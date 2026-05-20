@@ -217,6 +217,45 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(pasted, ["Ahoy, world"])
     }
 
+    func testPipelineAppliesDictionaryEntriesAfterOutputTransformation() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "I introduced KeyVox Speak and later on KeyVox Vibes.", languageCode: "en")
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { [self] in recorded.append($0) },
+            pasteText: { [self] in pasted.append($0) },
+            processOutputText: { _ in
+                DictationPipelineTextProcessingResult(
+                    text: "I introduced Kivok Speak and later on cue board.",
+                    duration: 0,
+                    applied: true,
+                    styleIdentifier: "test-style",
+                    chunkCount: 1,
+                    errorDescription: nil,
+                    errors: []
+                )
+            }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+
+        XCTAssertEqual(result.baseText, "I introduced KeyVox Speak and later on KeyVox Vibes.")
+        XCTAssertEqual(result.finalText, "I introduced KeyVox Speak and later on Cueboard.")
+        XCTAssertEqual(recorded, ["I introduced KeyVox Speak and later on Cueboard."])
+        XCTAssertEqual(pasted, ["I introduced KeyVox Speak and later on Cueboard."])
+    }
+
     func testCapsLockOverridesTransformedTextCasing() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "hello world", languageCode: "en")

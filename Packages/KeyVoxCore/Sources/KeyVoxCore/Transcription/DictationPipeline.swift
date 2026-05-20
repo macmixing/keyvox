@@ -254,8 +254,12 @@ public final class DictationPipeline {
 
             Task { @MainActor [self] in
                 let output = await self.processOutputText(finalText)
+                let dictionaryNormalizedOutputText = self.postProcessor.applyDictionaryEntries(
+                    to: output.text,
+                    dictionaryEntries: dictionaryEntries
+                )
                 let outputText = self.allCapsOverrideNormalizer.normalize(
-                    in: output.text,
+                    in: dictionaryNormalizedOutputText,
                     isEnabled: self.capsLockEnabledProvider()
                 )
                 let pasteStart = Date()

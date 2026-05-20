@@ -366,6 +366,8 @@ extension DictionaryMatcher {
                 // token anchors exactly and the second token is strongly similar, allow
                 // the match through a slightly lower gate.
                 effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.twoTokenStrongEvidenceThreshold)
+            } else if hasExactTailStylizedHeadEvidence(window: window, candidate: best.entry) {
+                effectiveThreshold = min(effectiveThreshold, StandardEvaluationConstants.stylizedModerateFallbackThreshold)
             } else if hasModerateAnchoredTwoTokenEvidence(window: window, candidate: best.entry) {
                 // Some near-miss surname variants are close in spelling shape but can
                 // diverge in runtime lexicon phonetics. Keep this fallback conservative

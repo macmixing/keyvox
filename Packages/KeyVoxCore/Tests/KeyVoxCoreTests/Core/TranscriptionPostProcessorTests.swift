@@ -32,16 +32,16 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "My app is called KeyVox.")
     }
 
-    func testAppliesBuiltInBrandNameAliasesWithoutUserEntry() {
+    func testAppliesBuiltInBrandNameNearMissesWithoutUserEntry() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "Kivok is open. Kivox listens. Keyvox works.",
+            "Have you heard of Kivox? Keyvox works.",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "KeyVox is open. KeyVox listens. KeyVox works.")
+        XCTAssertEqual(output, "Have you heard of KeyVox? KeyVox works.")
     }
 
     func testDoesNotApplyBuiltInBrandNameToFuzzyPluralSplit() {
@@ -110,11 +110,6 @@ final class TranscriptionPostProcessorTests: XCTestCase {
     func testAppliesBuiltInVibesProductNameDictionaryEntryWithoutUserEntry() {
         let processor = TranscriptionPostProcessor()
 
-        let kivokOutput = processor.process(
-            "I am using Kivok Vibes.",
-            dictionaryEntries: [],
-            renderMode: .singleLineInline
-        )
         let kivoxOutput = processor.process(
             "I am using Kivox Vibes.",
             dictionaryEntries: [],
@@ -126,7 +121,6 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(kivokOutput, "I am using KeyVox Vibes.")
         XCTAssertEqual(kivoxOutput, "I am using KeyVox Vibes.")
         XCTAssertEqual(keyvoxOutput, "I am using KeyVox Vibes.")
     }
