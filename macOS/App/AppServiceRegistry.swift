@@ -19,7 +19,6 @@ final class AppServiceRegistry {
     let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
     private var canSwitchActiveProvider: () -> Bool
     private var currentActiveProviderSelection: AppSettingsStore.ActiveDictationProvider
-    private var vibesReadinessPrewarmer: MacVibesReadinessPrewarmer?
     private var cancellables = Set<AnyCancellable>()
     lazy var transcriptionManager: TranscriptionManager = {
         let manager = TranscriptionManager(
@@ -71,7 +70,6 @@ final class AppServiceRegistry {
         self.canSwitchActiveProvider = canSwitchActiveProvider
         self.currentActiveProviderSelection = initialActiveProviderSelection
         bindActiveProviderSelection()
-        bindVibesReadinessPrewarm()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -122,7 +120,6 @@ final class AppServiceRegistry {
         canSwitchActiveProvider = { true }
         currentActiveProviderSelection = .whisper
         bindActiveProviderSelection()
-        bindVibesReadinessPrewarm()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -160,15 +157,6 @@ final class AppServiceRegistry {
         activeProviderRouter.replaceActiveProvider(with: provider)
     }
 
-    private func bindVibesReadinessPrewarm() {
-        vibesReadinessPrewarmer = MacVibesReadinessPrewarmer(
-            installState: localRewriteModelManager.$installState.eraseToAnyPublisher(),
-            prewarm: { [weak coordinator = vibesCoordinator] style in
-                coordinator?.prewarm(style: style)
-            }
-        )
-    }
-
     private static func makeVibesCoordinator(
         appSettings: AppSettingsStore,
         localRewriteModelManager: MacLocalRewriteModelManager
@@ -187,6 +175,9 @@ final class AppServiceRegistry {
             textTransformer: localStyleRewriteTextTransformer,
             isModelReady: { [weak localRewriteModelManager] in
                 localRewriteModelManager?.isModelReady() ?? false
+            },
+            releaseResources: { reason in
+                await localStyleRewriteTextTransformer.releaseResources(reason: reason)
             }
         )
     }

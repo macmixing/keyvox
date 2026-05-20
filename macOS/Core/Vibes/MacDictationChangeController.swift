@@ -143,12 +143,9 @@ final class MacDictationChangeController {
         }
 
         onProcessingStart()
-        defer {
-            vibesCoordinator.releasePrewarmSession(reason: "mac-vibe-change")
-            onProcessingEnd()
-        }
-
         let result = await vibesCoordinator.transform(session.sourceText, style: targetStyle)
+        await vibesCoordinator.releasePrewarmSession(reason: "mac-vibe-change")
+        onProcessingEnd()
         logTextTransformationResult(result)
         guard result.finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
             log("apply skipped reason=empty-transform style=\(targetStyle.styleIdentifier)")

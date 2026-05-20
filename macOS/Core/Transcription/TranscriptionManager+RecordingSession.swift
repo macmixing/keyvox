@@ -22,7 +22,9 @@ extension TranscriptionManager {
         audioRecorder.stopRecording { [weak self] _ in
             guard let self else { return }
             guard self.activeStopRequestID == stopRequestID else { return }
-            self.vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
+            Task { @MainActor [weak self] in
+                await self?.vibesCoordinator.releasePrewarmSession(reason: "mac-quick-tap-cancel")
+            }
             self.isLocked = false
             self.stopRequestedAt = nil
             self.activeStopRequestID = nil

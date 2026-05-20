@@ -7,15 +7,18 @@ final class MacVibesCoordinator {
     private let appSettings: AppSettingsStore
     private let textTransformer: any DictationTextTransforming
     private let isModelReady: () -> Bool
+    private let releaseResources: @MainActor (String) async -> Void
 
     init(
         appSettings: AppSettingsStore,
         textTransformer: any DictationTextTransforming,
-        isModelReady: @escaping () -> Bool
+        isModelReady: @escaping () -> Bool,
+        releaseResources: @escaping @MainActor (String) async -> Void = { _ in }
     ) {
         self.appSettings = appSettings
         self.textTransformer = textTransformer
         self.isModelReady = isModelReady
+        self.releaseResources = releaseResources
     }
 
     var selectedVibe: StyleRewriteStyle {
@@ -57,7 +60,7 @@ final class MacVibesCoordinator {
         }
 
         let result = await transform(text, style: style)
-        releasePrewarmSession(reason: "mac-dictation-transform")
+        await releasePrewarmSession(reason: "mac-dictation-transform")
         return DictationPipelineTextProcessingResult(
             text: result.finalText,
             duration: result.duration,
@@ -91,8 +94,8 @@ final class MacVibesCoordinator {
         return await textTransformer.transform(request)
     }
 
-    func releasePrewarmSession(reason: String) {
-        _ = reason
+    func releasePrewarmSession(reason: String) async {
+        await releaseResources(reason)
     }
 
     private func resolvedStyle(_ style: StyleRewriteStyle) -> StyleRewriteStyle {
