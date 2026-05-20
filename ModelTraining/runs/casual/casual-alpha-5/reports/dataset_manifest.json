@@ -1,0 +1,19 @@
+{
+  "categories": {
+    "casual_voice_guard": 7,
+    "math_money_boundary": 8,
+    "money_boundary_regression": 7,
+    "money_day_boundary": 24,
+    "price_ratio_boundary": 12,
+    "quantity_guard": 6,
+    "spoken_year_2010s": 22,
+    "spoken_year_2020s": 10,
+    "spoken_year_mixed": 4,
+    "star_rating_boundary": 1
+  },
+  "purpose": "continuation from casual-alpha-4 for money/day, price-ratio, rating-count, and math money boundary precision with casual voice guards",
+  "test_count": 4,
+  "train_count": 93,
+  "valid_count": 4,
+  "version": "casual-alpha-5"
+}

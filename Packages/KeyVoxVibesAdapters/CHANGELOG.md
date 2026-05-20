@@ -8,20 +8,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.0.1] - 2026-05-17
 
-Bundled Vibes adapter refresh for spoken year recognition and Polished age-compound precision.
+Bundled Vibes adapter refresh for spoken year recognition, Polished age-compound precision, and Polished and Casual money boundary handling.
 
 ### Includes
 
-- Updated the bundled Polished adapter resource to ship `polished-alpha-024-lora.gguf` instead of the previously prepared `polished-alpha-023-lora.gguf`.
+- Updated the bundled Polished adapter resource to ship `polished-alpha-025-lora.gguf` instead of the previously prepared `polished-alpha-024-lora.gguf`.
 - Continued Polished from alpha-023 to preserve spoken year recognition while fixing the observed teen-number age compound regression, including `eighteen year old` becoming `18-year-old` instead of `8-year-old`.
+- Continued Polished from alpha-024 to keep adjacent money and quantity phrases separated, including dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
 - Added Polished guard coverage for adjacent teen age compounds, `8-year-old` versus `18-year-old`, `$180` versus `$1,800`, and the full 2010s spoken-year sweep.
-- Updated the bundled Casual adapter resource to `casual-alpha-4-lora.gguf`.
+- Added Polished live guard coverage for reported money/day, price-ratio, star-rating, and money-math boundary regressions.
+- Updated the bundled Casual adapter resource to `casual-alpha-5-lora.gguf`.
+- Continued Casual from alpha-4 to keep adjacent money and quantity phrases separated, including dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
 - Updated the adapter catalog so Polished and Casual resolve to the refreshed bundled adapter resources.
 - Documented the refreshed adapter resources in package and app-facing notices.
 
 ### Notes
 
-- This entry extends the unshipped `1.0.1` adapter package notes so the shipped Polished resource is alpha-024 rather than alpha-023.
+- This entry extends the unshipped `1.0.1` adapter package notes so the shipped Polished resource is alpha-025 rather than alpha-024.
 
 ---
 

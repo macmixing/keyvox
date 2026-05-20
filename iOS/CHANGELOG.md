@@ -8,15 +8,17 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ## [1.2.1] - 2026-05-18
 
-Fixes a keyboard extension crash path by rasterizing the Vibes key logo before display, improves Vibes spoken year and age-compound recognition, and preserves spoken year formatting during shared dictation cleanup.
+Fixes a keyboard extension crash path by rasterizing the Vibes key logo before display, improves Vibes spoken year, age-compound, and money-boundary recognition, and preserves spoken year formatting during shared dictation cleanup.
 
 ### Fixed
 
 - Fixed a keyboard extension crash that could prevent affected users from opening the KeyVox keyboard from the globe key when the Vibes logo rendered through live template-vector tinting.
 - Updated the Vibes key none-state logo to render as a cached tinted bitmap before assignment while preserving the existing Vibes key layout, state colors, and behavior.
 - Updated bundled Casual and Polished Vibes adapters so spoken year references are preserved more reliably during local rewrite.
-- Updated the bundled Polished Vibes adapter to alpha-024 so teen-number age compounds such as `eighteen year old` become `18-year-old` instead of `8-year-old`.
+- Updated the bundled Casual Vibes adapter to alpha-5 so adjacent money and quantity phrases stay separated in dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
+- Updated the bundled Polished Vibes adapter to alpha-025 so teen-number age compounds such as `eighteen year old` become `18-year-old` instead of `8-year-old`, while adjacent money and quantity phrases stay separated.
 - Added Polished Vibes guard coverage for `8-year-old` versus `18-year-old`, `$180` versus `$1,800`, adjacent teen age compounds, and the full 2010s spoken-year sweep.
+- Added Polished Vibes guard coverage for dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
 - Fixed shared dictation cleanup so spoken year references stay ungrouped while nearby spoken quantities can still receive thousands separators.
 
 ### Package versions

@@ -244,9 +244,9 @@ private extension LocalRewriteAdapterKind {
     var logLabel: String {
         switch self {
         case .polished:
-            return "polished-alpha-024"
+            return "polished-alpha-025"
         case .casual:
-            return "casual-alpha-4"
+            return "casual-alpha-5"
         }
     }
 }

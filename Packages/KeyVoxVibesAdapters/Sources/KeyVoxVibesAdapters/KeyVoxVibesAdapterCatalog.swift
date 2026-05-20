@@ -26,15 +26,15 @@ public enum KeyVoxVibesAdapterCatalog {
 
     public static let polished = KeyVoxVibesAdapterDescriptor(
         kind: .polished,
-        id: "polished-alpha-024",
-        filename: "polished-alpha-024-lora.gguf",
+        id: "polished-alpha-025",
+        filename: "polished-alpha-025-lora.gguf",
         compatibleBaseModelID: compatibleBaseModelID
     )
 
     public static let casual = KeyVoxVibesAdapterDescriptor(
         kind: .casual,
-        id: "casual-alpha-4",
-        filename: "casual-alpha-4-lora.gguf",
+        id: "casual-alpha-5",
+        filename: "casual-alpha-5-lora.gguf",
         compatibleBaseModelID: compatibleBaseModelID
     )
 

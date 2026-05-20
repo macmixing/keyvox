@@ -35,6 +35,26 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
 
     private static let polishedAgeCompoundRegressionInput = "And it's funny because all of those tools I had years ago came in handy to restore an eighteen year old pair of glasses."
 
+    private static let polishedStarRatingBoundaryInput = "I have like twelve five star ratings right now."
+
+    private static let polishedHundredDollarsDaysInput = "I would have spent a hundred dollars seven days ago."
+
+    private static let polishedFiftyDollarsDaysInput = "I would have spent fifty dollars seven days ago."
+
+    private static let polishedFourDollarsDaysInput = "I would have spent four dollars six days ago."
+
+    private static let polishedTwentyFiveDollarsDaysInput = "I probably spent twenty-five dollars three days ago."
+
+    private static let polishedTenForOneDollarInput = "I ended up getting ten for one dollar."
+
+    private static let polishedFourForThreeDollarsInput = "I ended up getting four for three dollars."
+
+    private static let polishedMoneyMultiplierWordsInput = "I don't know, that's probably three dollars multiplied by four."
+
+    private static let polishedMoneyMultiplierSymbolsInput = "I don't know, that's probably 3 * 4 dollars."
+
+    private static let polishedCostFiftyDollarsDaysInput = "It probably cost fifty dollars three days ago."
+
     private static let cases = [
         LiveStylePromptCase(
             style: .polished,
@@ -65,6 +85,56 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             style: .polished,
             input: polishedAgeCompoundRegressionInput,
             expected: "And it's funny because all of those tools I had years ago came in handy to restore an 18-year-old pair of glasses."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedStarRatingBoundaryInput,
+            expected: "I have 12 5-star ratings right now."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedHundredDollarsDaysInput,
+            expected: "I would have spent $100 7 days ago."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedFiftyDollarsDaysInput,
+            expected: "I would have spent $50 7 days ago."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedFourDollarsDaysInput,
+            expected: "I would have spent $4 6 days ago."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedTwentyFiveDollarsDaysInput,
+            expected: "I probably spent $25 3 days ago."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedTenForOneDollarInput,
+            expected: "I ended up getting 10 for $1."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedFourForThreeDollarsInput,
+            expected: "I ended up getting 4 for $3."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedMoneyMultiplierWordsInput,
+            expected: "That's probably $3 multiplied by 4."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedMoneyMultiplierSymbolsInput,
+            expected: "That's probably 3 * $4."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedCostFiftyDollarsDaysInput,
+            expected: "It probably cost $50 3 days ago."
         ),
     ]
 
@@ -169,6 +239,98 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             extraForbiddenFragments: [
                 " an 8-year-old pair of glasses",
                 "eighteen year old",
+            ]
+        ),
+        polishedStarRatingBoundaryInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "12 5-star ratings",
+            ],
+            extraForbiddenFragments: [
+                "125-star",
+                "twelve five star",
+            ]
+        ),
+        polishedHundredDollarsDaysInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$100 7 days ago",
+            ],
+            extraForbiddenFragments: [
+                "a hundred dollars seven days ago",
+                "1007",
+            ]
+        ),
+        polishedFiftyDollarsDaysInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$50 7 days ago",
+            ],
+            extraForbiddenFragments: [
+                "$57.7 days ago",
+                "$507 days ago",
+                "fifty dollars seven days ago",
+            ]
+        ),
+        polishedFourDollarsDaysInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$4 6 days ago",
+            ],
+            extraForbiddenFragments: [
+                "$4.6 days ago",
+                "four dollars six days ago",
+            ]
+        ),
+        polishedTwentyFiveDollarsDaysInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$25 3 days ago",
+            ],
+            extraForbiddenFragments: [
+                "$253 days ago",
+                "twenty-five dollars three days ago",
+            ]
+        ),
+        polishedTenForOneDollarInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "10 for $1",
+            ],
+            extraForbiddenFragments: [
+                "$10 for $1",
+                "ten for one dollar",
+            ]
+        ),
+        polishedFourForThreeDollarsInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "4 for $3",
+            ],
+            extraForbiddenFragments: [
+                "$4 for $3",
+                "four for three dollars",
+            ]
+        ),
+        polishedMoneyMultiplierWordsInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$3 multiplied by 4",
+            ],
+            extraForbiddenFragments: [
+                "$3 multiplied by $4",
+                "three dollars multiplied by four",
+            ]
+        ),
+        polishedMoneyMultiplierSymbolsInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "3 * $4",
+            ],
+            extraForbiddenFragments: [
+                "$3 * $4",
+                "3 * 4 dollars",
+            ]
+        ),
+        polishedCostFiftyDollarsDaysInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "$50 3 days ago",
+            ],
+            extraForbiddenFragments: [
+                "$53 days ago",
+                "$5 3 days ago",
+                "fifty dollars three days ago",
             ]
         ),
     ]

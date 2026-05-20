@@ -22,22 +22,22 @@ This folder contains the source-of-truth training materials for local model adap
 
 ## Current Polished Adapter
 
-- Current run: `runs/polished/alpha-024`
+- Current run: `runs/polished/alpha-025`
 - Base dataset: `datasets/polished/alpha-010-base`
-- Continuation dataset: `datasets/polished/alpha-024-continuation-age-compounds`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-024-lora.gguf`
+- Continuation dataset: `datasets/polished/alpha-025-continuation-money-boundaries`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-025-lora.gguf`
 
 ## Current Casual Adapter
 
-- Current run: `runs/casual/casual-alpha-4`
+- Current run: `runs/casual/casual-alpha-5`
 - Base dataset: `datasets/casual/casual-alpha-1-base`
-- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-4-lora.gguf`
+- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`, `datasets/casual/casual-alpha-5-continuation-money-boundaries`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-5-lora.gguf`
 
 ## Polished Run Status
 
-- Current: `runs/polished/alpha-024`
-- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`
+- Current: `runs/polished/alpha-025`
+- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`, `runs/polished/alpha-024`
 - Rejected intermediate: `runs/polished/rejected/alpha-018`, `runs/polished/rejected/alpha-022`
 - Rejected dataset: `datasets/polished/rejected/alpha-018-continuation-paragraphs`
 

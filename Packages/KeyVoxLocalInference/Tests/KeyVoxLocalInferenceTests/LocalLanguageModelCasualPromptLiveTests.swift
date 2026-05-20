@@ -138,6 +138,67 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
     }
 
     @MainActor
+    func testLiveCasualMoneyBoundaryCoverageWhenEnabled() async throws {
+        let tester = try Self.makeTester()
+
+        let cases: [CasualLiveCase] = [
+            CasualLiveCase(
+                input: "I have like twelve five star ratings right now.",
+                requiredFragments: ["I have like 12 5"],
+                forbiddenFragments: ["125 star", "twelve five star"]
+            ),
+            CasualLiveCase(
+                input: "I would have spent fifty dollars seven days ago.",
+                requiredFragments: ["$50 7 days ago"],
+                forbiddenFragments: ["$5007", "fifty dollars seven days ago"]
+            ),
+            CasualLiveCase(
+                input: "I would have spent one hundred dollars seven days ago.",
+                requiredFragments: ["$100 7 days ago"],
+                forbiddenFragments: ["$107 days ago", "one hundred dollars seven days ago"]
+            ),
+            CasualLiveCase(
+                input: "I would have spent forty-three dollars seven days ago.",
+                requiredFragments: ["$43 7 days ago"],
+                forbiddenFragments: ["$4307", "forty-three dollars seven days ago"]
+            ),
+            CasualLiveCase(
+                input: "I ended up getting ten for one dollar.",
+                requiredFragments: ["10 for $1"],
+                forbiddenFragments: ["10 for $100", "ten for one dollar"]
+            ),
+            CasualLiveCase(
+                input: "It probably would have cost fifty dollars three days ago.",
+                requiredFragments: ["$50 3 days ago"],
+                forbiddenFragments: ["$5003", "fifty dollars three days ago"]
+            ),
+            CasualLiveCase(
+                input: "Yeah, that was what? Fifty dollars multiplied by three?",
+                requiredFragments: ["Yeah, that was what? $50 multiplied by 3?"],
+                forbiddenFragments: ["$500 multiplied by 3", "Fifty dollars multiplied by three"]
+            ),
+            CasualLiveCase(
+                input: "Yeah, that was 3 * 50 dollars.",
+                requiredFragments: ["Yeah, that was 3 * $50"],
+                forbiddenFragments: ["$3 * $500", "3 * 50 dollars"]
+            ),
+            CasualLiveCase(
+                input: "What yeah, that was 3 * 57 dollars.",
+                requiredFragments: ["What yeah, that was 3 * $57"],
+                forbiddenFragments: ["$3 * $570", "3 * 57 dollars"]
+            ),
+        ]
+
+        do {
+            try await tester.assertCases(cases)
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
+    }
+
+    @MainActor
     func testLiveCasualGauntletWhenEnabled() async throws {
         let tester = try Self.makeTester()
 

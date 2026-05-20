@@ -431,8 +431,8 @@ Packages/
 │   ├── Sources/KeyVoxVibesAdapters/
 │   │   ├── KeyVoxVibesAdapterCatalog.swift
 │   │   └── Resources/Adapters/
-│   │       ├── casual-alpha-4-lora.gguf
-│   │       └── polished-alpha-024-lora.gguf
+│   │       ├── casual-alpha-5-lora.gguf
+│   │       └── polished-alpha-025-lora.gguf
 │   └── Tests/KeyVoxVibesAdaptersTests/
 │       └── KeyVoxVibesAdapterCatalogTests.swift
 ├── KeyVoxStyleRewrite/
@@ -645,7 +645,7 @@ Packages/
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelCatalog.swift`
   - App-local catalog for the Vibes rewrite base model and package-provided bundled adapter filenames.
   - Current base model is `Qwen2.5-0.5B-Instruct` from `Qwen/Qwen2.5-0.5B-Instruct-GGUF`, artifact `qwen2.5-0.5b-instruct-q4_k_m.gguf`, with strict SHA-256 validation and a 491,400,032-byte expected size.
-  - Current bundled adapters are provided by `KeyVoxVibesAdapters`: `polished-alpha-024-lora.gguf` and `casual-alpha-4-lora.gguf`.
+  - Current bundled adapters are provided by `KeyVoxVibesAdapters`: `polished-alpha-025-lora.gguf` and `casual-alpha-5-lora.gguf`.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelManager.swift`
   - Containing-app owner for local Vibes model install state, foreground download, staging/finalization, manifest validation, SHA-256 integrity checks, delete/repair-style cleanup, and adapter URL resolution.
   - Resolves LoRA adapters from the bundled `KeyVoxVibesAdapters` package first and falls back to the installed model directory only when needed.
@@ -725,7 +725,7 @@ Packages/
   - Provides the cached `LlamaLocalLanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated or the utterance-scoped rewrite lifecycle is released.
 - `KeyVox iOS/Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift`
   - iOS adapter from `KeyVoxStyleRewrite` chunk requests into `KeyVoxLocalInference`.
-  - Maps Polished to `polished-alpha-024`, maps Casual and Chill to `casual-alpha-4`, prewarms the selected model/adapter without generating text, cancels pending prewarm work when resources are released, sends short LoRA prompts, unloads the local rewrite inference cache on release, and logs local inference load/prefill/decode/total timing in debug builds.
+  - Maps Polished to `polished-alpha-025`, maps Casual and Chill to `casual-alpha-5`, prewarms the selected model/adapter without generating text, cancels pending prewarm work when resources are released, sends short LoRA prompts, unloads the local rewrite inference cache on release, and logs local inference load/prefill/decode/total timing in debug builds.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
   - Resolves the current `AppSettingsStore` style, creates transform requests, forwards utterance-scoped prewarm/release calls to the app-owned local transformer, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
