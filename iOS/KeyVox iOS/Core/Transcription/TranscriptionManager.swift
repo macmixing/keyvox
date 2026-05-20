@@ -38,7 +38,7 @@ final class TranscriptionManager: ObservableObject {
     private let processOutputText: (String) async -> DictationPipelineTextProcessingResult
     private let recordPipelineResult: (DictationPipelineResult, String) -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
-    let releaseStyleRewritePrewarmSession: (String) -> Void
+    let releaseStyleRewritePrewarmSession: @MainActor (String) async -> Void
     private let sessionDisableTimingProvider: (() -> SessionDisableTiming)?
     let isTTSPlaybackActiveProvider: () -> Bool
     let sessionPolicy: SessionPolicy
@@ -95,7 +95,7 @@ final class TranscriptionManager: ObservableObject {
         },
         recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
         prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
-        releaseStyleRewritePrewarmSession: @escaping (String) -> Void = { _ in },
+        releaseStyleRewritePrewarmSession: @escaping @MainActor (String) async -> Void = { _ in },
         sessionDisableTimingProvider: (() -> SessionDisableTiming)? = nil,
         isTTSPlaybackActiveProvider: @escaping () -> Bool = { false },
         sessionDisableTimingPublisher: AnyPublisher<SessionDisableTiming, Never> = Empty().eraseToAnyPublisher(),
@@ -268,13 +268,13 @@ final class TranscriptionManager: ObservableObject {
 
     func completeStopRecording(_ stoppedCapture: StoppedCapture, utteranceID: UUID, startTime: Date) async {
         guard utteranceID == activeUtteranceID else {
-            releaseStyleRewritePrewarmSession("stale-utterance")
+            await releaseStyleRewritePrewarmSession("stale-utterance")
             await finishAndDisableSessionIfNeeded()
             return
         }
 
         guard !stoppedCapture.outputFrames.isEmpty else {
-            releaseStyleRewritePrewarmSession("empty-capture")
+            await releaseStyleRewritePrewarmSession("empty-capture")
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
@@ -283,7 +283,7 @@ final class TranscriptionManager: ObservableObject {
 
         refreshModelAvailability()
         guard isModelAvailable else {
-            releaseStyleRewritePrewarmSession("dictation-model-unavailable")
+            await releaseStyleRewritePrewarmSession("dictation-model-unavailable")
             lastErrorMessage = missingModelMessageProvider()
             state = .idle
             keyboardBridge.publishNoSpeech()
@@ -311,7 +311,10 @@ final class TranscriptionManager: ObservableObject {
         ) { [weak self] result in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                guard utteranceID == self.activeUtteranceID else { return }
+                guard utteranceID == self.activeUtteranceID else {
+                    await self.releaseStyleRewritePrewarmSession("stale-result")
+                    return
+                }
 
                 let finalText = self.pendingPipelineOutputText ?? result.finalText
                 #if DEBUG
@@ -341,7 +344,8 @@ final class TranscriptionManager: ObservableObject {
                     self.lastTranscriptionText = finalText
                     self.keyboardBridge.publishTranscriptionReady(finalText)
                 }
-                
+
+                await self.releaseStyleRewritePrewarmSession("utterance-finished")
                 Task { await self.finishAndDisableSessionIfNeeded() }
             }
         }

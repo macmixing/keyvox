@@ -5,6 +5,7 @@ import KeyVoxStyleRewrite
 @MainActor
 final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
     private let inferenceService: LocalRewriteInferenceService
+    private var prewarmTask: Task<Void, Never>?
     private lazy var transformer = StyleRewriteTextTransformer { [weak self] _ in
         LocalStyleRewriteChunkResponder(inferenceService: self?.inferenceService)
     }
@@ -14,9 +15,11 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
     }
 
     func prewarm(request: TextTransformRequest) {
+        prewarmTask?.cancel()
         let adapterKind = localRewriteAdapterKind(for: request.styleIdentifier)
-        Task { @MainActor [inferenceService] in
+        prewarmTask = Task { @MainActor [inferenceService] in
             do {
+                guard !Task.isCancelled else { return }
                 let model = try inferenceService.model(adapter: adapterKind)
                 let result = try await model.prepare(
                     configuration: LocalLanguageModelConfiguration(
@@ -26,6 +29,7 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
                         batchTokenCount: min(max(request.contextTokenLimit, 1), 512)
                     )
                 )
+                guard !Task.isCancelled else { return }
                 logPrewarm(
                     styleIdentifier: request.styleIdentifier,
                     adapterKind: adapterKind,
@@ -43,6 +47,12 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
 
     func transform(_ request: TextTransformRequest) async -> TextTransformResult {
         await transformer.transform(request)
+    }
+
+    func releaseResources(reason _: String) async {
+        prewarmTask?.cancel()
+        prewarmTask = nil
+        await inferenceService.unload()
     }
 }
 

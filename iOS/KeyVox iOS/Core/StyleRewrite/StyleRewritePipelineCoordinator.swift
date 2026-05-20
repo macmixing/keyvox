@@ -7,15 +7,18 @@ final class StyleRewritePipelineCoordinator {
     private let selectedStyleProvider: () -> StyleRewriteStyle
     private let artifactStore: StyleRewriteLatestArtifactStore
     private let textTransformer: any DictationTextTransforming
+    private let releaseResources: @MainActor (String) async -> Void
 
     init(
         selectedStyleProvider: @escaping () -> StyleRewriteStyle,
         artifactStore: StyleRewriteLatestArtifactStore,
-        textTransformer: any DictationTextTransforming
+        textTransformer: any DictationTextTransforming,
+        releaseResources: @escaping @MainActor (String) async -> Void = { _ in }
     ) {
         self.selectedStyleProvider = selectedStyleProvider
         self.artifactStore = artifactStore
         self.textTransformer = textTransformer
+        self.releaseResources = releaseResources
     }
 
     func prewarmForUpcomingDictationIfNeeded() {
@@ -52,7 +55,9 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
-    func releasePrewarmSession(reason: String) {}
+    func releasePrewarmSession(reason: String) async {
+        await releaseResources(reason)
+    }
 
     func handleKeyboardStyleRewriteRequest() async {
         guard let request = KeyVoxIPCBridge.consumeStyleRewriteRequest() else {

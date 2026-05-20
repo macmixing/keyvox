@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-05-11**
+**Last Updated: 2026-05-19**
 
 ## Design Philosophy
 
@@ -1033,7 +1033,7 @@ LoRA adapter ownership:
 
 - it builds `LlamaLocalLanguageModel` with the installed base model URL and requested adapter URL
 - it keeps one cached model identity at a time, keyed by base model URL plus adapter URL
-- it unloads when the local rewrite model is invalidated
+- it unloads when the local rewrite model is invalidated or when the utterance-scoped Vibes rewrite lifecycle is released
 
 `LocalStyleRewriteTextTransformer` maps style requests into local inference:
 
@@ -1041,6 +1041,7 @@ LoRA adapter ownership:
 - Casual maps to the casual adapter and the short casual LoRA system prompt
 - Chill maps to the casual adapter and the short casual LoRA system prompt before deterministic Chill formatting
 - prewarm maps the selected Vibe to the same adapter as generation and calls local inference prepare without producing text
+- release cancels any pending prewarm task and unloads the local rewrite inference cache
 - local generation uses the style request context limit, two CPU threads, two batch threads, and a batch token cap up to 512
 - debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
@@ -1157,6 +1158,8 @@ Prewarm is best-effort and utterance-scoped at the transformer contract level:
 - `None` skips prewarm
 - local rewrite prewarm prepares the selected style's base model and adapter without generating text
 - successful prewarm consumes the cold-load duration so the following generation reports the model as cached
+- after dictation output is published, `TranscriptionManager` releases the utterance-scoped Vibes lifecycle so the local rewrite model does not remain resident for the warm monitoring session
+- stale, empty, unavailable-model, and cancelled utterance paths also release the same lifecycle
 - model invalidation still explicitly unloads the local model cache
 - repeated prewarm/release calls must remain harmless because `TranscriptionManager` owns the lifecycle hooks
 

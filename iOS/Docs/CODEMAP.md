@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-05-11**
+**Last Updated: 2026-05-19**
 
 ## Project Overview
 
@@ -722,13 +722,13 @@ Packages/
   - Exposes adapter IDs, filenames, compatible base-model ID, and `Bundle.module` resource URL lookup for Polished and Casual.
 - `KeyVox iOS/Core/StyleRewrite/LocalRewriteInferenceService.swift`
   - App-owned local inference cache for the installed Vibes base model plus the currently requested LoRA adapter.
-  - Provides the cached `LlamaLocalLanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated.
+  - Provides the cached `LlamaLocalLanguageModel` for polished, casual, chill, or no adapter and unloads when the local rewrite model is invalidated or the utterance-scoped rewrite lifecycle is released.
 - `KeyVox iOS/Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift`
   - iOS adapter from `KeyVoxStyleRewrite` chunk requests into `KeyVoxLocalInference`.
-  - Maps Polished to `polished-alpha-024`, maps Casual and Chill to `casual-alpha-4`, prewarms the selected model/adapter without generating text, sends short LoRA prompts, and logs local inference load/prefill/decode/total timing in debug builds.
+  - Maps Polished to `polished-alpha-024`, maps Casual and Chill to `casual-alpha-4`, prewarms the selected model/adapter without generating text, cancels pending prewarm work when resources are released, sends short LoRA prompts, unloads the local rewrite inference cache on release, and logs local inference load/prefill/decode/total timing in debug builds.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
-  - Resolves the current `AppSettingsStore` style, creates transform requests, forwards prewarm/release calls through the transformer contract, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
+  - Resolves the current `AppSettingsStore` style, creates transform requests, forwards utterance-scoped prewarm/release calls to the app-owned local transformer, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift`
   - App Group latest-artifact persistence for the most recent dictation.
   - Stores raw provider text, post-processed base text, selected inserted text, selected style identifier, variant timing/error metadata, inference duration, transform duration, and creation date.
@@ -756,6 +756,7 @@ Packages/
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
   - Primary iOS runtime state machine and dictation owner.
   - Starts KeyVox Vibes prewarm after audio recording successfully begins, never before recorder startup finishes.
+  - Releases the utterance-scoped KeyVox Vibes local rewrite cache after dictation output is published, and on stale, empty, cancelled, or unavailable-model stop paths.
   - Prints speed-profile transformation duration, style, processing mode, chunk count, errors, and raw final text when raw debug logging is enabled.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+SessionLifecycle.swift`
   - Idle shutdown, user-configured session timeout scheduling including Never, deferred disable-session handling, and watchdog cleanup.

@@ -142,7 +142,10 @@ final class AppServiceRegistry {
                 )
             },
             artifactStore: styleRewriteArtifactStore,
-            textTransformer: localStyleRewriteTextTransformer
+            textTransformer: localStyleRewriteTextTransformer,
+            releaseResources: { reason in
+                await localStyleRewriteTextTransformer.releaseResources(reason: reason)
+            }
         )
         var ttsManagerRef: TTSManager?
         let recorder = AudioRecorder(
@@ -199,7 +202,7 @@ final class AppServiceRegistry {
                 }
             },
             releaseStyleRewritePrewarmSession: { [weak styleRewritePipelineCoordinator] reason in
-                styleRewritePipelineCoordinator?.releasePrewarmSession(reason: reason)
+                await styleRewritePipelineCoordinator?.releasePrewarmSession(reason: reason)
             },
             sessionDisableTimingProvider: { [weak settingsStore] in
                 settingsStore?.sessionDisableTiming ?? .fiveMinutes
