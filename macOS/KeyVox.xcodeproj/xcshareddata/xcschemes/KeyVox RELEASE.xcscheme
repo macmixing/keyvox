@@ -73,6 +73,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
+      customArchiveName = "KeyVox"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

@@ -6,6 +6,41 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.2] - 2026-05-20
+
+Refines Mac Vibes with promoted money-boundary adapters, shared dictionary correction improvements, and tighter local rewrite model lifecycle management.
+
+### Added
+
+- Added model-training datasets, lineage, manifests, validation scripts, and run materials for the promoted Polished `alpha-025` and Casual `alpha-5` Vibes adapters.
+- Added live validation coverage for Polished and Casual money-boundary behavior, including dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
+- Added shared dictation pipeline coverage to ensure dictionary correction still applies after Vibes-style output transformation.
+
+### Changed
+
+- Updated the bundled Polished Vibes adapter to `polished-alpha-025`, improving separation between money and adjacent quantity phrases while preserving spoken-year and age-compound fixes.
+- Updated the bundled Casual Vibes adapter to `casual-alpha-5`, improving separation between money and adjacent quantity phrases while preserving Casual voice and spoken-year handling.
+- Updated the Vibes adapter catalog and third-party notices to point at the promoted bundled adapter resources.
+- Updated shared dictation cleanup through `KeyVoxCore` `1.0.11` so stylized two-token dictionary phrases such as KeyVox product names can recover from near-miss leading tokens when the trailing token matches exactly.
+- Updated Mac Vibes runtime behavior so local rewrite model loading is tied to dictation or Vibe-change work instead of app launch or install-readiness prewarming.
+- Updated macOS engineering documentation and codemap notes for the promoted adapters and utterance-scoped Vibes runtime lifecycle.
+
+### Fixed
+
+- Fixed Vibes local rewrite resource cleanup so pending prewarm work is cancelled and the cached local rewrite model unloads after dictation transforms, Vibe-change transforms, and quick-tap cancellation paths.
+- Fixed post-transformation dictionary normalization so style rewrites that introduce dictionary near misses can still be corrected before casing and paste.
+- Fixed built-in KeyVox product-name correction to use the same canonical matcher path as user dictionary entries instead of package-owned alias shortcuts.
+
+### Package versions
+
+KeyVox macOS 1.1.2:
+- KeyVoxCore           1.0.11
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.0
+- KeyVoxLocalInference 1.0.2
+- KeyVoxVibesAdapters  1.0.2
+
 ## [1.1.1] - 2026-05-18
 
 Refines the Mac Vibes release with updated bundled style adapters, safer spoken-number cleanup, a new Dock icon preference, and more reliable paste behavior in blank web editors and Chromium-style browser surfaces.
