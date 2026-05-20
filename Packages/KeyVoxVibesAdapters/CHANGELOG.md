@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-05-20
+
+Bundled Vibes adapter promotion for Polished and Casual money boundary recognition.
+
+### Includes
+
+- Updated the bundled Polished adapter resource to `polished-alpha-025-lora.gguf`.
+- Updated the bundled Casual adapter resource to `casual-alpha-5-lora.gguf`.
+- Updated the adapter catalog so Polished and Casual resolve to the promoted bundled adapter resources.
+- Documented the promoted adapter resources in package and app-facing notices.
+
+### Notes
+
+- `1.0.2` bumps the tracked adapter package version for the promoted Polished and Casual money-boundary resources.
+
+---
+
 ## [1.0.1] - 2026-05-17
 
 Bundled Vibes adapter refresh for spoken year recognition, Polished age-compound precision, and Polished and Casual money boundary handling.

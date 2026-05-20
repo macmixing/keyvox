@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.11] - 2026-05-20
+
+Shared dictionary matching refinements for stylized product phrases.
+
+### Includes
+
+- Removed built-in alias variants from the package-owned `KeyVox`, `KeyVox Speak`, and `KeyVox Vibes` dictionary entries so they use the same canonical matching path as user entries.
+- Added shared matcher evidence for two-token stylized dictionary entries when the trailing token matches exactly and the leading token is a near miss.
+- Reapplied dictionary normalization after output transformation so transformed text can still be corrected before casing and paste.
+- Added shared-engine coverage for `Kivok Speak` recovery through the dictation pipeline.
+
+### Notes
+
+- `1.0.11` bumps the tracked engine version for `KeyVoxCore` to cover shared dictionary matching behavior used by both app clients.
+
+---
+
 ## [1.0.10] - 2026-05-17
 
 Shared spoken-year and quantity normalization refinements for dictation cleanup.

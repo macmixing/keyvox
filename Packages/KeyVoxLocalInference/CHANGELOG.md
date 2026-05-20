@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-05-20
+
+Live validation coverage for Polished and Casual money boundary adapter behavior.
+
+### Includes
+
+- Added Polished live local-model coverage for adjacent money and quantity phrases, including dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
+- Added Casual live local-model coverage for adjacent money and quantity phrases, including dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
+- Aligned live adapter validation with the promoted Polished alpha-025 and Casual alpha-5 bundled Vibes adapter resources.
+
+### Notes
+
+- `1.0.2` bumps the tracked local inference package version for the live validation coverage added around the promoted money-boundary Vibes adapters.
+
+---
+
 ## [1.0.1] - 2026-05-17
 
 Live validation coverage for refreshed Vibes adapters.
