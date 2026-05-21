@@ -6,19 +6,43 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.2] - 2026-05-20
+
+Fixes Vibes rewrite memory cleanup after dictation, refreshes bundled Vibes adapters for money-boundary recognition, and improves shared dictionary matching for stylized product phrases.
+
+### Fixed
+
+- Released warmed Vibes rewrite resources after dictation finishes, is cancelled, becomes stale, has no captured audio, or cannot continue because the dictation model is unavailable.
+- Cancelled pending Vibes rewrite prewarm work before unloading local rewrite resources so the app does not keep the local model resident after a dictation session no longer needs it.
+- Updated the bundled Casual Vibes adapter to alpha-5 so adjacent money and quantity phrases stay separated in dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
+- Updated the bundled Polished Vibes adapter to alpha-025 so adjacent money and quantity phrases stay separated while preserving the teen-number age-compound fix from the 1.2.1 line.
+- Added live local-model guard coverage for Polished and Casual money-boundary behavior.
+- Fixed shared dictionary matching so two-token stylized entries such as `KeyVox Speak` can recover leading-token near misses like `Kivok Speak` through the normal dictionary matcher path.
+- Removed built-in KeyVox alias variants so the package-owned entries use the same canonical dictionary matching path as user dictionary entries.
+- Reapplied shared dictionary normalization after Vibes output transformation so transformed text can still be corrected before casing and paste.
+
+### Package versions
+
+KeyVox iOS 1.2.2 (build 1)
+  KeyVoxCore           1.0.11
+  KeyVoxLocalInference 1.0.2
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.0
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.2
+  KeyVoxWhisper        1.0.0
+
 ## [1.2.1] - 2026-05-18
 
-Fixes a keyboard extension crash path by rasterizing the Vibes key logo before display, improves Vibes spoken year, age-compound, and money-boundary recognition, and preserves spoken year formatting during shared dictation cleanup.
+Fixes a keyboard extension crash path by rasterizing the Vibes key logo before display, improves Vibes spoken year and age-compound recognition, and preserves spoken year formatting during shared dictation cleanup.
 
 ### Fixed
 
 - Fixed a keyboard extension crash that could prevent affected users from opening the KeyVox keyboard from the globe key when the Vibes logo rendered through live template-vector tinting.
 - Updated the Vibes key none-state logo to render as a cached tinted bitmap before assignment while preserving the existing Vibes key layout, state colors, and behavior.
 - Updated bundled Casual and Polished Vibes adapters so spoken year references are preserved more reliably during local rewrite.
-- Updated the bundled Casual Vibes adapter to alpha-5 so adjacent money and quantity phrases stay separated in dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
-- Updated the bundled Polished Vibes adapter to alpha-025 so teen-number age compounds such as `eighteen year old` become `18-year-old` instead of `8-year-old`, while adjacent money and quantity phrases stay separated.
+- Updated the bundled Polished Vibes adapter to alpha-024 so teen-number age compounds such as `eighteen year old` become `18-year-old` instead of `8-year-old`.
 - Added Polished Vibes guard coverage for `8-year-old` versus `18-year-old`, `$180` versus `$1,800`, adjacent teen age compounds, and the full 2010s spoken-year sweep.
-- Added Polished Vibes guard coverage for dollar amounts followed by day counts, price ratios, star rating counts, and math expressions with money operands.
 - Fixed shared dictation cleanup so spoken year references stay ungrouped while nearby spoken quantities can still receive thousands separators.
 
 ### Package versions
