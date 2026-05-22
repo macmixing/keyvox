@@ -283,11 +283,6 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
                 forbiddenFragments: ["205", "twenty-five dollars", "twenty dollars"]
             ),
             CasualLiveCase(
-                input: "I have like twelve five star ratings right now.",
-                requiredFragments: ["I have like 12 5"],
-                forbiddenFragments: ["125 star", "twelve five star"]
-            ),
-            CasualLiveCase(
                 input: "I would have spent fifty dollars seven days ago.",
                 requiredFragments: ["$50 seven days ago"],
                 forbiddenFragments: ["$5007", "$50 7 days ago", "fifty dollars seven days ago"]

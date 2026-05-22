@@ -26,22 +26,22 @@ Tracked `datasets/` and `runs/` are the reproducible source of truth. Ignored ar
 
 ## Current Polished Adapter
 
-- Current run: `runs/polished/alpha-025`
+- Current run: `runs/polished/alpha-026`
 - Base dataset: `datasets/polished/alpha-010-base`
-- Continuation dataset: `datasets/polished/alpha-025-continuation-money-boundaries`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-025-lora.gguf`
+- Continuation dataset: `datasets/polished/alpha-026-continuation-rating-unlearn`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-026-lora.gguf`
 
 ## Current Casual Adapter
 
-- Current run: `runs/casual/casual-alpha-8`
+- Current run: `runs/casual/casual-alpha-9`
 - Base dataset: `datasets/casual/casual-alpha-1-base`
-- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`, `datasets/casual/casual-alpha-5-continuation-money-boundaries`, `datasets/casual/casual-alpha-6-continuation-money-negation-boundaries`, `datasets/casual/casual-alpha-7-continuation-money-time-coverage`, `datasets/casual/casual-alpha-8-continuation-address-time-guards`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-8-lora.gguf`
+- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`, `datasets/casual/casual-alpha-5-continuation-money-boundaries`, `datasets/casual/casual-alpha-6-continuation-money-negation-boundaries`, `datasets/casual/casual-alpha-7-continuation-money-time-coverage`, `datasets/casual/casual-alpha-8-continuation-address-time-guards`, `datasets/casual/casual-alpha-9-continuation-rating-unlearn`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-9-lora.gguf`
 
 ## Polished Run Status
 
-- Current: `runs/polished/alpha-025`
-- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`, `runs/polished/alpha-024`
+- Current: `runs/polished/alpha-026`
+- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`, `runs/polished/alpha-024`, `runs/polished/alpha-025`
 - Rejected intermediate: `runs/polished/rejected/alpha-018`, `runs/polished/rejected/alpha-022`
 - Rejected dataset: `datasets/polished/rejected/alpha-018-continuation-paragraphs`
 

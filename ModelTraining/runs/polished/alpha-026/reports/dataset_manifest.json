@@ -1,0 +1,23 @@
+{
+  "categories": {
+    "age_compound_guard": 24,
+    "age_quantity_guard": 7,
+    "live_regression_guard": 11,
+    "math_money_boundary": 151,
+    "money_boundary_regression": 19,
+    "money_day_boundary": 55,
+    "price_ratio_boundary": 8,
+    "quantity_guard": 20,
+    "spoken_year_2010s": 33,
+    "spoken_year_2020s": 20,
+    "spoken_year_mixed": 4,
+    "spoken_year_sequence": 9,
+    "spoken_year_sweep": 2
+  },
+  "purpose": "replay polished alpha-025 continuation with prior rating-formatting examples removed",
+  "source_dataset": "datasets/polished/alpha-025-continuation-money-boundaries",
+  "test_count": 8,
+  "train_count": 348,
+  "valid_count": 7,
+  "version": "polished-alpha-026"
+}

@@ -3,8 +3,37 @@ import Foundation
 struct APStyleNumberRepair {
     func repair(original: String, rewritten: String) -> String {
         let decimalRepaired = repairSpokenDecimalRuns(rewritten)
-        let lowDigitRepaired = repairLowOrdinaryDigits(original: original, rewritten: decimalRepaired)
+        let collapsedRunRepaired = repairCollapsedAdjacentNumberRuns(original: original, rewritten: decimalRepaired)
+        let lowDigitRepaired = repairLowOrdinaryDigits(original: original, rewritten: collapsedRunRepaired)
         return repairSpellOutNumberRuns(lowDigitRepaired)
+    }
+
+    private func repairCollapsedAdjacentNumberRuns(original: String, rewritten: String) -> String {
+        let tokens = RepairTokenization.wordTokens(in: original)
+        guard tokens.count >= 2 else { return rewritten }
+
+        var repaired = rewritten
+        var index = 0
+        while index < tokens.count {
+            guard let adjacentEndIndex = adjacentSingleNumberRunEnd(startingAt: index, tokens: tokens, in: original),
+                  !canParseWholeRun(startingAt: index, endingAt: adjacentEndIndex, tokens: tokens, in: original),
+                  let replacement = adjacentNumberRunReplacement(startingAt: index, endingAt: adjacentEndIndex, tokens: tokens) else {
+                index += 1
+                continue
+            }
+
+            let collapsedDigits = replacement.values.map(String.init).joined()
+            repaired = RepairMatching.replacingMatches(
+                in: repaired,
+                pattern: #"(?<![\w])\#(NSRegularExpression.escapedPattern(for: collapsedDigits))-(?=[\p{L}])"#,
+                options: []
+            ) { _, _ in
+                replacement.text + " "
+            }
+            index = adjacentEndIndex
+        }
+
+        return repaired
     }
 
     private func repairLowOrdinaryDigits(original: String, rewritten: String) -> String {
@@ -121,6 +150,29 @@ struct APStyleNumberRepair {
         }
 
         return nil
+    }
+
+    private func adjacentNumberRunReplacement(
+        startingAt index: Int,
+        endingAt endIndex: Int,
+        tokens: [RepairWordToken]
+    ) -> (values: [Int], text: String)? {
+        var values: [Int] = []
+        var parts: [String] = []
+        for token in tokens[index..<endIndex] {
+            guard let value = RepairNumberParsing.parsedSpellOutInteger(token.text) else {
+                return nil
+            }
+            values.append(value)
+            if value >= RepairNumberParsing.apStyleNumeralLowerBound {
+                parts.append(String(value))
+            } else if let word = RepairNumberParsing.spellOutString(for: value) {
+                parts.append(word)
+            } else {
+                return nil
+            }
+        }
+        return (values, parts.joined(separator: " "))
     }
 
     private func contiguousCandidateEnd(startingAt index: Int, tokens: [RepairWordToken], in text: String) -> Int {

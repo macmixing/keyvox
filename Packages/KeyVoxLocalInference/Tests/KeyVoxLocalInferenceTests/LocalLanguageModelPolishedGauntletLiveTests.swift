@@ -35,8 +35,6 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
 
     private static let polishedAgeCompoundRegressionInput = "And it's funny because all of those tools I had years ago came in handy to restore an eighteen year old pair of glasses."
 
-    private static let polishedStarRatingBoundaryInput = "I have like twelve five star ratings right now."
-
     private static let polishedHundredDollarsDaysInput = "I would have spent a hundred dollars seven days ago."
 
     private static let polishedFiftyDollarsDaysInput = "I would have spent fifty dollars seven days ago."
@@ -89,11 +87,6 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             style: .polished,
             input: polishedAgeCompoundRegressionInput,
             expected: "And it's funny because all of those tools I had years ago came in handy to restore an 18-year-old pair of glasses."
-        ),
-        LiveStylePromptCase(
-            style: .polished,
-            input: polishedStarRatingBoundaryInput,
-            expected: "I have 12 5-star ratings right now."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -253,15 +246,6 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             extraForbiddenFragments: [
                 " an 8-year-old pair of glasses",
                 "eighteen year old",
-            ]
-        ),
-        polishedStarRatingBoundaryInput: LiveStylePromptRequirements(
-            requiredFragments: [
-                "12 5-star ratings",
-            ],
-            extraForbiddenFragments: [
-                "125-star",
-                "twelve five star",
             ]
         ),
         polishedHundredDollarsDaysInput: LiveStylePromptRequirements(

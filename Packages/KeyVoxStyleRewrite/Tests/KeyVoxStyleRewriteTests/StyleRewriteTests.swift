@@ -209,6 +209,15 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "That guy waited 10 days total. Please order 22 labels.")
     }
 
+    func testRewriteRepairRestoresAPStyleForCollapsedAdjacentRatingNumbers() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I have like twelve five star ratings right now.",
+            rewritten: "I have like 125-star ratings right now."
+        )
+
+        XCTAssertEqual(output, "I have like 12 five star ratings right now.")
+    }
+
     func testRewriteRepairPreservesProtectedNumericContexts() {
         let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "The meeting starts at two thirty. Tell John it was five dollars and five percent.",
