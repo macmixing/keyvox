@@ -272,6 +272,15 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "Meet me at 759 7th Street.")
     }
 
+    func testRewriteRepairRestoresTimeShapedAddressAndOrdinalStreetDrift() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "She said her address was eleven thirty seven North Twelfth Street.",
+            rewritten: "She said her address was 11:37 North 2nd Street."
+        )
+
+        XCTAssertEqual(output, "She said her address was 1137 North 12th Street.")
+    }
+
     func testRewriteRepairRestoresAddressNumberWithDifferentStreetNames() {
         let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Send it to sixteen fifty nine Whitton Avenue and then 2359 North 59th Drive.",
@@ -279,6 +288,71 @@ final class StyleRewriteTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "Send it to 1659 Whitton Avenue and then 2359 North 59th Drive.")
+    }
+
+    func testRewriteRepairRestoresOrdinalStreetNumberDriftInAddressSuffix() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Yeah, she said her address was eleven thirty seven North Twelfth Street.",
+            rewritten: "She said her address was 1137 North 2nd Street."
+        )
+
+        XCTAssertEqual(output, "She said her address was 1137 North 12th Street.")
+    }
+
+    func testRewriteRepairCanonicalizesSpokenOrdinalStreetSuffix() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "She said her address was eleven twenty five North Twelfth Street.",
+            rewritten: "She said her address was 1125 North Twelfth Street."
+        )
+
+        XCTAssertEqual(output, "She said her address was 1125 North 12th Street.")
+    }
+
+    func testRewriteRepairRestoresCollapsedAddressNumberAndOrdinalStreetSuffix() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "She said her address was eleven twenty five North Twelfth Street.",
+            rewritten: "She said her address was 125 North 2nd Street."
+        )
+
+        XCTAssertEqual(output, "She said her address was 1125 North 12th Street.")
+    }
+
+    func testRewriteRepairRestoresDifferentOrdinalStreetNumberDriftInAddressSuffix() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Mail it to twenty three fifty nine West Fifty Ninth Drive.",
+            rewritten: "Mail it to 2359 West 9th Drive."
+        )
+
+        XCTAssertEqual(output, "Mail it to 2359 West 59th Drive.")
+    }
+
+    func testRewriteRepairRestoresCommonOrdinalStreetNumberDriftInAddressSuffixes() {
+        let cases = [
+            (
+                original: "Meet me at eight thirty seven North Seventh Street.",
+                rewritten: "Meet me at 837 North 2nd Street.",
+                repaired: "Meet me at 837 North 7th Street."
+            ),
+            (
+                original: "Meet me at nine forty eight South Eighth Avenue.",
+                rewritten: "Meet me at 948 South 1st Avenue.",
+                repaired: "Meet me at 948 South 8th Avenue."
+            ),
+            (
+                original: "Meet me at ten fifty nine West Ninth Drive.",
+                rewritten: "Meet me at 1059 West 5th Drive.",
+                repaired: "Meet me at 1059 West 9th Drive."
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairDeletedSeparatorPunctuation(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
     }
 
     func testRewriteRepairRepairsSplitDollarsAndCentsAmount() {
@@ -315,6 +389,33 @@ final class StyleRewriteTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "That should be €55.")
+    }
+
+    func testRewriteRepairKeepsAPStyleDayCountAfterMoneyAmount() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I would have spent fifty dollars seven days ago.",
+            rewritten: "I would have spent $50 seven days ago."
+        )
+
+        XCTAssertEqual(output, "I would have spent $50 seven days ago.")
+    }
+
+    func testRewriteRepairKeepsAPStyleMathOperandAfterMoneyAmount() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I don't know, that's probably three dollars multiplied by four.",
+            rewritten: "I don't know, that's probably $3 multiplied by four."
+        )
+
+        XCTAssertEqual(output, "I don't know, that's probably $3 multiplied by four.")
+    }
+
+    func testRewriteRepairRepairsMathMoneyOperandDrift() {
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I don't know, that's probably 3 * 4 dollars.",
+            rewritten: "I don't know, that's probably 3 * $34."
+        )
+
+        XCTAssertEqual(output, "I don't know, that's probably 3 * $4.")
     }
 
     func testRewriteRepairFixesModelPercentSentenceSplit() {
@@ -575,6 +676,27 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(result.finalText, request.baseText)
         XCTAssertFalse(result.applied)
         XCTAssertEqual(result.errors.map(\.errorCode), [.generationFailed])
+    }
+
+    @MainActor
+    func testStyleRewriteTransformerRepairsPolishedAddressOrdinalDrift() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .polished,
+            baseText: "She said her address was eleven thirty seven North Twelfth Street."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "She said her address was 1137 North 2nd Street."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "She said her address was 1137 North 12th Street.")
+        XCTAssertTrue(result.applied)
     }
 
     @MainActor

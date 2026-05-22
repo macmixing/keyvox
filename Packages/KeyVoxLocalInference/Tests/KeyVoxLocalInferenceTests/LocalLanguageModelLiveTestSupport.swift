@@ -116,7 +116,7 @@ final class LiveLocalStyleTester {
                     || missedParagraphCount
                     || result.applied != expectedApplied {
                     failures.append(
-                        "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); missing=\(missingFragments); forbidden=\(presentForbiddenFragments); paragraphs=\(paragraphCount); applied=\(result.applied)"
+                        "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); scalars=\(Self.unicodeScalars(in: result.finalText)); missing=\(missingFragments); forbidden=\(presentForbiddenFragments); paragraphs=\(paragraphCount); applied=\(result.applied)"
                     )
                 }
                 continue
@@ -124,7 +124,7 @@ final class LiveLocalStyleTester {
 
             if result.finalText != testCase.expected || result.applied != expectedApplied {
                 failures.append(
-                    "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); expected=\(testCase.expected); applied=\(result.applied)"
+                    "\(testCase.style.rawValue): \(testCase.input) => \(result.finalText); scalars=\(Self.unicodeScalars(in: result.finalText)); expected=\(testCase.expected); applied=\(result.applied)"
                 )
             }
         }
@@ -145,6 +145,14 @@ final class LiveLocalStyleTester {
         text.components(separatedBy: "\n\n")
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .count
+    }
+
+    private static func unicodeScalars(in text: String) -> String {
+        text.unicodeScalars
+            .map { scalar in
+                "U+\(String(format: "%04X", scalar.value))"
+            }
+            .joined(separator: " ")
     }
 }
 

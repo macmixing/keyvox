@@ -3,12 +3,18 @@ import Foundation
 enum RepairNumberParsing {
     static let apStyleNumeralLowerBound = 10
 
-    private static let spellOutNumberFormatter: NumberFormatter = {
+    private static let numberFormatterLocale = Locale(identifier: "en_US_POSIX")
+
+    private static let spellOutNumberFormatter = numberFormatter(style: .spellOut)
+
+    private static let ordinalNumberFormatter = numberFormatter(style: .ordinal)
+
+    private static func numberFormatter(style: NumberFormatter.Style) -> NumberFormatter {
         let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .spellOut
+        formatter.locale = numberFormatterLocale
+        formatter.numberStyle = style
         return formatter
-    }()
+    }
 
     static func spellOutString(for value: Int) -> String? {
         spellOutNumberFormatter.string(from: NSNumber(value: value))
@@ -30,6 +36,34 @@ enum RepairNumberParsing {
         }
 
         return nil
+    }
+
+    static func parsedOrdinalInteger(_ text: String) -> Int? {
+        let normalizedText = text.lowercased()
+
+        if let ordinalNumber = ordinalNumberFormatter.number(from: normalizedText),
+           let ordinalValue = integerValue(from: ordinalNumber) {
+            return ordinalValue
+        }
+
+        let candidates = [
+            normalizedText,
+            normalizedText.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
+        ]
+
+        for candidate in candidates {
+            guard let number = spellOutNumberFormatter.number(from: candidate),
+                  let value = integerValue(from: number) else {
+                continue
+            }
+            return value
+        }
+
+        return nil
+    }
+
+    static func ordinalString(for value: Int) -> String? {
+        ordinalNumberFormatter.string(from: NSNumber(value: value))
     }
 
     static func numericValue(for token: RepairWordToken) -> Int? {

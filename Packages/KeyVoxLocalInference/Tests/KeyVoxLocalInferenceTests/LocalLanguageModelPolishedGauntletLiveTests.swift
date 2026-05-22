@@ -55,6 +55,10 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
 
     private static let polishedCostFiftyDollarsDaysInput = "It probably cost fifty dollars three days ago."
 
+    private static let polishedAddressOrdinalInput = "She said her address was eleven twenty five North Twelfth Street."
+
+    private static let polishedAddressOrdinalSecondInput = "She said her address was eleven thirty seven North Twelfth Street."
+
     private static let cases = [
         LiveStylePromptCase(
             style: .polished,
@@ -94,22 +98,22 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: polishedHundredDollarsDaysInput,
-            expected: "I would have spent $100 7 days ago."
+            expected: "I would have spent $100 seven days ago."
         ),
         LiveStylePromptCase(
             style: .polished,
             input: polishedFiftyDollarsDaysInput,
-            expected: "I would have spent $50 7 days ago."
+            expected: "I would have spent $50 seven days ago."
         ),
         LiveStylePromptCase(
             style: .polished,
             input: polishedFourDollarsDaysInput,
-            expected: "I would have spent $4 6 days ago."
+            expected: "I would have spent $4 six days ago."
         ),
         LiveStylePromptCase(
             style: .polished,
             input: polishedTwentyFiveDollarsDaysInput,
-            expected: "I probably spent $25 3 days ago."
+            expected: "I probably spent $25 three days ago."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -119,12 +123,12 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: polishedFourForThreeDollarsInput,
-            expected: "I ended up getting 4 for $3."
+            expected: "I ended up getting four for $3."
         ),
         LiveStylePromptCase(
             style: .polished,
             input: polishedMoneyMultiplierWordsInput,
-            expected: "That's probably $3 multiplied by 4."
+            expected: "That's probably $3 multiplied by four."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -134,7 +138,17 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: polishedCostFiftyDollarsDaysInput,
-            expected: "It probably cost $50 3 days ago."
+            expected: "It probably cost $50 three days ago."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedAddressOrdinalInput,
+            expected: "She said her address was 1125 North 12th Street."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedAddressOrdinalSecondInput,
+            expected: "She said her address was 1137 North 12th Street."
         ),
     ]
 
@@ -252,38 +266,42 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         ),
         polishedHundredDollarsDaysInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$100 7 days ago",
+                "$100 seven days ago",
             ],
             extraForbiddenFragments: [
                 "a hundred dollars seven days ago",
                 "1007",
+                "$100 7 days ago",
             ]
         ),
         polishedFiftyDollarsDaysInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$50 7 days ago",
+                "$50 seven days ago",
             ],
             extraForbiddenFragments: [
                 "$57.7 days ago",
                 "$507 days ago",
+                "$50 7 days ago",
                 "fifty dollars seven days ago",
             ]
         ),
         polishedFourDollarsDaysInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$4 6 days ago",
+                "$4 six days ago",
             ],
             extraForbiddenFragments: [
                 "$4.6 days ago",
+                "$4 6 days ago",
                 "four dollars six days ago",
             ]
         ),
         polishedTwentyFiveDollarsDaysInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$25 3 days ago",
+                "$25 three days ago",
             ],
             extraForbiddenFragments: [
                 "$253 days ago",
+                "$25 3 days ago",
                 "twenty-five dollars three days ago",
             ]
         ),
@@ -298,19 +316,21 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         ),
         polishedFourForThreeDollarsInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "4 for $3",
+                "four for $3",
             ],
             extraForbiddenFragments: [
                 "$4 for $3",
+                "4 for $3",
                 "four for three dollars",
             ]
         ),
         polishedMoneyMultiplierWordsInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$3 multiplied by 4",
+                "$3 multiplied by four",
             ],
             extraForbiddenFragments: [
                 "$3 multiplied by $4",
+                "$3 multiplied by 4",
                 "three dollars multiplied by four",
             ]
         ),
@@ -325,12 +345,35 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
         ),
         polishedCostFiftyDollarsDaysInput: LiveStylePromptRequirements(
             requiredFragments: [
-                "$50 3 days ago",
+                "$50 three days ago",
             ],
             extraForbiddenFragments: [
                 "$53 days ago",
                 "$5 3 days ago",
+                "$50 3 days ago",
                 "fifty dollars three days ago",
+            ]
+        ),
+        polishedAddressOrdinalInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "1125 North 12th Street",
+            ],
+            extraForbiddenFragments: [
+                "1125 North Twelfth Street",
+                "125 North 2nd Street",
+                "North 2nd Street",
+                "eleven twenty five",
+            ]
+        ),
+        polishedAddressOrdinalSecondInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "1137 North 12th Street",
+            ],
+            extraForbiddenFragments: [
+                "1137 North Twelfth Street",
+                "1137 North 2nd Street",
+                "North 2nd Street",
+                "eleven thirty seven",
             ]
         ),
     ]

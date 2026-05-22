@@ -83,7 +83,7 @@ struct MoneyFactRepair {
         var spans: [SourceMoneySpan] = []
         var index = tokens.startIndex
         while index < tokens.endIndex {
-            guard let majorRun = numericRun(startingAt: index, in: tokens),
+            guard let majorRun = numericRun(startingAt: index, in: tokens, sourceText: text),
                   majorRun.endIndex < tokens.endIndex,
                   let majorValue = parsedNumericRun(Array(tokens[majorRun.range])),
                   let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex].lemma),
@@ -97,7 +97,7 @@ struct MoneyFactRepair {
             if nextIndex < tokens.endIndex,
                tokens[nextIndex].tag == .conjunction,
                let minorStartIndex = minorStartIndex(afterConjunctionAt: nextIndex, in: tokens),
-               let minorRun = numericRun(startingAt: minorStartIndex, in: tokens),
+               let minorRun = numericRun(startingAt: minorStartIndex, in: tokens, sourceText: text),
                minorRun.endIndex < tokens.endIndex,
                let parsedMinorValue = parsedNumericRun(Array(tokens[minorRun.range])),
                parsedMinorValue < 100,
@@ -140,11 +140,21 @@ struct MoneyFactRepair {
         return nil
     }
 
-    private func numericRun(startingAt index: Int, in tokens: [RepairTaggedToken]) -> (range: Range<Int>, endIndex: Int)? {
+    private func numericRun(
+        startingAt index: Int,
+        in tokens: [RepairTaggedToken],
+        sourceText: String
+    ) -> (range: Range<Int>, endIndex: Int)? {
         guard index < tokens.endIndex, RepairNumberParsing.isNumericToken(tokens[index]) else { return nil }
 
         var endIndex = index + 1
-        while endIndex < tokens.endIndex, RepairNumberParsing.isNumericToken(tokens[endIndex]) {
+        while endIndex < tokens.endIndex,
+              RepairNumberParsing.isNumericToken(tokens[endIndex]),
+              RepairNumberParsing.isNumberRunSeparator(
+                between: tokens[endIndex - 1].token,
+                and: tokens[endIndex].token,
+                in: sourceText
+              ) {
             endIndex += 1
         }
         return (index..<endIndex, endIndex)

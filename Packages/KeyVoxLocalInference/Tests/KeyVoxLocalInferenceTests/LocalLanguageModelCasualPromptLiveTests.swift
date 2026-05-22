@@ -218,6 +218,16 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
                 forbiddenFragments: ["11:52 North Washington", "eleven fifty two", "three thirty"]
             ),
             CasualLiveCase(
+                input: "She said her address was eleven twenty five North Twelfth Street.",
+                requiredFragments: ["1125 North 12th Street"],
+                forbiddenFragments: ["1125 North Twelfth Street", "125 North 2nd Street", "North 2nd Street"]
+            ),
+            CasualLiveCase(
+                input: "She said her address was eleven thirty seven North Twelfth Street.",
+                requiredFragments: ["1137 North 12th Street"],
+                forbiddenFragments: ["1137 North Twelfth Street", "1137 North 2nd Street", "North 2nd Street"]
+            ),
+            CasualLiveCase(
                 input: "I'm pretty sure that ain't twenty-five dollars, but I definitely know it starts at three thirty.",
                 requiredFragments: ["ain't $25", "starts at 3:30"],
                 forbiddenFragments: ["25 dollars", "$3.30", "twenty-five dollars", "three thirty"]
@@ -279,18 +289,18 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
             ),
             CasualLiveCase(
                 input: "I would have spent fifty dollars seven days ago.",
-                requiredFragments: ["$50 7 days ago"],
-                forbiddenFragments: ["$5007", "fifty dollars seven days ago"]
+                requiredFragments: ["$50 seven days ago"],
+                forbiddenFragments: ["$5007", "$50 7 days ago", "fifty dollars seven days ago"]
             ),
             CasualLiveCase(
                 input: "I would have spent one hundred dollars seven days ago.",
-                requiredFragments: ["$100 7 days ago"],
-                forbiddenFragments: ["$107 days ago", "one hundred dollars seven days ago"]
+                requiredFragments: ["$100 seven days ago"],
+                forbiddenFragments: ["$107 days ago", "$100 7 days ago", "one hundred dollars seven days ago"]
             ),
             CasualLiveCase(
                 input: "I would have spent forty-three dollars seven days ago.",
-                requiredFragments: ["$43 7 days ago"],
-                forbiddenFragments: ["$4307", "forty-three dollars seven days ago"]
+                requiredFragments: ["$43 seven days ago"],
+                forbiddenFragments: ["$4307", "$43 7 days ago", "forty-three dollars seven days ago"]
             ),
             CasualLiveCase(
                 input: "I ended up getting ten for one dollar.",
@@ -299,13 +309,13 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
             ),
             CasualLiveCase(
                 input: "It probably would have cost fifty dollars three days ago.",
-                requiredFragments: ["$50 3 days ago"],
-                forbiddenFragments: ["$5003", "fifty dollars three days ago"]
+                requiredFragments: ["$50 three days ago"],
+                forbiddenFragments: ["$5003", "$50 3 days ago", "fifty dollars three days ago"]
             ),
             CasualLiveCase(
                 input: "Yeah, that was what? Fifty dollars multiplied by three?",
-                requiredFragments: ["Yeah, that was what? $50 multiplied by 3?"],
-                forbiddenFragments: ["$500 multiplied by 3", "Fifty dollars multiplied by three"]
+                requiredFragments: ["Yeah, that was what? $50 multiplied by three?"],
+                forbiddenFragments: ["$500 multiplied by 3", "$50 multiplied by 3", "Fifty dollars multiplied by three"]
             ),
             CasualLiveCase(
                 input: "Yeah, that was 3 * 50 dollars.",

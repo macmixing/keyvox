@@ -1,6 +1,16 @@
 import Foundation
 
 struct AddressFactRepair {
+    private struct SourceAddressEvidence {
+        let number: String
+        let suffixEdits: [(Range<String.Index>, String)]
+    }
+
+    private struct SourceAddressEvidenceCandidate {
+        let evidence: SourceAddressEvidence
+        let sourceSuffixLength: Int
+    }
+
     private static let addressDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.address.rawValue
     )
@@ -17,19 +27,20 @@ struct AddressFactRepair {
             guard addressTokens.count > 1,
                   let leadingToken = addressTokens.first,
                   leadingToken.text.allSatisfy(\.isNumber),
-                  let sourceNumber = sourceAddressNumber(
+                  let sourceEvidence = sourceAddressEvidence(
                     beforeSuffix: Array(addressTokens.dropFirst()),
                     in: originalTokens
                   ),
-                  sourceNumber != leadingToken.text else {
+                  sourceEvidence.number != leadingToken.text || !sourceEvidence.suffixEdits.isEmpty else {
                 continue
             }
 
-            let candidate = replacingSubrange(leadingToken.range, in: rewritten, with: sourceNumber)
+            let candidateEdits = [(leadingToken.range, sourceEvidence.number)] + sourceEvidence.suffixEdits
+            let candidate = applying(edits: candidateEdits, to: rewritten)
             guard hasDetectedAddress(overlapping: leadingToken.range.lowerBound, in: candidate) else {
                 continue
             }
-            edits.append((leadingToken.range, sourceNumber))
+            edits.append(contentsOf: candidateEdits)
         }
 
         for timeMatch in timeMatches(in: rewritten) {
@@ -37,17 +48,19 @@ struct AddressFactRepair {
             let followingTokens = rewrittenWordTokens.filter { $0.range.lowerBound >= timeRange.upperBound }
             guard !followingTokens.isEmpty else { continue }
 
-            for suffixLength in 1...min(4, followingTokens.count) {
+            let maximumSuffixLength = min(4, followingTokens.count)
+            for suffixLength in stride(from: maximumSuffixLength, through: 1, by: -1) {
                 let suffix = Array(followingTokens.prefix(suffixLength))
-                guard let sourceNumber = sourceAddressNumber(beforeSuffix: suffix, in: originalTokens) else {
+                guard let sourceEvidence = sourceAddressEvidence(beforeSuffix: suffix, in: originalTokens) else {
                     continue
                 }
 
-                let candidate = replacingSubrange(timeRange, in: rewritten, with: sourceNumber)
+                let candidateEdits = [(timeRange, sourceEvidence.number)] + sourceEvidence.suffixEdits
+                let candidate = applying(edits: candidateEdits, to: rewritten)
                 guard hasDetectedAddress(overlapping: timeRange.lowerBound, in: candidate) else {
                     continue
                 }
-                edits.append((timeRange, sourceNumber))
+                edits.append(contentsOf: candidateEdits)
                 break
             }
         }
@@ -80,20 +93,90 @@ struct AddressFactRepair {
         return regex.matches(in: text, options: [], range: NSRange(text.startIndex..<text.endIndex, in: text))
     }
 
-    private func sourceAddressNumber(beforeSuffix suffix: [RepairWordToken], in sourceTokens: [RepairTaggedToken]) -> String? {
+    private func sourceAddressEvidence(
+        beforeSuffix suffix: [RepairWordToken],
+        in sourceTokens: [RepairTaggedToken]
+    ) -> SourceAddressEvidence? {
         guard !suffix.isEmpty else { return nil }
-        let suffixNormalizations = suffix.map(\.normalized)
+
+        var candidates: [SourceAddressEvidenceCandidate] = []
 
         for suffixStartIndex in sourceTokens.indices {
-            guard suffixStartIndex + suffixNormalizations.count <= sourceTokens.count else { continue }
-            let sourceSuffix = sourceTokens[suffixStartIndex..<(suffixStartIndex + suffixNormalizations.count)]
-            guard Array(sourceSuffix.map(\.token.normalized)) == suffixNormalizations else {
+            let maximumSuffixLength = min(suffix.count + 2, sourceTokens.count - suffixStartIndex)
+            guard suffix.count <= maximumSuffixLength else { continue }
+
+            for sourceSuffixLength in suffix.count...maximumSuffixLength {
+                let sourceSuffix = sourceTokens[suffixStartIndex..<(suffixStartIndex + sourceSuffixLength)]
+                guard let suffixEdits = suffixEdits(sourceSuffix: Array(sourceSuffix), rewrittenSuffix: suffix) else {
+                    continue
+                }
+                guard let value = parsedAddressNumber(endingBefore: suffixStartIndex, in: sourceTokens) else {
+                    continue
+                }
+                let evidence = SourceAddressEvidence(number: String(value), suffixEdits: suffixEdits)
+                candidates.append(SourceAddressEvidenceCandidate(evidence: evidence, sourceSuffixLength: sourceSuffixLength))
+            }
+        }
+
+        return candidates
+            .sorted {
+                if $0.evidence.suffixEdits.count != $1.evidence.suffixEdits.count {
+                    return $0.evidence.suffixEdits.count < $1.evidence.suffixEdits.count
+                }
+                return $0.sourceSuffixLength > $1.sourceSuffixLength
+            }
+            .first?
+            .evidence
+    }
+
+    private func suffixEdits(sourceSuffix: [RepairTaggedToken], rewrittenSuffix: [RepairWordToken]) -> [(Range<String.Index>, String)]? {
+        var edits: [(Range<String.Index>, String)] = []
+        var sourceIndex = sourceSuffix.startIndex
+        var rewrittenIndex = rewrittenSuffix.startIndex
+
+        while sourceIndex < sourceSuffix.endIndex, rewrittenIndex < rewrittenSuffix.endIndex {
+            let sourceToken = sourceSuffix[sourceIndex]
+            let rewrittenToken = rewrittenSuffix[rewrittenIndex]
+            if sourceToken.token.normalized == rewrittenToken.normalized {
+                if let sourceOrdinal = RepairNumberParsing.parsedOrdinalInteger(sourceToken.token.text),
+                   let replacement = RepairNumberParsing.ordinalString(for: sourceOrdinal),
+                   rewrittenToken.text != replacement {
+                    edits.append((rewrittenToken.range, replacement))
+                }
+                sourceIndex += 1
+                rewrittenIndex += 1
                 continue
             }
-            guard let value = parsedAddressNumber(endingBefore: suffixStartIndex, in: sourceTokens) else {
+
+            guard let sourceOrdinalRun = sourceOrdinalRun(startingAt: sourceIndex, in: sourceSuffix),
+                  RepairNumberParsing.parsedOrdinalInteger(rewrittenToken.text) != nil,
+                  let replacement = RepairNumberParsing.ordinalString(for: sourceOrdinalRun.value) else {
+                return nil
+            }
+            edits.append((rewrittenToken.range, replacement))
+            sourceIndex = sourceOrdinalRun.endIndex
+            rewrittenIndex += 1
+        }
+
+        guard sourceIndex == sourceSuffix.endIndex, rewrittenIndex == rewrittenSuffix.endIndex else { return nil }
+        return edits
+    }
+
+    private func sourceOrdinalRun(
+        startingAt startIndex: Int,
+        in sourceSuffix: [RepairTaggedToken]
+    ) -> (value: Int, endIndex: Int)? {
+        let maximumEndIndex = min(sourceSuffix.endIndex, startIndex + 3)
+        guard startIndex < maximumEndIndex else { return nil }
+
+        for endIndex in stride(from: maximumEndIndex, through: startIndex + 1, by: -1) {
+            let text = sourceSuffix[startIndex..<endIndex]
+                .map(\.token.text)
+                .joined(separator: " ")
+            guard let value = RepairNumberParsing.parsedOrdinalInteger(text) else {
                 continue
             }
-            return String(value)
+            return (value, endIndex)
         }
 
         return nil
@@ -152,6 +235,14 @@ struct AddressFactRepair {
     ) -> String {
         var repaired = text
         repaired.replaceSubrange(range, with: replacement)
+        return repaired
+    }
+
+    private func applying(edits: [(Range<String.Index>, String)], to text: String) -> String {
+        var repaired = text
+        for edit in edits.sorted(by: { $0.0.lowerBound > $1.0.lowerBound }) {
+            repaired.replaceSubrange(edit.0, with: edit.1)
+        }
         return repaired
     }
 }

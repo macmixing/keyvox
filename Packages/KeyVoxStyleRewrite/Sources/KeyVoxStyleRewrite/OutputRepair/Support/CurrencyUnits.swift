@@ -64,6 +64,8 @@ enum CurrencyUnits {
         .map { NSRegularExpression.escapedPattern(for: $0) }
         .joined(separator: "|")
 
+    static let symbols: Set<String> = Set(unitsByLemma.values.map(\.symbol))
+
     static func unit(for lemma: String?) -> Unit? {
         guard let lemma else { return nil }
         return unitsByLemma[lemma.lowercased()]

@@ -1,3 +1,4 @@
+import KeyVoxStyleRewrite
 import XCTest
 @testable import KeyVoxLocalInference
 
@@ -70,6 +71,24 @@ final class LocalLanguageModelTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testStyleRewriteDependencyRepairsAddressOrdinalDrift() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .polished,
+            baseText: "She said her address was eleven thirty seven North Twelfth Street."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: LocalInferenceWordTokenCounter(),
+            chunkResponderProvider: { _ in
+                LocalInferenceStubChunkResponder(response: "She said her address was 1137 North 2nd Street.")
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "She said her address was 1137 North 12th Street.")
+    }
+
     func testMissingModelProducesTypedFailure() async {
         let model = LlamaLocalLanguageModel(
             modelURL: URL(fileURLWithPath: "/tmp/keyvox-missing-local-model.gguf")
@@ -132,4 +151,23 @@ final class LocalLanguageModelTests: XCTestCase {
         }
     }
 
+}
+
+private struct LocalInferenceWordTokenCounter: TextTransformTokenCounting {
+    func tokenCount(for text: String) async throws -> Int {
+        text.split(whereSeparator: \.isWhitespace).count
+    }
+}
+
+@MainActor
+private final class LocalInferenceStubChunkResponder: TextTransformChunkResponding {
+    private let response: String
+
+    init(response: String) {
+        self.response = response
+    }
+
+    func transformChunk(_ chunk: TextTransformChunk, request: TextTransformRequest) async throws -> String {
+        response
+    }
 }
