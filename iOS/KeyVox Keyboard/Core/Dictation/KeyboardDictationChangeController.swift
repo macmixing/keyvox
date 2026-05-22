@@ -55,7 +55,11 @@ final class KeyboardDictationChangeController {
         case .selectedPreference:
             return appSettingsStore.selectedVibe
         case .activeInsertion:
-            return activeSession?.currentStyle ?? appSettingsStore.selectedVibe
+            guard let activeSession, activeInsertionMatchesCurrentText(activeSession) else {
+                return appSettingsStore.selectedVibe
+            }
+
+            return activeSession.currentStyle
         }
     }
 
@@ -66,10 +70,7 @@ final class KeyboardDictationChangeController {
 
         let currentDisplayedStyle = displayedVibeStyle
         return currentDisplayedStyle == activeSession.currentStyle
-            && textInputController.currentTextMatchesUntouchedInsertion(
-                activeSession.currentText,
-                documentContextBeforeInsertion: activeSession.documentContextBeforeInput
-            )
+            && activeInsertionMatchesCurrentText(activeSession)
     }
 
     init(
@@ -294,6 +295,13 @@ final class KeyboardDictationChangeController {
 
     private func invalidateActiveSession() {
         activeSession = nil
+    }
+
+    private func activeInsertionMatchesCurrentText(_ session: Session) -> Bool {
+        textInputController.currentTextMatchesUntouchedInsertion(
+            session.currentText,
+            documentContextBeforeInsertion: session.documentContextBeforeInput
+        )
     }
 
     private func targetDeterministicState(
