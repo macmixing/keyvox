@@ -1,6 +1,6 @@
 import Foundation
 
-enum StyleRewriteCurrencyUnits {
+enum CurrencyUnits {
     struct Unit {
         let symbol: String
         let scale: Scale

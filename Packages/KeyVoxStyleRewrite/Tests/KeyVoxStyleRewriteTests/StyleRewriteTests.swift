@@ -147,7 +147,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Hey, um what are you doing, um tomorrow?",
             rewritten: "Hey, what are you doing, tomorrow?"
         )
@@ -156,7 +156,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresSentenceOpeningCommaAroundDeletedTokens() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Phase three. Yo, um what are you doing?",
             rewritten: "Phase three. Yo what are you doing?"
         )
@@ -165,7 +165,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairAppliesAPStyleToOrdinaryLowNumbersFromSpokenInput() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "I went there two days ago. She wanted five lobsters for dinner.",
             rewritten: "I went there 2 days ago. She wanted 5 lobsters for dinner."
         )
@@ -174,7 +174,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresExplicitWrittenLowNumber() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "I'm just going to leave that as the written two.",
             rewritten: "I'm just going to leave that as the written 2."
         )
@@ -183,7 +183,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairFormatsSpokenDecimalRun() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "I'm shipping version two point zero tomorrow.",
             rewritten: "I'm shipping version two point zero tomorrow."
         )
@@ -192,7 +192,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresDeletedLowNumberEvidence() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Yeah, I'll probably meet you two tomorrow.",
             rewritten: "Yeah, I'll probably meet you tomorrow."
         )
@@ -201,7 +201,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairConvertsOrdinaryTenPlusSpokenCounts() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "That guy waited ten days total. Please order twenty two labels.",
             rewritten: "That guy waited ten days total. Please order twenty two labels."
         )
@@ -210,7 +210,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairPreservesProtectedNumericContexts() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "The meeting starts at two thirty. Tell John it was five dollars and five percent.",
             rewritten: "The meeting starts at 2:30. Tell John it was $5 and 5%."
         )
@@ -219,7 +219,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairDoesNotPartiallyConvertSpokenTimeClusters() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "The meeting starts at two thirty.",
             rewritten: "The meeting starts at two thirty."
         )
@@ -228,7 +228,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairDoesNotConvertAddressLikeSpokenNumberClusters() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Meet me at eleven fifty two North Washington Street.",
             rewritten: "Meet me at eleven fifty two North Washington Street."
         )
@@ -237,7 +237,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresAddressNumberConvertedToTime() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Meet me at 1152 North Washington Street.",
             rewritten: "Meet me at 11:52 North Washington Street."
         )
@@ -246,7 +246,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresSpokenAddressNumberCollapsedByModel() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Yeah, my address is twelve fifty five North Washington Avenue.",
             rewritten: "Yeah, my address is 125 North Washington Avenue."
         )
@@ -255,7 +255,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresDigitByDigitSpokenAddressNumberCollapsedByModel() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Yeah, my address is one two five five North Washington Avenue.",
             rewritten: "Yeah, my address is 125 North Washington Avenue."
         )
@@ -264,7 +264,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresTimeShapedAddressBeforeOrdinalStreet() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Meet me at seven fifty nine 7th Street.",
             rewritten: "Meet me at 7:59 7th Street."
         )
@@ -273,7 +273,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresAddressNumberWithDifferentStreetNames() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "Send it to sixteen fifty nine Whitton Avenue and then 2359 North 59th Drive.",
             rewritten: "Send it to 16:59 Whitton Avenue and then 23:59 North 59th Drive."
         )
@@ -282,7 +282,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsSplitDollarsAndCentsAmount() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "I think it was fifty seven dollars and fifty cents.",
             rewritten: "I think it was $57 and $50."
         )
@@ -291,7 +291,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsSplitDollarsAndCentsAmountWithFillerBeforeCents() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "I think it was forty seven dollars and like fifty cents.",
             rewritten: "I think it was $47 and $47."
         )
@@ -300,7 +300,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairDoesNotDuplicateRepairedSplitMoneyAmount() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "It's probably like forty seven dollars and like fifty cents.",
             rewritten: "It's probably like $47 and like $47."
         )
@@ -309,7 +309,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsChangedMoneyAmountWhenCurrencyMatches() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "That should be fifty five euros.",
             rewritten: "That should be €5."
         )
@@ -318,7 +318,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairFixesModelPercentSentenceSplit() {
-        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairDeletedSeparatorPunctuation(
             original: "The discount is five percent if we ship today.",
             rewritten: "The discount is 5%. if we ship today."
         )
