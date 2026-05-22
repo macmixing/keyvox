@@ -29,6 +29,9 @@ public struct ThousandsGroupingNormalizer {
     private static let dateDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.date.rawValue
     )
+    private static let addressDetector: NSDataDetector? = try? NSDataDetector(
+        types: NSTextCheckingResult.CheckingType.address.rawValue
+    )
     private static let calendarMonthTokens: Set<String> = {
         let monthFormatter = DateFormatter()
         monthFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -292,7 +295,7 @@ public struct ThousandsGroupingNormalizer {
     }
 
     private func protectedRanges(in line: String, fullRange: NSRange) -> [NSRange] {
-        [
+        let regexRanges = [
             Self.isoDateRegex,
             Self.slashedOrHyphenatedDateRegex,
             Self.versionRegex,
@@ -301,10 +304,15 @@ public struct ThousandsGroupingNormalizer {
         ]
         .compactMap { $0 }
         .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
-        +
-        (Self.dateDetector?.matches(in: line, options: [], range: fullRange)
-            .filter { $0.resultType == .date }
-            .map(\.range) ?? [])
+
+        let detectorRanges = [
+            Self.dateDetector,
+            Self.addressDetector,
+        ]
+        .compactMap { $0 }
+        .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
+
+        return regexRanges + detectorRanges
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {

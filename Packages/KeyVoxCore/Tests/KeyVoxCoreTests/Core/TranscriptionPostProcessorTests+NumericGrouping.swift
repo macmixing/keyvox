@@ -235,6 +235,33 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "November 2025 had 5,000 signups.")
     }
 
+    func testPreservesFourDigitAddressNumbersWithoutGroupingSeparators() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Meet me at 1152 North Washington Street. Drop it at 1925 South Franklin Boulevard.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Meet me at 1152 North Washington Street. Drop it at 1925 South Franklin Boulevard."
+        )
+    }
+
+    func testPreservesAddressNumbersWhileFormattingNearbyQuantities() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Send 5600 flyers to 1034 West General Street by 3:30.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Send 5,600 flyers to 1034 West General Street by 3:30.")
+    }
+
     func testNormalizesStandaloneSpokenThousandsQuantity() {
         let processor = TranscriptionPostProcessor()
 
