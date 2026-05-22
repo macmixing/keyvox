@@ -217,7 +217,7 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(pasted, ["Ahoy, world"])
     }
 
-    func testPipelineAppliesDictionaryEntriesAfterOutputTransformation() async throws {
+    func testPipelineDoesNotApplyDictionaryEntriesAfterOutputTransformation() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "I introduced KeyVox Speak and later on KeyVox Vibes.", languageCode: "en")
         )
@@ -251,9 +251,9 @@ final class DictationPipelineTests: XCTestCase {
         )
 
         XCTAssertEqual(result.baseText, "I introduced KeyVox Speak and later on KeyVox Vibes.")
-        XCTAssertEqual(result.finalText, "I introduced KeyVox Speak and later on Cueboard.")
-        XCTAssertEqual(recorded, ["I introduced KeyVox Speak and later on Cueboard."])
-        XCTAssertEqual(pasted, ["I introduced KeyVox Speak and later on Cueboard."])
+        XCTAssertEqual(result.finalText, "I introduced Kivok Speak and later on cue board.")
+        XCTAssertEqual(recorded, ["I introduced Kivok Speak and later on cue board."])
+        XCTAssertEqual(pasted, ["I introduced Kivok Speak and later on cue board."])
     }
 
     func testCapsLockOverridesTransformedTextCasing() async throws {

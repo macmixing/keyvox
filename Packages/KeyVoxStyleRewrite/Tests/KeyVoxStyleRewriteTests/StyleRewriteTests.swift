@@ -173,6 +173,33 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "I went there two days ago. She wanted five lobsters for dinner.")
     }
 
+    func testRewriteRepairRestoresExplicitWrittenLowNumber() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I'm just going to leave that as the written two.",
+            rewritten: "I'm just going to leave that as the written 2."
+        )
+
+        XCTAssertEqual(output, "I'm just going to leave that as the written two.")
+    }
+
+    func testRewriteRepairFormatsSpokenDecimalRun() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I'm shipping version two point zero tomorrow.",
+            rewritten: "I'm shipping version two point zero tomorrow."
+        )
+
+        XCTAssertEqual(output, "I'm shipping version 2.0 tomorrow.")
+    }
+
+    func testRewriteRepairRestoresDeletedLowNumberEvidence() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Yeah, I'll probably meet you two tomorrow.",
+            rewritten: "Yeah, I'll probably meet you tomorrow."
+        )
+
+        XCTAssertEqual(output, "Yeah, I'll probably meet you two tomorrow.")
+    }
+
     func testRewriteRepairConvertsOrdinaryTenPlusSpokenCounts() {
         let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
             original: "That guy waited ten days total. Please order twenty two labels.",
@@ -207,6 +234,87 @@ final class StyleRewriteTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "Meet me at eleven fifty two North Washington Street.")
+    }
+
+    func testRewriteRepairRestoresAddressNumberConvertedToTime() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Meet me at 1152 North Washington Street.",
+            rewritten: "Meet me at 11:52 North Washington Street."
+        )
+
+        XCTAssertEqual(output, "Meet me at 1152 North Washington Street.")
+    }
+
+    func testRewriteRepairRestoresSpokenAddressNumberCollapsedByModel() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Yeah, my address is twelve fifty five North Washington Avenue.",
+            rewritten: "Yeah, my address is 125 North Washington Avenue."
+        )
+
+        XCTAssertEqual(output, "Yeah, my address is 1255 North Washington Avenue.")
+    }
+
+    func testRewriteRepairRestoresDigitByDigitSpokenAddressNumberCollapsedByModel() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Yeah, my address is one two five five North Washington Avenue.",
+            rewritten: "Yeah, my address is 125 North Washington Avenue."
+        )
+
+        XCTAssertEqual(output, "Yeah, my address is 1255 North Washington Avenue.")
+    }
+
+    func testRewriteRepairRestoresTimeShapedAddressBeforeOrdinalStreet() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Meet me at seven fifty nine 7th Street.",
+            rewritten: "Meet me at 7:59 7th Street."
+        )
+
+        XCTAssertEqual(output, "Meet me at 759 7th Street.")
+    }
+
+    func testRewriteRepairRestoresAddressNumberWithDifferentStreetNames() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Send it to sixteen fifty nine Whitton Avenue and then 2359 North 59th Drive.",
+            rewritten: "Send it to 16:59 Whitton Avenue and then 23:59 North 59th Drive."
+        )
+
+        XCTAssertEqual(output, "Send it to 1659 Whitton Avenue and then 2359 North 59th Drive.")
+    }
+
+    func testRewriteRepairRepairsSplitDollarsAndCentsAmount() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I think it was fifty seven dollars and fifty cents.",
+            rewritten: "I think it was $57 and $50."
+        )
+
+        XCTAssertEqual(output, "I think it was $57.50.")
+    }
+
+    func testRewriteRepairRepairsSplitDollarsAndCentsAmountWithFillerBeforeCents() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I think it was forty seven dollars and like fifty cents.",
+            rewritten: "I think it was $47 and $47."
+        )
+
+        XCTAssertEqual(output, "I think it was $47.50.")
+    }
+
+    func testRewriteRepairDoesNotDuplicateRepairedSplitMoneyAmount() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "It's probably like forty seven dollars and like fifty cents.",
+            rewritten: "It's probably like $47 and like $47."
+        )
+
+        XCTAssertEqual(output, "It's probably like $47.50.")
+    }
+
+    func testRewriteRepairRepairsChangedMoneyAmountWhenCurrencyMatches() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "That should be fifty five euros.",
+            rewritten: "That should be €5."
+        )
+
+        XCTAssertEqual(output, "That should be €55.")
     }
 
     func testRewriteRepairFixesModelPercentSentenceSplit() {
