@@ -164,6 +164,60 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "Phase three. Yo, what are you doing?")
     }
 
+    func testRewriteRepairAppliesAPStyleToOrdinaryLowNumbersFromSpokenInput() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "I went there two days ago. She wanted five lobsters for dinner.",
+            rewritten: "I went there 2 days ago. She wanted 5 lobsters for dinner."
+        )
+
+        XCTAssertEqual(output, "I went there two days ago. She wanted five lobsters for dinner.")
+    }
+
+    func testRewriteRepairConvertsOrdinaryTenPlusSpokenCounts() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "That guy waited ten days total. Please order twenty two labels.",
+            rewritten: "That guy waited ten days total. Please order twenty two labels."
+        )
+
+        XCTAssertEqual(output, "That guy waited 10 days total. Please order 22 labels.")
+    }
+
+    func testRewriteRepairPreservesProtectedNumericContexts() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "The meeting starts at two thirty. Tell John it was five dollars and five percent.",
+            rewritten: "The meeting starts at 2:30. Tell John it was $5 and 5%."
+        )
+
+        XCTAssertEqual(output, "The meeting starts at 2:30. Tell John it was $5 and 5%.")
+    }
+
+    func testRewriteRepairDoesNotPartiallyConvertSpokenTimeClusters() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "The meeting starts at two thirty.",
+            rewritten: "The meeting starts at two thirty."
+        )
+
+        XCTAssertEqual(output, "The meeting starts at two thirty.")
+    }
+
+    func testRewriteRepairDoesNotConvertAddressLikeSpokenNumberClusters() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "Meet me at eleven fifty two North Washington Street.",
+            rewritten: "Meet me at eleven fifty two North Washington Street."
+        )
+
+        XCTAssertEqual(output, "Meet me at eleven fifty two North Washington Street.")
+    }
+
+    func testRewriteRepairFixesModelPercentSentenceSplit() {
+        let output = StyleRewriteOutputRepair.repairDeletedSeparatorPunctuation(
+            original: "The discount is five percent if we ship today.",
+            rewritten: "The discount is 5%. if we ship today."
+        )
+
+        XCTAssertEqual(output, "The discount is 5% if we ship today.")
+    }
+
     func testChunkPlannerBudgetsInstructionsInputAndExpectedOutput() async throws {
         let request = TextTransformRequest(
             baseText: "one two three four five six seven eight",
@@ -444,7 +498,7 @@ final class StyleRewriteTests: XCTestCase {
             tokenCounter: WordTokenCounter(),
             chunkResponderProvider: { _ in
                 StubChunkResponder(responses: [
-                    0: "Okay Okay, so I guess we're gonna have to just record this dictated text. Remove clear filler except keep the word like. Preserve slang, profanity, grammar, meaning, lists, and paragraph breaks. Format numbers, dates, money, and percentages when clear. Output only the result."
+                    0: "Okay Okay, so I guess we're gonna have to just record this dictated text. \(StyleRewriteDictationConfiguration.casualLoRASystemPrompt)"
                 ])
             }
         )

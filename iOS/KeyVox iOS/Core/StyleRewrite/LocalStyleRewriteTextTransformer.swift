@@ -246,7 +246,7 @@ private extension LocalRewriteAdapterKind {
         case .polished:
             return "polished-alpha-025"
         case .casual:
-            return "casual-alpha-5"
+            return "casual-alpha-8"
         }
     }
 }

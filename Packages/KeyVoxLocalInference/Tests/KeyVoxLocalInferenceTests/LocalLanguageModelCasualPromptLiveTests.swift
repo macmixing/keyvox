@@ -143,6 +143,136 @@ final class LocalLanguageModelCasualPromptLiveTests: XCTestCase {
 
         let cases: [CasualLiveCase] = [
             CasualLiveCase(
+                input: "Meet me at 655 East Clifford Drive.",
+                requiredFragments: ["655 East Clifford Drive"],
+                forbiddenFragments: ["6:55 East Clifford Drive", "six fifty five"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at six fifty five East Clifford Drive.",
+                requiredFragments: ["655 East Clifford Drive"],
+                forbiddenFragments: ["6:55 East Clifford Drive", "six fifty five"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at six five five East Clifford Drive.",
+                requiredFragments: ["655 East Clifford Drive"],
+                forbiddenFragments: ["6:55 East Clifford Drive", "six five five"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at 652 North Washington Street.",
+                requiredFragments: ["652 North Washington Street"],
+                forbiddenFragments: ["6:52 North Washington Street", "six fifty two"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at six fifty two North Washington Street.",
+                requiredFragments: ["652 North Washington Street"],
+                forbiddenFragments: ["6:52 North Washington Street", "six fifty two"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at 852 West General Street.",
+                requiredFragments: ["852 West General Street"],
+                forbiddenFragments: ["8:52 West General Street", "eight fifty two"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at eight fifty two West General Street.",
+                requiredFragments: ["852 West General Street"],
+                forbiddenFragments: ["8:52 West General Street", "eight fifty two"]
+            ),
+            CasualLiveCase(
+                input: "Drop the package at 734 South Maple Avenue.",
+                requiredFragments: ["734 South Maple Avenue"],
+                forbiddenFragments: ["7:34 South Maple Avenue", "seven thirty four"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at 1,152 North Washington Street.",
+                requiredFragments: ["1152 North Washington Street"],
+                forbiddenFragments: ["1,152", "11:52 North Washington"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at eleven fifty two North Washington Street.",
+                requiredFragments: ["1152 North Washington Street"],
+                forbiddenFragments: ["11:52 North Washington", "eleven fifty two"]
+            ),
+            CasualLiveCase(
+                input: "Send it to 1,034 West General Street.",
+                requiredFragments: ["1034 West General Street"],
+                forbiddenFragments: ["1,034", "10:34 West General"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at ten thirty four West General Street.",
+                requiredFragments: ["1034 West General Street"],
+                forbiddenFragments: ["10:34 West General", "ten thirty four"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at 655 East Clifford Drive at three thirty.",
+                requiredFragments: ["655 East Clifford Drive", "at 3:30"],
+                forbiddenFragments: ["6:55 East Clifford Drive", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "The appointment is at three thirty at 652 North Washington Street.",
+                requiredFragments: ["at 3:30", "652 North Washington Street"],
+                forbiddenFragments: ["6:52 North Washington Street", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "Meet me at eleven fifty two North Washington Street at three thirty.",
+                requiredFragments: ["1152 North Washington Street", "at 3:30"],
+                forbiddenFragments: ["11:52 North Washington", "eleven fifty two", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "I'm pretty sure that ain't twenty-five dollars, but I definitely know it starts at three thirty.",
+                requiredFragments: ["ain't $25", "starts at 3:30"],
+                forbiddenFragments: ["25 dollars", "$3.30", "twenty-five dollars", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "I'm pretty sure that ain't thirty-five dollars, but I definitely know it starts at five thirty.",
+                requiredFragments: ["ain't $35", "starts at 5:30"],
+                forbiddenFragments: ["35 dollars", "$5.30", "thirty-five dollars", "five thirty"]
+            ),
+            CasualLiveCase(
+                input: "I'm pretty sure that isn't forty dollars, but I definitely know it starts at six fifteen.",
+                requiredFragments: ["isn't $40", "starts at 6:15"],
+                forbiddenFragments: ["40 dollars", "$6.15", "forty dollars", "six fifteen"]
+            ),
+            CasualLiveCase(
+                input: "The price is not forty-five dollars, and the start time is seven forty five.",
+                requiredFragments: ["not $45", "start time is 7:45"],
+                forbiddenFragments: ["45 dollars", "$7.45", "forty-five dollars", "seven forty five"]
+            ),
+            CasualLiveCase(
+                input: "The ticket price should be thirty-five dollars, and the event starts at five thirty.",
+                requiredFragments: ["price should be $35", "starts at 5:30"],
+                forbiddenFragments: ["35 dollars", "$5.30", "thirty-five dollars", "five thirty"]
+            ),
+            CasualLiveCase(
+                input: "Tell John the concert ain't five dollars, but it'll be three dollars.",
+                requiredFragments: ["ain't $5", "it'll be $3"],
+                forbiddenFragments: ["$50", "five dollars", "three dollars"]
+            ),
+            CasualLiveCase(
+                input: "Tell John the concert is three dollars, not five dollars.",
+                requiredFragments: ["$3", "not $5"],
+                forbiddenFragments: ["three dollars", "five dollars"]
+            ),
+            CasualLiveCase(
+                input: "Um I'm pretty sure that's like twenty-five dollars and starts at three thirty.",
+                requiredFragments: ["I'm pretty sure that's like $25", "starts at 3:30"],
+                forbiddenFragments: ["205", "twenty-five dollars", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "Um I'm pretty sure that's like twenty dollars and starts at three thirty.",
+                requiredFragments: ["I'm pretty sure that's like $20", "starts at 3:30"],
+                forbiddenFragments: ["20 dollars", "twenty dollars", "three thirty"]
+            ),
+            CasualLiveCase(
+                input: "Tell John the tickets were five dollars yesterday and three dollars today.",
+                requiredFragments: ["$5 yesterday", "$3 today"],
+                forbiddenFragments: ["$50", "five dollars", "three dollars"]
+            ),
+            CasualLiveCase(
+                input: "I'm pretty sure that's like twenty-five dollars, not twenty dollars.",
+                requiredFragments: ["like $25", "not $20"],
+                forbiddenFragments: ["205", "twenty-five dollars", "twenty dollars"]
+            ),
+            CasualLiveCase(
                 input: "I have like twelve five star ratings right now.",
                 requiredFragments: ["I have like 12 5"],
                 forbiddenFragments: ["125 star", "twelve five star"]

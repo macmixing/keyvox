@@ -33,8 +33,8 @@ public enum KeyVoxVibesAdapterCatalog {
 
     public static let casual = KeyVoxVibesAdapterDescriptor(
         kind: .casual,
-        id: "casual-alpha-5",
-        filename: "casual-alpha-5-lora.gguf",
+        id: "casual-alpha-8",
+        filename: "casual-alpha-8-lora.gguf",
         compatibleBaseModelID: compatibleBaseModelID
     )
 

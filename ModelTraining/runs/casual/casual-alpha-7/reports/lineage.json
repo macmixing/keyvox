@@ -1,0 +1,61 @@
+{
+  "run": "casual-alpha-7",
+  "status": "candidate",
+  "continuations": [
+    {
+      "id": "casual-alpha-1",
+      "run": "ModelTraining/runs/casual/casual-alpha-1",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-1-base",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-1/adapters/casual-alpha-1/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-1/adapters/casual-alpha-1/casual-alpha-1-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-2",
+      "run": "ModelTraining/runs/casual/casual-alpha-2",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-2-continuation-times",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-1/adapters/casual-alpha-1/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-2/adapters/casual-alpha-2/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-2/adapters/casual-alpha-2/casual-alpha-2-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-3",
+      "run": "ModelTraining/runs/casual/casual-alpha-3",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-3-continuation-time-money-guards",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-2/adapters/casual-alpha-2/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-3/adapters/casual-alpha-3/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-3/adapters/casual-alpha-3/casual-alpha-3-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-4",
+      "run": "ModelTraining/runs/casual/casual-alpha-4",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-4-continuation-spoken-years",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-3/adapters/casual-alpha-3/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-4/adapters/casual-alpha-4/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-4/adapters/casual-alpha-4/casual-alpha-4-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-5",
+      "run": "ModelTraining/runs/casual/casual-alpha-5",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-5-continuation-money-boundaries",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-4/adapters/casual-alpha-4/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-5/adapters/casual-alpha-5/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-5/adapters/casual-alpha-5/casual-alpha-5-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-6",
+      "run": "ModelTraining/runs/casual/casual-alpha-6",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-6-continuation-money-negation-boundaries",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-5/adapters/casual-alpha-5/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-6/adapters/casual-alpha-6/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-6/adapters/casual-alpha-6/casual-alpha-6-lora.gguf"
+    },
+    {
+      "id": "casual-alpha-7",
+      "run": "ModelTraining/runs/casual/casual-alpha-7",
+      "dataset": "ModelTraining/datasets/casual/casual-alpha-7-continuation-money-time-coverage",
+      "continued_from": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-6/adapters/casual-alpha-6/adapters.safetensors",
+      "checkpoint": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-7/adapters/casual-alpha-7/adapters.safetensors",
+      "runtime_gguf": "ModelTraining/artifacts/archive/casual/casual-lora-alpha-7/adapters/casual-alpha-7/casual-alpha-7-lora.gguf"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "categories": {
+    "casual_voice_guard": 7,
+    "math_money_boundary": 8,
+    "money_boundary_regression": 7,
+    "money_day_boundary": 24,
+    "money_negation_boundary": 24,
+    "money_time_boundary": 24,
+    "money_time_contrast_boundary": 42,
+    "price_ratio_boundary": 12,
+    "quantity_guard": 6,
+    "spoken_year_2010s": 22,
+    "spoken_year_2020s": 10,
+    "spoken_year_mixed": 4,
+    "star_rating_boundary": 1
+  },
+  "purpose": "continuation from casual-alpha-6 for broader money plus time boundary coverage across contrast and plain start-time phrasing",
+  "test_count": 9,
+  "train_count": 174,
+  "valid_count": 8,
+  "version": "casual-alpha-7"
+}

@@ -16,9 +16,13 @@ This folder contains the source-of-truth training materials for local model adap
 ## Ignored
 
 - `artifacts/`
-  - Adapter checkpoints, converted GGUF files, training outputs, old experiments, and rejected runs.
+  - Local adapter checkpoints, converted GGUF files, and training outputs.
+  - `artifacts/current/` should only contain the promoted local artifact cache for the current adapter in each style.
+  - Older promoted artifacts belong in `artifacts/archive/`; rejected experiments belong in `artifacts/rejected/` only when they are intentionally preserved for diagnosis.
 - `models/`
   - Local base model files used for training or testing.
+
+Tracked `datasets/` and `runs/` are the reproducible source of truth. Ignored artifacts are a local cache. The bundled runtime GGUF under `Packages/KeyVoxVibesAdapters` is the app-shipped adapter artifact and should be tracked.
 
 ## Current Polished Adapter
 
@@ -29,10 +33,10 @@ This folder contains the source-of-truth training materials for local model adap
 
 ## Current Casual Adapter
 
-- Current run: `runs/casual/casual-alpha-5`
+- Current run: `runs/casual/casual-alpha-8`
 - Base dataset: `datasets/casual/casual-alpha-1-base`
-- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`, `datasets/casual/casual-alpha-5-continuation-money-boundaries`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-5-lora.gguf`
+- Continuation datasets: `datasets/casual/casual-alpha-2-continuation-times`, `datasets/casual/casual-alpha-3-continuation-time-money-guards`, `datasets/casual/casual-alpha-4-continuation-spoken-years`, `datasets/casual/casual-alpha-5-continuation-money-boundaries`, `datasets/casual/casual-alpha-6-continuation-money-negation-boundaries`, `datasets/casual/casual-alpha-7-continuation-money-time-coverage`, `datasets/casual/casual-alpha-8-continuation-address-time-guards`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/casual-alpha-8-lora.gguf`
 
 ## Polished Run Status
 
