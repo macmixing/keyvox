@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.12] - 2026-05-22
+
+Shared address-number protection and pipeline cleanup for dictation post-processing.
+
+### Includes
+
+- Protected address detector ranges during thousands grouping so address numbers such as `1152 North Washington Street` stay ungrouped while nearby quantities can still receive separators.
+- Removed the second dictionary normalization pass after Vibes style output transformation so dictionary correction remains owned by the base dictation post-processing pass.
+- Added shared-engine coverage for address numbers near ordinary grouped quantities and transformed Vibes output that must not receive dictionary correction after rewrite.
+
+### Notes
+
+- `1.0.12` bumps the tracked engine version for `KeyVoxCore` to cover shared address-number grouping protection and post-transform dictionary ownership used by both app clients.
+
+---
+
 ## [1.0.11] - 2026-05-20
 
 Shared dictionary matching refinements for stylized product phrases.

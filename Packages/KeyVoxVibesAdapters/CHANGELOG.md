@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-05-22
+
+Bundled Vibes adapter refresh for rating-formatting unlearn continuations and AP-backed number repair.
+
+### Includes
+
+- Updated the bundled Polished adapter resource to `polished-alpha-026-lora.gguf`.
+- Updated the bundled Casual adapter resource to `casual-alpha-9-lora.gguf`.
+- Updated the adapter catalog so Polished and Casual resolve to the promoted bundled adapter resources.
+- Promoted continuation materials that remove explicit rating-formatting examples from the current adapters while preserving money, address, time, and spoken-year coverage.
+
+### Notes
+
+- `1.0.3` bumps the tracked adapter package version for the refreshed bundled Vibes adapter resources used with deterministic AP-style number repair.
+
+---
+
 ## [1.0.2] - 2026-05-20
 
 Bundled Vibes adapter promotion for Polished and Casual money boundary recognition.

@@ -6,6 +6,25 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-05-22
+
+Live validation coverage for refreshed Vibes adapter boundaries and factual-number repair behavior.
+
+### Includes
+
+- Added Casual live local-model coverage for address-shaped inputs that should stay addresses instead of becoming time expressions.
+- Added coverage for numeric, digit-by-digit, spoken, and comma-grouped address number forms around north, south, east, and west street contexts.
+- Added Casual live local-model coverage for money and time boundaries so dollar amounts stay money while nearby spoken times stay time.
+- Added live coverage for factual number preservation around address, ordinal street, money, math, AP-style, and deleted-number rewrite repairs.
+- Removed rating-formatting adapter expectations from live coverage so rating behavior is validated through deterministic AP-style repair instead of adapter-specific star-rating rules.
+- Aligned live adapter validation with the promoted Casual alpha-9 and Polished alpha-026 bundled Vibes adapter resources.
+
+### Notes
+
+- `1.0.3` bumps the tracked local inference package version for live validation coverage around the promoted Casual alpha-9 and Polished alpha-026 Vibes adapters and the deterministic repair behavior that runs after local inference.
+
+---
+
 ## [1.0.2] - 2026-05-20
 
 Live validation coverage for Polished and Casual money boundary adapter behavior.

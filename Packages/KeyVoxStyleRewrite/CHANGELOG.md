@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-05-22
+
+Factual-number repair and output repair organization for Vibes rewrites.
+
+### Includes
+
+- Added deterministic rewrite output repair for address numbers that are converted to time-shaped values, collapsed during local model rewriting, or drift in ordinal street contexts.
+- Added factual money repair for split dollar-and-cent phrases, currency amount drift, and numeric money operands when the source dictation contains clear currency evidence.
+- Added deleted-number evidence repair so low-number words removed by a rewrite can be restored when the surrounding text still aligns.
+- Added AP-style spoken-number cleanup for ordinary low numbers while preserving protected numeric contexts such as time, money, percentages, addresses, decimals, and collapsed adjacent number evidence.
+- Split output repair into focused modules for punctuation, AP-style numbers, address facts, deleted number evidence, money facts, and shared repair support.
+
+### Notes
+
+- `1.0.1` bumps the tracked style rewrite package version for deterministic output repair behavior and the output repair module split used by Vibes rewrites.
+
+---
+
 ## [1.0.0] - 2026-04-29
 
 Baseline tracked release of the KeyVox style rewrite package.
