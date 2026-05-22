@@ -6,6 +6,45 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.3] - 2026-05-22
+
+Improves Vibes factual-number preservation, refreshes bundled Polished and Casual adapters, and fixes the keyboard Vibes key after an edited dictation.
+
+### Added
+
+- Added deterministic Vibes output repair for address numbers, ordinal street contexts, deleted low-number evidence, money amounts, currency operands, and AP-style low-number cleanup.
+- Added focused Vibes output repair modules for punctuation, AP-style numbers, address facts, deleted number evidence, money facts, and shared repair support.
+- Added live local-model coverage for address-shaped inputs, money and time boundaries, ordinal streets, math operands, AP-style repair behavior, and deleted-number repair behavior.
+- Added continuation training materials for Casual alpha-6, alpha-7, alpha-8, and alpha-9 plus Polished alpha-026 to strengthen money, address, time, spoken-year, and rating-formatting boundaries.
+
+### Changed
+
+- Updated the bundled Polished Vibes adapter to `polished-alpha-026-lora.gguf`.
+- Updated the bundled Casual Vibes adapter to `casual-alpha-9-lora.gguf`.
+- Updated the adapter catalog so Polished and Casual resolve to the refreshed bundled Vibes adapter resources.
+- Moved rating-formatting behavior away from adapter-specific expectations and into deterministic AP-style number repair.
+- Removed the second dictionary normalization pass after Vibes style output transformation so dictionary correction remains owned by base dictation post-processing.
+- Updated Vibes training documentation and iOS engineering documentation for the refreshed adapter and output repair behavior.
+
+### Fixed
+
+- Fixed Vibes rewrites so source address numbers stay factual when local rewrite output collapses digits, turns addresses into time-shaped text, or drifts around ordinal street wording.
+- Fixed Vibes rewrites so money amounts, split dollar-and-cent phrases, and numeric currency operands are restored when source dictation contains clear currency evidence.
+- Fixed Vibes rewrites so removed low-number words can be restored when the surrounding rewritten text still aligns with the source evidence.
+- Fixed shared dictation cleanup so address numbers such as `1152 North Washington Street` are protected from thousands grouping while nearby ordinary quantities can still receive separators.
+- Fixed the iOS keyboard Vibes key so, after the latest dictation has been edited or otherwise no longer matches the untouched insertion, the key shows the selected next Vibe instead of the stale Vibe from the previous transform.
+
+### Package versions
+
+KeyVox iOS 1.2.3
+  KeyVoxCore           1.0.12
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.1
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
 ## [1.2.2] - 2026-05-20
 
 Fixes Vibes rewrite memory cleanup after dictation, refreshes bundled Vibes adapters for money-boundary recognition, and improves shared dictionary matching for stylized product phrases.
