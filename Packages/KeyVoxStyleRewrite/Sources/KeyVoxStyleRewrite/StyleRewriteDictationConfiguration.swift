@@ -1,5 +1,12 @@
 import Foundation
 
+public enum StyleRewriteDictationModel: String, CaseIterable, Identifiable, Codable, Sendable {
+    case whisper
+    case parakeet
+
+    public var id: String { rawValue }
+}
+
 public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Sendable {
     case none
     case casual
@@ -28,22 +35,48 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
         case .polished:
             return "Rewrite dictated text while preserving the original intent and structure."
         case .casual:
-            return "Remove filler words while preserving the original tone and punctuation."
+            return "Remove filler words, format text, and preserve the original tone."
         case .chill:
             return "Lowercase with limited punctuation and no filler words for a relaxed vibe."
         }
     }
 
     public var exampleText: String {
+        exampleText(for: .whisper)
+    }
+
+    public func exampleText(for dictationModel: StyleRewriteDictationModel) -> String {
+        switch dictationModel {
+        case .whisper:
+            return whisperExampleText
+        case .parakeet:
+            return parakeetExampleText
+        }
+    }
+
+    private var whisperExampleText: String {
         switch self {
         case .none:
-            return "Are you um feeling this vibe? It's like pretty normal. Try it out."
+            return "Tell John, uh, like, immediately, the concert is gonna start at 5.30 and it's 10 bucks."
         case .casual:
-            return "Are you feeling this vibe? It's like pretty casual. Try it out."
+            return "Tell John like, immediately, the concert is gonna start at 5:30 and it's $10."
         case .polished:
-            return "Are you feeling this vibe? It's pretty polished. Try it out."
+            return "Tell John immediately, the concert is going to start at 5:30 and it's $10."
         case .chill:
-            return "are you feeling this vibe? its like pretty chill. try it out"
+            return "tell john like immediately the concert is gonna start at 530 and its $10"
+        }
+    }
+
+    private var parakeetExampleText: String {
+        switch self {
+        case .none:
+            return "Tell John, uh like immediately the concert is gonna start at five thirty and it's ten bucks."
+        case .casual:
+            return "Tell John like immediately the concert is gonna start at 5:30 and it's $10."
+        case .polished:
+            return "Tell John immediately, the concert is going to start at 5:30 and it's $10."
+        case .chill:
+            return "tell john like immediately the concert is gonna start at 530 and its $10"
         }
     }
 
