@@ -46,7 +46,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             return cleanupResult(request: request, result: result)
         }
 
-        let finalText = OutputRepair.repairDeletedSeparatorPunctuation(
+        let finalText = OutputRepair.repairModelOutput(
             original: request.baseText,
             rewritten: result.finalText
         )
@@ -73,7 +73,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         let runnerResult = await runner.transform(request)
         let cleanupSucceeded = runnerResult.errors.isEmpty
         let punctuationRepairedCleanup = cleanupSucceeded
-            ? OutputRepair.repairDeletedSeparatorPunctuation(
+            ? OutputRepair.repairModelOutput(
                 original: request.baseText,
                 rewritten: runnerResult.finalText
             )
@@ -133,7 +133,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         request: TextTransformRequest,
         result: TextTransformResult
     ) -> TextTransformResult {
-        let finalText = OutputRepair.repairDeletedSeparatorPunctuation(
+        let finalText = OutputRepair.repairModelOutput(
             original: request.baseText,
             rewritten: result.finalText
         )

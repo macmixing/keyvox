@@ -1,8 +1,12 @@
 import Foundation
 
 struct APStyleNumberRepair {
+    private static let dateDetector: NSDataDetector? = try? NSDataDetector(
+        types: NSTextCheckingResult.CheckingType.date.rawValue
+    )
+
     func repair(original: String, rewritten: String) -> String {
-        let decimalRepaired = repairSpokenDecimalRuns(rewritten)
+        let decimalRepaired = repairNumericSeparatorRuns(original: original, rewritten: rewritten)
         let collapsedRunRepaired = repairCollapsedAdjacentNumberRuns(original: original, rewritten: decimalRepaired)
         let lowDigitRepaired = repairLowOrdinaryDigits(original: original, rewritten: collapsedRunRepaired)
         return repairSpellOutNumberRuns(lowDigitRepaired)
@@ -85,7 +89,44 @@ struct APStyleNumberRepair {
         return repaired
     }
 
-    private func repairSpokenDecimalRuns(_ text: String) -> String {
+    private func repairNumericSeparatorRuns(original: String, rewritten: String) -> String {
+        let separatorEvidence = numericSeparatorEvidence(in: original)
+        let colonSeparatedRepaired = RepairMatching.replacingMatches(
+            in: rewritten,
+            pattern: #"(?<![\w:])([1-9]|1[0-2]):([0-5][0-9])(?![\w:])"#,
+            options: []
+        ) { match, nsText in
+            guard match.numberOfRanges == 3 else {
+                return nil
+            }
+
+            let hour = nsText.substring(with: match.range(at: 1))
+            let minute = nsText.substring(with: match.range(at: 2))
+            let decimal = "\(hour).\(minute)"
+            guard separatorEvidence.decimalSeparatedRuns.contains(decimal) else {
+                return nil
+            }
+
+            return decimal
+        }
+
+        let dotSeparatedRepaired = RepairMatching.replacingMatches(
+            in: colonSeparatedRepaired,
+            pattern: #"(?<![\w.])([1-9]|1[0-2])\.([0-5][0-9])(?![\w.])"#,
+            options: []
+        ) { match, nsText in
+            guard match.numberOfRanges == 3,
+                  separatorEvidence.timeSeparatedRuns.contains(nsText.substring(with: match.range)),
+                  !separatorEvidence.decimalSeparatedRuns.contains(nsText.substring(with: match.range)) else {
+                return nil
+            }
+
+            let hour = nsText.substring(with: match.range(at: 1))
+            let minute = nsText.substring(with: match.range(at: 2))
+            return "\(hour):\(minute)"
+        }
+
+        let text = dotSeparatedRepaired
         let tokens = RepairTokenization.wordTokens(in: text)
         guard tokens.count >= 3 else { return text }
 
@@ -93,7 +134,7 @@ struct APStyleNumberRepair {
         var index = 0
         while index + 2 < tokens.count {
             guard let major = RepairNumberParsing.parsedSpellOutInteger(tokens[index].text),
-                  tokens[index + 1].normalized == "point",
+                  RepairNumberParsing.isSpellOutDecimalSeparator(tokens[index + 1]),
                   RepairNumberParsing.isNumberRunSeparator(between: tokens[index], and: tokens[index + 1], in: text) else {
                 index += 1
                 continue
@@ -128,6 +169,77 @@ struct APStyleNumberRepair {
             repaired.replaceSubrange(edit.0, with: edit.1)
         }
         return repaired
+    }
+
+    private func numericSeparatorEvidence(in text: String) -> (
+        decimalSeparatedRuns: Set<String>,
+        timeSeparatedRuns: Set<String>
+    ) {
+        var decimalSeparatedRuns = spokenDecimalRuns(in: text)
+        var timeSeparatedRuns: Set<String> = []
+
+        RepairMatching.inspectingMatches(
+            in: text,
+            pattern: #"(?<![\w.])([1-9]|1[0-2])\.([0-5][0-9])(?![\w.])"#,
+            options: []
+        ) { match, nsText in
+            guard match.numberOfRanges == 3 else { return }
+            let separatorRun = nsText.substring(with: match.range)
+            if isTimeTerminatingAtCandidate(match: match, in: nsText as String) {
+                timeSeparatedRuns.insert(separatorRun)
+            } else {
+                decimalSeparatedRuns.insert(separatorRun)
+            }
+        }
+
+        RepairMatching.inspectingMatches(
+            in: text,
+            pattern: #"(?<![\w:])([1-9]|1[0-2]):([0-5][0-9])(?![\w:])"#,
+            options: []
+        ) { match, nsText in
+            guard match.numberOfRanges == 3 else { return }
+            let hour = nsText.substring(with: match.range(at: 1))
+            let minute = nsText.substring(with: match.range(at: 2))
+            timeSeparatedRuns.insert("\(hour).\(minute)")
+        }
+
+        return (decimalSeparatedRuns, timeSeparatedRuns)
+    }
+
+    private func spokenDecimalRuns(in text: String) -> Set<String> {
+        let tokens = RepairTokenization.wordTokens(in: text)
+        guard tokens.count >= 3 else { return [] }
+
+        var decimalRuns: Set<String> = []
+        var index = 0
+        while index + 2 < tokens.count {
+            guard let major = RepairNumberParsing.parsedSpellOutInteger(tokens[index].text),
+                  RepairNumberParsing.isSpellOutDecimalSeparator(tokens[index + 1]),
+                  RepairNumberParsing.isNumberRunSeparator(between: tokens[index], and: tokens[index + 1], in: text) else {
+                index += 1
+                continue
+            }
+
+            var minorDigits: [Int] = []
+            var endIndex = index + 2
+            while endIndex < tokens.count,
+                  let digit = RepairNumberParsing.parsedSpellOutInteger(tokens[endIndex].text),
+                  digit >= 0,
+                  digit < RepairNumberParsing.apStyleNumeralLowerBound,
+                  RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text) {
+                minorDigits.append(digit)
+                endIndex += 1
+            }
+
+            if minorDigits.isEmpty {
+                index += 1
+            } else {
+                decimalRuns.insert("\(major).\(minorDigits.map(String.init).joined())")
+                index = endIndex
+            }
+        }
+
+        return decimalRuns
     }
 
     private func spellOutNumberRunReplacement(
@@ -242,6 +354,26 @@ struct APStyleNumberRepair {
         }
 
         return false
+    }
+
+    private func isTimeTerminatingAtCandidate(match: NSTextCheckingResult, in text: String) -> Bool {
+        guard let dateDetector = Self.dateDetector,
+              let candidateRange = Range(match.range, in: text) else {
+            return false
+        }
+
+        let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        return dateDetector.matches(in: text, options: [], range: nsRange).contains { dateMatch in
+            guard dateMatch.date != nil,
+                  let detectedRange = Range(dateMatch.range, in: text) else {
+                return false
+            }
+
+            // Accept explicit time context such as "at 2.30" while rejecting bare date-parser guesses like "2.23 yesterday".
+            return detectedRange.contains(candidateRange.lowerBound)
+                && (detectedRange.upperBound == candidateRange.upperBound
+                    || detectedRange.lowerBound < candidateRange.lowerBound)
+        }
     }
 
 }

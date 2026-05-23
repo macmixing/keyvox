@@ -83,4 +83,25 @@ enum RepairMatching {
         }
         return repaired
     }
+
+    static func inspectingMatches(
+        in text: String,
+        pattern: String,
+        options: NSRegularExpression.Options,
+        inspect: (NSTextCheckingResult, NSString) -> Void
+    ) {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else {
+            return
+        }
+
+        let nsText = text as NSString
+        let matches = regex.matches(
+            in: text,
+            options: [],
+            range: NSRange(location: 0, length: nsText.length)
+        )
+        for match in matches {
+            inspect(match, nsText)
+        }
+    }
 }

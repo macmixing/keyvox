@@ -106,10 +106,10 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "keep (2 - 2 = 0) 3^2 = 9 8 / 2 5 * 4 and 50%")
     }
 
-    func testChillHeuristicPreservesColonBetweenNumbers() {
+    func testChillHeuristicCollapsesColonBetweenNumbers() {
         let output = ChillHeuristicFormatter().format("Meet at 5:45 and keep the ratio 16:9, but remove this: colon.")
 
-        XCTAssertEqual(output, "meet at 5:45 and keep the ratio 16:9 but remove this colon")
+        XCTAssertEqual(output, "meet at 545 and keep the ratio 169 but remove this colon")
     }
 
     func testChillHeuristicPreservesEmailAddress() {
@@ -147,7 +147,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Hey, um what are you doing, um tomorrow?",
             rewritten: "Hey, what are you doing, tomorrow?"
         )
@@ -156,7 +156,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresSentenceOpeningCommaAroundDeletedTokens() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Phase three. Yo, um what are you doing?",
             rewritten: "Phase three. Yo what are you doing?"
         )
@@ -165,7 +165,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairAppliesAPStyleToOrdinaryLowNumbersFromSpokenInput() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I went there two days ago. She wanted five lobsters for dinner.",
             rewritten: "I went there 2 days ago. She wanted 5 lobsters for dinner."
         )
@@ -174,7 +174,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresExplicitWrittenLowNumber() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I'm just going to leave that as the written two.",
             rewritten: "I'm just going to leave that as the written 2."
         )
@@ -183,7 +183,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairFormatsSpokenDecimalRun() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I'm shipping version two point zero tomorrow.",
             rewritten: "I'm shipping version two point zero tomorrow."
         )
@@ -192,7 +192,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresDeletedLowNumberEvidence() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Yeah, I'll probably meet you two tomorrow.",
             rewritten: "Yeah, I'll probably meet you tomorrow."
         )
@@ -201,7 +201,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairConvertsOrdinaryTenPlusSpokenCounts() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "That guy waited ten days total. Please order twenty two labels.",
             rewritten: "That guy waited ten days total. Please order twenty two labels."
         )
@@ -210,7 +210,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresAPStyleForCollapsedAdjacentRatingNumbers() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I have like twelve five star ratings right now.",
             rewritten: "I have like 125-star ratings right now."
         )
@@ -219,7 +219,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairPreservesProtectedNumericContexts() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "The meeting starts at two thirty. Tell John it was five dollars and five percent.",
             rewritten: "The meeting starts at 2:30. Tell John it was $5 and 5%."
         )
@@ -227,8 +227,98 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "The meeting starts at 2:30. Tell John it was $5 and 5%.")
     }
 
+    func testRewriteRepairRepairsDotSeparatedTimeShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Tell John, uh, like, immediately, it starts at 5.30 and it's 10 bucks.",
+            rewritten: "Tell John like immediately, it starts at 5.30 and it's $10."
+        )
+
+        XCTAssertEqual(output, "Tell John like immediately, it starts at 5:30 and it's $10.")
+    }
+
+    func testRewriteRepairRepairsDotSeparatedPastTimeShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Yeah, we met at 2.30 yesterday.",
+            rewritten: "Yeah, we met at 2.30 yesterday."
+        )
+
+        XCTAssertEqual(output, "Yeah, we met at 2:30 yesterday.")
+    }
+
+    func testRewriteRepairPreservesVersionNumberDecimalShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm shipping version five point thirty tomorrow.",
+            rewritten: "I'm shipping version 5.30 tomorrow."
+        )
+
+        XCTAssertEqual(output, "I'm shipping version 5.30 tomorrow.")
+    }
+
+    func testRewriteRepairPreservesSpokenDecimalBeforePastDate() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm pretty sure we reverted five point five three last Tuesday.",
+            rewritten: "I'm pretty sure we reverted 5.53 last Tuesday."
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure we reverted 5.53 last Tuesday.")
+    }
+
+    func testRewriteRepairRestoresSpokenDecimalChangedToTimeShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm pretty sure we reverted five point five three yesterday.",
+            rewritten: "I'm pretty sure we reverted 5:53 yesterday."
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure we reverted 5.53 yesterday.")
+    }
+
+    func testRewriteRepairRestoresChangedNumberEvidenceFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm pretty sure we reverted five point five three yesterday.",
+            rewritten: "I'm pretty sure we reverted 5.33 yesterday."
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure we reverted 5.53 yesterday.")
+    }
+
+    func testRewriteRepairRestoresChangedCompositeNumberEvidenceFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm pretty sure we reverted nine hundred and two yesterday.",
+            rewritten: "I'm pretty sure we reverted 912 yesterday."
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure we reverted 902 yesterday.")
+    }
+
+    func testRewriteRepairRestoresChangedNumericDigitEvidenceFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I'm pretty sure we reverted 902 yesterday.",
+            rewritten: "I'm pretty sure we reverted 912 yesterday."
+        )
+
+        XCTAssertEqual(output, "I'm pretty sure we reverted 902 yesterday.")
+    }
+
+    func testRewriteRepairPreservesReleasedVersionDecimalShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Yeah, we shipped 2.23 yesterday.",
+            rewritten: "Yeah, we shipped 2.23 yesterday."
+        )
+
+        XCTAssertEqual(output, "Yeah, we shipped 2.23 yesterday.")
+    }
+
+    func testRewriteRepairRestoresOriginalDecimalShapeChangedToTimeShape() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Yeah, we shipped 2.23 yesterday.",
+            rewritten: "Yeah, we shipped 2:23 yesterday."
+        )
+
+        XCTAssertEqual(output, "Yeah, we shipped 2.23 yesterday.")
+    }
+
     func testRewriteRepairDoesNotPartiallyConvertSpokenTimeClusters() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "The meeting starts at two thirty.",
             rewritten: "The meeting starts at two thirty."
         )
@@ -237,7 +327,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairDoesNotConvertAddressLikeSpokenNumberClusters() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Meet me at eleven fifty two North Washington Street.",
             rewritten: "Meet me at eleven fifty two North Washington Street."
         )
@@ -246,7 +336,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresAddressNumberConvertedToTime() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Meet me at 1152 North Washington Street.",
             rewritten: "Meet me at 11:52 North Washington Street."
         )
@@ -255,7 +345,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresSpokenAddressNumberCollapsedByModel() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Yeah, my address is twelve fifty five North Washington Avenue.",
             rewritten: "Yeah, my address is 125 North Washington Avenue."
         )
@@ -264,7 +354,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresDigitByDigitSpokenAddressNumberCollapsedByModel() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Yeah, my address is one two five five North Washington Avenue.",
             rewritten: "Yeah, my address is 125 North Washington Avenue."
         )
@@ -273,7 +363,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresTimeShapedAddressBeforeOrdinalStreet() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Meet me at seven fifty nine 7th Street.",
             rewritten: "Meet me at 7:59 7th Street."
         )
@@ -282,7 +372,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresTimeShapedAddressAndOrdinalStreetDrift() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "She said her address was eleven thirty seven North Twelfth Street.",
             rewritten: "She said her address was 11:37 North 2nd Street."
         )
@@ -291,7 +381,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresAddressNumberWithDifferentStreetNames() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Send it to sixteen fifty nine Whitton Avenue and then 2359 North 59th Drive.",
             rewritten: "Send it to 16:59 Whitton Avenue and then 23:59 North 59th Drive."
         )
@@ -300,7 +390,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresOrdinalStreetNumberDriftInAddressSuffix() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Yeah, she said her address was eleven thirty seven North Twelfth Street.",
             rewritten: "She said her address was 1137 North 2nd Street."
         )
@@ -309,7 +399,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairCanonicalizesSpokenOrdinalStreetSuffix() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "She said her address was eleven twenty five North Twelfth Street.",
             rewritten: "She said her address was 1125 North Twelfth Street."
         )
@@ -318,7 +408,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresCollapsedAddressNumberAndOrdinalStreetSuffix() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "She said her address was eleven twenty five North Twelfth Street.",
             rewritten: "She said her address was 125 North 2nd Street."
         )
@@ -327,7 +417,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRestoresDifferentOrdinalStreetNumberDriftInAddressSuffix() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "Mail it to twenty three fifty nine West Fifty Ninth Drive.",
             rewritten: "Mail it to 2359 West 9th Drive."
         )
@@ -355,7 +445,7 @@ final class StyleRewriteTests: XCTestCase {
         ]
 
         for testCase in cases {
-            let output = OutputRepair.repairDeletedSeparatorPunctuation(
+            let output = OutputRepair.repairModelOutput(
                 original: testCase.original,
                 rewritten: testCase.rewritten
             )
@@ -365,7 +455,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsSplitDollarsAndCentsAmount() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I think it was fifty seven dollars and fifty cents.",
             rewritten: "I think it was $57 and $50."
         )
@@ -374,7 +464,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsSplitDollarsAndCentsAmountWithFillerBeforeCents() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I think it was forty seven dollars and like fifty cents.",
             rewritten: "I think it was $47 and $47."
         )
@@ -383,7 +473,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairDoesNotDuplicateRepairedSplitMoneyAmount() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "It's probably like forty seven dollars and like fifty cents.",
             rewritten: "It's probably like $47 and like $47."
         )
@@ -392,7 +482,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsChangedMoneyAmountWhenCurrencyMatches() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "That should be fifty five euros.",
             rewritten: "That should be €5."
         )
@@ -400,8 +490,17 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "That should be €55.")
     }
 
+    func testRewriteRepairRepairsChangedCompositeMoneyAmountFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "That was nine hundred and two dollars.",
+            rewritten: "That was $2."
+        )
+
+        XCTAssertEqual(output, "That was $902.")
+    }
+
     func testRewriteRepairKeepsAPStyleDayCountAfterMoneyAmount() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I would have spent fifty dollars seven days ago.",
             rewritten: "I would have spent $50 seven days ago."
         )
@@ -410,7 +509,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairKeepsAPStyleMathOperandAfterMoneyAmount() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I don't know, that's probably three dollars multiplied by four.",
             rewritten: "I don't know, that's probably $3 multiplied by four."
         )
@@ -419,7 +518,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairRepairsMathMoneyOperandDrift() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "I don't know, that's probably 3 * 4 dollars.",
             rewritten: "I don't know, that's probably 3 * $34."
         )
@@ -428,7 +527,7 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     func testRewriteRepairFixesModelPercentSentenceSplit() {
-        let output = OutputRepair.repairDeletedSeparatorPunctuation(
+        let output = OutputRepair.repairModelOutput(
             original: "The discount is five percent if we ship today.",
             rewritten: "The discount is 5%. if we ship today."
         )
@@ -685,6 +784,72 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(result.finalText, request.baseText)
         XCTAssertFalse(result.applied)
         XCTAssertEqual(result.errors.map(\.errorCode), [.generationFailed])
+    }
+
+    @MainActor
+    func testStyleRewriteTransformerRepairsCasualDecimalDriftFromOriginalDictation() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .casual,
+            baseText: "I'm pretty sure we reverted five point five three yesterday."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "I'm pretty sure we reverted 5:53 yesterday."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "I'm pretty sure we reverted 5.53 yesterday.")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup")
+    }
+
+    @MainActor
+    func testStyleRewriteTransformerRepairsPolishedChangedNumberEvidenceFromOriginalDictation() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .polished,
+            baseText: "I'm pretty sure we reverted five point five three yesterday."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "I'm pretty sure we reverted 5.33 yesterday."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "I'm pretty sure we reverted 5.53 yesterday.")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model")
+    }
+
+    @MainActor
+    func testStyleRewriteTransformerRepairsCasualChangedMoneyEvidenceFromOriginalDictation() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .casual,
+            baseText: "That was nine hundred and two dollars."
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "That was $2."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "That was $902.")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup")
     }
 
     @MainActor

@@ -9,6 +9,20 @@ enum RepairNumberParsing {
 
     private static let ordinalNumberFormatter = numberFormatter(style: .ordinal)
 
+    private static let spellOutDecimalSeparatorToken: String? = {
+        let unit = apStyleNumeralLowerBound / apStyleNumeralLowerBound
+        let decimal = Double(unit) + (Double(unit) / Double(apStyleNumeralLowerBound))
+        guard let spellOutDecimal = spellOutNumberFormatter.string(from: NSNumber(value: decimal)),
+              let unitText = spellOutString(for: unit) else {
+            return nil
+        }
+
+        return normalizedSpellOut(spellOutDecimal)
+            .split(whereSeparator: \.isWhitespace)
+            .map(String.init)
+            .first { $0 != normalizedSpellOut(unitText) }
+    }()
+
     private static func numberFormatter(style: NumberFormatter.Style) -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = numberFormatterLocale
@@ -30,6 +44,24 @@ enum RepairNumberParsing {
             guard let number = spellOutNumberFormatter.number(from: candidate),
                   let value = integerValue(from: number),
                   spellOutMatches(candidate, value: value) else {
+                continue
+            }
+            return value
+        }
+
+        return nil
+    }
+
+    static func parsedSpellOutNumberPhrase(_ text: String) -> Int? {
+        let candidates = [
+            text,
+            text.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
+        ]
+
+        for candidate in candidates {
+            guard let number = spellOutNumberFormatter.number(from: candidate),
+                  let value = integerValue(from: number),
+                  spellOutNumberPhraseMatches(candidate, value: value) else {
                 continue
             }
             return value
@@ -90,6 +122,10 @@ enum RepairNumberParsing {
             || parsedSpellOutInteger(token.token.text) != nil
     }
 
+    static func isSpellOutDecimalSeparator(_ token: RepairWordToken) -> Bool {
+        token.normalized == spellOutDecimalSeparatorToken
+    }
+
     static func isNumberRunSeparator(between left: RepairWordToken, and right: RepairWordToken, in text: String) -> Bool {
         let separator = text[left.range.upperBound..<right.range.lowerBound]
         return separator.allSatisfy { $0.isWhitespace || $0 == "-" }
@@ -119,5 +155,29 @@ enum RepairNumberParsing {
             .replacingOccurrences(of: "-", with: " ")
             .split(whereSeparator: \.isWhitespace)
             .joined(separator: " ")
+    }
+
+    private static func spellOutNumberPhraseMatches(_ text: String, value: Int) -> Bool {
+        guard let spellOut = spellOutString(for: value) else {
+            return false
+        }
+
+        let sourceTokens = normalizedSpellOut(text).split(separator: " ").map(String.init)
+        let canonicalTokens = normalizedSpellOut(spellOut).split(separator: " ").map(String.init)
+        guard !sourceTokens.isEmpty, !canonicalTokens.isEmpty else {
+            return false
+        }
+
+        var canonicalIndex = 0
+        for sourceToken in sourceTokens {
+            if canonicalIndex < canonicalTokens.count,
+               sourceToken == canonicalTokens[canonicalIndex] {
+                canonicalIndex += 1
+            } else if parsedSpellOutInteger(sourceToken) != nil {
+                return false
+            }
+        }
+
+        return canonicalIndex == canonicalTokens.count
     }
 }

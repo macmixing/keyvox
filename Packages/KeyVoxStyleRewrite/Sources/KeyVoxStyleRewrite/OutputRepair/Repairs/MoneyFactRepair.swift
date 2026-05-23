@@ -83,9 +83,9 @@ struct MoneyFactRepair {
         var spans: [SourceMoneySpan] = []
         var index = tokens.startIndex
         while index < tokens.endIndex {
-            guard let majorRun = numericRun(startingAt: index, in: tokens, sourceText: text),
+            guard let majorRun = numericRunBeforeUnit(startingAt: index, in: tokens, sourceText: text),
                   majorRun.endIndex < tokens.endIndex,
-                  let majorValue = parsedNumericRun(Array(tokens[majorRun.range])),
+                  let majorValue = NumberEvidence.parsedValue(in: Array(tokens[majorRun.range].map(\.token))),
                   let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex].lemma),
                   majorUnit.scale == .major else {
                 index += 1
@@ -97,9 +97,9 @@ struct MoneyFactRepair {
             if nextIndex < tokens.endIndex,
                tokens[nextIndex].tag == .conjunction,
                let minorStartIndex = minorStartIndex(afterConjunctionAt: nextIndex, in: tokens),
-               let minorRun = numericRun(startingAt: minorStartIndex, in: tokens, sourceText: text),
+               let minorRun = numericRunBeforeUnit(startingAt: minorStartIndex, in: tokens, sourceText: text),
                minorRun.endIndex < tokens.endIndex,
-               let parsedMinorValue = parsedNumericRun(Array(tokens[minorRun.range])),
+               let parsedMinorValue = NumberEvidence.parsedValue(in: Array(tokens[minorRun.range].map(\.token))),
                parsedMinorValue < 100,
                let minorUnit = CurrencyUnits.unit(for: tokens[minorRun.endIndex].lemma),
                minorUnit.scale == .minor {
@@ -149,25 +149,60 @@ struct MoneyFactRepair {
 
         var endIndex = index + 1
         while endIndex < tokens.endIndex,
-              RepairNumberParsing.isNumericToken(tokens[endIndex]),
               RepairNumberParsing.isNumberRunSeparator(
                 between: tokens[endIndex - 1].token,
                 and: tokens[endIndex].token,
                 in: sourceText
               ) {
+            guard RepairNumberParsing.isNumericToken(tokens[endIndex])
+                    || tokens[endIndex].tag == .conjunction
+                    || numberPhraseCanContinue(
+                        range: index...endIndex,
+                        in: tokens
+                    ) else {
+                break
+            }
             endIndex += 1
         }
         return (index..<endIndex, endIndex)
     }
 
-    private func parsedNumericRun(_ tokens: [RepairTaggedToken]) -> Int? {
-        let texts = tokens.map(\.token.text)
-        if texts.allSatisfy({ $0.allSatisfy(\.isNumber) }) {
-            return Int(texts.joined())
+    private func numericRunBeforeUnit(
+        startingAt index: Int,
+        in tokens: [RepairTaggedToken],
+        sourceText: String
+    ) -> (range: Range<Int>, endIndex: Int)? {
+        guard index < tokens.endIndex, RepairNumberParsing.isNumericToken(tokens[index]) else { return nil }
+
+        var bestRun: (range: Range<Int>, endIndex: Int)?
+        var endIndex = index + 1
+        while endIndex < tokens.endIndex {
+            if CurrencyUnits.unit(for: tokens[endIndex].lemma) != nil,
+               NumberEvidence.parsedValue(in: Array(tokens[index..<endIndex].map(\.token))) != nil {
+                bestRun = (index..<endIndex, endIndex)
+            }
+
+            guard endIndex < tokens.endIndex,
+                  RepairNumberParsing.isNumberRunSeparator(
+                    between: tokens[endIndex - 1].token,
+                    and: tokens[endIndex].token,
+                    in: sourceText
+                  ),
+                  RepairNumberParsing.isNumericToken(tokens[endIndex])
+                    || tokens[endIndex].tag == .conjunction
+                    || numberPhraseCanContinue(
+                        range: index...endIndex,
+                        in: tokens
+                    ) else {
+                break
+            }
+            endIndex += 1
         }
-        if let digitSequence = RepairNumberParsing.parsedDigitSequence(from: texts) {
-            return digitSequence
-        }
-        return RepairNumberParsing.parsedSpellOutInteger(texts.joined(separator: " "))
+
+        return bestRun ?? numericRun(startingAt: index, in: tokens, sourceText: sourceText)
+    }
+
+    private func numberPhraseCanContinue(range: ClosedRange<Int>, in tokens: [RepairTaggedToken]) -> Bool {
+        NumberEvidence.parsedValue(in: Array(tokens[range].map(\.token))) != nil
     }
 }

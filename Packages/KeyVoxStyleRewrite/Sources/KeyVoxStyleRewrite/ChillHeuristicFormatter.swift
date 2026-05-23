@@ -174,6 +174,12 @@ public struct ChillHeuristicFormatter: Sendable {
             return String(character)
         }
 
+        if character == ":",
+           previous?.isNumber == true,
+           next?.isNumber == true {
+            return ""
+        }
+
         if isProtectedNumericPunctuation(
             character,
             previous: previous,
@@ -265,7 +271,7 @@ public struct ChillHeuristicFormatter: Sendable {
     }
 
     private static let immediateNumericSeparatorPunctuation: Set<Character> = [
-        ".", ",", ":"
+        ".", ","
     ]
 
     private static let spacedNumericSeparatorPunctuation: Set<Character> = [
