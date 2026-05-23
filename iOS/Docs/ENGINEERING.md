@@ -180,7 +180,7 @@ Service ownership rules:
 - `Feedback/` owns app-scoped haptics and copy-feedback interaction state.
 - `LiveActivity/` owns the ActivityKit mirror layer.
 - `KeyVoxSpeak/` owns the post-onboarding intro controller and copied-text playback purchase gate.
-- `KeyVoxVibes/` owns the post-onboarding intro controller, local trial state, and purchase gate for KeyVox Vibes.
+- `KeyVoxVibes/` owns the post-onboarding intro controller, shared local trial policy, trial time formatting, local trial state, and purchase gate for KeyVox Vibes.
 - `Purchases/` owns shared StoreKit non-consumable plumbing used by app-owned purchase controllers.
 - `Stats/` owns app-local weekly usage aggregation.
 - `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
@@ -282,7 +282,7 @@ Accepted truthy values:
 Behavior:
 
 - `KEYVOX_BYPASS_VIBES_TRIAL` bypasses the Vibes trial/unlock gate in debug builds
-- the flag allows the app and keyboard extension to use Vibes without starting the local 24-hour trial
+- the flag allows the app and keyboard extension to use Vibes without starting the local 72-hour trial
 - the flag must not change production monetization policy
 - local rewrite model availability still gates whether model-backed Vibes can run
 
@@ -293,13 +293,13 @@ Behavior:
 - `KEYVOX_VIBES_TRIAL_DURATION_SECONDS` overrides the local Vibes trial duration in debug builds
 - the value is parsed as a positive number of seconds
 - when the user starts a trial while the flag is active, the debug duration is persisted so restarts keep evaluating the same short test window
-- production builds ignore the override and use the 24-hour trial duration
+- production builds ignore the override and use the duration from `KeyVoxVibesTrialPolicy`
 
 ### KeyVox Vibes Trial Reset Runtime Flag
 
 Behavior:
 
-- `KEYVOX_RESET_VIBES_TRIAL` removes only `KeyVox.App.VibesTrialStartedAt` and the debug Vibes trial duration override in debug builds
+- `KEYVOX_RESET_VIBES_TRIAL` removes only `KeyVox.App.VibesTrialStartedAt.v2` and the debug Vibes trial duration override in debug builds
 - the flag does not clear purchase state, intro state, selected Vibe, or other Vibes defaults
 - production builds ignore the reset flag
 
@@ -447,7 +447,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasUsedKeyVoxSpeak`
 - `KeyVox.App.ShouldShowKeyVoxSpeakIntroOnNextEligibleLaunch`
 - `KeyVox.App.IsVibesUnlocked`
-- `KeyVox.App.VibesTrialStartedAt`
+- `KeyVox.App.VibesTrialStartedAt.v2`
+  - stores the versioned Vibes trial start date; bumping this key grants a fresh local trial without changing intro, interaction, unlock, model, or selected-Vibe state
 - `KeyVox.Debug.VibesTrialDuration`
   - stores the debug Vibes trial duration used by the Vibes controller and is cleared when the debug trial is reset
 - `KeyVox.App.HasSeenKeyVoxVibesIntro`
@@ -1051,11 +1052,24 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 
 ### KeyVox Vibes Purchase Ownership
 
+`KeyVoxVibesTrialPolicy` is the shared source of truth for the local Vibes trial duration.
+
+- the policy is compiled into the containing app, keyboard extension, and iOS tests
+- app and keyboard trial gates must read the policy instead of duplicating duration constants
+- UI copy that displays the total trial length derives from this policy
+
+`KeyVoxVibesTrialRemainingTimeFormatter` owns display formatting for Vibes trial durations.
+
+- remaining time uses adaptive units: days and hours while days remain, hours and minutes below one day, and minutes below one hour
+- zero-value units are omitted
+- views own their own surrounding sentence copy and call the formatter only for the formatted time value
+
 `KeyVoxVibesPurchaseController` is the containing-app owner for Vibes access.
 
 - the unlocked product identifier is `com.cueit.keyvox.vibes.unlocked`
 - the product is a non-consumable unlock named `KeyVox Vibes Unlock`
-- the 24-hour trial is local-only and starts only when the user taps `Try Now`
+- the local trial starts only when the user taps `Try Now`
+- trial resets are handled by versioning the trial-start defaults key, not by clearing intro, interaction, unlock, model, or selected-Vibe defaults
 - `canUseVibes` is true only while the unlock is owned or the local trial is active
 - trial expiration immediately resolves selected Vibe to `None`
 - unlock state, trial start date, intro state, and interacted state are app-local defaults, not iCloud-synced settings
@@ -1073,6 +1087,7 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle on the l
 - intro mode shows scenes A, B, and C
 - when Vibes AI is installed, each intro scene shows `Try Now` and starts the local trial as before
 - when Vibes AI is missing, scene A advances with `Get Started`, scene B advances with `Next`, and scene C keeps `Try Now` disabled until install readiness arrives
+- info mode shows the usage refresher with a `Vibe Now` CTA that dismisses the sheet for already-unlocked users
 - Scene C owns the inline Vibes AI install card and routes user-started downloads through the sheet-level confirmation overlay
 - active-trial missing-model recovery starts on Scene C and swaps the first detail subtitle to the same remaining-trial semantic used by the Style tab card
 - unlock mode normally shows the usage refresher scene and the unlock scene with a dynamic App Store price button
@@ -1111,7 +1126,7 @@ The restore card remains visible until both unlocks are owned.
 - cycles through `None`, `Casual`, `Polished`, `Chill` only when Vibes access and local Vibes AI readiness are both available
 - posts the shared Vibes selection-change Darwin notification
 - exposes Vibes platform availability as always true now that the Foundation-only gate is gone
-- exposes Vibes access state from app-local unlock/trial defaults so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
+- exposes Vibes access state from app-local unlock/trial defaults and the shared Vibes trial duration policy so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
 - checks local Vibes AI install readiness from the rooted model artifact and manifest so missing-model taps open the trial-start/install flow instead of cycling
 - reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI

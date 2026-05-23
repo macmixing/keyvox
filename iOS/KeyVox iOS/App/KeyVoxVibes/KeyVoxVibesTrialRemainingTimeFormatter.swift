@@ -20,7 +20,7 @@ enum KeyVoxVibesTrialRemainingTimeFormatter {
             components.append("\(hours)h")
         }
 
-        if minutes > 0 {
+        if days == 0, minutes > 0 {
             components.append("\(minutes)m")
         }
 

@@ -15,8 +15,6 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
     }
 
     nonisolated static let unlockProductID = "com.cueit.keyvox.vibes.unlocked"
-    nonisolated static let trialDuration: TimeInterval = 24 * 60 * 60
-
     @Published private(set) var isVibesUnlocked: Bool
     @Published private(set) var unlockProduct: StoreUnlockProduct?
     @Published private(set) var isStoreActionInFlight = false
@@ -277,7 +275,7 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
         #endif
 
-        return Self.trialDuration
+        return KeyVoxVibesTrialPolicy.duration
     }
 
     private func persistDebugTrialDurationIfNeeded() {

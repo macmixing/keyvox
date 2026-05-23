@@ -100,7 +100,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_VIBES_TRIAL_DURATION_SECONDS"
-            value = "10"
+            value = "300"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable

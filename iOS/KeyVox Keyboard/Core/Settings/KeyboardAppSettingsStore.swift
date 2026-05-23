@@ -53,7 +53,7 @@ final class KeyboardAppSettingsStore {
         }
         #endif
 
-        return TimeInterval(24 * 60 * 60)
+        return KeyVoxVibesTrialPolicy.duration
     }
 
     private var isVibesTrialBypassedForCurrentBuild: Bool {

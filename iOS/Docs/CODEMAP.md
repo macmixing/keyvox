@@ -85,10 +85,12 @@ iOS/
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
-│   │   ├── KeyVoxVibes/
-│   │   │   ├── KeyVoxVibesAccessMatrix.swift
-│   │   │   ├── KeyVoxVibesIntroController.swift
-│   │   │   └── KeyVoxVibesPurchaseController.swift
+	│   │   ├── KeyVoxVibes/
+	│   │   │   ├── KeyVoxVibesAccessMatrix.swift
+	│   │   │   ├── KeyVoxVibesIntroController.swift
+	│   │   │   ├── KeyVoxVibesPurchaseController.swift
+	│   │   │   ├── KeyVoxVibesTrialPolicy.swift
+	│   │   │   └── KeyVoxVibesTrialRemainingTimeFormatter.swift
 │   │   ├── Lifecycle/
 │   │   │   ├── AppDelegate.swift
 │   │   │   ├── AppSceneDelegate.swift
@@ -535,8 +537,12 @@ Packages/
   - Semantic access/model-state matrix for the Style tab Vibes card.
   - Resolves access state plus local Vibes AI availability into card content, visible control, card action, destination start scene, dynamic text class, and destination CTA without coupling tests to display copy.
 - `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesPurchaseController.swift`
-  - App-owned unlock and local 24-hour trial owner for KeyVox Vibes.
-  - Loads the Vibes StoreKit non-consumable product, owns purchase and restore flows, caches unlock state, records the local trial start date, exposes `canUseVibes`, and forces selected Vibe back to `None` when access expires.
+  - App-owned unlock and local trial state owner for KeyVox Vibes.
+  - Loads the Vibes StoreKit non-consumable product, owns purchase and restore flows, caches unlock state, records the versioned local trial start date, reads the shared trial duration policy, exposes `canUseVibes`, and forces selected Vibe back to `None` when access expires.
+- `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift`
+  - Shared source of truth for the KeyVox Vibes local trial duration used by the app, keyboard extension, trial copy, and tests.
+- `KeyVox iOS/App/KeyVoxVibes/KeyVoxVibesTrialRemainingTimeFormatter.swift`
+  - Formats Vibes trial durations for UI copy with adaptive days/hours/minutes output while leaving each view responsible for its own surrounding sentence.
 - `KeyVox iOS/App/Purchases/StoreUnlockStore.swift`
   - Shared StoreKit non-consumable loading, purchase, restore, and entitlement abstraction used by both KeyVox Speak and KeyVox Vibes purchase controllers.
 - `KeyVox iOS/App/Presentation/KeyVoxSpeakFlowRules.swift`
@@ -808,6 +814,7 @@ Packages/
 - `KeyVox iOS/Views/KeyVoxVibes/`
   - Dedicated feature folder for the shared KeyVox Vibes presentation surface.
   - `KeyVoxVibesSheetView.swift` owns the shared pager shell, intro/unlock/info mode selection, bottom CTA area, model-availability CTA rules, sheet-level Vibes AI download confirmation, unlock action, restore action, and close behavior.
+  - In info mode, the sheet keeps a bottom `Vibe Now` CTA that dismisses the usage refresher for already-unlocked users.
   - `KeyVoxVibesSceneAView.swift`, `KeyVoxVibesSceneBView.swift`, and `KeyVoxVibesSceneCView.swift` own the swipeable intro pages for what Vibes is, what it does, and how the local trial starts.
   - `KeyVoxVibesSceneCView.swift` also owns the compact Vibes AI install card shown when the local model is missing, including progress/error presentation, confirmed download requests, repair action, graceful collapse when install readiness arrives, and the active-trial recovery subtitle variant.
   - `KeyVoxVibesUnlockScene.swift` owns the unlock scene, including active-trial remaining-time copy.
@@ -820,6 +827,7 @@ Packages/
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - KeyVox Vibes card, style picker, selected style summary, style description, examples, and purchase row.
   - Consumes `KeyVoxVibesAccessMatrix` so main-card content, CTA visibility, card actions, recovery destinations, and dynamic trial/unlock text stay centralized and testable without string assertions.
+  - Uses the shared Vibes trial remaining-time formatter for active-trial status while keeping the card sentence local to the Style tab.
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
@@ -879,7 +887,7 @@ Packages/
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
 - `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
-  - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
+  - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`

@@ -25,7 +25,7 @@ struct KeyVoxVibesSceneAView: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 10)
 
-                    Text("Meet KeyVox Vibes")
+                    Text("Try KeyVox Vibes")
                         .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .opacity(titleOpacity)

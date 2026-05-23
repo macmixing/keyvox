@@ -17,7 +17,7 @@ struct KeyVoxVibesPurchaseControllerTests {
         #expect(controller.canUseVibes == false)
     }
 
-    @Test func startingTrialEnablesVibesForOneDay() async throws {
+    @Test func startingTrialEnablesVibesForThreeDays() async throws {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
@@ -40,9 +40,15 @@ struct KeyVoxVibesPurchaseControllerTests {
         await settleAsyncWork()
 
         controller.startTrial()
-        harness.now = harness.now.addingTimeInterval((2 * 60 * 60) + (15 * 60))
+        let elapsedTime: TimeInterval = (2 * 60 * 60) + (15 * 60)
+        harness.now = harness.now.addingTimeInterval(elapsedTime)
 
-        #expect(KeyVoxVibesTrialRemainingTimeFormatter.remainingText(for: controller.trialRemaining) == "21h 45m")
+        #expect(
+            KeyVoxVibesTrialRemainingTimeFormatter.remainingText(for: controller.trialRemaining)
+            == KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
+                for: KeyVoxVibesTrialPolicy.duration - elapsedTime
+            )
+        )
     }
 
     @Test func expiredTrialDisablesVibesAndResetsSelectedVibe() async throws {
@@ -54,7 +60,7 @@ struct KeyVoxVibesPurchaseControllerTests {
 
         controller.startTrial()
         harness.selectedVibe = .chill
-        harness.now = harness.now.addingTimeInterval(KeyVoxVibesPurchaseController.trialDuration + 1)
+        harness.now = harness.now.addingTimeInterval(KeyVoxVibesTrialPolicy.duration + 1)
         controller.refreshTrialStateIfNeeded()
 
         #expect(controller.canUseVibes == false)

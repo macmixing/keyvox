@@ -89,7 +89,7 @@ struct KeyVoxVibesSceneCView: View {
 
                     installCardSlot
 
-                    Text("\(KeyVoxVibesTrialRemainingTimeFormatter.fullDayCountText(for: KeyVoxVibesPurchaseController.trialDuration))-day trial. One-time purchase.")
+                    Text("\(KeyVoxVibesTrialRemainingTimeFormatter.fullDayCountText(for: KeyVoxVibesTrialPolicy.duration))-day trial. One-time purchase.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .opacity(footerOpacity)

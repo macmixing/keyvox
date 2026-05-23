@@ -26,7 +26,7 @@ nonisolated enum UserDefaultsKeys {
         static let ttsFreeSpeakUsageDayStart = "KeyVox.App.TTSFreeSpeakUsageDayStart"
         static let ttsFreeSpeakUsageCount = "KeyVox.App.TTSFreeSpeakUsageCount"
         static let isVibesUnlocked = "KeyVox.App.IsVibesUnlocked"
-        static let vibesTrialStartedAt = "KeyVox.App.VibesTrialStartedAt"
+        static let vibesTrialStartedAt = "KeyVox.App.VibesTrialStartedAt.v2"
         static let debugVibesTrialDuration = "KeyVox.Debug.VibesTrialDuration"
         static let weeklyWordStatsPayload = "KeyVox.App.WeeklyWordStatsPayload"
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
