@@ -207,8 +207,12 @@ extension StyleTabView {
 
     private var vibeExamples: [VibeExample] {
         StyleRewriteStyle.allCases.map { style in
-            VibeExample(style: style, text: style.exampleText)
+            VibeExample(style: style, text: style.exampleText(for: activeStyleRewriteDictationModel))
         }
+    }
+
+    private var activeStyleRewriteDictationModel: StyleRewriteDictationModel {
+        settingsStore.activeDictationProvider.styleRewriteDictationModel
     }
 
     private struct VibeExample: Hashable {

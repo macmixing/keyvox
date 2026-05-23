@@ -3,6 +3,7 @@ import SwiftUI
 
 struct KeyVoxVibesSceneAView: View {
     let isVisible: Bool
+    let dictationModel: StyleRewriteDictationModel
 
     @State private var logoOpacity: Double = 0
     @State private var logoScale: CGFloat = 0.7
@@ -75,7 +76,7 @@ struct KeyVoxVibesSceneAView: View {
                 .font(.appFont(17, variant: .medium))
                 .foregroundStyle(.yellow.opacity(0.7))
 
-            Text(style.exampleText)
+            Text(style.exampleText(for: dictationModel))
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white)
                 .fixedSize(horizontal: false, vertical: true)

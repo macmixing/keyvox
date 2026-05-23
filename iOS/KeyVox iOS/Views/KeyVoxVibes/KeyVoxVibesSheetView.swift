@@ -1,3 +1,4 @@
+import KeyVoxStyleRewrite
 import SwiftUI
 
 struct KeyVoxVibesSheetView: View {
@@ -51,6 +52,7 @@ struct KeyVoxVibesSheetView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appHaptics) private var appHaptics
+    @EnvironmentObject private var settingsStore: AppSettingsStore
     @EnvironmentObject private var vibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject private var localRewriteModelManager: LocalRewriteModelManager
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -286,7 +288,10 @@ struct KeyVoxVibesSheetView: View {
     private func sceneView(for scene: Scene) -> some View {
         switch scene {
         case .a:
-            KeyVoxVibesSceneAView(isVisible: selectedScene == .a)
+            KeyVoxVibesSceneAView(
+                isVisible: selectedScene == .a,
+                dictationModel: settingsStore.activeDictationProvider.styleRewriteDictationModel
+            )
         case .b:
             KeyVoxVibesSceneBView(isVisible: selectedScene == .b)
         case .c:
