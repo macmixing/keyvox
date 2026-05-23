@@ -21,7 +21,7 @@ struct KeyVoxVibesSceneCView: View {
     }
 
     private static let details: [Detail] = [
-        Detail(id: 0, icon: "clock.fill", title: "Try for 24 Hours", subtitle: "Why not vibe out for a day? You deserve it."),
+        Detail(id: 0, icon: "clock.fill", title: "Try it now", subtitle: "Why not vibe out for a while? You deserve it."),
         Detail(id: 1, icon: "infinity", title: "No Subscription", subtitle: "Pay once and keep the Vibes going."),
     ]
 
@@ -63,7 +63,7 @@ struct KeyVoxVibesSceneCView: View {
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Try today. Unlock tomorrow.")
+                    Text("Vibe now. Unlock it later.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -89,7 +89,7 @@ struct KeyVoxVibesSceneCView: View {
 
                     installCardSlot
 
-                    Text("One-time purchase. Try it free first.")
+                    Text("\(KeyVoxVibesTrialRemainingTimeFormatter.fullDayCountText(for: KeyVoxVibesPurchaseController.trialDuration))-day trial. One-time purchase.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .opacity(footerOpacity)
@@ -143,7 +143,10 @@ struct KeyVoxVibesSceneCView: View {
             return detail.subtitle
         }
 
-        return "You’re using Vibes for a day, you have \(vibesPurchaseController.trialRemainingText) left."
+        let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
+            for: vibesPurchaseController.trialRemaining
+        )
+        return "You’re trying Vibes, you have \(remainingText) left."
     }
 
     private func subtitleStyle(for detail: Detail) -> Color {

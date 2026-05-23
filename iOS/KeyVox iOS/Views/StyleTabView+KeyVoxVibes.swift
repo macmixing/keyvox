@@ -247,16 +247,19 @@ extension StyleTabView {
 
     private var keyVoxVibesStatusText: String? {
         if keyVoxVibesMatrix.dynamicText == .mainCardTrialRemaining {
-            return "You’re using Vibes for a day, you have \(keyVoxVibesPurchaseController.trialRemainingText) left."
+            let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
+                for: keyVoxVibesPurchaseController.trialRemaining
+            )
+            return "You’re trying Vibes, you have \(remainingText) left."
         }
 
         switch keyVoxVibesMatrix.mainCardContent {
         case .downloadRequired:
-            return "Download Vibes AI to use your Vibes."
+            return "Download Vibes AI to use Vibes."
         case .unlockOffer:
             return "Unlock and keep the Vibes flowing."
         case .trialOffer:
-            return "Try out KeyVox Vibes for 24 hours."
+            return "Try KeyVox Vibes for free."
         case .selectedVibe:
             return nil
         }

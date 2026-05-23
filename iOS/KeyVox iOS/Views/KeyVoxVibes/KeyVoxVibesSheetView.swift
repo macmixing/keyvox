@@ -177,7 +177,18 @@ struct KeyVoxVibesSheetView: View {
             .padding(.horizontal, 20)
             .background(AppTheme.screenBackground)
         case .info:
-            EmptyView()
+            VStack(spacing: 8) {
+                AppActionButton(
+                    title: "Vibe Now",
+                    style: .primary,
+                    fillsWidth: true,
+                    size: .compact,
+                    fontSize: 22,
+                    action: dismissSheet
+                )
+            }
+            .padding(.horizontal, 20)
+            .background(AppTheme.screenBackground)
         case .unlock:
             VStack(spacing: 8) {
                 AppActionButton(

@@ -42,7 +42,7 @@ struct KeyVoxVibesPurchaseControllerTests {
         controller.startTrial()
         harness.now = harness.now.addingTimeInterval((2 * 60 * 60) + (15 * 60))
 
-        #expect(controller.trialRemainingText == "21h 45m")
+        #expect(KeyVoxVibesTrialRemainingTimeFormatter.remainingText(for: controller.trialRemaining) == "21h 45m")
     }
 
     @Test func expiredTrialDisablesVibesAndResetsSelectedVibe() async throws {

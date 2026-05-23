@@ -119,7 +119,10 @@ struct KeyVoxVibesUnlockScene: View {
 
     private var subtitle: String {
         if vibesPurchaseController.isTrialActive {
-            return "Your trial has \(vibesPurchaseController.trialRemainingText) left."
+            let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
+                for: vibesPurchaseController.trialRemaining
+            )
+            return "You’re trying Vibes, you have \(remainingText) left."
         }
 
         return "Keep the Vibes flowing."

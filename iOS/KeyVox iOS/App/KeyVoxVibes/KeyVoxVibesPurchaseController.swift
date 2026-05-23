@@ -109,17 +109,6 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         return max(0, effectiveTrialDuration - elapsed)
     }
 
-    var trialRemainingText: String {
-        let remainingSeconds = Int(ceil(trialRemaining))
-        let hours = remainingSeconds / 3600
-        let minutes = max(0, (remainingSeconds % 3600) / 60)
-        guard hours > 0 else {
-            return "\(minutes)m"
-        }
-
-        return "\(hours)h \(minutes)m"
-    }
-
     func refreshStoreState() async {
         refreshTrialStateIfNeeded()
         guard isStoreActionInFlight == false else { return }
