@@ -46,6 +46,15 @@ final class AppSettingsStore: ObservableObject {
                 return "Parakeet"
             }
         }
+
+        var styleRewriteDictationModel: StyleRewriteDictationModel {
+            switch self {
+            case .whisper:
+                return .whisper
+            case .parakeet:
+                return .parakeet
+            }
+        }
     }
 
     enum TriggerBinding: String, CaseIterable, Identifiable {

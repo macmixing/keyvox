@@ -1,3 +1,4 @@
+import KeyVoxStyleRewrite
 import SwiftUI
 
 struct MacVibesIntroWindowView: View {
@@ -13,6 +14,7 @@ struct MacVibesIntroWindowView: View {
 
     @ObservedObject var localRewriteModelManager: MacLocalRewriteModelManager
     let initialScene: MacVibesIntroScene
+    let dictationModel: StyleRewriteDictationModel
     let onPreferredSizeChange: (CGSize) -> Void
     let onDismiss: () -> Void
     let onTryIt: () -> Void
@@ -24,12 +26,14 @@ struct MacVibesIntroWindowView: View {
 
     init(
         initialScene: MacVibesIntroScene,
+        dictationModel: StyleRewriteDictationModel,
         localRewriteModelManager: MacLocalRewriteModelManager,
         onPreferredSizeChange: @escaping (CGSize) -> Void,
         onDismiss: @escaping () -> Void,
         onTryIt: @escaping () -> Void
     ) {
         self.initialScene = initialScene
+        self.dictationModel = dictationModel
         self.localRewriteModelManager = localRewriteModelManager
         self.onPreferredSizeChange = onPreferredSizeChange
         self.onDismiss = onDismiss
@@ -103,7 +107,10 @@ struct MacVibesIntroWindowView: View {
     private var sceneView: some View {
         switch selectedScene {
         case .a:
-            MacVibesIntroSceneAView(isVisible: selectedScene == .a)
+            MacVibesIntroSceneAView(
+                isVisible: selectedScene == .a,
+                dictationModel: dictationModel
+            )
         case .b:
             MacVibesIntroSceneBView(isVisible: selectedScene == .b)
         case .c:

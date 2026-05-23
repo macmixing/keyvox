@@ -7,6 +7,7 @@ extension SettingsView {
 
             SettingsVibesCard(
                 selectedVibe: $appSettings.selectedVibe,
+                dictationModel: appSettings.activeDictationProvider.styleRewriteDictationModel,
                 installState: localRewriteModelManager.installState,
                 downloadAction: {
                     localRewriteModelManager.downloadModel()

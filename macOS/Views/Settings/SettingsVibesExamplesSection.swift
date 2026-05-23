@@ -4,6 +4,7 @@ import KeyVoxStyleRewrite
 struct SettingsVibesExamplesSection: View {
     @Binding var selectedVibe: StyleRewriteStyle
     let displayedSelectedVibe: StyleRewriteStyle
+    let dictationModel: StyleRewriteDictationModel
     let isSelectionEnabled: Bool
 
     @State private var isExpanded = false
@@ -131,7 +132,7 @@ struct SettingsVibesExamplesSection: View {
 
     private var examples: [VibeExample] {
         StyleRewriteStyle.allCases.map { style in
-            VibeExample(style: style, text: style.exampleText)
+            VibeExample(style: style, text: style.exampleText(for: dictationModel))
         }
     }
 

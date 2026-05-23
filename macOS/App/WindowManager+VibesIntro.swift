@@ -39,6 +39,7 @@ extension WindowManager {
             rootView:
                 MacVibesIntroWindowView(
                     initialScene: initialScene,
+                    dictationModel: AppSettingsStore.shared.activeDictationProvider.styleRewriteDictationModel,
                     localRewriteModelManager: AppServiceRegistry.shared.localRewriteModelManager,
                     onPreferredSizeChange: { [weak window] preferredSize in
                         guard let window else { return }

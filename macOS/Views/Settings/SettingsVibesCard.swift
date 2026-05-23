@@ -3,6 +3,7 @@ import KeyVoxStyleRewrite
 
 struct SettingsVibesCard: View {
     @Binding var selectedVibe: StyleRewriteStyle
+    let dictationModel: StyleRewriteDictationModel
     let installState: MacLocalRewriteModelInstallState
     let downloadAction: () -> Void
     let repairAction: () -> Void
@@ -23,6 +24,7 @@ struct SettingsVibesCard: View {
                     SettingsVibesExamplesSection(
                         selectedVibe: $selectedVibe,
                         displayedSelectedVibe: matrix.displayedSelectedVibe,
+                        dictationModel: dictationModel,
                         isSelectionEnabled: matrix.showsVibeSelector
                     )
                 }
