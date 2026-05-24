@@ -35,9 +35,10 @@ enum RepairNumberParsing {
     }
 
     static func parsedSpellOutInteger(_ text: String) -> Int? {
+        let normalizedText = text.lowercased()
         let candidates = [
-            text,
-            text.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
+            normalizedText,
+            normalizedText.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
         ]
 
         for candidate in candidates {
@@ -53,9 +54,10 @@ enum RepairNumberParsing {
     }
 
     static func parsedSpellOutNumberPhrase(_ text: String) -> Int? {
+        let normalizedText = text.lowercased()
         let candidates = [
-            text,
-            text.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
+            normalizedText,
+            normalizedText.replacingOccurrences(of: #"\s+"#, with: "-", options: .regularExpression),
         ]
 
         for candidate in candidates {

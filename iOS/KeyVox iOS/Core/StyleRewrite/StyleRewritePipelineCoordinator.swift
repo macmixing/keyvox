@@ -96,6 +96,9 @@ final class StyleRewritePipelineCoordinator {
         }
 
         let result = await textTransformer.transform(transformRequest)
+        log(
+            "keyboardResult id=\(request.id.uuidString) style=\(request.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
+        )
         let errorMessage = result.errors.map(\.message).joined(separator: "; ").nilIfEmpty
         KeyVoxIPCBridge.writeStyleRewriteResponse(
             KeyVoxStyleRewriteIPCResponse(
@@ -164,5 +167,11 @@ final class StyleRewritePipelineCoordinator {
         #if DEBUG
         NSLog("[StyleRewritePipelineCoordinator] %@", message)
         #endif
+    }
+
+    private func debugText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\t", with: "\\t")
     }
 }

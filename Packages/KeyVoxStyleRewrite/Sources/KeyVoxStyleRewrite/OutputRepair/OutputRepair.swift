@@ -6,6 +6,7 @@ enum OutputRepair {
         let addressRepaired = AddressFactRepair().repair(original: original, rewritten: punctuationRepaired)
         let moneyRepaired = MoneyFactRepair().repair(original: original, rewritten: addressRepaired)
         let numberEvidenceRepaired = NumberEvidenceRepair().repair(original: original, rewritten: moneyRepaired)
-        return APStyleNumberRepair().repair(original: original, rewritten: numberEvidenceRepaired)
+        let apStyleRepaired = APStyleNumberRepair().repair(original: original, rewritten: numberEvidenceRepaired)
+        return apStyleRepaired
     }
 }

@@ -6,11 +6,24 @@ final class KeyboardDictationChangeController {
     enum DeterministicControlKind {
         case paragraphs
         case lists
+
+        var debugLabel: String {
+            switch self {
+            case .paragraphs:
+                return "paragraphs"
+            case .lists:
+                return "lists"
+            }
+        }
     }
 
     private struct DeterministicState: Hashable {
         let paragraphsEnabled: Bool
         let listsEnabled: Bool
+
+        var debugDescription: String {
+            "paragraphs=\(paragraphsEnabled),lists=\(listsEnabled)"
+        }
     }
 
     private struct RenderedVariantKey: Hashable {
@@ -248,6 +261,9 @@ final class KeyboardDictationChangeController {
         }
 
         let targetState = targetDeterministicState(from: currentState, kind: kind)
+        logChange(
+            "deterministicLongPress kind=\(kind.debugLabel) currentStyle=\(session.currentStyle.styleIdentifier) currentState=\(currentState.debugDescription) targetState=\(targetState.debugDescription) currentText=\(debugText(session.currentText))"
+        )
         guard let replacementText = session.deterministicVariants[targetState],
               let renderedText = await renderedText(
                 for: targetState,
@@ -258,6 +274,9 @@ final class KeyboardDictationChangeController {
               ) else {
             return false
         }
+        logChange(
+            "deterministicLongPress replacementSource=\(debugText(replacementText)) rendered=\(debugText(renderedText))"
+        )
 
         if renderedText != session.currentText {
             guard textInputController.replaceUntouchedInsertion(
@@ -344,6 +363,9 @@ final class KeyboardDictationChangeController {
 
         let result = await textTransformer.transform(request)
         textTransformer.releasePrewarmSession(reason: "keyboard-vibe-change")
+        logChange(
+            "vibeApply style=\(targetStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
+        )
 
         let replacementText = preparedText(
             result.finalText,
@@ -391,6 +413,9 @@ final class KeyboardDictationChangeController {
 
         let result = await textTransformer.transform(request)
         textTransformer.releasePrewarmSession(reason: "keyboard-deterministic-change")
+        logChange(
+            "renderedText result style=\(session.currentStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
+        )
 
         let replacementText = textAdjustedForDeterministicState(
             preparedText(
@@ -451,6 +476,18 @@ final class KeyboardDictationChangeController {
             text,
             documentContextBeforeInput: documentContextBeforeInput
         )
+    }
+
+    private func logChange(_ message: String) {
+        #if DEBUG
+        NSLog("[KeyboardDictationChange] %@", message)
+        #endif
+    }
+
+    private func debugText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\t", with: "\\t")
     }
 
 }

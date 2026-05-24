@@ -133,10 +133,14 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         request: TextTransformRequest,
         result: TextTransformResult
     ) -> TextTransformResult {
+        log(
+            "modelOutput style=\(request.styleIdentifier) base=\(debugText(request.baseText)) final=\(debugText(result.finalText)) errors=\(result.errors.count)"
+        )
         let finalText = OutputRepair.repairModelOutput(
             original: request.baseText,
             rewritten: result.finalText
         )
+        log("repairedOutput style=\(request.styleIdentifier) final=\(debugText(finalText))")
         let processingMode = result.errors.isEmpty
             ? "local-model-cleanup"
             : "local-model-cleanup-partial"
@@ -157,6 +161,18 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             result: repairedResult,
             processingMode: "local-model-prompt-leak-fallback"
         )
+    }
+
+    private func log(_ message: String) {
+        #if DEBUG
+        NSLog("[StyleRewriteTextTransformer] %@", message)
+        #endif
+    }
+
+    private func debugText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\t", with: "\\t")
     }
 }
 

@@ -229,6 +229,30 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "Yeah, I'll probably meet you two tomorrow.")
     }
 
+    func testRewriteRepairRestoresDeletedListCueFromRawDictationVariant() {
+        let cases = [
+            (
+                original: "I need to pick up one thing from the store. Wait, maybe two. One, apples. Two, bananas.",
+                rewritten: "I need to pick up one thing from the store. Wait, maybe 2. Apples. 2, bananas.",
+                repaired: "I need to pick up one thing from the store. Wait, maybe two. One, Apples. Two, bananas."
+            ),
+            (
+                original: "I need to pick up one thing from the store. Wait, maybe two. One. Apples. Two. Bananas.",
+                rewritten: "I need to pick up one thing from the store. Wait, maybe 2. Apples. 2. Bananas.",
+                repaired: "I need to pick up one thing from the store. Wait, maybe two. One. Apples. Two. Bananas."
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
+    }
+
     func testRewriteRepairConvertsOrdinaryTenPlusSpokenCounts() {
         let output = OutputRepair.repairModelOutput(
             original: "That guy waited ten days total. Please order twenty two labels.",
