@@ -115,6 +115,7 @@
 				Core/Dictation/KeyboardCallObserver.swift,
 				Core/Dictation/KeyboardDictationChangeController.swift,
 				Core/Dictation/KeyboardDictationController.swift,
+				Core/Dictation/KeyboardDeterministicDictationFormatter.swift,
 				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
 				Core/Feedback/KeyboardInteractionHaptics.swift,

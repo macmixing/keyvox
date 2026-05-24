@@ -1142,6 +1142,7 @@ The restore card remains visible until both unlocks are owned.
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
 - treats `None` as the original post-processed base text
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, and cached rendered variants
+- delegates deterministic paragraph/list state transitions and paragraph-collapse/list-preservation text shaping to `KeyboardDeterministicDictationFormatter`
 - regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
 - applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
@@ -1323,6 +1324,7 @@ Implementation split:
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
 - `KeyboardDictationChangeController.swift` owns artifact-scoped long-press changes for the latest untouched KeyVox dictation insertion
+- `KeyboardDeterministicDictationFormatter.swift` owns deterministic paragraph/list state transitions and text shaping used by latest-insertion long-press changes
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes
   - `Feedback/` owns extension-local haptics configuration and dispatch

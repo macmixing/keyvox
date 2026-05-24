@@ -3,31 +3,8 @@ import KeyVoxStyleRewrite
 
 @MainActor
 final class KeyboardDictationChangeController {
-    enum DeterministicControlKind {
-        case paragraphs
-        case lists
-
-        var debugLabel: String {
-            switch self {
-            case .paragraphs:
-                return "paragraphs"
-            case .lists:
-                return "lists"
-            }
-        }
-    }
-
-    private struct DeterministicState: Hashable {
-        let paragraphsEnabled: Bool
-        let listsEnabled: Bool
-
-        var debugDescription: String {
-            "paragraphs=\(paragraphsEnabled),lists=\(listsEnabled)"
-        }
-    }
-
     private struct RenderedVariantKey: Hashable {
-        let deterministicState: DeterministicState
+        let deterministicState: KeyboardDeterministicDictationState
         let style: StyleRewriteStyle
     }
 
@@ -45,8 +22,8 @@ final class KeyboardDictationChangeController {
         var currentStyle: StyleRewriteStyle
         var previousStyle: StyleRewriteStyle?
         var variants: [StyleRewriteStyle: String]
-        var currentDeterministicState: DeterministicState?
-        var deterministicVariants: [DeterministicState: String]
+        var currentDeterministicState: KeyboardDeterministicDictationState?
+        var deterministicVariants: [KeyboardDeterministicDictationState: String]
         var renderedDeterministicVariants: [RenderedVariantKey: String]
     }
 
@@ -54,6 +31,7 @@ final class KeyboardDictationChangeController {
     private let artifactStore: KeyboardDictationChangeArtifactStore
     private let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
     private let appSettingsStore: KeyboardAppSettingsStore
+    private let deterministicFormatter = KeyboardDeterministicDictationFormatter()
 
     private var activeSession: Session?
     private var isApplyingChange = false
@@ -93,7 +71,10 @@ final class KeyboardDictationChangeController {
             return appSettingsStore.isAutoParagraphsEnabled
         }
 
-        return isParagraphFormattingVisiblyApplied(in: activeSession, currentState: currentState)
+        return deterministicFormatter.isParagraphFormattingVisiblyApplied(
+            currentState: currentState,
+            deterministicVariants: activeSession.deterministicVariants
+        )
     }
 
     var displayedListFormattingEnabled: Bool {
@@ -154,9 +135,9 @@ final class KeyboardDictationChangeController {
             )
         }
 
-        var deterministicVariants: [DeterministicState: String] = [:]
+        var deterministicVariants: [KeyboardDeterministicDictationState: String] = [:]
         for variant in artifact.deterministicVariants {
-            let state = DeterministicState(
+            let state = KeyboardDeterministicDictationState(
                 paragraphsEnabled: variant.paragraphsEnabled,
                 listsEnabled: variant.listsEnabled
             )
@@ -252,7 +233,7 @@ final class KeyboardDictationChangeController {
     }
 
     func applyDeterministicLongPressChange(
-        _ kind: DeterministicControlKind,
+        _ kind: KeyboardDeterministicControlKind,
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> Bool {
@@ -280,7 +261,7 @@ final class KeyboardDictationChangeController {
             session.currentStyle = .none
         }
 
-        let targetState = targetDeterministicState(from: currentState, kind: kind)
+        let targetState = deterministicFormatter.targetState(from: currentState, kind: kind)
         logChange(
             "deterministicLongPress kind=\(kind.debugLabel) currentStyle=\(session.currentStyle.styleIdentifier) currentState=\(currentState.debugDescription) targetState=\(targetState.debugDescription) currentText=\(debugText(session.currentText))"
         )
@@ -288,11 +269,11 @@ final class KeyboardDictationChangeController {
             return false
         }
 
-        let replacementSourceText = sourceText(
+        let replacementSourceText = deterministicFormatter.sourceText(
             for: targetState,
             deterministicText: deterministicText,
             currentState: currentState,
-            session: session
+            currentSourceText: session.sourceText
         )
         guard let renderedText = await renderedText(
             for: targetState,
@@ -352,64 +333,6 @@ final class KeyboardDictationChangeController {
         )
     }
 
-    private func targetDeterministicState(
-        from state: DeterministicState,
-        kind: DeterministicControlKind
-    ) -> DeterministicState {
-        switch kind {
-        case .paragraphs:
-            return DeterministicState(
-                paragraphsEnabled: !state.paragraphsEnabled,
-                listsEnabled: state.listsEnabled
-            )
-        case .lists:
-            return DeterministicState(
-                paragraphsEnabled: state.paragraphsEnabled,
-                listsEnabled: !state.listsEnabled
-            )
-        }
-    }
-
-    private func isParagraphFormattingVisiblyApplied(
-        in session: Session,
-        currentState: DeterministicState
-    ) -> Bool {
-        guard currentState.paragraphsEnabled else {
-            return false
-        }
-
-        let paragraphsOffState = DeterministicState(
-            paragraphsEnabled: false,
-            listsEnabled: false
-        )
-        let paragraphsOnState = DeterministicState(
-            paragraphsEnabled: true,
-            listsEnabled: false
-        )
-
-        guard let paragraphsOffText = session.deterministicVariants[paragraphsOffState],
-              let paragraphsOnText = session.deterministicVariants[paragraphsOnState] else {
-            return currentState.paragraphsEnabled
-        }
-
-        return paragraphsOnText != paragraphsOffText
-    }
-
-    private func sourceText(
-        for targetState: DeterministicState,
-        deterministicText: String,
-        currentState: DeterministicState,
-        session: Session
-    ) -> String {
-        guard targetState.paragraphsEnabled == false,
-              currentState.listsEnabled,
-              targetState.listsEnabled else {
-            return deterministicText
-        }
-
-        return textWithParagraphBreaksCollapsedPreservingLists(session.sourceText)
-    }
-
     private func replacementText(
         for targetStyle: StyleRewriteStyle,
         session: inout Session,
@@ -450,7 +373,7 @@ final class KeyboardDictationChangeController {
     }
 
     private func renderedText(
-        for targetState: DeterministicState,
+        for targetState: KeyboardDeterministicDictationState,
         sourceText: String,
         session: inout Session,
         onProcessingStart: @escaping () -> Void,
@@ -486,7 +409,7 @@ final class KeyboardDictationChangeController {
             "renderedText result style=\(session.currentStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
 
-        let replacementText = textAdjustedForDeterministicState(
+        let replacementText = deterministicFormatter.textAdjustedForDeterministicState(
             preparedText(
                 result.finalText,
                 documentContextBeforeInput: session.documentContextBeforeInput,
@@ -516,77 +439,6 @@ final class KeyboardDictationChangeController {
             deterministicState: currentDeterministicState,
             style: style
         )] = text
-    }
-
-    private func textAdjustedForDeterministicState(
-        _ text: String,
-        state: DeterministicState
-    ) -> String {
-        guard state.paragraphsEnabled == false else {
-            return text
-        }
-
-        if state.listsEnabled {
-            return textWithParagraphBreaksCollapsedPreservingLists(text)
-        }
-
-        return text
-            .replacingOccurrences(of: "\\s*\\n+\\s*", with: " ", options: .regularExpression)
-            .replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private func textWithParagraphBreaksCollapsedPreservingLists(_ text: String) -> String {
-        let lines = text
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .map(String.init)
-        var output = ""
-        var previousLineWasListItem = false
-        var hasPendingBlankLine = false
-
-        for line in lines {
-            let trimmedLine = line
-                .replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard trimmedLine.isEmpty == false else {
-                hasPendingBlankLine = output.isEmpty == false
-                continue
-            }
-
-            let currentLineIsListItem = isOrderedListItemLine(trimmedLine)
-            if output.isEmpty {
-                output = trimmedLine
-            } else if currentLineIsListItem || previousLineWasListItem {
-                output += hasPendingBlankLine ? "\n\n\(trimmedLine)" : "\n\(trimmedLine)"
-            } else {
-                output += " \(trimmedLine)"
-            }
-
-            previousLineWasListItem = currentLineIsListItem
-            hasPendingBlankLine = false
-        }
-
-        return output.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private func isOrderedListItemLine(_ line: String) -> Bool {
-        var index = line.startIndex
-        var foundDigit = false
-
-        while index < line.endIndex,
-              line[index].wholeNumberValue != nil {
-            foundDigit = true
-            index = line.index(after: index)
-        }
-
-        guard foundDigit,
-              index < line.endIndex,
-              line[index] == "." else {
-            return false
-        }
-
-        index = line.index(after: index)
-        return index < line.endIndex && line[index].isWhitespace
     }
 
     private func preparedText(

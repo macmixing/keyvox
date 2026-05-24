@@ -303,6 +303,7 @@ iOS/
 │   │   │   ├── AudioIndicatorDriver.swift
 │   │   │   ├── KeyboardCallObserver.swift
 │   │   │   ├── KeyboardDictationChangeController.swift
+│   │   │   ├── KeyboardDeterministicDictationFormatter.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
 │   │   ├── Feedback/
