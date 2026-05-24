@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-05-23
+
+Number-evidence repair refinements for model rewrite output.
+
+### Includes
+
+- Added unified number evidence repair for changed, deleted, and separator-drifted numeric values in rewritten text.
+- Added repair for time and decimal separator drift so source evidence can restore `5:30` versus `5.30` style values correctly.
+- Improved money fact repair so multi-token spoken number phrases are parsed through the shared number evidence path before currency units.
+- Added dictation-model-specific style example text for Whisper and Parakeet while preserving the existing default example API.
+- Updated Chill formatting so colon-separated numeric runs collapse consistently with the relaxed punctuation policy.
+
+### Notes
+
+- `1.0.2` bumps the tracked style rewrite package version for stronger deterministic numeric evidence preservation across Vibes rewrites.
+
+---
+
 ## [1.0.1] - 2026-05-22
 
 Factual-number repair and output repair organization for Vibes rewrites.
