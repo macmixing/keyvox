@@ -60,7 +60,7 @@ struct MainTabView: View {
         }
         .sheet(
             isPresented: Binding(
-                get: { canPresentFeatureSheets && keyVoxVibesPurchaseController.sheetPresentation != nil },
+                get: { canPresentExplicitVibesSheet && keyVoxVibesPurchaseController.sheetPresentation != nil },
                 set: { isPresented in
                     if isPresented == false {
                         keyVoxVibesPurchaseController.dismissSheet()
@@ -222,6 +222,11 @@ struct MainTabView: View {
     private var canPresentFeatureSheets: Bool {
         onboardingStore.shouldShowOnboarding == false
             && onboardingStore.hasCompletedOnboardingThisLaunch == false
+            && ttsManager.isPlaybackPreparationViewPresented == false
+    }
+
+    private var canPresentExplicitVibesSheet: Bool {
+        onboardingStore.shouldShowOnboarding == false
             && ttsManager.isPlaybackPreparationViewPresented == false
     }
 
