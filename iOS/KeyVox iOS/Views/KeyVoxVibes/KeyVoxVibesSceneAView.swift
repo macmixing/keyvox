@@ -10,7 +10,6 @@ struct KeyVoxVibesSceneAView: View {
     @State private var titleOpacity: Double = 0
     @State private var subtitleOpacity: Double = 0
     @State private var rowRevealProgress: Int = 0
-    @State private var disclosureOpacity: Double = 0
     @State private var animationTask: Task<Void, Never>?
     @State private var hasAnimated = false
 
@@ -45,12 +44,6 @@ struct KeyVoxVibesSceneAView: View {
                         }
                     }
                     .padding(.bottom, 10)
-
-                    Text("Vibes are currently supported for English only.")
-                        .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .opacity(disclosureOpacity)
 
                     Spacer(minLength: 0)
                 }
@@ -103,7 +96,6 @@ struct KeyVoxVibesSceneAView: View {
         titleOpacity = 0
         subtitleOpacity = 0
         rowRevealProgress = 0
-        disclosureOpacity = 0
 
         animationTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.2))
@@ -136,13 +128,6 @@ struct KeyVoxVibesSceneAView: View {
                     rowRevealProgress = index + 1
                 }
             }
-
-            try? await Task.sleep(for: .seconds(0.14))
-            guard !Task.isCancelled else { return }
-
-            withAnimation(.easeOut(duration: 0.3)) {
-                disclosureOpacity = 1
-            }
         }
     }
 
@@ -158,6 +143,5 @@ struct KeyVoxVibesSceneAView: View {
         titleOpacity = 1
         subtitleOpacity = 1
         rowRevealProgress = StyleRewriteStyle.allCases.count
-        disclosureOpacity = 1
     }
 }

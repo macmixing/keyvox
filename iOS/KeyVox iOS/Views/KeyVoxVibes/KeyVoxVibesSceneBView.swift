@@ -61,6 +61,13 @@ struct KeyVoxVibesSceneBView: View {
                         }
                     }
 
+                    Text("Vibes are currently supported for English only.")
+                        .font(.appFont(15, variant: .light))
+                        .foregroundStyle(.yellow.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 10)
+                        .opacity(disclosureOpacity)
+
                     Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
