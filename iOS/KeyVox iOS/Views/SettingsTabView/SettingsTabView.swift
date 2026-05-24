@@ -49,6 +49,7 @@ struct SettingsTabView: View {
                 ttsSection
                 rateAndReviewSection
                 supportSection
+                helpSection
                 restorePurchasesSection
                 versionFooter
             }

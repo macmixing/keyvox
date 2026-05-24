@@ -77,6 +77,43 @@ extension SettingsTabView {
     }
 
     @ViewBuilder
+    var helpSection: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .center, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.accent.opacity(0.4))
+                            .frame(width: 32, height: 32)
+
+                        Image(systemName: "questionmark.circle.fill")
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundColor(.yellow.opacity(0.8))
+                            .frame(width: 32, height: 32)
+                    }
+
+                    Text("Need Help?")
+                        .font(.appFont(18))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    AppActionButton(
+                        title: "Open",
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 15,
+                        action: openHelpFAQ
+                    )
+                }
+
+                Text("Get help with KeyVox, read the FAQ, find more information, or contact us.")
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+        }
+    }
+
+    @ViewBuilder
     var restorePurchasesSection: some View {
         if ttsPurchaseController.isTTSUnlocked == false || keyVoxVibesPurchaseController.isVibesUnlocked == false {
             AppCard {
@@ -159,6 +196,13 @@ extension SettingsTabView {
     func openGitHubSponsors() {
         appHaptics.light()
         if let url = URL(string: "https://github.com/sponsors/macmixing/") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    func openHelpFAQ() {
+        appHaptics.light()
+        if let url = URL(string: "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=settings&utm_campaign=help_card#faq") {
             UIApplication.shared.open(url)
         }
     }
