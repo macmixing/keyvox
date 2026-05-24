@@ -245,6 +245,15 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "Yeah, we met at 2:30 yesterday.")
     }
 
+    func testRewriteRepairRepairsDotSeparatedTimeShapeAcrossInterveningWords() {
+        let output = OutputRepair.repairModelOutput(
+            original: "The concert is gonna start at like um maybe 5.30.",
+            rewritten: "The concert is gonna start at like um maybe 5.30."
+        )
+
+        XCTAssertEqual(output, "The concert is gonna start at like um maybe 5:30.")
+    }
+
     func testRewriteRepairPreservesVersionNumberDecimalShape() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm shipping version five point thirty tomorrow.",
@@ -315,6 +324,15 @@ final class StyleRewriteTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "Yeah, we shipped 2.23 yesterday.")
+    }
+
+    func testRewriteRepairPreservesReleasedVersionDecimalShapeAcrossInterveningWords() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Yeah, we shipped like um maybe 2.23 yesterday.",
+            rewritten: "Yeah, we shipped like um maybe 2.23 yesterday."
+        )
+
+        XCTAssertEqual(output, "Yeah, we shipped like um maybe 2.23 yesterday.")
     }
 
     func testRewriteRepairDoesNotPartiallyConvertSpokenTimeClusters() {

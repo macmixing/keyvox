@@ -133,6 +133,19 @@ KeyVox/
 │   │       ├── LlamaLoadedModel.swift
 │   │       └── LocalInferenceCancellationToken.swift
 │   ├── KeyVoxStyleRewrite/
+│   │   └── Sources/KeyVoxStyleRewrite/
+│   │       ├── OutputRepair/
+│   │       │   ├── OutputRepair.swift
+│   │       │   ├── Repairs/
+│   │       │   │   ├── APStyleNumberRepair.swift
+│   │       │   │   ├── MoneyFactRepair.swift
+│   │       │   │   ├── NumberEvidenceRepair.swift
+│   │       │   │   └── NumberSeparatorEvidenceRepair.swift
+│   │       │   └── Support/
+│   │       │       ├── NumberEvidence.swift
+│   │       │       └── RepairNumberParsing.swift
+│   │       ├── StyleRewriteDictationConfiguration.swift
+│   │       └── StyleRewriteTextTransformer.swift
 │   └── KeyVoxVibesAdapters/
 ├── Tools/
 ├── build/
@@ -779,5 +792,5 @@ KeyVox/
   - `Packages/KeyVoxWhisper`: local `whisper.cpp` wrapper package
   - `Packages/KeyVoxParakeet`: local Parakeet Core ML runtime package
   - `Packages/KeyVoxLocalInference`: local llama.cpp-backed rewrite inference package
-  - `Packages/KeyVoxStyleRewrite`: shared style rewrite request/transform contracts
+  - `Packages/KeyVoxStyleRewrite`: shared style rewrite request/transform contracts and deterministic output repair
   - `Packages/KeyVoxVibesAdapters`: bundled Vibes LoRA adapter resources

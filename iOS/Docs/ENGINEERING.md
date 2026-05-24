@@ -960,8 +960,12 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - `TextTransformChunkPlanner` budgets every model call as instructions + prompt wrapper + input chunk + expected output + safety margin.
 - chunk planning prefers semantic boundaries first, then word-level splits when a segment exceeds budget.
 - `StyleRewriteTextTransformTokenCounter` uses conservative approximate token counting for local model chunk planning.
-- `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, Polished separator repair, and the Chill cleanup-plus-heuristic path.
-- `StyleRewriteOutputRepair` repairs deleted separator punctuation after model cleanup without taking ownership of semantic rewrite policy.
+- `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, deterministic output repair, and the Chill cleanup-plus-heuristic path.
+- `OutputRepair` runs deterministic post-model repair after the local model touches text.
+- `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair.
+- `NumberEvidenceRepair.repair` coordinates factual number preservation in changed -> deleted -> separator order, with `NumberSeparatorEvidenceRepair` owning decimal-vs-time separator evidence after changed/deleted number repair runs.
+- `MoneyFactRepair` owns currency-specific repair while relying on shared number evidence for amount values.
+- `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired.
 - `ChillHeuristicFormatter` owns deterministic Chill casing and punctuation after optional local-model cleanup.
 - `DictationUtteranceArtifact` and `DictationTextVariantArtifact` are package-owned serializable models so the app can cache the latest utterance without inventing iOS-only artifact shapes.
 

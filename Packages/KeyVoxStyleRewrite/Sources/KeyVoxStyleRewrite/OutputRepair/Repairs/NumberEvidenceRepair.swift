@@ -3,7 +3,8 @@ import Foundation
 struct NumberEvidenceRepair {
     func repair(original: String, rewritten: String) -> String {
         let changedNumberRepaired = repairChangedNumberEvidence(original: original, rewritten: rewritten)
-        return repairDeletedNumberEvidence(original: original, rewritten: changedNumberRepaired)
+        let deletedNumberRepaired = repairDeletedNumberEvidence(original: original, rewritten: changedNumberRepaired)
+        return NumberSeparatorEvidenceRepair().repair(original: original, rewritten: deletedNumberRepaired)
     }
 
     private func repairChangedNumberEvidence(original: String, rewritten: String) -> String {

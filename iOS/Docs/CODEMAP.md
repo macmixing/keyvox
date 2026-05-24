@@ -442,8 +442,8 @@ Packages/
 │   ├── Sources/KeyVoxStyleRewrite/
 │   │   ├── ChillHeuristicFormatter.swift
 │   │   ├── DictationTextTransforming.swift
+│   │   ├── OutputRepair/
 │   │   ├── StyleRewriteDictationConfiguration.swift
-│   │   ├── StyleRewriteOutputRepair.swift
 │   │   ├── StyleRewriteTextTransformer.swift
 │   │   └── TextTransformChunkPlanner.swift
 │   └── Tests/KeyVoxStyleRewriteTests/
@@ -711,11 +711,16 @@ Packages/
   - Uses a conservative approximate counter through `StyleRewriteTextTransformTokenCounter`.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/StyleRewriteTextTransformer.swift`
   - Generic chunk-runner-backed transformer used by the app and keyboard IPC client.
-  - Applies the model response, style-specific processing modes, Casual cleanup metadata, Polished separator repair, and Chill cleanup-plus-heuristic path.
+  - Applies the model response, style-specific processing modes, Casual cleanup metadata, deterministic output repair, and Chill cleanup-plus-heuristic path.
   - Falls back to the post-processed base text when the local model is unavailable, prompt input is too long, generation fails, or otherwise requires full fallback.
   - For chunk-level errors that do not require full fallback, keeps the failed chunk as base text and records chunk errors.
-- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/StyleRewriteOutputRepair.swift`
-  - Repairs deleted separator punctuation after model cleanup without taking ownership of semantic rewrite policy.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`
+  - Runs deterministic post-model repair after local rewrite output and before app injection.
+  - `NumberEvidence.swift` is the shared source of truth for factual number evidence used by general number repair and money repair.
+  - `NumberEvidenceRepair.swift` coordinates factual number preservation, including separator evidence repair, changed number repair, and deleted number repair.
+  - `NumberSeparatorEvidenceRepair.swift` preserves factual numeric separators, including decimal-vs-time evidence such as `5.30` versus `5:30`.
+  - `MoneyFactRepair.swift` owns currency-specific repair while using shared number evidence for the amount values.
+  - `APStyleNumberRepair.swift` owns AP-style number presentation only, after factual number evidence has been repaired.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/ChillHeuristicFormatter.swift`
   - Deterministic Chill formatter after optional local-model cleanup.
   - Lowercases, removes unsupported punctuation, preserves emoji, symbol characters, and email-shaped inline tokens, keeps question marks where sentence boundaries require them, separates interior sentence boundaries with periods, and leaves the final cluster without a trailing period unless it is a question.
