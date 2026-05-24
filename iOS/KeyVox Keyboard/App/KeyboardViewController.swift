@@ -144,12 +144,12 @@ final class KeyboardViewController: UIInputViewController {
 
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
-        updateVibesAppliedVisualState()
+        updateActiveInsertionVisualState()
     }
 
     override func selectionDidChange(_ textInput: UITextInput?) {
         super.selectionDidChange(textInput)
-        updateVibesAppliedVisualState()
+        updateActiveInsertionVisualState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -227,8 +227,8 @@ final class KeyboardViewController: UIInputViewController {
             displayedVibeStyle: dictationChangeController.displayedVibeStyle,
             isDisplayedVibeApplied: dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion,
             isVibesAvailable: appSettingsStore.isVibesAvailable,
-            isAutoParagraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
-            isListFormattingEnabled: appSettingsStore.isListFormattingEnabled,
+            isAutoParagraphsEnabled: dictationChangeController.displayedAutoParagraphsEnabled,
+            isListFormattingEnabled: dictationChangeController.displayedListFormattingEnabled,
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
@@ -416,6 +416,7 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .paragraphs,
                 onProcessingStart: { [weak self] in
+                    self?.interactionHaptics.emitMediumIfEnabled()
                     self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
@@ -427,6 +428,7 @@ final class KeyboardViewController: UIInputViewController {
                 }
             )
             if didApply {
+                self.updateUI()
                 self.interactionHaptics.emitSuccessIfEnabled()
             } else {
                 self.interactionHaptics.emitMediumIfEnabled()
@@ -442,6 +444,7 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .lists,
                 onProcessingStart: { [weak self] in
+                    self?.interactionHaptics.emitMediumIfEnabled()
                     self?.indicatorDriver.phase = .processing
                     self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
                 },
@@ -453,6 +456,7 @@ final class KeyboardViewController: UIInputViewController {
                 }
             )
             if didApply {
+                self.updateUI()
                 self.interactionHaptics.emitSuccessIfEnabled()
             } else {
                 self.interactionHaptics.emitMediumIfEnabled()
@@ -478,7 +482,7 @@ final class KeyboardViewController: UIInputViewController {
             }
         )
         if didHandle {
-            updateVibesAppliedVisualState()
+            updateActiveInsertionVisualState()
         }
         return didHandle
     }
@@ -496,7 +500,7 @@ final class KeyboardViewController: UIInputViewController {
                     self?.textInputController.adjustCursorPosition(by: offset)
                 }
             )
-            updateVibesAppliedVisualState()
+            updateActiveInsertionVisualState()
         case .ended, .cancelled:
             isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
@@ -523,10 +527,12 @@ final class KeyboardViewController: UIInputViewController {
         emitDelayedTranscriptionLandingHapticIfNeeded()
     }
 
-    private func updateVibesAppliedVisualState() {
+    private func updateActiveInsertionVisualState() {
         rootContainerView?.vibesButton.title = dictationChangeController.displayedVibeTitle
         rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
+        rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
+        rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
     }
 
     private func updateTranscriptionLandingHapticStart(previousState: KeyboardState) {
