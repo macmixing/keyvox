@@ -46,11 +46,14 @@ struct APStyleNumberRepair {
             let digitRange = match.range(at: 1)
             guard digitRange.location != NSNotFound else { return nil }
             let digit = nsText.substring(with: digitRange)
+            let text = nsText as String
+            guard let range = Range(digitRange, in: text) else { return nil }
             guard let value = Int(digit),
                   value < RepairNumberParsing.apStyleNumeralLowerBound,
                   let word = RepairNumberParsing.spellOutString(for: value),
                   RepairMatching.containsWord(word, in: normalizedOriginal),
-                  !isProtectedLowDigit(match: match, in: nsText as String) else {
+                  !isOrderedListMarker(range: range, in: text),
+                  !isProtectedLowDigit(match: match, in: text) else {
                 return nil
             }
             return word
@@ -169,7 +172,11 @@ struct APStyleNumberRepair {
         }
         if range.upperBound < text.endIndex {
             let next = text[range.upperBound]
-            if next == ":" || next == "%" || next == "/" || next == "-" {
+            if next == ":",
+               !isOrderedListIntroColon(at: range.upperBound, in: text) {
+                return true
+            }
+            if next == "%" || next == "/" || next == "-" {
                 return true
             }
             if next == ".",
@@ -196,6 +203,50 @@ struct APStyleNumberRepair {
         }
 
         return false
+    }
+
+    private func isOrderedListMarker(range: Range<String.Index>, in text: String) -> Bool {
+        guard isStartOfLine(range.lowerBound, in: text),
+              range.upperBound < text.endIndex,
+              text[range.upperBound] == "." else {
+            return false
+        }
+
+        let afterPeriod = text.index(after: range.upperBound)
+        return afterPeriod == text.endIndex || text[afterPeriod].isWhitespace
+    }
+
+    private func isOrderedListIntroColon(at colonIndex: String.Index, in text: String) -> Bool {
+        var index = text.index(after: colonIndex)
+        var sawNewline = false
+
+        while index < text.endIndex, text[index].isWhitespace {
+            if text[index].isNewline {
+                sawNewline = true
+            }
+            index = text.index(after: index)
+        }
+
+        guard sawNewline else { return false }
+
+        let markerStart = index
+        while index < text.endIndex, text[index].isNumber {
+            index = text.index(after: index)
+        }
+
+        guard markerStart < index,
+              index < text.endIndex,
+              text[index] == "." else {
+            return false
+        }
+
+        let afterPeriod = text.index(after: index)
+        return afterPeriod == text.endIndex || text[afterPeriod].isWhitespace
+    }
+
+    private func isStartOfLine(_ index: String.Index, in text: String) -> Bool {
+        guard index > text.startIndex else { return true }
+        return text[text.index(before: index)].isNewline
     }
 
 }

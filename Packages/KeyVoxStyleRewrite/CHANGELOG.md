@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-05-23
+
+Ordered-list marker preservation for Vibes rewrite output repair.
+
+### Includes
+
+- Protected line-start ordered-list markers from AP-style low-number restoration and still restores ordinary low-number wording before list-introducing colons.
+
+### Notes
+
+- `1.0.3` bumps the tracked style rewrite package version for deterministic list marker preservation across Vibes rewrites.
+
+---
+
 ## [1.0.2] - 2026-05-23
 
 Number-evidence repair refinements for model rewrite output.

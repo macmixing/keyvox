@@ -173,6 +173,35 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "I went there two days ago. She wanted five lobsters for dinner.")
     }
 
+    func testRewriteRepairPreservesOrderedListMarkersAroundSpokenLowNumberEvidence() {
+        let cases = [
+            (
+                original: "I was going to pick up one thing today, but let me make a list:\n\none. Apples\n2. Bananas",
+                rewritten: "I was going to pick up one thing today, but let me make a list:\n\n1. Apples\n2. Bananas",
+                repaired: "I was going to pick up one thing today, but let me make a list:\n\n1. Apples\n2. Bananas"
+            ),
+            (
+                original: "I was going to pick up two things from the store today:\n\n1. Apples\ntwo. Bananas",
+                rewritten: "I was going to pick up two things from the store today:\n\n1. Apples\n2. Bananas",
+                repaired: "I was going to pick up two things from the store today:\n\n1. Apples\n2. Bananas"
+            ),
+            (
+                original: "I need to pick up one thing from the store. Wait, maybe two:\n\n1. Apples\n2. Bananas\n3. Grapes",
+                rewritten: "I need to pick up one thing from the store. Wait, maybe 2:\n\n1. Apples\n2. Bananas\n3. Grapes",
+                repaired: "I need to pick up one thing from the store. Wait, maybe two:\n\n1. Apples\n2. Bananas\n3. Grapes"
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
+    }
+
     func testRewriteRepairRestoresExplicitWrittenLowNumber() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm just going to leave that as the written two.",
