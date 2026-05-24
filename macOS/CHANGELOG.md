@@ -6,6 +6,39 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.4] - 2026-05-23
+
+Refines Mac Vibes examples and strengthens deterministic numeric repair for local rewrite output.
+
+### Added
+
+- Added dictation-provider-aware Vibes example text so Mac settings and the Vibes intro can show examples that match the active Whisper or Parakeet dictation model.
+- Added shared factual number evidence repair through `KeyVoxStyleRewrite` `1.0.2` for changed, deleted, and separator-drifted numeric values in rewritten text.
+- Added deterministic time-versus-decimal separator repair so source evidence can preserve values such as `5:30` and `5.30` correctly after local model rewriting.
+
+### Changed
+
+- Updated the Mac Vibes settings card and Vibes intro window to pass the active dictation model into the shared style example formatter.
+- Updated money fact repair to parse multi-token spoken number phrases through the shared number evidence path before applying currency-specific repair.
+- Updated Chill formatting so colon-separated numeric runs collapse consistently with its relaxed punctuation policy.
+- Updated macOS engineering and codemap documentation for the expanded style rewrite output repair ownership.
+
+### Fixed
+
+- Fixed Mac Vibes examples so Parakeet users see spoken-number-oriented examples instead of Whisper-style numeric punctuation examples.
+- Fixed Vibes rewrites so decimal and time separators are less likely to drift when rewritten output changes punctuation around numeric evidence.
+- Fixed Vibes rewrites so factual numeric values are restored more consistently when the local model changes or deletes number evidence between otherwise aligned source words.
+
+### Package versions
+
+KeyVox macOS 1.1.4:
+- KeyVoxCore           1.0.12
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.2
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
 ## [1.1.3] - 2026-05-22
 
 Refines Mac Vibes with stronger factual-number repair, refreshed bundled style adapters, and shared address-number protection in dictation cleanup.
