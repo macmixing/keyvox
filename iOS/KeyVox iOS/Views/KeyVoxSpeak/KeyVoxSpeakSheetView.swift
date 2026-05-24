@@ -89,40 +89,7 @@ struct KeyVoxSpeakSheetView: View {
                     .tabViewStyle(.page(indexDisplayMode: pageIndexDisplayMode))
                     .opacity(tabViewOpacity)
 
-                    VStack(spacing: 8) {
-                        switch mode {
-                        case .intro(_, let onTryNow, _):
-                            AppActionButton(
-                                title: "Try KeyVox Speak",
-                                style: .primary,
-                                fillsWidth: true,
-                                size: .compact,
-                                fontSize: 22,
-                                action: onTryNow
-                            )
-                        case .unlock:
-                            AppActionButton(
-                                title: purchaseButtonTitle,
-                                style: .primary,
-                                fillsWidth: true,
-                                size: .compact,
-                                fontSize: 22,
-                                isEnabled: ttsPurchaseController.isStoreActionInFlight == false,
-                                action: purchaseUnlock
-                            )
-
-                            Button(action: restorePurchases) {
-                                Text("Restore Purchases")
-                                    .font(.appFont(14, variant: .light))
-                                    .foregroundStyle(.white.opacity(0.8))
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(ttsPurchaseController.isStoreActionInFlight)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .background(AppTheme.screenBackground)
+                    bottomActions
                     .opacity(buttonOpacity)
                 }
 
@@ -176,6 +143,47 @@ struct KeyVoxSpeakSheetView: View {
         return false
     }
 
+    @ViewBuilder
+    private var bottomActions: some View {
+        VStack(spacing: 8) {
+            switch mode {
+            case .intro(_, let onTryNow, _):
+                AppActionButton(
+                    title: introActionTitle,
+                    style: .primary,
+                    fillsWidth: true,
+                    size: .compact,
+                    fontSize: 22,
+                    isEnabled: isIntroActionEnabled,
+                    action: {
+                        handleIntroAction(onTryNow: onTryNow)
+                    }
+                )
+            case .unlock:
+                AppActionButton(
+                    title: purchaseButtonTitle,
+                    style: .primary,
+                    fillsWidth: true,
+                    size: .compact,
+                    fontSize: 22,
+                    isEnabled: ttsPurchaseController.isStoreActionInFlight == false,
+                    action: purchaseUnlock
+                )
+
+                Button(action: restorePurchases) {
+                    Text("Restore Purchases")
+                        .font(.appFont(14, variant: .light))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+                .disabled(ttsPurchaseController.isStoreActionInFlight)
+            }
+        }
+        .padding(.horizontal, 20)
+        .background(AppTheme.screenBackground)
+    }
+
     private var purchaseButtonTitle: String {
         if ttsPurchaseController.isTTSUnlocked {
             return "Unlocked"
@@ -186,6 +194,35 @@ struct KeyVoxSpeakSheetView: View {
         }
 
         return "Unlock"
+    }
+
+    private var introActionTitle: String {
+        if nextIntroScene != nil {
+            return selectedScene == .a ? "Get Started" : "Next"
+        }
+
+        return selectedScene == .c ? "Try Now" : "Speak Now"
+    }
+
+    private var isIntroActionEnabled: Bool {
+        selectedScene != .c || isReadyForSelectedVoice
+    }
+
+    private var isReadyForSelectedVoice: Bool {
+        pocketTTSModelManager.isReady(for: settingsStore.ttsVoice)
+    }
+
+    private var nextIntroScene: Scene? {
+        guard let currentIndex = displayedScenes.firstIndex(of: selectedScene) else {
+            return nil
+        }
+
+        let nextIndex = displayedScenes.index(after: currentIndex)
+        guard nextIndex < displayedScenes.endIndex else {
+            return nil
+        }
+
+        return displayedScenes[nextIndex]
     }
 
     @ViewBuilder
@@ -220,6 +257,23 @@ struct KeyVoxSpeakSheetView: View {
         appHaptics.light()
         Task {
             await ttsPurchaseController.restorePurchases()
+        }
+    }
+
+    private func handleIntroAction(onTryNow: () -> Void) {
+        guard let nextIntroScene else {
+            onTryNow()
+            return
+        }
+
+        advanceIntro(to: nextIntroScene)
+    }
+
+    private func advanceIntro(to scene: Scene) {
+        guard displayedScenes.contains(scene) else { return }
+        appHaptics.light()
+        withAnimation(.easeInOut(duration: 0.22)) {
+            selectedScene = scene
         }
     }
 
