@@ -388,23 +388,13 @@ final class KeyboardViewController: UIInputViewController {
             guard let self else { return }
             let didApply = await self.dictationChangeController.applyLongPressChange(
                 onProcessingStart: { [weak self] in
-                    self?.interactionHaptics.emitMediumIfEnabled()
-                    self?.indicatorDriver.phase = .processing
-                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                    self?.handleDictationChangeProcessingStart()
                 },
                 onProcessingEnd: { [weak self] in
-                    guard let self else { return }
-                    let phase = self.keyboardState.indicatorPhase
-                    self.indicatorDriver.phase = phase
-                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                    self?.handleDictationChangeProcessingEnd()
                 }
             )
-            if didApply {
-                self.updateUI()
-                self.interactionHaptics.emitSuccessIfEnabled()
-            } else {
-                self.interactionHaptics.emitMediumIfEnabled()
-            }
+            self.handleDictationChangeResult(didApply)
         }
     }
 
@@ -416,23 +406,13 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .paragraphs,
                 onProcessingStart: { [weak self] in
-                    self?.interactionHaptics.emitMediumIfEnabled()
-                    self?.indicatorDriver.phase = .processing
-                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                    self?.handleDictationChangeProcessingStart()
                 },
                 onProcessingEnd: { [weak self] in
-                    guard let self else { return }
-                    let phase = self.keyboardState.indicatorPhase
-                    self.indicatorDriver.phase = phase
-                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                    self?.handleDictationChangeProcessingEnd()
                 }
             )
-            if didApply {
-                self.updateUI()
-                self.interactionHaptics.emitSuccessIfEnabled()
-            } else {
-                self.interactionHaptics.emitMediumIfEnabled()
-            }
+            self.handleDictationChangeResult(didApply)
         }
     }
 
@@ -444,23 +424,13 @@ final class KeyboardViewController: UIInputViewController {
             let didApply = await self.dictationChangeController.applyDeterministicLongPressChange(
                 .lists,
                 onProcessingStart: { [weak self] in
-                    self?.interactionHaptics.emitMediumIfEnabled()
-                    self?.indicatorDriver.phase = .processing
-                    self?.rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+                    self?.handleDictationChangeProcessingStart()
                 },
                 onProcessingEnd: { [weak self] in
-                    guard let self else { return }
-                    let phase = self.keyboardState.indicatorPhase
-                    self.indicatorDriver.phase = phase
-                    self.rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+                    self?.handleDictationChangeProcessingEnd()
                 }
             )
-            if didApply {
-                self.updateUI()
-                self.interactionHaptics.emitSuccessIfEnabled()
-            } else {
-                self.interactionHaptics.emitMediumIfEnabled()
-            }
+            self.handleDictationChangeResult(didApply)
         }
     }
 
@@ -533,6 +503,27 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
         rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
         rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
+    }
+
+    private func handleDictationChangeProcessingStart() {
+        interactionHaptics.emitMediumIfEnabled()
+        indicatorDriver.phase = .processing
+        rootContainerView?.logoBarView.applyIndicatorPhase(.processing)
+    }
+
+    private func handleDictationChangeProcessingEnd() {
+        let phase = keyboardState.indicatorPhase
+        indicatorDriver.phase = phase
+        rootContainerView?.logoBarView.applyIndicatorPhase(phase)
+    }
+
+    private func handleDictationChangeResult(_ didApply: Bool) {
+        if didApply {
+            updateUI()
+            interactionHaptics.emitSuccessIfEnabled()
+        } else {
+            interactionHaptics.emitMediumIfEnabled()
+        }
     }
 
     private func updateTranscriptionLandingHapticStart(previousState: KeyboardState) {
