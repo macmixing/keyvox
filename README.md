@@ -12,6 +12,29 @@
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
 </p>
 
+## Branch Note: Personal Dictation Capture
+
+This branch contains a private personal capture workflow for building my own rated KeyVox dictation dataset. It is intended for my own use and is separate from the KeyVox product, which contains ZERO user analytics or data collection.
+
+The personal capture flow records KeyVox Vibes variants from my own dictation sessions, lets me rate visible results from the keyboard as good or bad, and keeps enough context to compare the original dictation text, visible output, model output, post-processed output, style, rating, and metadata.
+
+The keyboard rating control is intentionally lightweight:
+
+- Tap to mark the active Vibes result as good.
+- Long press to mark the active Vibes result as bad.
+- Double tap to clear an existing rating or re-arm the latest unrated Vibes result when I need to rate or re-rate it after moving on.
+
+The containing iOS app exposes manual exports from Settings:
+
+- SQLite export for the full personal capture file.
+- JSON export for rated capture records.
+
+This branch is not a user analytics system. The capture workflow exists so I can build a high-quality personal training dataset from my own rated dictation examples and use that data for future local model and adapter training and experimentation.
+
+For more detail, see [Personal Dictation Capture](iOS/Docs/PERSONAL_DICTATION_CAPTURE.md).
+
+## KeyVox
+
 KeyVox is a local-first macOS and iOS AI-powered dictation app with on-device Whisper and Parakeet transcription models. 
 
 KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe on-device with Whisper or Parakeet, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
