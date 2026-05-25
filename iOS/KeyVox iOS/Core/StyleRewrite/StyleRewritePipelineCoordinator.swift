@@ -4,6 +4,11 @@ import KeyVoxStyleRewrite
 
 @MainActor
 final class StyleRewritePipelineCoordinator {
+    struct DictationProviderSnapshot {
+        let providerIdentifier: String
+        let modelIdentifier: String
+    }
+
     private let selectedStyleProvider: () -> StyleRewriteStyle
     private let artifactStore: StyleRewriteLatestArtifactStore
     private let textTransformer: any DictationTextTransforming
@@ -118,6 +123,14 @@ final class StyleRewritePipelineCoordinator {
     }
 
     func recordLatestArtifact(from result: DictationPipelineResult, selectedText: String) {
+        recordLatestArtifact(from: result, selectedText: selectedText, dictationProvider: nil)
+    }
+
+    func recordLatestArtifact(
+        from result: DictationPipelineResult,
+        selectedText: String,
+        dictationProvider: DictationProviderSnapshot?
+    ) {
         guard !result.wasLikelyNoSpeech else {
             artifactStore.clear()
             return
@@ -156,7 +169,8 @@ final class StyleRewritePipelineCoordinator {
                 },
                 inferenceDuration: result.inferenceDuration,
                 textTransformationDuration: result.textTransformationDuration,
-                createdAt: Date()
+                createdAt: Date(),
+                metadata: artifactMetadata(dictationProvider: dictationProvider)
             )
         )
     }
@@ -188,6 +202,16 @@ final class StyleRewritePipelineCoordinator {
             postprocessedOutputText: result.finalText,
             metadata: metadata
         )
+    }
+
+    private func artifactMetadata(
+        dictationProvider: DictationProviderSnapshot?
+    ) -> [String: String] {
+        guard let dictationProvider else { return [:] }
+        return [
+            "dictation_provider": dictationProvider.providerIdentifier,
+            "dictation_model_id": dictationProvider.modelIdentifier
+        ]
     }
 
     private func log(_ message: String) {

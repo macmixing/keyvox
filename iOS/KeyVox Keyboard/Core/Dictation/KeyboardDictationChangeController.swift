@@ -19,6 +19,7 @@ final class KeyboardDictationChangeController {
         var captureID: String?
         var rawDictationText: String?
         var baseText: String?
+        var artifactMetadata: [String: String]
         let documentContextBeforeInput: String?
         let preparesAsDictationInsertion: Bool
         var currentText: String
@@ -123,6 +124,7 @@ final class KeyboardDictationChangeController {
                 captureID: nil,
                 rawDictationText: nil,
                 baseText: nil,
+                artifactMetadata: [:],
                 documentContextBeforeInput: insertion.documentContextBeforeInput,
                 preparesAsDictationInsertion: true,
                 currentText: insertion.insertedText,
@@ -188,6 +190,7 @@ final class KeyboardDictationChangeController {
             captureID: artifact.id.uuidString,
             rawDictationText: artifact.rawText,
             baseText: artifact.baseText,
+            artifactMetadata: artifact.metadata,
             documentContextBeforeInput: insertion.documentContextBeforeInput,
             preparesAsDictationInsertion: true,
             currentText: insertion.insertedText,
@@ -212,7 +215,11 @@ final class KeyboardDictationChangeController {
                 rawDictationText: artifact.rawText,
                 baseText: artifact.baseText,
                 postprocessedOutputText: postprocessedText,
-                metadata: metadata(style: selectedStyle, processingMode: nil)
+                metadata: metadata(
+                    style: selectedStyle,
+                    processingMode: nil,
+                    artifactMetadata: artifact.metadata
+                )
             ))
         }
     }
@@ -445,17 +452,21 @@ final class KeyboardDictationChangeController {
             rawDictationText: session.rawDictationText,
             baseText: session.baseText,
             postprocessedOutputText: postprocessedText,
-            metadata: metadata(style: style, processingMode: nil)
+            metadata: metadata(
+                style: style,
+                processingMode: nil,
+                artifactMetadata: session.artifactMetadata
+            )
         ))
     }
 
     private func metadata(
         style: StyleRewriteStyle,
-        processingMode: String?
+        processingMode: String?,
+        artifactMetadata: [String: String]
     ) -> [String: String] {
-        var values: [String: String] = [
-            "style": style.styleIdentifier
-        ]
+        var values = artifactMetadata
+        values["style"] = style.styleIdentifier
         if let processingMode {
             values["processing_mode"] = processingMode
         }

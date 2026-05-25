@@ -93,7 +93,7 @@ Important fields:
 - `rating`: `unrated`, `good`, or `bad`.
 - `created_at`: row creation time.
 - `rated_at`: rating time, if rated.
-- `metadata_json`: coarse timing, adapter, mode, chunk, error, and app-version context.
+- `metadata_json`: dictation provider/model identity plus coarse timing, adapter, mode, chunk, error, and app-version context.
 
 A second table stores coarse rewrite traces:
 
@@ -111,6 +111,7 @@ The capture flow uses the existing `DictationUtteranceArtifact` for:
 
 - raw dictation text
 - base post-processed text
+- dictation provider/model metadata for newly captured utterances
 - selected text
 - deterministic variants
 - selected style

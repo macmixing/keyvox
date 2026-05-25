@@ -199,8 +199,18 @@ final class AppServiceRegistry {
             processOutputText: { [weak styleRewritePipelineCoordinator] text in
                 await styleRewritePipelineCoordinator?.processOutputText(text) ?? .unchanged(text)
             },
-            recordPipelineResult: { [weak styleRewritePipelineCoordinator] result, selectedText in
-                styleRewritePipelineCoordinator?.recordLatestArtifact(from: result, selectedText: selectedText)
+            recordPipelineResult: { [weak styleRewritePipelineCoordinator, weak settingsStore] result, selectedText in
+                let provider = settingsStore?.activeDictationProvider
+                styleRewritePipelineCoordinator?.recordLatestArtifact(
+                    from: result,
+                    selectedText: selectedText,
+                    dictationProvider: provider.map {
+                        StyleRewritePipelineCoordinator.DictationProviderSnapshot(
+                            providerIdentifier: $0.rawValue,
+                            modelIdentifier: $0.modelID.rawValue
+                        )
+                    }
+                )
             },
             prewarmStyleRewriteForUpcomingDictation: { [weak styleRewritePipelineCoordinator] in
                 Task { @MainActor [weak styleRewritePipelineCoordinator] in

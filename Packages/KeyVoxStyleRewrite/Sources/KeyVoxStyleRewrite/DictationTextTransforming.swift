@@ -189,6 +189,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let inferenceDuration: TimeInterval
     public let textTransformationDuration: TimeInterval
     public let createdAt: Date
+    public let metadata: [String: String]
 
     public init(
         id: UUID,
@@ -200,7 +201,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         deterministicVariants: [DictationDeterministicTextVariantArtifact] = [],
         inferenceDuration: TimeInterval,
         textTransformationDuration: TimeInterval,
-        createdAt: Date
+        createdAt: Date,
+        metadata: [String: String] = [:]
     ) {
         self.id = id
         self.rawText = rawText
@@ -212,6 +214,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         self.inferenceDuration = inferenceDuration
         self.textTransformationDuration = textTransformationDuration
         self.createdAt = createdAt
+        self.metadata = metadata
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -225,6 +228,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         case inferenceDuration
         case textTransformationDuration
         case createdAt
+        case metadata
     }
 
     public init(from decoder: Decoder) throws {
@@ -242,6 +246,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         inferenceDuration = try container.decode(TimeInterval.self, forKey: .inferenceDuration)
         textTransformationDuration = try container.decode(TimeInterval.self, forKey: .textTransformationDuration)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
+        metadata = try container.decodeIfPresent([String: String].self, forKey: .metadata) ?? [:]
     }
 }
 

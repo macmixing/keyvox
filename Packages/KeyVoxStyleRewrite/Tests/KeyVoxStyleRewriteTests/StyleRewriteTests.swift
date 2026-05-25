@@ -759,7 +759,11 @@ final class StyleRewriteTests: XCTestCase {
             ],
             inferenceDuration: 0.5,
             textTransformationDuration: 0.25,
-            createdAt: Date()
+            createdAt: Date(),
+            metadata: [
+                "dictation_model_id": "parakeetTdtV3",
+                "dictation_provider": "parakeet"
+            ]
         )
 
         let data = try JSONEncoder().encode(artifact)
@@ -789,6 +793,7 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try decoder.decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded.deterministicVariants, [])
+        XCTAssertEqual(decoded.metadata, [:])
     }
 
     func testTextTransformRequestRoundTripsThroughJSON() throws {
