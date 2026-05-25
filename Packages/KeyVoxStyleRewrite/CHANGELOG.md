@@ -15,6 +15,7 @@ Spoken-list cue preservation for Vibes rewrite output repair.
 - Protected line-start ordered-list markers from AP-style low-number restoration and still restores ordinary low-number wording before list-introducing colons.
 - Restored spoken-number list cues from raw dictation variants when Vibe rewriting flattens item markers.
 - Preserved the original punctuation around restored spoken list cues across comma and period dictation variants.
+- Restored original non-numeric wording when a Vibes rewrite inserts unsupported factual number evidence into an ambiguous source phrase.
 - Added focused DEBUG visibility for local model output, repaired style output, and factual number evidence kept during output repair.
 
 ### Notes
