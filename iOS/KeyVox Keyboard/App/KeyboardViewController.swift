@@ -33,8 +33,10 @@ final class KeyboardViewController: UIInputViewController {
     )
     lazy var dictationChangeController = KeyboardDictationChangeController(
         textInputController: textInputController,
-        appSettingsStore: appSettingsStore
+        appSettingsStore: appSettingsStore,
+        ratingController: dictationRatingController
     )
+    let dictationRatingController = KeyboardDictationRatingController()
     lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
         scheduleAction: keyboardMainQueueScheduler,
@@ -229,6 +231,7 @@ final class KeyboardViewController: UIInputViewController {
             isVibesAvailable: appSettingsStore.isVibesAvailable,
             isAutoParagraphsEnabled: dictationChangeController.displayedAutoParagraphsEnabled,
             isListFormattingEnabled: dictationChangeController.displayedListFormattingEnabled,
+            dictationRatingState: dictationRatingController.buttonState,
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
@@ -371,8 +374,37 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleDictionaryTap() {
-        interactionHaptics.emitMediumIfEnabled()
-        containingAppLauncher.open(openDictionaryURL)
+        guard dictationRatingController.markGood() else {
+            interactionHaptics.emitMediumIfEnabled()
+            return
+        }
+
+        interactionHaptics.emitSuccessIfEnabled()
+        updateUI()
+    }
+
+    @objc
+    func handleDictionaryLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        guard dictationRatingController.markBad() else {
+            interactionHaptics.emitMediumIfEnabled()
+            return
+        }
+
+        interactionHaptics.emitWarningIfEnabled()
+        updateUI()
+    }
+
+    @objc
+    func handleDictionaryDoubleTap(_ recognizer: UITapGestureRecognizer) {
+        guard recognizer.state == .recognized else { return }
+        guard dictationRatingController.undoOrRearmLatestUnrated() else {
+            interactionHaptics.emitMediumIfEnabled()
+            return
+        }
+
+        interactionHaptics.emitHeavyIfEnabled()
+        updateUI()
     }
 
     @objc
@@ -503,6 +535,19 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
         rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
         rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
+        if !dictationChangeController.isRatingTargetStillVisible {
+            dictationRatingController.detachFromInsertionIfNeeded()
+        }
+        rootContainerView?.dictionaryButton.isEnabled = currentToolbarMode() == .branded
+            && !isTrackpadModeActive
+        switch dictationRatingController.buttonState {
+        case .inactive, .rated:
+            rootContainerView?.dictionaryButton.symbolName = "checkmark.app"
+            rootContainerView?.dictionaryButton.foregroundOverrideColor = nil
+        case .unrated:
+            rootContainerView?.dictionaryButton.symbolName = "checkmark.app.fill"
+            rootContainerView?.dictionaryButton.foregroundOverrideColor = .systemRed
+        }
     }
 
     private func handleDictationChangeProcessingStart() {

@@ -115,6 +115,7 @@
 				Core/Dictation/KeyboardCallObserver.swift,
 				Core/Dictation/KeyboardDictationChangeController.swift,
 				Core/Dictation/KeyboardDictationController.swift,
+				Core/Dictation/KeyboardDictationRatingController.swift,
 				Core/Dictation/KeyboardDeterministicDictationFormatter.swift,
 				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
@@ -173,6 +174,7 @@
 		8E7DB73E2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox iOSTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/Debug/PersonalDictationCaptureStore.swift,
 				App/iCloud/UserDefaultsKeys.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
@@ -190,6 +192,7 @@
 		8E7DB73F2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Keyboard" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/Debug/PersonalDictationCaptureStore.swift,
 				App/iCloud/UserDefaultsKeys.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,

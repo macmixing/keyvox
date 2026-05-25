@@ -548,31 +548,31 @@ extension KeyboardLayoutGeometry {
 
             if isLeftHandedLayoutEnabled, showsVibesButton {
                 singleKeySlots[.speak] = .nine
-                singleKeySlots[.dictionary] = .eight
+                singleKeySlots[.capsLock] = .eight
                 singleKeySlots[.paragraph] = .seven
                 singleKeySlots[.lists] = .six
-                singleKeySlots[.capsLock] = .five
+                singleKeySlots[.dictionary] = .five
                 vibesSlots = (.three, .four)
             } else if isLeftHandedLayoutEnabled {
                 singleKeySlots[.speak] = .seven
-                singleKeySlots[.dictionary] = .six
+                singleKeySlots[.capsLock] = .six
                 singleKeySlots[.paragraph] = .five
                 singleKeySlots[.lists] = .four
-                singleKeySlots[.capsLock] = .three
+                singleKeySlots[.dictionary] = .three
                 vibesSlots = nil
             } else if showsVibesButton {
                 singleKeySlots[.speak] = .two
-                singleKeySlots[.dictionary] = .three
+                singleKeySlots[.capsLock] = .three
                 singleKeySlots[.paragraph] = .four
                 singleKeySlots[.lists] = .five
-                singleKeySlots[.capsLock] = .six
+                singleKeySlots[.dictionary] = .six
                 vibesSlots = (.seven, .eight)
             } else {
                 singleKeySlots[.speak] = .four
-                singleKeySlots[.dictionary] = .five
+                singleKeySlots[.capsLock] = .five
                 singleKeySlots[.paragraph] = .six
                 singleKeySlots[.lists] = .seven
-                singleKeySlots[.capsLock] = .eight
+                singleKeySlots[.dictionary] = .eight
                 vibesSlots = nil
             }
 

@@ -143,6 +143,12 @@ final class AppServiceRegistry {
             },
             artifactStore: styleRewriteArtifactStore,
             textTransformer: localStyleRewriteTextTransformer,
+            modelOutputProvider: { [weak localStyleRewriteTextTransformer] styleIdentifier, sourceText in
+                localStyleRewriteTextTransformer?.consumeModelOutput(
+                    styleIdentifier: styleIdentifier,
+                    sourceText: sourceText
+                )
+            },
             releaseResources: { reason in
                 await localStyleRewriteTextTransformer.releaseResources(reason: reason)
             }

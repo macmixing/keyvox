@@ -7,17 +7,20 @@ final class StyleRewritePipelineCoordinator {
     private let selectedStyleProvider: () -> StyleRewriteStyle
     private let artifactStore: StyleRewriteLatestArtifactStore
     private let textTransformer: any DictationTextTransforming
+    private let modelOutputProvider: (String, String) -> String?
     private let releaseResources: @MainActor (String) async -> Void
 
     init(
         selectedStyleProvider: @escaping () -> StyleRewriteStyle,
         artifactStore: StyleRewriteLatestArtifactStore,
         textTransformer: any DictationTextTransforming,
+        modelOutputProvider: @escaping (String, String) -> String? = { _, _ in nil },
         releaseResources: @escaping @MainActor (String) async -> Void = { _ in }
     ) {
         self.selectedStyleProvider = selectedStyleProvider
         self.artifactStore = artifactStore
         self.textTransformer = textTransformer
+        self.modelOutputProvider = modelOutputProvider
         self.releaseResources = releaseResources
     }
 
@@ -42,6 +45,7 @@ final class StyleRewritePipelineCoordinator {
         }
 
         let result = await textTransformer.transform(request)
+        recordRewriteTrace(request: request, result: result)
         let errors = result.errors.map(\.message)
         return DictationPipelineTextProcessingResult(
             text: result.finalText,
@@ -96,6 +100,7 @@ final class StyleRewritePipelineCoordinator {
         }
 
         let result = await textTransformer.transform(transformRequest)
+        recordRewriteTrace(request: transformRequest, result: result)
         log(
             "keyboardResult id=\(request.id.uuidString) style=\(request.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
@@ -160,6 +165,28 @@ final class StyleRewritePipelineCoordinator {
         StyleRewriteDictationConfiguration.request(
             for: selectedStyleProvider(),
             baseText: baseText
+        )
+    }
+
+    private func recordRewriteTrace(
+        request: TextTransformRequest,
+        result: TextTransformResult
+    ) {
+        var metadata: [String: String] = [
+            "applied": result.applied ? "true" : "false",
+            "chunk_count": String(result.chunkCount),
+            "duration": String(result.duration)
+        ]
+        if let processingMode = result.processingMode {
+            metadata["processing_mode"] = processingMode
+        }
+
+        PersonalDictationCaptureStore.shared.recordRewriteTrace(
+            styleIdentifier: request.styleIdentifier,
+            sourceText: request.baseText,
+            modelOutputText: modelOutputProvider(request.styleIdentifier, request.baseText),
+            postprocessedOutputText: result.finalText,
+            metadata: metadata
         )
     }
 

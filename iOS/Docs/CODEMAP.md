@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-05-19**
+**Last Updated: 2026-05-25**
 
 ## Project Overview
 
@@ -40,7 +40,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxVibesAdapters/`**: bundled KeyVox-trained LoRA adapter resources and typed adapter catalog used by the app's local Vibes model manager.
 - **`../Packages/KeyVoxStyleRewrite/`**: reusable dictation style transform package, style request construction, token-aware chunk planning, model-response orchestration, output repair, Chill heuristic formatting, latest-utterance artifact models, and package tests for transform behavior.
 - **`KeyVoxiOSTests/`**: deterministic tests for onboarding state, keyboard-tour routing, settings persistence, KeyVox Vibes artifact persistence, iCloud sync, weekly stats, model lifecycle, copied-text playback policy and lifecycle, model download recovery, microphone permission handling, text input helpers, cursor-trackpad behavior, and transcription/session orchestration.
-- **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy.
+- **`iOS/Docs/`**: iOS-local source of truth. `CODEMAP.md` tracks file ownership; `ENGINEERING.md` tracks invariants, contracts, and operational policy; `PERSONAL_DICTATION_CAPTURE.md` documents the personal dictation rating and export flow.
 
 ## Contributor Notes
 
@@ -59,7 +59,8 @@ This is the curated iOS structure map, including the direct shared package depen
 iOS/
 ├── Docs/
 │   ├── CODEMAP.md
-│   └── ENGINEERING.md
+│   ├── ENGINEERING.md
+│   └── PERSONAL_DICTATION_CAPTURE.md
 ├── KeyVox iOS.xcodeproj/
 ├── KeyVox iOS.xctestplan
 ├── app-update-policy.json

@@ -124,6 +124,7 @@ final class KeyboardRootView: UIView {
         isVibesAvailable: Bool,
         isAutoParagraphsEnabled: Bool,
         isListFormattingEnabled: Bool,
+        dictationRatingState: KeyboardDictationRatingButtonState,
         isLeftHandedLayoutEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
@@ -170,6 +171,14 @@ final class KeyboardRootView: UIView {
         dictionaryButton.isTrackpadModeActive = isTrackpadModeActive
         dictionaryButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         dictionaryButton.isHidden = !showsBrandedToolbar
+        switch dictationRatingState {
+        case .inactive, .rated:
+            dictionaryButton.symbolName = "checkmark.app"
+            dictionaryButton.foregroundOverrideColor = nil
+        case .unrated:
+            dictionaryButton.symbolName = "checkmark.app.fill"
+            dictionaryButton.foregroundOverrideColor = .systemRed
+        }
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
         vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
@@ -224,8 +233,8 @@ final class KeyboardRootView: UIView {
         listsButton.symbolName = "list.number"
         listsButton.accessibilityTitle = "Lists"
         listsButton.isHidden = true
-        dictionaryButton.symbolName = "text.book.closed.fill"
-        dictionaryButton.accessibilityTitle = "Dictionary"
+        dictionaryButton.symbolName = "checkmark.app"
+        dictionaryButton.accessibilityTitle = "Rate Dictation"
         dictionaryButton.showsStateValue = false
         dictionaryButton.isHidden = true
         settingsButton.translatesAutoresizingMaskIntoConstraints = false

@@ -20,6 +20,7 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
+    @State var personalCaptureShareItem: AppActivityShareItem?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
     static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
@@ -46,6 +47,7 @@ struct SettingsTabView: View {
                 audioSection
                 activeModelSection
                 vibesAISection
+                personalCaptureSection
                 ttsSection
                 rateAndReviewSection
                 supportSection
@@ -56,6 +58,9 @@ struct SettingsTabView: View {
         }
         .sheet(isPresented: $isThirdPartyNoticesPresented) {
             ThirdPartyNoticesView()
+        }
+        .sheet(item: $personalCaptureShareItem) { item in
+            AppActivityShareSheet(url: item.url)
         }
         .onDisappear {
             ttsPreviewPlayer.stop()

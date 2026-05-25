@@ -41,6 +41,12 @@ final class KeyboardSettingsToggleButton: UIControl {
         }
     }
 
+    var foregroundOverrideColor: UIColor? {
+        didSet {
+            updateVisualState(animated: true)
+        }
+    }
+
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardStyle.cancelButtonSize, height: KeyboardStyle.cancelButtonSize)
     }
@@ -197,14 +203,14 @@ final class KeyboardSettingsToggleButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: isOn ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
+                foreground: foregroundOverrideColor ?? (isOn ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor)
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: isOn ? KeyboardStyle.activeForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor
+            foreground: foregroundOverrideColor ?? (isOn ? KeyboardStyle.activeForegroundColor(for: traitCollection) : KeyboardStyle.keyLabelColor)
         )
     }
 }

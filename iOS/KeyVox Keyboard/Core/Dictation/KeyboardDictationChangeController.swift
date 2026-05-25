@@ -16,6 +16,9 @@ final class KeyboardDictationChangeController {
     private struct Session {
         var sourceText: String
         var originalText: String
+        var captureID: String?
+        var rawDictationText: String?
+        var baseText: String?
         let documentContextBeforeInput: String?
         let preparesAsDictationInsertion: Bool
         var currentText: String
@@ -27,11 +30,17 @@ final class KeyboardDictationChangeController {
         var renderedDeterministicVariants: [RenderedVariantKey: String]
     }
 
+    private struct Replacement {
+        let visibleText: String
+        let postprocessedText: String
+    }
+
     private let textInputController: KeyboardTextInputController
     private let artifactStore: KeyboardDictationChangeArtifactStore
     private let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
     private let appSettingsStore: KeyboardAppSettingsStore
     private let deterministicFormatter = KeyboardDeterministicDictationFormatter()
+    private let ratingController: KeyboardDictationRatingController
 
     private var activeSession: Session?
     private var isApplyingChange = false
@@ -64,6 +73,11 @@ final class KeyboardDictationChangeController {
             && activeInsertionMatchesCurrentText(activeSession)
     }
 
+    var isRatingTargetStillVisible: Bool {
+        guard let activeSession else { return false }
+        return activeInsertionMatchesCurrentText(activeSession)
+    }
+
     var displayedAutoParagraphsEnabled: Bool {
         guard let activeSession,
               let currentState = activeSession.currentDeterministicState,
@@ -90,11 +104,13 @@ final class KeyboardDictationChangeController {
     init(
         textInputController: KeyboardTextInputController,
         appSettingsStore: KeyboardAppSettingsStore,
-        artifactStore: KeyboardDictationChangeArtifactStore = KeyboardDictationChangeArtifactStore()
+        artifactStore: KeyboardDictationChangeArtifactStore = KeyboardDictationChangeArtifactStore(),
+        ratingController: KeyboardDictationRatingController
     ) {
         self.textInputController = textInputController
         self.appSettingsStore = appSettingsStore
         self.artifactStore = artifactStore
+        self.ratingController = ratingController
     }
 
     func recordInsertedDictation(_ insertion: KeyboardTextInsertionResult) {
@@ -104,6 +120,9 @@ final class KeyboardDictationChangeController {
             activeSession = Session(
                 sourceText: insertion.sourceText,
                 originalText: insertion.insertedText,
+                captureID: nil,
+                rawDictationText: nil,
+                baseText: nil,
                 documentContextBeforeInput: insertion.documentContextBeforeInput,
                 preparesAsDictationInsertion: true,
                 currentText: insertion.insertedText,
@@ -114,6 +133,7 @@ final class KeyboardDictationChangeController {
                 deterministicVariants: [:],
                 renderedDeterministicVariants: [:]
             )
+            ratingController.deactivate()
             return
         }
 
@@ -165,6 +185,9 @@ final class KeyboardDictationChangeController {
         activeSession = Session(
             sourceText: originalText,
             originalText: originalText,
+            captureID: artifact.id.uuidString,
+            rawDictationText: artifact.rawText,
+            baseText: artifact.baseText,
             documentContextBeforeInput: insertion.documentContextBeforeInput,
             preparesAsDictationInsertion: true,
             currentText: insertion.insertedText,
@@ -175,6 +198,23 @@ final class KeyboardDictationChangeController {
             deterministicVariants: deterministicVariants,
             renderedDeterministicVariants: renderedDeterministicVariants
         )
+        if selectedStyle == .none {
+            ratingController.deactivate()
+        } else {
+            let postprocessedText = artifact.variants.first {
+                $0.styleIdentifier == selectedStyle.styleIdentifier
+            }?.text ?? insertion.insertedText
+            ratingController.activate(PersonalDictationCaptureVariantContext(
+                captureID: artifact.id.uuidString,
+                styleIdentifier: selectedStyle.styleIdentifier,
+                sourceText: artifact.baseText,
+                visibleText: insertion.insertedText,
+                rawDictationText: artifact.rawText,
+                baseText: artifact.baseText,
+                postprocessedOutputText: postprocessedText,
+                metadata: metadata(style: selectedStyle, processingMode: nil)
+            ))
+        }
     }
 
     func applyLongPressChange(
@@ -201,7 +241,7 @@ final class KeyboardDictationChangeController {
         }
 
         guard let targetStyle = targetStyle(for: session),
-              let replacementText = await replacementText(
+              let replacement = await replacementText(
                 for: targetStyle,
                 session: &session,
                 onProcessingStart: onProcessingStart,
@@ -212,19 +252,25 @@ final class KeyboardDictationChangeController {
 
         guard textInputController.replaceUntouchedInsertion(
             session.currentText,
-            with: replacementText,
+            with: replacement.visibleText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
             invalidateActiveSession()
             return false
         }
 
-        session.currentText = replacementText
+        session.currentText = replacement.visibleText
         session.previousStyle = session.currentStyle
         session.currentStyle = targetStyle
-        cacheRenderedText(replacementText, style: targetStyle, session: &session)
+        cacheRenderedText(replacement.visibleText, style: targetStyle, session: &session)
         activeSession = session
         displaySource = .activeInsertion
+        activateRatingIfNeeded(
+            style: targetStyle,
+            session: session,
+            visibleText: replacement.visibleText,
+            postprocessedText: replacement.postprocessedText
+        )
         return true
     }
 
@@ -275,7 +321,7 @@ final class KeyboardDictationChangeController {
             currentState: currentState,
             currentSourceText: session.sourceText
         )
-        guard let renderedText = await renderedText(
+        guard let renderedReplacement = await renderedText(
             for: targetState,
             sourceText: replacementSourceText,
             session: &session,
@@ -285,13 +331,13 @@ final class KeyboardDictationChangeController {
             return false
         }
         logChange(
-            "deterministicLongPress replacementSource=\(debugText(replacementSourceText)) rendered=\(debugText(renderedText))"
+            "deterministicLongPress replacementSource=\(debugText(replacementSourceText)) rendered=\(debugText(renderedReplacement.visibleText))"
         )
 
-        if renderedText != session.currentText {
+        if renderedReplacement.visibleText != session.currentText {
             guard textInputController.replaceUntouchedInsertion(
                 session.currentText,
-                with: renderedText,
+                with: renderedReplacement.visibleText,
                 documentContextBeforeInsertion: session.documentContextBeforeInput
             ) else {
                 invalidateActiveSession()
@@ -301,11 +347,17 @@ final class KeyboardDictationChangeController {
 
         session.sourceText = replacementSourceText
         session.originalText = replacementSourceText
-        session.currentText = renderedText
+        session.currentText = renderedReplacement.visibleText
         session.currentDeterministicState = targetState
         session.variants = [.none: replacementSourceText]
-        session.variants[session.currentStyle] = renderedText
+        session.variants[session.currentStyle] = renderedReplacement.visibleText
         activeSession = session
+        activateRatingIfNeeded(
+            style: session.currentStyle,
+            session: session,
+            visibleText: renderedReplacement.visibleText,
+            postprocessedText: renderedReplacement.postprocessedText
+        )
         return true
     }
 
@@ -324,6 +376,7 @@ final class KeyboardDictationChangeController {
 
     private func invalidateActiveSession() {
         activeSession = nil
+        ratingController.deactivate()
     }
 
     private func activeInsertionMatchesCurrentText(_ session: Session) -> Bool {
@@ -338,16 +391,16 @@ final class KeyboardDictationChangeController {
         session: inout Session,
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
-    ) async -> String? {
+    ) async -> Replacement? {
         if let cachedText = session.variants[targetStyle] {
-            return cachedText
+            return Replacement(visibleText: cachedText, postprocessedText: cachedText)
         }
 
         guard let request = StyleRewriteDictationConfiguration.request(
             for: targetStyle,
             baseText: session.sourceText
         ) else {
-            return session.originalText
+            return Replacement(visibleText: session.originalText, postprocessedText: session.originalText)
         }
 
         onProcessingStart()
@@ -369,7 +422,44 @@ final class KeyboardDictationChangeController {
         }
 
         cacheRenderedText(replacementText, style: targetStyle, session: &session)
-        return replacementText
+        return Replacement(visibleText: replacementText, postprocessedText: result.finalText)
+    }
+
+    private func activateRatingIfNeeded(
+        style: StyleRewriteStyle,
+        session: Session,
+        visibleText: String,
+        postprocessedText: String
+    ) {
+        guard style != .none else {
+            ratingController.deactivate()
+            return
+        }
+
+        let captureID = session.captureID ?? UUID().uuidString
+        ratingController.activate(PersonalDictationCaptureVariantContext(
+            captureID: captureID,
+            styleIdentifier: style.styleIdentifier,
+            sourceText: session.sourceText,
+            visibleText: visibleText,
+            rawDictationText: session.rawDictationText,
+            baseText: session.baseText,
+            postprocessedOutputText: postprocessedText,
+            metadata: metadata(style: style, processingMode: nil)
+        ))
+    }
+
+    private func metadata(
+        style: StyleRewriteStyle,
+        processingMode: String?
+    ) -> [String: String] {
+        var values: [String: String] = [
+            "style": style.styleIdentifier
+        ]
+        if let processingMode {
+            values["processing_mode"] = processingMode
+        }
+        return values
     }
 
     private func renderedText(
@@ -378,18 +468,18 @@ final class KeyboardDictationChangeController {
         session: inout Session,
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
-    ) async -> String? {
+    ) async -> Replacement? {
         let key = RenderedVariantKey(
             deterministicState: targetState,
             style: session.currentStyle
         )
         if let cachedText = session.renderedDeterministicVariants[key] {
-            return cachedText
+            return Replacement(visibleText: cachedText, postprocessedText: cachedText)
         }
 
         guard session.currentStyle != .none else {
             session.renderedDeterministicVariants[key] = sourceText
-            return sourceText
+            return Replacement(visibleText: sourceText, postprocessedText: sourceText)
         }
 
         guard let request = StyleRewriteDictationConfiguration.request(
@@ -397,7 +487,7 @@ final class KeyboardDictationChangeController {
             baseText: sourceText
         ) else {
             session.renderedDeterministicVariants[key] = sourceText
-            return sourceText
+            return Replacement(visibleText: sourceText, postprocessedText: sourceText)
         }
 
         onProcessingStart()
@@ -422,7 +512,7 @@ final class KeyboardDictationChangeController {
         }
 
         session.renderedDeterministicVariants[key] = replacementText
-        return replacementText
+        return Replacement(visibleText: replacementText, postprocessedText: result.finalText)
     }
 
     private func cacheRenderedText(

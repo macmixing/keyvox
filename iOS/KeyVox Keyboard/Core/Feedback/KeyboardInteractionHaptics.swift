@@ -21,6 +21,7 @@ final class KeyboardInteractionHaptics {
     private let settingsStore: KeyboardHapticsSettingsStore
     private let lightGenerator: any KeyboardImpactFeedbackGenerating
     private let mediumGenerator: any KeyboardImpactFeedbackGenerating
+    private let heavyGenerator: any KeyboardImpactFeedbackGenerating
     private let notificationGenerator: any KeyboardNotificationFeedbackGenerating
 
     init(
@@ -33,14 +34,20 @@ final class KeyboardInteractionHaptics {
             style: .medium,
             intensity: 0.90
         ),
+        heavyGenerator: any KeyboardImpactFeedbackGenerating = KeyboardImpactFeedbackGeneratorAdapter(
+            style: .heavy,
+            intensity: 0.95
+        ),
         notificationGenerator: any KeyboardNotificationFeedbackGenerating = KeyboardNotificationFeedbackGeneratorAdapter()
     ) {
         self.settingsStore = settingsStore
         self.lightGenerator = lightGenerator
         self.mediumGenerator = mediumGenerator
+        self.heavyGenerator = heavyGenerator
         self.notificationGenerator = notificationGenerator
         self.lightGenerator.prepare()
         self.mediumGenerator.prepare()
+        self.heavyGenerator.prepare()
         self.notificationGenerator.prepare()
     }
 
@@ -54,6 +61,12 @@ final class KeyboardInteractionHaptics {
         guard settingsStore.isKeypressHapticsEnabled else { return }
         mediumGenerator.impactOccurred()
         mediumGenerator.prepare()
+    }
+
+    func emitHeavyIfEnabled() {
+        guard settingsStore.isKeypressHapticsEnabled else { return }
+        heavyGenerator.impactOccurred()
+        heavyGenerator.prepare()
     }
 
     func emitWarningIfEnabled() {

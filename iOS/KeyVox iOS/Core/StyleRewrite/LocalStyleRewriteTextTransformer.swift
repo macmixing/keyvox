@@ -7,8 +7,14 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
     private let inferenceService: LocalRewriteInferenceService
     private var prewarmTask: Task<Void, Never>?
     private lazy var transformer = StyleRewriteTextTransformer { [weak self] _ in
-        LocalStyleRewriteChunkResponder(inferenceService: self?.inferenceService)
+        LocalStyleRewriteChunkResponder(
+            inferenceService: self?.inferenceService,
+            onModelOutput: { [weak self] request, output in
+                self?.recordModelOutput(output, request: request)
+            }
+        )
     }
+    private var modelOutputsBySignature: [String: [String]] = [:]
 
     init(inferenceService: LocalRewriteInferenceService) {
         self.inferenceService = inferenceService
@@ -49,19 +55,46 @@ final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
         await transformer.transform(request)
     }
 
+    func consumeModelOutput(styleIdentifier: String, sourceText: String) -> String? {
+        let signature = modelOutputSignature(styleIdentifier: styleIdentifier, sourceText: sourceText)
+        guard let outputs = modelOutputsBySignature.removeValue(forKey: signature),
+              outputs.isEmpty == false else {
+            return nil
+        }
+
+        return outputs.joined(separator: "\n")
+    }
+
     func releaseResources(reason _: String) async {
         prewarmTask?.cancel()
         prewarmTask = nil
         await inferenceService.unload()
+    }
+
+    private func recordModelOutput(_ output: String, request: TextTransformRequest) {
+        let signature = modelOutputSignature(
+            styleIdentifier: request.styleIdentifier,
+            sourceText: request.baseText
+        )
+        modelOutputsBySignature[signature, default: []].append(output)
+    }
+
+    private func modelOutputSignature(styleIdentifier: String, sourceText: String) -> String {
+        "\(styleIdentifier)\u{1F}\(sourceText)"
     }
 }
 
 @MainActor
 private final class LocalStyleRewriteChunkResponder: TextTransformChunkResponding {
     private let inferenceService: LocalRewriteInferenceService?
+    private let onModelOutput: (TextTransformRequest, String) -> Void
 
-    init(inferenceService: LocalRewriteInferenceService?) {
+    init(
+        inferenceService: LocalRewriteInferenceService?,
+        onModelOutput: @escaping (TextTransformRequest, String) -> Void
+    ) {
         self.inferenceService = inferenceService
+        self.onModelOutput = onModelOutput
     }
 
     func transformChunk(_ chunk: TextTransformChunk, request: TextTransformRequest) async throws -> String {
@@ -104,6 +137,7 @@ private final class LocalStyleRewriteChunkResponder: TextTransformChunkRespondin
                 chunkIndex: chunk.index,
                 adapterKind: adapterKind
             )
+            onModelOutput(request, result.text)
             return result.text
         } catch let error as LocalLanguageModelError {
             throw mapLocalInferenceError(error)

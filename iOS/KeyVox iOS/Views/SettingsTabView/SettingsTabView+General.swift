@@ -143,6 +143,67 @@ extension SettingsTabView {
     }
 
     @ViewBuilder
+    var personalCaptureSection: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.accent.opacity(0.4))
+                            .frame(width: 32, height: 32)
+
+                        Image(systemName: "checkmark.app.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.yellow)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Personal Capture")
+                            .font(.appFont(18))
+                            .foregroundStyle(.white)
+
+                        Text("Export rated dictation results from this private build.")
+                            .font(.appFont(15, variant: .light))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                HStack(spacing: 10) {
+                    AppActionButton(
+                        title: "SQLite",
+                        systemImage: "externaldrive.fill",
+                        style: .primary,
+                        fillsWidth: true,
+                        size: .compact,
+                        fontSize: 15
+                    ) {
+                        if let url = PersonalDictationCaptureStore.shared.databaseFileURL() {
+                            personalCaptureShareItem = AppActivityShareItem(url: url)
+                        }
+                    }
+
+                    AppActionButton(
+                        title: "JSON",
+                        systemImage: "doc.text.fill",
+                        style: .secondary,
+                        fillsWidth: true,
+                        size: .compact,
+                        fontSize: 15
+                    ) {
+                        if let url = PersonalDictationCaptureStore.shared.exportRatedJSONFile() {
+                            personalCaptureShareItem = AppActivityShareItem(url: url)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
     var audioSection: some View {
         AppCard {
             SettingsRow(
