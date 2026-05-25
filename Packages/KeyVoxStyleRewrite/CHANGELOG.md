@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-05-25
+
+Money output repair for redundant minor currency units after decimal amounts.
+
+### Includes
+
+- Removed redundant minor currency words when a Vibes rewrite already preserved the matching decimal money amount from source dictation evidence.
+- Routed minor currency word matching through the shared currency unit source of truth, including simple plural normalization.
+- Added regression coverage for decimal dollar-and-cent output followed by a duplicate cents unit.
+
+### Notes
+
+- `1.0.4` bumps the tracked style rewrite package version for deterministic money repair after local model rewrites.
+
+---
+
 ## [1.0.3] - 2026-05-23
 
 Spoken-list cue preservation for Vibes rewrite output repair.
