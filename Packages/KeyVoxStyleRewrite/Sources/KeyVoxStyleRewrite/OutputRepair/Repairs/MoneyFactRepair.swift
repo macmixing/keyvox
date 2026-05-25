@@ -12,11 +12,8 @@ struct MoneyFactRepair {
         guard !sourceSpans.isEmpty else { return rewritten }
 
         let splitRepaired = repairSplitMoneyAmount(sourceSpans: sourceSpans, rewritten: rewritten)
-        guard splitRepaired == rewritten else {
-            return splitRepaired
-        }
-
-        return repairSingleMoneyAmountDrift(sourceSpans: sourceSpans, rewritten: rewritten)
+        let amountDriftRepaired = repairSingleMoneyAmountDrift(sourceSpans: sourceSpans, rewritten: splitRepaired)
+        return repairRedundantMinorUnit(sourceSpans: sourceSpans, rewritten: amountDriftRepaired)
     }
 
     private func repairSplitMoneyAmount(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
@@ -62,6 +59,37 @@ struct MoneyFactRepair {
                 ? nil
                 : Int(nsText.substring(with: minorRange).padding(toLength: 2, withPad: "0", startingAt: 0))
             guard major != sourceSpan.majorValue || minor != sourceSpan.minorValue else {
+                return nil
+            }
+
+            return formattedMoneyAmount(symbol: symbol, sourceSpan: sourceSpan)
+        }
+    }
+
+    private func repairRedundantMinorUnit(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
+        let sourceSpansWithMinor = sourceSpans.filter { $0.minorValue != nil }
+        guard !sourceSpansWithMinor.isEmpty else { return rewritten }
+
+        return RepairMatching.replacingMatches(
+            in: rewritten,
+            pattern: "(\(CurrencyUnits.symbolPattern))\\s*(\\d+)\\.(\\d{1,2})\\s+(\(CurrencyUnits.unitPattern(for: .minor)))(?![\\p{L}'’])",
+            options: [.caseInsensitive]
+        ) { match, nsText in
+            guard match.numberOfRanges == 5,
+                  let major = Int(nsText.substring(with: match.range(at: 2))),
+                  let minor = Int(nsText.substring(with: match.range(at: 3)).padding(toLength: 2, withPad: "0", startingAt: 0)) else {
+                return nil
+            }
+
+            let symbol = nsText.substring(with: match.range(at: 1))
+            let minorUnit = CurrencyUnits.unit(for: nsText.substring(with: match.range(at: 4)))
+            guard minorUnit?.symbol == symbol,
+                  minorUnit?.scale == .minor,
+                  let sourceSpan = sourceSpansWithMinor.first(where: {
+                    $0.symbol == symbol
+                        && $0.majorValue == major
+                        && $0.minorValue == minor
+                  }) else {
                 return nil
             }
 

@@ -576,6 +576,15 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "It's probably like $47.50.")
     }
 
+    func testRewriteRepairRemovesRedundantMinorUnitAfterDecimalMoneyAmount() {
+        let output = OutputRepair.repairModelOutput(
+            original: "That was four dollars and ninety nine cents.",
+            rewritten: "That was $4.99 cents."
+        )
+
+        XCTAssertEqual(output, "That was $4.99.")
+    }
+
     func testRewriteRepairRepairsChangedMoneyAmountWhenCurrencyMatches() {
         let output = OutputRepair.repairModelOutput(
             original: "That should be fifty five euros.",

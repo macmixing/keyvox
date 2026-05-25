@@ -66,8 +66,28 @@ enum CurrencyUnits {
 
     static let symbols: Set<String> = Set(unitsByLemma.values.map(\.symbol))
 
+    static func unitPattern(for scale: Scale) -> String {
+        unitsByLemma
+            .filter { $0.value.scale == scale }
+            .keys
+            .flatMap { $0.hasSuffix("s") ? [$0] : [$0, "\($0)s"] }
+            .sorted { left, right in
+                if left.count == right.count {
+                    return left < right
+                }
+                return left.count > right.count
+            }
+            .map { NSRegularExpression.escapedPattern(for: $0) }
+            .joined(separator: "|")
+    }
+
     static func unit(for lemma: String?) -> Unit? {
         guard let lemma else { return nil }
-        return unitsByLemma[lemma.lowercased()]
+        let normalizedLemma = lemma.lowercased()
+        if let unit = unitsByLemma[normalizedLemma] {
+            return unit
+        }
+        guard normalizedLemma.hasSuffix("s") else { return nil }
+        return unitsByLemma[String(normalizedLemma.dropLast())]
     }
 }
