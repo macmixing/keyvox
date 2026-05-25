@@ -3,7 +3,8 @@ import Foundation
 struct NumberEvidenceRepair {
     func repair(original: String, rewritten: String) -> String {
         let changedNumberRepaired = repairChangedNumberEvidence(original: original, rewritten: rewritten)
-        let deletedNumberRepaired = repairDeletedNumberEvidence(original: original, rewritten: changedNumberRepaired)
+        let insertedNumberRepaired = repairInsertedNumberEvidence(original: original, rewritten: changedNumberRepaired)
+        let deletedNumberRepaired = repairDeletedNumberEvidence(original: original, rewritten: insertedNumberRepaired)
         return NumberSeparatorEvidenceRepair().repair(original: original, rewritten: deletedNumberRepaired)
     }
 
@@ -86,6 +87,52 @@ struct NumberEvidenceRepair {
                 replacementRange,
                 preservesEquivalentSurface ? replacementText : spacedReplacement(replacementText)
             ))
+        }
+
+        guard !edits.isEmpty else { return rewritten }
+
+        var repaired = rewritten
+        for edit in edits.sorted(by: { $0.0.lowerBound > $1.0.lowerBound }) {
+            repaired.replaceSubrange(edit.0, with: edit.1)
+        }
+        return repaired
+    }
+
+    private func repairInsertedNumberEvidence(original: String, rewritten: String) -> String {
+        let originalTokens = RepairTokenization.wordTokens(in: original)
+        let rewrittenTokens = RepairTokenization.wordTokens(in: rewritten)
+        guard originalTokens.count >= 3, rewrittenTokens.count >= 3 else { return rewritten }
+
+        let matches = RepairMatching.matchOriginalTokens(originalTokens, to: rewrittenTokens)
+        let orderedMatches = matches
+            .map { (originalIndex: $0.key, rewrittenIndex: $0.value) }
+            .sorted { $0.originalIndex < $1.originalIndex }
+
+        var edits: [(Range<String.Index>, String)] = []
+        for pairIndex in 0..<(orderedMatches.count - 1) {
+            let left = orderedMatches[pairIndex]
+            let right = orderedMatches[pairIndex + 1]
+            guard right.originalIndex > left.originalIndex + 1,
+                  right.rewrittenIndex > left.rewrittenIndex + 1 else {
+                continue
+            }
+
+            let originalRun = Array(originalTokens[(left.originalIndex + 1)..<right.originalIndex])
+            let rewrittenRun = Array(rewrittenTokens[(left.rewrittenIndex + 1)..<right.rewrittenIndex])
+            guard containsNumberEvidence(in: originalRun, sourceText: original) == false,
+                  containsNumberEvidence(in: rewrittenRun, sourceText: rewritten) else {
+                continue
+            }
+
+            let replacementRange = rewrittenTokens[left.rewrittenIndex].range.upperBound
+                ..< rewrittenTokens[right.rewrittenIndex].range.lowerBound
+            let sourceRange = originalTokens[left.originalIndex].range.upperBound
+                ..< originalTokens[right.originalIndex].range.lowerBound
+            let replacementText = String(original[sourceRange])
+            log(
+                "keptOriginalGapForInsertedEvidence originalRun=\(originalRun.map(\.text)) rewrittenRun=\(rewrittenRun.map(\.text)) replacement=\(debugText(replacementText))"
+            )
+            edits.append((replacementRange, replacementText))
         }
 
         guard !edits.isEmpty else { return rewritten }
@@ -215,6 +262,11 @@ struct NumberEvidenceRepair {
         }
 
         return runs
+    }
+
+    private func containsNumberEvidence(in tokens: [RepairWordToken], sourceText: String) -> Bool {
+        NumberEvidence.components(in: tokens) != nil
+            || contiguousNumberRuns(in: tokens, sourceText: sourceText).isEmpty == false
     }
 
     private func shouldPreserveOriginalSurface(tokens: [RepairWordToken], fullRun: [RepairWordToken], in text: String) -> Bool {

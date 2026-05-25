@@ -361,6 +361,30 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "I'm pretty sure we reverted 902 yesterday.")
     }
 
+    func testRewriteRepairRestoresOriginalGapWhenModelInsertsUnsupportedNumberEvidence() {
+        let cases = [
+            (
+                original: "It's gonna be massive in about a few weeks.",
+                rewritten: "It's going to be massive in about 5 weeks.",
+                repaired: "It's going to be massive in about a few weeks."
+            ),
+            (
+                original: "I'm pretty sure that'll happen after about a few weeks.",
+                rewritten: "I'm pretty sure that'll happen after about 5 weeks.",
+                repaired: "I'm pretty sure that'll happen after about a few weeks."
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
+    }
+
     func testRewriteRepairPreservesReleasedVersionDecimalShape() {
         let output = OutputRepair.repairModelOutput(
             original: "Yeah, we shipped 2.23 yesterday.",
