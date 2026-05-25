@@ -6,6 +6,33 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.5] - 2026-05-25
+
+Strengthens Mac Vibes rewrite repair for list cues and unsupported inserted number evidence.
+
+### Added
+
+- Added Vibes output repair support for preserving spoken-number list cues when local rewrites flatten raw dictated list markers.
+- Added deterministic repair for unsupported inserted number evidence so ambiguous non-numeric source phrases stay ambiguous instead of being replaced with invented factual values.
+
+### Fixed
+
+- Fixed Vibes rewrites so ordered list numbering is preserved while ordinary spoken low-number wording can still be restored where appropriate.
+- Fixed Vibes rewrites so spoken list cues can be restored while preserving cue punctuation and avoiding ordered-list marker AP-style regressions.
+- Fixed Vibes rewrites so ambiguous source phrases such as approximate durations are restored when the local model inserts unsupported factual number evidence.
+
+### Package versions
+
+KeyVox macOS 1.1.5:
+- KeyVoxCore           1.0.12
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.3
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
+---
+
 ## [1.1.4] - 2026-05-23
 
 Refines Mac Vibes examples and strengthens deterministic numeric repair for local rewrite output.
