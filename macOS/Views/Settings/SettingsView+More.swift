@@ -90,6 +90,17 @@ extension SettingsView {
                 ) {
                     openDeveloperURL("https://github.com/sponsors/macmixing")
                 }
+
+                DeveloperLinkCard(
+                    icon: .systemImage("questionmark.circle.fill"),
+                    title: "Need Help?",
+                    subtitle: "Get help with KeyVox, read the FAQ, find more information, or contact us.",
+                    buttonTitle: "Open",
+                    buttonStyle: .primary,
+                    isPromoted: false
+                ) {
+                    openDeveloperURL("https://keyvox.app/?utm_source=keyvox_mac&utm_medium=settings&utm_campaign=help_card#faq-mac")
+                }
             }
             
             HStack {
