@@ -6,6 +6,62 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.4] - 2026-05-24
+
+Extends the Vibes trial, refreshes Vibes trial copy, and strengthens deterministic numeric repair for local rewrite output.
+
+### Added
+
+- Added a shared Vibes trial duration policy so the containing app, keyboard extension, UI copy, and tests read the same local trial length.
+- Added a 3-day Vibes trial with a versioned trial-start defaults key so users get the refreshed trial window without resetting intro, unlock, model, or selected-Vibe state.
+- Added shared Vibes trial remaining-time formatting with adaptive day, hour, and minute output.
+- Added dictation-provider-aware Vibes example text so the Style tab and Vibes intro can show examples that match the active Whisper or Parakeet dictation model.
+- Added an English-only language support disclosure to the Vibes usage intro scene.
+- Added a Settings help card that opens the KeyVox FAQ and contact page with campaign tracking.
+- Added shared factual number evidence repair through `KeyVoxStyleRewrite` `1.0.2` for changed, deleted, and separator-drifted numeric values in rewritten text.
+- Added Vibes output repair support for preserving spoken-number list cues when local rewrites flatten raw dictated list markers.
+- Added deterministic time-versus-decimal separator repair so source evidence can preserve values such as `5:30` and `5.30` correctly after local model rewriting.
+
+### Changed
+
+- Updated Vibes intro, unlock, and Style tab copy around trials, unlock prompts, active-trial status, and missing-model download guidance.
+- Updated the Vibes info sheet to keep a bottom `Vibe Now` CTA for already-unlocked users.
+- Updated the Speak intro sheet so its primary action advances through intro scenes and only offers `Speak Now` or `Try Now` on the final relevant scene.
+- Moved the Vibes English-only disclosure from the examples intro scene to the usage intro scene, matching the Speak disclosure placement and styling.
+- Updated the GitHub support card in Settings so only the `Open` action button launches GitHub Sponsors.
+- Updated the keyboard Vibes trial gate to use the shared trial duration policy instead of a separate extension-side duration constant.
+- Extracted keyboard paragraph/list deterministic formatting into a focused formatter so latest-insertion session handling stays separate from text-shaping rules.
+- Shared keyboard long-press processing indicator and haptic handling across Vibes, Paragraphs, and Lists changes.
+- Updated money fact repair to parse multi-token spoken number phrases through the shared number evidence path before applying currency-specific repair.
+- Updated Chill formatting so colon-separated numeric runs collapse consistently with its relaxed punctuation policy.
+- Updated iOS engineering and codemap documentation for the Vibes trial policy, trial time formatter, expanded style rewrite output repair ownership, and keyboard deterministic formatting split.
+
+### Fixed
+
+- Fixed Vibes trial state so the refreshed 3-day trial uses a new versioned trial-start key without clearing unrelated Vibes state.
+- Fixed Vibes trial remaining-time copy so active trials can display days and hours instead of only hour/minute text.
+- Fixed the Style tab `Try Now` action so explicitly requested Vibes sheets can present immediately after onboarding while automatic intro deferral still waits for the next eligible launch.
+- Fixed the Speak intro so first-time users are guided through the scenes before the final setup or start action instead of seeing the same primary action on every scene.
+- Fixed Vibes examples so Parakeet users see spoken-number-oriented examples instead of Whisper-style numeric punctuation examples.
+- Fixed Vibes rewrites so decimal and time separators are less likely to drift when rewritten output changes punctuation around numeric evidence.
+- Fixed Vibes rewrites so factual numeric values are restored more consistently when the local model changes or deletes number evidence between otherwise aligned source words.
+- Fixed Vibes rewrites so ambiguous non-numeric source phrases are restored when the local model inserts unsupported factual number evidence.
+- Fixed Vibes rewrites so decimal money amounts do not keep duplicate minor currency words when the local model formats dollars and cents.
+- Fixed Vibes rewrites so spoken list cues can be restored while preserving cue punctuation and avoiding ordered-list marker AP-style regressions.
+- Fixed keyboard Paragraphs and Lists toggle display so it reflects the active untouched insertion state and returns to the stored settings state when the insertion is edited or selection changes.
+- Fixed keyboard paragraph/list long-press changes so processing haptics fire consistently and numbered list structure is preserved when paragraph formatting is reverted.
+
+### Package versions
+
+KeyVox iOS 1.2.4
+  KeyVoxCore           1.0.12
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.2
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
 ## [1.2.3] - 2026-05-22
 
 Improves Vibes factual-number preservation, refreshes bundled Polished and Casual adapters, and fixes the keyboard Vibes key after an edited dictation.
