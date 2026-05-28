@@ -12,6 +12,8 @@ final class AppSettingsStoreTests: XCTestCase {
         let store = AppSettingsStore(defaults: defaults)
 
         XCTAssertFalse(store.hasCompletedOnboarding)
+        XCTAssertFalse(store.hasCompletedFirstDictation)
+        XCTAssertFalse(store.hasSkippedFirstDictation)
         XCTAssertEqual(store.triggerBinding, .rightOption)
         XCTAssertTrue(store.autoParagraphsEnabled)
         XCTAssertTrue(store.listFormattingEnabled)
@@ -33,6 +35,8 @@ final class AppSettingsStoreTests: XCTestCase {
         let snoozedUntil = makeDate(year: 2026, month: 2, day: 20)
 
         defaults.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedFirstDictation)
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasSkippedFirstDictation)
         defaults.set(AppSettingsStore.TriggerBinding.leftCommand.rawValue, forKey: UserDefaultsKeys.triggerBinding)
         defaults.set(false, forKey: UserDefaultsKeys.autoParagraphsEnabled)
         defaults.set(false, forKey: UserDefaultsKeys.listFormattingEnabled)
@@ -49,6 +53,8 @@ final class AppSettingsStoreTests: XCTestCase {
         let store = AppSettingsStore(defaults: defaults)
 
         XCTAssertTrue(store.hasCompletedOnboarding)
+        XCTAssertTrue(store.hasCompletedFirstDictation)
+        XCTAssertTrue(store.hasSkippedFirstDictation)
         XCTAssertEqual(store.triggerBinding, .leftCommand)
         XCTAssertFalse(store.autoParagraphsEnabled)
         XCTAssertFalse(store.listFormattingEnabled)
@@ -109,6 +115,8 @@ final class AppSettingsStoreTests: XCTestCase {
         let store = AppSettingsStore(defaults: defaults)
 
         store.hasCompletedOnboarding = true
+        store.hasCompletedFirstDictation = true
+        store.hasSkippedFirstDictation = true
         store.triggerBinding = .rightCommand
         store.autoParagraphsEnabled = false
         store.listFormattingEnabled = false
@@ -122,6 +130,8 @@ final class AppSettingsStoreTests: XCTestCase {
         store.activeDictationProvider = .parakeet
 
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding))
+        XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.App.hasCompletedFirstDictation))
+        XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.App.hasSkippedFirstDictation))
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.triggerBinding), AppSettingsStore.TriggerBinding.rightCommand.rawValue)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool, false)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool, false)

@@ -5,6 +5,10 @@ protocol PasteAccessibilityInjecting {
 }
 
 final class PasteAccessibilityInjector {
+    private enum MainThreadInjection {
+        static let timeout: DispatchTimeInterval = .milliseconds(250)
+    }
+
     private let axInspector: PasteAXInspecting
 
     init(axInspector: PasteAXInspecting) {
@@ -15,6 +19,20 @@ final class PasteAccessibilityInjector {
         guard let element = axInspector.focusedUIElement() else {
             return .failureNeedsFallback
         }
+
+        if isCurrentProcessElement(element) {
+            return performOnMainThread {
+                self.injectTextViaAccessibility(text, into: element)
+            }
+        }
+
+        return injectTextViaAccessibility(text, into: element)
+    }
+
+    private func injectTextViaAccessibility(
+        _ text: String,
+        into element: AXUIElement
+    ) -> PasteAccessibilityInjectionOutcome {
 
         // Role gate: AXWebArea/AXGroup commonly ignore direct selected-text writes.
         var role: CFTypeRef?
@@ -63,6 +81,60 @@ final class PasteAccessibilityInjector {
 
         // Inconclusive verification: keep soft success and still run fallback path.
         return .softSuccessNeedsFallback
+    }
+
+    private func isCurrentProcessElement(_ element: AXUIElement) -> Bool {
+        var pid: pid_t = 0
+        guard AXUIElementGetPid(element, &pid) == .success else {
+            return false
+        }
+
+        return pid == getpid()
+    }
+
+    private func performOnMainThread(
+        _ operation: @escaping () -> PasteAccessibilityInjectionOutcome
+    ) -> PasteAccessibilityInjectionOutcome {
+        if Thread.isMainThread {
+            return operation()
+        }
+
+        let completion = DispatchSemaphore(value: 0)
+        let lock = NSLock()
+        var didTimeOut = false
+        var outcome: PasteAccessibilityInjectionOutcome = .failureNeedsFallback
+
+        // Self-targeted AX writes must run on the main thread, but the paste queue
+        // cannot wait forever if the main thread is synchronously waiting on it.
+        DispatchQueue.main.async {
+            lock.lock()
+            let shouldRun = !didTimeOut
+            lock.unlock()
+
+            guard shouldRun else {
+                completion.signal()
+                return
+            }
+
+            let operationOutcome = operation()
+
+            lock.lock()
+            outcome = operationOutcome
+            lock.unlock()
+            completion.signal()
+        }
+
+        guard completion.wait(timeout: .now() + MainThreadInjection.timeout) == .success else {
+            lock.lock()
+            didTimeOut = true
+            lock.unlock()
+            return .failureNeedsFallback
+        }
+
+        lock.lock()
+        let completedOutcome = outcome
+        lock.unlock()
+        return completedOutcome
     }
 }
 

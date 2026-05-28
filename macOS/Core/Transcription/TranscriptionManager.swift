@@ -9,6 +9,7 @@ class TranscriptionManager: ObservableObject {
     @Published var lastTranscription: String = UserDefaults.standard.string(
         forKey: UserDefaultsKeys.App.lastTranscription
     ) ?? ""
+    @Published var successfulDictationRevision = 0
 
     enum AppState: Equatable {
         case idle
