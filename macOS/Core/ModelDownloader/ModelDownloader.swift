@@ -43,7 +43,6 @@ class ModelDownloader: ObservableObject {
     var completedTaskIDs: Set<Int> = []
 
     static let defaultRequiredDownloadBytes: Int64 = 220_000_000
-    private static let downloadPreviewErrorEnvironmentKey = "KVX_MODEL_DOWNLOAD_PREVIEW_ERROR"
 
     var modelURL: URL {
         let resolved = modelURLProvider()
@@ -316,10 +315,7 @@ class ModelDownloader: ObservableObject {
 
     private func previewDownloadErrorMessage() -> String? {
 #if DEBUG
-        guard let rawValue = environmentProvider()[Self.downloadPreviewErrorEnvironmentKey]?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        else {
+        guard let rawValue = MacRuntimeFlags.modelDownloadPreviewErrorValue(environment: environmentProvider()) else {
             return nil
         }
 

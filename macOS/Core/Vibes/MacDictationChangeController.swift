@@ -180,7 +180,7 @@ final class MacDictationChangeController {
     }
 
     private var rawDebugTextLoggingEnabled: Bool {
-        ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1"
+        MacRuntimeFlags.debugLogRawText
     }
 
     private func rawTextDebugField(_ label: String, _ text: String) -> String {
