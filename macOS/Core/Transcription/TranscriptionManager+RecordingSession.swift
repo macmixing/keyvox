@@ -181,7 +181,14 @@ extension TranscriptionManager {
                         self.state = .idle
                         return
                     }
+                    let hadCompletedFirstDictation = self.appSettings.hasCompletedFirstDictation
                     self.lastTranscription = pipelineResult.finalText
+                    self.successfulDictationRevision += 1
+                    self.appSettings.hasCompletedFirstDictation = true
+                    if hadCompletedFirstDictation == false,
+                       WindowManager.shared.firstDictationOnboardingWindow == nil {
+                        KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+                    }
                     UserDefaults.standard.set(
                         pipelineResult.finalText,
                         forKey: UserDefaultsKeys.App.lastTranscription

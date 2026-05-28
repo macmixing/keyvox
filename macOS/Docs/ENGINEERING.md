@@ -27,9 +27,9 @@ Convenience must never come at the cost of trust.
 
 KeyVox is organized by responsibility:
 
-- `App/`: App lifecycle plus persisted app-owned state and registries (`KeyVoxApp`, `AppSettingsStore`, `AppServiceRegistry`, `DockIconVisibilityController`, `WeeklyWordStatsStore`).
+- `App/`: App lifecycle plus persisted app-owned state, runtime flags, window managers, and registries (`KeyVoxApp`, `AppSettingsStore`, `MacRuntimeFlags`, `AppServiceRegistry`, `DockIconVisibilityController`, `WeeklyWordStatsStore`).
 - `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
-- `Core/Transcription/`: Runtime state machine and macOS host-side transcription orchestration split across `TranscriptionManager.swift` plus focused extensions for bindings, recording sessions, and overlay/debug work. The reusable transcribe -> post-process -> paste boundary remains extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch.
+- `Core/Transcription/`: Runtime state machine and macOS host-side transcription orchestration split across `TranscriptionManager.swift` plus focused extensions for bindings, recording sessions, and overlay/debug work. The reusable transcribe -> post-process -> paste boundary remains extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch and publishes a per-successful-dictation revision for UI flows that must observe repeated identical dictations.
 - `Core/DictationTriggerController.swift`: Trigger-key orchestration that converts keyboard press/release/escape state into recording-session commands without owning transcription pipeline behavior.
 - `Core/Vibes/`: Mac-owned KeyVox Vibes runtime. The Mac path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation apply/undo behavior, `MacVibesTriggerActionController` owns quick-tap action orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
@@ -38,7 +38,7 @@ KeyVox is organized by responsibility:
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired.
 - `Core/Services/`: Paste/injection and update/checking services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, while update feed source selection lives in `UpdateFeedConfig.swift` and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
-- `Views/`: Onboarding/settings/warnings and presentation-only UI composition, including the proprietary logo system renderer.
+- `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
@@ -105,12 +105,19 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `SettingsVibesExamplesSection` owns the expandable example list, animated height measurement, and example-row selection behavior.
   - `SettingsVibesAIInstallCard` in the Settings/System section owns install management, delete/repair/progress/error display, and the Vibes trigger-key interactions toggle.
 - The Mac Vibes intro flow is separate from Settings:
-  - `MacVibesIntroController` owns one-time cold-launch eligibility after main onboarding and persists the seen flag.
+  - `MacVibesIntroController` owns one-time cold-launch eligibility after main onboarding and a completed-or-skipped first-dictation outcome, then persists the seen flag.
   - The intro must wait for the initial automatic update check; if an update is available, the intro remains suppressed until the app has updated and the post-update notice is dismissed.
   - `KEYVOX_FORCE_KEYVOX_VIBES_INTRO=1` forces repeated local presentation without clearing defaults, but it does not bypass the update-availability gate.
   - `WindowManager+VibesIntro` owns AppKit window creation, sizing, dismissal, and Style-tab handoff.
   - `MacVibesIntroWindowView` owns shared intro chrome: top close control, centered footer action, scene switching, dynamic size measurement, and the disabled `Try it` state while Vibes AI is not ready.
   - Intro scenes own only scene content; they should not reserve header/footer space or resize the NSWindow directly.
+- The Mac first-dictation practice flow is separate from setup onboarding:
+  - `OnboardingView` remains setup-only for model, microphone, and Accessibility requirements.
+  - `WindowManager+FirstDictationOnboarding` owns the optional post-setup first-dictation window and opens Settings after either completion or skip.
+  - `AppSettingsStore.hasCompletedFirstDictation` means a real successful dictation happened; `hasSkippedFirstDictation` means the user intentionally skipped the first-dictation step.
+  - `FirstDictationOnboardingFlowView` observes `TranscriptionManager.successfulDictationRevision` so repeated identical dictations still count as new events, then verifies the focused practice field contains the latest transcription.
+  - `FirstDictationOptionKeyPromptView` renders from the configured trigger binding and uses `KeyboardMonitor.isTriggerKeyPressed` for the held/down visual state.
+  - `KEYVOX_FORCE_ONBOARDING=1` and `KEYVOX_FORCE_FIRST_DICTATION_ONBOARDING=1` force the respective Mac onboarding windows without clearing or faking persisted completion state.
   - Scene C owns the install/download card and uses the shared labeled progress component for status and percent display.
   - Opening help from the Vibes card question-mark path starts at Scene B as standalone help: no close-header space, no X, and a `Done` footer action.
 - `MacVibesCoordinator.canUseVibes` means the local Vibes AI model is installed and ready.
@@ -187,6 +194,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - `Views/Settings/SettingsVibesCard.swift` is the Style-tab Vibes surface for style selection, readiness/status, examples, and style-card download/repair/progress affordances.
 - `Views/Settings/SettingsVibesAIInstallCard.swift` is the Settings/System Vibes AI management surface for install, removal, progress, repair, and the trigger-key interactions toggle.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift` persists the last successful final transcription to `UserDefaultsKeys.App.lastTranscription` for the Settings Home tab.
+- `Core/Transcription/TranscriptionManager+RecordingSession.swift` also marks the first-dictation completion flag after successful normal dictation and asks popup eligibility to re-run when that first completion happens outside the first-dictation window.
 
 ## Update Feed and Release Checks
 
@@ -337,6 +345,7 @@ These remain integration/manual-test territory by design.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - `Views/VibePillOverlay.swift` is a thin overlay shell for Vibe feedback only; style rewrite, tap classification, and paste replacement stay in `Core/Vibes/` and `Core/Services/Paste/`.
 - `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes. Vibe controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
+- `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift` must keep self-targeted AX writes on the main thread, but must not use an unbounded cross-thread `DispatchQueue.main.sync`; the current contract returns fallback on timeout so paste recovery can proceed.
 - `Core/Vibes/MacVibesAccessMatrix.swift` stays the pure Mac Vibes settings decision surface. Do not add entitlement, trial, purchase, restore, or paywall branches to Mac Vibes.
 - Mac Vibes settings copy belongs beside the view that renders it: `SettingsVibesCardCopy`, `SettingsVibesExamplesCopy`, and `SettingsVibesAIInstallCardCopy`. Do not move user-facing copy into `MacVibesAccessMatrix`.
 - `Core/Vibes/MacLocalRewriteInferenceService.swift` stays the Mac-local composition point for model URL, adapter URL, and GPU offload mode. Platform GPU eligibility belongs in `KeyVoxLocalInference`, where it is already logged and tested.

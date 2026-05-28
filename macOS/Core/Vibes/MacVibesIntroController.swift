@@ -25,9 +25,12 @@ final class MacVibesIntroController: ObservableObject {
 
     func scheduleColdLaunchPresentationIfNeeded(
         hasCompletedOnboarding: Bool,
+        hasCompletedFirstDictation: Bool,
+        hasSkippedFirstDictation: Bool,
         present: @escaping @MainActor () -> Void
     ) {
         guard hasCompletedOnboarding else { return }
+        guard hasCompletedFirstDictation || hasSkippedFirstDictation else { return }
         guard forcePresentation || hasSeenIntro == false else { return }
         guard pendingPresentationTask == nil else { return }
 

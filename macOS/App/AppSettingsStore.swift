@@ -87,6 +87,18 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var hasCompletedFirstDictation: Bool {
+        didSet {
+            defaults.set(hasCompletedFirstDictation, forKey: UserDefaultsKeys.App.hasCompletedFirstDictation)
+        }
+    }
+
+    @Published var hasSkippedFirstDictation: Bool {
+        didSet {
+            defaults.set(hasSkippedFirstDictation, forKey: UserDefaultsKeys.App.hasSkippedFirstDictation)
+        }
+    }
+
     @Published var triggerBinding: TriggerBinding {
         didSet {
             defaults.set(triggerBinding.rawValue, forKey: UserDefaultsKeys.triggerBinding)
@@ -202,6 +214,8 @@ final class AppSettingsStore: ObservableObject {
         self.osVersion = osVersion
 
         hasCompletedOnboarding = defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding)
+        hasCompletedFirstDictation = defaults.bool(forKey: UserDefaultsKeys.App.hasCompletedFirstDictation)
+        hasSkippedFirstDictation = defaults.bool(forKey: UserDefaultsKeys.App.hasSkippedFirstDictation)
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.triggerBinding),
            let binding = TriggerBinding(rawValue: raw) {

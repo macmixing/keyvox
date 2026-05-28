@@ -39,8 +39,10 @@ KeyVox/
 ├── macOS/
 │   ├── App/
 │   │   ├── KeyVoxApp.swift
+│   │   ├── MacRuntimeFlags.swift
 │   │   ├── WindowManager+Updates.swift
 │   │   ├── WindowManager+VibesIntro.swift
+│   │   ├── WindowManager+FirstDictationOnboarding.swift
 │   │   ├── AppSettingsStore.swift
 │   │   ├── AppServiceRegistry.swift
 │   │   ├── LoginItemController.swift
@@ -98,6 +100,7 @@ KeyVox/
 │   │   │   └── ConfirmDeletePromptView.swift
 │   │   ├── StatusMenuView.swift
 │   │   ├── OnboardingView.swift
+│   │   ├── FirstDictation/
 │   │   ├── RecordingOverlay.swift
 │   │   ├── VibePillOverlay.swift
 │   │   ├── UpdatePromptOverlay.swift
@@ -189,8 +192,13 @@ KeyVox/
   - Dedicated Vibes intro/help window lifecycle.
   - Hosts the shared Vibes intro window, resolves the SwiftUI fitting size before presentation, and keeps scene-size changes routed through one AppKit resize path.
   - Opens Settings directly to the Style tab when the intro `Try it` action completes.
+- `App/WindowManager+FirstDictationOnboarding.swift`
+  - Dedicated post-setup first-dictation window lifecycle.
+  - Hosts the separate first-dictation flow after setup onboarding completes, animates intro-to-practice resizing from a centered frame, and opens Settings when the user completes or skips the flow.
+- `App/MacRuntimeFlags.swift`
+  - Centralized macOS environment flag parser for forcing setup onboarding or first-dictation onboarding without clearing persisted defaults.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, first-dictation outcome flags, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
@@ -214,6 +222,10 @@ KeyVox/
   - Onboarding step orchestration UI.
   - Delegates microphone Step 1 flow logic to `OnboardingMicrophoneStepController`.
   - Uses `LogoBarView(size:)` for the standalone branded logo presentation.
+- `Views/FirstDictation/*`
+  - Separate optional first-dictation flow shown after setup onboarding, not inside `OnboardingView`.
+  - `FirstDictationIntroView` owns the try/skip choice, `FirstDictationPracticeView` owns the focused practice field and instruction copy, `FirstDictationOptionKeyPromptView` renders the configured trigger key, and `FirstDictationSuccessCelebrationView` owns the success animation.
+  - `FirstDictationOnboardingFlowView` keys completion off successful dictation revisions and verifies the focused field contains the latest dictated text.
 - `Views/OnboardingMicrophoneStepController.swift`
   - Owns onboarding microphone authorization and no-built-in gating behavior.
   - Drives microphone-step completion state and prompt visibility.
@@ -262,12 +274,14 @@ KeyVox/
 
 - `Core/Transcription/TranscriptionManager.swift`
   - Owns runtime state, dependencies, active-provider pipeline composition, initialization, and teardown for the macOS dictation manager.
+  - Publishes `successfulDictationRevision` as a monotonic in-memory signal for UI that needs to react to every successful dictation, including repeated identical text.
 - `Core/Transcription/TranscriptionManager+Bindings.swift`
   - Binds keyboard/caps-lock/model readiness publishers into runtime availability, trigger orchestration, and overlay hands-free state.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift`
   - Starts/stops recordings, routes transcribe -> post-process -> paste through internal `DictationPipeline`, and records spoken-word totals through `WeeklyWordStatsStore`.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
   - Persists the most recent successful final transcription for the Settings Home tab card.
+  - Marks `hasCompletedFirstDictation` on successful normal dictation and triggers popup eligibility when the first successful dictation happens outside the first-dictation window.
 - `Core/Transcription/TranscriptionManager+OverlayAndDebug.swift`
   - Keeps overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging out of recording-session flow.
 - `Core/DictationTriggerController.swift`
@@ -279,7 +293,7 @@ KeyVox/
 - `Core/Vibes/MacVibesReadinessPrewarmer.swift`
   - Defines the old install-readiness prewarm helper, but the app runtime does not retain it because Vibes AI should not load at app launch or immediately after reinstall.
 - `Core/Vibes/MacVibesIntroController.swift`
-  - Owns one-time cold-launch Vibes intro eligibility after main onboarding.
+  - Owns one-time cold-launch Vibes intro eligibility after main onboarding and a completed-or-skipped first-dictation outcome.
   - Persists the seen flag and supports the local force-show environment flag used by the Mac debug scheme.
 - `Core/Vibes/MacLocalRewriteModelCatalog.swift`
   - Mac-local source of truth for the Vibes GGUF model descriptor, artifact metadata, install manifest filename, and LoRA adapter filenames.
@@ -642,6 +656,7 @@ KeyVox/
   - Shared AX inspection helpers used by spacing, injector, and fallback verification.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
+  - Routes self-targeted AX writes through a bounded main-thread hop so local AppKit text fields can be updated without an unbounded cross-thread `main.sync`.
 - `Core/Services/Paste/MenuFallback/PasteMenuFallbackExecutor.swift`
   - Orchestrates menu fallback execution and verification decisions.
   - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
@@ -699,6 +714,8 @@ KeyVox/
 - `Views/OnboardingView.swift`
   - First-run setup for permissions and model download.
   - Accessibility and microphone authorization hooks are delegated to `WindowManager` callbacks.
+- `Views/FirstDictation/*`
+  - Optional first-dictation practice surfaces shown only after setup onboarding, with skip and completion reported back to `WindowManager+FirstDictationOnboarding`.
 - `Views/Settings/*`
   - Split settings tabs and reusable settings components for Home, Dictionary, Style, and Settings.
   - Shared app-window styling is sourced from `Views/Components/MacAppTheme.swift`.
@@ -750,7 +767,7 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, onboarding completion, update prompt timestamps, active dictation provider
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, onboarding completion, first-dictation completed/skipped flags, update prompt timestamps, active dictation provider
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`

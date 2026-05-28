@@ -16,7 +16,11 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
                 return
             }
 
-            if AppSettingsStore.shared.hasCompletedOnboarding {
+            if MacRuntimeFlags.forceOnboarding {
+                WindowManager.shared.showOnboarding()
+            } else if MacRuntimeFlags.forceFirstDictationOnboarding {
+                WindowManager.shared.showFirstDictationOnboarding()
+            } else if AppSettingsStore.shared.hasCompletedOnboarding {
                 WindowManager.shared.openSettings(centered: true)
             } else {
                 WindowManager.shared.showOnboarding()
@@ -49,6 +53,7 @@ class WindowManager: ObservableObject {
     
     @Published var settingsWindow: NSWindow?
     @Published var onboardingWindow: NSWindow?
+    @Published var firstDictationOnboardingWindow: NSWindow?
     @Published var updateWindow: NSWindow?
     @Published var postUpdateNoticeWindow: NSWindow?
     @Published var vibesIntroWindow: NSWindow?
@@ -61,6 +66,7 @@ class WindowManager: ObservableObject {
             postUpdateNoticeWindow,
             updateWindow,
             vibesIntroWindow,
+            firstDictationOnboardingWindow,
             onboardingWindow
         ]
 
@@ -110,9 +116,7 @@ class WindowManager: ObservableObject {
             AppSettingsStore.shared.hasCompletedOnboarding = true
             window.close()
             self.onboardingWindow = nil
-            // Open settings centered immediately after onboarding
-            self.openSettings(centered: true)
-            KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+            self.showFirstDictationOnboarding()
         }, openSettings: {
             self.openSettings()
         }, beginMicrophoneAuthorization: {
@@ -229,13 +233,16 @@ struct KeyVoxApp: App {
     private let onboardingStartupDelay: TimeInterval = 0.1
 
     static func presentVibesIntroIfEligibleAfterUpdateGate() {
-        guard AppSettingsStore.shared.hasCompletedOnboarding else { return }
+        let appSettings = AppSettingsStore.shared
+        guard appSettings.hasCompletedOnboarding else { return }
         guard AppUpdateCoordinator.shared.postUpdateNoticeVersion == nil else { return }
         guard AppUpdateService.shared.hasCompletedInitialAutomaticUpdateCheck else { return }
         guard AppUpdateService.shared.hasAvailableUpdateForCurrentVersion == false else { return }
 
         MacVibesIntroController.shared.scheduleColdLaunchPresentationIfNeeded(
-            hasCompletedOnboarding: true
+            hasCompletedOnboarding: true,
+            hasCompletedFirstDictation: appSettings.hasCompletedFirstDictation,
+            hasSkippedFirstDictation: appSettings.hasSkippedFirstDictation
         ) {
             WindowManager.shared.showVibesIntroWindow(initialScene: .a)
         }
@@ -258,7 +265,9 @@ struct KeyVoxApp: App {
 
         // App initialization
         DispatchQueue.main.asyncAfter(deadline: .now() + onboardingStartupDelay) {
-            if !AppSettingsStore.shared.hasCompletedOnboarding {
+            if MacRuntimeFlags.forceFirstDictationOnboarding {
+                WindowManager.shared.showFirstDictationOnboarding()
+            } else if !AppSettingsStore.shared.hasCompletedOnboarding || MacRuntimeFlags.forceOnboarding {
                 WindowManager.shared.showOnboarding()
             } else {
                 KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()

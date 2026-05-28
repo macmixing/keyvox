@@ -28,6 +28,14 @@
 		8E57FBA42F3E449000935A26 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FBA32F3E449000935A26 /* SettingsView.swift */; };
 		8E57FBA52F3E449000935A26 /* SettingsView+Legal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FBA22F3E449000935A26 /* SettingsView+Legal.swift */; };
 		8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */; };
+		F1D100112FEA000100AA0001 /* MacRuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */; };
+		F1D100192FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100092FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift */; };
+		F1D100122FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */; };
+		F1D100132FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */; };
+		F1D100142FEA000100AA0001 /* FirstDictationIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */; };
+		F1D100152FEA000100AA0001 /* FirstDictationPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */; };
+		F1D100172FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */; };
+		F1D1001A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */; };
 		8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */; };
 		8E6D05DD2F3C523D003BD458 /* RecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */; };
 		8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */; };
@@ -232,6 +240,14 @@
 		8E57FBA22F3E449000935A26 /* SettingsView+Legal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Legal.swift"; sourceTree = "<group>"; };
 		8E57FBA32F3E449000935A26 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
+		F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRuntimeFlags.swift; sourceTree = "<group>"; };
+		F1D100092FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+FirstDictationOnboarding.swift"; sourceTree = "<group>"; };
+		F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingFlowView.swift; sourceTree = "<group>"; };
+		F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingWindowMetrics.swift; sourceTree = "<group>"; };
+		F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationIntroView.swift; sourceTree = "<group>"; };
+		F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationPracticeView.swift; sourceTree = "<group>"; };
+		F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOptionKeyPromptView.swift; sourceTree = "<group>"; };
+		F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationSuccessCelebrationView.swift; sourceTree = "<group>"; };
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
@@ -458,10 +474,12 @@
 				D17000012FA3000100AA0001 /* AppServiceRegistry.swift */,
 				D15000012FA1000100AA0001 /* LoginItemController.swift */,
 				D15000022FA1000100AA0001 /* DockIconVisibilityController.swift */,
+				F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */,
 				A11000112FC1000100AA0001 /* WeeklyWordStatsStore.swift */,
 				8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */,
 				F30000012FC2000100AA0001 /* WindowManager+Updates.swift */,
 				F260000E2FF1000100AA0001 /* WindowManager+VibesIntro.swift */,
+				F1D100092FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift */,
 				8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */,
 			);
 			path = App;
@@ -535,6 +553,7 @@
 			isa = PBXGroup;
 			children = (
 				8E57FB9B2F3E444B00935A26 /* Settings */,
+				F1D100082FEA000100AA0001 /* FirstDictation */,
 				F26000112FF1000100AA0001 /* VibesIntro */,
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				F30000222FC2000100AA0001 /* Updates */,
@@ -547,6 +566,19 @@
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		F1D100082FEA000100AA0001 /* FirstDictation */ = {
+			isa = PBXGroup;
+			children = (
+				F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */,
+				F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */,
+				F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */,
+				F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */,
+				F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */,
+				F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */,
+			);
+			path = FirstDictation;
 			sourceTree = "<group>";
 		};
 		8EC700212F42000100C70001 /* Warnings */ = {
@@ -1121,6 +1153,14 @@
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
 				F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */,
 				8E4B08612FD0000100C5DB85 /* MacAppTheme.swift in Sources */,
+				F1D100112FEA000100AA0001 /* MacRuntimeFlags.swift in Sources */,
+				F1D100192FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift in Sources */,
+				F1D100122FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift in Sources */,
+				F1D100132FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift in Sources */,
+				F1D100142FEA000100AA0001 /* FirstDictationIntroView.swift in Sources */,
+				F1D100152FEA000100AA0001 /* FirstDictationPracticeView.swift in Sources */,
+				F1D100172FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift in Sources */,
+				F1D1001A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
