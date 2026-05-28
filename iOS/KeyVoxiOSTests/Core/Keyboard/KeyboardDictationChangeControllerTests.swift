@@ -142,6 +142,112 @@ struct KeyboardDictationChangeControllerTests {
         #expect(processingStartCount == 0)
         #expect(processingEndCount == 0)
     }
+
+    @Test func reapplyingVibeAfterListReapplyUsesRenderedDeterministicCache() async throws {
+        setenv("KEYVOX_BYPASS_VIBES_TRIAL", "1", 1)
+        defer {
+            unsetenv("KEYVOX_BYPASS_VIBES_TRIAL")
+        }
+        let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        defaults.set(false, forKey: UserDefaultsKeys.autoParagraphsEnabled)
+        defaults.set(true, forKey: UserDefaultsKeys.listFormattingEnabled)
+
+        let listText = "Tasks:\n\n1. Alpha\n2. Beta"
+        let casualListText = "tasks:\n\n1. alpha\n2. beta"
+        let noListText = "Tasks one Alpha two Beta"
+        let casualNoListText = "tasks one alpha two beta"
+        let artifact = DictationUtteranceArtifact(
+            id: UUID(),
+            rawText: listText,
+            baseText: listText,
+            selectedText: casualListText,
+            selectedStyleIdentifier: StyleRewriteStyle.casual.styleIdentifier,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: true,
+            variants: [
+                DictationTextVariantArtifact(
+                    styleIdentifier: StyleRewriteStyle.casual.styleIdentifier,
+                    text: casualListText,
+                    duration: 0,
+                    chunkCount: 1,
+                    applied: true,
+                    errors: []
+                )
+            ],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: noListText
+                ),
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: true,
+                    text: listText
+                ),
+            ],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(artifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+        let transformer = KeyboardDictationChangeTextTransformerSpy(
+            transformedText: casualNoListText
+        )
+        let documentProxy = KeyboardDictationChangeDocumentProxySpy()
+        let textInputController = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        let controller = KeyboardDictationChangeController(
+            textInputController: textInputController,
+            appSettingsStore: KeyboardAppSettingsStore(defaults: defaults),
+            artifactStore: KeyboardDictationChangeArtifactStore(defaults: defaults),
+            textTransformer: transformer
+        )
+
+        let insertion = try #require(textInputController.insertTranscriptionWithResult(casualListText))
+        controller.recordInsertedDictation(insertion)
+
+        let didRemoveList = await controller.applyDeterministicLongPressChange(
+            .lists,
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+        #expect(didRemoveList == true)
+        #expect(transformer.transformCallCount == 1)
+
+        let didRevertVibe = await controller.applyLongPressChange(
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+        #expect(didRevertVibe == true)
+        let didReapplyList = await controller.applyDeterministicLongPressChange(
+            .lists,
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+        #expect(didReapplyList == true)
+        var processingStartCount = 0
+        var processingEndCount = 0
+
+        let didReapplyVibe = await controller.applyLongPressChange(
+            onProcessingStart: { processingStartCount += 1 },
+            onProcessingEnd: { processingEndCount += 1 }
+        )
+
+        #expect(didReapplyVibe == true)
+        #expect(transformer.transformCallCount == 1)
+        #expect(processingStartCount == 0)
+        #expect(processingEndCount == 0)
+    }
 }
 
 private final class KeyboardDictationChangeDocumentProxySpy: KeyboardTextDocumentProxying {
@@ -166,4 +272,31 @@ private final class KeyboardDictationChangeDocumentProxySpy: KeyboardTextDocumen
     }
 
     func adjustTextPosition(byCharacterOffset offset: Int) {}
+}
+
+@MainActor
+private final class KeyboardDictationChangeTextTransformerSpy: DictationTextTransforming {
+    private let transformedText: String
+    var transformCallCount = 0
+
+    init(transformedText: String) {
+        self.transformedText = transformedText
+    }
+
+    func prewarm(request: TextTransformRequest) {}
+
+    func transform(_ request: TextTransformRequest) async -> TextTransformResult {
+        transformCallCount += 1
+        return TextTransformResult(
+            originalText: request.baseText,
+            finalText: transformedText,
+            styleIdentifier: request.styleIdentifier,
+            duration: 0,
+            chunkCount: 1,
+            applied: true,
+            chunkTimings: [],
+            errors: [],
+            processingMode: nil
+        )
+    }
 }

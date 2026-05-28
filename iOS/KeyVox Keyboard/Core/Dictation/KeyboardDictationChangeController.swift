@@ -29,7 +29,8 @@ final class KeyboardDictationChangeController {
 
     private let textInputController: KeyboardTextInputController
     private let artifactStore: KeyboardDictationChangeArtifactStore
-    private let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
+    private let textTransformer: any DictationTextTransforming
+    private let releaseTextTransformer: (String) -> Void
     private let appSettingsStore: KeyboardAppSettingsStore
     private let deterministicFormatter = KeyboardDeterministicDictationFormatter()
 
@@ -89,9 +90,26 @@ final class KeyboardDictationChangeController {
         appSettingsStore: KeyboardAppSettingsStore,
         artifactStore: KeyboardDictationChangeArtifactStore = KeyboardDictationChangeArtifactStore()
     ) {
+        let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
         self.textInputController = textInputController
         self.appSettingsStore = appSettingsStore
         self.artifactStore = artifactStore
+        self.textTransformer = textTransformer
+        self.releaseTextTransformer = textTransformer.releasePrewarmSession
+    }
+
+    init(
+        textInputController: KeyboardTextInputController,
+        appSettingsStore: KeyboardAppSettingsStore,
+        artifactStore: KeyboardDictationChangeArtifactStore,
+        textTransformer: any DictationTextTransforming,
+        releaseTextTransformer: @escaping (String) -> Void = { _ in }
+    ) {
+        self.textInputController = textInputController
+        self.appSettingsStore = appSettingsStore
+        self.artifactStore = artifactStore
+        self.textTransformer = textTransformer
+        self.releaseTextTransformer = releaseTextTransformer
     }
 
     func recordInsertedDictation(_ insertion: KeyboardTextInsertionResult) {
@@ -390,6 +408,14 @@ final class KeyboardDictationChangeController {
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> String? {
+        if let currentDeterministicState = session.currentDeterministicState,
+           let cachedText = session.renderedDeterministicVariants[RenderedVariantKey(
+            deterministicState: currentDeterministicState,
+            style: targetStyle
+           )] {
+            return cachedText
+        }
+
         if let cachedText = session.variants[targetStyle] {
             return cachedText
         }
@@ -405,7 +431,7 @@ final class KeyboardDictationChangeController {
         defer { onProcessingEnd() }
 
         let result = await textTransformer.transform(request)
-        textTransformer.releasePrewarmSession(reason: "keyboard-vibe-change")
+        releaseTextTransformer("keyboard-vibe-change")
         logChange(
             "vibeApply style=\(targetStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
@@ -455,7 +481,7 @@ final class KeyboardDictationChangeController {
         defer { onProcessingEnd() }
 
         let result = await textTransformer.transform(request)
-        textTransformer.releasePrewarmSession(reason: "keyboard-deterministic-change")
+        releaseTextTransformer("keyboard-deterministic-change")
         logChange(
             "renderedText result style=\(session.currentStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
