@@ -170,6 +170,14 @@
 		E92000012FE3000100AA0001 /* VibePillPresentationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */; };
 		E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */; };
 		E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */; };
+		F1D100112FEA000100AA0001 /* MacRuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */; };
+		F1D100122FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */; };
+		F1D100132FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */; };
+		F1D100142FEA000100AA0001 /* FirstDictationIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */; };
+		F1D100152FEA000100AA0001 /* FirstDictationPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */; };
+		F1D100172FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */; };
+		F1D100192FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100092FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift */; };
+		F1D1001A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */; };
 		F20000022FB0000100AA0001 /* AudioIndicatorDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */; };
 		F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000032FB0000100AA0001 /* LogoBarView.swift */; };
 		F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */; };
@@ -379,6 +387,14 @@
 		E92000112FE3000100AA0001 /* VibePillPresentationControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillPresentationControllerTests.swift; sourceTree = "<group>"; };
 		E93000112FE9000100AA0001 /* SettingsVibesExamplesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesExamplesSection.swift; sourceTree = "<group>"; };
 		E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesAIInstallCard.swift; sourceTree = "<group>"; };
+		F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRuntimeFlags.swift; sourceTree = "<group>"; };
+		F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingFlowView.swift; sourceTree = "<group>"; };
+		F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingWindowMetrics.swift; sourceTree = "<group>"; };
+		F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationIntroView.swift; sourceTree = "<group>"; };
+		F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationPracticeView.swift; sourceTree = "<group>"; };
+		F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOptionKeyPromptView.swift; sourceTree = "<group>"; };
+		F1D100092FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+FirstDictationOnboarding.swift"; sourceTree = "<group>"; };
+		F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationSuccessCelebrationView.swift; sourceTree = "<group>"; };
 		F20000012FB0000100AA0001 /* AudioIndicatorDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriver.swift; sourceTree = "<group>"; };
 		F20000032FB0000100AA0001 /* LogoBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoBarView.swift; sourceTree = "<group>"; };
 		F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIndicatorDriverTests.swift; sourceTree = "<group>"; };
@@ -862,6 +878,19 @@
 				E910001B2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift */,
 			);
 			path = Vibes;
+			sourceTree = "<group>";
+		};
+		F1D100082FEA000100AA0001 /* FirstDictation */ = {
+			isa = PBXGroup;
+			children = (
+				F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */,
+				F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */,
+				F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */,
+				F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */,
+				F1D100072FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift */,
+				F1D1000A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift */,
+			);
+			path = FirstDictation;
 			sourceTree = "<group>";
 		};
 		F26000112FF1000100AA0001 /* VibesIntro */ = {
@@ -1404,7 +1433,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.1.5;
+				MARKETING_VERSION = 1.1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1455,7 +1484,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.1.5;
+				MARKETING_VERSION = 1.1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
