@@ -6,6 +6,40 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.6] - 2026-05-28
+
+Adds guided first-dictation onboarding, a Settings help entry point, centralized Mac runtime flags, and stronger Vibes money repair.
+
+### Added
+
+- Added a first-dictation onboarding flow with intro, Option-key prompt, practice, and success screens after initial setup and Vibes intro gates complete.
+- Added first-dictation onboarding presentation coordination, completion persistence, DEBUG forcing, and paste accessibility priming for the practice flow.
+- Added a Settings help card in More settings for quick access to KeyVox help.
+- Added centralized Mac runtime flag handling for onboarding, mic picker, model-download preview, raw-text logging, and Vibes intro DEBUG controls.
+
+### Changed
+
+- Updated Mac onboarding, model download preview, Vibes intro, and dictation-change paths to read runtime flags through the shared `MacRuntimeFlags` source of truth.
+- Updated macOS engineering and codemap documentation for first-dictation onboarding and centralized runtime flag ownership.
+- Updated `KeyVoxStyleRewrite` to `1.0.4` with shared currency unit matching for redundant minor currency repair.
+
+### Fixed
+
+- Fixed Vibes money output repair so redundant minor currency words are removed when a rewritten decimal amount already preserves the matching source dictation evidence.
+- Fixed status menu Quit so KeyVox can terminate while Settings is open.
+
+### Package versions
+
+KeyVox macOS 1.1.6:
+- KeyVoxCore           1.0.12
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.4
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
+---
+
 ## [1.1.5] - 2026-05-25
 
 Strengthens Mac Vibes rewrite repair for list cues and unsupported inserted number evidence.
