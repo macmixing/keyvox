@@ -184,6 +184,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let baseText: String
     public let selectedText: String
     public let selectedStyleIdentifier: String?
+    public let baseParagraphsEnabled: Bool?
+    public let baseListsEnabled: Bool?
     public let variants: [DictationTextVariantArtifact]
     public let deterministicVariants: [DictationDeterministicTextVariantArtifact]
     public let inferenceDuration: TimeInterval
@@ -196,6 +198,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         baseText: String,
         selectedText: String,
         selectedStyleIdentifier: String?,
+        baseParagraphsEnabled: Bool? = nil,
+        baseListsEnabled: Bool? = nil,
         variants: [DictationTextVariantArtifact],
         deterministicVariants: [DictationDeterministicTextVariantArtifact] = [],
         inferenceDuration: TimeInterval,
@@ -207,6 +211,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         self.baseText = baseText
         self.selectedText = selectedText
         self.selectedStyleIdentifier = selectedStyleIdentifier
+        self.baseParagraphsEnabled = baseParagraphsEnabled
+        self.baseListsEnabled = baseListsEnabled
         self.variants = variants
         self.deterministicVariants = deterministicVariants
         self.inferenceDuration = inferenceDuration
@@ -220,6 +226,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         case baseText
         case selectedText
         case selectedStyleIdentifier
+        case baseParagraphsEnabled
+        case baseListsEnabled
         case variants
         case deterministicVariants
         case inferenceDuration
@@ -234,6 +242,8 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         baseText = try container.decode(String.self, forKey: .baseText)
         selectedText = try container.decode(String.self, forKey: .selectedText)
         selectedStyleIdentifier = try container.decodeIfPresent(String.self, forKey: .selectedStyleIdentifier)
+        baseParagraphsEnabled = try container.decodeIfPresent(Bool.self, forKey: .baseParagraphsEnabled)
+        baseListsEnabled = try container.decodeIfPresent(Bool.self, forKey: .baseListsEnabled)
         variants = try container.decode([DictationTextVariantArtifact].self, forKey: .variants)
         deterministicVariants = try container.decodeIfPresent(
             [DictationDeterministicTextVariantArtifact].self,

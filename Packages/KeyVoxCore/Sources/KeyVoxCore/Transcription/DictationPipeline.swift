@@ -56,6 +56,8 @@ public struct DictationPipelineResult: Sendable {
     public let rawText: String
     public let baseText: String
     public let finalText: String
+    public let baseParagraphsEnabled: Bool
+    public let baseListsEnabled: Bool
     public let deterministicVariants: [DeterministicTextVariant]
     public let wasLikelyNoSpeech: Bool
     public let inferenceDuration: TimeInterval
@@ -163,6 +165,7 @@ public final class DictationPipeline {
         let utteranceID = UUID()
         let inferenceStart = Date()
         let autoParagraphsEnabled = autoParagraphsEnabledProvider()
+        let listFormattingEnabled = listFormattingEnabledProvider()
         let userDictionaryEntries = dictionaryEntriesProvider()
         let shouldUseDictionaryHintPrompt = useDictionaryHintPrompt
             && DictionaryBuiltInEntries.hasEffectiveEntries(merging: userDictionaryEntries)
@@ -189,6 +192,8 @@ public final class DictationPipeline {
                         rawText: rawText,
                         baseText: "",
                         finalText: "",
+                        baseParagraphsEnabled: autoParagraphsEnabled,
+                        baseListsEnabled: listFormattingEnabled,
                         deterministicVariants: [],
                         wasLikelyNoSpeech: true,
                         inferenceDuration: inferenceDuration,
@@ -209,7 +214,6 @@ public final class DictationPipeline {
                 merging: userDictionaryEntries
             )
             let renderMode = self.listRenderModeProvider()
-            let listFormattingEnabled = self.listFormattingEnabledProvider()
             let finalText = self.postProcessor.process(
                 rawText,
                 dictionaryEntries: dictionaryEntries,
@@ -236,6 +240,8 @@ public final class DictationPipeline {
                         rawText: rawText,
                         baseText: finalText,
                         finalText: "",
+                        baseParagraphsEnabled: autoParagraphsEnabled,
+                        baseListsEnabled: listFormattingEnabled,
                         deterministicVariants: [],
                         wasLikelyNoSpeech: true,
                         inferenceDuration: inferenceDuration,
@@ -273,6 +279,8 @@ public final class DictationPipeline {
                         rawText: rawText,
                         baseText: finalText,
                         finalText: outputText,
+                        baseParagraphsEnabled: autoParagraphsEnabled,
+                        baseListsEnabled: listFormattingEnabled,
                         deterministicVariants: self.deterministicVariants(
                             rawText: rawText,
                             dictionaryEntries: dictionaryEntries,

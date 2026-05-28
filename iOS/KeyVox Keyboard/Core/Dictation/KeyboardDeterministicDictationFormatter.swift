@@ -71,12 +71,14 @@ struct KeyboardDeterministicDictationFormatter {
         for targetState: KeyboardDeterministicDictationState,
         deterministicText: String,
         currentState: KeyboardDeterministicDictationState,
-        currentSourceText: String
+        currentSourceText: String,
+        renderedTextForTargetState: String? = nil
     ) -> String {
+        let targetText = renderedTextForTargetState ?? deterministicText
         guard targetState.paragraphsEnabled == false,
               currentState.listsEnabled,
               targetState.listsEnabled else {
-            return deterministicText
+            return targetText
         }
 
         return textWithParagraphBreaksCollapsedPreservingLists(currentSourceText)

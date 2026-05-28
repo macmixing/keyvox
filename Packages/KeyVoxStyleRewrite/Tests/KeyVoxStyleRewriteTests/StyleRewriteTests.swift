@@ -768,6 +768,8 @@ final class StyleRewriteTests: XCTestCase {
             baseText: "base",
             selectedText: "styled",
             selectedStyleIdentifier: "test-style",
+            baseParagraphsEnabled: false,
+            baseListsEnabled: true,
             variants: [
                 DictationTextVariantArtifact(
                     styleIdentifier: "test-style",
@@ -799,6 +801,8 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded, artifact)
+        XCTAssertEqual(decoded.baseParagraphsEnabled, false)
+        XCTAssertEqual(decoded.baseListsEnabled, true)
     }
 
     func testDictationUtteranceArtifactDecodesMissingDeterministicVariantsAsEmpty() throws {
@@ -822,6 +826,8 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try decoder.decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded.deterministicVariants, [])
+        XCTAssertNil(decoded.baseParagraphsEnabled)
+        XCTAssertNil(decoded.baseListsEnabled)
     }
 
     func testTextTransformRequestRoundTripsThroughJSON() throws {

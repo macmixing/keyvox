@@ -106,6 +106,31 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
     }
 
+    func testPipelineResultRecordsBaseDeterministicState() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en")
+        )
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { false },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: Array(repeating: Float(0.1), count: 128),
+            useDictionaryHintPrompt: false
+        )
+
+        XCTAssertFalse(result.baseParagraphsEnabled)
+        XCTAssertTrue(result.baseListsEnabled)
+    }
+
     func testPipelineEmitsDeterministicVariantsWhenParagraphsAndListsAreOff() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "project notes one cue board two cue board", languageCode: "en")

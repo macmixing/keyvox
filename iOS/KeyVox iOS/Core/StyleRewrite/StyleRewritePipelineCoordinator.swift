@@ -141,6 +141,8 @@ final class StyleRewritePipelineCoordinator {
                 baseText: result.baseText,
                 selectedText: selectedText,
                 selectedStyleIdentifier: result.textTransformationStyleIdentifier,
+                baseParagraphsEnabled: result.baseParagraphsEnabled,
+                baseListsEnabled: result.baseListsEnabled,
                 variants: variants,
                 deterministicVariants: result.deterministicVariants.map { variant in
                     DictationDeterministicTextVariantArtifact(

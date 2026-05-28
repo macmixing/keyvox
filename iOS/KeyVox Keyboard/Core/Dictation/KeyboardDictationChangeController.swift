@@ -71,10 +71,7 @@ final class KeyboardDictationChangeController {
             return appSettingsStore.isAutoParagraphsEnabled
         }
 
-        return deterministicFormatter.isParagraphFormattingVisiblyApplied(
-            currentState: currentState,
-            deterministicVariants: activeSession.deterministicVariants
-        )
+        return currentState.paragraphsEnabled
     }
 
     var displayedListFormattingEnabled: Bool {
@@ -147,9 +144,13 @@ final class KeyboardDictationChangeController {
                 preparesAsDictationInsertion: true
             )
         }
-        let currentDeterministicState = deterministicVariants.first {
-            $0.value == originalText
-        }?.key
+        let currentDeterministicState = artifactBaseDeterministicState(
+            from: artifact,
+            deterministicVariants: deterministicVariants
+        ) ?? currentDeterministicState(
+            matching: originalText,
+            in: deterministicVariants
+        )
         var renderedDeterministicVariants: [RenderedVariantKey: String] = [:]
         if let currentDeterministicState {
             renderedDeterministicVariants[RenderedVariantKey(
@@ -273,8 +274,16 @@ final class KeyboardDictationChangeController {
             for: targetState,
             deterministicText: deterministicText,
             currentState: currentState,
-            currentSourceText: session.sourceText
+            currentSourceText: session.sourceText,
+            renderedTextForTargetState: session.renderedDeterministicVariants[RenderedVariantKey(
+                deterministicState: targetState,
+                style: .none
+            )]
         )
+        guard replacementSourceText != session.sourceText else {
+            return false
+        }
+
         guard let renderedText = await renderedText(
             for: targetState,
             sourceText: replacementSourceText,
@@ -288,15 +297,17 @@ final class KeyboardDictationChangeController {
             "deterministicLongPress replacementSource=\(debugText(replacementSourceText)) rendered=\(debugText(renderedText))"
         )
 
-        if renderedText != session.currentText {
-            guard textInputController.replaceUntouchedInsertion(
-                session.currentText,
-                with: renderedText,
-                documentContextBeforeInsertion: session.documentContextBeforeInput
-            ) else {
-                invalidateActiveSession()
-                return false
-            }
+        guard renderedText != session.currentText else {
+            return false
+        }
+
+        guard textInputController.replaceUntouchedInsertion(
+            session.currentText,
+            with: renderedText,
+            documentContextBeforeInsertion: session.documentContextBeforeInput
+        ) else {
+            invalidateActiveSession()
+            return false
         }
 
         session.sourceText = replacementSourceText
@@ -324,6 +335,46 @@ final class KeyboardDictationChangeController {
 
     private func invalidateActiveSession() {
         activeSession = nil
+    }
+
+    private func artifactBaseDeterministicState(
+        from artifact: DictationUtteranceArtifact,
+        deterministicVariants: [KeyboardDeterministicDictationState: String]
+    ) -> KeyboardDeterministicDictationState? {
+        guard let paragraphsEnabled = artifact.baseParagraphsEnabled,
+              let listsEnabled = artifact.baseListsEnabled else {
+            return nil
+        }
+
+        let state = KeyboardDeterministicDictationState(
+            paragraphsEnabled: paragraphsEnabled,
+            listsEnabled: listsEnabled
+        )
+        return deterministicVariants[state] == nil ? nil : state
+    }
+
+    private func currentDeterministicState(
+        matching text: String,
+        in deterministicVariants: [KeyboardDeterministicDictationState: String]
+    ) -> KeyboardDeterministicDictationState? {
+        let matchingStates = deterministicVariants
+            .filter { $0.value == text }
+            .map { $0.key }
+        guard !matchingStates.isEmpty else {
+            return nil
+        }
+
+        let preferredState = KeyboardDeterministicDictationState(
+            paragraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
+            listsEnabled: appSettingsStore.isListFormattingEnabled
+        )
+        return matchingStates.first { $0 == preferredState } ?? matchingStates.min {
+            if $0.paragraphsEnabled != $1.paragraphsEnabled {
+                return $0.paragraphsEnabled == false
+            }
+
+            return $0.listsEnabled == false && $1.listsEnabled
+        }
     }
 
     private func activeInsertionMatchesCurrentText(_ session: Session) -> Bool {
