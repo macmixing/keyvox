@@ -10,6 +10,14 @@ import AVFoundation
 import Combine
 
 final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
+    private var isHandlingStatusMenuQuit = false
+
+    @MainActor
+    func quitFromStatusMenu() {
+        isHandlingStatusMenuQuit = true
+        NSApplication.shared.terminate(nil)
+    }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         Task { @MainActor in
             if WindowManager.shared.bringForwardNonSettingsWindowIfNeeded() {
@@ -30,7 +38,9 @@ final class KeyVoxAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        if let settingsWindow = WindowManager.shared.settingsWindow,
+        if isHandlingStatusMenuQuit {
+            isHandlingStatusMenuQuit = false
+        } else if let settingsWindow = WindowManager.shared.settingsWindow,
            settingsWindow.isVisible,
            sender.isActive,
            (settingsWindow.isKeyWindow || settingsWindow.isMainWindow) {
@@ -304,7 +314,7 @@ struct KeyVoxApp: App {
                 manager: transcriptionManager,
                 openSettings: { tab in WindowManager.shared.openSettings(tab: tab) },
                 checkForUpdates: { AppUpdateService.shared.checkForUpdatesManually() },
-                quitApp: { NSApplication.shared.terminate(nil) }
+                quitApp: { appDelegate.quitFromStatusMenu() }
             )
         } label: {
             menuBarImage
