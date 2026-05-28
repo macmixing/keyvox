@@ -100,7 +100,7 @@ final class MacVibesIntroControllerTests: XCTestCase {
         harness.defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenKeyVoxVibesIntro)
         let controller = MacVibesIntroController(
             defaults: harness.defaults,
-            environment: [MacVibesIntroController.forceIntroEnvironmentKey: "1"],
+            environment: [MacRuntimeFlags.forceKeyVoxVibesIntroEnvironmentKey: "1"],
             presentationDelayNanoseconds: 0
         )
         var presentationCount = 0
@@ -125,7 +125,7 @@ final class MacVibesIntroControllerTests: XCTestCase {
         let harness = makeHarness()
         let controller = MacVibesIntroController(
             defaults: harness.defaults,
-            environment: [MacVibesIntroController.forceIntroEnvironmentKey: "1"],
+            environment: [MacRuntimeFlags.forceKeyVoxVibesIntroEnvironmentKey: "1"],
             presentationDelayNanoseconds: 0
         )
         var didPresent = false

@@ -108,15 +108,7 @@ final class OnboardingMicrophoneStepController: ObservableObject {
     }
 
     private var isMicPickerDebugOverrideEnabled: Bool {
-#if DEBUG
-        let value = ProcessInfo.processInfo.environment["KEYVOX_FORCE_MIC_PICKER"]?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-
-        return value == "1" || value == "true" || value == "yes"
-#else
-        return false
-#endif
+        MacRuntimeFlags.forceMicPicker
     }
 
     private var requiresMicSelectionPrompt: Bool {

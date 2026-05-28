@@ -368,7 +368,7 @@ final class ModelDownloaderTests: XCTestCase {
         let downloader = makeDownloader(
             in: dir,
             minBytes: 10,
-            environmentProvider: { ["KVX_MODEL_DOWNLOAD_PREVIEW_ERROR": "low_disk"] },
+            environmentProvider: { [MacRuntimeFlags.modelDownloadPreviewErrorEnvironmentKey: "low_disk"] },
             makeDownloadSession: sessionFactory.makeSession(delegate:)
         )
 
@@ -392,7 +392,7 @@ final class ModelDownloaderTests: XCTestCase {
         let downloader = makeDownloader(
             in: dir,
             minBytes: 10,
-            environmentProvider: { ["KVX_MODEL_DOWNLOAD_PREVIEW_ERROR": "generic"] },
+            environmentProvider: { [MacRuntimeFlags.modelDownloadPreviewErrorEnvironmentKey: "generic"] },
             makeDownloadSession: sessionFactory.makeSession(delegate:)
         )
 

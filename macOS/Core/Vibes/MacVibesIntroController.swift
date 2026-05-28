@@ -4,7 +4,6 @@ import Foundation
 @MainActor
 final class MacVibesIntroController: ObservableObject {
     static let shared = MacVibesIntroController()
-    static let forceIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_VIBES_INTRO"
 
     private let defaults: UserDefaults
     private let forcePresentation: Bool
@@ -17,9 +16,7 @@ final class MacVibesIntroController: ObservableObject {
         presentationDelayNanoseconds: UInt64 = 1_500_000_000
     ) {
         self.defaults = defaults
-        self.forcePresentation = Self.isEnabled(
-            environmentValue: environment[Self.forceIntroEnvironmentKey]
-        )
+        self.forcePresentation = MacRuntimeFlags.forceKeyVoxVibesIntro(environment: environment)
         self.presentationDelayNanoseconds = presentationDelayNanoseconds
     }
 
@@ -63,15 +60,5 @@ final class MacVibesIntroController: ObservableObject {
 
     var hasSeenIntro: Bool {
         defaults.bool(forKey: UserDefaultsKeys.App.hasSeenKeyVoxVibesIntro)
-    }
-
-    private static func isEnabled(environmentValue: String?) -> Bool {
-        let normalizedValue = environmentValue?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-
-        return normalizedValue == "1"
-            || normalizedValue == "true"
-            || normalizedValue == "yes"
     }
 }
