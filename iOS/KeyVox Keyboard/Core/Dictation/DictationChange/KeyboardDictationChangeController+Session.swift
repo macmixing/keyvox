@@ -22,6 +22,7 @@ extension KeyboardDictationChangeController {
                 currentDeterministicState: nil,
                 deterministicVariants: [:],
                 renderedDeterministicVariants: [:],
+                capsBaselineIsUppercase: false,
                 isCapsTransformApplied: false,
                 uncappedCurrentText: nil
             )
@@ -105,7 +106,8 @@ extension KeyboardDictationChangeController {
             currentDeterministicState: currentDeterministicState,
             deterministicVariants: deterministicVariants,
             renderedDeterministicVariants: renderedDeterministicVariants,
-            isCapsTransformApplied: initialCapsSourceText != nil,
+            capsBaselineIsUppercase: initialCapsSourceText != nil,
+            isCapsTransformApplied: false,
             uncappedCurrentText: initialCapsSourceText
         )
         if selectedStyle == .none {

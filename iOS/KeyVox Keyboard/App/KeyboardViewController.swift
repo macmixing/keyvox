@@ -226,6 +226,7 @@ final class KeyboardViewController: UIInputViewController {
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
+            isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
             displayedVibeTitle: dictationChangeController.displayedVibeTitle,
             displayedVibeStyle: dictationChangeController.displayedVibeStyle,
             isDisplayedVibeApplied: dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion,
@@ -543,6 +544,7 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         dictationChangeController.recordInsertedDictation(insertion)
+        updateActiveInsertionVisualState()
         emitDelayedTranscriptionLandingHapticIfNeeded()
     }
 
@@ -551,6 +553,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
         rootContainerView?.capsLockButton.isDictationCapsApplied = dictationChangeController.displayedCapsTransformApplied
+        rootContainerView?.capsLockButton.isDictationCapsUppercase = dictationChangeController.displayedCapsTextIsUppercase
         rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
         rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
         if !dictationChangeController.isRatingTargetStillVisible {

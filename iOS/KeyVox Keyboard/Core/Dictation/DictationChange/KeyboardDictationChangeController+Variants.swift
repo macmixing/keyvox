@@ -229,15 +229,21 @@ extension KeyboardDictationChangeController {
     }
 
     func displayText(_ text: String, for session: KeyboardDictationChangeSession) -> String {
-        session.isCapsTransformApplied ? text.uppercased() : text
+        capsTextIsUppercase(for: session) ? text.uppercased() : text
     }
 
     func updateCapsSourceTextIfNeeded(_ text: String, session: inout KeyboardDictationChangeSession) {
-        guard session.isCapsTransformApplied else {
+        guard session.capsBaselineIsUppercase || session.isCapsTransformApplied else {
             return
         }
 
         session.uncappedCurrentText = text
+    }
+
+    func capsTextIsUppercase(for session: KeyboardDictationChangeSession) -> Bool {
+        // Baseline false/applied false = lowercase; false/true = uppercase;
+        // baseline true/applied false = uppercase; true/true = lowercase.
+        session.capsBaselineIsUppercase != session.isCapsTransformApplied
     }
 
     func initialCapsSourceText(insertedText: String, uncappedText: String) -> String? {

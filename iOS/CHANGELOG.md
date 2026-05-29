@@ -6,6 +6,50 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.5] Build 3 - 2026-05-29
+
+Adds reversible long-press formatting for the latest untouched dictation, including audio-derived paragraphs, deterministic lists, and Caps Lock reversal.
+
+### Added
+
+- Added audio-derived paragraph and inline variants from Whisper and Parakeet so Paragraphs can be applied later from captured audio boundary evidence instead of guessed from visible text.
+- Added deterministic paragraph/list variants for every base dictation state so the keyboard can swap Paragraphs and Lists on the latest untouched insertion without rerunning transcription.
+- Added selected pre-Caps text to latest dictation artifacts so Caps Lock can be reversed after Vibes or base dictation output has already been inserted.
+- Added Caps Lock long-press support for applying or removing uppercase formatting on the latest untouched dictation.
+
+### Changed
+
+- Updated keyboard long-press formatting so Paragraphs, Lists, Vibes, and Caps Lock behave as reversible state controls for the latest untouched KeyVox insertion.
+- Updated Vibes replacement caching to reuse rendered style output for the current paragraph/list state instead of reprocessing already-rendered combinations.
+- Updated deterministic list variants to honor the configured list render mode, including preserving multiline list separation when converting from no-list to list.
+- Updated Paragraphs and Lists tap handling so accidental taps during an active untouched insertion do not silently change the stored default setting.
+- Updated Caps Lock visual state so active dictation casing uses the same light and dark active color pattern as the other formatting controls.
+- Split the keyboard latest-insertion dictation-change controller into focused files grouped under `DictationChange`.
+- Updated iOS engineering and codemap documentation for latest-artifact state, pre-Caps selected text, deterministic long-press controls, and Caps Lock reversal.
+
+### Fixed
+
+- Fixed Paragraphs and Lists indicators so they reflect the formatting actually applied to the current untouched insertion instead of lighting from unrelated deterministic variants.
+- Fixed paragraph/list no-op handling so long press does not show processing feedback when the stored variant would not change the text.
+- Fixed Vibes reapply after list/paragraph changes so cached rendered variants are preserved across deterministic state changes.
+- Fixed list reapply after Vibes changes so multiline list structure keeps the proper separation before the first list marker.
+- Fixed Caps Lock reversal for dictated text inserted while Caps Lock and a Vibe are active.
+- Fixed Caps Lock display state so changing Paragraphs, Lists, or Vibes while Caps is active preserves the reversible uppercase layer.
+- Fixed Caps Lock long-press visuals so yellow means an active reversible transform while the filled icon and pressed state follow the transformed casing.
+
+### Package versions
+
+KeyVox iOS 1.2.5
+  KeyVoxCore           1.0.13
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.5
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
+---
+
 ## [1.2.5] Build 2 - 2026-05-29
 
 Adds reversible long-press formatting for the latest untouched dictation, including audio-derived paragraphs, deterministic lists, and Caps Lock reversal.

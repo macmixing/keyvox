@@ -24,6 +24,14 @@ final class KeyboardCapsLockButton: UIControl {
 
     var isDictationCapsApplied = false {
         didSet {
+            updateAccessibility()
+            updateVisualState(animated: true)
+        }
+    }
+
+    var isDictationCapsUppercase = false {
+        didSet {
+            updateAccessibility()
             updateVisualState(animated: true)
         }
     }
@@ -121,11 +129,11 @@ final class KeyboardCapsLockButton: UIControl {
     }
 
     private func updateVisualState(animated: Bool) {
-        let isPressed = isLocked || isHighlighted
+        let isPressed = isVisuallyLocked || isHighlighted
         let colors = colorsForState(isPressed: isPressed, isEnabled: isEnabled)
         let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
         let shadow = isPressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
-        let symbolName = isLocked ? "capslock.fill" : "capslock"
+        let symbolName = isVisuallyLocked ? "capslock.fill" : "capslock"
 
         let applyState = {
             self.backgroundView.transform = .identity
@@ -160,7 +168,11 @@ final class KeyboardCapsLockButton: UIControl {
 
     private func updateAccessibility() {
         accessibilityLabel = "Caps Lock"
-        accessibilityValue = isLocked ? "On" : "Off"
+        accessibilityValue = isVisuallyLocked ? "On" : "Off"
+    }
+
+    var isVisuallyLocked: Bool {
+        isDictationCapsApplied ? isDictationCapsUppercase : isLocked
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
@@ -184,7 +196,7 @@ final class KeyboardCapsLockButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: isDictationCapsApplied
+                foreground: showsDictationCapsIndicator
                     ? (isHighlighted
                         ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection)
                         : KeyboardStyle.activeForegroundColor(for: traitCollection))
@@ -195,9 +207,13 @@ final class KeyboardCapsLockButton: UIControl {
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: isDictationCapsApplied
+            foreground: showsDictationCapsIndicator
                 ? KeyboardStyle.activeForegroundColor(for: traitCollection)
                 : KeyboardStyle.keyLabelColor
         )
+    }
+
+    var showsDictationCapsIndicator: Bool {
+        isDictationCapsApplied
     }
 }
