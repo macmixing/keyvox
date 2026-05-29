@@ -20,6 +20,7 @@ struct KeyboardDictationChangeSession {
     var currentStyle: StyleRewriteStyle
     var previousStyle: StyleRewriteStyle?
     var variants: [StyleRewriteStyle: String]
+    var baselineDeterministicState: KeyboardDeterministicDictationState?
     var currentDeterministicState: KeyboardDeterministicDictationState?
     var deterministicVariants: [KeyboardDeterministicDictationState: String]
     var renderedDeterministicVariants: [KeyboardDictationRenderedVariantKey: String]

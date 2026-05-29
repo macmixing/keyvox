@@ -118,6 +118,82 @@ struct KeyboardDictationChangeControllerTests {
         #expect(controller.hasActiveUntouchedInsertion == false)
     }
 
+    @Test func untransformedUntouchedInsertionDisplaysCurrentParagraphAndListDefaults() async throws {
+        let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        defaults.set(false, forKey: UserDefaultsKeys.autoParagraphsEnabled)
+        defaults.set(false, forKey: UserDefaultsKeys.listFormattingEnabled)
+
+        let noListText = "Tasks one Alpha two Beta"
+        let listText = "Tasks:\n\n1. Alpha\n2. Beta"
+        let artifact = DictationUtteranceArtifact(
+            id: UUID(),
+            rawText: noListText,
+            baseText: noListText,
+            selectedText: noListText,
+            selectedStyleIdentifier: nil,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: false,
+            variants: [],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: noListText
+                ),
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: true,
+                    text: listText
+                ),
+            ],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(artifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+
+        let documentProxy = KeyboardDictationChangeDocumentProxySpy()
+        let textInputController = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        let controller = KeyboardDictationChangeController(
+            textInputController: textInputController,
+            appSettingsStore: KeyboardAppSettingsStore(defaults: defaults),
+            artifactStore: KeyboardDictationChangeArtifactStore(defaults: defaults)
+        )
+
+        let insertion = try #require(textInputController.insertTranscriptionWithResult(noListText))
+        controller.recordInsertedDictation(insertion)
+        defaults.set(true, forKey: UserDefaultsKeys.autoParagraphsEnabled)
+        defaults.set(true, forKey: UserDefaultsKeys.listFormattingEnabled)
+
+        #expect(controller.hasActiveUntouchedInsertion == true)
+        #expect(controller.hasActiveDeterministicTransform(.paragraphs) == false)
+        #expect(controller.hasActiveDeterministicTransform(.lists) == false)
+        #expect(controller.displayedAutoParagraphsEnabled == true)
+        #expect(controller.displayedListFormattingEnabled == true)
+
+        let didApplyList = await controller.applyDeterministicLongPressChange(
+            .lists,
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+
+        #expect(didApplyList == true)
+        #expect(controller.hasActiveDeterministicTransform(.paragraphs) == false)
+        #expect(controller.hasActiveDeterministicTransform(.lists) == true)
+        #expect(controller.displayedAutoParagraphsEnabled == true)
+        #expect(controller.displayedListFormattingEnabled == true)
+    }
+
     @Test func capsLongPressUppercasesAndRestoresUntouchedInsertion() throws {
         let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
