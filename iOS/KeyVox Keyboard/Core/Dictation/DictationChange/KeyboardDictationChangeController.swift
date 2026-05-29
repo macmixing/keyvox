@@ -79,6 +79,16 @@ final class KeyboardDictationChangeController {
         return true
     }
 
+    var displayedCapsTextIsUppercase: Bool {
+        guard let activeSession,
+              activeSession.isCapsTransformApplied,
+              activeInsertionMatchesCurrentText(activeSession) else {
+            return false
+        }
+
+        return capsTextIsUppercase(for: activeSession)
+    }
+
     init(
         textInputController: KeyboardTextInputController,
         appSettingsStore: KeyboardAppSettingsStore,

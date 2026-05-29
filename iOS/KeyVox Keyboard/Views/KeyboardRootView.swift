@@ -119,6 +119,7 @@ final class KeyboardRootView: UIView {
         symbolPage: KeyboardSymbolPage,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
+        isDictationCapsUppercase: Bool,
         displayedVibeTitle: String,
         displayedVibeStyle: StyleRewriteStyle,
         isDisplayedVibeApplied: Bool,
@@ -158,6 +159,7 @@ final class KeyboardRootView: UIView {
         cancelButton.transform = .identity
         capsLockButton.isLocked = isCapsLockEnabled
         capsLockButton.isDictationCapsApplied = isDictationCapsApplied
+        capsLockButton.isDictationCapsUppercase = isDictationCapsUppercase
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
         capsLockButton.isHidden = !showsBrandedToolbar

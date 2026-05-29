@@ -23,6 +23,7 @@ struct KeyboardDictationChangeSession {
     var currentDeterministicState: KeyboardDeterministicDictationState?
     var deterministicVariants: [KeyboardDeterministicDictationState: String]
     var renderedDeterministicVariants: [KeyboardDictationRenderedVariantKey: String]
+    var capsBaselineIsUppercase: Bool
     var isCapsTransformApplied: Bool
     var uncappedCurrentText: String?
 }

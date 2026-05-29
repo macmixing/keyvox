@@ -80,43 +80,54 @@ extension KeyboardDictationChangeController {
         }
 
         if session.isCapsTransformApplied {
-            guard let uncappedText = session.uncappedCurrentText,
-                  uncappedText != session.currentText else {
+            // Restore the original baseline casing: a Caps-on dictation can have an uppercase
+            // baseline, so baselineText may be uppercased even though we keep uncappedCurrentText.
+            // If it already matches session.currentText, the transform is a no-op; keep the
+            // uncapped source only when capsBaselineIsUppercase needs it for a future lowercase swap.
+            let uncappedText = session.uncappedCurrentText ?? session.currentText
+            let baselineText = session.capsBaselineIsUppercase ? uncappedText.uppercased() : uncappedText
+            guard baselineText != session.currentText else {
                 return false
             }
 
             guard textInputController.replaceUntouchedInsertion(
                 session.currentText,
-                with: uncappedText,
+                with: baselineText,
                 documentContextBeforeInsertion: session.documentContextBeforeInput
             ) else {
                 invalidateActiveSession()
                 return false
             }
 
-            session.currentText = uncappedText
+            session.currentText = baselineText
             session.isCapsTransformApplied = false
-            session.uncappedCurrentText = nil
+            session.uncappedCurrentText = session.capsBaselineIsUppercase ? uncappedText : nil
             activeSession = session
             return true
         }
 
-        let uncappedText = session.currentText
-        let cappedText = uncappedText.uppercased()
-        guard cappedText != uncappedText else {
+        // Apply the opposite casing from the baseline: uppercase baselines show the saved
+        // uncappedText, while lowercase baselines derive transformedText by uppercasing it.
+        // After replaceUntouchedInsertion succeeds, session.currentText, session.uncappedCurrentText,
+        // isCapsTransformApplied, activeSession, and displaySource move to the transformed state.
+        let uncappedText = session.capsBaselineIsUppercase
+            ? (session.uncappedCurrentText ?? session.currentText)
+            : session.currentText
+        let transformedText = session.capsBaselineIsUppercase ? uncappedText : uncappedText.uppercased()
+        guard transformedText != session.currentText else {
             return false
         }
 
         guard textInputController.replaceUntouchedInsertion(
-            uncappedText,
-            with: cappedText,
+            session.currentText,
+            with: transformedText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
             invalidateActiveSession()
             return false
         }
 
-        session.currentText = cappedText
+        session.currentText = transformedText
         session.isCapsTransformApplied = true
         session.uncappedCurrentText = uncappedText
         activeSession = session

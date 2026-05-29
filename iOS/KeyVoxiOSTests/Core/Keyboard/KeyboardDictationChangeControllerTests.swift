@@ -1,6 +1,7 @@
 import Foundation
 import KeyVoxStyleRewrite
 import Testing
+import UIKit
 @testable import KeyVox_iOS
 
 @MainActor
@@ -166,11 +167,75 @@ struct KeyboardDictationChangeControllerTests {
 
         #expect(controller.applyCapsLongPressChange() == true)
         #expect(controller.displayedCapsTransformApplied == true)
+        #expect(controller.displayedCapsTextIsUppercase == true)
         #expect(documentProxy.documentContextBeforeInput == text.uppercased())
 
         #expect(controller.applyCapsLongPressChange() == true)
         #expect(controller.displayedCapsTransformApplied == false)
+        #expect(controller.displayedCapsTextIsUppercase == false)
         #expect(documentProxy.documentContextBeforeInput == text)
+    }
+
+    @Test func capsLongPressLowercasesAndRestoresDictationInsertedWithCapsLockEnabled() throws {
+        let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        let text = "Plain dictation."
+        let artifact = DictationUtteranceArtifact(
+            id: UUID(),
+            rawText: text,
+            baseText: text,
+            selectedText: text.uppercased(),
+            selectedUncappedText: text,
+            selectedStyleIdentifier: nil,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: false,
+            variants: [],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: text
+                )
+            ],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(artifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+
+        let documentProxy = KeyboardDictationChangeDocumentProxySpy()
+        let textInputController = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        let controller = KeyboardDictationChangeController(
+            textInputController: textInputController,
+            appSettingsStore: KeyboardAppSettingsStore(defaults: defaults),
+            artifactStore: KeyboardDictationChangeArtifactStore(defaults: defaults)
+        )
+
+        let insertion = try #require(textInputController.insertTranscriptionWithResult(text.uppercased()))
+        controller.recordInsertedDictation(insertion)
+
+        #expect(controller.displayedCapsTransformApplied == false)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+
+        #expect(controller.applyCapsLongPressChange() == true)
+        #expect(controller.displayedCapsTransformApplied == true)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+        #expect(documentProxy.documentContextBeforeInput == text)
+
+        #expect(controller.applyCapsLongPressChange() == true)
+        #expect(controller.displayedCapsTransformApplied == false)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+        #expect(documentProxy.documentContextBeforeInput == text.uppercased())
     }
 
     @Test func capsLongPressRestoresVibeDictationInsertedWithCapsLockEnabled() throws {
@@ -231,10 +296,17 @@ struct KeyboardDictationChangeControllerTests {
         let insertion = try #require(textInputController.insertTranscriptionWithResult(casualText.uppercased()))
         controller.recordInsertedDictation(insertion)
 
+        #expect(controller.displayedCapsTransformApplied == false)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+        #expect(controller.applyCapsLongPressChange() == true)
         #expect(controller.displayedCapsTransformApplied == true)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+        #expect(documentProxy.documentContextBeforeInput == casualText)
+
         #expect(controller.applyCapsLongPressChange() == true)
         #expect(controller.displayedCapsTransformApplied == false)
-        #expect(documentProxy.documentContextBeforeInput == casualText)
+        #expect(controller.displayedCapsTextIsUppercase == false)
+        #expect(documentProxy.documentContextBeforeInput == casualText.uppercased())
     }
 
     @Test func capsOverlayPersistsAcrossDeterministicListChange() async throws {
@@ -491,6 +563,44 @@ struct KeyboardDictationChangeControllerTests {
         #expect(transformer.transformCallCount == 1)
         #expect(processingStartCount == 0)
         #expect(processingEndCount == 0)
+    }
+}
+
+@MainActor
+struct KeyboardCapsLockButtonTests {
+    @Test func visualStateUsesTapLatchWhenNoDictationTransformIsActive() {
+        let button = KeyboardCapsLockButton()
+
+        button.isLocked = false
+        button.isDictationCapsApplied = false
+        button.isDictationCapsUppercase = false
+        #expect(button.isVisuallyLocked == false)
+        #expect(button.showsDictationCapsIndicator == false)
+
+        button.isLocked = true
+        #expect(button.isVisuallyLocked == true)
+        #expect(button.showsDictationCapsIndicator == false)
+    }
+
+    @Test func visualStateUsesTransformedDictationCasingWhenCapsTransformIsActive() {
+        let button = KeyboardCapsLockButton()
+
+        button.isLocked = false
+        button.isDictationCapsApplied = true
+        button.isDictationCapsUppercase = true
+        #expect(button.isVisuallyLocked == true)
+        #expect(button.showsDictationCapsIndicator == true)
+
+        button.isDictationCapsUppercase = false
+        #expect(button.isVisuallyLocked == false)
+        #expect(button.showsDictationCapsIndicator == true)
+
+        button.isLocked = true
+        #expect(button.isVisuallyLocked == false)
+
+        button.isDictationCapsApplied = false
+        #expect(button.isVisuallyLocked == true)
+        #expect(button.showsDictationCapsIndicator == false)
     }
 }
 
