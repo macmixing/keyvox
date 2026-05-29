@@ -1325,7 +1325,13 @@ Implementation split:
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardDictationChangeController.swift` owns artifact-scoped long-press changes for the latest untouched KeyVox dictation insertion
+- `DictationChange/` groups the latest untouched insertion long-press feature files
+- `DictationChange/KeyboardDictationChangeController.swift` owns the artifact-scoped latest-insertion change facade, display-facing state, collaborators, and current session reference
+- `DictationChange/KeyboardDictationChangeController+Actions.swift` owns long-press action entry points for Vibes, Paragraphs, Lists, and Caps Lock
+- `DictationChange/KeyboardDictationChangeController+Session.swift` owns latest untouched insertion session construction from keyboard insertion results and app-published artifacts
+- `DictationChange/KeyboardDictationChangeController+Variants.swift` owns deterministic state resolution, Vibes replacement lookup/generation, rendered variant caching, Caps display text handling, and shared preparation/debug helpers
+- `DictationChange/KeyboardDictationChangeSession.swift` owns the latest-insertion session and rendered-variant value types
+- `DictationChange/KeyboardDictationChangeArtifactStore.swift` owns lightweight App Group artifact reads for keyboard-side latest-insertion changes
 - `KeyboardDeterministicDictationFormatter.swift` owns deterministic paragraph/list state transitions and text shaping used by latest-insertion long-press changes
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes

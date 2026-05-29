@@ -301,8 +301,14 @@ iOS/
 │   ├── Core/
 │   │   ├── Dictation/
 │   │   │   ├── AudioIndicatorDriver.swift
+│   │   │   ├── DictationChange/
+│   │   │   │   ├── KeyboardDictationChangeArtifactStore.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Actions.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Session.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Variants.swift
+│   │   │   │   ├── KeyboardDictationChangeController.swift
+│   │   │   │   └── KeyboardDictationChangeSession.swift
 │   │   │   ├── KeyboardCallObserver.swift
-│   │   │   ├── KeyboardDictationChangeController.swift
 │   │   │   ├── KeyboardDeterministicDictationFormatter.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
@@ -877,9 +883,19 @@ Packages/
   - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
-- `KeyVox Keyboard/Core/Dictation/KeyboardDictationChangeController.swift`
-  - Keyboard-local artifact-scoped changer for the latest untouched KeyVox dictation insertion.
-  - Records the inserted dictation session from the latest App Group artifact, reverts/restyles Vibes by using the keyboard's app-IPC style rewrite transformer when available, applies persisted deterministic paragraph/list state changes outside the Vibes entitlement boundary, toggles Caps Lock display transforms from preserved pre-Caps selected text, caches rendered variants, and refuses to operate after the insertion no longer matches the active session.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController.swift`
+  - Keyboard-local artifact-scoped changer facade for the latest untouched KeyVox dictation insertion.
+  - Owns the display-facing state surface, injected collaborators, and current session reference used by the split dictation-change files.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Actions.swift`
+  - Owns long-press action entry points for Vibes, Paragraphs, Lists, and Caps Lock on the latest untouched insertion.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Session.swift`
+  - Builds the latest untouched insertion session from `KeyboardTextInsertionResult` plus the app-published latest dictation artifact.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift`
+  - Resolves deterministic state, cached rendered variants, Vibes replacement text, Caps display text, and shared debug/preparation helpers for dictation-change actions.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift`
+  - Session, rendered-variant key, and display-source value types for the latest untouched dictation insertion.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeArtifactStore.swift`
+  - Lightweight keyboard-side reader for the app-published latest dictation artifact in App Group defaults.
 - `KeyVox Keyboard/Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift`
   - Keyboard-side style rewrite transport that writes a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
   - Keeps local rewrite model execution out of the extension.
