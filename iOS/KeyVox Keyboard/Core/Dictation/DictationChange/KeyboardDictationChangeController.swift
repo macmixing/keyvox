@@ -50,7 +50,7 @@ final class KeyboardDictationChangeController {
     var displayedAutoParagraphsEnabled: Bool {
         guard let activeSession,
               let currentState = activeSession.currentDeterministicState,
-              activeInsertionMatchesCurrentText(activeSession) else {
+              hasActiveDeterministicTransform(.paragraphs) else {
             return appSettingsStore.isAutoParagraphsEnabled
         }
 
@@ -63,7 +63,7 @@ final class KeyboardDictationChangeController {
     var displayedListFormattingEnabled: Bool {
         guard let activeSession,
               let currentState = activeSession.currentDeterministicState,
-              activeInsertionMatchesCurrentText(activeSession) else {
+              hasActiveDeterministicTransform(.lists) else {
             return appSettingsStore.isListFormattingEnabled
         }
 
@@ -76,6 +76,32 @@ final class KeyboardDictationChangeController {
         }
 
         return activeInsertionMatchesCurrentText(activeSession)
+    }
+
+    func hasActiveDeterministicTransform(_ kind: KeyboardDeterministicControlKind) -> Bool {
+        guard let activeSession,
+              activeInsertionMatchesCurrentText(activeSession) else {
+            return false
+        }
+
+        return hasActiveDeterministicTransform(kind, in: activeSession)
+    }
+
+    private func hasActiveDeterministicTransform(
+        _ kind: KeyboardDeterministicControlKind,
+        in session: KeyboardDictationChangeSession
+    ) -> Bool {
+        guard let baselineState = session.baselineDeterministicState,
+              let currentState = session.currentDeterministicState else {
+            return false
+        }
+
+        switch kind {
+        case .paragraphs:
+            return currentState.paragraphsEnabled != baselineState.paragraphsEnabled
+        case .lists:
+            return currentState.listsEnabled != baselineState.listsEnabled
+        }
     }
 
     var displayedCapsTransformApplied: Bool {

@@ -368,7 +368,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleParagraphsTap() {
-        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+        guard dictationChangeController.hasActiveDeterministicTransform(.paragraphs) == false else {
             updateUI()
             return
         }
@@ -380,7 +380,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleListsTap() {
-        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+        guard dictationChangeController.hasActiveDeterministicTransform(.lists) == false else {
             updateUI()
             return
         }
