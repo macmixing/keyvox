@@ -1051,7 +1051,8 @@ LoRA adapter ownership:
 - debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
-The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
+The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, deterministic paragraph/list variants, variant text/timing/errors, inference duration, transform duration, and creation date.
+When providers supply audio-derived paragraph and inline text, deterministic paragraph variants preserve those forms so the keyboard can apply paragraph changes later without inferring sentence breaks locally.
 The keyboard consumes this artifact for long-press Vibes revert/restyle on the latest untouched KeyVox dictation insertion.
 
 ### KeyVox Vibes Purchase Ownership
@@ -1144,7 +1145,7 @@ The restore card remains visible until both unlocks are owned.
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, and cached rendered variants
 - delegates deterministic paragraph/list state transitions and paragraph-collapse/list-preservation text shaping to `KeyboardDeterministicDictationFormatter`
 - regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
-- applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary
+- applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary, including persisted paragraph variants captured even when Paragraphs was disabled during recording
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
 - replaces only when the active insertion still matches the untouched session
 - clears the active session on mismatch to avoid data loss

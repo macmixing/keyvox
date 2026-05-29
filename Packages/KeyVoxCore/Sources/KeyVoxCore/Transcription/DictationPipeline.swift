@@ -38,10 +38,19 @@ public typealias DictationProvider =
 public struct TranscriptionProviderResult: Sendable {
     public let text: String
     public let languageCode: String?
+    public let paragraphsText: String?
+    public let inlineText: String?
 
-    public init(text: String, languageCode: String?) {
+    public init(
+        text: String,
+        languageCode: String?,
+        paragraphsText: String?,
+        inlineText: String?
+    ) {
         self.text = text
         self.languageCode = languageCode
+        self.paragraphsText = paragraphsText
+        self.inlineText = inlineText
     }
 }
 
@@ -179,6 +188,8 @@ public final class DictationPipeline {
         ) { [self] result in
             let inferenceDuration = Date().timeIntervalSince(inferenceStart)
             let rawText = result?.text ?? ""
+            let paragraphRawText = result?.paragraphsText ?? rawText
+            let inlineRawText = result?.inlineText ?? rawText
             let languageCode = result?.languageCode
             let wasLikelyNoSpeech = rawText.isEmpty && self.transcriptionProvider.lastResultWasLikelyNoSpeech
             #if DEBUG
@@ -282,7 +293,8 @@ public final class DictationPipeline {
                         baseParagraphsEnabled: autoParagraphsEnabled,
                         baseListsEnabled: listFormattingEnabled,
                         deterministicVariants: self.deterministicVariants(
-                            rawText: rawText,
+                            paragraphRawText: paragraphRawText,
+                            inlineRawText: inlineRawText,
                             dictionaryEntries: dictionaryEntries,
                             renderMode: renderMode,
                             languageCode: languageCode
@@ -304,7 +316,8 @@ public final class DictationPipeline {
     }
 
     private func deterministicVariants(
-        rawText: String,
+        paragraphRawText: String,
+        inlineRawText: String,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
@@ -312,7 +325,8 @@ public final class DictationPipeline {
         #if DEBUG
         return TranscriptionPostProcessingDebugLogging.$isEnabled.withValue(false) {
             makeDeterministicVariants(
-                rawText: rawText,
+                paragraphRawText: paragraphRawText,
+                inlineRawText: inlineRawText,
                 dictionaryEntries: dictionaryEntries,
                 renderMode: renderMode,
                 languageCode: languageCode
@@ -320,7 +334,8 @@ public final class DictationPipeline {
         }
         #else
         return makeDeterministicVariants(
-            rawText: rawText,
+            paragraphRawText: paragraphRawText,
+            inlineRawText: inlineRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
             languageCode: languageCode
@@ -329,13 +344,14 @@ public final class DictationPipeline {
     }
 
     private func makeDeterministicVariants(
-        rawText: String,
+        paragraphRawText: String,
+        inlineRawText: String,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
     ) -> [DictationPipelineResult.DeterministicTextVariant] {
         let noParagraphsNoLists = postProcessor.process(
-            rawText,
+            inlineRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: .singleLineInline,
             listFormattingEnabled: false,
@@ -343,7 +359,7 @@ public final class DictationPipeline {
             languageCode: languageCode
         )
         let paragraphsNoLists = postProcessor.process(
-            rawText,
+            paragraphRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
             listFormattingEnabled: false,
@@ -351,7 +367,7 @@ public final class DictationPipeline {
             languageCode: languageCode
         )
         let noParagraphsWithLists = postProcessor.process(
-            rawText,
+            inlineRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: .singleLineInline,
             listFormattingEnabled: true,
@@ -359,7 +375,7 @@ public final class DictationPipeline {
             languageCode: languageCode
         )
         let paragraphsWithLists = postProcessor.process(
-            rawText,
+            paragraphRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
             listFormattingEnabled: true,

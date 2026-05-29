@@ -141,10 +141,15 @@ extension WhisperService {
                     return
                 }
 
-                let text = self.assembleTranscription(
+                let paragraphText = self.assembleTranscription(
                     from: transcribedChunks,
                     silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
-                    enableAutoParagraphs: enableAutoParagraphs
+                    enableAutoParagraphs: true
+                )
+                let inlineText = self.assembleTranscription(
+                    from: transcribedChunks,
+                    silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
+                    enableAutoParagraphs: false
                 )
                 let hasSegments = !transcribedSegments.isEmpty
                 let allSegmentsHighNoSpeech = hasSegments && transcribedSegments.allSatisfy {
@@ -157,13 +162,15 @@ extension WhisperService {
                     || allSegmentsHighNoSpeech
                     || averageNoSpeechProbability >= noSpeechAverageProbabilityThreshold
 
-                let cleanedText = self.normalizeWhitespace(text, preservingNewlines: true)
-                let finalText = likelyNoSpeechByDecoder ? "" : cleanedText
+                let cleanedParagraphText = self.normalizeWhitespace(paragraphText, preservingNewlines: true)
+                let cleanedInlineText = self.normalizeWhitespace(inlineText)
+                let selectedText = enableAutoParagraphs ? cleanedParagraphText : cleanedInlineText
+                let finalText = likelyNoSpeechByDecoder ? "" : selectedText
                 #if DEBUG
                 print(
                     "WhisperService paragraphing: segments=\(transcribedSegments.count) " +
                     "enabled=\(enableAutoParagraphs) " +
-                    "hasParagraphBreaks=\(finalText.contains("\n\n"))"
+                    "hasParagraphBreaks=\(cleanedParagraphText.contains("\n\n"))"
                 )
                 print(
                     "WhisperService final decode: totalChunks=\(chunkResult.chunks.count) " +
@@ -178,6 +185,8 @@ extension WhisperService {
                     requestID,
                     usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
                     finalText: finalText,
+                    paragraphsText: likelyNoSpeechByDecoder ? "" : cleanedParagraphText,
+                    inlineText: likelyNoSpeechByDecoder ? "" : cleanedInlineText,
                     likelyNoSpeech: likelyNoSpeechByDecoder,
                     detectedLanguageCode: detectedLanguageCode,
                     completion: completion

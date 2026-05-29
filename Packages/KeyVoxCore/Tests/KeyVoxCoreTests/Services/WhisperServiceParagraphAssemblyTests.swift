@@ -17,6 +17,28 @@ final class WhisperServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(text, "First paragraph.\n\nSecond paragraph.")
     }
 
+    func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() {
+        let service = WhisperService()
+        let chunks: [WhisperService.TranscribedChunk] = [
+            .init(text: "First paragraph.", trailingBoundaryFrame: 32_000),
+            .init(text: "Second paragraph.", trailingBoundaryFrame: nil)
+        ]
+
+        let paragraphText = service.assembleTranscription(
+            from: chunks,
+            silenceBoundaryFrames: [32_000],
+            enableAutoParagraphs: true
+        )
+        let inlineText = service.assembleTranscription(
+            from: chunks,
+            silenceBoundaryFrames: [32_000],
+            enableAutoParagraphs: false
+        )
+
+        XCTAssertEqual(paragraphText, "First paragraph.\n\nSecond paragraph.")
+        XCTAssertEqual(inlineText, "First paragraph. Second paragraph.")
+    }
+
     func testAssembleTranscriptionKeepsMidSentenceSilenceBoundaryInline() {
         let service = WhisperService()
         let text = service.assembleTranscription(

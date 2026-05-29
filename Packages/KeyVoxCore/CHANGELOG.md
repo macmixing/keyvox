@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.13] - 2026-05-29
+
+Audio-derived paragraph variants for deterministic dictation state.
+
+### Includes
+
+- Extended `TranscriptionProviderResult` so providers can return selected text plus preserved paragraph-on and inline text from the same audio boundary evidence.
+- Updated Whisper and Parakeet assembly to compute both paragraph and inline forms before post-processing so later deterministic paragraph toggles can use the captured audio-derived variant.
+- Updated `DictationPipeline` deterministic variants so paragraph-on states use preserved paragraph text and paragraph-off states use preserved inline text while list variants still flow through shared post-processing.
+- Added shared-engine coverage for provider paragraph/inline assembly parity and pipeline deterministic paragraph variants when Paragraphs starts enabled or disabled.
+
+### Notes
+
+- `1.0.13` bumps the tracked engine version for `KeyVoxCore` to cover audio-derived paragraph variants used by iOS keyboard deterministic long-press changes while preserving the selected dictation output contract for both app clients.
+
+---
+
 ## [1.0.12] - 2026-05-22
 
 Shared address-number protection and pipeline cleanup for dictation post-processing.
