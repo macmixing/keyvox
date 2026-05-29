@@ -100,19 +100,27 @@ extension ParakeetService {
                     )
                 }
 
-                let assembledText = self.assembleTranscription(
+                let paragraphText = self.assembleTranscription(
                     from: transcribedChunks,
                     silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
-                    enableAutoParagraphs: enableAutoParagraphs
+                    enableAutoParagraphs: true
                 )
-                let finalText = self.normalizeWhitespace(
-                    assembledText,
-                    preservingNewlines: enableAutoParagraphs
+                let inlineText = self.assembleTranscription(
+                    from: transcribedChunks,
+                    silenceBoundaryFrames: Set(chunkResult.silenceBoundaryFrames),
+                    enableAutoParagraphs: false
                 )
-                let likelyNoSpeech = finalText.isEmpty || self.isLikelyNoSpeech(
+                let cleanedParagraphText = self.normalizeWhitespace(
+                    paragraphText,
+                    preservingNewlines: true
+                )
+                let cleanedInlineText = self.normalizeWhitespace(inlineText)
+                let selectedText = enableAutoParagraphs ? cleanedParagraphText : cleanedInlineText
+                let likelyNoSpeech = selectedText.isEmpty || self.isLikelyNoSpeech(
                     transcribedSegments: filteredResult.segments,
                     audioFrameCount: audioFrames.count
                 )
+                let finalText = likelyNoSpeech ? "" : selectedText
                 #if DEBUG
                 let averageConfidence: Float = filteredResult.segments.isEmpty
                     ? 0
@@ -141,7 +149,9 @@ extension ParakeetService {
                 #endif
                 self.finishSuccessfulRequest(
                     requestID,
-                    finalText: likelyNoSpeech ? "" : finalText,
+                    finalText: finalText,
+                    paragraphsText: likelyNoSpeech ? "" : cleanedParagraphText,
+                    inlineText: likelyNoSpeech ? "" : cleanedInlineText,
                     likelyNoSpeech: likelyNoSpeech,
                     detectedLanguageCode: detectedLanguageCode,
                     completion: completion

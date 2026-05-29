@@ -58,7 +58,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -79,7 +79,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -135,7 +135,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(sessionPolicy: SessionPolicy(idleTimeout: 0.03))
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -185,7 +185,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -283,7 +283,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -299,7 +299,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world again", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world again", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -313,7 +313,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(capsLockEnabled: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -326,7 +326,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
 
@@ -345,7 +345,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(modelPath: "")
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en", paragraphsText: nil, inlineText: nil)
         let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
         await harness.manager.performStartRecordingCommand()
@@ -362,7 +362,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "", languageCode: "en", paragraphsText: nil, inlineText: nil)
         harness.transcriptionService.lastResultWasLikelyNoSpeech = true
         let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
@@ -377,7 +377,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(sessionDisableTiming: .immediately)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -420,7 +420,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(sessionDisableTiming: .immediately, isTTSPlaybackActive: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()
@@ -493,7 +493,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(sessionDisableTiming: .fiveMinutes)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
         await harness.manager.performStartRecordingCommand()
@@ -517,7 +517,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
@@ -536,7 +536,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness(serviceShouldSuspend: true)
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
@@ -598,7 +598,7 @@ struct TranscriptionManagerTests {
     @Test func appDidBecomeActiveRecoversPendingInterruptedCapture() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "recovered phrase", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "recovered phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
@@ -616,7 +616,7 @@ struct TranscriptionManagerTests {
     @Test func appDidBecomeActiveWithoutModelKeepsPendingInterruptedCapture() async throws {
         let harness = try makeHarness(modelPath: "")
         defer { harness.cleanup() }
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
@@ -640,7 +640,7 @@ struct TranscriptionManagerTests {
         #expect(harness.transcriptionService.lastUpdatedPrompt == nil)
 
         harness.recorder.stoppedCapture = acceptedCapture()
-        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "cueit launched", languageCode: "en")
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "cueit launched", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
         await harness.manager.performStopRecordingCommand()

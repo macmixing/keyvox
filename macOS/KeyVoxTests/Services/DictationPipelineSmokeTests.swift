@@ -405,7 +405,12 @@ private final class StubTranscriptionProvider: DictationTranscriptionProviding {
         autoParagraphFlags.append(enableAutoParagraphs)
         
         if let text = text {
-            completion(TranscriptionProviderResult(text: text, languageCode: languageCode))
+            completion(TranscriptionProviderResult(
+                text: text,
+                languageCode: languageCode,
+                paragraphsText: nil,
+                inlineText: nil
+            ))
         } else {
             completion(nil)
         }

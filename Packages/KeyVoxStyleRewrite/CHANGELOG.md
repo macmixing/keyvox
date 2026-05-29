@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.5] - 2026-05-29
+
+Selected uncapped dictation artifact support for reversible keyboard Caps Lock transforms.
+
+### Includes
+
+- Added an optional selected uncapped text field to latest dictation artifacts so app clients can preserve the selected Vibes result before keyboard-level Caps Lock casing is applied.
+- Kept artifact decoding backward compatible when older stored dictation artifacts do not include the selected uncapped text field.
+- Updated artifact serialization coverage for the selected uncapped text field and legacy decode behavior.
+
+### Notes
+
+- `1.0.5` bumps the tracked style rewrite package version for the artifact schema addition used by keyboard-side Caps Lock reversal on selected Vibes output.
+
+---
+
 ## [1.0.4] - 2026-05-25
 
 Money output repair for redundant minor currency units after decimal amounts.

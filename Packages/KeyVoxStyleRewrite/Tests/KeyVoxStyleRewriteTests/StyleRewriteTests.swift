@@ -767,7 +767,10 @@ final class StyleRewriteTests: XCTestCase {
             rawText: "raw",
             baseText: "base",
             selectedText: "styled",
+            selectedUncappedText: "styled before caps",
             selectedStyleIdentifier: "test-style",
+            baseParagraphsEnabled: false,
+            baseListsEnabled: true,
             variants: [
                 DictationTextVariantArtifact(
                     styleIdentifier: "test-style",
@@ -803,6 +806,9 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded, artifact)
+        XCTAssertEqual(decoded.selectedUncappedText, "styled before caps")
+        XCTAssertEqual(decoded.baseParagraphsEnabled, false)
+        XCTAssertEqual(decoded.baseListsEnabled, true)
     }
 
     func testDictationUtteranceArtifactDecodesMissingDeterministicVariantsAsEmpty() throws {
@@ -827,6 +833,9 @@ final class StyleRewriteTests: XCTestCase {
 
         XCTAssertEqual(decoded.deterministicVariants, [])
         XCTAssertEqual(decoded.metadata, [:])
+        XCTAssertNil(decoded.selectedUncappedText)
+        XCTAssertNil(decoded.baseParagraphsEnabled)
+        XCTAssertNil(decoded.baseListsEnabled)
     }
 
     func testTextTransformRequestRoundTripsThroughJSON() throws {

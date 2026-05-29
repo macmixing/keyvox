@@ -993,7 +993,7 @@ The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
 4. Caps Lock casing override is applied after transformation
 5. final text is recorded and inserted
 
-`DictationPipelineResult` exposes raw provider text, base text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
+`DictationPipelineResult` exposes raw provider text, base text, selected pre-Caps final text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
 This keeps the keyboard insertion path unchanged while still making speed-profile and artifact data explicit.
 
 Failure policy:
@@ -1051,8 +1051,9 @@ LoRA adapter ownership:
 - debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
-The artifact includes raw provider text, post-processed base text, selected inserted text, selected style identifier, variant text/timing/errors, inference duration, transform duration, and creation date.
-The keyboard consumes this artifact for long-press Vibes revert/restyle on the latest untouched KeyVox dictation insertion.
+The artifact includes raw provider text, post-processed base text, selected inserted text, selected pre-Caps text, selected style identifier, deterministic paragraph/list variants, variant text/timing/errors, inference duration, transform duration, and creation date.
+When providers supply audio-derived paragraph and inline text, deterministic paragraph variants preserve those forms so the keyboard can apply paragraph changes later without inferring sentence breaks locally.
+The keyboard consumes this artifact for long-press Vibes revert/restyle, paragraph/list deterministic swaps, and Caps Lock reversal on the latest untouched KeyVox dictation insertion.
 
 ### KeyVox Vibes Purchase Ownership
 
@@ -1141,10 +1142,11 @@ The restore card remains visible until both unlocks are owned.
 
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
 - treats `None` as the original post-processed base text
-- stores the current insertion text, current Vibe, deterministic paragraph/list state, and cached rendered variants
+- stores the current insertion text, current Vibe, deterministic paragraph/list state, Caps Lock display-transform state, and cached rendered variants
 - delegates deterministic paragraph/list state transitions and paragraph-collapse/list-preservation text shaping to `KeyboardDeterministicDictationFormatter`
 - regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
-- applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary
+- applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary, including persisted paragraph variants captured even when Paragraphs was disabled during recording
+- applies Caps Lock long-press changes locally from the current untouched insertion and the artifact's selected pre-Caps text, preserving Caps display state across Vibes and deterministic paragraph/list changes
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
 - replaces only when the active insertion still matches the untouched session
 - clears the active session on mismatch to avoid data loss
@@ -1323,7 +1325,13 @@ Implementation split:
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardDictationChangeController.swift` owns artifact-scoped long-press changes for the latest untouched KeyVox dictation insertion
+- `DictationChange/` groups the latest untouched insertion long-press feature files
+- `DictationChange/KeyboardDictationChangeController.swift` owns the artifact-scoped latest-insertion change facade, display-facing state, collaborators, and current session reference
+- `DictationChange/KeyboardDictationChangeController+Actions.swift` owns long-press action entry points for Vibes, Paragraphs, Lists, and Caps Lock
+- `DictationChange/KeyboardDictationChangeController+Session.swift` owns latest untouched insertion session construction from keyboard insertion results and app-published artifacts
+- `DictationChange/KeyboardDictationChangeController+Variants.swift` owns deterministic state resolution, Vibes replacement lookup/generation, rendered variant caching, Caps display text handling, and shared preparation/debug helpers
+- `DictationChange/KeyboardDictationChangeSession.swift` owns the latest-insertion session and rendered-variant value types
+- `DictationChange/KeyboardDictationChangeArtifactStore.swift` owns lightweight App Group artifact reads for keyboard-side latest-insertion changes
 - `KeyboardDeterministicDictationFormatter.swift` owns deterministic paragraph/list state transitions and text shaping used by latest-insertion long-press changes
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes

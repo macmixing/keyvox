@@ -25,7 +25,7 @@ The current default runtime flow is:
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe.
 10. The extension inserts the returned text into the focused host app using conservative spacing and capitalization heuristics.
-11. A later keyboard Vibes long press may restyle or revert only the latest untouched KeyVox insertion by sending an app-IPC rewrite request; the containing app runs the model and returns the replacement text. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
+11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 
@@ -302,8 +302,14 @@ iOS/
 │   ├── Core/
 │   │   ├── Dictation/
 │   │   │   ├── AudioIndicatorDriver.swift
+│   │   │   ├── DictationChange/
+│   │   │   │   ├── KeyboardDictationChangeArtifactStore.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Actions.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Session.swift
+│   │   │   │   ├── KeyboardDictationChangeController+Variants.swift
+│   │   │   │   ├── KeyboardDictationChangeController.swift
+│   │   │   │   └── KeyboardDictationChangeSession.swift
 │   │   │   ├── KeyboardCallObserver.swift
-│   │   │   ├── KeyboardDictationChangeController.swift
 │   │   │   ├── KeyboardDeterministicDictationFormatter.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
@@ -744,7 +750,7 @@ Packages/
   - Resolves the current `AppSettingsStore` style, creates transform requests, forwards utterance-scoped prewarm/release calls to the app-owned local transformer, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift`
   - App Group latest-artifact persistence for the most recent dictation.
-  - Stores raw provider text, post-processed base text, selected inserted text, selected style identifier, variant timing/error metadata, inference duration, transform duration, and creation date.
+  - Stores raw provider text, post-processed base text, selected inserted text, selected pre-Caps text, selected style identifier, deterministic paragraph/list variants, variant timing/error metadata, inference duration, transform duration, and creation date.
   - Exposes raw `Data` and decoded artifact access for keyboard Vibes revert/restyle flows.
 - `KeyVox iOS/Views/StyleTabView+KeyVoxVibes.swift`
   - Branded KeyVox Vibes section inside the existing Style tab.
@@ -878,9 +884,19 @@ Packages/
   - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
   - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
-- `KeyVox Keyboard/Core/Dictation/KeyboardDictationChangeController.swift`
-  - Keyboard-local artifact-scoped changer for the latest untouched KeyVox dictation insertion.
-  - Records the inserted dictation session from the latest App Group artifact, reverts/restyles Vibes by using the keyboard's app-IPC style rewrite transformer when available, applies deterministic paragraph/list state changes outside the Vibes entitlement boundary, caches rendered variants, and refuses to operate after the insertion no longer matches the active session.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController.swift`
+  - Keyboard-local artifact-scoped changer facade for the latest untouched KeyVox dictation insertion.
+  - Owns the display-facing state surface, injected collaborators, and current session reference used by the split dictation-change files.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Actions.swift`
+  - Owns long-press action entry points for Vibes, Paragraphs, Lists, and Caps Lock on the latest untouched insertion.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Session.swift`
+  - Builds the latest untouched insertion session from `KeyboardTextInsertionResult` plus the app-published latest dictation artifact.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift`
+  - Resolves deterministic state, cached rendered variants, Vibes replacement text, Caps display text, and shared debug/preparation helpers for dictation-change actions.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift`
+  - Session, rendered-variant key, and display-source value types for the latest untouched dictation insertion.
+- `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeArtifactStore.swift`
+  - Lightweight keyboard-side reader for the app-published latest dictation artifact in App Group defaults.
 - `KeyVox Keyboard/Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift`
   - Keyboard-side style rewrite transport that writes a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
   - Keeps local rewrite model execution out of the extension.

@@ -225,6 +225,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
+            isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             displayedVibeTitle: dictationChangeController.displayedVibeTitle,
             displayedVibeStyle: dictationChangeController.displayedVibeStyle,
             isDisplayedVibeApplied: dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion,
@@ -316,6 +317,12 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @objc
+    func handleCapsLockLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        handleDictationChangeResult(dictationChangeController.applyCapsLongPressChange())
+    }
+
+    @objc
     func handleMicTap() {
         interactionHaptics.emitMediumIfEnabled()
         switch keyboardState {
@@ -360,6 +367,11 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleParagraphsTap() {
+        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+            updateUI()
+            return
+        }
+
         _ = appSettingsStore.toggleAutoParagraphs()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
@@ -367,6 +379,11 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleListsTap() {
+        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+            updateUI()
+            return
+        }
+
         _ = appSettingsStore.toggleListFormatting()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
@@ -533,6 +550,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.vibesButton.title = dictationChangeController.displayedVibeTitle
         rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
+        rootContainerView?.capsLockButton.isDictationCapsApplied = dictationChangeController.displayedCapsTransformApplied
         rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
         rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
         if !dictationChangeController.isRatingTargetStillVisible {

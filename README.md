@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/macmixing/keyvox/releases/latest"><img src="https://img.shields.io/github/v/release/macmixing/keyvox?label=macOS&color=navy" alt="macOS Release"></a>
-  <a href="https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964"><img src="https://img.shields.io/badge/iOS-App%20Store-navy" alt="iOS App Store"></a>
+  <a href="https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=github-readme-badge&mt=8"><img src="https://img.shields.io/badge/dynamic/json?color=navy&label=iOS&prefix=v&query=%24.results%5B0%5D.version&url=https%3A%2F%2Fitunes.apple.com%2Flookup%3Fid%3D6760396964" alt="iOS App Store Version"></a>
   <img src="https://img.shields.io/badge/macOS-13.5%2B-FFCC00" alt="macOS 13.5+">
   <img src="https://img.shields.io/badge/iOS-18%2B-FFCC00" alt="iOS 18+">
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>

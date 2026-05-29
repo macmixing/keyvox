@@ -22,6 +22,12 @@ final class KeyboardCapsLockButton: UIControl {
         }
     }
 
+    var isDictationCapsApplied = false {
+        didSet {
+            updateVisualState(animated: true)
+        }
+    }
+
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardStyle.cancelButtonSize, height: KeyboardStyle.cancelButtonSize)
     }
@@ -178,14 +184,20 @@ final class KeyboardCapsLockButton: UIControl {
             return (
                 fill: KeyboardStyle.keyPressedFillColor,
                 border: traitCollection.userInterfaceStyle == .light ? .black : .white,
-                foreground: KeyboardStyle.keyLabelColor
+                foreground: isDictationCapsApplied
+                    ? (isHighlighted
+                        ? KeyboardStyle.pressedActiveForegroundColor(for: traitCollection)
+                        : KeyboardStyle.activeForegroundColor(for: traitCollection))
+                    : KeyboardStyle.keyLabelColor
             )
         }
 
         return (
             fill: KeyboardStyle.keyFillColor,
             border: KeyboardStyle.keyBorderColor,
-            foreground: KeyboardStyle.keyLabelColor
+            foreground: isDictationCapsApplied
+                ? KeyboardStyle.activeForegroundColor(for: traitCollection)
+                : KeyboardStyle.keyLabelColor
         )
     }
 }

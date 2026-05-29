@@ -82,12 +82,19 @@ public final class ParakeetService: ObservableObject, DictationProvider {
         isTranscribing = false
         lastResultWasLikelyNoSpeech = true
         transcriptionText = ""
-        completion(TranscriptionProviderResult(text: "", languageCode: nil))
+        completion(TranscriptionProviderResult(
+            text: "",
+            languageCode: nil,
+            paragraphsText: nil,
+            inlineText: nil
+        ))
     }
 
     func finishSuccessfulRequest(
         _ requestID: UUID,
         finalText: String,
+        paragraphsText: String? = nil,
+        inlineText: String? = nil,
         likelyNoSpeech: Bool,
         detectedLanguageCode: String?,
         completion: @escaping (TranscriptionProviderResult?) -> Void
@@ -97,7 +104,12 @@ public final class ParakeetService: ObservableObject, DictationProvider {
         isTranscribing = false
         lastResultWasLikelyNoSpeech = likelyNoSpeech
         transcriptionText = finalText
-        completion(TranscriptionProviderResult(text: finalText, languageCode: detectedLanguageCode))
+        completion(TranscriptionProviderResult(
+            text: finalText,
+            languageCode: detectedLanguageCode,
+            paragraphsText: paragraphsText,
+            inlineText: inlineText
+        ))
     }
 
     func finishFailedRequest(
