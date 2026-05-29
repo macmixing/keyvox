@@ -85,6 +85,14 @@ final class KeyboardDictationChangeController {
         return currentState.listsEnabled
     }
 
+    var hasActiveUntouchedInsertion: Bool {
+        guard let activeSession else {
+            return false
+        }
+
+        return activeInsertionMatchesCurrentText(activeSession)
+    }
+
     init(
         textInputController: KeyboardTextInputController,
         appSettingsStore: KeyboardAppSettingsStore,

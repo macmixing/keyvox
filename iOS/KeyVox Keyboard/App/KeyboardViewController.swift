@@ -357,6 +357,11 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleParagraphsTap() {
+        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+            updateUI()
+            return
+        }
+
         _ = appSettingsStore.toggleAutoParagraphs()
         interactionHaptics.emitLightIfEnabled()
         updateUI()
@@ -364,6 +369,11 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleListsTap() {
+        guard dictationChangeController.hasActiveUntouchedInsertion == false else {
+            updateUI()
+            return
+        }
+
         _ = appSettingsStore.toggleListFormatting()
         interactionHaptics.emitLightIfEnabled()
         updateUI()

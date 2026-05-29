@@ -59,8 +59,62 @@ struct KeyboardDictationChangeControllerTests {
         let insertion = try #require(textInputController.insertTranscriptionWithResult(listText))
         controller.recordInsertedDictation(insertion)
 
+        #expect(controller.hasActiveUntouchedInsertion == true)
         #expect(controller.displayedAutoParagraphsEnabled == false)
         #expect(controller.displayedListFormattingEnabled == true)
+    }
+
+    @Test func activeUntouchedInsertionClearsAfterUserEditsText() throws {
+        let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        let text = "Plain dictation."
+        let artifact = DictationUtteranceArtifact(
+            id: UUID(),
+            rawText: text,
+            baseText: text,
+            selectedText: text,
+            selectedStyleIdentifier: nil,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: false,
+            variants: [],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: text
+                )
+            ],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(artifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+
+        let documentProxy = KeyboardDictationChangeDocumentProxySpy()
+        let textInputController = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        let controller = KeyboardDictationChangeController(
+            textInputController: textInputController,
+            appSettingsStore: KeyboardAppSettingsStore(defaults: defaults),
+            artifactStore: KeyboardDictationChangeArtifactStore(defaults: defaults)
+        )
+
+        let insertion = try #require(textInputController.insertTranscriptionWithResult(text))
+        controller.recordInsertedDictation(insertion)
+        #expect(controller.hasActiveUntouchedInsertion == true)
+
+        documentProxy.insertText("x")
+
+        #expect(controller.hasActiveUntouchedInsertion == false)
     }
 
     @Test func deterministicNoOpDoesNotStartProcessingForVibeInsertion() async throws {
