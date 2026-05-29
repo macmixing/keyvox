@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
-## [1.2.5] Build 2 - 2026-05-29
+## [1.2.5] Build 3 - 2026-05-29
 
 Adds reversible long-press formatting for the latest untouched dictation, including audio-derived paragraphs, deterministic lists, and Caps Lock reversal.
 
@@ -35,6 +35,7 @@ Adds reversible long-press formatting for the latest untouched dictation, includ
 - Fixed list reapply after Vibes changes so multiline list structure keeps the proper separation before the first list marker.
 - Fixed Caps Lock reversal for dictated text inserted while Caps Lock and a Vibe are active.
 - Fixed Caps Lock display state so changing Paragraphs, Lists, or Vibes while Caps is active preserves the reversible uppercase layer.
+- Fixed Caps Lock long-press visuals so yellow means an active reversible transform while the filled icon and pressed state follow the transformed casing.
 
 ### Package versions
 
