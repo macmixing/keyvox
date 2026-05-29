@@ -183,6 +183,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let rawText: String
     public let baseText: String
     public let selectedText: String
+    public let selectedUncappedText: String?
     public let selectedStyleIdentifier: String?
     public let baseParagraphsEnabled: Bool?
     public let baseListsEnabled: Bool?
@@ -197,6 +198,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         rawText: String,
         baseText: String,
         selectedText: String,
+        selectedUncappedText: String? = nil,
         selectedStyleIdentifier: String?,
         baseParagraphsEnabled: Bool? = nil,
         baseListsEnabled: Bool? = nil,
@@ -210,6 +212,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         self.rawText = rawText
         self.baseText = baseText
         self.selectedText = selectedText
+        self.selectedUncappedText = selectedUncappedText
         self.selectedStyleIdentifier = selectedStyleIdentifier
         self.baseParagraphsEnabled = baseParagraphsEnabled
         self.baseListsEnabled = baseListsEnabled
@@ -225,6 +228,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         case rawText
         case baseText
         case selectedText
+        case selectedUncappedText
         case selectedStyleIdentifier
         case baseParagraphsEnabled
         case baseListsEnabled
@@ -241,6 +245,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         rawText = try container.decode(String.self, forKey: .rawText)
         baseText = try container.decode(String.self, forKey: .baseText)
         selectedText = try container.decode(String.self, forKey: .selectedText)
+        selectedUncappedText = try container.decodeIfPresent(String.self, forKey: .selectedUncappedText)
         selectedStyleIdentifier = try container.decodeIfPresent(String.self, forKey: .selectedStyleIdentifier)
         baseParagraphsEnabled = try container.decodeIfPresent(Bool.self, forKey: .baseParagraphsEnabled)
         baseListsEnabled = try container.decodeIfPresent(Bool.self, forKey: .baseListsEnabled)

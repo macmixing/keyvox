@@ -767,6 +767,7 @@ final class StyleRewriteTests: XCTestCase {
             rawText: "raw",
             baseText: "base",
             selectedText: "styled",
+            selectedUncappedText: "styled before caps",
             selectedStyleIdentifier: "test-style",
             baseParagraphsEnabled: false,
             baseListsEnabled: true,
@@ -801,6 +802,7 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded, artifact)
+        XCTAssertEqual(decoded.selectedUncappedText, "styled before caps")
         XCTAssertEqual(decoded.baseParagraphsEnabled, false)
         XCTAssertEqual(decoded.baseListsEnabled, true)
     }
@@ -826,6 +828,7 @@ final class StyleRewriteTests: XCTestCase {
         let decoded = try decoder.decode(DictationUtteranceArtifact.self, from: data)
 
         XCTAssertEqual(decoded.deterministicVariants, [])
+        XCTAssertNil(decoded.selectedUncappedText)
         XCTAssertNil(decoded.baseParagraphsEnabled)
         XCTAssertNil(decoded.baseListsEnabled)
     }

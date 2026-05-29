@@ -426,6 +426,7 @@ final class DictationPipelineTests: XCTestCase {
 
         XCTAssertEqual(processedTexts, ["Hello world"])
         XCTAssertEqual(result.baseText, "Hello world")
+        XCTAssertEqual(result.uncappedFinalText, "Styled mixed casing")
         XCTAssertEqual(result.finalText, "STYLED MIXED CASING")
         XCTAssertEqual(recorded, ["STYLED MIXED CASING"])
         XCTAssertEqual(pasted, ["STYLED MIXED CASING"])

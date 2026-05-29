@@ -64,6 +64,7 @@ public struct DictationPipelineResult: Sendable {
     public let id: UUID
     public let rawText: String
     public let baseText: String
+    public let uncappedFinalText: String
     public let finalText: String
     public let baseParagraphsEnabled: Bool
     public let baseListsEnabled: Bool
@@ -202,6 +203,7 @@ public final class DictationPipeline {
                         id: utteranceID,
                         rawText: rawText,
                         baseText: "",
+                        uncappedFinalText: "",
                         finalText: "",
                         baseParagraphsEnabled: autoParagraphsEnabled,
                         baseListsEnabled: listFormattingEnabled,
@@ -250,6 +252,7 @@ public final class DictationPipeline {
                         id: utteranceID,
                         rawText: rawText,
                         baseText: finalText,
+                        uncappedFinalText: "",
                         finalText: "",
                         baseParagraphsEnabled: autoParagraphsEnabled,
                         baseListsEnabled: listFormattingEnabled,
@@ -289,6 +292,7 @@ public final class DictationPipeline {
                         id: utteranceID,
                         rawText: rawText,
                         baseText: finalText,
+                        uncappedFinalText: output.text,
                         finalText: outputText,
                         baseParagraphsEnabled: autoParagraphsEnabled,
                         baseListsEnabled: listFormattingEnabled,

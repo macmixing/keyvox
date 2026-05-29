@@ -25,6 +25,8 @@ final class KeyboardDictationChangeController {
         var currentDeterministicState: KeyboardDeterministicDictationState?
         var deterministicVariants: [KeyboardDeterministicDictationState: String]
         var renderedDeterministicVariants: [RenderedVariantKey: String]
+        var isCapsTransformApplied: Bool
+        var uncappedCurrentText: String?
     }
 
     private let textInputController: KeyboardTextInputController
@@ -93,6 +95,16 @@ final class KeyboardDictationChangeController {
         return activeInsertionMatchesCurrentText(activeSession)
     }
 
+    var displayedCapsTransformApplied: Bool {
+        guard let activeSession,
+              activeSession.isCapsTransformApplied,
+              activeInsertionMatchesCurrentText(activeSession) else {
+            return false
+        }
+
+        return true
+    }
+
     init(
         textInputController: KeyboardTextInputController,
         appSettingsStore: KeyboardAppSettingsStore,
@@ -135,7 +147,9 @@ final class KeyboardDictationChangeController {
                 variants: [.none: insertion.insertedText],
                 currentDeterministicState: nil,
                 deterministicVariants: [:],
-                renderedDeterministicVariants: [:]
+                renderedDeterministicVariants: [:],
+                isCapsTransformApplied: false,
+                uncappedCurrentText: nil
             )
             return
         }
@@ -153,6 +167,13 @@ final class KeyboardDictationChangeController {
             guard let style = StyleRewriteStyle(rawValue: variant.styleIdentifier) else { continue }
             variants[style] = preparedText(
                 variant.text,
+                documentContextBeforeInput: insertion.documentContextBeforeInput,
+                preparesAsDictationInsertion: true
+            )
+        }
+        if let selectedUncappedText = artifact.selectedUncappedText {
+            variants[selectedStyle] = preparedText(
+                selectedUncappedText,
                 documentContextBeforeInput: insertion.documentContextBeforeInput,
                 preparesAsDictationInsertion: true
             )
@@ -186,8 +207,12 @@ final class KeyboardDictationChangeController {
             renderedDeterministicVariants[RenderedVariantKey(
                 deterministicState: currentDeterministicState,
                 style: selectedStyle
-            )] = insertion.insertedText
+            )] = variants[selectedStyle] ?? insertion.insertedText
         }
+        let initialCapsSourceText = initialCapsSourceText(
+            insertedText: insertion.insertedText,
+            uncappedText: variants[selectedStyle] ?? originalText
+        )
 
         activeSession = Session(
             sourceText: originalText,
@@ -200,7 +225,9 @@ final class KeyboardDictationChangeController {
             variants: variants,
             currentDeterministicState: currentDeterministicState,
             deterministicVariants: deterministicVariants,
-            renderedDeterministicVariants: renderedDeterministicVariants
+            renderedDeterministicVariants: renderedDeterministicVariants,
+            isCapsTransformApplied: initialCapsSourceText != nil,
+            uncappedCurrentText: initialCapsSourceText
         )
     }
 
@@ -236,17 +263,19 @@ final class KeyboardDictationChangeController {
               ) else {
             return false
         }
+        let displayedReplacementText = displayText(replacementText, for: session)
 
         guard textInputController.replaceUntouchedInsertion(
             session.currentText,
-            with: replacementText,
+            with: displayedReplacementText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
             invalidateActiveSession()
             return false
         }
 
-        session.currentText = replacementText
+        session.currentText = displayedReplacementText
+        updateCapsSourceTextIfNeeded(replacementText, session: &session)
         session.previousStyle = session.currentStyle
         session.currentStyle = targetStyle
         cacheRenderedText(replacementText, style: targetStyle, session: &session)
@@ -257,6 +286,71 @@ final class KeyboardDictationChangeController {
 
     func showSelectedVibePreference() {
         displaySource = .selectedPreference
+    }
+
+    func applyCapsLongPressChange() -> Bool {
+        guard isApplyingChange == false else {
+            return false
+        }
+
+        isApplyingChange = true
+        defer { isApplyingChange = false }
+
+        guard var session = activeSession else {
+            return false
+        }
+
+        guard textInputController.currentTextMatchesUntouchedInsertion(
+            session.currentText,
+            documentContextBeforeInsertion: session.documentContextBeforeInput
+        ) else {
+            invalidateActiveSession()
+            return false
+        }
+
+        if session.isCapsTransformApplied {
+            guard let uncappedText = session.uncappedCurrentText,
+                  uncappedText != session.currentText else {
+                return false
+            }
+
+            guard textInputController.replaceUntouchedInsertion(
+                session.currentText,
+                with: uncappedText,
+                documentContextBeforeInsertion: session.documentContextBeforeInput
+            ) else {
+                invalidateActiveSession()
+                return false
+            }
+
+            session.currentText = uncappedText
+            session.isCapsTransformApplied = false
+            session.uncappedCurrentText = nil
+            activeSession = session
+            return true
+        }
+
+        let uncappedText = session.currentText
+        let cappedText = uncappedText.uppercased()
+        guard cappedText != uncappedText else {
+            return false
+        }
+
+        guard textInputController.replaceUntouchedInsertion(
+            uncappedText,
+            with: cappedText,
+            documentContextBeforeInsertion: session.documentContextBeforeInput
+        ) else {
+            invalidateActiveSession()
+            return false
+        }
+
+        session.currentText = cappedText
+        session.isCapsTransformApplied = true
+        session.uncappedCurrentText = uncappedText
+        activeSession = session
+        displaySource = .activeInsertion
+        return true
     }
 
     func applyDeterministicLongPressChange(
@@ -323,13 +417,14 @@ final class KeyboardDictationChangeController {
             "deterministicLongPress replacementSource=\(debugText(replacementSourceText)) rendered=\(debugText(renderedText))"
         )
 
-        guard renderedText != session.currentText else {
+        let displayedRenderedText = displayText(renderedText, for: session)
+        guard displayedRenderedText != session.currentText else {
             return false
         }
 
         guard textInputController.replaceUntouchedInsertion(
             session.currentText,
-            with: renderedText,
+            with: displayedRenderedText,
             documentContextBeforeInsertion: session.documentContextBeforeInput
         ) else {
             invalidateActiveSession()
@@ -338,7 +433,8 @@ final class KeyboardDictationChangeController {
 
         session.sourceText = replacementSourceText
         session.originalText = replacementSourceText
-        session.currentText = renderedText
+        session.currentText = displayedRenderedText
+        updateCapsSourceTextIfNeeded(renderedText, session: &session)
         session.currentDeterministicState = targetState
         session.variants = [.none: replacementSourceText]
         session.variants[session.currentStyle] = renderedText
@@ -524,6 +620,27 @@ final class KeyboardDictationChangeController {
             deterministicState: currentDeterministicState,
             style: style
         )] = text
+    }
+
+    private func displayText(_ text: String, for session: Session) -> String {
+        session.isCapsTransformApplied ? text.uppercased() : text
+    }
+
+    private func updateCapsSourceTextIfNeeded(_ text: String, session: inout Session) {
+        guard session.isCapsTransformApplied else {
+            return
+        }
+
+        session.uncappedCurrentText = text
+    }
+
+    private func initialCapsSourceText(insertedText: String, uncappedText: String) -> String? {
+        guard insertedText == uncappedText.uppercased(),
+              insertedText != uncappedText else {
+            return nil
+        }
+
+        return uncappedText
     }
 
     private func preparedText(

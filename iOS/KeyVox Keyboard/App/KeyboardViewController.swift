@@ -223,6 +223,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             isCapsLockEnabled: isCapsLockEnabled,
+            isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             displayedVibeTitle: dictationChangeController.displayedVibeTitle,
             displayedVibeStyle: dictationChangeController.displayedVibeStyle,
             isDisplayedVibeApplied: dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion,
@@ -310,6 +311,12 @@ final class KeyboardViewController: UIInputViewController {
     func handleCapsLockTap() {
         isCapsLockEnabled = capsLockStateStore.toggle()
         interactionHaptics.emitLightIfEnabled()
+    }
+
+    @objc
+    func handleCapsLockLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began else { return }
+        handleDictationChangeResult(dictationChangeController.applyCapsLongPressChange())
     }
 
     @objc
@@ -511,6 +518,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.vibesButton.title = dictationChangeController.displayedVibeTitle
         rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
+        rootContainerView?.capsLockButton.isDictationCapsApplied = dictationChangeController.displayedCapsTransformApplied
         rootContainerView?.paragraphButton.isOn = dictationChangeController.displayedAutoParagraphsEnabled
         rootContainerView?.listsButton.isOn = dictationChangeController.displayedListFormattingEnabled
     }

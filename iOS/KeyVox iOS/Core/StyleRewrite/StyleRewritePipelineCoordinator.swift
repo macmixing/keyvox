@@ -123,7 +123,7 @@ final class StyleRewritePipelineCoordinator {
             variants = [
                 DictationTextVariantArtifact(
                     styleIdentifier: styleIdentifier,
-                    text: result.finalText,
+                    text: result.uncappedFinalText,
                     duration: result.textTransformationDuration,
                     chunkCount: result.textTransformationChunkCount,
                     applied: result.textTransformationApplied,
@@ -140,6 +140,7 @@ final class StyleRewritePipelineCoordinator {
                 rawText: result.rawText,
                 baseText: result.baseText,
                 selectedText: selectedText,
+                selectedUncappedText: result.uncappedFinalText,
                 selectedStyleIdentifier: result.textTransformationStyleIdentifier,
                 baseParagraphsEnabled: result.baseParagraphsEnabled,
                 baseListsEnabled: result.baseListsEnabled,

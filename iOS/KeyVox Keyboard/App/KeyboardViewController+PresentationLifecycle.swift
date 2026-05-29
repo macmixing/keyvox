@@ -66,6 +66,12 @@ extension KeyboardViewController {
         rootContainerView.settingsButton.addTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
         rootContainerView.capsLockButton.addTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+        let capsLongPressRecognizer = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(handleCapsLockLongPress(_:))
+        )
+        capsLongPressRecognizer.cancelsTouchesInView = true
+        rootContainerView.capsLockButton.addGestureRecognizer(capsLongPressRecognizer)
         rootContainerView.paragraphButton.addTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
         rootContainerView.listsButton.addTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
         rootContainerView.dictionaryButton.addTarget(self, action: #selector(handleDictionaryTap), for: .touchUpInside)
@@ -125,6 +131,9 @@ extension KeyboardViewController {
             rootContainerView.settingsButton.removeTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
             rootContainerView.cancelButton.removeTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
             rootContainerView.capsLockButton.removeTarget(self, action: #selector(handleCapsLockTap), for: .touchUpInside)
+            rootContainerView.capsLockButton.gestureRecognizers?.forEach {
+                rootContainerView.capsLockButton.removeGestureRecognizer($0)
+            }
             rootContainerView.paragraphButton.removeTarget(self, action: #selector(handleParagraphsTap), for: .touchUpInside)
             rootContainerView.listsButton.removeTarget(self, action: #selector(handleListsTap), for: .touchUpInside)
             rootContainerView.paragraphButton.gestureRecognizers?.forEach {
