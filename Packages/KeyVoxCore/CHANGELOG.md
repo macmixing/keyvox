@@ -15,6 +15,7 @@ Audio-derived paragraph variants for deterministic dictation state.
 - Extended `TranscriptionProviderResult` so providers can return selected text plus preserved paragraph-on and inline text from the same audio boundary evidence.
 - Updated Whisper and Parakeet assembly to compute both paragraph and inline forms before post-processing so later deterministic paragraph toggles can use the captured audio-derived variant.
 - Updated `DictationPipeline` deterministic variants so paragraph-on states use preserved paragraph text and paragraph-off states use preserved inline text while list variants still flow through shared post-processing.
+- Updated deterministic list variants to honor the configured list render mode so list reapply can preserve multiline list boundaries when Paragraphs is off.
 - Added shared-engine coverage for provider paragraph/inline assembly parity and pipeline deterministic paragraph variants when Paragraphs starts enabled or disabled.
 
 ### Notes

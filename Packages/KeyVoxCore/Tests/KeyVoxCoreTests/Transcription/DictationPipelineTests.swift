@@ -70,6 +70,37 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(result.deterministicVariants.count, 4)
         XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], result.baseText)
+    }
+
+    func testPipelineEmitsSingleLineDeterministicListVariantsWhenRenderModeIsInline() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "project notes one cue board two cue board", languageCode: "en", paragraphsText: nil, inlineText: nil)
+        )
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+        let variants = Dictionary(
+            uniqueKeysWithValues: result.deterministicVariants.map {
+                (DeterministicVariantKey($0), $0.text)
+            }
+        )
+
         XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], result.baseText)
     }
@@ -102,7 +133,7 @@ final class DictationPipelineTests: XCTestCase {
         )
 
         XCTAssertEqual(result.baseText, "Project notes one Cueboard two Cueboard")
-        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
     }
 
@@ -238,7 +269,7 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(result.baseText, "Project notes one Cueboard two Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
-        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes: 1. Cueboard; 2. Cueboard")
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
     }
 

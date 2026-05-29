@@ -369,7 +369,7 @@ public final class DictationPipeline {
         let noParagraphsWithLists = postProcessor.process(
             inlineRawText,
             dictionaryEntries: dictionaryEntries,
-            renderMode: .singleLineInline,
+            renderMode: renderMode,
             listFormattingEnabled: true,
             forceAllCaps: false,
             languageCode: languageCode
