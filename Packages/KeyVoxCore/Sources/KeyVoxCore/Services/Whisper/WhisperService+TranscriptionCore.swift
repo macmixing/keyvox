@@ -276,7 +276,11 @@ extension WhisperService {
             chunkFrames: chunkFrames,
             usedDictionaryHintPrompt: usedDictionaryHintPrompt
         )
-        guard shouldRetryEmptyResult || shouldRetryLeadingShort else {
+        let shouldRetryTrailingCutoff = shouldRetryTrailingCutoffDecode(
+            primary.segments,
+            chunkFrames: chunkFrames
+        )
+        guard shouldRetryEmptyResult || shouldRetryLeadingShort || shouldRetryTrailingCutoff else {
             return primary
         }
         guard let whisper else { return primary }
@@ -305,6 +309,9 @@ extension WhisperService {
             if shouldRetryEmptyResult {
                 return "empty_chunk_result"
             }
+            if shouldRetryTrailingCutoff {
+                return "trailing_cutoff_result"
+            }
             return "leading_short_result"
         }()
         print(
@@ -315,7 +322,11 @@ extension WhisperService {
         #endif
 
         let retry = try await whisper.transcribeWithMetadata(audioFrames: chunkFrames)
-        let selection = selectPreferredRetry(primary: primary.segments, retry: retry.segments)
+        let selection = selectPreferredRetry(
+            primary: primary.segments,
+            retry: retry.segments,
+            acceptsSingleWordRecovery: shouldRetryTrailingCutoff
+        )
         let finalSegments = selection.segments
         let finalLanguageCode = selection.selectedRetry
             ? (retry.detectedLanguageCode ?? primary.detectedLanguageCode)
@@ -364,6 +375,25 @@ extension WhisperService {
         return shouldRetryEmptyChunkResult(segmentCount: primary.count, chunkSeconds: duration)
     }
 
+    private func shouldRetryTrailingCutoffDecode(
+        _ primary: [Segment],
+        chunkFrames: [Float]
+    ) -> Bool {
+        guard let lastSegment = primary.max(by: { $0.endTime < $1.endTime }) else { return false }
+
+        let trailingStartFrame = min(
+            max(Int((Double(lastSegment.endTime) / 1_000.0) * 16_000.0), 0),
+            chunkFrames.count
+        )
+        let trailingFrames = Array(chunkFrames[trailingStartFrame..<chunkFrames.count])
+        let duration = Double(chunkFrames.count) / 16_000.0
+        return shouldRetryTrailingCutoffResult(
+            segments: primary,
+            chunkSeconds: duration,
+            trailingAudioFrames: trailingFrames
+        )
+    }
+
     func isSuspiciouslyShortResult(words: Int, chunkSeconds: Double) -> Bool {
         guard words > 0 else { return false }
         if words <= suspiciousShortResultMaxWords {
@@ -379,9 +409,32 @@ extension WhisperService {
         return chunkSeconds >= emptyResultRetryMinChunkSeconds
     }
 
-    private func selectPreferredRetry(
+    func shouldRetryTrailingCutoffResult(
+        segments: [Segment],
+        chunkSeconds: Double,
+        trailingAudioFrames: [Float]
+    ) -> Bool {
+        guard chunkSeconds >= AudioSilenceGatePolicy.longCaptureMinimumDuration else { return false }
+        guard !segments.isEmpty else { return false }
+        guard trailingAudioContainsSpeechSignal(trailingAudioFrames) else { return false }
+
+        let averageNoSpeechProbability = segments.reduce(0) { $0 + $1.noSpeechProbability } / Float(segments.count)
+        return averageNoSpeechProbability <= suspiciousShortResultMaxNoSpeechProbability
+    }
+
+    func trailingAudioContainsSpeechSignal(_ audioFrames: [Float]) -> Bool {
+        guard audioFrames.count >= AudioSilenceGatePolicy.trueSilenceWindowSize else { return false }
+
+        let silentWindowRatio = AudioSilenceGatePolicy.trueSilenceWindowRatio(for: audioFrames)
+        guard silentWindowRatio < AudioSilenceGatePolicy.trueSilenceMinimumWindowRatio else { return false }
+
+        return AudioSignalMetrics.rms(of: audioFrames) >= AudioSilenceGatePolicy.trueSilenceWindowRMSThreshold
+    }
+
+    func selectPreferredRetry(
         primary: [Segment],
-        retry: [Segment]
+        retry: [Segment],
+        acceptsSingleWordRecovery: Bool = false
     ) -> (segments: [Segment], selectedRetry: Bool) {
         let primaryText = compactSegmentText(primary)
         let retryText = compactSegmentText(retry)
@@ -389,6 +442,9 @@ extension WhisperService {
         let primaryWords = wordCount(in: primaryText)
         let retryWords = wordCount(in: retryText)
 
+        if acceptsSingleWordRecovery && retryWords > primaryWords {
+            return (retry, true)
+        }
         if retryWords >= primaryWords + 2 {
             return (retry, true)
         }
