@@ -6,6 +6,30 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.6] Build 3 - 2026-05-30
+
+Fixes Paragraphs and Lists tap behavior for untouched dictation and improves Whisper recovery for trailing words.
+
+### Fixed
+
+- Fixed Paragraphs and Lists taps so untouched, untransformed dictation no longer prevents changing the stored default settings.
+- Fixed transformed-dictation protection so only the key that created the active Paragraphs or Lists transform is blocked from changing its default setting.
+- Fixed Whisper transcription recovery so long captures can keep trailing words that were left out of the first decode.
+- Fixed recording startup so KeyVox retries instead of crashing when iOS has not finished preparing the microphone input.
+
+### Package versions
+
+KeyVox iOS 1.2.6
+  KeyVoxCore           1.0.14
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.5
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
+---
+
 ## [1.2.5] Build 3 - 2026-05-29
 
 Adds reversible long-press formatting for the latest untouched dictation, including audio-derived paragraphs, deterministic lists, and Caps Lock reversal.

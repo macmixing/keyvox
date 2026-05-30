@@ -6,6 +6,35 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.7] - 2026-05-30
+
+Improves Whisper recovery for long Mac dictations that previously could drop trailing words.
+
+### Added
+
+- Added trailing-audio detection so Whisper can retry long captures when speech-like audio remains after the final decoded segment.
+
+### Changed
+
+- Updated Whisper retry selection so trailing cutoff retries can keep a recovered final word while preserving stricter selection for other retry paths.
+- Split Whisper retry heuristics out of the chunk transcription flow so retry rules stay separate from transcription assembly.
+
+### Fixed
+
+- Fixed long Whisper dictations where the final word or words could be omitted even though speech-like audio remained in the capture.
+
+### Package versions
+
+KeyVox macOS 1.1.7:
+- KeyVoxCore           1.0.14
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.5
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
+---
+
 ## [1.1.6] - 2026-05-28
 
 Adds guided first-dictation onboarding, a Settings help entry point, centralized Mac runtime flags, and stronger Vibes money repair.

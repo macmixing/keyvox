@@ -53,7 +53,7 @@ That split is intentional. `KeyVoxCore` should stay focused on reusable engine b
 - `Sources/KeyVoxCore/Transcription/`
   High-level pipeline assembly and post-processing entry points.
 - `Sources/KeyVoxCore/Services/Whisper/`
-  Whisper model lifecycle, chunk transcription flow, and paragraph-aware chunk assembly.
+  Whisper model lifecycle, chunk transcription flow, retry heuristics, and paragraph-aware chunk assembly.
 - `Sources/KeyVoxCore/Language/`
   Dictionary models, matching, phonetic scoring, and pronunciation-lexicon access.
 - `Sources/KeyVoxCore/Lists/`

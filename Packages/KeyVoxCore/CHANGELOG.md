@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.14] - 2026-05-30
+
+Whisper retry recovery for trailing words left out of long captures.
+
+### Includes
+
+- Added trailing-audio detection so Whisper retries long captures when speech-like audio remains after the final decoded segment.
+- Updated retry selection so a trailing-cutoff retry can keep even a single recovered final word while preserving the stricter threshold for other retry paths.
+- Split Whisper retry heuristics out of the chunk transcription core so retry rules stay separate from transcription flow.
+- Added shared-engine coverage for trailing cutoff detection, silent trailing audio rejection, likely-no-speech rejection, and single-word retry recovery.
+
+### Notes
+
+- `1.0.14` bumps the tracked engine version for `KeyVoxCore` to cover Whisper trailing-word recovery used by shared dictation clients.
+
+---
+
 ## [1.0.13] - 2026-05-29
 
 Audio-derived paragraph variants for deterministic dictation state.

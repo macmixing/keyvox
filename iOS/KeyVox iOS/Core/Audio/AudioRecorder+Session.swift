@@ -191,6 +191,15 @@ extension AudioRecorder {
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
+        guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
+            Self.log(
+                "invalid input format sampleRate=\(String(inputFormat.sampleRate)) channelCount=\(String(inputFormat.channelCount))"
+            )
+            throw AudioRecorderError.invalidInputFormat(
+                sampleRate: inputFormat.sampleRate,
+                channelCount: inputFormat.channelCount
+            )
+        }
         // Smaller buffers give the keyboard logo a denser stream of level updates
         // so the shared waveform feels closer to the Mac overlay.
         let bufferSize: AVAudioFrameCount = 512
@@ -398,8 +407,14 @@ extension AudioRecorder {
         let isBluetoothA2DPOnly = audioSession.currentRoute.outputs.contains { $0.portType == .bluetoothA2DP }
         let isRouteSettlingStartFailure = nsError.domain == "com.apple.coreaudio.avfaudio" && nsError.code == 2003329396
         let isSessionPropertyFailure = nsError.code == 560557684
+        let isInvalidInputFormat: Bool
+        if case .some(.invalidInputFormat) = error as? AudioRecorderError {
+            isInvalidInputFormat = true
+        } else {
+            isInvalidInputFormat = false
+        }
 
-        return hasNoInputs || isBluetoothA2DPOnly || isRouteSettlingStartFailure || isSessionPropertyFailure
+        return hasNoInputs || isBluetoothA2DPOnly || isRouteSettlingStartFailure || isSessionPropertyFailure || isInvalidInputFormat
     }
 
     private func applyInputPreference() throws {
@@ -441,6 +456,7 @@ enum AudioRecorderError: LocalizedError {
     case engineStartFailed(underlying: Error)
     case engineStopFailed(underlying: Error)
     case monitoringShutdownWhileRecording
+    case invalidInputFormat(sampleRate: Double, channelCount: AVAudioChannelCount)
 
     var errorDescription: String? {
         switch self {
@@ -452,6 +468,8 @@ enum AudioRecorderError: LocalizedError {
             return "Couldn't stop audio capture: \(underlying.localizedDescription)"
         case .monitoringShutdownWhileRecording:
             return "Can't disable the session while audio is actively recording."
+        case let .invalidInputFormat(sampleRate, channelCount):
+            return "Audio input is not ready yet. sampleRate=\(sampleRate), channelCount=\(channelCount)"
         }
     }
 }
