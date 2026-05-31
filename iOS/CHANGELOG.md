@@ -6,6 +6,30 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.7] - 2026-05-30
+
+Refreshes the return-to-host animation assets, tightens the Speak return message, and aligns the keyboard logo bar with the Vibes control.
+
+### Changed
+
+- Updated the ReturnToHost video and placeholder assets so the first frame matches the refreshed animation.
+- Updated the Speak ready-to-return message so users know they can listen in the original app.
+- Updated the keyboard logo bar portrait alignment so it anchors to the Vibes control.
+- Updated the minimum supported iOS app version to 1.2.6.
+
+### Package versions
+
+KeyVox iOS 1.2.7
+  KeyVoxCore           1.0.14
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.5
+  KeyVoxTTS            1.0.1
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
+---
+
 ## [1.2.6] Build 3 - 2026-05-30
 
 Fixes Paragraphs and Lists tap behavior for untouched dictation and improves Whisper recovery for trailing words.
