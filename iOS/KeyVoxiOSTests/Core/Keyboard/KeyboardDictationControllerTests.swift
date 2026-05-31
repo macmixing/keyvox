@@ -212,9 +212,36 @@ struct KeyboardDictationControllerTests {
             receivedText = text
         }
 
+        ipcManager.onTranscribingStarted?()
         ipcManager.onTranscriptionReady?("Hello world")
 
         #expect(receivedText == "Hello world")
+        #expect(controller.state == .idle)
+    }
+
+    @Test func transcriptionReadyAfterReconciliationDoesNotForwardDuplicateText() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.reconciledRecordingStateValue = .idle
+        ipcManager.currentTranscriptionValue = "Hello world"
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+        var receivedTexts: [String] = []
+
+        controller.onTranscriptionReady = { text in
+            receivedTexts.append(text)
+        }
+
+        ipcManager.onTranscribingStarted?()
+        scheduler.runScheduledAction(after: 0.5)
+        ipcManager.onTranscriptionReady?("Hello world")
+
+        #expect(receivedTexts == ["Hello world"])
         #expect(controller.state == .idle)
     }
 }
