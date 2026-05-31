@@ -149,7 +149,7 @@ struct PlaybackPreparationView: View {
         case .preparing:
             return "Wait here while KeyVox prepares to speak without interruptions."
         case .readyToReturn:
-            return "Speak has started. Go back to your original app and keep listening there."
+            return "Speak has started. You can listen in your original app now."
         }
     }
 
