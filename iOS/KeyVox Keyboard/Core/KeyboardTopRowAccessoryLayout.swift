@@ -397,10 +397,9 @@ extension KeyboardLayoutGeometry {
                         equalTo: currentLogoLeadingReferenceView.topAnchor,
                         constant: -KeyboardStyle.keyboardRowSpacing
                     )
-                } else if let capsLockButton {
-                    logoBarVerticalConstraint = logoBarView.centerYAnchor.constraint(
-                        equalTo: capsLockButton.centerYAnchor,
-                        constant: -10
+                } else if let vibesButton {
+                    logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
+                        equalTo: vibesButton.bottomAnchor
                     )
                 } else {
                     logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
