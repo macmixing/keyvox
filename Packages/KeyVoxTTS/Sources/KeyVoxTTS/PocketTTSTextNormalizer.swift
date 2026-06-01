@@ -15,7 +15,7 @@ enum PocketTTSTextNormalizer {
     private static let timePattern = #"\b([0-9]{1,2}):([0-9]{2})(?:\s*([AaPp][Mm]))?\b"#
     private static let datePattern = #"\b([0-9]{1,2})/([0-9]{1,2})/([0-9]{2,4})\b"#
     private static let versionPattern = #"\bv([0-9]+(?:\.[0-9]+){1,3})\b"#
-    private static let hyphenJoinPattern = #"(?<=\p{L}|\p{N})\-(?=\p{L}|\p{N})"#
+    private static let attachedNegativeNumberPattern = #"(?<![\p{L}\p{N}-])-([0-9]+(?:\.[0-9]+)?)\b"#
     private static let underscoreJoinPattern = #"(?<=\p{L}|\p{N})_(?=\p{L}|\p{N})"#
     private static let camelCaseBoundaryPattern = #"(?<=\p{Ll})(?=\p{Lu})"#
     private static let openAsidePattern = #"\s*[\(\[]\s*"#
@@ -114,19 +114,8 @@ enum PocketTTSTextNormalizer {
             options: .regularExpression
         )
         sanitized = normalizeCloseAsides(in: sanitized)
-        sanitized = sanitized.replacingOccurrences(
-            of: "/",
-            with: " "
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: "\\",
-            with: " "
-        )
-        sanitized = sanitized.replacingOccurrences(
-            of: hyphenJoinPattern,
-            with: " ",
-            options: .regularExpression
-        )
+        sanitized = normalizeSafeSymbols(in: sanitized)
+        sanitized = normalizeAttachedNegativeNumbers(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
             of: underscoreJoinPattern,
             with: " ",
@@ -139,7 +128,7 @@ enum PocketTTSTextNormalizer {
         )
         sanitized = normalizeTerminalPeriods(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
-            of: #"[^\p{L}\p{N}\s\.,!\?;'"\/\-\)\n]"#,
+            of: #"[^\p{L}\p{N}\s\.,!\?;'"\-\)\n]"#,
             with: " ",
             options: .regularExpression
         )
@@ -175,6 +164,22 @@ enum PocketTTSTextNormalizer {
         )
 
         return sanitized
+    }
+
+    private static func normalizeSafeSymbols(in text: String) -> String {
+        text
+            .replacingOccurrences(of: "/", with: " slash ")
+            .replacingOccurrences(of: "\\", with: " backslash ")
+            .replacingOccurrences(of: "+", with: " plus ")
+            .replacingOccurrences(of: "=", with: " equals ")
+    }
+
+    private static func normalizeAttachedNegativeNumbers(in text: String) -> String {
+        text.replacingOccurrences(
+            of: attachedNegativeNumberPattern,
+            with: " negative $1",
+            options: .regularExpression
+        )
     }
 
     private static func normalizeArrows(in text: String) -> String {

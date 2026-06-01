@@ -75,7 +75,7 @@ extension SettingsView {
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {
-                Text("SUPPORT OPEN SOURCE DEVELOPMENT")
+                Text("MORE")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)

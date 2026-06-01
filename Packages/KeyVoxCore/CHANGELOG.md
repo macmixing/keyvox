@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.15] - 2026-05-31
+
+Uppercase reaction-token normalization for dictation cleanup.
+
+### Includes
+
+- Added `LaughterNormalizer` handling for uppercase reaction tokens so `LOL`, `LMAO`, `LMFAO`, `OMG`, and `WTF` normalize to lowercase forms.
+- Added shared-engine coverage for the lowercase reaction-token normalization path.
+
+### Notes
+
+- `1.0.15` bumps the tracked engine version for `KeyVoxCore` to cover reaction-token casing cleanup used by shared dictation clients.
+
+---
+
 ## [1.0.14] - 2026-05-30
 
 Whisper retry recovery for trailing words left out of long captures.

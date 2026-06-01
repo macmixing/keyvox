@@ -6,6 +6,16 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-05-31
+
+### Fixed
+
+- PocketTTS now speaks `/` as `slash`, `\` as `backslash`, `+` as `plus`, and `=` as `equals` during text normalization.
+- PocketTTS now speaks attached negative numbers such as `-5`, `-42`, and `-3.14` as negative values.
+- PocketTTS no longer splits or rewrites contextual hyphen usage in words, subtraction expressions, ISO-style dates, phone-number-like values, or numeric ranges.
+
+---
+
 ## [1.0.1] - 2026-05-01
 
 ### Fixed

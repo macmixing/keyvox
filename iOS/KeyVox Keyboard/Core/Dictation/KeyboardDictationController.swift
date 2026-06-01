@@ -214,6 +214,9 @@ final class KeyboardDictationController {
     }
 
     private func handleTranscriptionReady(_ text: String) {
+        guard state != .idle else {
+            return
+        }
         cancelWaitingTimeout()
         cancelTranscriptionReconciliation()
         onTranscriptionReady?(text)

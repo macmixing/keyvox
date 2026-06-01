@@ -6,6 +6,31 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.8] - 2026-06-01
+
+Fixes duplicate keyboard dictation insertion and improves text normalization for reaction tokens, PocketTTS symbols, negative numbers, and hyphenated text.
+
+### Fixed
+
+- Fixed keyboard dictation so a late transcription-ready callback is ignored after reconciliation has already returned dictation to idle.
+- Fixed PocketTTS so `/`, `\`, `+`, and `=` are spoken as words instead of being dropped during text normalization.
+- Fixed PocketTTS so attached negative numbers such as `-5`, `-42`, and `-3.14` are spoken as negative values.
+- Fixed PocketTTS so contextual hyphens are preserved in words, subtraction expressions, ISO-style dates, phone-number-like values, and numeric ranges.
+- Fixed dictation cleanup so uppercase reaction tokens `LOL`, `LMAO`, `LMFAO`, `OMG`, and `WTF` normalize to lowercase forms before final sentence casing.
+
+### Package versions
+
+KeyVox iOS 1.2.8
+  KeyVoxCore           1.0.15
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.5
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
+---
+
 ## [1.2.7] - 2026-05-30
 
 Refreshes the return-to-host animation assets, tightens the Speak return message, and aligns the keyboard logo bar with the Vibes control.
