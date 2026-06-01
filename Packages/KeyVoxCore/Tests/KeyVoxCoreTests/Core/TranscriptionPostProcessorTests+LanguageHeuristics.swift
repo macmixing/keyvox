@@ -161,6 +161,26 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Haha that was funny")
     }
+    func testLowercasesUppercaseReactionTokens() {
+        let normalizer = LaughterNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalize(in: "LOL LMAO LMFAO OMG WTF"),
+            "lol lmao lmfao omg wtf"
+        )
+        XCTAssertEqual(
+            normalizer.normalize(in: "I said LOL to that joke"),
+            "I said lol to that joke"
+        )
+        XCTAssertEqual(
+            normalizer.normalize(in: "LOL! That's funny."),
+            "lol! That's funny."
+        )
+        XCTAssertEqual(
+            normalizer.normalize(in: "WTF happened here? OMG this is crazy."),
+            "wtf happened here? omg this is crazy."
+        )
+    }
     func testKeepsBetweenColonPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
 
