@@ -29,9 +29,9 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Hello, world, today."))
     }
 
-    func testNormalizeSplitsHyphenatedWordsIntoSeparateWords() {
+    func testNormalizePreservesHyphenatedWords() {
         let normalized = PocketTTSChunkPlanner.normalize("time-to-first audio")
-        XCTAssertTrue(normalized.text.hasSuffix("Time to first audio."))
+        XCTAssertTrue(normalized.text.hasSuffix("Time-to-first audio."))
     }
 
     func testNormalizeReplacesEmailsWithPlaceholder() {
@@ -74,9 +74,24 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
         XCTAssertTrue(normalized.text.hasSuffix("Agenda. review."))
     }
 
-    func testNormalizeStripsSlashesIntoSpaces() {
+    func testNormalizeSpeaksSafeSymbols() {
+        let normalized = PocketTTSChunkPlanner.normalize(#"alpha/beta\gamma + delta = value"#)
+        XCTAssertTrue(normalized.text.hasSuffix("Alpha slash beta backslash gamma plus delta equals value."))
+    }
+
+    func testNormalizeSpeaksAttachedNegativeNumbers() {
+        let normalized = PocketTTSChunkPlanner.normalize("-5 -42 -3.14")
+        XCTAssertTrue(normalized.text.hasSuffix("Negative 5 negative 42 negative 3.14."))
+    }
+
+    func testNormalizeLeavesContextualHyphensUnchanged() {
+        let normalized = PocketTTSChunkPlanner.normalize("word - word 5 - 3 2026-05-31 555-1234 10-20")
+        XCTAssertTrue(normalized.text.hasSuffix("Word - word 5 - 3 2026-05-31 555-1234 10-20."))
+    }
+
+    func testNormalizeSpeaksSlashes() {
         let normalized = PocketTTSChunkPlanner.normalize(#"alpha/beta\gamma"#)
-        XCTAssertTrue(normalized.text.hasSuffix("Alpha beta gamma."))
+        XCTAssertTrue(normalized.text.hasSuffix("Alpha slash beta backslash gamma."))
     }
 
     func testNormalizePreservesTerminalPeriodsOnLinkListItems() {
@@ -101,7 +116,7 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
 
     func testNormalizeSplitsSnakeCaseCamelCaseAndSlashJoinedWords() {
         let normalized = PocketTTSChunkPlanner.normalize("snake_case camelCase and/or")
-        XCTAssertTrue(normalized.text.hasSuffix("Snake case camel Case and or."))
+        XCTAssertTrue(normalized.text.hasSuffix("Snake case camel Case and slash or."))
     }
 
     func testNormalizeExpandsVersionPrefix() {
