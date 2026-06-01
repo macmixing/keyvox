@@ -6,6 +6,30 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.8] - 2026-06-01
+
+Improves Mac dictation cleanup for common uppercase reaction tokens and simplifies the More settings heading.
+
+### Changed
+
+- Changed the More settings section heading so the developer links area uses the shorter `MORE` label.
+
+### Fixed
+
+- Fixed shared dictation cleanup through `KeyVoxCore` `1.0.15` so uppercase reaction tokens such as `LOL`, `LMAO`, `LMFAO`, `OMG`, and `WTF` normalize to lowercase forms before final sentence casing.
+
+### Package versions
+
+KeyVox macOS 1.1.8:
+- KeyVoxCore           1.0.15
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.5
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
+---
+
 ## [1.1.7] - 2026-05-30
 
 Improves Whisper recovery for long Mac dictations that previously could drop trailing words.
