@@ -116,13 +116,17 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         appliedOverride: Bool? = nil
     ) -> TextTransformResult {
         let formattedText = ChillHeuristicFormatter().format(sourceText)
+        let finalText = OutputRepair.repairModelOutput(
+            original: sourceText,
+            rewritten: formattedText
+        )
         return TextTransformResult(
             originalText: request.baseText,
-            finalText: formattedText,
+            finalText: finalText,
             styleIdentifier: request.styleIdentifier,
             duration: Date().timeIntervalSince(transformStart),
             chunkCount: chunkCount ?? (request.baseText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0 : 1),
-            applied: appliedOverride ?? (formattedText != request.baseText),
+            applied: appliedOverride ?? (finalText != request.baseText),
             chunkTimings: chunkTimings,
             errors: errors,
             processingMode: processingMode

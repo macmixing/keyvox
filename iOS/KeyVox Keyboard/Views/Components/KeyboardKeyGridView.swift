@@ -174,6 +174,7 @@ final class KeyboardKeyGridView: UIView {
         guard isKeyboardEnabled else { return }
 
         let location = gesture.location(in: self)
+        let timestamp = ProcessInfo.processInfo.systemUptime
         let hitKey = keyView(at: location)
         switch gesture.state {
         case .began:
@@ -229,7 +230,7 @@ final class KeyboardKeyGridView: UIView {
                     isStillOnSpaceKey: true
                 )
                 if let movementDelta = update.movementDelta {
-                    onSpaceTrackpadEvent?(.moved(movementDelta))
+                    onSpaceTrackpadEvent?(.moved(movementDelta, timestamp: timestamp))
                 }
                 return
             }

@@ -513,9 +513,10 @@ final class KeyboardViewController: UIInputViewController {
             isTrackpadModeActive = true
             cursorTrackpadInteractor.begin()
             updateUI()
-        case let .moved(delta):
+        case let .moved(delta, timestamp):
             cursorTrackpadInteractor.handleMovement(
                 delta: delta,
+                timestamp: timestamp,
                 adjustCursor: { [weak self] offset in
                     self?.textInputController.adjustCursorPosition(by: offset)
                 }

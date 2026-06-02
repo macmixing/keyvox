@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-05-19**
+**Last Updated: 2026-06-01**
 
 ## Design Philosophy
 
@@ -962,6 +962,7 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - `StyleRewriteTextTransformTokenCounter` uses conservative approximate token counting for local model chunk planning.
 - `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, deterministic output repair, and the Chill cleanup-plus-heuristic path.
 - `OutputRepair` runs deterministic post-model repair after the local model touches text.
+- `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries across model rewrites and Chill heuristic formatting.
 - `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair.
 - `NumberEvidenceRepair.repair` coordinates factual number preservation in changed -> deleted -> separator order, with `NumberSeparatorEvidenceRepair` owning decimal-vs-time separator evidence after changed/deleted number repair runs.
 - `MoneyFactRepair` owns currency-specific repair while relying on shared number evidence for amount values.

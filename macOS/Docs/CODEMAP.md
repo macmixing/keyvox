@@ -354,7 +354,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Converts spoken/delimiter forms of `colon` into punctuation (`:`) with lightweight homophone tolerance and punctuation cleanup guards.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
-  - Appends terminal period for sentence-like outputs ending in formatted times when punctuation is absent.
+  - Converts eligible spoken terminal punctuation commands into `?`/`!` during post-processing and appends terminal periods for sentence-like outputs ending in formatted times when punctuation is absent.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final independent override that uppercases post-processed output when Caps Lock mode is enabled.
 - `Core/KeyboardMonitor.swift`

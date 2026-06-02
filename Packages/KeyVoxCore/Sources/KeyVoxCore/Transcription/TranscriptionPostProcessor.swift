@@ -139,7 +139,15 @@ public final class TranscriptionPostProcessor {
         #if DEBUG
         logPipelineStage("sentenceNormalized", sentenceNormalized)
         #endif
-        let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(sentenceNormalized)
+        let spokenTerminalPunctuationNormalized = terminalPunctuationNormalizer.normalizeSpokenTerminalPunctuation(
+            in: sentenceNormalized
+        )
+        #if DEBUG
+        logPipelineStage("spokenTerminalPunctuationNormalized", spokenTerminalPunctuationNormalized)
+        #endif
+        let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(
+            spokenTerminalPunctuationNormalized
+        )
         let output = allCapsOverrideNormalizer.normalize(in: punctuatedOutput, isEnabled: forceAllCaps)
         #if DEBUG
         if forceAllCaps {
