@@ -3,7 +3,7 @@ import Foundation
 
 enum KeyboardSpaceTrackpadEvent {
     case began
-    case moved(CGPoint)
+    case moved(CGPoint, timestamp: TimeInterval)
     case ended
     case cancelled
 }
@@ -12,15 +12,47 @@ nonisolated struct KeyboardSpaceTrackpadConfiguration {
     var activationHoldDuration: TimeInterval
     var horizontalStepDistance: CGFloat
     var activationMovementTolerance: CGFloat
+    var minimumCursorVelocityMultiplier: CGFloat
+    var maximumCursorVelocityMultiplier: CGFloat
+    var minimumCursorAccelerationVelocity: CGFloat
+    var maximumCursorAccelerationVelocity: CGFloat
+    var cursorVelocitySamplingFloor: TimeInterval
 
     init(
         activationHoldDuration: TimeInterval = 0.35,
         horizontalStepDistance: CGFloat = 9,
-        activationMovementTolerance: CGFloat = 8
+        activationMovementTolerance: CGFloat = 8,
+        minimumCursorVelocityMultiplier: CGFloat = 0.65,
+        maximumCursorVelocityMultiplier: CGFloat = 5,
+        minimumCursorAccelerationVelocity: CGFloat = 70,
+        maximumCursorAccelerationVelocity: CGFloat = 520,
+        cursorVelocitySamplingFloor: TimeInterval = 1.0 / 240.0
     ) {
         self.activationHoldDuration = activationHoldDuration
         self.horizontalStepDistance = horizontalStepDistance
         self.activationMovementTolerance = activationMovementTolerance
+        self.minimumCursorVelocityMultiplier = minimumCursorVelocityMultiplier
+        self.maximumCursorVelocityMultiplier = maximumCursorVelocityMultiplier
+        self.minimumCursorAccelerationVelocity = minimumCursorAccelerationVelocity
+        self.maximumCursorAccelerationVelocity = maximumCursorAccelerationVelocity
+        self.cursorVelocitySamplingFloor = cursorVelocitySamplingFloor
+    }
+
+    func cursorVelocityMultiplier(forHorizontalVelocity horizontalVelocity: CGFloat) -> CGFloat {
+        let velocityRange = maximumCursorAccelerationVelocity - minimumCursorAccelerationVelocity
+        guard velocityRange > 0 else {
+            return maximumCursorVelocityMultiplier
+        }
+
+        let normalizedVelocity = min(
+            max(
+                (horizontalVelocity - minimumCursorAccelerationVelocity) / velocityRange,
+                0
+            ),
+            1
+        )
+        let multiplierRange = maximumCursorVelocityMultiplier - minimumCursorVelocityMultiplier
+        return minimumCursorVelocityMultiplier + (multiplierRange * normalizedVelocity)
     }
 }
 

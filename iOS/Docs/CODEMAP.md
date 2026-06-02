@@ -914,7 +914,7 @@ Packages/
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
-  - Cursor-trackpad delta handling used by the space-bar trackpad interaction.
+  - Velocity-sensitive cursor-trackpad delta handling used by the space-bar trackpad interaction.
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionSpacingHeuristics.swift`
   - Conservative smart-spacing before inserted dictation text.
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationHeuristics.swift`

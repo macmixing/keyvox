@@ -110,4 +110,48 @@ struct KeyboardCursorTrackpadSupportTests {
 
         #expect(appliedOffsets == [2])
     }
+
+    @Test func interactorKeepsSlowMovementPrecise() {
+        var appliedOffsets: [Int] = []
+        var interactor = KeyboardCursorTrackpadInteractor(configuration: KeyboardSpaceTrackpadConfiguration(
+            activationHoldDuration: 0.35,
+            horizontalStepDistance: 10,
+            minimumCursorVelocityMultiplier: 0.5,
+            maximumCursorVelocityMultiplier: 3,
+            minimumCursorAccelerationVelocity: 100,
+            maximumCursorAccelerationVelocity: 300
+        ))
+
+        interactor.begin()
+        interactor.handleMovement(delta: CGPoint(x: 10, y: 0), timestamp: 0) { offset in
+            appliedOffsets.append(offset)
+        }
+        interactor.handleMovement(delta: CGPoint(x: 10, y: 0), timestamp: 0.1) { offset in
+            appliedOffsets.append(offset)
+        }
+
+        #expect(appliedOffsets == [1])
+    }
+
+    @Test func interactorAcceleratesFastMovement() {
+        var appliedOffsets: [Int] = []
+        var interactor = KeyboardCursorTrackpadInteractor(configuration: KeyboardSpaceTrackpadConfiguration(
+            activationHoldDuration: 0.35,
+            horizontalStepDistance: 10,
+            minimumCursorVelocityMultiplier: 0.5,
+            maximumCursorVelocityMultiplier: 3,
+            minimumCursorAccelerationVelocity: 100,
+            maximumCursorAccelerationVelocity: 300
+        ))
+
+        interactor.begin()
+        interactor.handleMovement(delta: .zero, timestamp: 0) { offset in
+            appliedOffsets.append(offset)
+        }
+        interactor.handleMovement(delta: CGPoint(x: 10, y: 0), timestamp: 0.025) { offset in
+            appliedOffsets.append(offset)
+        }
+
+        #expect(appliedOffsets == [3])
+    }
 }
