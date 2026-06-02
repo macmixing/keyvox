@@ -146,6 +146,60 @@ final class StyleRewriteTests: XCTestCase {
         )
     }
 
+    func testTerminalPunctuationBoundaryRepairRestoresSourceBoundaryExclamation() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "That is wild! Are we shipping this?",
+            rewritten: "that is wild. are we shipping this?"
+        )
+
+        XCTAssertEqual(output, "that is wild! are we shipping this?")
+    }
+
+    func testTerminalPunctuationBoundaryRepairPreservesRewrittenParagraphBreak() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "That is wild! Are we shipping this?",
+            rewritten: "that is wild.\n\nare we shipping this?"
+        )
+
+        XCTAssertEqual(output, "that is wild!\n\nare we shipping this?")
+    }
+
+    func testTerminalPunctuationBoundaryRepairRestoresTerminalSourceExclamation() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "Ship it!",
+            rewritten: "ship it"
+        )
+
+        XCTAssertEqual(output, "ship it!")
+    }
+
+    func testTerminalPunctuationBoundaryRepairRestoresTerminalSourceQuestionExclamationCluster() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "What the hell is wrong with you?!",
+            rewritten: "what the hell is wrong with you!"
+        )
+
+        XCTAssertEqual(output, "what the hell is wrong with you?!")
+    }
+
+    func testTerminalPunctuationBoundaryRepairRestoresTerminalSourceExclamationChangedToQuestion() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "Hey man? Are you okay!",
+            rewritten: "Hey man? Are you okay?"
+        )
+
+        XCTAssertEqual(output, "Hey man? Are you okay!")
+    }
+
+    func testTerminalPunctuationBoundaryRepairDoesNotRestoreWithoutSourceExclamation() {
+        let output = TerminalPunctuationBoundaryRepair().repair(
+            original: "Ship it.",
+            rewritten: "ship it"
+        )
+
+        XCTAssertEqual(output, "ship it")
+    }
+
     func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
         let output = OutputRepair.repairModelOutput(
             original: "Hey, um what are you doing, um tomorrow?",
@@ -922,6 +976,28 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     @MainActor
+    func testStyleRewriteTransformerRepairsCasualTerminalPunctuationDriftFromOriginalDictation() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .casual,
+            baseText: "Hey man? Are you okay!"
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "Hey man? Are you okay?"
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "Hey man? Are you okay!")
+        XCTAssertFalse(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup")
+    }
+
+    @MainActor
     func testStyleRewriteTransformerRepairsPolishedChangedNumberEvidenceFromOriginalDictation() async throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .polished,
@@ -1047,6 +1123,50 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertFalse(result.applied)
         XCTAssertEqual(result.errors.map(\.errorCode), [.localModelLoadFailed])
         XCTAssertEqual(result.processingMode, "local-model-cleanup-failed+heuristic")
+    }
+
+    @MainActor
+    func testChillRestoresSourceExclamationBoundaryAfterHeuristicFormatting() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .chill,
+            baseText: "That is wild!"
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "That is wild."
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "that is wild!")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup+heuristic")
+    }
+
+    @MainActor
+    func testChillRestoresSourceQuestionExclamationClusterAfterHeuristicFormatting() async throws {
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .chill,
+            baseText: "What the hell is wrong with you?!"
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { _ in
+                StubChunkResponder(responses: [
+                    0: "What the hell is wrong with you!"
+                ])
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.finalText, "what the hell is wrong with you?!")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup+heuristic")
     }
 
     private static func request(_ baseText: String) -> TextTransformRequest {

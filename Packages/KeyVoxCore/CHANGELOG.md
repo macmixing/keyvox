@@ -6,6 +6,25 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.16] - 2026-06-01
+
+Spoken terminal punctuation normalization for shared dictation cleanup.
+
+### Includes
+
+- Added linguistic-token-based normalization for terminal spoken punctuation commands so dictated `question mark`, `exclamation point`, and `exclamation mark` can become `?` and `!` when they function as sentence-ending punctuation.
+- Supported repeated terminal command sequences such as doubled punctuation and mixed `?!` or `!?` ordering while preserving the original command order.
+- Ignored surrounding punctuation around spoken terminal commands so trailing or wrapping punctuation does not prevent the intended terminal symbol from being emitted.
+- Kept ordinary references to punctuation wording unchanged by using token context and lexical-class checks before converting ambiguous phrases.
+- Wired spoken terminal punctuation normalization into shared transcription post-processing before terminal time punctuation and caps handling.
+- Added shared-engine coverage for supported terminal commands, repeated command sequences, punctuation-wrapped commands, clause-ending commands, and ordinary-reference false positives.
+
+### Notes
+
+- `1.0.16` bumps the tracked engine version for `KeyVoxCore` to cover spoken terminal punctuation normalization used by shared dictation clients.
+
+---
+
 ## [1.0.15] - 2026-05-31
 
 Uppercase reaction-token normalization for dictation cleanup.

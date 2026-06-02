@@ -723,6 +723,7 @@ Packages/
   - For chunk-level errors that do not require full fallback, keeps the failed chunk as base text and records chunk errors.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`
   - Runs deterministic post-model repair after local rewrite output and before app injection.
+  - `TerminalPunctuationBoundaryRepair.swift` preserves source-backed terminal `!` and `?!` boundaries across model rewrites and Chill heuristic formatting.
   - `NumberEvidence.swift` is the shared source of truth for factual number evidence used by general number repair and money repair.
   - `NumberEvidenceRepair.swift` coordinates factual number preservation, including separator evidence repair, changed number repair, and deleted number repair.
   - `NumberSeparatorEvidenceRepair.swift` preserves factual numeric separators, including decimal-vs-time evidence such as `5.30` versus `5:30`.

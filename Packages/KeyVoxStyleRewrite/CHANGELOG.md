@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.6] - 2026-06-01
+
+Terminal punctuation preservation for Vibes rewrite output repair.
+
+### Includes
+
+- Added deterministic terminal punctuation boundary repair so Vibes rewrites preserve source `!` and mixed `?!` punctuation when the model changes, drops, or simplifies those boundaries.
+- Routed terminal punctuation repair through shared `OutputRepair` so Casual, Polished, and Chill all use the same source-backed correction path.
+- Reapplied output repair after Chill heuristic formatting so lowercase cleanup cannot strip terminal punctuation that was proven by the source dictation.
+- Preserved rewritten paragraph breaks when restoring source punctuation across sentence boundaries instead of collapsing separators to a single space.
+- Added regression coverage for exclamation boundary restoration, terminal `!` restoration, mixed `?!` restoration, model drift from `!` to `?`, Chill heuristic preservation, and paragraph-break preservation.
+
+### Notes
+
+- `1.0.6` bumps the tracked style rewrite package version for deterministic terminal punctuation preservation across Vibes rewrites.
+
+---
+
 ## [1.0.5] - 2026-05-29
 
 Selected uncapped dictation artifact support for reversible keyboard Caps Lock transforms.
