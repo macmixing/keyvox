@@ -6,6 +6,53 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.9] - 2026-06-02
+
+Improves keyboard cursor trackpad movement and adds shared terminal punctuation handling for dictation and Vibes rewrites.
+
+### Added
+
+- Added velocity-aware spacebar trackpad cursor movement so slow horizontal drags stay precise while faster drags can move the insertion point farther per gesture step.
+- Added timestamped spacebar trackpad movement events so cursor acceleration is based on measured gesture velocity instead of raw movement distance alone.
+- Added shared dictation cleanup for spoken terminal punctuation commands so sentence-ending `question mark`, `exclamation point`, and `exclamation mark` can become `?` and `!`.
+- Added shared support for repeated and mixed terminal punctuation command sequences, including doubled punctuation and mixed `?!` or `!?` ordering.
+- Added deterministic Vibes output repair for terminal punctuation boundaries so rewritten output can preserve source-backed `!`, `?`, `?!`, and `!?` endings.
+
+### Changed
+
+- Updated keyboard cursor trackpad configuration with explicit minimum and maximum cursor velocity multipliers, acceleration velocity bounds, and a sampling floor for stable gesture timing.
+- Updated shared transcription post-processing so spoken terminal punctuation normalization runs before terminal time punctuation and caps handling.
+- Updated Vibes output repair so terminal punctuation restoration is routed through the shared repair path used by Casual, Polished, and Chill.
+- Updated Chill rewrite formatting so output repair is reapplied after heuristic cleanup, preserving proven terminal punctuation after lowercase formatting.
+- Updated iOS engineering and codemap documentation for the terminal punctuation behavior shared through `KeyVoxCore` and `KeyVoxStyleRewrite`.
+
+### Fixed
+
+- Fixed spacebar trackpad cursor movement feeling too uniform by keeping deliberate drags precise and accelerating fast horizontal movement.
+- Fixed dictated sentence endings where spoken `question mark`, `exclamation point`, or `exclamation mark` could remain as words instead of terminal punctuation.
+- Fixed punctuation-wrapped spoken terminal commands so surrounding punctuation does not block the intended terminal symbol.
+- Fixed ordinary references to punctuation wording so ambiguous phrases are left unchanged when token context does not indicate a sentence-ending command.
+- Fixed Vibes rewrites so model changes, dropped punctuation, simplified punctuation, or question/exclamation drift do not lose source-backed terminal punctuation.
+- Fixed terminal punctuation repair across paragraph boundaries so restored punctuation does not collapse rewritten paragraph breaks into a single space.
+
+### Package versions
+
+KeyVox iOS 1.2.9
+  KeyVoxCore           1.0.16
+  KeyVoxLocalInference 1.0.3
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.6
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.3
+  KeyVoxWhisper        1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.0.16` adds linguistic-token-based spoken terminal punctuation normalization for shared dictation cleanup, including repeated command sequences, punctuation-wrapped commands, clause-ending commands, and false-positive protection for ordinary punctuation references.
+- `KeyVoxStyleRewrite` `1.0.6` adds deterministic terminal punctuation boundary repair for Vibes rewrite output, including exclamation restoration, mixed terminal punctuation restoration, model drift from `!` to `?`, Chill preservation, and paragraph-break preservation.
+
+---
+
 ## [1.2.8] - 2026-06-01
 
 Fixes duplicate keyboard dictation insertion and improves text normalization for reaction tokens, PocketTTS symbols, negative numbers, and hyphenated text.
