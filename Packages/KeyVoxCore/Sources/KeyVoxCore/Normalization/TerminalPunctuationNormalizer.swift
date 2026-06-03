@@ -178,7 +178,7 @@ public struct TerminalPunctuationNormalizer {
             return false
         }
 
-        if previousIndex > words.startIndex {
+        if match.firstWordIndex == 2 {
             let secondPreviousWord = words[words.index(before: previousIndex)]
             if secondPreviousWord.lexicalClass == .determiner, previousWord.lexicalClass == .noun {
                 return false
