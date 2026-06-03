@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.17] - 2026-06-02
+
+Terminal spoken punctuation boundary refinement.
+
+### Includes
+
+- Clarified the short leading reference guard for spoken terminal punctuation normalization so the boundary check directly expresses the exact two-token context it protects.
+
+### Notes
+
+- `1.0.17` bumps the tracked engine version for `KeyVoxCore` to cover the terminal spoken punctuation boundary refinement used by shared dictation clients.
+
+---
+
 ## [1.0.16] - 2026-06-01
 
 Spoken terminal punctuation normalization for shared dictation cleanup.

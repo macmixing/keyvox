@@ -85,6 +85,16 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(output, "What is your problem!")
     }
 
+    func testConvertsTerminalCommandAfterNounPhraseWithoutCommaBoundary() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        let output = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "Here's the update exclamation point."
+        )
+
+        XCTAssertEqual(output, "Here's the update!")
+    }
+
     func testDoesNotConvertOrdinaryReferences() {
         let normalizer = TerminalPunctuationNormalizer()
 
