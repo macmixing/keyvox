@@ -6,6 +6,36 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.9] - 2026-06-02
+
+Adds spoken question mark and exclamation point support for Mac dictation.
+
+### Added
+
+- Added shared dictation cleanup through `KeyVoxCore` `1.0.17` so eligible spoken terminal punctuation commands such as `question mark`, `exclamation point`, and `exclamation mark` can become `?` and `!` when they end a dictated sentence.
+- Added support for repeated, mixed, or punctuation-wrapped spoken terminal punctuation commands so dictation can produce symbols such as `?!` and `!?` while ordinary references to punctuation wording stay unchanged.
+- Added shared Vibes output repair through `KeyVoxStyleRewrite` `1.0.6` so rewritten text can preserve terminal `!`, `?!`, and `!?` punctuation boundaries that came from spoken punctuation evidence.
+
+### Changed
+
+- Updated Mac engineering and codemap documentation for shared terminal punctuation normalization and Vibes terminal punctuation repair ownership.
+
+### Fixed
+
+- Fixed Vibes rewrites so Casual, Polished, and Chill preserve proven spoken terminal punctuation after local model rewriting or Chill heuristic formatting.
+
+### Package versions
+
+KeyVox macOS 1.1.9:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.6
+- KeyVoxLocalInference 1.0.3
+- KeyVoxVibesAdapters  1.0.3
+
+---
+
 ## [1.1.8] - 2026-06-01
 
 Improves Mac dictation cleanup for common uppercase reaction tokens and simplifies the More settings heading.
