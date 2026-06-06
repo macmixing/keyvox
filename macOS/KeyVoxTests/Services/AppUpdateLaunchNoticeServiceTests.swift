@@ -20,6 +20,51 @@ final class AppUpdateLaunchNoticeServiceTests: XCTestCase {
         XCTAssertEqual(service.consumePendingNoticeVersionIfNeeded(), currentVersion)
     }
 
+    func testStagePendingUpdatedVersionStoresPreferredDisplayKey() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defer {
+            defaults.removePersistentDomain(forName: #function)
+        }
+
+        let service = AppUpdateLaunchNoticeService(bundle: .main, defaults: defaults)
+        service.stagePendingUpdatedVersion("999.0.0", preferredDisplayKey: "display-2")
+
+        XCTAssertEqual(service.pendingNoticePreferredDisplayKey(), "display-2")
+    }
+
+    func testStagePendingUpdatedVersionWithNilClearsPreferredDisplayKey() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defer {
+            defaults.removePersistentDomain(forName: #function)
+        }
+
+        let service = AppUpdateLaunchNoticeService(bundle: .main, defaults: defaults)
+        service.stagePendingUpdatedVersion("1.0.0", preferredDisplayKey: "display-2")
+        service.stagePendingUpdatedVersion("1.0.0", preferredDisplayKey: nil)
+
+        XCTAssertNil(service.pendingNoticePreferredDisplayKey())
+    }
+
+    func testConsumeMatchingPendingNoticePreservesPreferredDisplayKey() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defer {
+            defaults.removePersistentDomain(forName: #function)
+        }
+
+        let bundle = Bundle.main
+        let currentVersion = AppUpdateLogic.normalizeVersionTag(
+            (bundle.infoDictionary?["CFBundleShortVersionString"] as? String) ?? ""
+        )
+        let service = AppUpdateLaunchNoticeService(bundle: bundle, defaults: defaults)
+        service.stagePendingUpdatedVersion(currentVersion, preferredDisplayKey: "display-2")
+
+        XCTAssertEqual(service.consumePendingNoticeVersionIfNeeded(), currentVersion)
+        XCTAssertEqual(service.pendingNoticePreferredDisplayKey(), "display-2")
+    }
+
     func testConsumePendingNoticeClearsMismatchedVersion() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
@@ -32,6 +77,21 @@ final class AppUpdateLaunchNoticeServiceTests: XCTestCase {
 
         XCTAssertNil(service.consumePendingNoticeVersionIfNeeded())
         XCTAssertNil(defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersion))
+        XCTAssertNil(defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey))
+    }
+
+    func testAcknowledgeClearsPreferredDisplayKey() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defer {
+            defaults.removePersistentDomain(forName: #function)
+        }
+
+        let service = AppUpdateLaunchNoticeService(bundle: .main, defaults: defaults)
+        service.stagePendingUpdatedVersion("1.0.0", preferredDisplayKey: "display-2")
+        service.acknowledge(version: "1.0.0")
+
+        XCTAssertNil(defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey))
     }
 
     func testStagePendingUpdatedVersionClearsAcknowledgedVersionForRepeatUpdate() {

@@ -19,7 +19,10 @@ struct AppUpdateInstallLauncher {
             throw AppUpdateError.missingInstallerScript
         }
 
-        noticeService.stagePendingUpdatedVersion(version)
+        noticeService.stagePendingUpdatedVersion(
+            version,
+            preferredDisplayKey: AppUpdateDisplayCoordinator.shared.preferredDisplayKeyForResume
+        )
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
