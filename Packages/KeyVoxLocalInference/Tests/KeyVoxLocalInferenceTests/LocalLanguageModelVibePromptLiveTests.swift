@@ -233,7 +233,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "There was three things left on the checklist.",
-            expected: "There were 3 things left on the checklist."
+            expected: "There were three things left on the checklist."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -278,7 +278,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "I, I need the report by five.",
-            expected: "I need the report by 5."
+            expected: "I need the report by five."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -303,7 +303,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "Um remind me to order two cases of water, thirty six labels, and one hundred envelopes.",
-            expected: "Remind me to order 2 cases of water, 36 labels, and 100 envelopes."
+            expected: "Remind me to order two cases of water, 36 labels, and 100 envelopes."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -328,7 +328,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "I need groceries:\n\n1. Um apples\n2. Like two cartons of eggs\n3. Uh three bags of rice",
-            expected: "I need groceries:\n\n1. Apples\n2. 2 cartons of eggs\n3. 3 bags of rice"
+            expected: "I need groceries:\n\n1. Apples\n2. Two cartons of eggs\n3. Three bags of rice"
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -388,7 +388,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "Okay so for the roadmap, um, phase one is onboarding, phase two is billing, and phase three is the admin dashboard.",
-            expected: "For the roadmap, phase 1 is onboarding, phase 2 is billing, and phase 3 is the admin dashboard."
+            expected: "For the roadmap, phase one is onboarding, phase two is billing, and phase three is the admin dashboard."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -412,8 +412,8 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         ),
         LiveStylePromptCase(
             style: .polished,
-            input: "Please summarize this as a note for tomorrow: um call the vendor at nine, confirm the order number four eight seven two, and ask whether delivery can happen before noon.",
-            expected: "Please summarize this as a note for tomorrow: call the vendor at 9:00, confirm order number 4872, and ask whether delivery can happen before noon."
+            input: "Please summarize this as a note for tomorrow. Um call the vendor at nine, confirm the order number four eight seven two, and ask whether delivery can happen before noon.",
+            expected: "Please summarize this as a note for tomorrow. Call the vendor at nine, confirm order number 4872, and ask whether delivery can happen before noon."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -448,7 +448,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "Okay, the customer said they tried the feature three times, um, the first attempt failed, the second attempt worked, and the third attempt worked after they restarted the app.",
-            expected: "The customer said they tried the feature 3 times. The first attempt failed, the second attempt worked, and the third attempt worked after they restarted the app."
+            expected: "The customer said they tried the feature three times. The first attempt failed, the second attempt worked, and the third attempt worked after they restarted the app."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -478,12 +478,12 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         LiveStylePromptCase(
             style: .polished,
             input: "For the internal recap, um, we shipped the first pass on Monday, reviewed twenty seven pieces of feedback on Tuesday, fixed the top five issues on Wednesday, and by Friday the average rewrite time had dropped from one point two seconds to zero point six seconds.",
-            expected: "For the internal recap, we shipped the first pass on Monday, reviewed 27 pieces of feedback on Tuesday, fixed the top 5 issues on Wednesday, and by Friday the average rewrite time had dropped from 1.2 seconds to 0.6 seconds."
+            expected: "For the internal recap, we shipped the first pass on Monday, reviewed 27 pieces of feedback on Tuesday, fixed the top five issues on Wednesday, and by Friday the average rewrite time had dropped from 1.2 seconds to 0.6 seconds."
         ),
         LiveStylePromptCase(
             style: .polished,
             input: "Please clean this up for a client update. Um we are still waiting on the final assets, but engineering finished the integration, QA found two minor issues, and the earliest realistic ship date is June fifth unless the review takes longer than expected.",
-            expected: "Please clean this up for a client update: we are still waiting on the final assets, but engineering finished the integration, QA found 2 minor issues, and the earliest realistic ship date is June 5th unless the review takes longer than expected."
+            expected: "Please clean this up for a client update: we are still waiting on the final assets, but engineering finished the integration, QA found two minor issues, and the earliest realistic ship date is June 5th unless the review takes longer than expected."
         ),
         LiveStylePromptCase(
             style: .polished,
@@ -571,7 +571,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             extraForbiddenFragments: [" like "]
         ),
         "I, I need the report by five.": LiveStylePromptRequirements(
-            requiredFragments: ["report", "5"],
+            requiredFragments: ["report", "five"],
             extraForbiddenFragments: ["I, I"]
         ),
         "Can you send me the twenty twenty four numbers?": LiveStylePromptRequirements(
@@ -587,7 +587,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["3:30", "4:15"]
         ),
         "Um remind me to order two cases of water, thirty six labels, and one hundred envelopes.": LiveStylePromptRequirements(
-            requiredFragments: ["2 cases", "36 labels", "100 envelopes"]
+            requiredFragments: ["two cases", "36 labels", "100 envelopes"]
         ),
         "I need to send this to Sarah, um, and then like ask if the client approved the final copy.": LiveStylePromptRequirements(
             requiredFragments: ["Sarah", "client approved the final copy"],
@@ -603,7 +603,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["123 Main Street", "4B", "85001"]
         ),
         "I need groceries:\n\n1. Um apples\n2. Like two cartons of eggs\n3. Uh three bags of rice": LiveStylePromptRequirements(
-            requiredFragments: ["1. Apples", "2 cartons", "3 bags"],
+            requiredFragments: ["1. Apples", "Two cartons", "Three bags"],
             extraForbiddenFragments: ["Like"]
         ),
         "Here are the launch tasks:\n\n1. Uh finalize screenshots\n2. Submit the build\n3. Like send the announcement email": LiveStylePromptRequirements(
@@ -633,7 +633,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["Jordan", "10 minutes late", "$800"]
         ),
         "Okay so for the roadmap, um, phase one is onboarding, phase two is billing, and phase three is the admin dashboard.": LiveStylePromptRequirements(
-            requiredFragments: ["phase 1", "phase 2", "phase 3"]
+            requiredFragments: ["phase one", "phase two", "phase three"]
         ),
         "I need to explain that the customer paid in twenty twenty three, renewed in twenty twenty four, and wants a quote for twenty twenty five.": LiveStylePromptRequirements(
             requiredFragments: ["2023", "2024", "2025"]
@@ -648,8 +648,8 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["feel faster", "accuracy", "200 milliseconds"],
             extraForbiddenFragments: [" like "]
         ),
-        "Please summarize this as a note for tomorrow: um call the vendor at nine, confirm the order number four eight seven two, and ask whether delivery can happen before noon.": LiveStylePromptRequirements(
-            requiredFragments: ["call the vendor", "9", "4872", "before noon"]
+        "Please summarize this as a note for tomorrow. Um call the vendor at nine, confirm the order number four eight seven two, and ask whether delivery can happen before noon.": LiveStylePromptRequirements(
+            requiredFragments: ["Call the vendor", "nine", "4872", "before noon"]
         ),
         "I need a clean text to the team that says hey everyone, um, the build is ready, the checklist is done, and we are waiting on final approval from design.": LiveStylePromptRequirements(
             requiredFragments: ["team", "build is ready", "checklist is done", "final approval"]
@@ -670,7 +670,7 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["first prototype", "second prototype", "third prototype", "latency and quality"]
         ),
         "Okay, the customer said they tried the feature three times, um, the first attempt failed, the second attempt worked, and the third attempt worked after they restarted the app.": LiveStylePromptRequirements(
-            requiredFragments: ["3 times", "first attempt failed", "second attempt worked", "third attempt worked"]
+            requiredFragments: ["three times", "first attempt failed", "second attempt worked", "third attempt worked"]
         ),
         "I'm dictating a longer product note because I want to make sure the model can handle a real paragraph. Um the user starts by recording a thought, then chooses a vibe, then the app rewrites the text without making them leave the keyboard or guess what happened.": LiveStylePromptRequirements(
             requiredFragments: ["longer product note", "recording a thought", "chooses a vibe", "without making them leave the keyboard"]
@@ -688,10 +688,10 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             requiredFragments: ["intentionally messy", "speed", "trust", "text is editable", "original words are back"]
         ),
         "For the internal recap, um, we shipped the first pass on Monday, reviewed twenty seven pieces of feedback on Tuesday, fixed the top five issues on Wednesday, and by Friday the average rewrite time had dropped from one point two seconds to zero point six seconds.": LiveStylePromptRequirements(
-            requiredFragments: ["27 pieces of feedback", "top 5 issues", "1.2 seconds", "0.6 seconds"]
+            requiredFragments: ["27 pieces of feedback", "top five issues", "1.2 seconds", "0.6 seconds"]
         ),
         "Please clean this up for a client update. Um we are still waiting on the final assets, but engineering finished the integration, QA found two minor issues, and the earliest realistic ship date is June fifth unless the review takes longer than expected.": LiveStylePromptRequirements(
-            requiredFragments: ["final assets", "engineering finished the integration", "2 minor issues", "June 5th"]
+            requiredFragments: ["final assets", "engineering finished the integration", "two minor issues", "June 5th"]
         ),
         "Turn this into a clean note. Um the warehouse has twelve boxes ready now, another forty eight boxes arriving next week, and a back order of two hundred sixteen units that should arrive in twenty twenty six.": LiveStylePromptRequirements(
             requiredFragments: ["12 boxes", "48 boxes", "216 units", "2026"]

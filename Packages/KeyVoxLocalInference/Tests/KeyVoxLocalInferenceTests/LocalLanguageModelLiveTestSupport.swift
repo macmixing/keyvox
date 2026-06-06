@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import XCTest
 @testable import KeyVoxLocalInference
@@ -88,10 +89,20 @@ final class LiveLocalStyleTester {
     ) async throws {
         var failures: [String] = []
         let styleFilter = ProcessInfo.processInfo.environment["KEYVOX_LIVE_STYLE_FILTER"]
+        let logsProgress = ProcessInfo.processInfo.environment["KEYVOX_LIVE_STYLE_PROGRESS"] == "1"
+        let runnableCases = cases.filter { testCase in
+            guard let styleFilter else {
+                return true
+            }
+            return testCase.style.rawValue == styleFilter
+        }
 
-        for testCase in cases {
-            if let styleFilter, testCase.style.rawValue != styleFilter {
-                continue
+        for (index, testCase) in runnableCases.enumerated() {
+            if logsProgress {
+                FileHandle.standardError.write(
+                    "[LiveStyle] start \(index + 1)/\(runnableCases.count) style=\(testCase.style.rawValue) input=\(Self.preview(testCase.input))\n"
+                        .data(using: .utf8) ?? Data()
+                )
             }
             let request = try XCTUnwrap(
                 StyleRewriteDictationConfiguration.request(
@@ -102,6 +113,12 @@ final class LiveLocalStyleTester {
                 line: line
             )
             let result = await transformer.transform(request)
+            if logsProgress {
+                FileHandle.standardError.write(
+                    "[LiveStyle] done \(index + 1)/\(runnableCases.count) style=\(testCase.style.rawValue) output=\(Self.preview(result.finalText))\n"
+                        .data(using: .utf8) ?? Data()
+                )
+            }
             let expectedApplied = testCase.expected != testCase.input
 
             if let requirements = coverageRequirements[testCase.input] {
@@ -153,6 +170,16 @@ final class LiveLocalStyleTester {
                 "U+\(String(format: "%04X", scalar.value))"
             }
             .joined(separator: " ")
+    }
+
+    private static func preview(_ text: String) -> String {
+        let normalized = text
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+        if normalized.count <= 140 {
+            return normalized
+        }
+        return String(normalized.prefix(140)) + "..."
     }
 }
 
