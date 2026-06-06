@@ -31,6 +31,9 @@ struct NumberEvidenceRepair {
             guard let rewrittenEvidence = NumberEvidence.components(in: rewrittenRun) else {
                 continue
             }
+            guard !containsCurrencySymbol(in: rewrittenRun, text: rewritten) else {
+                continue
+            }
 
             let originalRun = Array(originalTokens[(left.originalIndex + 1)..<right.originalIndex])
             guard let originalEvidenceRun = originalEvidenceRun(
@@ -126,6 +129,18 @@ struct NumberEvidenceRepair {
 
             let replacementRange = rewrittenTokens[left.rewrittenIndex].range.upperBound
                 ..< rewrittenTokens[right.rewrittenIndex].range.lowerBound
+            if let replacementText = currencyReplacement(
+                originalRun: originalRun,
+                rewrittenRun: rewrittenRun,
+                replacementRange: replacementRange,
+                rewritten: rewritten
+            ) {
+                edits.append((replacementRange, replacementText))
+                continue
+            }
+            guard !containsCurrencySymbol(in: rewrittenRun, text: rewritten) else {
+                continue
+            }
             let sourceRange = originalTokens[left.originalIndex].range.upperBound
                 ..< originalTokens[right.originalIndex].range.lowerBound
             let replacementText = String(original[sourceRange])
@@ -133,6 +148,25 @@ struct NumberEvidenceRepair {
                 "keptOriginalGapForInsertedEvidence originalRun=\(originalRun.map(\.text)) rewrittenRun=\(rewrittenRun.map(\.text)) replacement=\(debugText(replacementText))"
             )
             edits.append((replacementRange, replacementText))
+        }
+
+        if let last = orderedMatches.last,
+           last.originalIndex < originalTokens.count - 1,
+           last.rewrittenIndex < rewrittenTokens.count - 1 {
+            let originalRun = Array(originalTokens[(last.originalIndex + 1)..<originalTokens.count])
+            let rewrittenRun = Array(rewrittenTokens[(last.rewrittenIndex + 1)..<rewrittenTokens.count])
+            if containsNumberEvidence(in: originalRun, sourceText: original) == false,
+               containsNumberEvidence(in: rewrittenRun, sourceText: rewritten) {
+                let replacementRange = rewrittenTokens[last.rewrittenIndex].range.upperBound..<rewritten.endIndex
+                if let replacementText = currencyReplacement(
+                    originalRun: originalRun,
+                    rewrittenRun: rewrittenRun,
+                    replacementRange: replacementRange,
+                    rewritten: rewritten
+                ) {
+                    edits.append((replacementRange, replacementText))
+                }
+            }
         }
 
         guard !edits.isEmpty else { return rewritten }
@@ -327,6 +361,34 @@ struct NumberEvidenceRepair {
         }
 
         return originalGap.firstNonWhitespace == rewrittenSeparator.firstNonWhitespace
+    }
+
+    private func containsCurrencySymbol(in tokens: [RepairWordToken], text: String) -> Bool {
+        tokens.contains { token in
+            let prefix = text[..<token.range.lowerBound].suffix(4)
+            return CurrencyUnits.symbols.contains { symbol in
+                prefix.hasSuffix(symbol)
+            }
+        }
+    }
+
+    private func currencyReplacement(
+        originalRun: [RepairWordToken],
+        rewrittenRun: [RepairWordToken],
+        replacementRange: Range<String.Index>,
+        rewritten: String
+    ) -> String? {
+        guard let unit = originalRun.compactMap({ CurrencyUnits.unit(for: $0.normalized) }).first(where: { $0.scale == .major }),
+              rewrittenRun.count == 1,
+              rewrittenRun[0].text.allSatisfy(\.isNumber),
+              containsCurrencySymbol(in: rewrittenRun, text: rewritten) == false else {
+            return nil
+        }
+
+        let originalText = String(rewritten[replacementRange])
+        let leadingWhitespace = String(originalText.prefix(while: \.isWhitespace))
+        let suffix = String(rewritten[rewrittenRun[0].range.upperBound..<replacementRange.upperBound])
+        return "\(leadingWhitespace)\(unit.symbol)\(rewrittenRun[0].text)\(suffix)"
     }
 
     private func log(_ message: String) {

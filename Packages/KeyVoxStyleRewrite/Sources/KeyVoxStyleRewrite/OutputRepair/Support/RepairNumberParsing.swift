@@ -72,6 +72,37 @@ enum RepairNumberParsing {
         return nil
     }
 
+    static func parsedSpellOutNumberPhraseByChunks(_ text: String) -> Int? {
+        let tokens = normalizedSpellOut(text).split(separator: " ").map(String.init)
+        guard tokens.count > 1 else { return nil }
+
+        var values: [Int] = []
+        var index = tokens.startIndex
+        while index < tokens.endIndex {
+            var parsed: (endIndex: Int, value: Int)?
+            var endIndex = tokens.endIndex
+            while endIndex > index {
+                let candidate = tokens[index..<endIndex].joined(separator: " ")
+                if let value = parsedSpellOutNumberPhrase(candidate)
+                    ?? parsedSpellOutInteger(candidate) {
+                    parsed = (endIndex, value)
+                    break
+                }
+                endIndex -= 1
+            }
+
+            if let parsed {
+                values.append(parsed.value)
+                index = parsed.endIndex
+            } else {
+                index += 1
+            }
+        }
+
+        guard values.count > 1 else { return nil }
+        return values.reduce(0, +)
+    }
+
     static func parsedOrdinalInteger(_ text: String) -> Int? {
         let normalizedText = text.lowercased()
 
