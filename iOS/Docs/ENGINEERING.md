@@ -1030,7 +1030,7 @@ It owns:
 LoRA adapter ownership:
 
 - adapters are resources in `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters`
-- Polished uses `polished-alpha-026-lora.gguf`
+- Polished uses `polished-alpha-027-lora.gguf`
 - Casual and Chill share `casual-alpha-9-lora.gguf`
 - adapter URLs resolve from `KeyVoxVibesAdapters` first, with installed-directory fallback for development/repair paths
 - a missing required adapter is a model-load failure for that Vibe, not permission to silently run a different prompt path
