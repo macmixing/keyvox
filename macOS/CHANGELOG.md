@@ -6,6 +6,34 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.10] - 2026-06-06
+
+Improves Vibes number preservation and adds a small multi-display updater reliability improvement.
+
+### Changed
+
+- Updated the bundled Polished Vibes adapter through `KeyVoxVibesAdapters` `1.0.4` so Polished resolves to `polished-alpha-027-lora.gguf`, refreshed for bad-rating meaning preservation.
+- Updated Polished adapter validation through `KeyVoxLocalInference` `1.0.4` with AP-style small-number expectations and clearer live prompt progress logging.
+- Updated Mac local Vibes logging so adapter labels come from the shared adapter catalog.
+
+### Fixed
+
+- Fixed Vibes money output repair through `KeyVoxStyleRewrite` `1.0.7` so rewritten currency values can be restored from source evidence when multi-money amounts drift.
+- Fixed Vibes money preservation for comma-grouped source amounts and chunked spoken money phrases such as five thousand twenty two dollars.
+- Fixed the completed-update prompt so future updater flows preserve the preferred display across relaunch before showing the notice.
+
+### Package versions
+
+KeyVox macOS 1.1.10:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.7
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+---
+
 ## [1.1.9] - 2026-06-02
 
 Adds spoken question mark and exclamation point support for Mac dictation.
