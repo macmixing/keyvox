@@ -26,10 +26,10 @@ Tracked `datasets/` and `runs/` are the reproducible source of truth. Ignored ar
 
 ## Current Polished Adapter
 
-- Current run: `runs/polished/alpha-026`
+- Current run: `runs/polished/alpha-027`
 - Base dataset: `datasets/polished/alpha-010-base`
-- Continuation dataset: `datasets/polished/alpha-026-continuation-rating-unlearn`
-- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-026-lora.gguf`
+- Continuation dataset: `datasets/polished/alpha-027-continuation-meaning-preservation-ratings`
+- Runtime app resource: `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters/polished-alpha-027-lora.gguf`
 
 ## Current Casual Adapter
 
@@ -40,8 +40,8 @@ Tracked `datasets/` and `runs/` are the reproducible source of truth. Ignored ar
 
 ## Polished Run Status
 
-- Current: `runs/polished/alpha-026`
-- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`, `runs/polished/alpha-024`, `runs/polished/alpha-025`
+- Current: `runs/polished/alpha-027`
+- Previously promoted: `runs/polished/alpha-017`, `runs/polished/alpha-019`, `runs/polished/alpha-020`, `runs/polished/alpha-021`, `runs/polished/alpha-023`, `runs/polished/alpha-024`, `runs/polished/alpha-025`, `runs/polished/alpha-026`
 - Rejected intermediate: `runs/polished/rejected/alpha-018`, `runs/polished/rejected/alpha-022`
 - Rejected dataset: `datasets/polished/rejected/alpha-018-continuation-paragraphs`
 
