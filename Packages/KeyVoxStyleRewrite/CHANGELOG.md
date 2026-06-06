@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.7] - 2026-06-06
+
+Money and number evidence repair for Polished alpha-027 rewrite validation.
+
+### Includes
+
+- Repaired multi-money amount drift when rewritten currency values no longer match spoken source amounts.
+- Preserved comma-grouped source money amounts such as `$6,500` and `$1,500` during money fact repair.
+- Parsed chunked spoken number phrases so source money evidence can recover values like five thousand twenty two dollars.
+- Tightened currency-adjacent number repair so currency symbols only count when directly adjacent to the rewritten number.
+
+### Notes
+
+- `1.0.7` bumps the tracked style rewrite package version for deterministic money and number evidence preservation after local model rewrites.
+
+---
+
 ## [1.0.6] - 2026-06-01
 
 Terminal punctuation preservation for Vibes rewrite output repair.
