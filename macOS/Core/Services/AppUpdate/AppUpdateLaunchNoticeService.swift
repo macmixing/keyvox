@@ -12,8 +12,13 @@ struct AppUpdateLaunchNoticeService {
         self.defaults = defaults
     }
 
-    func stagePendingUpdatedVersion(_ version: String) {
+    func stagePendingUpdatedVersion(_ version: String, preferredDisplayKey: String? = nil) {
         defaults.set(version, forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
+        if let preferredDisplayKey {
+            defaults.set(preferredDisplayKey, forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey)
+        } else {
+            defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey)
+        }
         defaults.removeObject(forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
     }
 
@@ -32,11 +37,17 @@ struct AppUpdateLaunchNoticeService {
         }
 
         defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
+        defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey)
         return nil
+    }
+
+    func pendingNoticePreferredDisplayKey() -> String? {
+        defaults.string(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey)
     }
 
     func acknowledge(version: String) {
         defaults.set(version, forKey: UserDefaultsKeys.App.lastAcknowledgedUpdatedVersion)
         defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersion)
+        defaults.removeObject(forKey: UserDefaultsKeys.App.pendingUpdatedVersionPreferredDisplayKey)
     }
 }

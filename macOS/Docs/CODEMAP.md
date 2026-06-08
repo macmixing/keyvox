@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-05-19**
+**Last Updated: 2026-06-08**
 
 ## Project Overview
 
@@ -74,6 +74,7 @@ KeyVox/
 │   │   │   ├── MacTriggerTapClassifier.swift
 │   │   │   └── MacVibesTriggerActionController.swift
 │   │   ├── Services/
+│   │   │   ├── AppProcessTerminator.swift
 │   │   │   ├── Paste/
 │   │   │   │   ├── Accessibility/
 │   │   │   │   ├── Clipboard/
@@ -92,12 +93,16 @@ KeyVox/
 │   │       └── AudioIndicatorDriver.swift
 │   ├── Views/
 │   │   ├── Components/
+│   │   │   ├── AppActionButton.swift
+│   │   │   ├── AppUpdateProgressBar.swift
+│   │   │   ├── ConfirmDeletePromptView.swift
+│   │   │   ├── DictionaryFloatingAddButton.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── MacAppTheme.swift
+│   │   │   ├── OnboardingMicrophonePickerView.swift
 │   │   │   ├── SelectedVibeLabel.swift
 │   │   │   ├── UIComponents.swift
-│   │   │   ├── SettingsLastTranscriptionCard.swift
-│   │   │   └── ConfirmDeletePromptView.swift
+│   │   │   └── SettingsLastTranscriptionCard.swift
 │   │   ├── StatusMenuView.swift
 │   │   ├── OnboardingView.swift
 │   │   ├── FirstDictation/
@@ -125,6 +130,7 @@ KeyVox/
 │   │       ├── Language/
 │   │       ├── Lists/
 │   │       ├── Normalization/
+│   │       ├── Support/
 │   │       ├── Audio/
 │   │       └── Resources/Pronunciation/
 │   ├── KeyVoxWhisper/
@@ -132,6 +138,8 @@ KeyVox/
 │   ├── KeyVoxLocalInference/
 │   │   └── Sources/KeyVoxLocalInference/
 │   │       ├── LocalLanguageModel.swift
+│   │       ├── LocalLanguageModelGPUOffloadMode+Logging.swift
+│   │       ├── ProcessInfo+XCTest.swift
 │   │       ├── LlamaLocalLanguageModel*.swift
 │   │       ├── LlamaLoadedModel.swift
 │   │       └── LocalInferenceCancellationToken.swift
@@ -141,13 +149,20 @@ KeyVox/
 │   │       │   ├── OutputRepair.swift
 │   │       │   ├── Repairs/
 │   │       │   │   ├── APStyleNumberRepair.swift
+│   │       │   │   ├── AddressFactRepair.swift
 │   │       │   │   ├── MoneyFactRepair.swift
 │   │       │   │   ├── NumberEvidenceRepair.swift
-│   │       │   │   └── NumberSeparatorEvidenceRepair.swift
+│   │       │   │   ├── NumberSeparatorEvidenceRepair.swift
+│   │       │   │   ├── PunctuationRepair.swift
+│   │       │   │   └── TerminalPunctuationBoundaryRepair.swift
 │   │       │   └── Support/
+│   │       │       ├── CurrencyUnits.swift
 │   │       │       ├── NumberEvidence.swift
-│   │       │       └── RepairNumberParsing.swift
+│   │       │       ├── RepairMatching.swift
+│   │       │       ├── RepairNumberParsing.swift
+│   │       │       └── RepairTokenization.swift
 │   │       ├── StyleRewriteDictationConfiguration.swift
+│   │       ├── StyleRewritePromptLeakGuard.swift
 │   │       └── StyleRewriteTextTransformer.swift
 │   └── KeyVoxVibesAdapters/
 ├── Tools/
@@ -164,7 +179,7 @@ KeyVox/
 4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, and binds install-time Parakeet preloading to the downloader.
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
-7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates dictionary correction, list formatting, and specialized normalization helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`, including model-artifact repair and four-digit quantity grouping.
+7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
 8. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
 9. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
 10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
@@ -196,7 +211,7 @@ KeyVox/
   - Dedicated post-setup first-dictation window lifecycle.
   - Hosts the separate first-dictation flow after setup onboarding completes, animates intro-to-practice resizing from a centered frame, and opens Settings when the user completes or skips the flow.
 - `App/MacRuntimeFlags.swift`
-  - Centralized macOS environment flag parser for forcing setup onboarding or first-dictation onboarding without clearing persisted defaults.
+  - Centralized macOS environment flag parser for forcing setup onboarding, first-dictation onboarding, the debug microphone picker, debug model-download preview errors, raw-text debug logs, and the KeyVox Vibes intro without clearing persisted defaults.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, first-dictation outcome flags, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -330,7 +345,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/math/list passes, laughter/spam/model-artifact/time/email/website/four-digit grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
+  - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/spoken-quantity/math/list passes, laughter/spam/model-artifact/time/date/email/website/numeric grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
   - Merges hidden package-owned dictionary entries before matching so app-brand corrections work even when the user has not created visible dictionary entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift`
   - Shared conservative silence/fallback chunking used by both Whisper and Parakeet services.
@@ -338,7 +353,7 @@ KeyVox/
   - Small provider router that swaps the active dictation backend without changing host-side transcription call sites.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
-- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/MathExpressionNormalizer.swift`
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/Math/MathExpressionNormalizer.swift`
   - Deterministic math phrase/operator normalization (`plus/minus/times/divided by`, exponents, percent, chained expressions) with protected URL/email/code/time/date/version spans.
   - Strips terminal punctuation only for standalone math utterances while preserving sentence punctuation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/LaughterNormalizer.swift`
@@ -426,6 +441,8 @@ KeyVox/
   - Defines the tracked GitHub release feed plus the optional local override resolver used by update checks.
 - `Core/Services/UpdatePromptPresenting.swift`
   - Small UI presentation seam used so update-check behavior stays testable and decoupled from prompt-window ownership.
+- `Core/Services/AppProcessTerminator.swift`
+  - Centralized immediate-termination helper used only after updater install handoff or self-move relaunch handoff has been confirmed.
 - `Core/Services/Paste/PasteService.swift`
   - Host paste orchestrator that snapshots the clipboard, attempts Accessibility insertion first, coordinates menu fallback second, and restores or recovers clipboard state afterward.
 - `Core/Services/Paste/Accessibility/*`
@@ -500,9 +517,9 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/WebsiteNormalizer.swift`
   - Shared website/domain helper for compact-domain detection, leading-domain normalization, and standalone website checks.
   - Used by list marker parsing/detection and dictionary email normalization to keep website rules centralized.
-- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/MathExpressionNormalizer.swift`
-  - Shared deterministic math normalizer pass used by post-processing before list parsing.
-  - Converts high-confidence spoken math into symbol form while preserving non-math structures and protected spans.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/Math/`
+  - Shared deterministic math normalizer split across core, pattern, protected-range, exponent, and spelled-out-operand helpers.
+  - Converts high-confidence spoken math into symbol form before list parsing while preserving non-math structures and protected spans.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Provides spoken-colon normalization before list detection to stabilize `label colon value` phrasing into deterministic punctuation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/CharacterSpamNormalizer.swift`
@@ -510,7 +527,11 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AsteriskCensorshipArtifactNormalizer.swift`
   - A targeted provider-artifact guard that restores observed leading-f asterisk censorship patterns before downstream cleanup.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ThousandsGroupingNormalizer.swift`
-  - Adds grouping separators to quantity-style four-digit numerals while preserving year-like references and protected date/version/phone shapes.
+  - Normalizes spoken quantity forms before math parsing and adds grouping separators to quantity-style four-digit numerals later while preserving year-like references and protected date/version/phone shapes.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/DateNormalizer.swift`
+  - Late cleanup pass for spoken date forms after time normalization and before final email/website/numeric finishing.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
+  - Handles spoken terminal punctuation and terminal-time punctuation completion near the end of post-processing.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryEmailEntry.swift`
@@ -777,9 +798,21 @@ KeyVox/
 - Vibes trigger-key interactions preference key: `KeyVox.VibesTriggerKeyInteractionsEnabled` (defaults to enabled)
 - Hide Dock icon preference key: `KeyVox.HideDockIconWhenAllWindowsClosed` (defaults to disabled)
 - Audio-device initialization marker: `KeyVox.HasInitializedMicrophoneDefault` (owned in `Core/AudioDeviceManager.swift`)
+- Onboarding completion key: `KeyVox.HasCompletedOnboarding`
+- First-dictation outcome keys:
+  - `KeyVox.App.HasCompletedFirstDictation`
+  - `KeyVox.App.HasSkippedFirstDictation`
+- Mac Vibes intro seen key: `KeyVox.App.HasSeenKeyVoxVibesIntro`
 - Last transcription cache key: `KeyVox.App.LastTranscription`
 - Active provider key: `KeyVox.App.ActiveDictationProvider`
-- Resume-after-self-move updater key: `KeyVox.App.ResumeUpdaterAfterApplicationsMove`
+- Update prompt and handoff keys:
+  - `KeyVox.App.UpdateAlertLastShown`
+  - `KeyVox.App.UpdateAlertSnoozedUntil`
+  - `KeyVox.App.PendingUpdatedVersion`
+  - `KeyVox.App.PendingUpdatedVersionPreferredDisplayKey`
+  - `KeyVox.App.LastAcknowledgedUpdatedVersion`
+  - `KeyVox.App.ResumeUpdaterAfterApplicationsMove`
+  - `KeyVox.App.ResumeUpdaterPreferredDisplayKey`
 - Weekly word stats owner: `App/WeeklyWordStatsStore.swift`
   - persists a stable installation identifier plus the current-week usage snapshot and local rollover behavior
 - Weekly word stats iCloud sync: `App/iCloud/WeeklyWordStatsCloudSync.swift`
@@ -792,6 +825,7 @@ KeyVox/
   - origins by display map: `KeyVox.RecordingOverlayOriginsByDisplay`
   - legacy read-only migration key: `KeyVox.RecordingOverlayOrigin`
 - iCloud per-setting modified-at keys:
+  - `KeyVox.iCloud.DictionaryLastModifiedAt`
   - `KeyVox.iCloud.TriggerBindingLastModifiedAt`
   - `KeyVox.iCloud.AutoParagraphsLastModifiedAt`
   - `KeyVox.iCloud.ListFormattingLastModifiedAt`

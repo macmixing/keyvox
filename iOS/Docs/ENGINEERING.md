@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-06-01**
+**Last Updated: 2026-06-08**
 
 ## Design Philosophy
 
@@ -228,6 +228,11 @@ The supported runtime flags are:
 - `KEYVOX_FORCE_ONBOARDING`
 - `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`
 - `KEYVOX_FORCE_KEYVOX_SPEAK_INTRO`
+- `KEYVOX_FORCE_TTS_REGENERATION`
+- `KEYVOX_BYPASS_VIBES_TRIAL`
+- `KEYVOX_VIBES_TRIAL_DURATION_SECONDS`
+- `KEYVOX_RESET_VIBES_TRIAL`
+- `KEYVOX_FORCE_KEYVOX_VIBES_INTRO`
 
 Accepted truthy values:
 
@@ -270,6 +275,20 @@ Behavior:
 - the flag forces the post-onboarding KeyVox Speak intro to present for development and design work
 - the flag does not change the underlying seen-state or feature-used suppression rules for production behavior
 - the intro still routes through the main app surface and must not appear over onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
+
+### TTS Force-Regeneration Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- `KEYVOX_FORCE_TTS_REGENERATION` asks `TTSManager` to generate a fresh copied-text playback request even when the request text matches the replayable cached transcript
+- the flag is for development and debugging only
+- the flag must not change entitlement, free-speak consumption, replay-cache persistence, pause/resume, or playback ownership rules
 
 ### KeyVox Vibes Trial Bypass Runtime Flag
 
@@ -909,6 +928,21 @@ The containing app owns live dictionary and style state, while the dictation pip
 - `TranscriptionManager` observes dictionary entries and refreshes the post-processor plus the currently selected provider’s hint prompt
 - hint prompts are bounded to the newest entries, up to `200` phrases and `1200` characters
 
+### Shared Post-Processing Rules
+
+`KeyVoxCore` owns the shared post-processing order used by iOS and macOS.
+
+Current order:
+
+1. normalize literal email text before dictionary matching
+2. apply dictionary matching with package-owned hidden built-ins merged at effective-use boundaries
+3. normalize lightweight idioms and spoken colons
+4. group spoken quantity forms before math normalization
+5. normalize math expressions through the split math normalization helpers
+6. apply list formatting when enabled
+7. run late cleanup for laughter, character spam, provider asterisk artifacts, time expressions, dates, email boundaries, website/domain casing, and numeric grouping
+8. run render-mode whitespace cleanup, sentence capitalization, spoken terminal punctuation, terminal-time punctuation completion, and the all-caps override
+
 ### Style Rules
 
 - `autoParagraphsEnabled` and `listFormattingEnabled` are app-owned toggles
@@ -960,9 +994,12 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - `TextTransformChunkPlanner` budgets every model call as instructions + prompt wrapper + input chunk + expected output + safety margin.
 - chunk planning prefers semantic boundaries first, then word-level splits when a segment exceeds budget.
 - `StyleRewriteTextTransformTokenCounter` uses conservative approximate token counting for local model chunk planning.
-- `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, deterministic output repair, and the Chill cleanup-plus-heuristic path.
+- `StyleRewriteTextTransformer` owns chunk execution through an injected chunk responder, full fallback policy, style-specific processing modes, Casual cleanup metadata, deterministic output repair, prompt-leak fallback, and the Chill cleanup-plus-heuristic path.
+- `StyleRewritePromptLeakGuard` falls back to the original base text when generated output leaks significant prompt/instruction text.
 - `OutputRepair` runs deterministic post-model repair after the local model touches text.
+- `PunctuationRepair` preserves punctuation facts before more specific fact repair runs.
 - `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries across model rewrites and Chill heuristic formatting.
+- `AddressFactRepair` preserves source-backed address facts before money and number repair.
 - `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair.
 - `NumberEvidenceRepair.repair` coordinates factual number preservation in changed -> deleted -> separator order, with `NumberSeparatorEvidenceRepair` owning decimal-vs-time separator evidence after changed/deleted number repair runs.
 - `MoneyFactRepair` owns currency-specific repair while relying on shared number evidence for amount values.
@@ -999,7 +1036,7 @@ This keeps the keyboard insertion path unchanged while still making speed-profil
 
 Failure policy:
 
-- no selected request, `None`, unavailable local rewrite model, missing required adapter, generation failure, prompt-too-long, or required full fallback inserts the post-processed base text
+- no selected request, `None`, unavailable local rewrite model, missing required adapter, generation failure, prompt-too-long, prompt-leak detection, or required full fallback inserts the post-processed base text
 - chunk-level failures that do not require full fallback use the base text for only the failed chunk and record the error
 - model errors must never replace user dictation with an error or diagnostic string
 
@@ -1030,7 +1067,7 @@ It owns:
 LoRA adapter ownership:
 
 - adapters are resources in `Packages/KeyVoxVibesAdapters/Sources/KeyVoxVibesAdapters/Resources/Adapters`
-- Polished uses `polished-alpha-026-lora.gguf`
+- Polished uses `polished-alpha-027-lora.gguf`
 - Casual and Chill share `casual-alpha-9-lora.gguf`
 - adapter URLs resolve from `KeyVoxVibesAdapters` first, with installed-directory fallback for development/repair paths
 - a missing required adapter is a model-load failure for that Vibe, not permission to silently run a different prompt path
@@ -1507,10 +1544,13 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - weekly stats storage and merge behavior
 - Live Activity coordination
 - model manager validation and repair behavior
+- KeyVox Vibes intro scheduling, access matrix semantics, and purchase/trial behavior
 - PocketTTS engine runtime preparation, unload, and prepared-runtime compute-mode behavior
 - TTS manager engine-unload behavior on replayable completion, explicit stop, and playback error
+- Home copied-text playback preparation presentation policy
 - stop-time capture processing
 - keyboard dictation controller behavior
+- keyboard deterministic dictation formatting and latest-insertion change behavior
 - keyboard interaction haptics
 - keyboard controller presentation teardown and rebuild behavior
 - keyboard text input helpers

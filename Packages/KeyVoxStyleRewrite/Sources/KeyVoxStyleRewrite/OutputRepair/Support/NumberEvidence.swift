@@ -36,6 +36,9 @@ enum NumberEvidence {
         if let numberPhrase = RepairNumberParsing.parsedSpellOutNumberPhrase(texts.joined(separator: " ")) {
             return numberPhrase
         }
+        if let chunkedNumberPhrase = RepairNumberParsing.parsedSpellOutNumberPhraseByChunks(texts.joined(separator: " ")) {
+            return chunkedNumberPhrase
+        }
         if let digitSequence = RepairNumberParsing.parsedDigitSequence(from: texts) {
             return digitSequence
         }

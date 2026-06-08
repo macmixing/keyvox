@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-06-05
+
+Bundled Polished adapter refresh for bad-rating meaning preservation.
+
+### Includes
+
+- Updated the bundled Polished adapter resource to `polished-alpha-027-lora.gguf`.
+- Continued Polished from alpha-026 using the `alpha-027-continuation-meaning-preservation-ratings` dataset built from six bad Polished ratings.
+- Added continuation coverage for negation, pronoun, uncertainty, `though`, duplicate-article, and invention-guard failures while replaying existing live-regression guards.
+- Updated the adapter catalog so Polished resolves to the promoted bundled adapter resource.
+
+### Notes
+
+- `1.0.4` bumps the tracked adapter package version for the refreshed bundled Polished adapter resource.
+- Casual remains on `casual-alpha-9-lora.gguf`.
+
+---
+
 ## [1.0.3] - 2026-05-22
 
 Bundled Vibes adapter refresh for rating-formatting unlearn continuations and AP-backed number repair.

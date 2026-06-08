@@ -102,6 +102,11 @@ final class AppUpdateCoordinator: ObservableObject {
     func prepareForLaunch() {
         cleanupService.cleanupStaleArtifacts()
         postUpdateNoticeVersion = noticeService.consumePendingNoticeVersionIfNeeded()
+        if postUpdateNoticeVersion != nil {
+            AppUpdateDisplayCoordinator.shared.restorePreferredDisplayKeyForResumedUpdate(
+                noticeService.pendingNoticePreferredDisplayKey()
+            )
+        }
         if let resumeContext = applicationsPrereflight.consumeResumeAfterApplicationsMoveContext() {
             service.suppressNextAutomaticUpdatePrompt()
             AppUpdateDisplayCoordinator.shared.restorePreferredDisplayKeyForResumedUpdate(

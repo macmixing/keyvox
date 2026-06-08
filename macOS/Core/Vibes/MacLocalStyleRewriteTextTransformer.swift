@@ -1,6 +1,7 @@
 import Foundation
 import KeyVoxLocalInference
 import KeyVoxStyleRewrite
+import KeyVoxVibesAdapters
 
 @MainActor
 final class MacLocalStyleRewriteTextTransformer: DictationTextTransforming {
@@ -248,9 +249,9 @@ private extension MacLocalRewriteAdapterKind {
     var logLabel: String {
         switch self {
         case .polished:
-            return "polished-alpha-021"
+            return KeyVoxVibesAdapterCatalog.polished.id
         case .casual:
-            return "casual-alpha-3"
+            return KeyVoxVibesAdapterCatalog.casual.id
         }
     }
 }

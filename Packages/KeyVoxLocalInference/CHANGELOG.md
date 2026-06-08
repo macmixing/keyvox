@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-06-06
+
+Live validation coverage for the Polished alpha-027 adapter refresh.
+
+### Includes
+
+- Aligned Polished live prompt expectations with AP-style small-number behavior for ordinary non-money, non-date, non-time, non-percentage, non-year, and non-reference contexts.
+- Preserved non-time wording for phrases such as `at nine` while keeping explicit time-shaped inputs formatted as times.
+- Added opt-in live prompt progress logging so local adapter validation can show each running input and output.
+
+### Notes
+
+- `1.0.4` bumps the tracked local inference package version for live validation coverage around the promoted Polished alpha-027 Vibes adapter.
+
+---
+
 ## [1.0.3] - 2026-05-22
 
 Live validation coverage for refreshed Vibes adapter boundaries and factual-number repair behavior.

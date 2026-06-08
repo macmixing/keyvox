@@ -1,0 +1,57 @@
+{
+  "bad_rating_records": [
+    {
+      "capture_id": "328FF95E-BBC6-4260-A960-2FDBFFDA5B66",
+      "source_text": "The way I see it is there's no way it can't get eternally.",
+      "style_identifier": "polished",
+      "visible_text": "The way I see it is there is no way it can get eternally."
+    },
+    {
+      "capture_id": "08045D7F-DCDD-455D-8405-F10A6CA9D789",
+      "source_text": "But the user also has to download The rewrite model from Hugging Face as well.",
+      "style_identifier": "polished",
+      "visible_text": "But the user also has to download the The rewrite model from Hugging Face as well."
+    },
+    {
+      "capture_id": "EA1D6688-A580-4FC6-93AF-323F5C5D2E89",
+      "source_text": " I hope you get good sleep though. Message me tomorrow.",
+      "style_identifier": "polished",
+      "visible_text": " I hope you get good sleep tomorrow. Message me tomorrow."
+    },
+    {
+      "capture_id": "37E86A6B-05E4-4DE5-A63F-149F3E4BA7F0",
+      "source_text": "Yeah, I don't know if you know what you're doing, but let's stop this.",
+      "style_identifier": "polished",
+      "visible_text": "Yeah, I don't know what you're doing, but let's stop this."
+    },
+    {
+      "capture_id": "1184BA05-2CDD-467C-BA94-AFD97253A820",
+      "source_text": "Do you think now is a good time to call you?",
+      "style_identifier": "polished",
+      "visible_text": "Do you think now is a good time to call me?"
+    },
+    {
+      "capture_id": "007F939C-EE3B-4B0D-ADFF-FE9076667FCF",
+      "source_text": " That's cool. Are there any games that are your favorite besides the new ones that you've gotten though? Like anything you've played for a long time?",
+      "style_identifier": "polished",
+      "visible_text": " That's cool. Are there any games that are your favorite besides the new ones that you've gotten through? Anything you've played for a long time?"
+    }
+  ],
+  "categories": {
+    "duplicate_article_cleanup": 7,
+    "invention_guard": 7,
+    "live_prompt_compatibility": 19,
+    "live_regression_guard": 27,
+    "negation_preservation": 7,
+    "pronoun_preservation": 7,
+    "though_preservation": 7,
+    "uncertainty_preservation": 7
+  },
+  "continued_from": "ModelTraining/artifacts/current/polished-lora-alpha-026/adapters/polished-alpha-026/adapters.safetensors",
+  "purpose": "continue polished alpha-026 with bad-rating meaning preservation guards",
+  "source_bad_ratings": "bad-ratings.json",
+  "test_count": 11,
+  "train_count": 66,
+  "valid_count": 11,
+  "version": "polished-alpha-027"
+}

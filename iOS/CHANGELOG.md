@@ -6,6 +6,42 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.10] - 2026-06-06
+
+Improves Vibes money preservation, refreshes the Polished adapter, and refines shared terminal punctuation cleanup.
+
+### Changed
+
+- Updated the bundled Polished Vibes adapter through `KeyVoxVibesAdapters` `1.0.4` so Polished resolves to `polished-alpha-027-lora.gguf`, refreshed for bad-rating meaning preservation.
+- Updated Polished adapter validation through `KeyVoxLocalInference` `1.0.4` with AP-style small-number expectations and clearer live prompt progress logging.
+- Updated iOS local Vibes logging and documentation so adapter references come from the shared adapter catalog and name the current Polished adapter.
+
+### Fixed
+
+- Fixed Vibes money output repair through `KeyVoxStyleRewrite` `1.0.7` so rewritten currency values can be restored from source evidence when multi-money amounts drift.
+- Fixed Vibes money preservation for comma-grouped source amounts and chunked spoken money phrases such as five thousand twenty two dollars.
+- Refined shared terminal punctuation cleanup through `KeyVoxCore` `1.0.17` so the short leading reference guard uses the exact two-token context it protects.
+
+### Package versions
+
+KeyVox iOS 1.2.10
+  KeyVoxCore           1.0.17
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.3
+  KeyVoxStyleRewrite   1.0.7
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.0.17` refines the terminal spoken punctuation boundary guard used by shared dictation cleanup.
+- `KeyVoxStyleRewrite` `1.0.7` repairs multi-money amount drift, preserves comma-grouped source money amounts, parses chunked spoken number phrases for money evidence, and tightens currency-adjacent number repair for Vibes rewrites.
+- `KeyVoxLocalInference` `1.0.4` updates Polished live validation expectations for the promoted alpha-027 adapter.
+- `KeyVoxVibesAdapters` `1.0.4` promotes the bundled Polished adapter resource to `polished-alpha-027-lora.gguf`.
+
+---
+
 ## [1.2.9] - 2026-06-02
 
 Improves keyboard cursor trackpad movement and adds shared terminal punctuation handling for dictation and Vibes rewrites.
