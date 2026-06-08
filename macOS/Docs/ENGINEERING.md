@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-05-19**
+**Last Updated: 2026-06-08**
 
 ## Design Philosophy
 
@@ -35,8 +35,8 @@ KeyVox is organized by responsibility:
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). Package-owned hidden dictionary entries live beside user dictionary primitives so app/product naming is corrected through the same matcher pipeline without persisting or displaying those entries as user vocabulary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
-- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired.
-- `Core/Services/`: Paste/injection and update/checking services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, while update feed source selection lives in `UpdateFeedConfig.swift` and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `PunctuationRepair` preserves punctuation facts first, `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `AddressFactRepair` preserves source-backed address facts, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired. `StyleRewritePromptLeakGuard` falls back to the base text when generated output leaks significant prompt text.
+- `Core/Services/`: Paste/injection, update/checking, and process-termination services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, in-place updater pieces live under `AppUpdate/`, immediate process termination is centralized in `AppProcessTerminator.swift`, update feed source selection lives in `UpdateFeedConfig.swift`, and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
 - `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
@@ -120,6 +120,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `KEYVOX_FORCE_ONBOARDING=1` and `KEYVOX_FORCE_FIRST_DICTATION_ONBOARDING=1` force the respective Mac onboarding windows without clearing or faking persisted completion state.
   - Scene C owns the install/download card and uses the shared labeled progress component for status and percent display.
   - Opening help from the Vibes card question-mark path starts at Scene B as standalone help: no close-header space, no X, and a `Done` footer action.
+
 - `MacVibesCoordinator.canUseVibes` means the local Vibes AI model is installed and ready.
 - `MacVibesCoordinator.selectedVibe` resolves to `.none` while the model is missing, but the persisted selected style is not erased just because the model is unavailable.
 - `MacVibesCoordinator.releasePrewarmSession(reason:)` forwards to the local transformer so prewarm work is cancelled and the local rewrite model is unloaded after dictation and Vibe-change transforms.
@@ -130,6 +131,19 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - macOS Sequoia (15)+: automatic mode may report Metal/GPU backend when available, with CPU fallback on load/context failure
   - macOS Ventura/Sonoma (13.5-14.x): automatic mode resolves to CPU-only because platform GPU support is disabled before device enumeration
   - non-macOS platforms: CPU-only
+
+## Mac Runtime Flags
+
+`MacRuntimeFlags` is the single macOS environment flag parser.
+
+Supported flags:
+
+- `KEYVOX_FORCE_ONBOARDING`: forces the setup onboarding window without clearing persisted completion state
+- `KEYVOX_FORCE_FIRST_DICTATION_ONBOARDING`: forces the first-dictation practice window without clearing or faking first-dictation completion/skipped state
+- `KEYVOX_FORCE_MIC_PICKER`: debug-only force path for the onboarding microphone picker
+- `KEYVOX_FORCE_KEYVOX_VIBES_INTRO`: forces repeated local Vibes intro presentation without clearing defaults, while still respecting the update-availability gate
+- `KVX_MODEL_DOWNLOAD_PREVIEW_ERROR`: debug-only model-download preview error value
+- `KVX_DEBUG_LOG_RAW_TEXT`: enables raw final text in debug transformation logs when set to `1`
 
 ## Mac Vibes Trigger-Key Contract
 
@@ -151,10 +165,10 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
 2. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies effective dictionary adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery and package-owned hidden app/product naming entries.
-4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
+4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, spoken quantity grouping, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
 5. List formatting applies numeric list rendering when confidence gates pass.
-6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
-7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
+6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, `DateNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
+7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), spoken terminal punctuation, terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
 8. Final text is inserted via the paste service, where macOS applies final insertion-time heuristics such as dictionary-aware leading-cap normalization and smart spacing based on the focused target context.
 
 ## Dictionary Hinting and Built-Ins
@@ -346,6 +360,7 @@ These remain integration/manual-test territory by design.
 - `Views/VibePillOverlay.swift` is a thin overlay shell for Vibe feedback only; style rewrite, tap classification, and paste replacement stay in `Core/Vibes/` and `Core/Services/Paste/`.
 - `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes. Vibe controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift` must keep self-targeted AX writes on the main thread, but must not use an unbounded cross-thread `DispatchQueue.main.sync`; the current contract returns fallback on timeout so paste recovery can proceed.
+- `Core/Services/AppProcessTerminator.swift` is the only helper for intentional immediate app termination after updater handoff or resume-after-move relaunch; keep termination policy out of updater views and app entry-point branching.
 - `Core/Vibes/MacVibesAccessMatrix.swift` stays the pure Mac Vibes settings decision surface. Do not add entitlement, trial, purchase, restore, or paywall branches to Mac Vibes.
 - Mac Vibes settings copy belongs beside the view that renders it: `SettingsVibesCardCopy`, `SettingsVibesExamplesCopy`, and `SettingsVibesAIInstallCardCopy`. Do not move user-facing copy into `MacVibesAccessMatrix`.
 - `Core/Vibes/MacLocalRewriteInferenceService.swift` stays the Mac-local composition point for model URL, adapter URL, and GPU offload mode. Platform GPU eligibility belongs in `KeyVoxLocalInference`, where it is already logged and tested.
