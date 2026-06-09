@@ -79,7 +79,7 @@ extension AudioRecorder {
             throw AudioRecorderError.microphonePermissionDenied
         }
 
-        try ensureEngineRunning()
+        try await ensureEngineRunning()
     }
 
     func repairMonitoringAfterPlayback() async throws {
@@ -99,13 +99,13 @@ extension AudioRecorder {
         for (attemptIndex, delay) in recoveryDelays.enumerated() {
             if delay > 0 {
                 invalidateAudioEngine(clearSessionActive: true)
-                deactivateAudioSessionForRouteRecovery()
+                await deactivateAudioSessionForRouteRecovery()
                 try? await Task.sleep(nanoseconds: delay)
                 refreshCurrentCaptureDeviceName()
             }
 
             do {
-                try ensureEngineRunning()
+                try await ensureEngineRunning()
                 lastError = nil
                 break
             } catch {
@@ -125,7 +125,7 @@ extension AudioRecorder {
         }
     }
 
-    func ensureEngineRunning() throws {
+    func ensureEngineRunning() async throws {
         guard !isMonitoring || audioEngine == nil || !audioEngine!.isRunning else { return }
 
         let routeInputPorts = audioSession.currentRoute.inputs
@@ -141,25 +141,18 @@ extension AudioRecorder {
 
         // Set up audio session for background persistence
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetoothHFP])
+            try await configureAudioSessionForRecording()
             Self.log("setCategory(playAndRecord) succeeded")
-        } catch {
-            Self.log("setCategory(playAndRecord) failed error=\(error.localizedDescription)")
-            throw error
-        }
-
-        do {
-            try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
             Self.log("setAllowHapticsAndSystemSoundsDuringRecording(true) succeeded")
         } catch {
-            Self.log("setAllowHapticsAndSystemSoundsDuringRecording(true) failed error=\(error.localizedDescription)")
+            Self.log("configureAudioSessionForRecording failed error=\(error.localizedDescription)")
             throw error
         }
         // Keep the hardware route's native sample rate. Bluetooth HFP routes can reject
         // a forced 16 kHz preference, and we already convert captured audio into the
         // recorder's 16 kHz output format downstream.
         do {
-            try audioSession.setActive(true)
+            try await activateAudioSession()
             let activeRouteInputPorts = audioSession.currentRoute.inputs
                 .map { $0.portType.rawValue }
                 .joined(separator: ",")
@@ -255,7 +248,7 @@ extension AudioRecorder {
         KeyVoxIPCBridge.setSessionActive()
     }
 
-    func stopMonitoring(keepAudioSessionActive: Bool = false) throws {
+    func stopMonitoring(keepAudioSessionActive: Bool = false) async throws {
         guard isMonitoring else { return }
         guard !isRecording else {
             throw AudioRecorderError.monitoringShutdownWhileRecording
@@ -265,7 +258,7 @@ extension AudioRecorder {
 
         if keepAudioSessionActive == false {
             do {
-                try audioSession.setActive(false)
+                try await deactivateAudioSession()
             } catch {
                 throw AudioRecorderError.engineStopFailed(underlying: error)
             }
@@ -297,13 +290,13 @@ extension AudioRecorder {
         for (attemptIndex, delay) in recoveryDelays.enumerated() {
             if delay > 0 {
                 invalidateAudioEngine(clearSessionActive: true)
-                deactivateAudioSessionForRouteRecovery()
+                await deactivateAudioSessionForRouteRecovery()
                 try await Task.sleep(nanoseconds: delay)
                 refreshCurrentCaptureDeviceName()
             }
 
             do {
-                try ensureEngineRunning()
+                try await ensureEngineRunning()
                 try applyInputPreference()
                 lastError = nil
                 break
@@ -389,16 +382,18 @@ extension AudioRecorder {
             "handleMonitoringInterruption routeInputs=\(String(audioSession.currentRoute.inputs.count)) engineRunning=\(String(audioEngine?.isRunning == true))"
         )
         invalidateAudioEngine(clearSessionActive: true)
-        deactivateAudioSessionForRouteRecovery()
+        Task { [weak self] in
+            await self?.deactivateAudioSessionForRouteRecovery()
+        }
         refreshCurrentCaptureDeviceName()
         audioSessionInterruptedHandler?()
     }
 
-    func deactivateAudioSessionForRouteRecovery() {
+    func deactivateAudioSessionForRouteRecovery() async {
         // The session may already be transitioning during a route change, but recovery
         // should continue with a fresh engine either way.
         Self.log("deactivateAudioSessionForRouteRecovery")
-        try? audioSession.setActive(false)
+        try? await deactivateAudioSession()
     }
 
     private func shouldRetryRecordingStartAfterRouteTransition(for error: Error) -> Bool {
