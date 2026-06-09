@@ -24,6 +24,8 @@ struct MainTabView: View {
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
+    @State private var pendingModelUpdatePrompt: PendingModelUpdatePrompt?
+    @State private var hasDismissedModelUpdatePrompt = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +47,7 @@ struct MainTabView: View {
         }
         .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
         .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
+        .modelUpdatePrompt(modelUpdatePromptBinding, onDownload: performModelUpdatePromptDownload)
         .sheet(
             isPresented: Binding(
                 get: { canPresentFeatureSheets && ttsPurchaseController.isUnlockSheetPresented },
@@ -110,6 +113,12 @@ struct MainTabView: View {
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
             }
+        }
+        .task {
+            presentModelUpdatePromptIfNeeded()
+        }
+        .onReceive(modelManager.$modelStates) { _ in
+            presentModelUpdatePromptIfNeeded()
         }
     }
 
@@ -213,6 +222,36 @@ struct MainTabView: View {
         case .ttsVoiceWithSharedModel(let voice):
             pocketTTSModelManager.installVoiceEnsuringSharedModel(voice)
         }
+    }
+
+    private func performModelUpdatePromptDownload(_ prompt: PendingModelUpdatePrompt) {
+        switch prompt {
+        case .parakeetArtifactUpdate:
+            appTabRouter.openSettingsModelSection()
+            modelManager.repairModelIfNeeded(for: .parakeetTdtV3)
+        }
+    }
+
+    private func presentModelUpdatePromptIfNeeded() {
+        guard hasDismissedModelUpdatePrompt == false,
+              pendingModelUpdatePrompt == nil,
+              modelManager.requiresArtifactUpdate(for: .parakeetTdtV3) else {
+            return
+        }
+
+        pendingModelUpdatePrompt = .parakeetArtifactUpdate
+    }
+
+    private var modelUpdatePromptBinding: Binding<PendingModelUpdatePrompt?> {
+        Binding(
+            get: { pendingModelUpdatePrompt },
+            set: { newValue in
+                if pendingModelUpdatePrompt != nil && newValue == nil {
+                    hasDismissedModelUpdatePrompt = true
+                }
+                pendingModelUpdatePrompt = newValue
+            }
+        )
     }
 
     private var selectedTab: ContainingAppTab {

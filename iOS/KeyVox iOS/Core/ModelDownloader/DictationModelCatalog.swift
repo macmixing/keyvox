@@ -88,7 +88,7 @@ enum DictationModelCatalog {
                 displayName: "Parakeet TDT v3",
                 installLayout: .subdirectory("parakeet"),
                 artifacts: parakeetArtifacts,
-                requiredDownloadBytes: 600_000_000
+                requiredDownloadBytes: 360_000_000
             )
         }
     }
