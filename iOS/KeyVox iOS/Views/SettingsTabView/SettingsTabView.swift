@@ -9,6 +9,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @EnvironmentObject private var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State var isModelSectionExpanded = false
@@ -20,6 +21,7 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
+    @State private var handledModelSectionExpansionRequestID: UUID?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
     static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
@@ -38,51 +40,85 @@ struct SettingsTabView: View {
     }
 
     var body: some View {
-        AppScrollScreen {
-            VStack(alignment: .leading, spacing: 16) {
-                sessionSection
-                speakTimeoutSection
-                keyboardSection
-                audioSection
-                activeModelSection
-                vibesAISection
-                ttsSection
-                rateAndReviewSection
-                supportSection
-                helpSection
-                restorePurchasesSection
-                versionFooter
+        ScrollViewReader { scrollProxy in
+            AppScrollScreen {
+                VStack(alignment: .leading, spacing: 16) {
+                    sessionSection
+                    speakTimeoutSection
+                    keyboardSection
+                    audioSection
+                    activeModelSection
+                    vibesAISection
+                    ttsSection
+                    rateAndReviewSection
+                    supportSection
+                    helpSection
+                    restorePurchasesSection
+                    versionFooter
+                }
             }
-        }
-        .sheet(isPresented: $isThirdPartyNoticesPresented) {
-            ThirdPartyNoticesView()
-        }
-        .onDisappear {
-            ttsPreviewPlayer.stop()
-        }
-        .onChange(of: isTTSSectionExpanded) { _, isExpanded in
-            if isExpanded == false {
+            .sheet(isPresented: $isThirdPartyNoticesPresented) {
+                ThirdPartyNoticesView()
+            }
+            .onDisappear {
                 ttsPreviewPlayer.stop()
             }
-        }
-        .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
-            let wasReady = {
-                if case .ready = oldValue { return true }
-                return false
-            }()
-            let isReady = {
-                if case .ready = newValue { return true }
-                return false
-            }()
-
-            if wasReady == false && isReady {
-                withAnimation(Self.sectionExpansionAnimation) {
-                    isTTSSectionExpanded = true
+            .onChange(of: isTTSSectionExpanded) { _, isExpanded in
+                if isExpanded == false {
+                    ttsPreviewPlayer.stop()
                 }
+            }
+            .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
+                let wasReady = {
+                    if case .ready = oldValue { return true }
+                    return false
+                }()
+                let isReady = {
+                    if case .ready = newValue { return true }
+                    return false
+                }()
+
+                if wasReady == false && isReady {
+                    withAnimation(Self.sectionExpansionAnimation) {
+                        isTTSSectionExpanded = true
+                    }
+                }
+            }
+            .onChange(of: appTabRouter.settingsModelSectionExpansionRequestID) { _, requestID in
+                handleModelSectionExpansionRequest(requestID, scrollProxy: scrollProxy)
+            }
+            .onAppear {
+                handleModelSectionExpansionRequest(
+                    appTabRouter.settingsModelSectionExpansionRequestID,
+                    scrollProxy: scrollProxy
+                )
             }
         }
     }
 
+    private func handleModelSectionExpansionRequest(_ requestID: UUID?, scrollProxy: ScrollViewProxy) {
+        guard let requestID,
+              handledModelSectionExpansionRequestID != requestID else {
+            return
+        }
+
+        handledModelSectionExpansionRequestID = requestID
+
+        withAnimation(Self.sectionExpansionAnimation) {
+            isModelSectionExpanded = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(Self.sectionExpansionAnimation) {
+                scrollProxy.scrollTo(SettingsScrollTarget.dictationModel, anchor: .top)
+            }
+        }
+    }
+
+}
+
+enum SettingsScrollTarget {
+    case dictationModel
 }
 
 #Preview {
@@ -97,4 +133,5 @@ struct SettingsTabView: View {
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppTabRouter())
 }

@@ -52,12 +52,20 @@ enum ContainingAppTab: Hashable {
 @MainActor
 final class AppTabRouter: ObservableObject {
     @Published var selectedTab: ContainingAppTab = .home
+    @Published private(set) var settingsModelSectionExpansionRequestID: UUID?
 
     private var shouldSuppressNextSelectionHaptic = false
 
     func selectTab(_ tab: ContainingAppTab, suppressesHaptic: Bool = false) {
         shouldSuppressNextSelectionHaptic = suppressesHaptic && tab != selectedTab
         selectedTab = tab
+    }
+
+    func openSettingsModelSection() {
+        selectTab(.settings, suppressesHaptic: true)
+        DispatchQueue.main.async { [weak self] in
+            self?.settingsModelSectionExpansionRequestID = UUID()
+        }
     }
 
     func consumeShouldSuppressNextSelectionHaptic() -> Bool {

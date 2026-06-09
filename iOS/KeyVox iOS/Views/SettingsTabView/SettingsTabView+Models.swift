@@ -91,6 +91,7 @@ extension SettingsTabView {
                     }
             }
         }
+        .id(SettingsScrollTarget.dictationModel)
     }
 
     @ViewBuilder
@@ -280,7 +281,7 @@ extension SettingsTabView {
         case .whisperBase:
             return "~190 MB"
         case .parakeetTdtV3:
-            return "~480 MB"
+            return "~335 MB"
         }
     }
 
