@@ -23,8 +23,12 @@ extension ParakeetCoreMLBackend {
         return DecoderStep(
             output: try requireMultiArray(named: "decoder", from: features),
             state: DecoderState(
-                hidden: try requireMultiArray(named: "h_out", from: features),
-                cell: try requireMultiArray(named: "c_out", from: features)
+                hidden: try decoderStateArray(
+                    try requireMultiArray(named: "h_out", from: features)
+                ),
+                cell: try decoderStateArray(
+                    try requireMultiArray(named: "c_out", from: features)
+                )
             )
         )
     }
@@ -80,6 +84,22 @@ extension ParakeetCoreMLBackend {
         )
     }
 
+    func decoderStateArray(_ state: MLMultiArray) throws -> MLMultiArray {
+        guard usesCurrentArtifactLayout else {
+            return state
+        }
+
+        let destination = try makeFloat32Array(
+            shape: [
+                Constants.decoderLayerCount,
+                1,
+                Constants.decoderHiddenSize,
+            ]
+        )
+        try Self.copyNormalizedDecoderState(state, into: destination)
+        return destination
+    }
+
     func requireMultiArray(named featureName: String, from provider: MLFeatureProvider) throws -> MLMultiArray {
         guard let value = provider.featureValue(for: featureName)?.multiArrayValue else {
             throw ParakeetError.transcriptionFailed(code: -1, message: featureName)
@@ -117,6 +137,47 @@ extension ParakeetCoreMLBackend {
             let destinationIndex = hiddenIndex * destinationStride
             let value = try Self.floatValue(in: projection, atLinearIndex: sourceIndex)
             try Self.setFloatValue(value, in: destination, atLinearIndex: destinationIndex)
+        }
+    }
+
+    static func copyNormalizedDecoderState(
+        _ state: MLMultiArray,
+        into destination: MLMultiArray
+    ) throws {
+        let shape = state.shape.map(\.intValue)
+        guard shape.count == 3 else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "invalid_decoder_state_shape")
+        }
+
+        guard destination.shape.map(\.intValue) == [
+            Constants.decoderLayerCount,
+            1,
+            Constants.decoderHiddenSize,
+        ] else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "invalid_decoder_state_destination_shape")
+        }
+
+        guard let layerAxis = shape.firstIndex(of: Constants.decoderLayerCount),
+              let hiddenAxis = shape.firstIndex(of: Constants.decoderHiddenSize),
+              let batchAxis = shape.indices.first(where: { $0 != layerAxis && $0 != hiddenAxis && shape[$0] == 1 }) else {
+            throw ParakeetError.transcriptionFailed(code: -1, message: "decoder_state_layout_mismatch")
+        }
+
+        let sourceStrides = state.strides.map(\.intValue)
+        let destinationStrides = destination.strides.map(\.intValue)
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+
+        for layerIndex in 0..<Constants.decoderLayerCount {
+            for hiddenIndex in 0..<Constants.decoderHiddenSize {
+                let sourceIndex = (layerIndex * sourceStrides[layerAxis]) +
+                    (0 * sourceStrides[batchAxis]) +
+                    (hiddenIndex * sourceStrides[hiddenAxis])
+                let destinationIndex = (layerIndex * destinationStrides[0]) +
+                    (0 * destinationStrides[1]) +
+                    (hiddenIndex * destinationStrides[2])
+                let value = try floatValue(in: state, atLinearIndex: sourceIndex)
+                destinationPointer[destinationIndex] = value
+            }
         }
     }
 }

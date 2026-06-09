@@ -149,7 +149,11 @@ final class ParakeetTests: XCTestCase {
         }
 
         let accessor = try ParakeetCoreMLBackend.EncoderFrameAccessor(array: source, validFrameCount: 3)
-        accessor.copyFrame(at: targetFrameIndex, into: destination)
+        try accessor.copyFrame(
+            at: targetFrameIndex,
+            into: destination,
+            usesCurrentArtifactLayout: false
+        )
 
         let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
         let destinationHiddenStride = destination.strides[1].intValue
@@ -158,6 +162,42 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(destinationPointer[1 * destinationHiddenStride], 1)
         XCTAssertEqual(destinationPointer[255 * destinationHiddenStride], 255)
         XCTAssertEqual(destinationPointer[1023 * destinationHiddenStride], 1023)
+    }
+
+    func testEncoderFrameAccessorCopiesFrameFromFloat16EncoderOutput() throws {
+        let source = try MLMultiArray(
+            shape: [1, 2, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount)],
+            dataType: .float16
+        )
+        let destination = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 1],
+            dataType: .float32
+        )
+
+        let sourcePointer = source.dataPointer.bindMemory(to: UInt16.self, capacity: source.count)
+        let timeStride = source.strides[1].intValue
+        let hiddenStride = source.strides[2].intValue
+        let targetFrameIndex = 1
+
+        for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.encoderChannelCount {
+            sourcePointer[(targetFrameIndex * timeStride) + (hiddenIndex * hiddenStride)] =
+                ParakeetFloat16Storage.bitPattern(from: Float(hiddenIndex) / 10)
+        }
+
+        let accessor = try ParakeetCoreMLBackend.EncoderFrameAccessor(array: source, validFrameCount: 2)
+        try accessor.copyFrame(
+            at: targetFrameIndex,
+            into: destination,
+            usesCurrentArtifactLayout: true
+        )
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationHiddenStride = destination.strides[1].intValue
+
+        XCTAssertEqual(destinationPointer[0], 0, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[1 * destinationHiddenStride], 0.1, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[255 * destinationHiddenStride], 25.5, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[639 * destinationHiddenStride], 63.9, accuracy: 0.05)
     }
 
     func testCopyNormalizedDecoderProjectionSupportsFloat16AndFloat32() throws {
@@ -213,6 +253,84 @@ final class ParakeetTests: XCTestCase {
                 .transcriptionFailed(code: -1, message: "invalid_decoder_stride")
             )
         }
+    }
+
+    func testCopyNormalizedDecoderStateSupportsHiddenMiddleLayout() throws {
+        let state = try MLMultiArray(
+            shape: [
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderLayerCount),
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize),
+                1,
+            ],
+            dataType: .float16
+        )
+        let destination = try MLMultiArray(
+            shape: [
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderLayerCount),
+                1,
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize),
+            ],
+            dataType: .float32
+        )
+
+        let statePointer = state.dataPointer.bindMemory(to: UInt16.self, capacity: state.count)
+        let stateStrides = state.strides.map(\.intValue)
+        for layerIndex in 0..<ParakeetCoreMLBackend.Constants.decoderLayerCount {
+            for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.decoderHiddenSize {
+                let index = (layerIndex * stateStrides[0]) + (hiddenIndex * stateStrides[1])
+                statePointer[index] = ParakeetFloat16Storage.bitPattern(
+                    from: Float(layerIndex * 1000 + hiddenIndex) / 10
+                )
+            }
+        }
+
+        try ParakeetCoreMLBackend.copyNormalizedDecoderState(state, into: destination)
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationStrides = destination.strides.map(\.intValue)
+        let firstLayerIndex = (0 * destinationStrides[0]) + (255 * destinationStrides[2])
+        let secondLayerIndex = (1 * destinationStrides[0]) + (255 * destinationStrides[2])
+
+        XCTAssertEqual(destinationPointer[firstLayerIndex], 25.5, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[secondLayerIndex], 125.5, accuracy: 0.05)
+    }
+
+    func testCopyNormalizedDecoderStateSupportsLayerMiddleLayout() throws {
+        let state = try MLMultiArray(
+            shape: [
+                1,
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderLayerCount),
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize),
+            ],
+            dataType: .float32
+        )
+        let destination = try MLMultiArray(
+            shape: [
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderLayerCount),
+                1,
+                NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize),
+            ],
+            dataType: .float32
+        )
+
+        let statePointer = state.dataPointer.bindMemory(to: Float.self, capacity: state.count)
+        let stateStrides = state.strides.map(\.intValue)
+        for layerIndex in 0..<ParakeetCoreMLBackend.Constants.decoderLayerCount {
+            for hiddenIndex in 0..<ParakeetCoreMLBackend.Constants.decoderHiddenSize {
+                let index = (layerIndex * stateStrides[1]) + (hiddenIndex * stateStrides[2])
+                statePointer[index] = Float(layerIndex * 1000 + hiddenIndex)
+            }
+        }
+
+        try ParakeetCoreMLBackend.copyNormalizedDecoderState(state, into: destination)
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationStrides = destination.strides.map(\.intValue)
+        let firstLayerIndex = (0 * destinationStrides[0]) + (255 * destinationStrides[2])
+        let secondLayerIndex = (1 * destinationStrides[0]) + (255 * destinationStrides[2])
+
+        XCTAssertEqual(destinationPointer[firstLayerIndex], 255)
+        XCTAssertEqual(destinationPointer[secondLayerIndex], 1255)
     }
 
     func testFillFloatValuesSupportsFloat16Storage() throws {
