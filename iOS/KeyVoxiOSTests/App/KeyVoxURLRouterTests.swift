@@ -282,11 +282,11 @@ private final class StubAudioRecorder: AudioRecording {
         )
     }
 
-    func ensureEngineRunning() throws {
+    func ensureEngineRunning() async throws {
         isMonitoring = true
     }
 
-    func stopMonitoring(keepAudioSessionActive: Bool) throws {
+    func stopMonitoring(keepAudioSessionActive: Bool) async throws {
         isMonitoring = false
     }
 

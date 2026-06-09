@@ -21,8 +21,8 @@ protocol AudioRecording: AnyObject {
     func repairMonitoringAfterPlayback() async throws
     func startRecording() async throws
     func stopRecording() async -> StoppedCapture
-    func ensureEngineRunning() throws
-    func stopMonitoring(keepAudioSessionActive: Bool) throws
+    func ensureEngineRunning() async throws
+    func stopMonitoring(keepAudioSessionActive: Bool) async throws
     func cancelCurrentUtterance()
 }
 
