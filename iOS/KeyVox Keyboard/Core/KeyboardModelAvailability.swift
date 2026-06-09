@@ -168,11 +168,15 @@ enum KeyboardModelAvailability {
         let manifestURL = parakeetRootURL.appendingPathComponent("install-manifest.json", isDirectory: false)
         let configURL = parakeetRootURL.appendingPathComponent("config.json", isDirectory: false)
         let vocabURL = parakeetRootURL.appendingPathComponent("parakeet_vocab.json", isDirectory: false)
-        let jointModelURL = parakeetRootURL.appendingPathComponent("JointDecision.mlmodelc", isDirectory: true)
+        let currentJointModelURL = parakeetRootURL.appendingPathComponent("JointDecisionv3.mlmodelc", isDirectory: true)
+        let legacyJointModelURL = parakeetRootURL.appendingPathComponent("JointDecision.mlmodelc", isDirectory: true)
 
         return fileManager.fileExists(atPath: manifestURL.path)
             && fileManager.fileExists(atPath: configURL.path)
             && fileManager.fileExists(atPath: vocabURL.path)
-            && fileManager.fileExists(atPath: jointModelURL.path)
+            && (
+                fileManager.fileExists(atPath: currentJointModelURL.path)
+                    || fileManager.fileExists(atPath: legacyJointModelURL.path)
+            )
     }
 }

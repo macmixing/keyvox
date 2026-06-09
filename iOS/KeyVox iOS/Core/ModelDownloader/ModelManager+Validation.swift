@@ -1,6 +1,33 @@
 import Foundation
 
 extension ModelManager {
+    func requiresArtifactUpdate(for modelID: DictationModelID) -> Bool {
+        switch modelID {
+        case .parakeetTdtV3:
+            return requiresCurrentParakeetArtifacts()
+        case .whisperBase:
+            return false
+        }
+    }
+
+    private func requiresCurrentParakeetArtifacts() -> Bool {
+#if os(iOS)
+        guard ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27,
+              let installRootURL = modelLocator.installRootURL(for: .parakeetTdtV3) else {
+            return false
+        }
+
+        let manifestURL = installRootURL.appendingPathComponent(DictationModelCatalog.manifestFilename, isDirectory: false)
+        guard fileManager.fileExists(atPath: manifestURL.path) else {
+            return false
+        }
+
+        return isLegacyParakeetInstall(at: installRootURL)
+#else
+        return false
+#endif
+    }
+
     func validatedState(for modelID: DictationModelID) -> ModelInstallState {
         let descriptor = descriptorProvider(modelID)
         guard let installRootURL = modelLocator.installRootURL(for: modelID),
@@ -43,6 +70,12 @@ extension ModelManager {
             return .failed(message: "Model install manifest version is not supported.")
         }
 
+        if modelID == .parakeetTdtV3,
+           isLegacyParakeetInstall(at: installRootURL),
+           shouldRequireCurrentParakeetArtifacts == false {
+            return .ready
+        }
+
         for artifact in descriptor.artifacts {
             if artifact.retainedAfterInstall {
                 guard let artifactURL = modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath),
@@ -66,6 +99,30 @@ extension ModelManager {
         }
 
         return .ready
+    }
+
+    private var shouldRequireCurrentParakeetArtifacts: Bool {
+#if os(iOS)
+        ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27
+#else
+        true
+#endif
+    }
+
+    private func isLegacyParakeetInstall(at installRootURL: URL) -> Bool {
+        let legacyEncoderURL = installRootURL.appendingPathComponent("Encoder.mlmodelc", isDirectory: true)
+        let legacyJointURL = installRootURL.appendingPathComponent("JointDecision.mlmodelc", isDirectory: true)
+        let legacyJointV2URL = installRootURL.appendingPathComponent("JointDecisionv2.mlmodelc", isDirectory: true)
+        let currentEncoderURL = installRootURL.appendingPathComponent("EncoderInt4.mlmodelc", isDirectory: true)
+        let currentJointURL = installRootURL.appendingPathComponent("JointDecisionv3.mlmodelc", isDirectory: true)
+
+        let hasLegacyArtifacts = fileManager.fileExists(atPath: legacyEncoderURL.path)
+            || fileManager.fileExists(atPath: legacyJointURL.path)
+            || fileManager.fileExists(atPath: legacyJointV2URL.path)
+        let hasCurrentArtifacts = fileManager.fileExists(atPath: currentEncoderURL.path)
+            && fileManager.fileExists(atPath: currentJointURL.path)
+
+        return hasLegacyArtifacts && hasCurrentArtifacts == false
     }
 
     func ensureModelsDirectoryExists() throws {
