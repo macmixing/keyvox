@@ -227,7 +227,7 @@ extension SettingsTabView {
             )
         case .failed:
             AppActionButton(
-                title: "Repair",
+                title: failedModelActionTitle(for: modelID),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -237,6 +237,14 @@ extension SettingsTabView {
         case .downloading, .installing:
             EmptyView()
         }
+    }
+
+    func failedModelActionTitle(for modelID: DictationModelID) -> String {
+        if modelManager.requiresArtifactUpdate(for: modelID) {
+            return "Update"
+        }
+
+        return "Repair"
     }
 
     func modelStatusText(for modelID: DictationModelID, state: ModelInstallState) -> String {

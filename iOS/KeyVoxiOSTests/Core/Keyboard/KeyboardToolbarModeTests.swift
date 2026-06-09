@@ -4,7 +4,7 @@ import Testing
 struct KeyboardToolbarModeTests {
     @Test func activePhoneCallUsesPhoneCallWarning() {
         let mode = KeyboardToolbarMode.resolve(
-            isModelInstalled: true,
+            modelAvailability: .ready,
             hasFullAccess: true,
             hasMicrophonePermission: true,
             hasActivePhoneCall: true,
@@ -18,14 +18,14 @@ struct KeyboardToolbarModeTests {
 
     @Test func activePhoneCallDoesNotOverrideHigherPriorityWarnings() {
         let fullAccessMode = KeyboardToolbarMode.resolve(
-            isModelInstalled: true,
+            modelAvailability: .ready,
             hasFullAccess: false,
             hasMicrophonePermission: true,
             hasActivePhoneCall: true,
             isUpdateRequired: false
         )
         let microphoneMode = KeyboardToolbarMode.resolve(
-            isModelInstalled: true,
+            modelAvailability: .ready,
             hasFullAccess: true,
             hasMicrophonePermission: false,
             hasActivePhoneCall: true,

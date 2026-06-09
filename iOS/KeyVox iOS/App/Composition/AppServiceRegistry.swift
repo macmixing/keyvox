@@ -410,17 +410,21 @@ final class AppServiceRegistry {
     }
 
     private func normalizeActiveProviderSelection() {
-        let selectableProviders = AppSettingsStore.ActiveDictationProvider.allCases.filter {
+        switch modelManager.state(for: settingsStore.activeDictationProvider.modelID) {
+        case .downloading, .installing, .ready, .failed:
+            return
+        case .notInstalled:
+            break
+        }
+
+        let readyProviders = AppSettingsStore.ActiveDictationProvider.allCases.filter {
             modelManager.isModelReady(for: $0.modelID)
         }
 
-        guard selectableProviders.contains(settingsStore.activeDictationProvider) else {
-            if let fallback = selectableProviders.first {
-                settingsStore.activeDictationProvider = fallback
-            } else if settingsStore.activeDictationProvider != .whisper {
-                settingsStore.activeDictationProvider = .whisper
-            }
-            return
+        if let fallback = readyProviders.first {
+            settingsStore.activeDictationProvider = fallback
+        } else if settingsStore.activeDictationProvider != .whisper {
+            settingsStore.activeDictationProvider = .whisper
         }
     }
 

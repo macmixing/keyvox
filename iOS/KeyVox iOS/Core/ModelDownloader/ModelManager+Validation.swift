@@ -76,6 +76,12 @@ extension ModelManager {
             return .ready
         }
 
+        if modelID == .parakeetTdtV3,
+           isLegacyParakeetInstall(at: installRootURL),
+           shouldRequireCurrentParakeetArtifacts {
+            return .failed(message: "This model needs to be updated before dictation can continue.")
+        }
+
         for artifact in descriptor.artifacts {
             if artifact.retainedAfterInstall {
                 guard let artifactURL = modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath),
