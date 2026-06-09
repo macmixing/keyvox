@@ -188,7 +188,8 @@ struct ModelManagerTests {
         let whisperGGMLFixtureURL = makeTempFile(in: rootURL, prefix: "whisper-ggml", data: Data(repeating: 0x5A, count: 2_048))
         let whisperCoreMLFixtureURL = makeTempFile(in: rootURL, prefix: "whisper-coreml", data: Data(repeating: 0x6B, count: 1_024))
         let parakeetConfigFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-config", data: Data("{}".utf8))
-        let parakeetWeightsFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-weights", data: Data(repeating: 0x4D, count: 512))
+        let parakeetEncoderFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-encoder", data: Data(repeating: 0x4D, count: 512))
+        let parakeetJointFixtureURL = makeTempFile(in: rootURL, prefix: "parakeet-joint", data: Data(repeating: 0x2E, count: 256))
 
         let whisperDescriptor = DictationModelDescriptor(
             id: .whisperBase,
@@ -226,10 +227,17 @@ struct ModelManagerTests {
                     retainedAfterInstall: true
                 ),
                 DictationModelArtifact(
-                    relativePath: "Encoder.mlmodelc/weights/weight.bin",
-                    remoteURL: URL(string: "https://example.com/test-parakeet-weight.bin")!,
-                    expectedSHA256: sha256Hex(forFileAt: parakeetWeightsFixtureURL),
+                    relativePath: "EncoderInt4.mlmodelc/weights/weight.bin",
+                    remoteURL: URL(string: "https://example.com/test-parakeet-encoder.bin")!,
+                    expectedSHA256: sha256Hex(forFileAt: parakeetEncoderFixtureURL),
                     progressTotalBytes: 512,
+                    retainedAfterInstall: true
+                ),
+                DictationModelArtifact(
+                    relativePath: "JointDecisionv3.mlmodelc/weights/weight.bin",
+                    remoteURL: URL(string: "https://example.com/test-parakeet-joint.bin")!,
+                    expectedSHA256: sha256Hex(forFileAt: parakeetJointFixtureURL),
+                    progressTotalBytes: 256,
                     retainedAfterInstall: true
                 )
             ],
@@ -254,8 +262,10 @@ struct ModelManagerTests {
             return rootURL.appendingPathComponent("whisper-coreml")
         case "https://example.com/test-parakeet-config.json":
             return rootURL.appendingPathComponent("parakeet-config")
-        case "https://example.com/test-parakeet-weight.bin":
-            return rootURL.appendingPathComponent("parakeet-weights")
+        case "https://example.com/test-parakeet-encoder.bin":
+            return rootURL.appendingPathComponent("parakeet-encoder")
+        case "https://example.com/test-parakeet-joint.bin":
+            return rootURL.appendingPathComponent("parakeet-joint")
         default:
             throw CocoaError(.fileNoSuchFile)
         }
