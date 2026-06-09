@@ -89,6 +89,12 @@ struct InstalledDictationModelLocator {
             return nil
         }
 
+        if modelID == .parakeetTdtV3,
+           isLegacyParakeetInstall(at: installRootURL),
+           shouldRequireCurrentParakeetArtifacts == false {
+            return installRootURL
+        }
+
         for artifact in descriptor.artifacts {
             if artifact.retainedAfterInstall {
                 guard let artifactURL = artifactURL(for: modelID, relativePath: artifact.relativePath),
@@ -103,6 +109,30 @@ struct InstalledDictationModelLocator {
         }
 
         return installRootURL
+    }
+
+    private var shouldRequireCurrentParakeetArtifacts: Bool {
+#if os(iOS)
+        ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27
+#else
+        true
+#endif
+    }
+
+    private func isLegacyParakeetInstall(at installRootURL: URL) -> Bool {
+        let legacyEncoderURL = installRootURL.appendingPathComponent("Encoder.mlmodelc", isDirectory: true)
+        let legacyJointURL = installRootURL.appendingPathComponent("JointDecision.mlmodelc", isDirectory: true)
+        let legacyJointV2URL = installRootURL.appendingPathComponent("JointDecisionv2.mlmodelc", isDirectory: true)
+        let currentEncoderURL = installRootURL.appendingPathComponent("EncoderInt4.mlmodelc", isDirectory: true)
+        let currentJointURL = installRootURL.appendingPathComponent("JointDecisionv3.mlmodelc", isDirectory: true)
+
+        let hasLegacyArtifacts = fileManager.fileExists(atPath: legacyEncoderURL.path)
+            || fileManager.fileExists(atPath: legacyJointURL.path)
+            || fileManager.fileExists(atPath: legacyJointV2URL.path)
+        let hasCurrentArtifacts = fileManager.fileExists(atPath: currentEncoderURL.path)
+            && fileManager.fileExists(atPath: currentJointURL.path)
+
+        return hasLegacyArtifacts && hasCurrentArtifacts == false
     }
 
     private func migrateLegacyWhisperInstallIfNeeded() {
