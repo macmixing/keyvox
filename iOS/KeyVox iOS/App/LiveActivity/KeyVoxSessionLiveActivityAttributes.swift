@@ -1,6 +1,6 @@
 import ActivityKit
 
-struct KeyVoxSessionLiveActivityAttributes: ActivityAttributes {
+struct KeyVoxSessionLiveActivityAttributes: nonisolated ActivityAttributes {
     struct ContentState: Codable, Hashable {
         let weeklyWordCount: Int
     }
