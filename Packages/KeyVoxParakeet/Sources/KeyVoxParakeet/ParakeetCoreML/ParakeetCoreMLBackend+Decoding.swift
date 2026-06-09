@@ -66,7 +66,11 @@ extension ParakeetCoreMLBackend {
             try throwIfCancelled(requestID)
 
             let currentTimeIndex = timeIndex
-            encoderFrames.copyFrame(at: currentTimeIndex, into: encoderStepInput)
+            try encoderFrames.copyFrame(
+                at: currentTimeIndex,
+                into: encoderStepInput,
+                usesCurrentArtifactLayout: usesCurrentArtifactLayout
+            )
             try normalizeDecoderProjection(decoderStep.output, into: decoderStepInput)
             let decision = try runJointDecision(
                 encoderStep: encoderStepInput,

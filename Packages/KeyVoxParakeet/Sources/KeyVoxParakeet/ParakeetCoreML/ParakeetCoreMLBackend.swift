@@ -8,6 +8,7 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
     let jointModel: MLModel
     let vocabulary: ParakeetVocabulary
     let blankTokenID: Int32
+    let usesCurrentArtifactLayout: Bool
     let lock = NSLock()
     var activeRequestID = UUID()
 
@@ -18,7 +19,7 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
         }
 
         let preprocessorDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.preprocessorDirectoryName, isDirectory: true)
-        let encoderDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.encoderDirectoryName, isDirectory: true)
+        let encoderDirectoryURL = Self.preferredEncoderDirectoryURL(in: modelDirectoryURL, fileManager: fileManager)
         let decoderDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.decoderDirectoryName, isDirectory: true)
         let jointDirectoryURL = Self.preferredJointDirectoryURL(in: modelDirectoryURL, fileManager: fileManager)
 
@@ -36,17 +37,27 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
         let preprocessorConfiguration = MLModelConfiguration()
         preprocessorConfiguration.computeUnits = .cpuOnly
 
-        let inferenceConfiguration = MLModelConfiguration()
-        inferenceConfiguration.computeUnits = .cpuAndNeuralEngine
+        let encoderComputeUnits = Self.encoderComputeUnits(for: encoderDirectoryURL)
+        let encoderConfiguration = MLModelConfiguration()
+        encoderConfiguration.computeUnits = encoderComputeUnits
+
+        let decoderComputeUnits = Self.decoderComputeUnits
+        let decoderConfiguration = MLModelConfiguration()
+        decoderConfiguration.computeUnits = decoderComputeUnits
 
         do {
             self.preprocessorModel = try MLModel(contentsOf: preprocessorDirectoryURL, configuration: preprocessorConfiguration)
-            self.encoderModel = try MLModel(contentsOf: encoderDirectoryURL, configuration: inferenceConfiguration)
-            self.decoderModel = try MLModel(contentsOf: decoderDirectoryURL, configuration: inferenceConfiguration)
-            self.jointModel = try MLModel(contentsOf: jointDirectoryURL, configuration: inferenceConfiguration)
+            self.encoderModel = try MLModel(contentsOf: encoderDirectoryURL, configuration: encoderConfiguration)
+            self.decoderModel = try MLModel(contentsOf: decoderDirectoryURL, configuration: decoderConfiguration)
+            self.jointModel = try MLModel(contentsOf: jointDirectoryURL, configuration: decoderConfiguration)
             self.vocabulary = try ParakeetVocabulary(modelDirectoryURL: modelDirectoryURL)
             self.blankTokenID = vocabulary.tokenCount
+            self.usesCurrentArtifactLayout = encoderDirectoryURL.lastPathComponent == Constants.encoderInt4DirectoryName
+                || jointDirectoryURL.lastPathComponent == Constants.jointV3DirectoryName
+            debugLog("loaded_encoder=\(encoderDirectoryURL.lastPathComponent)")
             debugLog("loaded_joint=\(jointDirectoryURL.lastPathComponent)")
+            debugLog("encoder_compute_units=\(Self.computeUnitsLogLabel(encoderComputeUnits))")
+            debugLog("decoder_compute_units=\(Self.computeUnitsLogLabel(decoderComputeUnits))")
         } catch let error as ParakeetError {
             throw error
         } catch {
@@ -150,5 +161,39 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
 #if DEBUG
         print("[ParakeetCoreML] \(message)")
 #endif
+    }
+
+    static func encoderComputeUnits(for encoderDirectoryURL: URL) -> MLComputeUnits {
+#if os(iOS)
+        if ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27,
+           encoderDirectoryURL.lastPathComponent == Constants.encoderInt4DirectoryName {
+            return .cpuOnly
+        }
+#endif
+        return .cpuAndNeuralEngine
+    }
+
+    static var decoderComputeUnits: MLComputeUnits {
+#if os(iOS)
+        if ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27 {
+            return .cpuOnly
+        }
+#endif
+        return .cpuAndNeuralEngine
+    }
+
+    static func computeUnitsLogLabel(_ computeUnits: MLComputeUnits) -> String {
+        switch computeUnits {
+        case .cpuOnly:
+            return "cpuOnly"
+        case .cpuAndGPU:
+            return "cpuAndGPU"
+        case .cpuAndNeuralEngine:
+            return "cpuAndNeuralEngine"
+        case .all:
+            return "all"
+        @unknown default:
+            return "unknown"
+        }
     }
 }
