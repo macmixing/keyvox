@@ -82,12 +82,40 @@ struct TTSManagerLifecycleTests {
         #expect(harness.manager.isPlaybackPaused == false)
     }
 
-    @Test func protectedDataLockPausesUnsafeFastModePlayback() async {
+    @Test func appDidBecomeActiveDuringProtectedDataLockDoesNotRestoreForegroundSynthesis() async {
         let harness = makeHarness()
         defer { harness.cleanup() }
 
         harness.manager.settingsStore.fastPlaybackModeEnabled = true
         harness.manager.activeRequest = makeRequest(createdAt: 4)
+        harness.manager.hasStartedPlaybackForActiveRequest = true
+        harness.manager.updateState(.playing)
+        harness.manager.playbackCoordinator.fastModeEnabled = true
+        harness.manager.playbackCoordinator.didStartPlayback = true
+        harness.manager.playbackCoordinator.isPaused = false
+        harness.manager.playbackCoordinator.isFastModeBackgroundSafeState = true
+        harness.manager.playbackCoordinator.hasObservedFastModeBackgroundSafeCompute = true
+
+        harness.manager.handleProtectedDataWillBecomeUnavailableNotification(
+            Notification(name: UIApplication.protectedDataWillBecomeUnavailableNotification)
+        )
+        await settleLifecycleTasks()
+
+        harness.manager.handleAppDidBecomeActive()
+        await settleLifecycleTasks()
+
+        #expect(harness.engine.immediateBackgroundRequestCount == 1)
+        #expect(harness.engine.prepareBackgroundCallCount == 1)
+        #expect(harness.engine.immediateForegroundRequestCount == 0)
+        #expect(harness.engine.prepareForegroundCallCount == 0)
+    }
+
+    @Test func protectedDataLockPausesUnsafeFastModePlayback() async {
+        let harness = makeHarness()
+        defer { harness.cleanup() }
+
+        harness.manager.settingsStore.fastPlaybackModeEnabled = true
+        harness.manager.activeRequest = makeRequest(createdAt: 5)
         harness.manager.hasStartedPlaybackForActiveRequest = true
         harness.manager.updateState(.playing)
         await armPlaybackCoordinatorForPause(harness.manager.playbackCoordinator)
