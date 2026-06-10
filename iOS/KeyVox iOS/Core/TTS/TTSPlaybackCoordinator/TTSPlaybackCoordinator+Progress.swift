@@ -61,26 +61,29 @@ extension TTSPlaybackCoordinator {
         )
         guard queuedSampleCount >= requiredSamples || (isFinishing && queuedSampleCount > 0) else { return }
 
-        do {
-            try ensureAudioEngineReadyForPlayback(context: "resumeIfBufferedEnough")
-        } catch {
-            handleFailure(error)
-            return
-        }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await self.ensureAudioEngineReadyForPlayback(context: "resumeIfBufferedEnough")
+            } catch {
+                self.handleFailure(error)
+                return
+            }
 
-        playerNode.play()
-        isPaused = false
-        isWaitingForResumeBuffer = false
-        if isReplayingCachedAudio {
-            replayPausedSampleOffset = 0
+            self.playerNode.play()
+            self.isPaused = false
+            self.isWaitingForResumeBuffer = false
+            if self.isReplayingCachedAudio {
+                self.replayPausedSampleOffset = 0
+            }
+            self.startPlaybackProgressTimer()
+            self.emitPlaybackProgress()
+            Self.log(
+                "Playback resumed after buffer refill. queuedSeconds=\(String(format: "%.3f", self.bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / self.playbackFormat.sampleRate)) generatedSeconds=\(String(format: "%.3f", Double(self.totalGeneratedSampleCount) / self.playbackFormat.sampleRate))"
+            )
+            self.notifyFastModeBackgroundSafetyChanged()
+            self.onPlaybackResumed?()
         }
-        startPlaybackProgressTimer()
-        emitPlaybackProgress()
-        Self.log(
-            "Playback resumed after buffer refill. queuedSeconds=\(String(format: "%.3f", bufferedSeconds)) requiredSeconds=\(String(format: "%.3f", Double(requiredSamples) / playbackFormat.sampleRate)) generatedSeconds=\(String(format: "%.3f", Double(totalGeneratedSampleCount) / playbackFormat.sampleRate))"
-        )
-        notifyFastModeBackgroundSafetyChanged()
-        onPlaybackResumed?()
     }
 
     func startPlaybackProgressTimer() {

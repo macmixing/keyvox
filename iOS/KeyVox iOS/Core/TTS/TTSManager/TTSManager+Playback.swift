@@ -110,7 +110,7 @@ extension TTSManager {
                 voiceID: request.voiceID,
                 fastModeEnabled: settingsStore.fastPlaybackModeEnabled
             )
-            playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
+            await playbackCoordinator.play(stream, fastModeEnabled: settingsStore.fastPlaybackModeEnabled)
         } catch {
             shouldConsumeFreeSpeakOnPlaybackStart = false
             handleError(error.localizedDescription)
@@ -140,11 +140,15 @@ extension TTSManager {
             lastErrorMessage = nil
             dismissPlaybackPreparationView()
             beginBackgroundTaskIfNeeded()
-            playbackCoordinator.replayLastPlayback(startingAtSample: pausedReplaySampleOffset)
+            Task { @MainActor [weak self] in
+                await self?.playbackCoordinator.replayLastPlayback(startingAtSample: pausedReplaySampleOffset)
+            }
             return
         }
 
-        playbackCoordinator.resume()
+        Task { @MainActor [weak self] in
+            await self?.playbackCoordinator.resume()
+        }
     }
 
     func replayLastPlayback() {
@@ -162,7 +166,9 @@ extension TTSManager {
         lastErrorMessage = nil
         dismissPlaybackPreparationView()
         beginBackgroundTaskIfNeeded()
-        playbackCoordinator.replayLastPlayback()
+        Task { @MainActor [weak self] in
+            await self?.playbackCoordinator.replayLastPlayback()
+        }
     }
 
     func seekReplay(toProgress progress: Double) {
@@ -192,10 +198,12 @@ extension TTSManager {
         dismissPlaybackPreparationView()
         if shouldAutoplay {
             beginBackgroundTaskIfNeeded()
-            playbackCoordinator.replayLastPlayback(
-                startingAtSample: sampleOffset,
-                shouldAutoplay: true
-            )
+            Task { @MainActor [weak self] in
+                await self?.playbackCoordinator.replayLastPlayback(
+                    startingAtSample: sampleOffset,
+                    shouldAutoplay: true
+                )
+            }
             return
         }
 
@@ -210,10 +218,12 @@ extension TTSManager {
         }
 
         beginBackgroundTaskIfNeeded()
-        playbackCoordinator.replayLastPlayback(
-            startingAtSample: sampleOffset,
-            shouldAutoplay: false
-        )
+        Task { @MainActor [weak self] in
+            await self?.playbackCoordinator.replayLastPlayback(
+                startingAtSample: sampleOffset,
+                shouldAutoplay: false
+            )
+        }
     }
 
     func stopPlayback() async {

@@ -41,7 +41,7 @@ extension TTSPlaybackCoordinator {
         return replayPausedSampleOffset
     }
 
-    func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>, fastModeEnabled: Bool = false) {
+    func play(_ stream: AsyncThrowingStream<KeyVoxTTSAudioFrame, Error>, fastModeEnabled: Bool = false) async {
         stop(emitCallback: false)
         Self.log("Playback requested. fastMode=\(fastModeEnabled)")
         playbackSessionID = UUID()
@@ -49,7 +49,7 @@ extension TTSPlaybackCoordinator {
 
         do {
             configureAudioGraphIfNeeded()
-            try configureAudioSession()
+            try await configureAudioSession()
             if audioEngine.isRunning == false {
                 try audioEngine.start()
             }
@@ -141,7 +141,13 @@ extension TTSPlaybackCoordinator {
             audioEngine.pause()
         }
         if audioSessionMode == .playbackWhilePreservingRecording {
-            handoffPausedAudioSessionIfNeeded()
+            if shouldUseAsynchronousAudioSessionActivation {
+                Task { [weak self] in
+                    await self?.handoffPausedAudioSessionIfNeeded()
+                }
+            } else {
+                handoffPausedAudioSessionIfNeededSynchronously()
+            }
         }
         isPaused = true
         stopPlaybackProgressTimer()
@@ -151,11 +157,11 @@ extension TTSPlaybackCoordinator {
         onPlaybackPaused?()
     }
 
-    func resume() {
+    func resume() async {
         guard canResumePlayback else { return }
         if isReplayingCachedAudio,
            let pausedReplaySampleOffset = replayPausedSampleOffsetSnapshot() {
-            replayLastPlayback(startingAtSample: pausedReplaySampleOffset, shouldAutoplay: true)
+            await replayLastPlayback(startingAtSample: pausedReplaySampleOffset, shouldAutoplay: true)
             return
         }
         if shouldDelayResumeUntilBuffered() {
@@ -172,8 +178,8 @@ extension TTSPlaybackCoordinator {
         }
 
         do {
-            try configureAudioSession()
-            try ensureAudioEngineReadyForPlayback(context: "resume")
+            try await configureAudioSession()
+            try await ensureAudioEngineReadyForPlayback(context: "resume")
         } catch {
             handleFailure(error)
             return
@@ -192,7 +198,7 @@ extension TTSPlaybackCoordinator {
         onPlaybackResumed?()
     }
 
-    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0, shouldAutoplay: Bool = true) {
+    func replayLastPlayback(startingAtSample startSampleOffset: Int = 0, shouldAutoplay: Bool = true) async {
         guard !replayablePlaybackSamples.isEmpty else { return }
 
         stop(emitCallback: false)
@@ -204,7 +210,7 @@ extension TTSPlaybackCoordinator {
 
         do {
             configureAudioGraphIfNeeded()
-            try configureAudioSession()
+            try await configureAudioSession()
             if audioEngine.isRunning == false {
                 try audioEngine.start()
             }
@@ -270,7 +276,7 @@ extension TTSPlaybackCoordinator {
                 playerNode.stop()
             }
             audioEngine.stop()
-            handoffPausedAudioSessionIfNeeded()
+            await handoffPausedAudioSessionIfNeeded()
             Self.log("Replay prepared in paused state; audio engine stopped while keeping the playback session active.")
         }
     }
@@ -320,17 +326,30 @@ extension TTSPlaybackCoordinator {
         emitPlaybackProgress()
     }
 
-    func configureAudioSession() throws {
-        switch audioSessionMode {
+    func configureAudioSession() async throws {
+        let targetAudioSessionMode = audioSessionMode
+        if hasActivatedAudioSession, configuredAudioSessionMode == targetAudioSessionMode {
+            return
+        }
+
+        if hasActivatedAudioSession {
+            try await deactivatePlaybackAudioSession()
+        } else if shouldUseAsynchronousAudioSessionActivation, targetAudioSessionMode == .playback {
+            try? await deactivatePlaybackAudioSession()
+        }
+
+        switch targetAudioSessionMode {
         case .playback:
             hasHandedOffPausedPlaybackSession = false
-            try audioSession.setCategory(
-                .playback,
-                mode: .spokenAudio,
-                policy: .longFormAudio,
-                options: []
-            )
-            try? audioSession.overrideOutputAudioPort(.none)
+            try await configurePlaybackAudioSession { audioSession in
+                try audioSession.setCategory(
+                    .playback,
+                    mode: .spokenAudio,
+                    policy: .longFormAudio,
+                    options: []
+                )
+                try? audioSession.overrideOutputAudioPort(.none)
+            }
         case .playbackWhilePreservingRecording:
             hasHandedOffPausedPlaybackSession = false
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
@@ -338,24 +357,29 @@ extension TTSPlaybackCoordinator {
             )
             var categoryOptions: AVAudioSession.CategoryOptions = [.defaultToSpeaker]
             categoryOptions.formUnion(bluetoothRoutePolicy.bluetoothCategoryOptions)
-            try audioSession.setCategory(
-                .playAndRecord,
-                mode: .default,
-                options: categoryOptions
-            )
-            Self.log("Configuring preserved playback session routePolicy=\(bluetoothRoutePolicy.family.rawValue)")
-            let isUsingBuiltInReceiver = audioSession.currentOutputPortTypes.contains(.builtInReceiver)
-            try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+            let resolvedCategoryOptions = categoryOptions
+            let routePolicyFamily = bluetoothRoutePolicy.family.rawValue
+            try await configurePlaybackAudioSession { audioSession in
+                try audioSession.setCategory(
+                    .playAndRecord,
+                    mode: .default,
+                    options: resolvedCategoryOptions
+                )
+                Self.log("Configuring preserved playback session routePolicy=\(routePolicyFamily)")
+                let isUsingBuiltInReceiver = audioSession.currentOutputPortTypes.contains(.builtInReceiver)
+                try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
+            }
         }
-        try audioSession.setActive(true, options: [])
+        configuredAudioSessionMode = targetAudioSessionMode
+        try await activatePlaybackAudioSession()
     }
 
-    func ensureAudioEngineReadyForPlayback(context: String) throws {
+    func ensureAudioEngineReadyForPlayback(context: String) async throws {
         configureAudioGraphIfNeeded()
         if audioEngine.isRunning { return }
 
         Self.log("Audio engine was stopped before playback context=\(context); reconfiguring session and restarting engine.")
-        try configureAudioSession()
+        try await configureAudioSession()
         try audioEngine.start()
     }
 
@@ -386,7 +410,13 @@ extension TTSPlaybackCoordinator {
             return
         }
 
-        try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
+        if shouldUseAsynchronousAudioSessionActivation {
+            Task { [weak self] in
+                try? await self?.deactivatePlaybackAudioSession(notifyOthers: true)
+            }
+        } else {
+            try? deactivatePlaybackAudioSessionSynchronously(notifyOthers: true)
+        }
         hasHandedOffPausedPlaybackSession = false
     }
 
@@ -395,11 +425,39 @@ extension TTSPlaybackCoordinator {
         onPlaybackFailed?(error)
     }
 
-    private func handoffPausedAudioSessionIfNeeded() {
+    private func handoffPausedAudioSessionIfNeeded() async {
         guard audioSessionMode == .playbackWhilePreservingRecording else { return }
 
         do {
-            try audioSession.setActive(false, options: [])
+            try await deactivatePlaybackAudioSession()
+        } catch {
+            Self.log("Failed to deactivate preserved recording session before paused handoff: \(error.localizedDescription)")
+        }
+
+        do {
+            try await configurePlaybackAudioSession { audioSession in
+                try audioSession.setCategory(
+                    .playback,
+                    mode: .spokenAudio,
+                    policy: .longFormAudio,
+                    options: []
+                )
+                try? audioSession.overrideOutputAudioPort(.none)
+            }
+            configuredAudioSessionMode = .playback
+            try await activatePlaybackAudioSession()
+            hasHandedOffPausedPlaybackSession = true
+            Self.log("Handed paused playback off to playback/spokenAudio session.")
+        } catch {
+            Self.log("Failed to hand paused playback off to playback session: \(error.localizedDescription)")
+        }
+    }
+
+    private func handoffPausedAudioSessionIfNeededSynchronously() {
+        guard audioSessionMode == .playbackWhilePreservingRecording else { return }
+
+        do {
+            try deactivatePlaybackAudioSessionSynchronously()
         } catch {
             Self.log("Failed to deactivate preserved recording session before paused handoff: \(error.localizedDescription)")
         }
@@ -412,7 +470,8 @@ extension TTSPlaybackCoordinator {
                 options: []
             )
             try? audioSession.overrideOutputAudioPort(.none)
-            try audioSession.setActive(true, options: [])
+            configuredAudioSessionMode = .playback
+            try activatePlaybackAudioSessionSynchronously()
             hasHandedOffPausedPlaybackSession = true
             Self.log("Handed paused playback off to playback/spokenAudio session.")
         } catch {
