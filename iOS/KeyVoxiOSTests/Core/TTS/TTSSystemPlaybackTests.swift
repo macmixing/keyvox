@@ -339,6 +339,8 @@ private final class SpyPlaybackAudioSession: TTSPlaybackAudioSessionControlling 
         portOverrides.append(portOverride)
     }
 
+    func setAllowHapticsAndSystemSoundsDuringRecording(_ inValue: Bool) throws {}
+
     func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws {
         activeCalls.append(.init(active: active, options: options))
     }

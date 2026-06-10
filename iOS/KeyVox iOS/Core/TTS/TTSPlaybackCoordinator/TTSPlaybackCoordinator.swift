@@ -20,6 +20,7 @@ protocol TTSPlaybackAudioSessionControlling: AnyObject {
     ) throws
 
     func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws
+    func setAllowHapticsAndSystemSoundsDuringRecording(_ inValue: Bool) throws
     func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws
 }
 

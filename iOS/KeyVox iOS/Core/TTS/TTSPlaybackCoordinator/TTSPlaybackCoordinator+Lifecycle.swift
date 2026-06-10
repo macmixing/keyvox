@@ -365,6 +365,7 @@ extension TTSPlaybackCoordinator {
                     mode: .default,
                     options: resolvedCategoryOptions
                 )
+                try audioSession.setAllowHapticsAndSystemSoundsDuringRecording(true)
                 Self.log("Configuring preserved playback session routePolicy=\(routePolicyFamily)")
                 let isUsingBuiltInReceiver = audioSession.currentOutputPortTypes.contains(.builtInReceiver)
                 try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
