@@ -410,7 +410,12 @@ final class AppServiceRegistry {
     }
 
     private func normalizeActiveProviderSelection() {
-        switch modelManager.state(for: settingsStore.activeDictationProvider.modelID) {
+        let selectedModelID = settingsStore.activeDictationProvider.modelID
+        if modelManager.activeInstallModelID() == selectedModelID {
+            return
+        }
+
+        switch modelManager.state(for: selectedModelID) {
         case .downloading, .installing, .ready, .failed:
             return
         case .notInstalled:
