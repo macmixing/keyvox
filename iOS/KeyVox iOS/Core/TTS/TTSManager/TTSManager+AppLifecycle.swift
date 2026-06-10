@@ -25,6 +25,14 @@ extension TTSManager {
 
     func handleAppDidBecomeActive() {
         KeyVoxIPCBridge.touchHeartbeat()
+        // iOS 27 seed 1 can report active during device lock; retest without this guard in later betas.
+        if isProtectedDataLockTransitionActive,
+           state == .playing,
+           isPlaybackPaused == false,
+           isReplayingCachedPlayback == false {
+            Self.log("Skipping foreground TTS restore during protected-data lock transition.")
+            return
+        }
         hasRequestedFastModeBackgroundContinuation = false
         requestImmediateForegroundSynthesis()
         playbackCoordinator.prepareForForegroundPlayback()
@@ -130,6 +138,7 @@ extension TTSManager {
 
     @objc
     func handleProtectedDataWillBecomeUnavailableNotification(_ notification: Notification) {
+        isProtectedDataLockTransitionActive = true
         let isActiveLiveGeneration =
             state == .playing
             && isPlaybackPaused == false
@@ -163,6 +172,7 @@ extension TTSManager {
 
     @objc
     func handleProtectedDataDidBecomeAvailableNotification(_ notification: Notification) {
+        isProtectedDataLockTransitionActive = false
         Self.log(
             "Protected data did become available state=\(state.rawValue) paused=\(isPlaybackPaused) replaying=\(isReplayingCachedPlayback)"
         )
