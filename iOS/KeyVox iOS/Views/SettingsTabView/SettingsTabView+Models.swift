@@ -252,7 +252,11 @@ extension SettingsTabView {
         switch state {
         case .downloading(_, let phase), .installing(_, let phase):
             return phase.statusText
-        case .ready, .failed, .notInstalled:
+        case .failed:
+            return modelManager.requiresArtifactUpdate(for: modelID)
+                ? "Action needed (Update required)"
+                : "Action needed (Repair required)"
+        case .ready, .notInstalled:
             break
         }
 
