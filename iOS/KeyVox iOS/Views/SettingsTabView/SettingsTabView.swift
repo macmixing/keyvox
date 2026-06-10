@@ -40,23 +40,7 @@ struct SettingsTabView: View {
     }
 
     var body: some View {
-        ScrollViewReader { scrollProxy in
-            AppScrollScreen {
-                VStack(alignment: .leading, spacing: 16) {
-                    sessionSection
-                    speakTimeoutSection
-                    keyboardSection
-                    audioSection
-                    activeModelSection
-                    vibesAISection
-                    ttsSection
-                    rateAndReviewSection
-                    supportSection
-                    helpSection
-                    restorePurchasesSection
-                    versionFooter
-                }
-            }
+        settingsScrollScreen
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
             }
@@ -82,6 +66,26 @@ struct SettingsTabView: View {
                     withAnimation(Self.sectionExpansionAnimation) {
                         isTTSSectionExpanded = true
                     }
+                }
+            }
+    }
+
+    private var settingsScrollScreen: some View {
+        ScrollViewReader { scrollProxy in
+            AppScrollScreen {
+                VStack(alignment: .leading, spacing: 16) {
+                    sessionSection
+                    speakTimeoutSection
+                    keyboardSection
+                    audioSection
+                    activeModelSection
+                    vibesAISection
+                    ttsSection
+                    rateAndReviewSection
+                    supportSection
+                    helpSection
+                    restorePurchasesSection
+                    versionFooter
                 }
             }
             .onChange(of: appTabRouter.settingsModelSectionExpansionRequestID) { _, requestID in
