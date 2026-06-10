@@ -201,7 +201,7 @@ extension TTSPlaybackCoordinator {
     func replayLastPlayback(startingAtSample startSampleOffset: Int = 0, shouldAutoplay: Bool = true) async {
         guard !replayablePlaybackSamples.isEmpty else { return }
 
-        stop(emitCallback: false)
+        stop(emitCallback: false, deactivateAudioSession: false)
         let safeStartSampleOffset = min(max(0, startSampleOffset), max(0, replayablePlaybackSamples.count - 1))
         Self.log(
             "Replaying cached playback samples=\(replayablePlaybackSamples.count) startOffset=\(safeStartSampleOffset) autoplay=\(shouldAutoplay)"
@@ -281,7 +281,7 @@ extension TTSPlaybackCoordinator {
         }
     }
 
-    func stop(emitCallback: Bool) {
+    func stop(emitCallback: Bool, deactivateAudioSession: Bool = true) {
         let hadPlayback = playbackTask != nil || playerNode.isPlaying || queuedBufferCount > 0
         playbackSessionID = UUID()
 
@@ -317,7 +317,9 @@ extension TTSPlaybackCoordinator {
             playerNode.stop()
         }
         audioEngine.stop()
-        deactivateAudioSessionIfNeeded()
+        if deactivateAudioSession {
+            deactivateAudioSessionIfNeeded()
+        }
 
         if emitCallback, hadPlayback {
             onPlaybackCancelled?()
