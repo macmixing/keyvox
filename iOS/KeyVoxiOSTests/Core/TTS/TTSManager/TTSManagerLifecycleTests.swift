@@ -46,7 +46,7 @@ struct TTSManagerLifecycleTests {
         harness.manager.activeRequest = makeRequest(createdAt: 2)
         harness.manager.hasStartedPlaybackForActiveRequest = true
         harness.manager.updateState(.playing)
-        armPlaybackCoordinatorForPause(harness.manager.playbackCoordinator)
+        await armPlaybackCoordinatorForPause(harness.manager.playbackCoordinator)
 
         harness.manager.handleAppWillResignActive()
         await settleLifecycleTasks()
@@ -90,7 +90,7 @@ struct TTSManagerLifecycleTests {
         harness.manager.activeRequest = makeRequest(createdAt: 4)
         harness.manager.hasStartedPlaybackForActiveRequest = true
         harness.manager.updateState(.playing)
-        armPlaybackCoordinatorForPause(harness.manager.playbackCoordinator)
+        await armPlaybackCoordinatorForPause(harness.manager.playbackCoordinator)
 
         harness.manager.handleProtectedDataWillBecomeUnavailableNotification(
             Notification(name: UIApplication.protectedDataWillBecomeUnavailableNotification)
@@ -243,12 +243,13 @@ struct TTSManagerLifecycleTests {
         replayCache.clear()
 
         let engine = SpyTTSEngine()
+        let playbackCoordinator = TTSPlaybackCoordinator(audioSession: StubTTSPlaybackAudioSession())
         let manager = TTSManager(
             settingsStore: AppSettingsStore(defaults: defaults),
             appHaptics: StubAppHaptics(),
             keyboardBridge: KeyVoxKeyboardBridge(),
             engine: engine,
-            playbackCoordinator: TTSPlaybackCoordinator(),
+            playbackCoordinator: playbackCoordinator,
             purchaseGate: StubTTSPurchaseGate(),
             replayCache: replayCache
         )
@@ -278,7 +279,7 @@ struct TTSManagerLifecycleTests {
         await Task.yield()
     }
 
-    private func armPlaybackCoordinatorForPause(_ playbackCoordinator: TTSPlaybackCoordinator) {
+    private func armPlaybackCoordinatorForPause(_ playbackCoordinator: TTSPlaybackCoordinator) async {
         playbackCoordinator.fastModeEnabled = true
         playbackCoordinator.didStartPlayback = true
         playbackCoordinator.isPaused = false
@@ -287,7 +288,7 @@ struct TTSManagerLifecycleTests {
         playbackCoordinator.configureAudioGraphIfNeeded()
         let samples = Array(repeating: Float(0), count: 24_000)
         if let buffer = playbackCoordinator.makeBuffer(from: samples) {
-            try? playbackCoordinator.configureAudioSession()
+            try? await playbackCoordinator.configureAudioSession()
             try? playbackCoordinator.audioEngine.start()
             playbackCoordinator.scheduleBuffer(
                 buffer,
@@ -395,4 +396,25 @@ private final class StubTTSPurchaseGate: TTSPurchaseGating {
     func presentUnlockSheet() {}
     func dismissUnlockSheet() {}
     func consumeFreeTTSSpeakIfNeeded() {}
+}
+
+private final class StubTTSPlaybackAudioSession: TTSPlaybackAudioSessionControlling {
+    var currentOutputPortTypes: [AVAudioSession.Port] = []
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        policy: AVAudioSession.RouteSharingPolicy,
+        options: AVAudioSession.CategoryOptions
+    ) throws {}
+
+    func setCategory(
+        _ category: AVAudioSession.Category,
+        mode: AVAudioSession.Mode,
+        options: AVAudioSession.CategoryOptions
+    ) throws {}
+
+    func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws {}
+
+    func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws {}
 }

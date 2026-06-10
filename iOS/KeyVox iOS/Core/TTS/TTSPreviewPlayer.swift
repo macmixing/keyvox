@@ -78,9 +78,20 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             return
         }
 
-        do {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await self.startPlayback(resourceName: resourceName, url: url)
+            } catch {
+                Self.log("Failed to play preview for \(resourceName): \(String(describing: error))")
+                self.stop()
+            }
+        }
+    }
+
+    private func startPlayback(resourceName: String, url: URL) async throws {
             resetPlaybackState(deactivateAudioSession: false)
-            try configureAudioSession()
+            try await configureAudioSession()
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
             player.prepareToPlay()
@@ -89,10 +100,6 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
             appHaptics.light()
             player.play()
             isPlaying = true
-        } catch {
-            Self.log("Failed to play preview for \(resourceName): \(String(describing: error))")
-            stop()
-        }
     }
 
     private func resetPlaybackState(deactivateAudioSession: Bool) {
@@ -112,45 +119,115 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     private func resumeCurrentPlayback() {
         guard let player else { return }
 
-        do {
-            try configureAudioSession()
-            appHaptics.light()
-            player.play()
-            isPlaying = true
-        } catch {
-            Self.log(
-                "Failed to resume preview for \(activePreviewResourceName ?? "unknown"): \(String(describing: error))"
-            )
-            stop()
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await self.configureAudioSession()
+                self.appHaptics.light()
+                player.play()
+                self.isPlaying = true
+            } catch {
+                Self.log(
+                    "Failed to resume preview for \(self.activePreviewResourceName ?? "unknown"): \(String(describing: error))"
+                )
+                self.stop()
+            }
         }
     }
 
-    private func configureAudioSession() throws {
+    private func configureAudioSession() async throws {
         if isRecordingSessionActiveProvider() {
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
                 preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
             )
             var categoryOptions: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .mixWithOthers]
             categoryOptions.formUnion(bluetoothRoutePolicy.bluetoothCategoryOptions)
-            try audioSession.setCategory(.playAndRecord, mode: .default, options: categoryOptions)
-            let isUsingBuiltInReceiver = audioSession.currentRoute.outputs.contains {
-                $0.portType == .builtInReceiver
+            let resolvedCategoryOptions = categoryOptions
+            try await performAudioSessionOperation { audioSession in
+                try audioSession.setCategory(.playAndRecord, mode: .default, options: resolvedCategoryOptions)
+                let isUsingBuiltInReceiver = audioSession.currentRoute.outputs.contains {
+                    $0.portType == .builtInReceiver
+                }
+                try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
             }
-            try? audioSession.overrideOutputAudioPort(isUsingBuiltInReceiver ? .speaker : .none)
             shouldDeactivateAudioSessionOnStop = false
         } else {
-            try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try? audioSession.overrideOutputAudioPort(.none)
+            try? await deactivateAudioSession()
+            try await performAudioSessionOperation { audioSession in
+                try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+                try? audioSession.overrideOutputAudioPort(.none)
+            }
             shouldDeactivateAudioSessionOnStop = true
         }
-        try audioSession.setActive(true)
+        try await activateAudioSession()
         hasActivatedAudioSession = true
     }
 
     private func deactivateAudioSessionIfNeeded() {
-        try? audioSession.setActive(false, options: [.notifyOthersOnDeactivation])
-        hasActivatedAudioSession = false
-        shouldDeactivateAudioSessionOnStop = false
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            try? await self.deactivateAudioSession(notifyOthers: true)
+            self.hasActivatedAudioSession = false
+            self.shouldDeactivateAudioSessionOnStop = false
+        }
+    }
+
+    private func activateAudioSession() async throws {
+        if #available(iOS 27.0, *) {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                audioSession.activate(options: []) { activated, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else if activated {
+                        continuation.resume()
+                    } else {
+                        continuation.resume(throwing: CocoaError(.featureUnsupported))
+                    }
+                }
+            }
+        } else {
+            try await performAudioSessionOperation { audioSession in
+                try audioSession.setActive(true)
+            }
+        }
+    }
+
+    private func deactivateAudioSession(notifyOthers: Bool = false) async throws {
+        if #available(iOS 27.0, *) {
+            let options: AVAudioSessionDeactivationOptions = notifyOthers ? [.notifyOthersOnDeactivation] : []
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                audioSession.deactivate(options: options) { deactivated, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else if deactivated {
+                        continuation.resume()
+                    } else {
+                        continuation.resume(throwing: CocoaError(.featureUnsupported))
+                    }
+                }
+            }
+        } else {
+            let options: AVAudioSession.SetActiveOptions = notifyOthers ? [.notifyOthersOnDeactivation] : []
+            try await performAudioSessionOperation { audioSession in
+                try audioSession.setActive(false, options: options)
+            }
+        }
+    }
+
+    private func performAudioSessionOperation(
+        _ operation: @escaping @Sendable (AVAudioSession) throws -> Void
+    ) async throws {
+        let audioSession = audioSession
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try operation(audioSession)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     private static func log(_ message: String) {

@@ -274,7 +274,9 @@ extension TTSManager {
             isPlaybackPaused = false
             dismissPlaybackPreparationView()
             beginBackgroundTaskIfNeeded()
-            playbackCoordinator.replayLastPlayback(startingAtSample: resumeOffset, shouldAutoplay: true)
+            Task { @MainActor [weak self] in
+                await self?.playbackCoordinator.replayLastPlayback(startingAtSample: resumeOffset, shouldAutoplay: true)
+            }
         default:
             break
         }

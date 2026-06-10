@@ -92,6 +92,8 @@ final class TTSPlaybackCoordinator {
     var hasObservedFastModeBackgroundSafeCompute = false
     var hasConfiguredAudioGraph = false
     var hasHandedOffPausedPlaybackSession = false
+    var hasActivatedAudioSession = false
+    var configuredAudioSessionMode: AudioSessionMode?
     var overrideIsPlayerNodePlaying: Bool?
     let audioSession: any TTSPlaybackAudioSessionControlling
     let preferBuiltInMicrophoneProvider: () -> Bool
