@@ -31,6 +31,7 @@ extension ParakeetCoreMLBackend {
         let hiddenStride: Int
         let timeStride: Int
         let timeBaseOffset: Int
+        let sourceElementCapacity: Int
 
         init(array: MLMultiArray, validFrameCount: Int) throws {
             let shape = array.shape.map(\.intValue)
@@ -55,6 +56,7 @@ extension ParakeetCoreMLBackend {
             self.hiddenStride = strides[hiddenAxis]
             self.timeStride = strides[timeAxis]
             self.timeBaseOffset = timeStride >= 0 ? 0 : (availableFrames - 1) * timeStride
+            self.sourceElementCapacity = Self.addressableElementCapacity(shape: shape, strides: strides, fallback: array.count)
         }
 
         func copyFrame(
@@ -85,14 +87,42 @@ extension ParakeetCoreMLBackend {
             let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
             let destinationHiddenStride = destination.strides[1].intValue
             let sourceBaseIndex = timeBaseOffset + (frameIndex * timeStride)
-
-            for hiddenIndex in 0..<hiddenSize {
-                destinationPointer[hiddenIndex * destinationHiddenStride] =
-                    try ParakeetCoreMLBackend.floatValue(
-                        in: array,
-                        atLinearIndex: sourceBaseIndex + (hiddenIndex * hiddenStride)
-                    )
+            let maxSourceIndex = sourceBaseIndex + ((hiddenSize - 1) * hiddenStride)
+            guard sourceBaseIndex >= 0, maxSourceIndex < sourceElementCapacity else {
+                throw ParakeetError.transcriptionFailed(code: -1, message: "encoder_frame_buffer_too_small")
             }
+
+            switch array.dataType {
+            case .float16:
+                let sourcePointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: sourceElementCapacity)
+                for hiddenIndex in 0..<hiddenSize {
+                    destinationPointer[hiddenIndex * destinationHiddenStride] =
+                        ParakeetFloat16Storage.float(from: sourcePointer[sourceBaseIndex + (hiddenIndex * hiddenStride)])
+                }
+            case .float32:
+                let sourcePointer = array.dataPointer.bindMemory(to: Float.self, capacity: sourceElementCapacity)
+                for hiddenIndex in 0..<hiddenSize {
+                    destinationPointer[hiddenIndex * destinationHiddenStride] =
+                        sourcePointer[sourceBaseIndex + (hiddenIndex * hiddenStride)]
+                }
+            default:
+                throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
+            }
+        }
+
+        private static func addressableElementCapacity(shape: [Int], strides: [Int], fallback: Int) -> Int {
+            guard shape.count == strides.count else {
+                return fallback
+            }
+
+            let maximumStrideOffset = zip(shape, strides).reduce(0) { partialResult, pair in
+                let dimension = pair.0
+                let stride = pair.1
+                guard dimension > 0, stride > 0 else { return partialResult }
+                return partialResult + ((dimension - 1) * stride)
+            }
+
+            return max(fallback, maximumStrideOffset + 1)
         }
     }
 

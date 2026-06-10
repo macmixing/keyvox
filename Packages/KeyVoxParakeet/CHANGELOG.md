@@ -17,12 +17,14 @@ iOS 27 compatibility update for the Parakeet Core ML runtime.
 - Routed `EncoderInt4.mlmodelc` through CPU-only Core ML execution on iOS 27 and newer after device testing showed the ANE path fails during background dictation on iOS 27.
 - Routed Parakeet decoder and joint execution through CPU-only Core ML execution on iOS 27 and newer.
 - Normalized float16 encoder frame reads and decoder state layouts only when the updated Core ML artifact layout is loaded.
+- Handled padded Core ML encoder output strides from `EncoderInt4.mlmodelc` on the iOS 26 ANE path without changing the legacy `Encoder.mlmodelc` frame-copy path.
 - Preserved the legacy direct Float32 encoder-frame copy and decoder-state handoff paths for existing `Encoder.mlmodelc` and `JointDecision.mlmodelc` installs.
 - Updated package coverage for both the legacy encoder-frame path and the current float16 encoder-frame path.
 
 ### Notes
 
 - `1.0.4` bumps the tracked runtime version for `KeyVoxParakeet` to cover the iOS 27 compatibility path that restores Parakeet dictation with the updated v3 artifact set while keeping existing legacy installs on their original runtime behavior.
+- The updated v3 artifact is intended to provide a reliable CPU fallback for iOS 27 while preserving the fast ANE path on iOS 26 and below; once the iOS 27 Core ML / ANE regression is resolved, the execution branch can be narrowed without requiring another artifact migration.
 
 ## [1.0.3] - 2026-05-05
 

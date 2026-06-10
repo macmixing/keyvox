@@ -200,6 +200,46 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(destinationPointer[639 * destinationHiddenStride], 63.9, accuracy: 0.05)
     }
 
+    func testEncoderFrameAccessorCopiesCurrentArtifactFrameFromPaddedANEOutput() throws {
+        let storageCount = 196_608
+        let sourcePointer = UnsafeMutablePointer<UInt16>.allocate(capacity: storageCount)
+        sourcePointer.initialize(repeating: 0, count: storageCount)
+
+        let source = try MLMultiArray(
+            dataPointer: UnsafeMutableRawPointer(sourcePointer),
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 188],
+            dataType: .float16,
+            strides: [196_608, 192, 1],
+            deallocator: { pointer in
+                pointer.deallocate()
+            }
+        )
+        let destination = try MLMultiArray(
+            shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 1],
+            dataType: .float32
+        )
+        let targetFrameIndex = 18
+        let hiddenStride = 192
+
+        sourcePointer[targetFrameIndex] = ParakeetFloat16Storage.bitPattern(from: 1.25)
+        sourcePointer[(1 * hiddenStride) + targetFrameIndex] = ParakeetFloat16Storage.bitPattern(from: 2.5)
+        sourcePointer[(1_023 * hiddenStride) + targetFrameIndex] = ParakeetFloat16Storage.bitPattern(from: 3.75)
+
+        let accessor = try ParakeetCoreMLBackend.EncoderFrameAccessor(array: source, validFrameCount: 19)
+        try accessor.copyFrame(
+            at: targetFrameIndex,
+            into: destination,
+            usesCurrentArtifactLayout: true
+        )
+
+        let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+        let destinationHiddenStride = destination.strides[1].intValue
+
+        XCTAssertEqual(destinationPointer[0], 1.25, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[1 * destinationHiddenStride], 2.5, accuracy: 0.001)
+        XCTAssertEqual(destinationPointer[1_023 * destinationHiddenStride], 3.75, accuracy: 0.001)
+    }
+
     func testCopyNormalizedDecoderProjectionSupportsFloat16AndFloat32() throws {
         let projection = try MLMultiArray(
             shape: [1, 1, NSNumber(value: ParakeetCoreMLBackend.Constants.decoderHiddenSize)],
