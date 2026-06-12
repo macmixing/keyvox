@@ -6,6 +6,53 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.11] - 2026-06-11
+
+Restores dictation behavior on iOS 27 beta while adding a safer Parakeet model update path.
+
+### Added
+
+- Added a required Parakeet model update prompt for iOS 27 devices with legacy Parakeet artifacts, including a direct path into the Settings dictation model card.
+- Added model-card update states so required artifact updates show an Update action while ordinary incomplete installs still show Repair.
+- Added keyboard-side dictation model status checks so the keyboard can distinguish missing models from models that need to be updated or repaired.
+- Added a local `KeyVoxWhisper` runtime artifact so iOS 27 can use a KeyVox-owned Whisper Core ML compatibility path.
+
+### Changed
+
+- Updated fresh Parakeet installs to download the current FluidInference v3 artifact layout with `EncoderInt4.mlmodelc` and `JointDecisionv3.mlmodelc`, reducing the estimated Parakeet download size shown in Settings to about 335 MB.
+- Updated Parakeet validation so existing legacy Parakeet installs remain usable on iOS 26 and below, while iOS 27 requires the current artifact set before Parakeet dictation can continue.
+- Updated Parakeet repair/update behavior so model updates stage new artifacts before replacing the installed model, preserving the selected dictation provider during updates while keeping delete behavior separate.
+- Updated Settings scrolling so required model update prompts can open and scroll to the dictation model card.
+- Updated Live Activity attributes for Swift concurrency compatibility.
+
+### Fixed
+
+- Fixed Whisper dictation on iOS 27 by routing the Whisper Core ML encoder away from the failing ANE path on iOS 27 and newer while keeping earlier OS behavior unchanged.
+- Fixed Parakeet dictation on iOS 27 by supporting the current Parakeet v3 artifact layout and routing the updated encoder, decoder, and joint Core ML execution through the iOS 27 compatibility path.
+- Fixed current Parakeet artifacts on iOS 26 and below by handling padded encoder output strides without changing the legacy Parakeet artifact path.
+- Fixed legacy Parakeet installs on iOS 26 and below so they do not get incorrectly marked as needing repair or update.
+- Fixed active dictation provider fallback so an in-progress update of the selected model does not switch the user back to another installed model.
+- Fixed keyboard model warnings so repair/update-required models no longer appear as a generic “Install a dictation model” state.
+- Fixed duplicate dictation provider warmup on launch.
+
+### Package versions
+
+KeyVox iOS 1.2.11
+  KeyVoxCore           1.0.17
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.7
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxWhisper` `1.0.1` adds a package-owned local `whisper.cpp` runtime artifact and routes the Whisper Core ML encoder through a CPU-only policy on iOS 27 and newer to avoid the iOS 27 beta ANE failure path.
+- `KeyVoxParakeet` `1.0.4` supports the current FluidInference Parakeet v3 artifact layout, keeps legacy artifact loading for existing installs, routes updated Parakeet Core ML execution through the iOS 27 compatibility path, and handles padded encoder output strides for the current artifacts on iOS 26 and below.
+
+---
+
 ## [1.2.10] - 2026-06-06
 
 Improves Vibes money preservation, refreshes the Polished adapter, and refines shared terminal punctuation cleanup.
