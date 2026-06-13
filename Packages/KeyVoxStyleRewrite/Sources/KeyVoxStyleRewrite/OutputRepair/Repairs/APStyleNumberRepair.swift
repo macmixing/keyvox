@@ -98,7 +98,9 @@ struct APStyleNumberRepair {
         for endIndex in stride(from: maximumEndIndex, through: index + 1, by: -1) {
             let runRange = tokens[index].range.lowerBound..<tokens[endIndex - 1].range.upperBound
             let runText = String(text[runRange])
-            guard let value = RepairNumberParsing.parsedSpellOutInteger(runText),
+            let runTokens = Array(tokens[index..<endIndex])
+            guard let value = RepairNumberParsing.parsedSpellOutInteger(runText)
+                    ?? parsedConnectorNumberRunCandidate(runTokens),
                   value >= RepairNumberParsing.apStyleNumeralLowerBound,
                   !isProtectedNumberRun(range: runRange, in: text) else {
                 continue
@@ -107,6 +109,37 @@ struct APStyleNumberRepair {
         }
 
         return nil
+    }
+
+    private func parsedConnectorNumberRunCandidate(_ tokens: [RepairWordToken]) -> Int? {
+        guard tokens.count >= 3,
+              isSingleNumberToken(tokens[tokens.startIndex]),
+              isSingleNumberToken(tokens[tokens.index(before: tokens.endIndex)]) else {
+            return nil
+        }
+
+        for connectorIndex in tokens.indices.dropFirst().dropLast()
+        where !isSingleNumberToken(tokens[connectorIndex]) {
+            let leftTokens = tokens[tokens.startIndex..<connectorIndex]
+            let rightTokens = tokens[tokens.index(after: connectorIndex)..<tokens.endIndex]
+            guard let leftValue = parsedNumberChunk(leftTokens),
+                  let rightValue = parsedNumberChunk(rightTokens) else {
+                continue
+            }
+            return leftValue + rightValue
+        }
+
+        return nil
+    }
+
+    private func isSingleNumberToken(_ token: RepairWordToken) -> Bool {
+        RepairNumberParsing.parsedSpellOutInteger(token.text) != nil
+    }
+
+    private func parsedNumberChunk(_ tokens: ArraySlice<RepairWordToken>) -> Int? {
+        let text = tokens.map(\.text).joined(separator: " ")
+        return RepairNumberParsing.parsedSpellOutNumberPhrase(text)
+            ?? RepairNumberParsing.parsedSpellOutInteger(text)
     }
 
     private func adjacentNumberRunReplacement(
