@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.8] - 2026-06-12
+
+Connector-based spoken number repair for Vibes output formatting.
+
+### Includes
+
+- Converted connector-based spoken hundreds such as seven hundred and fifty into one AP-style numeric value.
+- Kept connector-number repair limited to number-token runs so surrounding dictation text is not parsed by the connector path.
+- Added regression coverage for both spoken connector-number output and changed numeric output restored from source dictation evidence.
+
+### Notes
+
+- `1.0.8` bumps the tracked style rewrite package version for deterministic connector-number repair after local model rewrites.
+
+---
+
 ## [1.0.7] - 2026-06-06
 
 Money and number evidence repair for Polished alpha-027 rewrite validation.
