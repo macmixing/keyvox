@@ -316,6 +316,39 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "That guy waited 10 days total. Please order 22 labels.")
     }
 
+    func testRewriteRepairConvertsConnectorBasedHundredsAsSingleNumber() {
+        let cases = [
+            (
+                original: "That's seven hundred and fifty gigabytes.",
+                rewritten: "That's seven hundred and fifty gigabytes.",
+                repaired: "That's 750 gigabytes."
+            ),
+            (
+                original: "That's four hundred and seventy five gigabytes.",
+                rewritten: "That's four hundred and seventy five gigabytes.",
+                repaired: "That's 475 gigabytes."
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
+    }
+
+    func testRewriteRepairRestoresChangedConnectorBasedHundredsFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "That's seven hundred and fifty gigabytes.",
+            rewritten: "That's 705 gigabytes."
+        )
+
+        XCTAssertEqual(output, "That's 750 gigabytes.")
+    }
+
     func testRewriteRepairRestoresAPStyleForCollapsedAdjacentRatingNumbers() {
         let output = OutputRepair.repairModelOutput(
             original: "I have like twelve five star ratings right now.",
