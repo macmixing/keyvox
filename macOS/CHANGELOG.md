@@ -6,6 +6,31 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.11] - 2026-06-13
+
+Improves Vibes repair for connector-based spoken hundreds.
+
+### Changed
+
+- Updated `KeyVoxStyleRewrite` to `1.0.8` with more deterministic connector-number repair for Vibes output formatting.
+
+### Fixed
+
+- Fixed Vibes rewrites so spoken hundreds with connectors, such as seven hundred and fifty, are repaired as one AP-style numeric value.
+- Fixed Vibes rewrites so changed connector-based hundreds can be restored from the original dictation evidence when model output drifts to a different number.
+
+### Package versions
+
+KeyVox macOS 1.1.11:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.8
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+---
+
 ## [1.1.10] - 2026-06-06
 
 Improves Vibes number preservation and adds a small multi-display updater reliability improvement.
