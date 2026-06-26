@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-06-25
+
+Runtime CPU fallback for failed Whisper Core ML transcription.
+
+### Changed
+
+- `1.0.2` bumps the tracked `KeyVoxWhisper` runtime version for package-owned CPU fallback behavior.
+- Added a Core ML CPU-only fallback model path so upstream `whisper.cpp` can retry without Apple Neural Engine acceleration when the primary path fails.
+- Retried failed, empty, or structurally invalid `whisper_full` results once on the CPU fallback context instead of matching private Core ML or Apple Neural Engine error codes.
+- Preferred the fallback context for the current `Whisper` instance after the primary path produces unusable output and fallback returns real segments, avoiding repeated bad primary passes.
+
+### Notes
+
+- This keeps the fallback policy inside the Whisper package while avoiding a long-term fork of upstream `whisper.cpp` source behavior.
+
+---
+
 ## [1.0.1] - 2026-06-08
 
 iOS 27 beta compatibility release for the Whisper Core ML runtime.

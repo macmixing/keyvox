@@ -5,6 +5,7 @@ import whisper
 
 final class WhisperCoreTests: XCTestCase {
     private static let dummyContext = OpaquePointer(bitPattern: 0x1)!
+    private static let fallbackContext = OpaquePointer(bitPattern: 0x2)!
 
     func testWhisperErrorDescriptions() {
         XCTAssertEqual(WhisperError.initializationFailed.errorDescription, "Failed to initialize Whisper context")
@@ -117,6 +118,88 @@ final class WhisperCoreTests: XCTestCase {
         }
     }
 
+    func testTranscribeRetriesCPUFallbackWhenPrimaryRuntimeFails() async throws {
+        let modelURL = try makeTemporaryWhisperModelURL()
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext, Self.fallbackContext],
+            segments: [.init(text: "Fallback worked", start: 1, end: 5, noSpeechProbability: 0.2)]
+        )
+        recorder.fullStatuses = [-8, 0]
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14, fileURL: modelURL)
+
+        let segments = try await whisper.transcribe(audioFrames: [0.1, 0.2, 0.3])
+
+        XCTAssertEqual(segments.map(\.text), ["Fallback worked"])
+        XCTAssertEqual(recorder.capturedContexts, [Self.dummyContext, Self.fallbackContext])
+        XCTAssertEqual(recorder.capturedBuffers.count, 2)
+    }
+
+    func testTranscribePrefersCPUFallbackAfterPrimaryRuntimeProducesInvalidTiming() async throws {
+        let modelURL = try makeTemporaryWhisperModelURL()
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext, Self.fallbackContext],
+            segments: [.init(text: "Fallback repaired timing", start: 0, end: 10, noSpeechProbability: 0.2)]
+        )
+        recorder.segmentsByContext = [
+            Self.dummyContext: [.init(text: "!!!!!!!!!!!!!!!!", start: -100_728, end: 3_000, noSpeechProbability: 0)],
+            Self.fallbackContext: [.init(text: "Fallback repaired timing", start: 0, end: 10, noSpeechProbability: 0.2)],
+        ]
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14, fileURL: modelURL)
+
+        let segments = try await whisper.transcribe(audioFrames: [0.1, 0.2, 0.3])
+        _ = try await whisper.transcribe(audioFrames: [0.4, 0.5, 0.6])
+
+        XCTAssertEqual(segments.map(\.text), ["Fallback repaired timing"])
+        XCTAssertEqual(recorder.capturedContexts, [
+            Self.dummyContext,
+            Self.fallbackContext,
+            Self.fallbackContext,
+        ])
+    }
+
+    func testTranscribePrefersCPUFallbackAfterPrimaryRuntimeProducesNoSegments() async throws {
+        let modelURL = try makeTemporaryWhisperModelURL()
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext, Self.fallbackContext],
+            segments: []
+        )
+        recorder.segmentsByContext = [
+            Self.dummyContext: [],
+            Self.fallbackContext: [.init(text: "Fallback repaired empty primary", start: 0, end: 10, noSpeechProbability: 0.2)],
+        ]
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14, fileURL: modelURL)
+
+        let segments = try await whisper.transcribe(audioFrames: [0.1, 0.2, 0.3])
+        _ = try await whisper.transcribe(audioFrames: [0.4, 0.5, 0.6])
+
+        XCTAssertEqual(segments.map(\.text), ["Fallback repaired empty primary"])
+        XCTAssertEqual(recorder.capturedContexts, [
+            Self.dummyContext,
+            Self.fallbackContext,
+            Self.fallbackContext,
+        ])
+    }
+
+    func testTranscribeRetriesCPUFallbackPerRequestWithoutChangingDefaultPath() async throws {
+        let modelURL = try makeTemporaryWhisperModelURL()
+        let recorder = WhisperRuntimeRecorder(
+            contextsToReturn: [Self.dummyContext, Self.fallbackContext],
+            segments: [.init(text: "Fallback repaired request", start: 1, end: 5, noSpeechProbability: 0.2)]
+        )
+        recorder.fullStatuses = [-8, 0, -8, 0]
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14, fileURL: modelURL)
+
+        _ = try await whisper.transcribe(audioFrames: [0.1, 0.2, 0.3])
+        _ = try await whisper.transcribe(audioFrames: [0.4, 0.5, 0.6])
+
+        XCTAssertEqual(recorder.capturedContexts, [
+            Self.dummyContext,
+            Self.fallbackContext,
+            Self.dummyContext,
+            Self.fallbackContext,
+        ])
+    }
+
     func testTranscribeWithMetadataReturnsLanguageMetadata() async throws {
         let recorder = WhisperRuntimeRecorder(
             contextsToReturn: [Self.dummyContext],
@@ -182,6 +265,17 @@ final class WhisperCoreTests: XCTestCase {
         XCTAssertEqual(recorder.freedContexts.first, Self.dummyContext)
     }
 
+    func testDeinitFreesCPUFallbackContextWhenAvailable() throws {
+        let modelURL = try makeTemporaryWhisperModelURL()
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext, Self.fallbackContext], segments: [])
+        var whisper: Whisper? = makeWhisper(recorder: recorder, osMajorVersion: 14, fileURL: modelURL)
+        XCTAssertTrue(recorder.freedContexts.isEmpty)
+
+        whisper = nil
+        XCTAssertNil(whisper)
+        XCTAssertEqual(recorder.freedContexts, [Self.dummyContext, Self.fallbackContext])
+    }
+
     func testDeinitSkipsFreeWhenContextIsMissing() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil], segments: [])
         var whisper: Whisper? = makeWhisper(recorder: recorder, osMajorVersion: 14)
@@ -216,10 +310,11 @@ final class WhisperCoreTests: XCTestCase {
 
     private func makeWhisper(
         recorder: WhisperRuntimeRecorder,
-        osMajorVersion: Int
+        osMajorVersion: Int,
+        fileURL: URL = URL(fileURLWithPath: "/tmp/keyvox-whisper-\(UUID().uuidString).bin")
     ) -> Whisper {
         Whisper(
-            fromFileURL: URL(fileURLWithPath: "/tmp/keyvox-whisper-\(UUID().uuidString).bin"),
+            fromFileURL: fileURL,
             withParams: .default,
             runtime: recorder.makeRuntime(),
             osVersionProvider: {
@@ -231,6 +326,15 @@ final class WhisperCoreTests: XCTestCase {
             },
             inferenceQueue: DispatchQueue(label: "KeyVoxWhisperTests.inference.\(UUID().uuidString)")
         )
+    }
+
+    private func makeTemporaryWhisperModelURL() throws -> URL {
+        let directoryURL = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("keyvox-whisper-tests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        let modelURL = directoryURL.appendingPathComponent("ggml-base.bin")
+        try Data([0x6b, 0x76, 0x78]).write(to: modelURL)
+        return modelURL
     }
 }
 
@@ -265,12 +369,16 @@ private final class WhisperRuntimeRecorder {
     var contextParamsHistory: [whisper_context_params] = []
     private var contextAttemptIndex = 0
     private var contextsToReturn: [OpaquePointer?]
-    private var textPointers: [UnsafeMutablePointer<CChar>?]
+    private var textPointersByText: [String: UnsafeMutablePointer<CChar>] = [:]
 
     var fullStatus: Int32 = 0
+    var fullStatuses: [Int32] = []
+    private var fullAttemptIndex = 0
+    var capturedContexts: [OpaquePointer] = []
     var capturedBuffers: [[Float]] = []
     var freedContexts: [OpaquePointer] = []
     var segments: [StubSegment]
+    var segmentsByContext: [OpaquePointer: [StubSegment]] = [:]
 
     var stubLangId: Int32 = -1
     var stubLangCode: String?
@@ -281,20 +389,27 @@ private final class WhisperRuntimeRecorder {
     init(contextsToReturn: [OpaquePointer?], segments: [StubSegment]) {
         self.contextsToReturn = contextsToReturn
         self.segments = segments
-        self.textPointers = segments.map { segment in
-            guard let text = segment.text else { return nil }
-            return strdup(text)
-        }
     }
 
     deinit {
-        for pointer in textPointers {
-            if let pointer {
-                free(pointer)
-            }
+        for pointer in textPointersByText.values {
+            free(pointer)
         }
         if let langCodePointer { free(langCodePointer) }
         if let langNamePointer { free(langNamePointer) }
+    }
+
+    private func segments(for context: OpaquePointer) -> [StubSegment] {
+        segmentsByContext[context] ?? segments
+    }
+
+    private func pointer(for text: String) -> UnsafePointer<CChar> {
+        if let pointer = textPointersByText[text] {
+            return UnsafePointer(pointer)
+        }
+        let pointer = strdup(text)!
+        textPointersByText[text] = pointer
+        return UnsafePointer(pointer)
     }
 
     func makeRuntime() -> WhisperRuntime {
@@ -315,34 +430,44 @@ private final class WhisperRuntimeRecorder {
             freeContext: { [self] context in
                 freedContexts.append(context)
             },
-            full: { [self] _, _, samples, sampleCount in
+            full: { [self] context, _, samples, sampleCount in
+                capturedContexts.append(context)
                 if let samples {
                     let buffer = UnsafeBufferPointer(start: samples, count: Int(sampleCount))
                     capturedBuffers.append(Array(buffer))
                 } else {
                     capturedBuffers.append([])
                 }
-                return fullStatus
+                defer { fullAttemptIndex += 1 }
+                guard !fullStatuses.isEmpty else { return fullStatus }
+                if fullAttemptIndex < fullStatuses.count {
+                    return fullStatuses[fullAttemptIndex]
+                }
+                return fullStatuses.last ?? fullStatus
             },
-            fullNSegments: { [self] _ in
-                Int32(segments.count)
+            fullNSegments: { [self] context in
+                Int32(segments(for: context).count)
             },
-            fullGetSegmentText: { [self] _, index in
-                guard index >= 0, Int(index) < textPointers.count else { return nil }
-                guard let pointer = textPointers[Int(index)] else { return nil }
-                return UnsafePointer(pointer)
+            fullGetSegmentText: { [self] context, index in
+                let contextSegments = segments(for: context)
+                guard index >= 0, Int(index) < contextSegments.count else { return nil }
+                guard let text = contextSegments[Int(index)].text else { return nil }
+                return pointer(for: text)
             },
-            fullGetSegmentT0: { [self] _, index in
-                guard index >= 0, Int(index) < segments.count else { return 0 }
-                return segments[Int(index)].start
+            fullGetSegmentT0: { [self] context, index in
+                let contextSegments = segments(for: context)
+                guard index >= 0, Int(index) < contextSegments.count else { return 0 }
+                return contextSegments[Int(index)].start
             },
-            fullGetSegmentT1: { [self] _, index in
-                guard index >= 0, Int(index) < segments.count else { return 0 }
-                return segments[Int(index)].end
+            fullGetSegmentT1: { [self] context, index in
+                let contextSegments = segments(for: context)
+                guard index >= 0, Int(index) < contextSegments.count else { return 0 }
+                return contextSegments[Int(index)].end
             },
-            fullGetSegmentNoSpeechProb: { [self] _, index in
-                guard index >= 0, Int(index) < segments.count else { return 0 }
-                return segments[Int(index)].noSpeechProbability
+            fullGetSegmentNoSpeechProb: { [self] context, index in
+                let contextSegments = segments(for: context)
+                guard index >= 0, Int(index) < contextSegments.count else { return 0 }
+                return contextSegments[Int(index)].noSpeechProbability
             },
             fullLangId: { [self] _ in
                 stubLangId

@@ -3,12 +3,13 @@ set -euo pipefail
 
 MODEL_TRAINING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${MODEL_TRAINING_DIR}/.." && pwd)"
-WORK_DIR="${MODEL_TRAINING_DIR}/artifacts/current/.keyvox-whisper-runtime-work"
-OUTPUT_DIR="${MODEL_TRAINING_DIR}/artifacts/current/keyvox-whisper-runtime-v1.7.5"
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/keyvox-whisper-runtime-work.XXXXXX")"
+OUTPUT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/keyvox-whisper-runtime-output.XXXXXX")/keyvox-whisper-runtime-v1.7.5"
 WHISPER_CPP_VERSION="${WHISPER_CPP_VERSION:-v1.7.5}"
 DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
 
 export DEVELOPER_DIR
+trap 'rm -rf "${WORK_DIR}" "$(dirname "${OUTPUT_DIR}")"' EXIT
 
 if [[ ! -d "${DEVELOPER_DIR}" ]]; then
   echo "Xcode Beta not found at ${DEVELOPER_DIR}." >&2
@@ -26,7 +27,7 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 rm -rf "${WORK_DIR}"
-mkdir -p "${WORK_DIR}" "${OUTPUT_DIR}" "${REPO_ROOT}/Packages/KeyVoxWhisper/Artifacts"
+mkdir -p "${WORK_DIR}" "${OUTPUT_DIR}" "${REPO_ROOT}/Artifacts"
 
 git clone --depth 1 --branch "${WHISPER_CPP_VERSION}" https://github.com/ggml-org/whisper.cpp.git "${WORK_DIR}/whisper.cpp"
 
@@ -37,15 +38,11 @@ import sys
 path = Path(sys.argv[1])
 source = path.read_text()
 old = "    config.computeUnits = MLComputeUnitsAll;\n"
-new = """#if TARGET_OS_IOS
-    if ([[NSProcessInfo processInfo] operatingSystemVersion].majorVersion >= 27) {
+new = """    if ([path_model_str containsString:@"/.cpu-fallback/"]) {
         config.computeUnits = MLComputeUnitsCPUOnly;
     } else {
         config.computeUnits = MLComputeUnitsAll;
     }
-#else
-    config.computeUnits = MLComputeUnitsAll;
-#endif
 """
 if old not in source:
     raise SystemExit("Could not find Core ML computeUnits assignment to patch.")
@@ -99,12 +96,12 @@ pushd "${WORK_DIR}/whisper.cpp" >/dev/null
 ./build-xcframework.sh
 popd >/dev/null
 
-rm -rf "${REPO_ROOT}/Packages/KeyVoxWhisper/Artifacts/whisper.xcframework"
-cp -R "${WORK_DIR}/whisper.cpp/build-apple/whisper.xcframework" "${REPO_ROOT}/Packages/KeyVoxWhisper/Artifacts/whisper.xcframework"
+rm -rf "${REPO_ROOT}/Artifacts/whisper.xcframework"
+cp -R "${WORK_DIR}/whisper.cpp/build-apple/whisper.xcframework" "${REPO_ROOT}/Artifacts/whisper.xcframework"
 
 rm -f "${OUTPUT_DIR}/whisper.xcframework.zip"
 (
-  cd "${REPO_ROOT}/Packages/KeyVoxWhisper/Artifacts"
+  cd "${REPO_ROOT}/Artifacts"
   zip -qry "${OUTPUT_DIR}/whisper.xcframework.zip" "whisper.xcframework"
 )
 
@@ -113,11 +110,11 @@ cat > "${OUTPUT_DIR}/artifact-manifest.json" <<JSON
 {
   "runtimeID": "keyvox-whisper-runtime",
   "whisperCppVersion": "${WHISPER_CPP_VERSION}",
-  "coreMLPolicy": "iOS 27+ CPUOnly, older iOS/macOS unchanged",
+  "coreMLPolicy": "normal model paths use MLComputeUnitsAll; .cpu-fallback model paths use MLComputeUnitsCPUOnly",
   "swiftPMChecksum": "${CHECKSUM}"
 }
 JSON
 
-echo "Wrote ${REPO_ROOT}/Packages/KeyVoxWhisper/Artifacts/whisper.xcframework"
+echo "Wrote ${REPO_ROOT}/Artifacts/whisper.xcframework"
 echo "Wrote ${OUTPUT_DIR}/whisper.xcframework.zip"
 echo "SwiftPM checksum: ${CHECKSUM}"

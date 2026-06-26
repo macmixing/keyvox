@@ -11,6 +11,12 @@ public struct WhisperTranscriptionResult: Sendable {
         self.detectedLanguageCode = detectedLanguageCode
         self.detectedLanguageName = detectedLanguageName
     }
+
+    var hasValidTiming: Bool {
+        segments.allSatisfy { segment in
+            segment.startTime >= 0 && segment.endTime >= segment.startTime
+        }
+    }
 }
 
 private struct WhisperContextHandle: @unchecked Sendable {
@@ -85,13 +91,25 @@ public final class Whisper {
     private let runtime: WhisperRuntime
     private let inferenceQueue: DispatchQueue
     private let whisperContext: OpaquePointer?
+    private let cpuFallbackContext: OpaquePointer?
+    private let fallbackStateLock = NSLock()
+    private var prefersCPUFallbackAfterInvalidPrimaryTiming = false
     public var params: WhisperParams
+
+    private static func log(_ message: String) {
+        print("[KeyVoxWhisper] \(message)")
+    }
 
     public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
         self.runtime = .live
         self.inferenceQueue = DispatchQueue.global(qos: .userInitiated)
         self.params = params
         self.whisperContext = Self.makeContext(
+            fileURL: fileURL,
+            runtime: runtime,
+            osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
+        )
+        self.cpuFallbackContext = Self.makeCPUFallbackContext(
             fileURL: fileURL,
             runtime: runtime,
             osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
@@ -113,11 +131,19 @@ public final class Whisper {
             runtime: runtime,
             osVersionProvider: osVersionProvider
         )
+        self.cpuFallbackContext = Self.makeCPUFallbackContext(
+            fileURL: fileURL,
+            runtime: runtime,
+            osVersionProvider: osVersionProvider
+        )
     }
 
     deinit {
         if let whisperContext {
             runtime.freeContext(whisperContext)
+        }
+        if let cpuFallbackContext {
+            runtime.freeContext(cpuFallbackContext)
         }
     }
 
@@ -146,74 +172,164 @@ public final class Whisper {
 
         let paramsSnapshot = WhisperParamsHandle(raw: params.whisperParams)
         let context = WhisperContextHandle(raw: whisperContext)
+        let fallbackContext = cpuFallbackContext.map { WhisperContextHandle(raw: $0) }
         let runtime = self.runtime
         let inferenceQueue = self.inferenceQueue
+        let shouldPreferCPUFallback = prefersCPUFallbackContext()
 
-        return try await withCheckedThrowingContinuation { continuation in
+        let runResult: TranscriptionRunResult = try await withCheckedThrowingContinuation { continuation in
             inferenceQueue.async {
                 let localParams = paramsSnapshot.raw
-
-                let status = framesForInference.withUnsafeBufferPointer { buffer in
-                    runtime.full(
-                        context.raw,
-                        localParams,
-                        buffer.baseAddress,
-                        Int32(buffer.count)
-                    )
+                let primaryAttempt = TranscriptionAttempt(context: context, isCPUFallback: false)
+                let fallbackAttempt = fallbackContext.map {
+                    TranscriptionAttempt(context: $0, isCPUFallback: true)
                 }
+                let attempts: [TranscriptionAttempt]
+                if shouldPreferCPUFallback, let fallbackAttempt {
+                    attempts = [fallbackAttempt]
+                } else if let fallbackAttempt {
+                    attempts = [primaryAttempt, fallbackAttempt]
+                } else {
+                    attempts = [primaryAttempt]
+                }
+                var sawUnusablePrimaryResult = false
 
-                guard status == 0 else {
-                    continuation.resume(throwing: WhisperError.transcriptionFailed(code: status))
+                for attempt in attempts {
+                    Self.log("Starting \(attempt.logName) transcription path.")
+                    let status = framesForInference.withUnsafeBufferPointer { buffer in
+                        runtime.full(
+                            attempt.context.raw,
+                            localParams,
+                            buffer.baseAddress,
+                            Int32(buffer.count)
+                        )
+                    }
+
+                    guard status == 0 else {
+                        if attempt.context.raw == attempts.last?.context.raw {
+                            Self.log("\(attempt.logName) transcription path failed with status=\(status).")
+                            continuation.resume(throwing: WhisperError.transcriptionFailed(code: status))
+                            return
+                        }
+                        Self.log("\(attempt.logName) transcription path failed with status=\(status); retrying CPU fallback.")
+                        continue
+                    }
+
+                    let result = Self.transcriptionResult(from: attempt.context.raw, runtime: runtime)
+                    if attempt.isCPUFallback == false,
+                       result.segments.isEmpty,
+                       attempt.context.raw != attempts.last?.context.raw {
+                        Self.log("\(attempt.logName) transcription path produced no segments; retrying CPU fallback.")
+                        sawUnusablePrimaryResult = true
+                        continue
+                    }
+
+                    guard result.hasValidTiming else {
+                        if attempt.context.raw == attempts.last?.context.raw {
+                            Self.log("\(attempt.logName) transcription path produced invalid timestamps.")
+                            continuation.resume(throwing: WhisperError.transcriptionFailed(code: -1))
+                            return
+                        }
+                        Self.log("\(attempt.logName) transcription path produced invalid timestamps; retrying CPU fallback.")
+                        if attempt.isCPUFallback == false {
+                            sawUnusablePrimaryResult = true
+                        }
+                        continue
+                    }
+
+                    Self.log("\(attempt.logName) transcription path succeeded.")
+                    continuation.resume(
+                        returning: TranscriptionRunResult(
+                            result: result,
+                            shouldPreferCPUFallback: attempt.isCPUFallback && sawUnusablePrimaryResult && result.segments.isEmpty == false
+                        )
+                    )
                     return
                 }
 
-                let segmentCount = Int(runtime.fullNSegments(context.raw))
-                var segments: [Segment] = []
-                segments.reserveCapacity(segmentCount)
-
-                if segmentCount > 0 {
-                    for index in 0..<segmentCount {
-                        guard let cText = runtime.fullGetSegmentText(context.raw, Int32(index)) else {
-                            continue
-                        }
-
-                        let startTime = Int(runtime.fullGetSegmentT0(context.raw, Int32(index)) * 10)
-                        let endTime = Int(runtime.fullGetSegmentT1(context.raw, Int32(index)) * 10)
-                        let text = String(cString: cText)
-                        let noSpeechProbability = runtime.fullGetSegmentNoSpeechProb(context.raw, Int32(index))
-
-                        segments.append(
-                            Segment(
-                                startTime: startTime,
-                                endTime: endTime,
-                                text: text,
-                                noSpeechProbability: noSpeechProbability
-                            )
-                        )
-                    }
-                }
-
-                let langId = runtime.fullLangId(context.raw)
-                let langCode: String?
-                let langName: String?
-
-                if langId >= 0 {
-                    langCode = runtime.langStr(langId).map { String(cString: $0) }
-                    langName = runtime.langStrFull(langId).map { String(cString: $0) }
-                } else {
-                    langCode = nil
-                    langName = nil
-                }
-
-                let result = WhisperTranscriptionResult(
-                    segments: segments,
-                    detectedLanguageCode: langCode,
-                    detectedLanguageName: langName
-                )
-
-                continuation.resume(returning: result)
+                continuation.resume(throwing: WhisperError.transcriptionFailed(code: -1))
             }
         }
+
+        if runResult.shouldPreferCPUFallback {
+            markCPUFallbackPreferredAfterInvalidPrimaryTiming()
+        }
+        return runResult.result
+    }
+
+    private func prefersCPUFallbackContext() -> Bool {
+        fallbackStateLock.lock()
+        defer { fallbackStateLock.unlock() }
+        return prefersCPUFallbackAfterInvalidPrimaryTiming
+    }
+
+    private func markCPUFallbackPreferredAfterInvalidPrimaryTiming() {
+        fallbackStateLock.lock()
+        prefersCPUFallbackAfterInvalidPrimaryTiming = true
+        fallbackStateLock.unlock()
+    }
+
+    private struct TranscriptionAttempt {
+        let context: WhisperContextHandle
+        let isCPUFallback: Bool
+
+        var logName: String {
+            isCPUFallback ? "CPU fallback" : "primary"
+        }
+    }
+
+    private struct TranscriptionRunResult {
+        let result: WhisperTranscriptionResult
+        let shouldPreferCPUFallback: Bool
+    }
+
+    private static func transcriptionResult(
+        from context: OpaquePointer,
+        runtime: WhisperRuntime
+    ) -> WhisperTranscriptionResult {
+        let segmentCount = Int(runtime.fullNSegments(context))
+        var segments: [Segment] = []
+        segments.reserveCapacity(segmentCount)
+
+        if segmentCount > 0 {
+            for index in 0..<segmentCount {
+                guard let cText = runtime.fullGetSegmentText(context, Int32(index)) else {
+                    continue
+                }
+
+                let startTime = Int(runtime.fullGetSegmentT0(context, Int32(index)) * 10)
+                let endTime = Int(runtime.fullGetSegmentT1(context, Int32(index)) * 10)
+                let text = String(cString: cText)
+                let noSpeechProbability = runtime.fullGetSegmentNoSpeechProb(context, Int32(index))
+
+                segments.append(
+                    Segment(
+                        startTime: startTime,
+                        endTime: endTime,
+                        text: text,
+                        noSpeechProbability: noSpeechProbability
+                    )
+                )
+            }
+        }
+
+        let langId = runtime.fullLangId(context)
+        let langCode: String?
+        let langName: String?
+
+        if langId >= 0 {
+            langCode = runtime.langStr(langId).map { String(cString: $0) }
+            langName = runtime.langStrFull(langId).map { String(cString: $0) }
+        } else {
+            langCode = nil
+            langName = nil
+        }
+
+        return WhisperTranscriptionResult(
+            segments: segments,
+            detectedLanguageCode: langCode,
+            detectedLanguageName: langName
+        )
     }
 
     private static func makeContext(
@@ -253,6 +369,77 @@ public final class Whisper {
         fallbackParams.flash_attn = false
         return fileURL.path.withCString { path in
             runtime.initFromFileWithParams(path, fallbackParams)
+        }
+    }
+
+    private static func makeCPUFallbackContext(
+        fileURL: URL,
+        runtime: WhisperRuntime,
+        osVersionProvider: () -> OperatingSystemVersion
+    ) -> OpaquePointer? {
+        guard let fallbackURL = makeCPUFallbackModelURL(for: fileURL) else {
+            return nil
+        }
+        return makeContext(
+            fileURL: fallbackURL,
+            runtime: runtime,
+            osVersionProvider: osVersionProvider
+        )
+    }
+
+    private static func makeCPUFallbackModelURL(for fileURL: URL) -> URL? {
+        let fallbackDirectoryURL = fileURL
+            .deletingLastPathComponent()
+            .appendingPathComponent(".cpu-fallback", isDirectory: true)
+        let fallbackURL = fallbackDirectoryURL.appendingPathComponent(fileURL.lastPathComponent)
+        let encoderURL = fileURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("\(fileURL.deletingPathExtension().lastPathComponent)-encoder.mlmodelc")
+        let fallbackEncoderURL = fallbackDirectoryURL.appendingPathComponent(encoderURL.lastPathComponent)
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: fileURL.path) else {
+            return nil
+        }
+
+        do {
+            try fileManager.createDirectory(
+                at: fallbackDirectoryURL,
+                withIntermediateDirectories: true
+            )
+
+            try linkOrSymlinkItemIfNeeded(
+                from: fileURL,
+                to: fallbackURL,
+                fileManager: fileManager
+            )
+
+            if fileManager.fileExists(atPath: encoderURL.path) {
+                try linkOrSymlinkItemIfNeeded(
+                    from: encoderURL,
+                    to: fallbackEncoderURL,
+                    fileManager: fileManager
+                )
+            }
+
+            return fallbackURL
+        } catch {
+            return nil
+        }
+    }
+
+    private static func linkOrSymlinkItemIfNeeded(
+        from sourceURL: URL,
+        to destinationURL: URL,
+        fileManager: FileManager
+    ) throws {
+        if fileManager.fileExists(atPath: destinationURL.path) {
+            return
+        }
+
+        do {
+            try fileManager.linkItem(at: sourceURL, to: destinationURL)
+        } catch {
+            try fileManager.createSymbolicLink(at: destinationURL, withDestinationURL: sourceURL)
         }
     }
 }
