@@ -53,6 +53,14 @@ enum NumberEvidence {
         leftText: String,
         rightText: String
     ) -> Bool {
+        let leftDecimalText = decimalReplacementText(evidence: leftEvidence, tokens: leftRun)
+        let rightDecimalText = decimalReplacementText(evidence: rightEvidence, tokens: rightRun)
+        if let leftDecimalText,
+           let rightDecimalText,
+           leftDecimalText != rightDecimalText {
+            return false
+        }
+
         if leftEvidence == rightEvidence {
             return true
         }
@@ -68,6 +76,10 @@ enum NumberEvidence {
         sourceText: String,
         sourceRange: Range<String.Index>
     ) -> String {
+        if let decimalText = decimalReplacementText(evidence: evidence, tokens: tokens) {
+            return decimalText
+        }
+
         if tokens.count > 1,
            evidence.count == 1,
            case let .value(value) = evidence[0] {
@@ -75,6 +87,43 @@ enum NumberEvidence {
         }
 
         return String(sourceText[sourceRange])
+    }
+
+    static func decimalReplacementText(evidence: [Component]) -> String? {
+        decimalReplacementText(evidence: evidence, tokens: nil)
+    }
+
+    static func decimalReplacementText(evidence: [Component], tokens: [RepairWordToken]?) -> String? {
+        guard let separatorIndex = evidence.firstIndex(of: .separator),
+              separatorIndex == 1,
+              evidence[(separatorIndex + 1)...].contains(.separator) == false else {
+            return nil
+        }
+
+        guard case let .value(major) = evidence[0] else {
+            return nil
+        }
+
+        var minorParts: [String] = []
+        for index in evidence.indices[(separatorIndex + 1)...] {
+            let component = evidence[index]
+            guard case let .value(value) = component,
+                  (0..<100).contains(value) else {
+                return nil
+            }
+            if let token = tokens?[safe: index],
+               token.text.allSatisfy(\.isNumber) {
+                minorParts.append(token.text)
+            } else {
+                minorParts.append(String(value))
+            }
+        }
+
+        guard !minorParts.isEmpty else {
+            return nil
+        }
+
+        return "\(major).\(minorParts.joined())"
     }
 
     private static func alternatives(
@@ -150,5 +199,11 @@ enum NumberEvidence {
 
         collect(index: 0, groups: [])
         return alternatives
+    }
+}
+
+private extension Array {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

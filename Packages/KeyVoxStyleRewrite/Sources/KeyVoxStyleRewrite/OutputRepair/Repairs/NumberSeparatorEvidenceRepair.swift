@@ -53,7 +53,7 @@ struct NumberSeparatorEvidenceRepair {
         var edits: [(Range<String.Index>, String)] = []
         var index = 0
         while index + 2 < tokens.count {
-            guard let major = RepairNumberParsing.parsedSpellOutInteger(tokens[index].text),
+            guard let major = RepairNumberParsing.numericValue(for: tokens[index]),
                   RepairNumberParsing.isSpellOutDecimalSeparator(tokens[index + 1]),
                   RepairNumberParsing.isNumberRunSeparator(between: tokens[index], and: tokens[index + 1], in: text) else {
                 index += 1
@@ -63,7 +63,7 @@ struct NumberSeparatorEvidenceRepair {
             var minorDigits: [Int] = []
             var endIndex = index + 2
             while endIndex < tokens.count,
-                  let digit = RepairNumberParsing.parsedSpellOutInteger(tokens[endIndex].text),
+                  let digit = RepairNumberParsing.numericValue(for: tokens[endIndex]),
                   digit >= 0,
                   digit < RepairNumberParsing.apStyleNumeralLowerBound,
                   RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text) {
@@ -133,7 +133,7 @@ struct NumberSeparatorEvidenceRepair {
         var decimalRuns: Set<String> = []
         var index = 0
         while index + 2 < tokens.count {
-            guard let major = RepairNumberParsing.parsedSpellOutInteger(tokens[index].text),
+            guard let major = RepairNumberParsing.numericValue(for: tokens[index]),
                   RepairNumberParsing.isSpellOutDecimalSeparator(tokens[index + 1]),
                   RepairNumberParsing.isNumberRunSeparator(between: tokens[index], and: tokens[index + 1], in: text) else {
                 index += 1
@@ -143,7 +143,7 @@ struct NumberSeparatorEvidenceRepair {
             var minorDigits: [Int] = []
             var endIndex = index + 2
             while endIndex < tokens.count,
-                  let digit = RepairNumberParsing.parsedSpellOutInteger(tokens[endIndex].text),
+                  let digit = RepairNumberParsing.numericValue(for: tokens[endIndex]),
                   digit >= 0,
                   digit < RepairNumberParsing.apStyleNumeralLowerBound,
                   RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text) {
