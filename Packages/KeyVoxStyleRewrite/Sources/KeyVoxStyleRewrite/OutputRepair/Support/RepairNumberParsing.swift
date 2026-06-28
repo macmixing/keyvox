@@ -156,7 +156,12 @@ enum RepairNumberParsing {
     }
 
     static func isSpellOutDecimalSeparator(_ token: RepairWordToken) -> Bool {
-        token.normalized == spellOutDecimalSeparatorToken
+        guard let spellOutDecimalSeparatorToken else {
+            return false
+        }
+
+        return token.normalized == spellOutDecimalSeparatorToken
+            || token.normalized == "\(spellOutDecimalSeparatorToken)s"
     }
 
     static func isNumberRunSeparator(between left: RepairWordToken, and right: RepairWordToken, in text: String) -> Bool {
