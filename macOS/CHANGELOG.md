@@ -6,6 +6,36 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.12] - 2026-06-28
+
+Fixes Vibes decimal rewrites so source-backed values such as `5.5`, `GPT-5.6`, and `5.05` survive Casual and Polished model cleanup.
+
+### Changed
+
+- Updated `KeyVoxStyleRewrite` to `1.0.9` with deterministic decimal evidence preservation for Vibes output repair.
+
+### Fixed
+
+- Fixed Vibes decimal rewrites so source-backed spoken decimals such as five point five are preserved when Casual or Polished outputs drift to `10`, `5`, `5 point 5`, or `5 points 5`.
+- Fixed fused Vibes decimal outputs such as `GPT56` so Mac rewrite repair restores deterministic output like `GPT-5.6`.
+- Preserved source fractional width for decimal evidence such as `5.05` so rewritten output does not collapse it to `5.5`.
+
+### Package versions
+
+KeyVox macOS 1.1.12:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.9
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxStyleRewrite` `1.0.9` is the cherry-picked package diff from `mac-1.1.11`, adding deterministic decimal evidence repair for changed, truncated, pluralized, fused, boundary, and fractional-width Vibes decimal cases.
+
+---
+
 ## [1.1.11] - 2026-06-13
 
 Improves Vibes repair for connector-based spoken hundreds.
