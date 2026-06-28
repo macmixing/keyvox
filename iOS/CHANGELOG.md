@@ -6,6 +6,37 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.12] - 2026-06-28
+
+Fixes Vibes decimal rewrites so source-backed values such as `5.5`, `GPT-5.6`, and `5.05` survive Casual and Polished model cleanup.
+
+### Fixed
+
+- Fixed Vibes decimal rewrite repair through `KeyVoxStyleRewrite` `1.0.9` so source-backed spoken decimals such as five point five are preserved when Casual or Polished rewrites drift to outputs like `10`, `5`, `5 point 5`, or `5 points 5`.
+- Fixed fused Vibes decimal outputs such as `GPT56` so iOS rewrite repair restores deterministic output like `GPT-5.6`.
+- Preserved source fractional width for decimal evidence such as `5.05` so rewritten output does not collapse it to `5.5`.
+
+### Release origin
+
+- This release entry was released from the `ios-27-compat-release` branch, the iOS 27 Compatibility Release Branch, before being cherry-picked elsewhere.
+
+### Package versions
+
+KeyVox iOS 1.2.12
+  KeyVoxCore           1.0.17
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.9
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxStyleRewrite` `1.0.9` adds deterministic decimal evidence preservation for Vibes rewrites, including changed, truncated, pluralized, fused, boundary, and fractional-width decimal repair cases.
+
+---
+
 ## [1.2.11] - 2026-06-11
 
 Restores dictation behavior on iOS 27 beta while adding a safer Parakeet model update path.
