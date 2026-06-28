@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.9] - 2026-06-28
+
+Decimal number evidence repair for Vibes rewrite output.
+
+### Includes
+
+- Repaired spoken decimal drift so model outputs such as `10`, `5`, `5 point 5`, and `5 points 5` restore source-backed decimals like `5.5`.
+- Repaired fused prefix decimals such as `GPT56` to deterministic output like `GPT-5.6`, including start and end boundary cases.
+- Preserved numeric fractional width from source evidence so values such as `5.05` are not collapsed to `5.5`.
+- Added regression coverage for changed, truncated, pluralized, fused, and fractional-width decimal repair cases.
+
+### Notes
+
+- `1.0.9` bumps the tracked style rewrite package version for deterministic decimal evidence preservation across Vibes rewrites.
+
+---
+
 ## [1.0.8] - 2026-06-12
 
 Connector-based spoken number repair for Vibes output formatting.
