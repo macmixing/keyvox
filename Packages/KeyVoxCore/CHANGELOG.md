@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.18] - 2026-07-01
+
+Spoken terminal punctuation reference guard refinement.
+
+### Includes
+
+- Refined spoken terminal punctuation eligibility so short verb phrases with explicit trailing punctuation can convert spoken commands such as `exclamation point` while punctuation-word references after verbs stay unchanged.
+- Extended spoken terminal punctuation eligibility for narrow determiner back-reference phrases such as `fan of that question mark.` while keeping protected determiner reference edges unchanged.
+- Restored lexical-class-based verb guarding for punctuation-word references without relying on a fixed reference-verb word list.
+- Added shared-engine coverage for the short verb phrase conversion path, determiner back-reference conversion, protected determiner edges, and broader verb-shaped punctuation-word references.
+
+### Notes
+
+- `1.0.18` bumps the tracked engine version for `KeyVoxCore` to cover the spoken terminal punctuation reference guard refinement used by shared dictation clients.
+
+---
+
 ## [1.0.17] - 2026-06-02
 
 Terminal spoken punctuation boundary refinement.
