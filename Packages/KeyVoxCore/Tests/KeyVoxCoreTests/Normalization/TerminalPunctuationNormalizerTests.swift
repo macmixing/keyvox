@@ -95,6 +95,43 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(output, "Here's the update!")
     }
 
+    func testConvertsTerminalCommandAfterShortVerbPhrase() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        let output = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "We won exclamation point."
+        )
+
+        XCTAssertEqual(output, "We won!")
+    }
+
+    func testConvertsTerminalQuestionCommandAfterDeterminerPhrase() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        let output = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "That's cool. So you're a big fan of that question mark."
+        )
+
+        XCTAssertEqual(output, "That's cool. So you're a big fan of that?")
+    }
+
+    func testDoesNotConvertProtectedDeterminerCommandEdges() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "That question mark."),
+            "That question mark."
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I'm a fan of that question mark"),
+            "I'm a fan of that question mark"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "Of that question mark."),
+            "Of that question mark."
+        )
+    }
+
     func testDoesNotConvertOrdinaryReferences() {
         let normalizer = TerminalPunctuationNormalizer()
 
@@ -105,6 +142,31 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "I said exclamation point"),
             "I said exclamation point"
+        )
+        // A leading capitalized verb can still be a punctuation-word reference.
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "Said exclamation point"),
+            "Said exclamation point"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I noted question mark"),
+            "I noted question mark"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I typed exclamation point"),
+            "I typed exclamation point"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I typed that question mark."),
+            "I typed that question mark."
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I declared exclamation mark"),
+            "I declared exclamation mark"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "I asked question mark"),
+            "I asked question mark"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "The symbol exclamation mark"),

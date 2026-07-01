@@ -169,7 +169,8 @@ public struct TerminalPunctuationNormalizer {
             return true
         }
 
-        if previousWord.lexicalClass == .determiner {
+        if previousWord.lexicalClass == .determiner,
+           !isEligibleDeterminerCommand(match: match, previousIndex: previousIndex, words: words, text: text) {
             return false
         }
 
@@ -185,11 +186,54 @@ public struct TerminalPunctuationNormalizer {
             }
         }
 
-        if previousIndex > words.startIndex, previousWord.lexicalClass == .verb {
+        if previousWord.lexicalClass == .verb,
+           !hasExplicitCommandBoundaryAfter(match: match, words: words, text: text) {
             return false
         }
 
         return true
+    }
+
+    private func isEligibleDeterminerCommand(
+        match: CommandMatch,
+        previousIndex: Int,
+        words: [WordToken],
+        text: String
+    ) -> Bool {
+        guard hasExplicitCommandBoundaryAfter(match: match, words: words, text: text),
+              previousIndex > words.startIndex else {
+            return false
+        }
+
+        let secondPreviousIndex = words.index(before: previousIndex)
+        guard secondPreviousIndex > words.startIndex else {
+            return false
+        }
+
+        // isEligibleDeterminerCommand is a narrow back-reference rule: hasExplicitCommandBoundaryAfter plus [noun/adjective] [preposition] [determiner] via isNominalOrDescriptive.
+        let thirdPreviousIndex = words.index(before: secondPreviousIndex)
+        return words[secondPreviousIndex].lexicalClass == .preposition
+            && isNominalOrDescriptive(words[thirdPreviousIndex])
+    }
+
+    private func isNominalOrDescriptive(_ word: WordToken) -> Bool {
+        word.lexicalClass == .noun || word.lexicalClass == .adjective
+    }
+
+    private func hasExplicitCommandBoundaryAfter(
+        match: CommandMatch,
+        words: [WordToken],
+        text: String
+    ) -> Bool {
+        let commandEnd = words[words.index(before: match.nextWordIndex)].range.upperBound
+        let followingText: Substring
+        if match.nextWordIndex < words.endIndex {
+            followingText = text[commandEnd..<words[match.nextWordIndex].range.lowerBound]
+        } else {
+            followingText = text[commandEnd..<text.endIndex]
+        }
+
+        return followingText.contains(where: isCommandSentenceBoundary)
     }
 
     private func commandPhraseEndsBeforeWord(
