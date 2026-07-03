@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.10] - 2026-07-03
+
+Trailing number evidence repair and number repair organization for Vibes rewrite output.
+
+### Includes
+
+- Restored source-backed trailing number evidence when a local model rewrite changes a final spoken value, including Casual cleanup output that truncated `thirty` to `3`.
+- Kept AP-style formatting after factual repair so restored trailing values such as spoken thirty are emitted as `30`.
+- Split number evidence output repair into focused decimal, changed, inserted, deleted, support, and run-analysis files under a dedicated repair folder.
+- Added regression coverage for trailing changed-number evidence in Vibes output repair.
+
+### Notes
+
+- `1.0.10` bumps the tracked style rewrite package version for deterministic trailing-number preservation and the number evidence repair refactor.
+
+---
+
 ## [1.0.9] - 2026-06-28
 
 Decimal number evidence repair for Vibes rewrite output.
