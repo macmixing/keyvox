@@ -247,6 +247,16 @@ struct NumberEvidenceRepair {
             ))
         }
 
+        if let trailingEdit = trailingChangedNumberEvidenceEdit(
+            original: original,
+            rewritten: rewritten,
+            originalTokens: originalTokens,
+            rewrittenTokens: rewrittenTokens,
+            orderedMatches: orderedMatches
+        ) {
+            edits.append(trailingEdit)
+        }
+
         guard !edits.isEmpty else { return rewritten }
 
         var repaired = rewritten
@@ -254,6 +264,56 @@ struct NumberEvidenceRepair {
             repaired.replaceSubrange(edit.0, with: edit.1)
         }
         return repaired
+    }
+
+    private func trailingChangedNumberEvidenceEdit(
+        original: String,
+        rewritten: String,
+        originalTokens: [RepairWordToken],
+        rewrittenTokens: [RepairWordToken],
+        orderedMatches: [(originalIndex: Int, rewrittenIndex: Int)]
+    ) -> (Range<String.Index>, String)? {
+        guard let last = orderedMatches.last,
+              last.originalIndex < originalTokens.count - 1,
+              last.rewrittenIndex < rewrittenTokens.count - 1 else {
+            return nil
+        }
+
+        let originalRun = Array(originalTokens[(last.originalIndex + 1)..<originalTokens.count])
+        let rewrittenRun = Array(rewrittenTokens[(last.rewrittenIndex + 1)..<rewrittenTokens.count])
+        guard !containsCurrencySymbol(in: rewrittenRun, text: rewritten),
+              let originalEvidenceRun = singleNumberEvidenceRun(in: originalRun, sourceText: original),
+              let rewrittenEvidenceRun = singleNumberEvidenceRun(in: rewrittenRun, sourceText: rewritten),
+              !NumberEvidence.isEquivalent(
+                originalEvidenceRun.evidence,
+                rewrittenEvidenceRun.evidence,
+                leftRun: originalEvidenceRun.tokens,
+                rightRun: rewrittenEvidenceRun.tokens,
+                leftText: original,
+                rightText: rewritten
+              ) else {
+            return nil
+        }
+
+        let replacementRange = rewrittenTokens[last.rewrittenIndex].range.upperBound..<rewritten.endIndex
+        let sourceRange = originalTokens[last.originalIndex].range.upperBound..<original.endIndex
+        let evidenceSourceRange = originalEvidenceRun.tokens[0].range.lowerBound
+            ..< originalEvidenceRun.tokens[originalEvidenceRun.tokens.count - 1].range.upperBound
+        let evidenceReplacement = NumberEvidence.canonicalReplacementText(
+            evidence: originalEvidenceRun.evidence,
+            tokens: originalEvidenceRun.tokens,
+            sourceText: original,
+            sourceRange: evidenceSourceRange
+        )
+        let replacementText = String(original[sourceRange.lowerBound..<evidenceSourceRange.lowerBound])
+            + evidenceReplacement
+            + String(original[evidenceSourceRange.upperBound..<sourceRange.upperBound])
+
+        log(
+            "keptTrailingChangedEvidence originalRun=\(originalEvidenceRun.tokens.map(\.text)) "
+                + "rewrittenRun=\(rewrittenEvidenceRun.tokens.map(\.text)) replacement=\(debugText(replacementText))"
+        )
+        return (replacementRange, replacementText)
     }
 
     private func repairInsertedNumberEvidence(original: String, rewritten: String) -> String {
@@ -561,6 +621,22 @@ struct NumberEvidenceRepair {
         }
 
         return runs
+    }
+
+    private func singleNumberEvidenceRun(
+        in tokens: [RepairWordToken],
+        sourceText: String
+    ) -> (tokens: [RepairWordToken], evidence: [NumberEvidence.Component])? {
+        if let evidence = NumberEvidence.components(in: tokens) {
+            return (tokens, evidence)
+        }
+
+        let runs = contiguousNumberRuns(in: tokens, sourceText: sourceText)
+        guard runs.count == 1,
+              let evidence = NumberEvidence.components(in: runs[0]) else {
+            return nil
+        }
+        return (runs[0], evidence)
     }
 
     private func containsNumberEvidence(in tokens: [RepairWordToken], sourceText: String) -> Bool {
