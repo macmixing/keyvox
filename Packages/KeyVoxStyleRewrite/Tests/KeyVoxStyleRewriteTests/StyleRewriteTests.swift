@@ -227,6 +227,18 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "I went there two days ago. She wanted five lobsters for dinner.")
     }
 
+    func testRewriteRepairRestoresTrailingChangedNumberEvidence() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Okay, now I want you to fix the evidence crop progress bar and then I want you to run a test on test thirty.",
+            rewritten: "Okay, now I want you to fix the evidence crop progress bar and then I want you to run a test 3."
+        )
+
+        XCTAssertEqual(
+            output,
+            "Okay, now I want you to fix the evidence crop progress bar and then I want you to run a test on test 30."
+        )
+    }
+
     func testRewriteRepairPreservesOrderedListMarkersAroundSpokenLowNumberEvidence() {
         let cases = [
             (
