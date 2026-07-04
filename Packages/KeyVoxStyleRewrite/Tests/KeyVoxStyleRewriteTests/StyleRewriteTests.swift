@@ -434,6 +434,18 @@ final class StyleRewriteTests: XCTestCase {
         }
     }
 
+    func testRewriteRepairDoesNotCollapseSeparatedVideoFactsIntoOneNumber() {
+        let output = OutputRepair.repairModelOutput(
+            original: "At the end of the day, that was a nine minute four gigabyte video that was compressed down into thirty one megabytes, retaining full semantic understanding.",
+            rewritten: "At the end of the day, that was a 9 minute 4 gigabyte video that was compressed down into 31 megabytes, retaining full semantic understanding."
+        )
+
+        XCTAssertEqual(
+            output,
+            "At the end of the day, that was a nine minute four gigabyte video that was compressed down into 31 megabytes, retaining full semantic understanding."
+        )
+    }
+
     func testRewriteRepairRestoresChangedConnectorBasedHundredsFromOriginalDictation() {
         let output = OutputRepair.repairModelOutput(
             original: "That's seven hundred and fifty gigabytes.",

@@ -99,7 +99,8 @@ struct APStyleNumberRepair {
             let runRange = tokens[index].range.lowerBound..<tokens[endIndex - 1].range.upperBound
             let runText = String(text[runRange])
             let runTokens = Array(tokens[index..<endIndex])
-            guard let value = RepairNumberParsing.parsedSpellOutInteger(runText)
+            guard let value = RepairNumberParsing.parsedSpellOutNumberPhrase(runText)
+                    ?? RepairNumberParsing.parsedSpellOutInteger(runText)
                     ?? parsedConnectorNumberRunCandidate(runTokens),
                   value >= RepairNumberParsing.apStyleNumeralLowerBound,
                   !isProtectedNumberRun(range: runRange, in: text) else {
@@ -122,8 +123,12 @@ struct APStyleNumberRepair {
         where !isSingleNumberToken(tokens[connectorIndex]) {
             let leftTokens = tokens[tokens.startIndex..<connectorIndex]
             let rightTokens = tokens[tokens.index(after: connectorIndex)..<tokens.endIndex]
+            let hundredsBoundary = RepairNumberParsing.apStyleNumeralLowerBound * RepairNumberParsing.apStyleNumeralLowerBound
             guard let leftValue = parsedNumberChunk(leftTokens),
-                  let rightValue = parsedNumberChunk(rightTokens) else {
+                  let rightValue = parsedNumberChunk(rightTokens),
+                  leftValue >= hundredsBoundary,
+                  leftValue.isMultiple(of: hundredsBoundary),
+                  (1..<hundredsBoundary).contains(rightValue) else {
                 continue
             }
             return leftValue + rightValue
