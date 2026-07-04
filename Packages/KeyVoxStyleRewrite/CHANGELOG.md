@@ -14,8 +14,9 @@ Trailing number evidence repair and number repair organization for Vibes rewrite
 
 - Restored source-backed trailing number evidence when a local model rewrite changes a final spoken value, including Casual cleanup output that truncated `thirty` to `3`.
 - Kept AP-style formatting after factual repair so restored trailing values such as spoken thirty are emitted as `30`.
+- Prevented AP-style number repair from collapsing separate nearby facts into one number while still preserving connector-based hundreds.
 - Split number evidence output repair into focused decimal, changed, inserted, deleted, support, and run-analysis files under a dedicated repair folder.
-- Added regression coverage for trailing changed-number evidence in Vibes output repair.
+- Added regression coverage for trailing changed-number evidence and separated video facts in Vibes output repair.
 
 ### Notes
 
