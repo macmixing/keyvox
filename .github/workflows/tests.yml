@@ -41,6 +41,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Clean iOS build caches
+        run: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          rm -rf /tmp/keyvox-ios-tests.xcresult
+
       - name: Run iOS unit tests
         run: |
           xcodebuild \
