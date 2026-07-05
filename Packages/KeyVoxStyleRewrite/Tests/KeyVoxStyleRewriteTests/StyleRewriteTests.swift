@@ -543,6 +543,28 @@ final class StyleRewriteTests: XCTestCase {
         }
     }
 
+    func testRewriteInputVariantSelectionUsesNoListVersionVariant() {
+        let baseText = "That's version:\n\n1. Dot\n2. Dot seven"
+        let selected = StyleRewriteInputVariantSelection.baseText(
+            for: .casual,
+            baseText: baseText,
+            deterministicVariants: [
+                StyleRewriteInputVariant(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: "That's version one dot two dot seven"
+                ),
+                StyleRewriteInputVariant(
+                    paragraphsEnabled: true,
+                    listsEnabled: true,
+                    text: baseText
+                ),
+            ]
+        )
+
+        XCTAssertEqual(selected, "That's version one dot two dot seven")
+    }
+
     func testRewriteRepairPreservesSpokenDecimalBeforePastDate() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm pretty sure we reverted five point five three last Tuesday.",

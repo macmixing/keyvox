@@ -125,6 +125,28 @@ public struct DictationPipelineTextProcessingResult: Equatable, Sendable {
     }
 }
 
+public struct DictationPipelineTextProcessingContext: Sendable {
+    public let rawText: String
+    public let baseText: String
+    public let baseParagraphsEnabled: Bool
+    public let baseListsEnabled: Bool
+    public let deterministicVariants: [DictationPipelineResult.DeterministicTextVariant]
+
+    public init(
+        rawText: String,
+        baseText: String,
+        baseParagraphsEnabled: Bool,
+        baseListsEnabled: Bool,
+        deterministicVariants: [DictationPipelineResult.DeterministicTextVariant]
+    ) {
+        self.rawText = rawText
+        self.baseText = baseText
+        self.baseParagraphsEnabled = baseParagraphsEnabled
+        self.baseListsEnabled = baseListsEnabled
+        self.deterministicVariants = deterministicVariants
+    }
+}
+
 @MainActor
 public final class DictationPipeline {
     private let transcriptionProvider: DictationTranscriptionProviding
@@ -138,7 +160,7 @@ public final class DictationPipeline {
     private let listRenderModeProvider: () -> ListRenderMode
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
-    private let processOutputText: (String) async -> DictationPipelineTextProcessingResult
+    private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
 
     public init(
         transcriptionProvider: DictationTranscriptionProviding,
@@ -152,7 +174,8 @@ public final class DictationPipeline {
         pasteText: @escaping (String) -> Void,
         processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
             .unchanged($0)
-        }
+        },
+        processOutputTextWithContext: ((DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult)? = nil
     ) {
         self.transcriptionProvider = transcriptionProvider
         self.transcriptionController = transcriptionProvider as? any DictationTranscriptionControlling
@@ -164,7 +187,9 @@ public final class DictationPipeline {
         self.listRenderModeProvider = listRenderModeProvider
         self.recordSpokenWords = recordSpokenWords
         self.pasteText = pasteText
-        self.processOutputText = processOutputText
+        self.processOutputText = processOutputTextWithContext ?? { context in
+            await processOutputText(context.baseText)
+        }
     }
 
     public func run(
@@ -273,7 +298,21 @@ public final class DictationPipeline {
             }
 
             Task { @MainActor [self] in
-                let output = await self.processOutputText(finalText)
+                let deterministicVariants = self.deterministicVariants(
+                    paragraphRawText: paragraphRawText,
+                    inlineRawText: inlineRawText,
+                    dictionaryEntries: dictionaryEntries,
+                    renderMode: renderMode,
+                    languageCode: languageCode
+                )
+                let processingContext = DictationPipelineTextProcessingContext(
+                    rawText: rawText,
+                    baseText: finalText,
+                    baseParagraphsEnabled: autoParagraphsEnabled,
+                    baseListsEnabled: listFormattingEnabled,
+                    deterministicVariants: deterministicVariants
+                )
+                let output = await self.processOutputText(processingContext)
                 let outputText = self.allCapsOverrideNormalizer.normalize(
                     in: output.text,
                     isEnabled: self.capsLockEnabledProvider()
@@ -296,13 +335,7 @@ public final class DictationPipeline {
                         finalText: outputText,
                         baseParagraphsEnabled: autoParagraphsEnabled,
                         baseListsEnabled: listFormattingEnabled,
-                        deterministicVariants: self.deterministicVariants(
-                            paragraphRawText: paragraphRawText,
-                            inlineRawText: inlineRawText,
-                            dictionaryEntries: dictionaryEntries,
-                            renderMode: renderMode,
-                            languageCode: languageCode
-                        ),
+                        deterministicVariants: deterministicVariants,
                         wasLikelyNoSpeech: false,
                         inferenceDuration: inferenceDuration,
                         textTransformationDuration: output.duration,
