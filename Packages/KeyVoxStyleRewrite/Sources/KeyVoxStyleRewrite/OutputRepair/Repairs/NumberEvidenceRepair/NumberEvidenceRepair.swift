@@ -2,7 +2,8 @@ import Foundation
 
 struct NumberEvidenceRepair {
     func repair(original: String, rewritten: String) -> String {
-        let decimalRepaired = DecimalNumberEvidenceRepair().repair(original: original, rewritten: rewritten)
+        let versionRepaired = VersionNumberEvidenceRepair().repair(original: original, rewritten: rewritten)
+        let decimalRepaired = DecimalNumberEvidenceRepair().repair(original: original, rewritten: versionRepaired)
         let changedNumberRepaired = ChangedNumberEvidenceRepair().repair(original: original, rewritten: decimalRepaired)
         let insertedNumberRepaired = InsertedNumberEvidenceRepair().repair(original: original, rewritten: changedNumberRepaired)
         let deletedNumberRepaired = DeletedNumberEvidenceRepair().repair(original: original, rewritten: insertedNumberRepaired)
