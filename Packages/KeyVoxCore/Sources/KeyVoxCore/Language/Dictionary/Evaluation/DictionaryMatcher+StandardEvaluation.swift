@@ -278,6 +278,15 @@ extension DictionaryMatcher {
             }
 
             if stylizedSingleTokenEntry,
+               observedHasRuntimePronunciation,
+               isTitlecaseToken(observedToken),
+               observedToken.normalized.count > candidateToken.count,
+               textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
+                stats.rejectedLowScore += 1
+                return nil
+            }
+
+            if stylizedSingleTokenEntry,
                !allowStylizedFallbackBySurface,
                !hasStructuralContext,
                textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
