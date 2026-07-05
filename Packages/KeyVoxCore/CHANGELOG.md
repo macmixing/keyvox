@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.0.18] - 2026-07-01
 
-Spoken terminal punctuation reference guard, dictionary matcher refinement, and deterministic variant context.
+Spoken terminal punctuation reference guard, dictionary matcher refinement, and deterministic variant context API.
 
 ### Includes
 
@@ -17,11 +17,12 @@ Spoken terminal punctuation reference guard, dictionary matcher refinement, and 
 - Restored lexical-class-based verb guarding for punctuation-word references without relying on a fixed reference-verb word list.
 - Prevented dictionary matching from replacing known longer titlecase names with shorter stylized dictionary entries on weak text evidence.
 - Exposed raw text, base text, base deterministic settings, and all deterministic paragraph/list variants to the shared output transformation hook so Vibes can choose from package-owned deterministic outputs without changing core list formatting behavior.
-- Added shared-engine coverage for the short verb phrase conversion path, determiner back-reference conversion, protected determiner edges, broader verb-shaped punctuation-word references, known-name dictionary preservation, and deterministic variant context passed to output transformation.
+- Made deterministic text variants explicitly constructible across package boundaries so shared clients and tests can pass Core-owned deterministic variants into downstream package integrations.
+- Added shared-engine coverage for the short verb phrase conversion path, determiner back-reference conversion, protected determiner edges, broader verb-shaped punctuation-word references, known-name dictionary preservation, deterministic variant context passed to output transformation, and cross-package deterministic variant construction.
 
 ### Notes
 
-- `1.0.18` bumps the tracked engine version for `KeyVoxCore` to cover the spoken terminal punctuation reference guard, dictionary matcher refinements, and deterministic variant context used by shared dictation clients.
+- `1.0.18` bumps the tracked engine version for `KeyVoxCore` to cover the spoken terminal punctuation reference guard, dictionary matcher refinements, and deterministic variant context API used by shared dictation clients.
 
 ---
 
