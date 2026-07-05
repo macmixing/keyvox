@@ -73,11 +73,44 @@ final class MacVibesCoordinator {
         )
     }
 
+    func processOutputText(_ context: DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult {
+        let style = selectedVibe
+        guard style.usesModelRewrite else {
+            return .unchanged(context.baseText)
+        }
+
+        let result = await transform(
+            context.baseText,
+            style: style,
+            deterministicVariants: styleRewriteVariants(from: context.deterministicVariants)
+        )
+        await releasePrewarmSession(reason: "mac-dictation-transform")
+        return DictationPipelineTextProcessingResult(
+            text: result.finalText,
+            duration: result.duration,
+            applied: result.applied,
+            styleIdentifier: result.styleIdentifier,
+            chunkCount: result.chunkCount,
+            errorDescription: result.errors.first?.message,
+            errors: result.errors.map(\.message),
+            processingMode: result.processingMode
+        )
+    }
+
     func transform(_ text: String, style: StyleRewriteStyle) async -> TextTransformResult {
+        await transform(text, style: style, deterministicVariants: [])
+    }
+
+    private func transform(
+        _ text: String,
+        style: StyleRewriteStyle,
+        deterministicVariants: [StyleRewriteInputVariant]
+    ) async -> TextTransformResult {
         let resolvedStyle = resolvedStyle(style)
         guard let request = StyleRewriteDictationConfiguration.request(
             for: resolvedStyle,
-            baseText: text
+            baseText: text,
+            deterministicVariants: deterministicVariants
         ) else {
             return TextTransformResult(
                 originalText: text,
@@ -100,6 +133,18 @@ final class MacVibesCoordinator {
 
     private func resolvedStyle(_ style: StyleRewriteStyle) -> StyleRewriteStyle {
         style.resolvedForModelAvailability(isModelReady())
+    }
+
+    private func styleRewriteVariants(
+        from variants: [DictationPipelineResult.DeterministicTextVariant]
+    ) -> [StyleRewriteInputVariant] {
+        variants.map { variant in
+            StyleRewriteInputVariant(
+                paragraphsEnabled: variant.paragraphsEnabled,
+                listsEnabled: variant.listsEnabled,
+                text: variant.text
+            )
+        }
     }
 
     private func log(_ message: @autoclosure () -> String) {

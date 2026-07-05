@@ -47,6 +47,46 @@ final class MacVibesCoordinatorTests: XCTestCase {
         XCTAssertEqual(transformer.transformRequests.map(\.styleIdentifier), [StyleRewriteStyle.casual.styleIdentifier])
     }
 
+    func testProcessOutputTextPassesDeterministicVariantsToTransformerRequest() async {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = AppSettingsStore(defaults: defaults)
+        settings.selectedVibe = .casual
+        let transformer = FakeDictationTextTransformer()
+        let coordinator = MacVibesCoordinator(
+            appSettings: settings,
+            textTransformer: transformer,
+            isModelReady: { true }
+        )
+        let context = DictationPipelineTextProcessingContext(
+            rawText: "That's version one dot two dot seven.",
+            baseText: "That's version:\n\n1. Dot\n2. Dot seven",
+            baseParagraphsEnabled: true,
+            baseListsEnabled: true,
+            deterministicVariants: [
+                DictationPipelineResult.DeterministicTextVariant(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: "That's version one dot two dot seven"
+                )
+            ]
+        )
+
+        _ = await coordinator.processOutputText(context)
+
+        XCTAssertEqual(transformer.transformRequests.count, 1)
+        XCTAssertEqual(
+            transformer.transformRequests[0].deterministicVariants,
+            [
+                StyleRewriteInputVariant(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: "That's version one dot two dot seven"
+                )
+            ]
+        )
+    }
+
     func testAdvanceSelectedVibeIsBlockedWhenModelIsMissing() {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }

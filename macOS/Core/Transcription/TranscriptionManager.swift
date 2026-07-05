@@ -68,9 +68,9 @@ class TranscriptionManager: ObservableObject {
         pasteText: { text in
             PasteService.shared.pasteText(text)
         },
-        processOutputText: { [weak self] text in
-            guard let self else { return .unchanged(text) }
-            return await self.vibesCoordinator.processOutputText(text)
+        processOutputTextWithContext: { [weak self] context in
+            guard let self else { return .unchanged(context.baseText) }
+            return await self.vibesCoordinator.processOutputText(context)
         }
     )
     var isLocked = false
