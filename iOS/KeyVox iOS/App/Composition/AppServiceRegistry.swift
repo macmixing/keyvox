@@ -196,8 +196,8 @@ final class AppServiceRegistry {
             capsLockEnabledProvider: {
                 settingsDefaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
             },
-            processOutputText: { [weak styleRewritePipelineCoordinator] text in
-                await styleRewritePipelineCoordinator?.processOutputText(text) ?? .unchanged(text)
+            processOutputTextWithContext: { [weak styleRewritePipelineCoordinator] context in
+                await styleRewritePipelineCoordinator?.processOutputText(context) ?? .unchanged(context.baseText)
             },
             recordPipelineResult: { [weak styleRewritePipelineCoordinator, weak settingsStore] result, selectedText in
                 let provider = settingsStore?.activeDictationProvider

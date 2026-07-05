@@ -36,7 +36,7 @@ final class StyleRewritePipelineCoordinator {
             return
         }
 
-        guard let request = transformRequest(for: "") else {
+        guard let request = transformRequest(for: "", deterministicVariants: []) else {
             log("prewarm skipped reason=no-request style=\(style.styleIdentifier)")
             return
         }
@@ -45,12 +45,34 @@ final class StyleRewritePipelineCoordinator {
     }
 
     func processOutputText(_ baseText: String) async -> DictationPipelineTextProcessingResult {
-        guard let request = transformRequest(for: baseText) else {
+        guard let request = transformRequest(for: baseText, deterministicVariants: []) else {
             return .unchanged(baseText)
         }
 
         let result = await textTransformer.transform(request)
         recordRewriteTrace(request: request, result: result)
+        let errors = result.errors.map(\.message)
+        return DictationPipelineTextProcessingResult(
+            text: result.finalText,
+            duration: result.duration,
+            applied: result.applied,
+            styleIdentifier: result.styleIdentifier.nilIfEmpty,
+            chunkCount: result.chunkCount,
+            errorDescription: errors.joined(separator: "; ").nilIfEmpty,
+            errors: errors,
+            processingMode: result.processingMode
+        )
+    }
+
+    func processOutputText(_ context: DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult {
+        guard let request = transformRequest(
+            for: context.baseText,
+            deterministicVariants: styleRewriteVariants(from: context.deterministicVariants)
+        ) else {
+            return .unchanged(context.baseText)
+        }
+
+        let result = await textTransformer.transform(request)
         let errors = result.errors.map(\.message)
         return DictationPipelineTextProcessingResult(
             text: result.finalText,
@@ -89,7 +111,8 @@ final class StyleRewritePipelineCoordinator {
 
         guard let transformRequest = StyleRewriteDictationConfiguration.request(
             for: style,
-            baseText: request.baseText
+            baseText: request.baseText,
+            deterministicVariants: []
         ) else {
             KeyVoxIPCBridge.writeStyleRewriteResponse(
                 KeyVoxStyleRewriteIPCResponse(
@@ -178,10 +201,14 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
-    private func transformRequest(for baseText: String) -> TextTransformRequest? {
+    private func transformRequest(
+        for baseText: String,
+        deterministicVariants: [StyleRewriteInputVariant]
+    ) -> TextTransformRequest? {
         StyleRewriteDictationConfiguration.request(
             for: selectedStyleProvider(),
-            baseText: baseText
+            baseText: baseText,
+            deterministicVariants: deterministicVariants
         )
     }
 
@@ -215,6 +242,18 @@ final class StyleRewritePipelineCoordinator {
             "dictation_provider": dictationProvider.providerIdentifier,
             "dictation_model_id": dictationProvider.modelIdentifier
         ]
+    }
+
+    private func styleRewriteVariants(
+        from variants: [DictationPipelineResult.DeterministicTextVariant]
+    ) -> [StyleRewriteInputVariant] {
+        variants.map { variant in
+            StyleRewriteInputVariant(
+                paragraphsEnabled: variant.paragraphsEnabled,
+                listsEnabled: variant.listsEnabled,
+                text: variant.text
+            )
+        }
     }
 
     private func log(_ message: String) {
