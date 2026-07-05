@@ -187,13 +187,12 @@ struct MoneyFactRepair {
            let separatorIndex = decimalText.firstIndex(of: ".") {
             let majorText = String(decimalText[..<separatorIndex])
             let minorText = String(decimalText[decimalText.index(after: separatorIndex)...])
-            guard !minorText.isEmpty,
-                  minorText.count <= 2,
-                  let majorValue = Int(majorText),
-                  let minorValue = Int(minorText.padding(toLength: 2, withPad: "0", startingAt: 0)) else {
-                return nil
+            if !minorText.isEmpty,
+               minorText.count <= 2,
+               let majorValue = Int(majorText),
+               let minorValue = Int(minorText.padding(toLength: 2, withPad: "0", startingAt: 0)) {
+                return (majorValue, minorValue)
             }
-            return (majorValue, minorValue)
         }
 
         guard let majorValue = NumberEvidence.parsedValue(in: tokens) else {
