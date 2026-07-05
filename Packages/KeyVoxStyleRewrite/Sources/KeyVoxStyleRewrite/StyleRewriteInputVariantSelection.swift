@@ -1,6 +1,6 @@
 import Foundation
 
-public struct StyleRewriteInputVariant: Equatable, Sendable {
+public struct StyleRewriteInputVariant: Codable, Equatable, Sendable {
     public let paragraphsEnabled: Bool
     public let listsEnabled: Bool
     public let text: String
