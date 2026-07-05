@@ -25,7 +25,7 @@ public enum StyleRewriteInputVariantSelection {
         guard style.usesModelRewrite else { return baseText }
 
         for variant in deterministicVariants where !variant.listsEnabled {
-            let repaired = OutputRepair.repairModelOutput(
+            let repaired = VersionNumberEvidenceRepair().repair(
                 original: variant.text,
                 rewritten: variant.text
             )
