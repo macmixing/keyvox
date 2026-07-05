@@ -554,6 +554,15 @@ final class StyleRewriteTests: XCTestCase {
         XCTAssertEqual(output, "I'm pretty sure we reverted 902 yesterday.")
     }
 
+    func testRewriteRepairRestoresSpokenOhDigitSequenceFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Stay on this branch and review PR one oh seven.",
+            rewritten: "Stay on this branch and review PR 17."
+        )
+
+        XCTAssertEqual(output, "Stay on this branch and review PR 107.")
+    }
+
     func testRewriteRepairRestoresOriginalGapWhenModelInsertsUnsupportedNumberEvidence() {
         let cases = [
             (

@@ -117,8 +117,12 @@ struct ChangedNumberEvidenceRepair {
         let originalRun = Array(originalTokens[(last.originalIndex + 1)..<originalTokens.count])
         let rewrittenRun = Array(rewrittenTokens[(last.rewrittenIndex + 1)..<rewrittenTokens.count])
         guard !NumberEvidenceRepairSupport.containsCurrencySymbol(in: rewrittenRun, text: rewritten),
-              let originalEvidenceRun = NumberEvidenceRunAnalysis.singleNumberEvidenceRun(in: originalRun, sourceText: original),
               let rewrittenEvidenceRun = NumberEvidenceRunAnalysis.singleNumberEvidenceRun(in: rewrittenRun, sourceText: rewritten),
+              let originalEvidenceRun = NumberEvidenceRunAnalysis.singleNumberEvidenceRun(
+                in: originalRun,
+                sourceText: original,
+                matching: rewrittenEvidenceRun.evidence
+              ),
               !NumberEvidence.isEquivalent(
                 originalEvidenceRun.evidence,
                 rewrittenEvidenceRun.evidence,

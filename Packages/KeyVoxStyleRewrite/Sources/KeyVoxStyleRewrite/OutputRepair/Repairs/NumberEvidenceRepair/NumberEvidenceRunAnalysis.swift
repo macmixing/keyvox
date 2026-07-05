@@ -81,7 +81,7 @@ enum NumberEvidenceRunAnalysis {
         }
 
         guard let evidence = NumberEvidence.components(in: tokens) else {
-            return nil
+            return inferredDroppedZeroDigitSequence(in: tokens, matching: rewrittenEvidence, sourceText: sourceText)
         }
         return (tokens, evidence)
     }
@@ -112,10 +112,19 @@ enum NumberEvidenceRunAnalysis {
 
     static func singleNumberEvidenceRun(
         in tokens: [RepairWordToken],
-        sourceText: String
+        sourceText: String,
+        matching rewrittenEvidence: [NumberEvidence.Component]? = nil
     ) -> (tokens: [RepairWordToken], evidence: [NumberEvidence.Component])? {
         if let evidence = NumberEvidence.components(in: tokens) {
             return (tokens, evidence)
+        }
+        if let rewrittenEvidence,
+           let inferred = inferredDroppedZeroDigitSequence(
+            in: tokens,
+            matching: rewrittenEvidence,
+            sourceText: sourceText
+           ) {
+            return inferred
         }
 
         let runs = contiguousNumberRuns(in: tokens, sourceText: sourceText)
@@ -180,5 +189,65 @@ enum NumberEvidenceRunAnalysis {
     private static func isStartOfLine(_ index: String.Index, in text: String) -> Bool {
         guard index > text.startIndex else { return true }
         return text[text.index(before: index)].isNewline
+    }
+
+    private static func inferredDroppedZeroDigitSequence(
+        in tokens: [RepairWordToken],
+        matching rewrittenEvidence: [NumberEvidence.Component],
+        sourceText: String
+    ) -> (tokens: [RepairWordToken], evidence: [NumberEvidence.Component])? {
+        guard tokens.count >= 3,
+              let rewrittenValue = wholeNumberValue(from: rewrittenEvidence) else {
+            return nil
+        }
+
+        var observedDigits = ""
+        var inferredDigits = ""
+        var parsedDigitCount = 0
+        var inferredZeroCount = 0
+
+        for index in tokens.indices {
+            if index > tokens.startIndex,
+               !RepairNumberParsing.isNumberRunSeparator(between: tokens[index - 1], and: tokens[index], in: sourceText) {
+                return nil
+            }
+
+            if let value = RepairNumberParsing.numericValue(for: tokens[index]),
+               (0...9).contains(value) {
+                let digit = String(value)
+                observedDigits += digit
+                inferredDigits += digit
+                parsedDigitCount += 1
+            } else if isDroppedZeroPlaceholderCandidate(tokens[index]) {
+                inferredDigits += "0"
+                inferredZeroCount += 1
+            } else {
+                return nil
+            }
+        }
+
+        let rewrittenDigits = String(rewrittenValue)
+        guard parsedDigitCount >= 2,
+              inferredZeroCount == 1,
+              observedDigits == rewrittenDigits,
+              inferredDigits.count > rewrittenDigits.count,
+              let inferredValue = Int(inferredDigits),
+              inferredValue != rewrittenValue else {
+            return nil
+        }
+
+        return (tokens, [.value(inferredValue)])
+    }
+
+    private static func wholeNumberValue(from evidence: [NumberEvidence.Component]) -> Int? {
+        guard evidence.count == 1,
+              case let .value(value) = evidence[0] else {
+            return nil
+        }
+        return value
+    }
+
+    private static func isDroppedZeroPlaceholderCandidate(_ token: RepairWordToken) -> Bool {
+        token.normalized == "oh" || token.normalized == "o"
     }
 }
