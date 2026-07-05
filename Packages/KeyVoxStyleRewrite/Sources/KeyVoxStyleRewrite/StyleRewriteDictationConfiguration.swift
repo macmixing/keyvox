@@ -108,6 +108,7 @@ public enum StyleRewriteDictationConfiguration {
     public static func request(
         for style: StyleRewriteStyle,
         baseText: String,
+        deterministicVariants: [StyleRewriteInputVariant] = [],
         contextTokenLimit: Int = modelContextTokenLimit,
         maximumResponseTokens: Int = defaultMaximumResponseTokens
     ) -> TextTransformRequest? {
@@ -117,18 +118,21 @@ public enum StyleRewriteDictationConfiguration {
         case .polished:
             return polishedRequest(
                 baseText: baseText,
+                deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
             )
         case .casual:
             return casualRequest(
                 baseText: baseText,
+                deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
             )
         case .chill:
             return chillRequest(
                 baseText: baseText,
+                deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
             )
@@ -137,6 +141,7 @@ public enum StyleRewriteDictationConfiguration {
 
     private static func polishedRequest(
         baseText: String,
+        deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
@@ -148,12 +153,14 @@ public enum StyleRewriteDictationConfiguration {
             contextTokenLimit: contextTokenLimit,
             expectedOutputExpansionRatio: 0.75,
             safetyMarginTokens: 384,
-            maximumResponseTokens: maximumResponseTokens
+            maximumResponseTokens: maximumResponseTokens,
+            deterministicVariants: deterministicVariants
         )
     }
 
     private static func casualRequest(
         baseText: String,
+        deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
@@ -165,17 +172,20 @@ public enum StyleRewriteDictationConfiguration {
             contextTokenLimit: contextTokenLimit,
             expectedOutputExpansionRatio: 0.75,
             safetyMarginTokens: 384,
-            maximumResponseTokens: maximumResponseTokens
+            maximumResponseTokens: maximumResponseTokens,
+            deterministicVariants: deterministicVariants
         )
     }
 
     private static func chillRequest(
         baseText: String,
+        deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
         let cleanupRequest = casualRequest(
             baseText: baseText,
+            deterministicVariants: deterministicVariants,
             contextTokenLimit: contextTokenLimit,
             maximumResponseTokens: maximumResponseTokens
         )
@@ -189,7 +199,8 @@ public enum StyleRewriteDictationConfiguration {
             contextTokenLimit: cleanupRequest.contextTokenLimit,
             expectedOutputExpansionRatio: cleanupRequest.expectedOutputExpansionRatio,
             safetyMarginTokens: cleanupRequest.safetyMarginTokens,
-            maximumResponseTokens: cleanupRequest.maximumResponseTokens
+            maximumResponseTokens: cleanupRequest.maximumResponseTokens,
+            deterministicVariants: cleanupRequest.deterministicVariants
         )
     }
 }
