@@ -378,6 +378,18 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "These new MacBooks have great keyboards.")
     }
 
+    func testDoesNotReplaceKnownNameWithStylizedDictionaryEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let result = matcher.apply(to: "Spot check something like Monique.")
+        XCTAssertEqual(result.text, "Spot check something like Monique.")
+    }
+
     func testReplacesCommonWordInOwnershipPredicateContextForStylizedEntry() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
