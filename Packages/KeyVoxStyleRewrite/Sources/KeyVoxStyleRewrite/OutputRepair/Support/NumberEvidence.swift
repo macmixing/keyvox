@@ -14,18 +14,33 @@ enum NumberEvidence {
             return [.value(value)]
         }
 
-        var components: [Component] = []
+        var components: [Component]?
         for token in tokens {
             if RepairNumberParsing.isSpellOutDecimalSeparator(token) {
-                components.append(.separator)
+                components = (components ?? []) + [.separator]
             } else if let value = RepairNumberParsing.numericValue(for: token) {
-                components.append(.value(value))
+                components = (components ?? []) + [.value(value)]
             } else {
-                return nil
+                components = nil
+                break
             }
         }
 
-        return components
+        if let components {
+            if components.contains(.separator) {
+                return components
+            }
+            if let digitSequence = digitSequenceComponents(in: tokens) {
+                return digitSequence
+            }
+            return components
+        }
+
+        if let digitSequence = digitSequenceComponents(in: tokens) {
+            return digitSequence
+        }
+
+        return nil
     }
 
     static func parsedValue(in tokens: [RepairWordToken]) -> Int? {
@@ -199,6 +214,14 @@ enum NumberEvidence {
 
         collect(index: 0, groups: [])
         return alternatives
+    }
+
+    private static func digitSequenceComponents(in tokens: [RepairWordToken]) -> [Component]? {
+        guard tokens.count > 1,
+              let value = RepairNumberParsing.parsedDigitSequence(from: tokens.map(\.text)) else {
+            return nil
+        }
+        return [.value(value)]
     }
 }
 
