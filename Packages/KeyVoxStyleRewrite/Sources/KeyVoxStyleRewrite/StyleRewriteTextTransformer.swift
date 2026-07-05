@@ -31,26 +31,40 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
     public func transform(_ request: TextTransformRequest) async -> TextTransformResult {
         let transformStart = Date()
+        let modelInputText = StyleRewriteInputVariantSelection.baseText(
+            for: StyleRewriteStyle(rawValue: request.styleIdentifier) ?? .none,
+            baseText: request.baseText,
+            deterministicVariants: request.deterministicVariants
+        )
+        let modelRequest = request.replacingBaseText(modelInputText)
 
         if request.styleIdentifier == StyleRewriteStyle.chill.styleIdentifier {
-            return await transformChill(request, transformStart: transformStart)
+            return await transformChill(
+                request,
+                modelRequest: modelRequest,
+                transformStart: transformStart
+            )
         }
 
         let runner = TextTransformChunkRunner(
             planner: TextTransformChunkPlanner(tokenCounter: tokenCounter),
-            responder: chunkResponderProvider(request)
+            responder: chunkResponderProvider(modelRequest)
         )
-        let result = await runner.transform(request)
+        let result = await runner.transform(modelRequest)
 
         if request.styleIdentifier == StyleRewriteStyle.casual.styleIdentifier {
-            return cleanupResult(request: request, result: result)
+            return cleanupResult(
+                request: request,
+                repairOriginalText: modelRequest.baseText,
+                result: result
+            )
         }
 
         let finalText = OutputRepair.repairModelOutput(
-            original: request.baseText,
+            original: modelRequest.baseText,
             rewritten: result.finalText
         )
-        let repairedResult = result.withProcessingMode(
+        let repairedResult = result.withOriginalText(request.baseText).withProcessingMode(
             "local-model",
             finalText: finalText,
             applied: finalText != request.baseText && result.errors.isEmpty
@@ -64,17 +78,18 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
     private func transformChill(
         _ request: TextTransformRequest,
+        modelRequest: TextTransformRequest,
         transformStart: Date
     ) async -> TextTransformResult {
         let runner = TextTransformChunkRunner(
             planner: TextTransformChunkPlanner(tokenCounter: tokenCounter),
-            responder: chunkResponderProvider(request)
+            responder: chunkResponderProvider(modelRequest)
         )
-        let runnerResult = await runner.transform(request)
+        let runnerResult = await runner.transform(modelRequest)
         let cleanupSucceeded = runnerResult.errors.isEmpty
         let punctuationRepairedCleanup = cleanupSucceeded
             ? OutputRepair.repairModelOutput(
-                original: request.baseText,
+                original: modelRequest.baseText,
                 rewritten: runnerResult.finalText
             )
             : nil
@@ -135,13 +150,14 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
     private func cleanupResult(
         request: TextTransformRequest,
+        repairOriginalText: String,
         result: TextTransformResult
     ) -> TextTransformResult {
         log(
-            "modelOutput style=\(request.styleIdentifier) base=\(debugText(request.baseText)) final=\(debugText(result.finalText)) errors=\(result.errors.count)"
+            "modelOutput style=\(request.styleIdentifier) base=\(debugText(repairOriginalText)) final=\(debugText(result.finalText)) errors=\(result.errors.count)"
         )
         let finalText = OutputRepair.repairModelOutput(
-            original: request.baseText,
+            original: repairOriginalText,
             rewritten: result.finalText
         )
         log("repairedOutput style=\(request.styleIdentifier) final=\(debugText(finalText))")
@@ -181,6 +197,20 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 }
 
 private extension TextTransformResult {
+    func withOriginalText(_ originalText: String) -> TextTransformResult {
+        TextTransformResult(
+            originalText: originalText,
+            finalText: finalText,
+            styleIdentifier: styleIdentifier,
+            duration: duration,
+            chunkCount: chunkCount,
+            applied: applied,
+            chunkTimings: chunkTimings,
+            errors: errors,
+            processingMode: processingMode
+        )
+    }
+
     func withProcessingMode(
         _ processingMode: String,
         finalText: String? = nil,

@@ -1220,6 +1220,42 @@ final class StyleRewriteTests: XCTestCase {
     }
 
     @MainActor
+    func testStyleRewriteTransformerUsesNoListVersionVariantForModelInput() async throws {
+        let listText = "That's version:\n\n1. Dot\n2. Dot seven"
+        let noListText = "That's version one dot two dot seven"
+        let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
+            for: .casual,
+            baseText: listText,
+            deterministicVariants: [
+                StyleRewriteInputVariant(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: noListText
+                ),
+                StyleRewriteInputVariant(
+                    paragraphsEnabled: true,
+                    listsEnabled: true,
+                    text: listText
+                )
+            ]
+        ))
+        let transformer = StyleRewriteTextTransformer(
+            tokenCounter: WordTokenCounter(),
+            chunkResponderProvider: { modelRequest in
+                XCTAssertEqual(modelRequest.baseText, noListText)
+                return StubChunkResponder()
+            }
+        )
+
+        let result = await transformer.transform(request)
+
+        XCTAssertEqual(result.originalText, listText)
+        XCTAssertEqual(result.finalText, "That's version 1.2.7")
+        XCTAssertTrue(result.applied)
+        XCTAssertEqual(result.processingMode, "local-model-cleanup")
+    }
+
+    @MainActor
     func testStyleRewriteTransformerRepairsPolishedChangedNumberEvidenceFromOriginalDictation() async throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .polished,

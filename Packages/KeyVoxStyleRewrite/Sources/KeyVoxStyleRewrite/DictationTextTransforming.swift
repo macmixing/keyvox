@@ -10,6 +10,7 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
     public let expectedOutputExpansionRatio: Double
     public let safetyMarginTokens: Int
     public let maximumResponseTokens: Int?
+    public let deterministicVariants: [StyleRewriteInputVariant]
 
     public init(
         baseText: String,
@@ -20,7 +21,8 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
         contextTokenLimit: Int,
         expectedOutputExpansionRatio: Double,
         safetyMarginTokens: Int,
-        maximumResponseTokens: Int? = nil
+        maximumResponseTokens: Int? = nil,
+        deterministicVariants: [StyleRewriteInputVariant] = []
     ) {
         self.baseText = baseText
         self.styleIdentifier = styleIdentifier
@@ -31,10 +33,26 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
         self.expectedOutputExpansionRatio = expectedOutputExpansionRatio
         self.safetyMarginTokens = safetyMarginTokens
         self.maximumResponseTokens = maximumResponseTokens
+        self.deterministicVariants = deterministicVariants
     }
 
     public func prompt(for chunkText: String) -> String {
         promptPrefix + chunkText + promptSuffix
+    }
+
+    func replacingBaseText(_ baseText: String) -> TextTransformRequest {
+        TextTransformRequest(
+            baseText: baseText,
+            styleIdentifier: styleIdentifier,
+            instructions: instructions,
+            promptPrefix: promptPrefix,
+            promptSuffix: promptSuffix,
+            contextTokenLimit: contextTokenLimit,
+            expectedOutputExpansionRatio: expectedOutputExpansionRatio,
+            safetyMarginTokens: safetyMarginTokens,
+            maximumResponseTokens: maximumResponseTokens,
+            deterministicVariants: deterministicVariants
+        )
     }
 }
 
