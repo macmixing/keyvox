@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.0.10] - 2026-07-03
 
-Trailing number evidence repair, version evidence preservation, digit-sequence preservation, deterministic variant input selection, and number repair organization for Vibes rewrite output.
+Trailing number evidence repair, version evidence preservation, digit-sequence preservation, decimal money preservation, deterministic variant input selection, and number repair organization for Vibes rewrite output.
 
 ### Includes
 
@@ -17,15 +17,16 @@ Trailing number evidence repair, version evidence preservation, digit-sequence p
 - Prevented AP-style number repair from collapsing separate nearby facts into one number while still preserving connector-based hundreds.
 - Restored spoken digit sequences containing `oh` when a local model rewrite drops the zero digit, such as `one oh seven` becoming `17`.
 - Restored source-backed multi-segment version numbers when local model rewrites mix spoken separators and numeric segments, including outputs such as `1.1 point 13`, `1 point 15`, and `16 point 15`.
+- Preserved decimal money amounts from source dictation evidence so values such as `five point three dollars` are not repaired from `$5.3` down to `$3`.
 - Added Vibes input variant selection so style rewrite callers can prefer deterministic no-list variants when source-backed version repair can recover the intended version number.
 - Carried deterministic variants through style rewrite transform requests and used the selected variant as the model cleanup input while preserving the original base text for result comparison.
 - Updated cleanup logging to report the actual model/repair input so selected deterministic variants are visible during Vibes diagnostics.
 - Split number evidence output repair into focused decimal, changed, inserted, deleted, support, and run-analysis files under a dedicated repair folder.
-- Added regression coverage for trailing changed-number evidence, separated video facts, spoken `oh` digit-sequence preservation, version separator repair, no-list variant selection, and transformer-level deterministic variant input in Vibes output repair.
+- Added regression coverage for trailing changed-number evidence, separated video facts, spoken `oh` digit-sequence preservation, version separator repair, decimal money preservation, no-list variant selection, and transformer-level deterministic variant input in Vibes output repair.
 
 ### Notes
 
-- `1.0.10` bumps the tracked style rewrite package version for deterministic trailing-number preservation, version evidence preservation, digit-sequence preservation, deterministic variant input selection, and the number evidence repair refactor.
+- `1.0.10` bumps the tracked style rewrite package version for deterministic trailing-number preservation, version evidence preservation, digit-sequence preservation, decimal money preservation, deterministic variant input selection, and the number evidence repair refactor.
 
 ---
 
