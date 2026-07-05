@@ -54,22 +54,14 @@ final class MacVibesCoordinator {
     }
 
     func processOutputText(_ text: String) async -> DictationPipelineTextProcessingResult {
-        let style = selectedVibe
-        guard style.usesModelRewrite else {
-            return .unchanged(text)
-        }
-
-        let result = await transform(text, style: style)
-        await releasePrewarmSession(reason: "mac-dictation-transform")
-        return DictationPipelineTextProcessingResult(
-            text: result.finalText,
-            duration: result.duration,
-            applied: result.applied,
-            styleIdentifier: result.styleIdentifier,
-            chunkCount: result.chunkCount,
-            errorDescription: result.errors.first?.message,
-            errors: result.errors.map(\.message),
-            processingMode: result.processingMode
+        await processOutputText(
+            DictationPipelineTextProcessingContext(
+                rawText: text,
+                baseText: text,
+                baseParagraphsEnabled: false,
+                baseListsEnabled: false,
+                deterministicVariants: []
+            )
         )
     }
 
