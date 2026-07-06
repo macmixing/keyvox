@@ -13,6 +13,9 @@ enum NumberEvidence {
         if let value = RepairNumberParsing.parsedSpellOutNumberPhrase(tokenText) {
             return [.value(value)]
         }
+        if let value = parsedConnectorNumberPhrase(in: tokens) {
+            return [.value(value)]
+        }
 
         var components: [Component]?
         for token in tokens {
@@ -222,6 +225,10 @@ enum NumberEvidence {
             return nil
         }
         return [.value(value)]
+    }
+
+    private static func parsedConnectorNumberPhrase(in tokens: [RepairWordToken]) -> Int? {
+        RepairNumberParsing.parsedConnectorNumberRun(tokens)
     }
 }
 

@@ -101,7 +101,7 @@ struct APStyleNumberRepair {
             let runTokens = Array(tokens[index..<endIndex])
             guard let value = RepairNumberParsing.parsedSpellOutNumberPhrase(runText)
                     ?? RepairNumberParsing.parsedSpellOutInteger(runText)
-                    ?? parsedConnectorNumberRunCandidate(runTokens),
+                    ?? RepairNumberParsing.parsedConnectorNumberRun(runTokens),
                   value >= RepairNumberParsing.apStyleNumeralLowerBound,
                   !isProtectedNumberRun(range: runRange, in: text) else {
                 continue
@@ -110,41 +110,6 @@ struct APStyleNumberRepair {
         }
 
         return nil
-    }
-
-    private func parsedConnectorNumberRunCandidate(_ tokens: [RepairWordToken]) -> Int? {
-        guard tokens.count >= 3,
-              isSingleNumberToken(tokens[tokens.startIndex]),
-              isSingleNumberToken(tokens[tokens.index(before: tokens.endIndex)]) else {
-            return nil
-        }
-
-        for connectorIndex in tokens.indices.dropFirst().dropLast()
-        where !isSingleNumberToken(tokens[connectorIndex]) {
-            let leftTokens = tokens[tokens.startIndex..<connectorIndex]
-            let rightTokens = tokens[tokens.index(after: connectorIndex)..<tokens.endIndex]
-            let hundredsBoundary = RepairNumberParsing.apStyleNumeralLowerBound * RepairNumberParsing.apStyleNumeralLowerBound
-            guard let leftValue = parsedNumberChunk(leftTokens),
-                  let rightValue = parsedNumberChunk(rightTokens),
-                  leftValue >= hundredsBoundary,
-                  leftValue.isMultiple(of: hundredsBoundary),
-                  (1..<hundredsBoundary).contains(rightValue) else {
-                continue
-            }
-            return leftValue + rightValue
-        }
-
-        return nil
-    }
-
-    private func isSingleNumberToken(_ token: RepairWordToken) -> Bool {
-        RepairNumberParsing.parsedSpellOutInteger(token.text) != nil
-    }
-
-    private func parsedNumberChunk(_ tokens: ArraySlice<RepairWordToken>) -> Int? {
-        let text = tokens.map(\.text).joined(separator: " ")
-        return RepairNumberParsing.parsedSpellOutNumberPhrase(text)
-            ?? RepairNumberParsing.parsedSpellOutInteger(text)
     }
 
     private func adjacentNumberRunReplacement(
