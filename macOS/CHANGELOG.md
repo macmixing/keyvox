@@ -6,6 +6,42 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.13] - 2026-07-05
+
+Improves Mac Vibes factual repair and shared dictation cleanup so source-backed numbers, version strings, money amounts, punctuation, and known names survive local rewrite cleanup more reliably.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.18` with deterministic variant context support, refined spoken terminal punctuation guarding, and safer dictionary matching for known names.
+- Updated `KeyVoxStyleRewrite` to `1.0.10` with stronger source-backed number, version, money, and deterministic variant repair for Vibes output.
+- Updated Mac Vibes processing so the rewrite pipeline receives Core-owned deterministic dictation variants and can choose a no-list variant when it better preserves version-number evidence.
+- Centralized the legacy Mac Vibes string processing path through the deterministic-context overload so result mapping stays consistent.
+
+### Fixed
+
+- Fixed Vibes rewrites so version-number dictation such as spoken dot or point-separated versions can recover the intended numeric form instead of staying as a list or mixed spoken/numeric output.
+- Fixed Vibes money repair so decimal amounts such as five point three dollars remain `$5.3` instead of being repaired down to the minor digit.
+- Fixed Vibes number repair so trailing spoken values, spoken `oh` digit sequences, connector-based hundreds, and nearby separate numeric facts are preserved from source evidence.
+- Fixed dictionary matching so longer known names are not replaced by shorter stylized dictionary entries on weak evidence.
+- Fixed spoken terminal punctuation cleanup so punctuation-word references stay protected while eligible short terminal commands can still convert to punctuation symbols.
+
+### Package versions
+
+KeyVox macOS 1.1.13:
+- KeyVoxCore           1.0.18
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.10
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.18` adds deterministic variant context APIs for Vibes, refines spoken terminal punctuation reference guards, and protects known titlecase names from weak stylized dictionary matches.
+- `KeyVoxStyleRewrite` `1.0.10` adds deterministic repair for trailing number evidence, spoken zero digit evidence, version separators, decimal money amounts, nearby numeric facts, and connector-based hundreds, while splitting number evidence repair into focused files.
+
+---
+
 ## [1.1.12] - 2026-06-28
 
 Fixes Vibes decimal rewrites so source-backed values such as `5.5`, `GPT-5.6`, and `5.05` survive Casual and Polished model cleanup.
