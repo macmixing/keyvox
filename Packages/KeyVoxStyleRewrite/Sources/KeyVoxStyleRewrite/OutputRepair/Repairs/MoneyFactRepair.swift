@@ -177,6 +177,61 @@ struct MoneyFactRepair {
         Int(text.replacingOccurrences(of: ",", with: ""))
     }
 
+    private func moneyValues(in tokens: [RepairWordToken]) -> (majorValue: Int, minorValue: Int?)? {
+        if let decimalValues = decimalMoneyValues(in: tokens) {
+            return decimalValues
+        }
+
+        if let evidence = NumberEvidence.components(in: tokens),
+           let decimalText = NumberEvidence.decimalReplacementText(evidence: evidence, tokens: tokens),
+           let separatorIndex = decimalText.firstIndex(of: ".") {
+            let majorText = String(decimalText[..<separatorIndex])
+            let minorText = String(decimalText[decimalText.index(after: separatorIndex)...])
+            if !minorText.isEmpty,
+               minorText.count <= 2,
+               let majorValue = Int(majorText),
+               let minorValue = Int(minorText.padding(toLength: 2, withPad: "0", startingAt: 0)) {
+                return (majorValue, minorValue)
+            }
+        }
+
+        guard let majorValue = NumberEvidence.parsedValue(in: tokens) else {
+            return nil
+        }
+        return (majorValue, nil)
+    }
+
+    private func decimalMoneyValues(in tokens: [RepairWordToken]) -> (majorValue: Int, minorValue: Int?)? {
+        guard let separatorIndex = tokens.firstIndex(where: RepairNumberParsing.isSpellOutDecimalSeparator),
+              separatorIndex > tokens.startIndex,
+              separatorIndex < tokens.index(before: tokens.endIndex),
+              tokens[(separatorIndex + 1)...].contains(where: RepairNumberParsing.isSpellOutDecimalSeparator) == false,
+              let majorValue = NumberEvidence.parsedValue(in: Array(tokens[..<separatorIndex])) else {
+            return nil
+        }
+
+        var minorParts: [String] = []
+        for token in tokens[(separatorIndex + 1)...] {
+            guard let value = RepairNumberParsing.numericValue(for: token),
+                  (0..<100).contains(value) else {
+                return nil
+            }
+            if token.text.allSatisfy(\.isNumber) {
+                minorParts.append(token.text)
+            } else {
+                minorParts.append(String(value))
+            }
+        }
+
+        let minorText = minorParts.joined()
+        guard !minorText.isEmpty,
+              minorText.count <= 2,
+              let minorValue = Int(minorText.padding(toLength: 2, withPad: "0", startingAt: 0)) else {
+            return nil
+        }
+        return (majorValue, minorValue)
+    }
+
     private func rewrittenMoneySpans(in text: String) -> [RewrittenMoneySpan] {
         let pattern = "(\(CurrencyUnits.symbolPattern))\\s*(\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.(\\d{1,2}))?(?!\\d|\\.\\d)"
         let nsText = text as NSString
@@ -211,16 +266,17 @@ struct MoneyFactRepair {
         while index < tokens.endIndex {
             guard let majorRun = numericRunBeforeUnit(startingAt: index, in: tokens, sourceText: text),
                   majorRun.endIndex < tokens.endIndex,
-                  let majorValue = NumberEvidence.parsedValue(in: Array(tokens[majorRun.range].map(\.token))),
+                  let moneyValues = moneyValues(in: Array(tokens[majorRun.range].map(\.token))),
                   let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex].lemma),
                   majorUnit.scale == .major else {
                 index += 1
                 continue
             }
 
-            var minorValue: Int?
+            var minorValue = moneyValues.minorValue
             var nextIndex = majorRun.endIndex + 1
-            if nextIndex < tokens.endIndex,
+            if minorValue == nil,
+               nextIndex < tokens.endIndex,
                tokens[nextIndex].tag == .conjunction,
                let minorStartIndex = minorStartIndex(afterConjunctionAt: nextIndex, in: tokens),
                let minorRun = numericRunBeforeUnit(startingAt: minorStartIndex, in: tokens, sourceText: text),
@@ -234,7 +290,7 @@ struct MoneyFactRepair {
             }
 
             spans.append(SourceMoneySpan(
-                majorValue: majorValue,
+                majorValue: moneyValues.majorValue,
                 minorValue: minorValue,
                 symbol: majorUnit.symbol
             ))
@@ -333,6 +389,7 @@ struct MoneyFactRepair {
                 in: sourceText
               ) {
             guard RepairNumberParsing.isNumericToken(tokens[endIndex])
+                    || RepairNumberParsing.isSpellOutDecimalSeparator(tokens[endIndex].token)
                     || tokens[endIndex].tag == .conjunction
                     || numberPhraseCanContinue(
                         range: index...endIndex,
@@ -356,7 +413,7 @@ struct MoneyFactRepair {
         var endIndex = index + 1
         while endIndex < tokens.endIndex {
             if CurrencyUnits.unit(for: tokens[endIndex].lemma) != nil,
-               NumberEvidence.parsedValue(in: Array(tokens[index..<endIndex].map(\.token))) != nil {
+               moneyValues(in: Array(tokens[index..<endIndex].map(\.token))) != nil {
                 bestRun = (index..<endIndex, endIndex)
             }
 
@@ -367,6 +424,7 @@ struct MoneyFactRepair {
                     in: sourceText
                   ),
                   RepairNumberParsing.isNumericToken(tokens[endIndex])
+                    || RepairNumberParsing.isSpellOutDecimalSeparator(tokens[endIndex].token)
                     || tokens[endIndex].tag == .conjunction
                     || numberPhraseCanContinue(
                         range: index...endIndex,

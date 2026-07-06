@@ -349,6 +349,46 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(pasted, ["Ahoy, world"])
     }
 
+    func testPipelineProvidesDeterministicVariantsToOutputTransformation() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "that's version one dot two dot seven", languageCode: "en", paragraphsText: nil, inlineText: nil)
+        )
+        var receivedContext: DictationPipelineTextProcessingContext?
+        let audioFrames = Array(repeating: Float(0.1), count: 128)
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { [self] in recorded.append($0) },
+            pasteText: { [self] in pasted.append($0) },
+            processOutputTextWithContext: { context in
+                receivedContext = context
+                return .unchanged(context.baseText)
+            }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: audioFrames,
+            useDictionaryHintPrompt: false
+        )
+        let variants = Dictionary(
+            uniqueKeysWithValues: result.deterministicVariants.map {
+                (DeterministicVariantKey($0), $0.text)
+            }
+        )
+
+        XCTAssertEqual(result.baseText, "That's version:\n\n1. Dot\n2. Dot seven")
+        XCTAssertEqual(receivedContext?.baseText, result.baseText)
+        XCTAssertEqual(receivedContext?.deterministicVariants.count, 4)
+        XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: false)], "That's version one dot two dot seven")
+        XCTAssertEqual(recorded, ["That's version:\n\n1. Dot\n2. Dot seven"])
+        XCTAssertEqual(pasted, ["That's version:\n\n1. Dot\n2. Dot seven"])
+    }
+
     func testPipelineDoesNotApplyDictionaryEntriesAfterOutputTransformation() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "I introduced KeyVox Speak and later on KeyVox Vibes.", languageCode: "en", paragraphsText: nil, inlineText: nil)

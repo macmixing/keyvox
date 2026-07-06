@@ -35,7 +35,7 @@ final class TranscriptionManager: ObservableObject {
     private let autoParagraphsEnabledProvider: () -> Bool
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
-    private let processOutputText: (String) async -> DictationPipelineTextProcessingResult
+    private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
     private let recordPipelineResult: (DictationPipelineResult, String) -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
     let releaseStyleRewritePrewarmSession: @MainActor (String) async -> Void
@@ -71,8 +71,8 @@ final class TranscriptionManager: ObservableObject {
         pasteText: { [weak self] text in
             self?.capturePipelineOutput(text)
         },
-        processOutputText: { [weak self] baseText in
-            await self?.processOutputText(baseText) ?? .unchanged(baseText)
+        processOutputTextWithContext: { [weak self] context in
+            await self?.processOutputText(context) ?? .unchanged(context.baseText)
         }
     )
 
@@ -90,8 +90,8 @@ final class TranscriptionManager: ObservableObject {
         autoParagraphsEnabledProvider: @escaping () -> Bool = { true },
         listFormattingEnabledProvider: @escaping () -> Bool = { true },
         capsLockEnabledProvider: @escaping () -> Bool = { false },
-        processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
-            .unchanged($0)
+        processOutputTextWithContext: @escaping (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult = {
+            .unchanged($0.baseText)
         },
         recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
         prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
@@ -123,7 +123,7 @@ final class TranscriptionManager: ObservableObject {
         self.autoParagraphsEnabledProvider = autoParagraphsEnabledProvider
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
-        self.processOutputText = processOutputText
+        self.processOutputText = processOutputTextWithContext
         self.recordPipelineResult = recordPipelineResult
         self.prewarmStyleRewriteForUpcomingDictation = prewarmStyleRewriteForUpcomingDictation
         self.releaseStyleRewritePrewarmSession = releaseStyleRewritePrewarmSession
