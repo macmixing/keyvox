@@ -75,6 +75,15 @@ final class NumberEvidenceRepairTests: XCTestCase {
         XCTAssertEqual(output, "That's 750 gigabytes.")
     }
 
+    func testRewriteRepairRestoresChangedChunkedHundredsFromOriginalDictation() {
+        let output = OutputRepair.repairModelOutput(
+            original: "It has two hundred and twenty one views so far.",
+            rewritten: "It has 2021 views so far."
+        )
+
+        XCTAssertEqual(output, "It has 221 views so far.")
+    }
+
     func testRewriteRepairRestoresChangedNumberEvidenceFromOriginalDictation() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm pretty sure we reverted five point five three yesterday.",

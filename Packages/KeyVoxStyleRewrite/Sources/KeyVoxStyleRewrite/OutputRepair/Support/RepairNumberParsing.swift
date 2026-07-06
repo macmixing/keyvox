@@ -149,6 +149,31 @@ enum RepairNumberParsing {
         return Int(digits)
     }
 
+    static func parsedConnectorNumberRun(_ tokens: [RepairWordToken]) -> Int? {
+        guard tokens.count >= 3,
+              isSingleNumberToken(tokens[tokens.startIndex]),
+              isSingleNumberToken(tokens[tokens.index(before: tokens.endIndex)]) else {
+            return nil
+        }
+
+        for connectorIndex in tokens.indices.dropFirst().dropLast()
+        where !isSingleNumberToken(tokens[connectorIndex]) {
+            let leftTokens = tokens[tokens.startIndex..<connectorIndex]
+            let rightTokens = tokens[tokens.index(after: connectorIndex)..<tokens.endIndex]
+            let hundredsBoundary = apStyleNumeralLowerBound * apStyleNumeralLowerBound
+            guard let leftValue = parsedNumberChunk(leftTokens),
+                  let rightValue = parsedNumberChunk(rightTokens),
+                  leftValue >= hundredsBoundary,
+                  leftValue.isMultiple(of: hundredsBoundary),
+                  (1..<hundredsBoundary).contains(rightValue) else {
+                continue
+            }
+            return leftValue + rightValue
+        }
+
+        return nil
+    }
+
     static func isNumericToken(_ token: RepairTaggedToken) -> Bool {
         token.tag == .number
             || token.token.text.allSatisfy(\.isNumber)
@@ -193,6 +218,16 @@ enum RepairNumberParsing {
             .replacingOccurrences(of: "-", with: " ")
             .split(whereSeparator: \.isWhitespace)
             .joined(separator: " ")
+    }
+
+    private static func isSingleNumberToken(_ token: RepairWordToken) -> Bool {
+        parsedSpellOutInteger(token.text) != nil
+    }
+
+    private static func parsedNumberChunk(_ tokens: ArraySlice<RepairWordToken>) -> Int? {
+        let text = tokens.map(\.text).joined(separator: " ")
+        return parsedSpellOutNumberPhrase(text)
+            ?? parsedSpellOutInteger(text)
     }
 
     private static func spellOutNumberPhraseMatches(_ text: String, value: Int) -> Bool {
