@@ -17,7 +17,7 @@ public class WhisperService: ObservableObject, DictationProvider {
     let noSpeechAverageProbabilityThreshold: Float = 0.80
     let paragraphChunker = AudioParagraphChunker()
     // Enabled by default; temporarily disable locally when validating phonetic matching without hint bias.
-    let isPromptHintingEnabled = true
+    let isPromptHintingEnabled = false
     let suspiciousShortResultMinChunkSeconds: Double = 1.35
     let suspiciousShortResultMaxWords = 2
     let suspiciousShortResultDensityMinChunkSeconds: Double = 8.0
