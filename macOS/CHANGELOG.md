@@ -6,6 +6,37 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.14] - 2026-07-11
+
+Improves Mac dictation dictionary matching so random recognizer titlecase is less likely to trigger accidental custom dictionary replacements.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.19` with dictionary matcher hardening for random Whisper titlecase output and shared post-transcription ownership of dictionary matching.
+
+### Fixed
+
+- Fixed custom dictionary matching so accidental titlecase output from Whisper does not replace ordinary words with weakly similar dictionary entries.
+- Fixed common words so plain titlecase alone no longer counts as stylized dictionary evidence.
+- Preserved supported structural-context dictionary corrections while requiring peer support for weak titlecase matches.
+- Disabled Whisper dictionary prompt hinting so custom dictionary corrections are handled deterministically after transcription instead of being nudged upstream by prompt bias.
+
+### Package versions
+
+KeyVox macOS 1.1.14:
+- KeyVoxCore           1.0.19
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.10
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.19` hardens dictionary matching against random Whisper titlecase, requires corroboration before weak titlecase replacements, preserves structural-context corrections, and disables Whisper dictionary prompt hinting so dictionary corrections stay in shared post-transcription matching.
+
+---
+
 ## [1.1.13] - 2026-07-05
 
 Improves Mac Vibes factual repair and shared dictation cleanup so source-backed numbers, version strings, money amounts, punctuation, and known names survive local rewrite cleanup more reliably.
