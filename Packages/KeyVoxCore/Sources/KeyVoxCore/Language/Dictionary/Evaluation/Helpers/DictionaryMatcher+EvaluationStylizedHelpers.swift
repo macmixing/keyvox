@@ -144,6 +144,10 @@ extension DictionaryMatcher {
             return true
         }
 
+        if lexicon.isCommonWord(baseTokenForCommonWordGuard(token.normalized)) {
+            return false
+        }
+
         // Avoid sentence-start capitalization false positives in prose.
         if tokenIndex == 0, totalTokens > 1 {
             return false

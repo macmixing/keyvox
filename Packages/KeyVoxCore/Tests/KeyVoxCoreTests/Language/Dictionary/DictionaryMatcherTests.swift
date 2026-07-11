@@ -390,6 +390,41 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Spot check something like Monique.")
     }
 
+    func testTitlecaseKnownWordsResistRandomStylizedDictionaryEntries() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "HouZe"),
+            DictionaryEntry(phrase: "MarKit"),
+            DictionaryEntry(phrase: "PeepL"),
+            DictionaryEntry(phrase: "ThynG"),
+            DictionaryEntry(phrase: "Worq"),
+            DictionaryEntry(phrase: "NayMe"),
+            DictionaryEntry(phrase: "PlASe"),
+            DictionaryEntry(phrase: "TyMe"),
+            DictionaryEntry(phrase: "WaTerz"),
+        ])
+
+        let samples = [
+            "The House was quiet.",
+            "We met near the Market.",
+            "Those People were early.",
+            "That Thing was broken.",
+            "The Work was finished.",
+            "Her Name was listed.",
+            "The Place was closed.",
+            "Their Time was limited.",
+            "The Water was cold.",
+        ]
+
+        for sample in samples {
+            XCTAssertEqual(matcher.apply(to: sample).text, sample)
+        }
+    }
+
     func testReplacesCommonWordInOwnershipPredicateContextForStylizedEntry() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
@@ -400,6 +435,18 @@ final class DictionaryMatcherTests: XCTestCase {
 
         let result = matcher.apply(to: "My new iPhone has keyboard installed on it.")
         XCTAssertEqual(result.text, "My new iPhone has Cueboard installed on it.")
+    }
+
+    func testKeepsTitlecaseCommonWordInStructuralContextWithoutPeerSupport() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "My new iPhone has Keyboard installed on it.")
+        XCTAssertEqual(result.text, "My new iPhone has Keyboard installed on it.")
     }
 
     func testKeepsCommonWordKeyboardInProseWhenBrandMentionAlsoExists() {
