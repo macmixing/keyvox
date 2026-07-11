@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.19] - 2026-07-07
+
+Dictionary matcher hardening for random Whisper titlecase output.
+
+### Includes
+
+- Made dictionary matching require corroboration before replacing known titlecase words with weakly similar dictionary entries, reducing accidental replacements caused by recognizer casing noise.
+- Prevented common words from using plain titlecase capitalization alone as stylized dictionary evidence.
+- Preserved supported structural-context dictionary corrections while keeping accidental titlecase common words unchanged unless another nearby dictionary match provides peer support.
+- Disabled Whisper dictionary prompt hinting so custom dictionary behavior is owned by shared post-transcription matching instead of upstream prompt bias.
+- Added shared-engine coverage for random stylized dictionary entries against ordinary titlecase words and the structural-context peer-support guard.
+
+### Notes
+
+- `1.0.19` bumps the tracked engine version for `KeyVoxCore` to cover dictionary matcher titlecase hardening and Whisper prompt-hinting disablement used by shared dictation clients.
+
+---
+
 ## [1.0.18] - 2026-07-01
 
 Spoken terminal punctuation reference guard, dictionary matcher refinement, and deterministic variant context API.

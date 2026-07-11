@@ -18,6 +18,7 @@ private enum StandardEvaluationConstants {
 
     static let peerSupportSimilarityMaximum = 0.70
     static let stylizedSurfaceSimilarityMinimum = 0.82
+    static let titlecaseKnownWordSurfaceMinimum = 0.90
     static let stylizedStrongTextThreshold = 0.50
     static let stylizedStrongFallbackThreshold = 0.60
     static let stylizedModerateFallbackThreshold = 0.55
@@ -228,6 +229,7 @@ extension DictionaryMatcher {
             effectiveThreshold = threshold
         }
         var requiresPeerSupport = false
+        var requiresPeerSupportForTitlecaseKnownWord = false
         var singleTokenCandidatePhonetic: String?
 
         if tokenCount == 1 {
@@ -277,13 +279,12 @@ extension DictionaryMatcher {
                 return nil
             }
 
-            if stylizedSingleTokenEntry,
-               observedHasRuntimePronunciation,
+            if observedHasRuntimePronunciation,
                isTitlecaseToken(observedToken),
-               observedToken.normalized.count > candidateToken.count,
-               textSimilarity < StandardEvaluationConstants.stylizedSurfaceSimilarityMinimum {
-                stats.rejectedLowScore += 1
-                return nil
+               observedToken.normalized.count >= candidateToken.count,
+               textSimilarity < StandardEvaluationConstants.titlecaseKnownWordSurfaceMinimum {
+                requiresPeerSupport = true
+                requiresPeerSupportForTitlecaseKnownWord = true
             }
 
             if stylizedSingleTokenEntry,
@@ -451,7 +452,9 @@ extension DictionaryMatcher {
             if !stylizedBrandBypass,
                best.score.final < scorer.commonWordOverrideThreshold {
                 if hasStructuralContext {
-                    requiresPeerSupport = false
+                    if !requiresPeerSupportForTitlecaseKnownWord {
+                        requiresPeerSupport = false
+                    }
                 } else if stylizedCommonWordWithoutSurfaceEvidence || hasAttributionPrepositionContext {
                     requiresPeerSupport = true
                 } else if !requiresPeerSupport {
