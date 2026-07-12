@@ -6,6 +6,43 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.14] - 2026-07-11
+
+Improves custom dictionary matching on the iOS 27 compatibility release branch so random recognizer titlecase is less likely to trigger accidental replacements.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.19` with dictionary matcher hardening for random Whisper titlecase output and shared post-transcription ownership of dictionary matching.
+
+### Fixed
+
+- Fixed custom dictionary matching so accidental titlecase output from Whisper does not replace ordinary words with weakly similar dictionary entries.
+- Fixed common words so plain titlecase alone no longer counts as stylized dictionary evidence.
+- Preserved supported structural-context dictionary corrections while requiring peer support for weak titlecase matches.
+- Disabled Whisper dictionary prompt hinting so custom dictionary corrections are handled deterministically after transcription instead of being nudged upstream by prompt bias.
+
+### Release origin
+
+- This release entry was authored on the `ios-27-compat-release` branch for the iOS 27 Compatibility Release Branch and will be cherry-picked back to `main`.
+- The underlying fixes are already present on `main`; this entry documents the iOS 1.2.14 compatibility-branch release packaging.
+
+### Package versions
+
+KeyVox iOS 1.2.14
+  KeyVoxCore           1.0.19
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.10
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.0.19` hardens dictionary matching against random Whisper titlecase, requires corroboration before weak titlecase replacements, preserves structural-context corrections, and disables Whisper dictionary prompt hinting so dictionary corrections stay in shared post-transcription matching.
+
+---
+
 ## [1.2.13] - 2026-07-05
 
 Improves Vibes factual repair and shared dictation cleanup on the iOS 27 compatibility release branch so source-backed numbers, version strings, money amounts, punctuation, and known names survive local rewrite cleanup more reliably.
