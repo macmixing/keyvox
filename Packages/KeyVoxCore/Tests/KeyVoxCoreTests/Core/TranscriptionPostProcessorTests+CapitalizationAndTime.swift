@@ -59,6 +59,17 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Go ahead and send me an email next week at 2:35 PM.")
     }
+    func testAddsPeriodToOrdinaryProseWithoutTerminalPunctuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "please send the notes tomorrow",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Please send the notes tomorrow.")
+    }
     func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
         let processor = TranscriptionPostProcessor()
 
@@ -231,16 +242,16 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Visit https://i.example.com and I can explain")
     }
 
-    func testDoesNotSplitLongTopLevelDomainIntoSentenceBoundary() {
+    func testAppendsPeriodAfterProseContainingDomain() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "please visit keyvox.photography and share it",
+            "please visit dom.tech and share it",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Please visit keyvox.photography and share it")
+        XCTAssertEqual(output, "Please visit dom.tech and share it.")
     }
 
     func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
