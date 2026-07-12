@@ -22,6 +22,7 @@ public final class TranscriptionPostProcessor {
     private let whitespaceNormalizer = WhitespaceNormalizer()
     private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
     private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
+    private let terminalPeriodNormalizer = TerminalPeriodNormalizer()
     private var dictionaryFingerprint = ""
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
@@ -148,7 +149,11 @@ public final class TranscriptionPostProcessor {
         let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(
             spokenTerminalPunctuationNormalized
         )
-        let output = allCapsOverrideNormalizer.normalize(in: punctuatedOutput, isEnabled: forceAllCaps)
+        let terminalPeriodNormalized = terminalPeriodNormalizer.appendTerminalPeriodIfNeeded(
+            to: punctuatedOutput,
+            languageCode: languageCode
+        )
+        let output = allCapsOverrideNormalizer.normalize(in: terminalPeriodNormalized, isEnabled: forceAllCaps)
         #if DEBUG
         if forceAllCaps {
             logPipelineStage("allCapsOverride", output)
