@@ -176,7 +176,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "Hello world")
+        XCTAssertTrue(output == "Hello world.")
     }
     func testMultilineModePreservesSingleParagraphBreak() {
         let processor = TranscriptionPostProcessor()

@@ -141,24 +141,29 @@ extension MathExpressionNormalizer {
 
         let coreRange = NSRange(location: 0, length: trailingMatch.range.location)
         let core = nsText.substring(with: coreRange).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !core.isEmpty else { return text }
-        guard core.rangeOfCharacter(from: .letters) == nil else { return text }
-
-        guard let allowedCharsRegex = Self.standaloneMathAllowedCharsRegex,
-              let operatorRegex = Self.standaloneMathOperatorRegex else {
-            return text
-        }
-
-        let coreNS = core as NSString
-        let coreFullRange = NSRange(location: 0, length: coreNS.length)
-        guard allowedCharsRegex.firstMatch(in: core, options: [], range: coreFullRange) != nil else {
-            return text
-        }
-        guard operatorRegex.firstMatch(in: core, options: [], range: coreFullRange) != nil else {
-            return text
-        }
-        guard core.rangeOfCharacter(from: .decimalDigits) != nil else { return text }
+        guard Self.isStandaloneMathExpression(core) else { return text }
 
         return core
+    }
+
+    static func isStandaloneMathExpression(_ text: String) -> Bool {
+        let normalized = text.replacingOccurrences(
+            of: #"(?i)\band\b"#,
+            with: " ",
+            options: .regularExpression
+        )
+        guard !normalized.isEmpty,
+              !normalized.contains("\n"),
+              normalized.rangeOfCharacter(from: .letters) == nil,
+              let allowedCharsRegex = Self.standaloneMathAllowedCharsRegex,
+              let operatorRegex = Self.standaloneMathOperatorRegex else {
+            return false
+        }
+
+        let nsText = normalized as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        return allowedCharsRegex.firstMatch(in: normalized, options: [], range: fullRange) != nil
+            && operatorRegex.firstMatch(in: normalized, options: [], range: fullRange) != nil
+            && normalized.rangeOfCharacter(from: .decimalDigits) != nil
     }
 }
