@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.20] - 2026-07-12
+
+Terminal period completion for ordinary dictation prose.
+
+### Includes
+
+- Added a shared terminal-period normalizer that completes eligible multi-word prose when it has no sentence-ending punctuation.
+- Preserved existing terminal periods, questions, exclamations, numbered lists, list items, trailing whitespace, and prose containing embedded domains or URLs.
+- Kept non-prose output unchanged for standalone math, numeric or time-only results, heading-like labels, laughter-only utterances, and terminal email or website lines.
+- Removed incidental single-word ASR periods while preserving explicit spoken question and exclamation punctuation.
+- Updated post-processing and pipeline coverage to reflect the completed-prose output contract and the protected non-prose cases.
+
+### Notes
+
+- `1.0.20` bumps the tracked engine version for `KeyVoxCore` to cover consistent terminal punctuation across shared dictation clients.
+
+---
+
 ## [1.0.19] - 2026-07-07
 
 Dictionary matcher hardening for random Whisper titlecase output.
