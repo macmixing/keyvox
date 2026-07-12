@@ -70,6 +70,34 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Please send the notes tomorrow.")
     }
+    func testStripsASRTerminalPeriodFromOneWordDictation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "reminder.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Reminder")
+    }
+    func testPreservesSpokenQuestionAndExclamationPunctuationForOneWordDictation() {
+        let processor = TranscriptionPostProcessor()
+
+        let questionOutput = processor.process(
+            "reminder question mark",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+        let exclamationOutput = processor.process(
+            "reminder exclamation point",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(questionOutput, "Reminder?")
+        XCTAssertEqual(exclamationOutput, "Reminder!")
+    }
     func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
         let processor = TranscriptionPostProcessor()
 

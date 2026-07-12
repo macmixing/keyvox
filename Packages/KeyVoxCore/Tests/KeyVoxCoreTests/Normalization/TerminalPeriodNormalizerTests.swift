@@ -28,6 +28,20 @@ final class TerminalPeriodNormalizerTests: XCTestCase {
         XCTAssertEqual(output, "Reminder")
     }
 
+    func testStripsTerminalPeriodFromOneWordText() {
+        let normalizer = TerminalPeriodNormalizer()
+
+        XCTAssertEqual(normalizer.appendTerminalPeriodIfNeeded(to: "Reminder."), "Reminder")
+        XCTAssertEqual(normalizer.appendTerminalPeriodIfNeeded(to: "Reminder.  "), "Reminder  ")
+    }
+
+    func testPreservesQuestionAndExclamationMarksOnOneWordText() {
+        let normalizer = TerminalPeriodNormalizer()
+
+        XCTAssertEqual(normalizer.appendTerminalPeriodIfNeeded(to: "Reminder?"), "Reminder?")
+        XCTAssertEqual(normalizer.appendTerminalPeriodIfNeeded(to: "Reminder!"), "Reminder!")
+    }
+
     func testDoesNotAppendPeriodToListOrListItem() {
         let normalizer = TerminalPeriodNormalizer()
 

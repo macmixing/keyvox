@@ -297,9 +297,9 @@ final class DictationPipelineTests: XCTestCase {
 
         XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
         XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, true)
-        XCTAssertEqual(result.finalText, "My app is called KeyVox")
-        XCTAssertEqual(recorded, ["My app is called KeyVox"])
-        XCTAssertEqual(pasted, ["My app is called KeyVox"])
+        XCTAssertEqual(result.finalText, "My app is called KeyVox.")
+        XCTAssertEqual(recorded, ["My app is called KeyVox."])
+        XCTAssertEqual(pasted, ["My app is called KeyVox."])
     }
 
     func testPipelineTransformsProcessedTextBeforeRecordingAndPasting() async throws {
@@ -337,9 +337,9 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(processedTexts, ["Hello world"])
+        XCTAssertEqual(processedTexts, ["Hello world."])
         XCTAssertEqual(result.rawText, "hello world")
-        XCTAssertEqual(result.baseText, "Hello world")
+        XCTAssertEqual(result.baseText, "Hello world.")
         XCTAssertEqual(result.finalText, "Ahoy, world")
         XCTAssertTrue(result.textTransformationApplied)
         XCTAssertEqual(result.textTransformationStyleIdentifier, "test-style")
@@ -464,8 +464,8 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(processedTexts, ["Hello world"])
-        XCTAssertEqual(result.baseText, "Hello world")
+        XCTAssertEqual(processedTexts, ["Hello world."])
+        XCTAssertEqual(result.baseText, "Hello world.")
         XCTAssertEqual(result.uncappedFinalText, "Styled mixed casing")
         XCTAssertEqual(result.finalText, "STYLED MIXED CASING")
         XCTAssertEqual(recorded, ["STYLED MIXED CASING"])
@@ -507,14 +507,14 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(processedTexts, ["Hello world"])
-        XCTAssertEqual(result.finalText, "Hello world")
+        XCTAssertEqual(processedTexts, ["Hello world."])
+        XCTAssertEqual(result.finalText, "Hello world.")
         XCTAssertFalse(result.textTransformationApplied)
         XCTAssertEqual(result.textTransformationChunkCount, 1)
         XCTAssertNotNil(result.textTransformationErrorDescription)
         XCTAssertEqual(result.textTransformationErrors, ["failed"])
-        XCTAssertEqual(recorded, ["Hello world"])
-        XCTAssertEqual(pasted, ["Hello world"])
+        XCTAssertEqual(recorded, ["Hello world."])
+        XCTAssertEqual(pasted, ["Hello world."])
     }
 
     func testPasteDurationDoesNotIncludeOutputProcessingDelay() async throws {
@@ -551,10 +551,10 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(result.finalText, "Hello world")
+        XCTAssertEqual(result.finalText, "Hello world.")
         XCTAssertLessThan(result.pasteDuration, 0.1)
-        XCTAssertEqual(recorded, ["Hello world"])
-        XCTAssertEqual(pasted, ["Hello world"])
+        XCTAssertEqual(recorded, ["Hello world."])
+        XCTAssertEqual(pasted, ["Hello world."])
     }
 
     func testPipelineKeepsProviderHintDisabledWhenAudioGateDisallowsHinting() async throws {
@@ -640,7 +640,7 @@ final class DictationPipelineTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
 
         XCTAssertEqual(result?.rawText, "hello world")
-        XCTAssertEqual(result?.finalText, "Hello world")
+        XCTAssertEqual(result?.finalText, "Hello world.")
         XCTAssertEqual(result?.wasLikelyNoSpeech, false)
     }
 

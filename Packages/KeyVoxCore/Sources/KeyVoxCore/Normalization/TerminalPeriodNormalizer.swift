@@ -7,8 +7,13 @@ public struct TerminalPeriodNormalizer {
     public init() {}
 
     public func appendTerminalPeriodIfNeeded(to text: String, languageCode: String? = nil) -> String {
-        guard !text.isEmpty,
-              !terminalPunctuationNormalizer.hasTerminalSentencePunctuation(text),
+        guard !text.isEmpty else { return text }
+
+        if wordCount(in: text) == 1 {
+            return removingTerminalPeriod(from: text)
+        }
+
+        guard !terminalPunctuationNormalizer.hasTerminalSentencePunctuation(text),
               !isListOrListItem(text, languageCode: languageCode),
               wordCount(in: text) > 1 else {
             return text
@@ -48,5 +53,13 @@ public struct TerminalPeriodNormalizer {
 
         let insertionIndex = text.index(after: lastNonWhitespace)
         return String(text[..<insertionIndex]) + "." + text[insertionIndex...]
+    }
+
+    private func removingTerminalPeriod(from text: String) -> String {
+        text.replacingOccurrences(
+            of: #"(?<!\.)\.(?!\.)(?=[\"'”’\)\]\}]*\s*$)"#,
+            with: "",
+            options: .regularExpression
+        )
     }
 }
