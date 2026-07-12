@@ -46,7 +46,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I got there at 4:18 in the morning and left at 4:19 in the evening")
+        XCTAssertTrue(output == "I got there at 4:18 in the morning and left at 4:19 in the evening.")
     }
     func testAddsPeriodWhenSentenceEndsWithFormattedTime() {
         let processor = TranscriptionPostProcessor()
@@ -245,7 +245,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Inside bit I am")
+        XCTAssertEqual(output, "Inside bit I am.")
     }
     func testKeepsEmailLocalPartLowercaseIAndCapitalizesStandalonePronounI() {
         let processor = TranscriptionPostProcessor()
@@ -256,7 +256,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Reach me at i@example.com and I will reply")
+        XCTAssertEqual(output, "Reach me at i@example.com and I will reply.")
     }
     func testKeepsURLSubdomainLowercaseIAndCapitalizesStandalonePronounI() {
         let processor = TranscriptionPostProcessor()
@@ -267,7 +267,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Visit https://i.example.com and I can explain")
+        XCTAssertEqual(output, "Visit https://i.example.com and I can explain.")
     }
 
     func testAppendsPeriodAfterProseContainingDomain() {
@@ -313,7 +313,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon")
+        XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon.")
     }
 
     func testForceAllCapsAppliesAfterNormalizationPipeline() {

@@ -159,7 +159,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Haha that was funny")
+        XCTAssertEqual(output, "Haha that was funny.")
     }
     func testLowercasesUppercaseReactionTokens() {
         let normalizer = LaughterNormalizer()
@@ -190,7 +190,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Let's pick between colon McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between colon McDonalds or Burger King.")
     }
     func testKeepsBetweenColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -201,7 +201,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Let's pick between Colin McDonalds or Burger King")
+        XCTAssertEqual(output, "Let's pick between Colin McDonalds or Burger King.")
     }
     func testNormalizesCommaDelimitedColonPhraseToPunctuation() {
         let processor = TranscriptionPostProcessor()
@@ -304,7 +304,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "The word colon appears here")
+        XCTAssertEqual(output, "The word colon appears here.")
     }
     func testKeepsTerminalCommaDelimitedColinPhraseLiteral() {
         let processor = TranscriptionPostProcessor()
@@ -425,7 +425,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were opponents ahead of me.")
     }
     func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
         let processor = TranscriptionPostProcessor()
@@ -436,7 +436,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me")
+        XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were two opponents ahead of me.")
         XCTAssertFalse(output.contains("\n1. "))
         XCTAssertFalse(output.contains("\n2. "))
     }

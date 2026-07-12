@@ -25,7 +25,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "I shipped 5,600 units in 2025 and 9,300 units in 2026")
+        XCTAssertEqual(output, "I shipped 5,600 units in 2025 and 9,300 units in 2026.")
     }
 
     func testPreservesYearModifiersWhileFormattingFourDigitQuantities() {
@@ -37,7 +37,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "The 2025 roadmap replaced the 2026 plan after 2,100 tickets came in")
+        XCTAssertEqual(output, "The 2025 roadmap replaced the 2026 plan after 2,100 tickets came in.")
     }
 
     func testFormatsPartitiveFourDigitQuantitiesWithoutTreatingThemAsYears() {
@@ -271,7 +271,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "5,791.")
+        XCTAssertEqual(output, "5,791")
     }
 
     func testNormalizesSpokenThousandsAndHundredsWithoutTriggeringListFormatting() {
@@ -283,7 +283,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "3,071.")
+        XCTAssertEqual(output, "3,071")
     }
 
     func testNormalizesSpokenThousandsWithConjunctionAndTeenTailWithoutLeavingResidualWords() {
@@ -295,7 +295,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "3,071.")
+        XCTAssertEqual(output, "3,071")
     }
 
     func testNormalizesSpokenThousandsWithConjunctionAndUnitTailWithoutLeavingResidualWords() {
@@ -307,7 +307,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "3,072.")
+        XCTAssertEqual(output, "3,072")
     }
 
     func testNormalizesLowercasedSpokenThousandsWithoutLeavingResidualWords() {
@@ -331,7 +331,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .multiline
         )
 
-        XCTAssertEqual(output, "5,051.")
+        XCTAssertEqual(output, "5,051")
     }
 
     func testNormalizesSpokenHundredsOverOneThousand() {
@@ -343,7 +343,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "3,500.")
+        XCTAssertEqual(output, "3,500")
     }
 
     func testNormalizesSpokenThousandWithAndRemainder() {
@@ -355,7 +355,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "1,005.")
+        XCTAssertEqual(output, "1,005")
     }
 
     func testNormalizesSpokenThousandsInsideSentenceWithoutTouchingDates() {
