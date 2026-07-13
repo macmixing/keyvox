@@ -1,5 +1,11 @@
 import Foundation
 
+actor OutputRepairExecutor {
+    func repairModelOutput(original: String, rewritten: String) -> String {
+        OutputRepair.repairModelOutput(original: original, rewritten: rewritten)
+    }
+}
+
 enum OutputRepair {
     static func repairModelOutput(original: String, rewritten: String) -> String {
         let punctuationRepaired = PunctuationRepair().repair(original: original, rewritten: rewritten)
