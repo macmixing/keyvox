@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.11] - 2026-07-12
+
+Long-dictation output repair performance and main-thread responsiveness for Vibes rewrites.
+
+### Includes
+
+- Moved deterministic rewrite output repair away from the main actor so long Casual and Polished dictations no longer block overlay animation while repaired text is prepared.
+- Prevented AP-style number repair from treating an entire long paragraph as one possible spelled-number phrase.
+- Added fast number-token filtering, repeated-token caching, and bounded phrase candidates while continuing to repair every supported number occurrence across the dictation.
+- Preserved connector-based hundreds, protected numeric contexts, ordinary AP-style number formatting, and existing factual number repair behavior.
+- Added regression coverage for long prose containing a valid spoken number phrase.
+
+### Notes
+
+- `1.0.11` bumps the tracked style rewrite package version for responsive and bounded deterministic output repair during long Vibes dictations.
+
+---
+
 ## [1.0.10] - 2026-07-03
 
 Trailing number evidence repair, version evidence preservation, digit-sequence preservation, decimal money preservation, deterministic variant input selection, and number repair organization for Vibes rewrite output.
