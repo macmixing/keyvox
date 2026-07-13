@@ -13,6 +13,7 @@ Terminal period completion for ordinary dictation prose.
 ### Includes
 
 - Added a shared terminal-period normalizer that completes eligible multi-word prose when it has no sentence-ending punctuation.
+- Replaced a terminal comma with the completed period so model-supplied commas do not produce `,.`.
 - Preserved existing terminal periods, questions, exclamations, numbered lists, list items, trailing whitespace, and prose containing embedded domains or URLs.
 - Kept non-prose output unchanged for standalone math, numeric or time-only results, heading-like labels, laughter-only utterances, and terminal email or website lines.
 - Removed incidental single-word ASR periods while preserving explicit spoken question and exclamation punctuation.
