@@ -14,6 +14,12 @@ final class TerminalPeriodNormalizerTests: XCTestCase {
         XCTAssertEqual(output, "Please send the notes tomorrow.  ")
     }
 
+    func testReplacesTerminalCommaWithPeriod() {
+        let output = TerminalPeriodNormalizer().appendTerminalPeriodIfNeeded(to: "Please send the notes tomorrow,  ")
+
+        XCTAssertEqual(output, "Please send the notes tomorrow.  ")
+    }
+
     func testPreservesExistingTerminalSentencePunctuation() {
         let normalizer = TerminalPeriodNormalizer()
 

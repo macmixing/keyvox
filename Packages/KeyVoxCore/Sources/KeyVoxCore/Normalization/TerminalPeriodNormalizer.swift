@@ -95,6 +95,10 @@ public struct TerminalPeriodNormalizer {
         }
 
         let insertionIndex = text.index(after: lastNonWhitespace)
+        if text[lastNonWhitespace] == "," {
+            return String(text[..<lastNonWhitespace]) + "." + text[insertionIndex...]
+        }
+
         return String(text[..<insertionIndex]) + "." + text[insertionIndex...]
     }
 
