@@ -18,6 +18,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
     private let tokenCounter: any TextTransformTokenCounting
     private let chunkResponderProvider: ChunkResponderProvider
+    private let outputRepairExecutor = OutputRepairExecutor()
 
     public init(
         tokenCounter: any TextTransformTokenCounting = StyleRewriteTextTransformTokenCounter(),
@@ -53,14 +54,14 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         let result = await runner.transform(modelRequest)
 
         if request.styleIdentifier == StyleRewriteStyle.casual.styleIdentifier {
-            return cleanupResult(
+            return await cleanupResult(
                 request: request,
                 repairOriginalText: modelRequest.baseText,
                 result: result
             )
         }
 
-        let finalText = OutputRepair.repairModelOutput(
+        let finalText = await outputRepairExecutor.repairModelOutput(
             original: modelRequest.baseText,
             rewritten: result.finalText
         )
@@ -87,12 +88,15 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         )
         let runnerResult = await runner.transform(modelRequest)
         let cleanupSucceeded = runnerResult.errors.isEmpty
-        let punctuationRepairedCleanup = cleanupSucceeded
-            ? OutputRepair.repairModelOutput(
+        let punctuationRepairedCleanup: String?
+        if cleanupSucceeded {
+            punctuationRepairedCleanup = await outputRepairExecutor.repairModelOutput(
                 original: modelRequest.baseText,
                 rewritten: runnerResult.finalText
             )
-            : nil
+        } else {
+            punctuationRepairedCleanup = nil
+        }
         let sourceText = cleanupSucceeded
             ? punctuationRepairedCleanup ?? runnerResult.finalText
             : request.baseText
@@ -103,7 +107,7 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
             processingMode = "local-model-cleanup+heuristic"
         }
 
-        let result = chillResult(
+        let result = await chillResult(
             request: request,
             sourceText: sourceText,
             transformStart: transformStart,
@@ -129,9 +133,9 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         errors: [TextTransformErrorSummary] = [],
         processingMode: String,
         appliedOverride: Bool? = nil
-    ) -> TextTransformResult {
+    ) async -> TextTransformResult {
         let formattedText = ChillHeuristicFormatter().format(sourceText)
-        let finalText = OutputRepair.repairModelOutput(
+        let finalText = await outputRepairExecutor.repairModelOutput(
             original: sourceText,
             rewritten: formattedText
         )
@@ -152,11 +156,11 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         request: TextTransformRequest,
         repairOriginalText: String,
         result: TextTransformResult
-    ) -> TextTransformResult {
+    ) async -> TextTransformResult {
         log(
             "modelOutput style=\(request.styleIdentifier) base=\(debugText(repairOriginalText)) final=\(debugText(result.finalText)) errors=\(result.errors.count)"
         )
-        let finalText = OutputRepair.repairModelOutput(
+        let finalText = await outputRepairExecutor.repairModelOutput(
             original: repairOriginalText,
             rewritten: result.finalText
         )

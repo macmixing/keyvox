@@ -1,6 +1,28 @@
 import Foundation
 
 struct APStyleNumberRepair {
+    private final class TokenNumberCache {
+        private var values: [String: Int] = [:]
+        private var rejected: Set<String> = []
+
+        func value(for token: RepairWordToken) -> Int? {
+            let key = token.normalized
+            if let value = values[key] {
+                return value
+            }
+            guard !rejected.contains(key),
+                  RepairNumberParsing.canStartSpellOutIntegerParsing(token.text),
+                  let value = RepairNumberParsing.parsedSpellOutInteger(token.text) else {
+                rejected.insert(key)
+                return nil
+            }
+            values[key] = value
+            return value
+        }
+    }
+
+    private static let maximumNumberPhraseTokenCount = 16
+
     func repair(original: String, rewritten: String) -> String {
         let collapsedRunRepaired = repairCollapsedAdjacentNumberRuns(original: original, rewritten: rewritten)
         let lowDigitRepaired = repairLowOrdinaryDigits(original: original, rewritten: collapsedRunRepaired)
@@ -13,8 +35,14 @@ struct APStyleNumberRepair {
 
         var repaired = rewritten
         var index = 0
+        let tokenNumberCache = TokenNumberCache()
         while index < tokens.count {
-            guard let adjacentEndIndex = adjacentSingleNumberRunEnd(startingAt: index, tokens: tokens, in: original),
+            guard let adjacentEndIndex = adjacentSingleNumberRunEnd(
+                startingAt: index,
+                tokens: tokens,
+                in: original,
+                tokenNumberCache: tokenNumberCache
+            ),
                   !canParseWholeRun(startingAt: index, endingAt: adjacentEndIndex, tokens: tokens, in: original),
                   let replacement = adjacentNumberRunReplacement(startingAt: index, endingAt: adjacentEndIndex, tokens: tokens) else {
                 index += 1
@@ -66,11 +94,22 @@ struct APStyleNumberRepair {
 
         var edits: [(Range<String.Index>, String)] = []
         var index = 0
+        let tokenNumberCache = TokenNumberCache()
         while index < tokens.count {
-            if let adjacentEndIndex = adjacentSingleNumberRunEnd(startingAt: index, tokens: tokens, in: text),
+            if let adjacentEndIndex = adjacentSingleNumberRunEnd(
+                startingAt: index,
+                tokens: tokens,
+                in: text,
+                tokenNumberCache: tokenNumberCache
+            ),
                !canParseWholeRun(startingAt: index, endingAt: adjacentEndIndex, tokens: tokens, in: text) {
                 index = adjacentEndIndex
-            } else if let replacement = spellOutNumberRunReplacement(startingAt: index, tokens: tokens, in: text) {
+            } else if let replacement = spellOutNumberRunReplacement(
+                startingAt: index,
+                tokens: tokens,
+                in: text,
+                tokenNumberCache: tokenNumberCache
+            ) {
                 edits.append((replacement.range, replacement.text))
                 index = replacement.endIndex
             } else {
@@ -90,8 +129,13 @@ struct APStyleNumberRepair {
     private func spellOutNumberRunReplacement(
         startingAt index: Int,
         tokens: [RepairWordToken],
-        in text: String
+        in text: String,
+        tokenNumberCache: TokenNumberCache
     ) -> (range: Range<String.Index>, text: String, endIndex: Int)? {
+        guard tokenNumberCache.value(for: tokens[index]) != nil else {
+            return nil
+        }
+
         let maximumEndIndex = contiguousCandidateEnd(startingAt: index, tokens: tokens, in: text)
         guard maximumEndIndex > index else { return nil }
 
@@ -137,20 +181,27 @@ struct APStyleNumberRepair {
 
     private func contiguousCandidateEnd(startingAt index: Int, tokens: [RepairWordToken], in text: String) -> Int {
         var endIndex = index + 1
+        let upperBound = min(tokens.count, index + Self.maximumNumberPhraseTokenCount)
         while endIndex < tokens.count,
+              endIndex < upperBound,
               RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text) {
             endIndex += 1
         }
         return endIndex
     }
 
-    private func adjacentSingleNumberRunEnd(startingAt index: Int, tokens: [RepairWordToken], in text: String) -> Int? {
-        guard RepairNumberParsing.parsedSpellOutInteger(tokens[index].text) != nil else { return nil }
+    private func adjacentSingleNumberRunEnd(
+        startingAt index: Int,
+        tokens: [RepairWordToken],
+        in text: String,
+        tokenNumberCache: TokenNumberCache
+    ) -> Int? {
+        guard tokenNumberCache.value(for: tokens[index]) != nil else { return nil }
 
         var endIndex = index + 1
         while endIndex < tokens.count,
               RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text),
-              RepairNumberParsing.parsedSpellOutInteger(tokens[endIndex].text) != nil {
+              tokenNumberCache.value(for: tokens[endIndex]) != nil {
             endIndex += 1
         }
 
