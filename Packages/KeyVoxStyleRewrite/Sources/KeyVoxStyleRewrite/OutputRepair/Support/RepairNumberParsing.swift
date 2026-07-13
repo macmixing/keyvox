@@ -9,6 +9,14 @@ enum RepairNumberParsing {
 
     private static let ordinalNumberFormatter = numberFormatter(style: .ordinal)
 
+    private static let spellOutIntegerTokens: Set<String> = [
+        "zero", "oh", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+        "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+        "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy",
+        "eighty", "ninety", "hundred", "thousand", "million", "billion", "trillion",
+        "quadrillion", "quintillion",
+    ]
+
     private static let spellOutDecimalSeparatorToken: String? = {
         let unit = apStyleNumeralLowerBound / apStyleNumeralLowerBound
         let decimal = Double(unit) + (Double(unit) / Double(apStyleNumeralLowerBound))
@@ -51,6 +59,12 @@ enum RepairNumberParsing {
         }
 
         return nil
+    }
+
+    static func canStartSpellOutIntegerParsing(_ text: String) -> Bool {
+        let normalizedTokens = normalizedSpellOut(text).split(whereSeparator: \.isWhitespace)
+        guard !normalizedTokens.isEmpty else { return false }
+        return normalizedTokens.allSatisfy { spellOutIntegerTokens.contains(String($0)) }
     }
 
     static func parsedSpellOutNumberPhrase(_ text: String) -> Int? {

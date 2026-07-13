@@ -112,4 +112,14 @@ final class APStyleNumberRepairTests: XCTestCase {
 
         XCTAssertEqual(output, "The meeting starts at 2:30. Tell John it was $5 and 5%.")
     }
+
+    func testRewriteRepairBoundsNumberParsingWithinLongOrdinaryProse() {
+        let ordinarySentence = "The finished draft keeps every sentence readable while the speaker continues describing the same ordinary subject without introducing numeric evidence."
+        let ordinaryParagraph = Array(repeating: ordinarySentence, count: 80).joined(separator: " ")
+        let original = "That section contains twenty two labels. \(ordinaryParagraph)"
+
+        let output = APStyleNumberRepair().repair(original: original, rewritten: original)
+
+        XCTAssertEqual(output, "That section contains 22 labels. \(ordinaryParagraph)")
+    }
 }
