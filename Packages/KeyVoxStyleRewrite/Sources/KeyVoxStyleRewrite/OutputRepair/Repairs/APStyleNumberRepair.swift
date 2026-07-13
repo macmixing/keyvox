@@ -199,7 +199,9 @@ struct APStyleNumberRepair {
         guard tokenNumberCache.value(for: tokens[index]) != nil else { return nil }
 
         var endIndex = index + 1
+        let upperBound = min(tokens.count, index + Self.maximumNumberPhraseTokenCount)
         while endIndex < tokens.count,
+              endIndex < upperBound,
               RepairNumberParsing.isNumberRunSeparator(between: tokens[endIndex - 1], and: tokens[endIndex], in: text),
               tokenNumberCache.value(for: tokens[endIndex]) != nil {
             endIndex += 1
