@@ -49,7 +49,7 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
             case .whisperBase:
                 return "Download the Whisper Base dictation model (~190 MB) before using local dictation on this device?"
             case .parakeetTdtV3:
-                return "Download the Parakeet v3 dictation model (~480 MB) for faster on-device dictation on this device?"
+                return "Download the Parakeet v3 dictation model (~335 MB) for faster on-device dictation on this device?"
             }
         case .keyVoxVibesAI:
             return "Download KeyVox Vibes AI (~491 MB) to use KeyVox Vibes on this device?"
