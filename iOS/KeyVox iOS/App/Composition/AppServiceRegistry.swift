@@ -392,7 +392,6 @@ final class AppServiceRegistry {
 
         normalizeActiveProviderSelection()
         normalizeTTSVoiceSelection()
-        applyActiveProviderSelection(settingsStore.activeDictationProvider)
     }
 
     private func applyActiveProviderSelection(_ provider: AppSettingsStore.ActiveDictationProvider) {
