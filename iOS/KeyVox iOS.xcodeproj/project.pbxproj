@@ -128,6 +128,7 @@
 				Core/Input/KeyboardCursorTrackpadSupport.swift,
 				Core/Input/KeyboardSpecialKeyInteractionSupport.swift,
 				Core/Input/KeyboardTextInputController.swift,
+				Core/KeyboardDictationModelStatus.swift,
 				Core/KeyboardLayoutGeometry.swift,
 				Core/KeyboardModelAvailability.swift,
 				Core/KeyboardState.swift,
