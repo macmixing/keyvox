@@ -6,6 +6,43 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.15] - 2026-07-15
+
+Improves Mac dictation punctuation, long Vibes rewrite responsiveness, and status-menu styling.
+
+### Added
+
+- Added shared terminal-period completion through `KeyVoxCore` `1.0.20` so eligible multi-word dictation prose ends with a period when no sentence-ending punctuation is present.
+
+### Changed
+
+- Updated long Casual and Polished Vibes output repair through `KeyVoxStyleRewrite` `1.0.11` so deterministic cleanup runs away from the main actor and uses bounded number-phrase analysis.
+- Updated the Mac status menu to use the system-provided menu surface, native accent selection colors, and consistent action and warning-row alignment.
+
+### Fixed
+
+- Fixed ordinary dictation prose so missing terminal punctuation is completed consistently while existing punctuation, lists, headings, math, times, URLs, email addresses, and other non-prose output remain unchanged.
+- Fixed model-supplied terminal commas so eligible completed prose ends with a period instead of `,.`.
+- Fixed long Vibes rewrites so output repair no longer blocks overlay animation while preserving supported AP-style number formatting and factual number repair.
+
+### Package versions
+
+KeyVox macOS 1.1.15:
+- KeyVoxCore           1.0.20
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.4
+- KeyVoxStyleRewrite   1.0.11
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.20` adds shared terminal-period completion for eligible prose, replaces terminal commas with periods, and preserves protected punctuation and non-prose output.
+- `KeyVoxParakeet` `1.0.4` adds backward-compatible runtime support for the current Parakeet Core ML artifact layouts. macOS continues to use the legacy `Encoder` and `JointDecision` artifacts, so this package change does not alter Mac Parakeet behavior.
+- `KeyVoxStyleRewrite` `1.0.11` moves deterministic Vibes output repair away from the main actor and bounds long-form number analysis so long rewrites remain responsive.
+
+---
+
 ## [1.1.14] - 2026-07-11
 
 Improves Mac dictation dictionary matching so random recognizer titlecase is less likely to trigger accidental custom dictionary replacements.
