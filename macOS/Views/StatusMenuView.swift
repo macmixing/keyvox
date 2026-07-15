@@ -63,6 +63,7 @@ struct StatusMenuView: View {
                             }
                         }
                     }
+                    .padding(.horizontal, -6)
                     
                 }
                 
@@ -87,22 +88,12 @@ struct StatusMenuView: View {
                         quitApp()
                     }
                 }
+                .padding(.horizontal, -6)
             }
             .padding(14)
         }
         .frame(width: 260)
         .fixedSize(horizontal: false, vertical: true)
-        .background(
-            ZStack {
-                VisualEffectView(material: .menu, blendingMode: .behindWindow)
-                Color.indigo.opacity(0.05)
-            }
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-        )
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: micAuthorized)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: activeProviderModelReady)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: AXIsProcessTrusted())
@@ -223,13 +214,13 @@ struct WarningRow: View {
                 HStack(spacing: 10) {
                     Image(systemName: icon)
                         .font(.appFont(12, variant: .medium))
-                        .foregroundColor(isHovering ? .white : .red)
-                        .frame(width: 20)
+                        .foregroundColor(.white)
+                        .frame(width: 16)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         Text(isHovering ? "Click to resolve" : title)
                             .font(.appFont(12, variant: .medium))
-                            .foregroundColor(isHovering ? .white : .red.opacity(0.9))
+                            .foregroundColor(.white)
                         
                         // Keep title visible on hover so they know what they are clicking
                         if isHovering {
@@ -240,7 +231,7 @@ struct WarningRow: View {
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 6)
             }
             .frame(height: 40)
             .contentShape(Rectangle())
@@ -267,9 +258,18 @@ struct MenuActionRow: View {
                     .font(.appFont(12, variant: .light))
                 Spacer()
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(isHovering && !disabled ? Color.primary.opacity(0.05) : Color.clear)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 6) 
+            .foregroundStyle(
+                isHovering && !disabled
+                    ? Color(nsColor: .selectedMenuItemTextColor)
+                    : Color.primary
+            )
+            .background(
+                isHovering && !disabled
+                    ? Color(nsColor: .selectedContentBackgroundColor)
+                    : Color.clear
+            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

@@ -247,7 +247,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func currentToolbarMode() -> KeyboardToolbarMode {
         KeyboardToolbarMode.resolve(
-            isModelInstalled: KeyboardModelAvailability.isInstalled(),
+            modelAvailability: KeyboardDictationModelStatus.availability(),
             hasFullAccess: hasFullAccess,
             hasMicrophonePermission: hasMicrophonePermission,
             hasActivePhoneCall: callObserver.hasActivePhoneCall,

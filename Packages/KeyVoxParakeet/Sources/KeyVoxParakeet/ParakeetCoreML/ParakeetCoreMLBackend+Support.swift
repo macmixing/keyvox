@@ -15,7 +15,9 @@ extension ParakeetCoreMLBackend {
         static let durationBins = [0, 1, 2, 3, 4]
         static let preprocessorDirectoryName = "Preprocessor.mlmodelc"
         static let encoderDirectoryName = "Encoder.mlmodelc"
+        static let encoderInt4DirectoryName = "EncoderInt4.mlmodelc"
         static let decoderDirectoryName = "Decoder.mlmodelc"
+        static let jointV3DirectoryName = "JointDecisionv3.mlmodelc"
         static let canonicalJointDirectoryName = "JointDecision.mlmodelc"
         static let jointDirectoryName = "JointDecisionv2.mlmodelc"
         static let noSpeechTokenID: Int32 = 1
@@ -29,6 +31,7 @@ extension ParakeetCoreMLBackend {
         let hiddenStride: Int
         let timeStride: Int
         let timeBaseOffset: Int
+        let sourceElementCapacity: Int
 
         init(array: MLMultiArray, validFrameCount: Int) throws {
             let shape = array.shape.map(\.intValue)
@@ -53,9 +56,26 @@ extension ParakeetCoreMLBackend {
             self.hiddenStride = strides[hiddenAxis]
             self.timeStride = strides[timeAxis]
             self.timeBaseOffset = timeStride >= 0 ? 0 : (availableFrames - 1) * timeStride
+            self.sourceElementCapacity = ParakeetCoreMLBackend.addressableElementCapacity(
+                shape: shape,
+                strides: strides,
+                fallback: array.count
+            )
         }
 
-        func copyFrame(at frameIndex: Int, into destination: MLMultiArray) {
+        func copyFrame(
+            at frameIndex: Int,
+            into destination: MLMultiArray,
+            usesCurrentArtifactLayout: Bool
+        ) throws {
+            if usesCurrentArtifactLayout {
+                try copyCurrentArtifactFrame(at: frameIndex, into: destination)
+            } else {
+                copyLegacyArtifactFrame(at: frameIndex, into: destination)
+            }
+        }
+
+        private func copyLegacyArtifactFrame(at frameIndex: Int, into destination: MLMultiArray) {
             let sourcePointer = array.dataPointer.bindMemory(to: Float.self, capacity: array.count)
             let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
             let destinationHiddenStride = destination.strides[1].intValue
@@ -66,6 +86,48 @@ extension ParakeetCoreMLBackend {
                     sourcePointer[sourceBaseIndex + (hiddenIndex * hiddenStride)]
             }
         }
+
+        private func copyCurrentArtifactFrame(at frameIndex: Int, into destination: MLMultiArray) throws {
+            let destinationPointer = destination.dataPointer.bindMemory(to: Float.self, capacity: destination.count)
+            let destinationHiddenStride = destination.strides[1].intValue
+            let sourceBaseIndex = timeBaseOffset + (frameIndex * timeStride)
+            let maxSourceIndex = sourceBaseIndex + ((hiddenSize - 1) * hiddenStride)
+            guard sourceBaseIndex >= 0, maxSourceIndex < sourceElementCapacity else {
+                throw ParakeetError.transcriptionFailed(code: -1, message: "encoder_frame_buffer_too_small")
+            }
+
+            switch array.dataType {
+            case .float16:
+                let sourcePointer = array.dataPointer.bindMemory(to: UInt16.self, capacity: sourceElementCapacity)
+                for hiddenIndex in 0..<hiddenSize {
+                    destinationPointer[hiddenIndex * destinationHiddenStride] =
+                        ParakeetFloat16Storage.float(from: sourcePointer[sourceBaseIndex + (hiddenIndex * hiddenStride)])
+                }
+            case .float32:
+                let sourcePointer = array.dataPointer.bindMemory(to: Float.self, capacity: sourceElementCapacity)
+                for hiddenIndex in 0..<hiddenSize {
+                    destinationPointer[hiddenIndex * destinationHiddenStride] =
+                        sourcePointer[sourceBaseIndex + (hiddenIndex * hiddenStride)]
+                }
+            default:
+                throw ParakeetError.transcriptionFailed(code: -1, message: "unsupported_float_array_data_type")
+            }
+        }
+    }
+
+    static func addressableElementCapacity(shape: [Int], strides: [Int], fallback: Int) -> Int {
+        guard shape.count == strides.count else {
+            return fallback
+        }
+
+        let maximumStrideOffset = zip(shape, strides).reduce(0) { partialResult, pair in
+            let dimension = pair.0
+            let stride = pair.1
+            guard dimension > 0, stride > 0 else { return partialResult }
+            return partialResult + ((dimension - 1) * stride)
+        }
+
+        return max(fallback, maximumStrideOffset + 1)
     }
 
     struct DecoderState {
@@ -287,10 +349,24 @@ extension ParakeetCoreMLBackend {
     }
 
     static func preferredJointDirectoryURL(in modelDirectoryURL: URL, fileManager: FileManager) -> URL {
+        let v3URL = modelDirectoryURL.appendingPathComponent(Constants.jointV3DirectoryName, isDirectory: true)
+        if fileManager.fileExists(atPath: v3URL.path) {
+            return v3URL
+        }
+
         let canonicalURL = modelDirectoryURL.appendingPathComponent(Constants.canonicalJointDirectoryName, isDirectory: true)
         if fileManager.fileExists(atPath: canonicalURL.path) {
             return canonicalURL
         }
         return modelDirectoryURL.appendingPathComponent(Constants.jointDirectoryName, isDirectory: true)
+    }
+
+    static func preferredEncoderDirectoryURL(in modelDirectoryURL: URL, fileManager: FileManager) -> URL {
+        let int4URL = modelDirectoryURL.appendingPathComponent(Constants.encoderInt4DirectoryName, isDirectory: true)
+        if fileManager.fileExists(atPath: int4URL.path) {
+            return int4URL
+        }
+
+        return modelDirectoryURL.appendingPathComponent(Constants.encoderDirectoryName, isDirectory: true)
     }
 }

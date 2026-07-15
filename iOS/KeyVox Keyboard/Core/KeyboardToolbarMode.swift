@@ -1,23 +1,29 @@
 import Foundation
 
-enum KeyboardToolbarMode {
+enum KeyboardToolbarMode: Equatable {
     case hidden
     case branded
     case dictationModelWarning
+    case dictationModelActionWarning(String)
     case fullAccessWarning
     case microphoneWarning
     case phoneCallWarning
     case updateRequiredWarning
 
     static func resolve(
-        isModelInstalled: Bool,
+        modelAvailability: KeyboardDictationModelStatus.Availability,
         hasFullAccess: Bool,
         hasMicrophonePermission: Bool,
         hasActivePhoneCall: Bool,
         isUpdateRequired: Bool
     ) -> KeyboardToolbarMode {
-        guard isModelInstalled else {
+        switch modelAvailability {
+        case .ready:
+            break
+        case .notInstalled:
             return .dictationModelWarning
+        case .actionRequired(let message):
+            return .dictationModelActionWarning(message)
         }
 
         guard isUpdateRequired == false else {
@@ -43,6 +49,8 @@ enum KeyboardToolbarMode {
         switch self {
         case .dictationModelWarning:
             return "Install a dictation model"
+        case .dictationModelActionWarning(let message):
+            return message
         case .fullAccessWarning:
             return "Allow Full Access for dictation"
         case .microphoneWarning:

@@ -6,6 +6,128 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.1.14] - 2026-07-11
+
+Improves Mac dictation dictionary matching so random recognizer titlecase is less likely to trigger accidental custom dictionary replacements.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.19` with dictionary matcher hardening for random Whisper titlecase output and shared post-transcription ownership of dictionary matching.
+
+### Fixed
+
+- Fixed custom dictionary matching so accidental titlecase output from Whisper does not replace ordinary words with weakly similar dictionary entries.
+- Fixed common words so plain titlecase alone no longer counts as stylized dictionary evidence.
+- Preserved supported structural-context dictionary corrections while requiring peer support for weak titlecase matches.
+- Disabled Whisper dictionary prompt hinting so custom dictionary corrections are handled deterministically after transcription instead of being nudged upstream by prompt bias.
+
+### Package versions
+
+KeyVox macOS 1.1.14:
+- KeyVoxCore           1.0.19
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.10
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.19` hardens dictionary matching against random Whisper titlecase, requires corroboration before weak titlecase replacements, preserves structural-context corrections, and disables Whisper dictionary prompt hinting so dictionary corrections stay in shared post-transcription matching.
+
+---
+
+## [1.1.13] - 2026-07-05
+
+Improves Mac Vibes factual repair and shared dictation cleanup so source-backed numbers, version strings, money amounts, punctuation, and known names survive local rewrite cleanup more reliably.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.18` with deterministic variant context support, refined spoken terminal punctuation guarding, and safer dictionary matching for known names.
+- Updated `KeyVoxStyleRewrite` to `1.0.10` with stronger source-backed number, version, money, and deterministic variant repair for Vibes output.
+- Updated Mac Vibes processing so the rewrite pipeline receives Core-owned deterministic dictation variants and can choose a no-list variant when it better preserves version-number evidence.
+- Centralized the legacy Mac Vibes string processing path through the deterministic-context overload so result mapping stays consistent.
+
+### Fixed
+
+- Fixed Vibes rewrites so version-number dictation such as spoken dot or point-separated versions can recover the intended numeric form instead of staying as a list or mixed spoken/numeric output.
+- Fixed Vibes money repair so decimal amounts such as five point three dollars remain `$5.3` instead of being repaired down to the minor digit.
+- Fixed Vibes number repair so trailing spoken values, spoken `oh` digit sequences, connector-based hundreds, and nearby separate numeric facts are preserved from source evidence.
+- Fixed dictionary matching so longer known names are not replaced by shorter stylized dictionary entries on weak evidence.
+- Fixed spoken terminal punctuation cleanup so punctuation-word references stay protected while eligible short terminal commands can still convert to punctuation symbols.
+
+### Package versions
+
+KeyVox macOS 1.1.13:
+- KeyVoxCore           1.0.18
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.10
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.18` adds deterministic variant context APIs for Vibes, refines spoken terminal punctuation reference guards, and protects known titlecase names from weak stylized dictionary matches.
+- `KeyVoxStyleRewrite` `1.0.10` adds deterministic repair for trailing number evidence, spoken zero digit evidence, version separators, decimal money amounts, nearby numeric facts, and connector-based hundreds, while splitting number evidence repair into focused files.
+
+---
+
+## [1.1.12] - 2026-06-28
+
+Fixes Vibes decimal rewrites so source-backed values such as `5.5`, `GPT-5.6`, and `5.05` survive Casual and Polished model cleanup.
+
+### Changed
+
+- Updated `KeyVoxStyleRewrite` to `1.0.9` with deterministic decimal evidence preservation for Vibes output repair.
+
+### Fixed
+
+- Fixed Vibes decimal rewrites so source-backed spoken decimals such as five point five are preserved when Casual or Polished outputs drift to `10`, `5`, `5 point 5`, or `5 points 5`.
+- Fixed fused Vibes decimal outputs such as `GPT56` so Mac rewrite repair restores deterministic output like `GPT-5.6`.
+- Preserved source fractional width for decimal evidence such as `5.05` so rewritten output does not collapse it to `5.5`.
+
+### Package versions
+
+KeyVox macOS 1.1.12:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.9
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxStyleRewrite` `1.0.9` is the cherry-picked package diff from `mac-1.1.11`, adding deterministic decimal evidence repair for changed, truncated, pluralized, fused, boundary, and fractional-width Vibes decimal cases.
+
+---
+
+## [1.1.11] - 2026-06-13
+
+Improves Vibes repair for connector-based spoken hundreds.
+
+### Changed
+
+- Updated `KeyVoxStyleRewrite` to `1.0.8` with more deterministic connector-number repair for Vibes output formatting.
+
+### Fixed
+
+- Fixed Vibes rewrites so spoken hundreds with connectors, such as seven hundred and fifty, are repaired as one AP-style numeric value.
+- Fixed Vibes rewrites so changed connector-based hundreds can be restored from the original dictation evidence when model output drifts to a different number.
+
+### Package versions
+
+KeyVox macOS 1.1.11:
+- KeyVoxCore           1.0.17
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.3
+- KeyVoxStyleRewrite   1.0.8
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+---
+
 ## [1.1.10] - 2026-06-06
 
 Improves Vibes number preservation and adds a small multi-display updater reliability improvement.

@@ -24,6 +24,12 @@ struct MainTabView: View {
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @State private var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
+    @State private var pendingModelUpdatePrompt: PendingModelUpdatePrompt?
+    @State private var hasPresentedModelUpdatePrompt = false
+    @AppStorage(
+        UserDefaultsKeys.App.dismissedDictationModelUpdatePromptID,
+        store: SharedPaths.appGroupUserDefaults()
+    ) private var dismissedModelUpdatePromptID = ""
 
     var body: some View {
         NavigationStack {
@@ -45,6 +51,11 @@ struct MainTabView: View {
         }
         .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
         .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
+        .modelUpdatePrompt(
+            $pendingModelUpdatePrompt,
+            onDownload: performModelUpdatePromptDownload,
+            onLater: dismissModelUpdatePromptPermanently
+        )
         .sheet(
             isPresented: Binding(
                 get: { canPresentFeatureSheets && ttsPurchaseController.isUnlockSheetPresented },
@@ -110,6 +121,12 @@ struct MainTabView: View {
             if let event = MainTabHapticsDecision.eventForSelectionChange(previous: oldTab, current: newTab) {
                 appHaptics.emit(event)
             }
+        }
+        .task {
+            presentModelUpdatePromptIfNeeded()
+        }
+        .onReceive(modelManager.$modelStates) { _ in
+            presentModelUpdatePromptIfNeeded()
         }
     }
 
@@ -213,6 +230,31 @@ struct MainTabView: View {
         case .ttsVoiceWithSharedModel(let voice):
             pocketTTSModelManager.installVoiceEnsuringSharedModel(voice)
         }
+    }
+
+    private func performModelUpdatePromptDownload(_ prompt: PendingModelUpdatePrompt) {
+        switch prompt {
+        case .parakeetArtifactUpdate:
+            appTabRouter.openSettingsModelSection()
+            modelManager.repairModelIfNeeded(for: .parakeetTdtV3)
+        }
+    }
+
+    private func dismissModelUpdatePromptPermanently(_ prompt: PendingModelUpdatePrompt) {
+        dismissedModelUpdatePromptID = prompt.id
+    }
+
+    private func presentModelUpdatePromptIfNeeded() {
+        let prompt = PendingModelUpdatePrompt.parakeetArtifactUpdate
+        guard hasPresentedModelUpdatePrompt == false,
+              pendingModelUpdatePrompt == nil,
+              dismissedModelUpdatePromptID != prompt.id,
+              modelManager.requiresArtifactUpdate(for: .parakeetTdtV3) else {
+            return
+        }
+
+        hasPresentedModelUpdatePrompt = true
+        pendingModelUpdatePrompt = prompt
     }
 
     private var selectedTab: ContainingAppTab {

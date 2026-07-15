@@ -6,6 +6,84 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.14] - 2026-07-11
+
+Improves custom dictionary matching on the iOS 27 compatibility release branch so random recognizer titlecase is less likely to trigger accidental replacements.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.19` with dictionary matcher hardening for random Whisper titlecase output and shared post-transcription ownership of dictionary matching.
+
+### Fixed
+
+- Fixed custom dictionary matching so accidental titlecase output from Whisper does not replace ordinary words with weakly similar dictionary entries.
+- Fixed common words so plain titlecase alone no longer counts as stylized dictionary evidence.
+- Preserved supported structural-context dictionary corrections while requiring peer support for weak titlecase matches.
+- Disabled Whisper dictionary prompt hinting so custom dictionary corrections are handled deterministically after transcription instead of being nudged upstream by prompt bias.
+
+### Release origin
+
+- This release entry was authored on the `ios-27-compat-release` branch for the iOS 27 Compatibility Release Branch and will be cherry-picked back to `main`.
+- The underlying fixes are already present on `main`; this entry documents the iOS 1.2.14 compatibility-branch release packaging.
+
+### Package versions
+
+KeyVox iOS 1.2.14
+  KeyVoxCore           1.0.19
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.10
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.0.19` hardens dictionary matching against random Whisper titlecase, requires corroboration before weak titlecase replacements, preserves structural-context corrections, and disables Whisper dictionary prompt hinting so dictionary corrections stay in shared post-transcription matching.
+
+---
+
+## [1.2.13] - 2026-07-05
+
+Improves Vibes factual repair and shared dictation cleanup on the iOS 27 compatibility release branch so source-backed numbers, version strings, money amounts, punctuation, and known names survive local rewrite cleanup more reliably.
+
+### Changed
+
+- Updated `KeyVoxCore` to `1.0.18` with deterministic variant context support, refined spoken terminal punctuation guarding, and safer dictionary matching for known names.
+- Updated `KeyVoxStyleRewrite` to `1.0.10` with stronger source-backed number, version, money, and deterministic variant repair for Vibes output.
+- Updated iOS Vibes processing so the rewrite pipeline receives Core-owned deterministic dictation variants and can choose a no-list variant when it better preserves version-number evidence.
+
+### Fixed
+
+- Fixed Vibes rewrites so version-number dictation such as spoken dot or point-separated versions can recover the intended numeric form instead of staying as a list or mixed spoken/numeric output.
+- Fixed Vibes money repair so decimal amounts such as five point three dollars remain `$5.3` instead of being repaired down to the minor digit.
+- Fixed Vibes number repair so trailing spoken values, spoken `oh` digit sequences, connector-based hundreds, and nearby separate numeric facts are preserved from source evidence.
+- Fixed dictionary matching so longer known names are not replaced by shorter stylized dictionary entries on weak evidence.
+- Fixed spoken terminal punctuation cleanup so punctuation-word references stay protected while eligible short terminal commands can still convert to punctuation symbols.
+
+### Release origin
+
+- This release entry was authored on the `ios-27-compat-release` branch for the iOS 27 Compatibility Release Branch and will be cherry-picked back to `main`.
+- The underlying fixes are already present on `main`; this entry documents the iOS 1.2.13 compatibility-branch release packaging.
+
+### Package versions
+
+KeyVox iOS 1.2.13
+  KeyVoxCore           1.0.18
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.10
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.0.18` adds deterministic variant context APIs for Vibes, refines spoken terminal punctuation reference guards, and protects known titlecase names from weak stylized dictionary matches.
+- `KeyVoxStyleRewrite` `1.0.10` adds deterministic repair for trailing number evidence, spoken zero digit evidence, version separators, decimal money amounts, nearby numeric facts, and connector-based hundreds, while splitting number evidence repair into focused files.
+
+---
+
 ## [1.2.12] - 2026-06-28
 
 Fixes Vibes decimal rewrites so source-backed values such as `5.5`, `GPT-5.6`, and `5.05` survive Casual and Polished model cleanup.

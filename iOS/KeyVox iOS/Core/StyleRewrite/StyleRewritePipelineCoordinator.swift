@@ -86,6 +86,28 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
+    func processOutputText(_ context: DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult {
+        guard let request = transformRequest(
+            for: context.baseText,
+            deterministicVariants: styleRewriteVariants(from: context.deterministicVariants)
+        ) else {
+            return .unchanged(context.baseText)
+        }
+
+        let result = await textTransformer.transform(request)
+        let errors = result.errors.map(\.message)
+        return DictationPipelineTextProcessingResult(
+            text: result.finalText,
+            duration: result.duration,
+            applied: result.applied,
+            styleIdentifier: result.styleIdentifier.nilIfEmpty,
+            chunkCount: result.chunkCount,
+            errorDescription: errors.joined(separator: "; ").nilIfEmpty,
+            errors: errors,
+            processingMode: result.processingMode
+        )
+    }
+
     func releasePrewarmSession(reason: String) async {
         await releaseResources(reason)
     }

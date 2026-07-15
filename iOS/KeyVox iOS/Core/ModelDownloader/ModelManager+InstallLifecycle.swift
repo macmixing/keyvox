@@ -320,6 +320,12 @@ extension ModelManager {
             return
         }
 
+        removeModelInstallFiles(withID: modelID)
+
+        refreshStatus()
+    }
+
+    private func removeModelInstallFiles(withID modelID: DictationModelID) {
         lifecycleProvider(modelID)?.unloadModel()
         if let backgroundJob = persistedBackgroundDownloadJob(), backgroundJob.modelID == modelID {
             try? backgroundJobStore().clear()
@@ -330,8 +336,6 @@ extension ModelManager {
         if let stagingRootURL = modelLocator.stagedRootURL(for: modelID) {
             try? removeItemIfExists(at: stagingRootURL)
         }
-
-        refreshStatus()
     }
 
     func performRepairModelIfNeeded(for modelID: DictationModelID) async {
@@ -351,18 +355,20 @@ extension ModelManager {
             return
         }
 
-        switch validatedState(for: modelID) {
+        let validatedState = validatedState(for: modelID)
+        switch validatedState {
         case .ready:
-            return
+            guard requiresArtifactUpdate(for: modelID) else { return }
         case .notInstalled, .failed:
-            await performDeleteModel(withID: modelID)
-            if backgroundDownloadCoordinator != nil {
-                await startOrResumeDownloadJob(for: modelID)
-            } else {
-                await performDownloadModel(withID: modelID)
-            }
+            break
         case .downloading, .installing:
             return
+        }
+
+        if backgroundDownloadCoordinator != nil {
+            await startOrResumeDownloadJob(for: modelID)
+        } else {
+            await performDownloadModel(withID: modelID)
         }
     }
 }
