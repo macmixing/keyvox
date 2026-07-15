@@ -91,6 +91,7 @@ extension SettingsTabView {
                     }
             }
         }
+        .id(SettingsScrollTarget.dictationModel)
     }
 
     @ViewBuilder
@@ -218,13 +219,24 @@ extension SettingsTabView {
                 action: { pendingDownloadConfirmation = .dictationModel(modelID) }
             )
         case .ready:
-            AppActionButton(
-                title: "Delete",
-                style: .destructive,
-                size: .compact,
-                fontSize: 15,
-                action: { pendingDeletionConfirmation = .dictationModel(modelID) }
-            )
+            if modelManager.requiresArtifactUpdate(for: modelID) {
+                AppActionButton(
+                    title: "Update",
+                    style: .primary,
+                    size: .compact,
+                    fontSize: 15,
+                    isEnabled: !isBlockedByAnotherActiveInstall,
+                    action: { modelManager.repairModelIfNeeded(for: modelID) }
+                )
+            } else {
+                AppActionButton(
+                    title: "Delete",
+                    style: .destructive,
+                    size: .compact,
+                    fontSize: 15,
+                    action: { pendingDeletionConfirmation = .dictationModel(modelID) }
+                )
+            }
         case .failed:
             AppActionButton(
                 title: "Repair",
@@ -243,7 +255,11 @@ extension SettingsTabView {
         switch state {
         case .downloading(_, let phase), .installing(_, let phase):
             return phase.statusText
-        case .ready, .failed, .notInstalled:
+        case .ready:
+            if modelManager.requiresArtifactUpdate(for: modelID) {
+                return "Update available"
+            }
+        case .failed, .notInstalled:
             break
         }
 
@@ -272,7 +288,7 @@ extension SettingsTabView {
         case .whisperBase:
             return "~190 MB"
         case .parakeetTdtV3:
-            return "~480 MB"
+            return "~335 MB"
         }
     }
 

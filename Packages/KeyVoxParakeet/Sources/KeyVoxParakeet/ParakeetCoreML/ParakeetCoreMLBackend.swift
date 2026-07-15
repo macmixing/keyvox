@@ -8,6 +8,7 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
     let jointModel: MLModel
     let vocabulary: ParakeetVocabulary
     let blankTokenID: Int32
+    let usesCurrentArtifactLayout: Bool
     let lock = NSLock()
     var activeRequestID = UUID()
 
@@ -18,7 +19,7 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
         }
 
         let preprocessorDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.preprocessorDirectoryName, isDirectory: true)
-        let encoderDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.encoderDirectoryName, isDirectory: true)
+        let encoderDirectoryURL = Self.preferredEncoderDirectoryURL(in: modelDirectoryURL, fileManager: fileManager)
         let decoderDirectoryURL = modelDirectoryURL.appendingPathComponent(Constants.decoderDirectoryName, isDirectory: true)
         let jointDirectoryURL = Self.preferredJointDirectoryURL(in: modelDirectoryURL, fileManager: fileManager)
 
@@ -46,6 +47,9 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
             self.jointModel = try MLModel(contentsOf: jointDirectoryURL, configuration: inferenceConfiguration)
             self.vocabulary = try ParakeetVocabulary(modelDirectoryURL: modelDirectoryURL)
             self.blankTokenID = vocabulary.tokenCount
+            self.usesCurrentArtifactLayout = encoderDirectoryURL.lastPathComponent == Constants.encoderInt4DirectoryName
+                || jointDirectoryURL.lastPathComponent == Constants.jointV3DirectoryName
+            debugLog("loaded_encoder=\(encoderDirectoryURL.lastPathComponent)")
             debugLog("loaded_joint=\(jointDirectoryURL.lastPathComponent)")
         } catch let error as ParakeetError {
             throw error

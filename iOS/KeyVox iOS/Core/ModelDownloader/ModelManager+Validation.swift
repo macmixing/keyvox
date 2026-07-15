@@ -1,6 +1,32 @@
 import Foundation
 
 extension ModelManager {
+    func requiresArtifactUpdate(for modelID: DictationModelID) -> Bool {
+        switch modelID {
+        case .parakeetTdtV3:
+            return requiresCurrentParakeetArtifacts()
+        case .whisperBase:
+            return false
+        }
+    }
+
+    private func requiresCurrentParakeetArtifacts() -> Bool {
+#if os(iOS)
+        guard let installRootURL = modelLocator.installRootURL(for: .parakeetTdtV3) else {
+            return false
+        }
+
+        let manifestURL = installRootURL.appendingPathComponent(DictationModelCatalog.manifestFilename, isDirectory: false)
+        guard fileManager.fileExists(atPath: manifestURL.path) else {
+            return false
+        }
+
+        return modelLocator.isLegacyParakeetInstall(at: installRootURL)
+#else
+        return false
+#endif
+    }
+
     func validatedState(for modelID: DictationModelID) -> ModelInstallState {
         let descriptor = descriptorProvider(modelID)
         guard let installRootURL = modelLocator.installRootURL(for: modelID),
@@ -43,7 +69,12 @@ extension ModelManager {
             return .failed(message: "Model install manifest version is not supported.")
         }
 
-        for artifact in descriptor.artifacts {
+        let artifactsToValidate = modelID == .parakeetTdtV3
+            && modelLocator.isLegacyParakeetInstall(at: installRootURL)
+            ? DictationModelCatalog.legacyParakeetArtifacts
+            : descriptor.artifacts
+
+        for artifact in artifactsToValidate {
             if artifact.retainedAfterInstall {
                 guard let artifactURL = modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath),
                       fileManager.fileExists(atPath: artifactURL.path) else {

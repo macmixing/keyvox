@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.4] - 2026-07-14
+
+Compatibility support for the current Parakeet Core ML model artifacts.
+
+### Includes
+
+- Added runtime support for the `EncoderInt4` and `JointDecisionv3` model artifacts while preserving compatibility with legacy Parakeet installations.
+- Added handling for the current encoder's Float16 output and padded Neural Engine tensor strides.
+- Added decoder-state normalization for the current model layout while retaining the existing legacy decoding path.
+- Kept Parakeet inference configured for CPU and Neural Engine execution.
+- Expanded package regression coverage for current and legacy encoder layouts, padded encoder output, and decoder-state normalization.
+
+### Notes
+
+- `1.0.4` bumps the tracked runtime version for `KeyVoxParakeet` to cover backward-compatible support for the current Parakeet model artifact layout.
+
 ## [1.0.3] - 2026-05-05
 
 Removed unsupported Parakeet prompt priming from the runtime.
