@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-06-08**
+**Last Updated: 2026-07-15**
 
 ## Design Philosophy
 
@@ -30,15 +30,15 @@ KeyVox is organized by responsibility:
 - `App/`: App lifecycle plus persisted app-owned state, runtime flags, window managers, and registries (`KeyVoxApp`, `AppSettingsStore`, `MacRuntimeFlags`, `AppServiceRegistry`, `DockIconVisibilityController`, `WeeklyWordStatsStore`).
 - `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
 - `Core/Transcription/`: Runtime state machine and macOS host-side transcription orchestration split across `TranscriptionManager.swift` plus focused extensions for bindings, recording sessions, and overlay/debug work. The reusable transcribe -> post-process -> paste boundary remains extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch and publishes a per-successful-dictation revision for UI flows that must observe repeated identical dictations.
-- `Core/DictationTriggerController.swift`: Trigger-key orchestration that converts keyboard press/release/escape state into recording-session commands without owning transcription pipeline behavior.
-- `Core/Vibes/`: Mac-owned KeyVox Vibes runtime. The Mac path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation apply/undo behavior, `MacVibesTriggerActionController` owns quick-tap action orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
+- `Core/DictationTriggerController.swift`: Trigger-key orchestration that converts keyboard press/release/escape state into recording-session commands and hands consumed trigger+L/P chords to the formatting action controller without owning transcription or replacement behavior.
+- `Core/Vibes/`: Mac-owned KeyVox Vibes and latest-insertion change runtime. The Mac Vibes path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation Vibe and deterministic paragraph/list changes, `MacFormattingShortcutMonitor` owns safe chord interception, `MacFormattingTriggerActionController` owns formatting feedback/action orchestration, `MacVibesTriggerActionController` owns quick-tap orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
 - `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). Package-owned hidden dictionary entries live beside user dictionary primitives so app/product naming is corrected through the same matcher pipeline without persisting or displaying those entries as user vocabulary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `PunctuationRepair` preserves punctuation facts first, `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `AddressFactRepair` preserves source-backed address facts, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired. `StyleRewritePromptLeakGuard` falls back to the base text when generated output leaks significant prompt text.
 - `Core/Services/`: Paste/injection, update/checking, and process-termination services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Heuristics/`, and `Pipeline/` subdomains, in-place updater pieces live under `AppUpdate/`, immediate process termination is centralized in `AppProcessTerminator.swift`, update feed source selection lives in `UpdateFeedConfig.swift`, and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
-- `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic audio-indicator timing/state driving, and reusable fling-impact types.
-- `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer.
+- `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic standalone-pill presentation, generic audio-indicator timing/state driving, and reusable fling-impact types.
+- `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer plus separate reusable overlay-pill components.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt`: Curated safety/policy list for common-word replacement guards; maintained with pronunciation resources as tuning data.
 
@@ -55,8 +55,8 @@ File-level ownership and locations are intentionally maintained in one place: [`
 ### Transcription Manager Ownership
 
 - `TranscriptionManager.swift` owns shared runtime state, dependencies, pipeline composition, initialization, and teardown.
-- `TranscriptionManager+Bindings.swift` owns Combine bindings from keyboard/caps-lock/model readiness into manager state, trigger orchestration, and overlay readiness.
-- `TranscriptionManager+RecordingSession.swift` owns recording start/stop, transcription pipeline execution, paste insertion handoff, weekly word totals, and last-transcription persistence.
+- `TranscriptionManager+Bindings.swift` owns Combine bindings from keyboard/caps-lock/model readiness into manager state, trigger orchestration, formatting-monitor runtime eligibility, and overlay readiness.
+- `TranscriptionManager+RecordingSession.swift` owns recording start/stop, formatting-chord recorder discard, transcription pipeline execution, paste insertion handoff, weekly word totals, and last-transcription persistence.
 - `TranscriptionManager+OverlayAndDebug.swift` owns overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging.
 - `Core/DictationTriggerController.swift` owns trigger-key press/release handling, pending-stop behavior, deferred starts, hands-free toggles, and cancellation, and calls back into `TranscriptionManager` only for recording-session commands.
 
@@ -159,6 +159,21 @@ Supported flags:
 - A standalone single-tap pill with no transformable text can be adopted by `OverlayManager.prepareVibePillCycleHandoff()` so the exact visible pill becomes the first cycle pill on double tap.
 - `OverlayManager.showVibeCyclePill` reuses the visible primary/auxiliary cycle panel when possible, schedules animated dismissal separately from panel removal, and keeps cycle-pill positioning centered on the normal recording overlay.
 - `VibeCyclePillVisibilityController` owns the atomic cycle-pill presentation state; `VibeCyclePillOverlay` owns only rendering, entry/exit animation, and the forward flip between cycle states.
+
+## Mac Paragraph/List Trigger-Key Contract
+
+- Trigger+L toggles list formatting and trigger+P toggles paragraph formatting for only the latest untouched KeyVox insertion. These actions never change the persisted paragraph/list preferences.
+- Recording starts immediately on trigger-down. There is no formatting-chord delay or deferred recording start.
+- `MacFormattingShortcutMonitor` recognizes physical L/P key codes for the configured left/right trigger binding and consumes both key-down and matching key-up so letters, Option characters, and Command/Control actions do not reach the focused app.
+- Auto-repeat remains consumed but emits only one formatting action per physical key press. A tap disabled by timeout or user input is re-enabled.
+- The event tap may start only when `AXIsProcessTrusted()` is already true. The formatting feature must not request Accessibility permission at launch or move the existing permission prompt out of the recording/onboarding permission flow.
+- The formatting monitor is action-enabled only while idle or during an ordinary unlocked recording. Stopping, transcribing, and hands-free-stop flows retain their existing ownership.
+- When L/P arrives during an eligible recording, the trigger interaction becomes consumed, pending Vibe tap classification is cleared, the recording is stopped and discarded without transcription or paste, and formatting runs after recorder shutdown.
+- Trigger release after a consumed formatting chord cannot become a Vibe tap, recording stop, or hands-free action.
+- `MacDictationChangeController` validates the latest insertion before mutation, resolves a saved deterministic source through `KeyVoxCore`, reapplies the active Vibe when available, adjusts rewritten layout for the target state, preserves all-caps display, and commits session state only after paste replacement succeeds.
+- Rendered variants are cached by deterministic state plus Vibe. If Vibes becomes unavailable, formatting falls back to the deterministic source and moves the session to the no-Vibe state.
+- If no untouched insertion exists, the chord is still consumed and the pill reports the saved preference without changing it.
+- Formatting feedback uses the shared overlay pill: yellow SF Symbol means enabled, white means disabled, and successful replacement uses the common completed stroke animation.
 
 ## Post-Processing Order
 
@@ -351,14 +366,16 @@ These remain integration/manual-test territory by design.
 
 - Keep behavior/motion constants close to owning logic.
 - Keep branded visual tuning inside branded view files.
-- `Views/Components/LogoBarView.swift` is the only branded Mac logo file on this branch, including the temporary Vibe pill presentation used by the overlay.
+- `Views/Components/LogoBarView.swift` is the only branded Mac logo file and owns only standalone/recording logo presentation; it does not own temporary pill copy or rendering.
+- `Views/Components/OverlayPillView.swift` owns neutral pill layout, common metrics, state, and completion animation; injected feature views own their icons and copy.
+- `Views/Components/VibePillView.swift` owns Vibe-specific logo pulsing, while `Views/Components/MacFormattingPillView.swift` owns formatting titles, SF Symbols, enabled colors, and feature-specific spacing.
 - `Views/Components/SelectedVibeLabel.swift` owns the small recording-time selected Vibe label. It stays separate from `RecordingOverlay` so the label cannot push or resize the logo panel.
 - `Views/Components/MacAppTheme.swift` is the shared non-branded macOS theme file for app-window surfaces; keep generic window/theme tokens there rather than scattering repeated values across settings/onboarding/update views.
 - `Views/Components/UIComponents.swift` is the shared non-branded home for typography/effect/progress primitives; keep those generic building blocks there rather than re-declaring them in feature views.
 - Do not route `Views/StatusMenuView.swift` or `Views/Warnings/*` through `MacAppTheme` unless the product explicitly wants those surfaces visually unified with the main app windows.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
-- `Views/VibePillOverlay.swift` is a thin overlay shell for Vibe feedback only; style rewrite, tap classification, and paste replacement stay in `Core/Vibes/` and `Core/Services/Paste/`.
-- `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes. Vibe controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
+- `Views/Components/OverlayPillOverlay.swift` is the generic standalone-pill visibility shell; `Views/VibePillOverlay.swift` retains only Vibe cycle presentation and flip behavior.
+- `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes and deterministic formatting changes. Change controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift` must keep self-targeted AX writes on the main thread, but must not use an unbounded cross-thread `DispatchQueue.main.sync`; the current contract returns fallback on timeout so paste recovery can proceed.
 - `Core/Services/AppProcessTerminator.swift` is the only helper for intentional immediate app termination after updater handoff or resume-after-move relaunch; keep termination policy out of updater views and app entry-point branching.
 - `Core/Vibes/MacVibesAccessMatrix.swift` stays the pure Mac Vibes settings decision surface. Do not add entitlement, trial, purchase, restore, or paywall branches to Mac Vibes.

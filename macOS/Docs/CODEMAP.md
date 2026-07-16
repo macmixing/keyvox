@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-06-08**
+**Last Updated: 2026-07-15**
 
 ## Project Overview
 
@@ -9,7 +9,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership, and macOS-side iCloud sync wiring
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, provider-aware host integration, paste/update host integration
-- **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
+- **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, deterministic paragraph/list state and variant handling, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -71,6 +71,14 @@ KeyVox/
 │   │   │   ├── MacVibesCoordinator.swift
 │   │   │   ├── MacVibesReadinessPrewarmer.swift
 │   │   │   ├── MacDictationChangeController.swift
+│   │   │   ├── MacDictationChangeController+Formatting.swift
+│   │   │   ├── MacDictationChangeSession.swift
+│   │   │   ├── MacDictationInsertionReplacing.swift
+│   │   │   ├── MacDictationRenderedVariantKey.swift
+│   │   │   ├── MacFormattingChangeOutcome.swift
+│   │   │   ├── MacFormattingShortcutMonitor.swift
+│   │   │   ├── MacFormattingShortcutStateMachine.swift
+│   │   │   ├── MacFormattingTriggerActionController.swift
 │   │   │   ├── MacTriggerTapClassifier.swift
 │   │   │   └── MacVibesTriggerActionController.swift
 │   │   ├── Services/
@@ -99,9 +107,17 @@ KeyVox/
 │   │   │   ├── DictionaryFloatingAddButton.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── MacAppTheme.swift
+│   │   │   ├── MacFormattingPillView.swift
 │   │   │   ├── OnboardingMicrophonePickerView.swift
+│   │   │   ├── OverlayPillCompletionStroke.swift
+│   │   │   ├── OverlayPillMetrics.swift
+│   │   │   ├── OverlayPillOverlay.swift
+│   │   │   ├── OverlayPillState.swift
+│   │   │   ├── OverlayPillView.swift
+│   │   │   ├── OverlayPresentationMetrics.swift
 │   │   │   ├── SelectedVibeLabel.swift
 │   │   │   ├── UIComponents.swift
+│   │   │   ├── VibePillView.swift
 │   │   │   └── SettingsLastTranscriptionCard.swift
 │   │   ├── StatusMenuView.swift
 │   │   ├── OnboardingView.swift
@@ -185,7 +201,7 @@ KeyVox/
 10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 11. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
 12. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
-13. `Views/Components/LogoBarView.swift` is the single branded Mac logo renderer for both standalone logo presentation, overlay-reactive modes, and Vibe pill presentation.
+13. `Views/Components/LogoBarView.swift` renders standalone and recording-reactive KeyVox logo presentations; reusable temporary pill rendering lives in the dedicated overlay pill components.
 
 ## Key Components
 
@@ -255,8 +271,15 @@ KeyVox/
   - Shared floating circular add action used by the dictionary settings surface.
 - `Views/Components/LogoBarView.swift`
   - Single branded Mac logo file.
-  - Provides standalone logo presentation (`LogoBarView(size:)`), recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`), and Vibe pill presentation (`LogoBarView(vibeTitle:state:)`).
+  - Provides standalone logo presentation (`LogoBarView(size:)`) and recording-indicator presentation (`LogoBarView(phase:timelineState:ringColor:)`).
   - Contains the proprietary ring/glow/bar/ripple visual language and visual tuning.
+- `Views/Components/OverlayPillView.swift`
+  - Neutral shared temporary-pill renderer for normal, processing, and completed presentation with injected icon content.
+  - Owns the capsule, title, completion stroke, common sizing, and shared animation surface without owning Vibe or formatting copy.
+- `Views/Components/VibePillView.swift`
+  - Vibe-specific pill content and processing pulse layered onto `OverlayPillView`.
+- `Views/Components/MacFormattingPillView.swift`
+  - Formatting-specific List/Paragraph titles, SF Symbols, enabled-state color, and the Paragraph-specific content spacing used by the shared pill renderer.
 - `Views/Components/SelectedVibeLabel.swift`
   - Small recording-time Vibe label shown below the floating logo when a non-None Vibe is selected.
   - Lives outside `RecordingOverlay` layout so it does not affect the logo panel's position or animation.
@@ -264,8 +287,9 @@ KeyVox/
   - Thin overlay shell for visibility animation, panel sizing, and ring-color selection.
   - Feeds recorder-derived indicator samples into `AudioIndicatorDriver` and renders `LogoBarView`.
 - `Views/VibePillOverlay.swift`
-  - Thin overlay shell for temporary Vibe feedback pills driven by `OverlayManager`.
-  - Owns standalone pill visibility animation plus the cycle-pill presentation controller and forward flip animation used for double-tap Vibe cycling.
+  - Owns the cycle-pill presentation controller and forward flip animation used for double-tap Vibe cycling.
+- `Views/Components/OverlayPillOverlay.swift`
+  - Generic standalone-pill visibility shell shared by Vibe and formatting feedback.
 - `Views/Settings/SettingsView+DictationModels.swift`
   - User-facing `Active Model` settings card for provider selection plus install/remove/progress/error state per model.
   - Falls back to the first ready provider when the persisted active selection is no longer installable/selectable.
@@ -291,17 +315,19 @@ KeyVox/
   - Owns runtime state, dependencies, active-provider pipeline composition, initialization, and teardown for the macOS dictation manager.
   - Publishes `successfulDictationRevision` as a monotonic in-memory signal for UI that needs to react to every successful dictation, including repeated identical text.
 - `Core/Transcription/TranscriptionManager+Bindings.swift`
-  - Binds keyboard/caps-lock/model readiness publishers into runtime availability, trigger orchestration, and overlay hands-free state.
+  - Binds keyboard/caps-lock/model readiness publishers into runtime availability, trigger orchestration, formatting-shortcut monitor eligibility, and overlay hands-free state.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift`
   - Starts/stops recordings, routes transcribe -> post-process -> paste through internal `DictationPipeline`, and records spoken-word totals through `WeeklyWordStatsStore`.
   - Chooses list render mode (`multiline` vs `singleLineInline`) from focused target context before post-processing.
   - Persists the most recent successful final transcription for the Settings Home tab card.
   - Marks `hasCompletedFirstDictation` on successful normal dictation and triggers popup eligibility when the first successful dictation happens outside the first-dictation window.
+  - Stops and discards an in-progress ordinary recording when a consumed formatting chord takes ownership, then runs the latest-insertion change after recorder shutdown.
 - `Core/Transcription/TranscriptionManager+OverlayAndDebug.swift`
   - Keeps overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging out of recording-session flow.
 - `Core/DictationTriggerController.swift`
   - Owns trigger press/release orchestration, pending-stop handling, deferred recording start, hands-free lock mode, and escape cancellation.
   - Delegates recording/transcription actions back to `TranscriptionManager` through a narrow runtime protocol and delegates Vibes quick-tap apply/undo/cycling behavior to `MacVibesTriggerActionController`.
+  - Hands consumed trigger+L/P interactions to `MacFormattingTriggerActionController`, cancels the current Vibe interaction, and prevents trigger release from becoming a recording or Vibe action.
 - `Core/Vibes/MacVibesCoordinator.swift`
   - Mac-owned local style rewrite coordinator for KeyVox Vibes.
   - Resolves the selected Vibe through local model readiness, prewarms requested styles, transforms pipeline output, and releases the local rewrite runtime after dictation and Vibe-change transforms complete.
@@ -329,8 +355,15 @@ KeyVox/
   - Emits structural state only; user-facing copy stays in the owning settings views.
   - Mac Vibes have no trial, unlock, purchase, restore, or paywall branches.
 - `Core/Vibes/MacDictationChangeController.swift`
-  - Captures the latest inserted dictation session and safely applies or undoes Vibes only when the current focused field still contains the untouched insertion before the caret.
-  - Caches generated Vibe variants so repeated apply/undo hops do not re-transform already generated text.
+  - Captures the latest inserted dictation session and safely applies Vibe or deterministic paragraph/list changes only when the focused field still contains the untouched insertion before the caret.
+  - Preserves all four deterministic variants, all-caps presentation, active/previous Vibe state, and rendered results cached by deterministic state plus Vibe.
+- `Core/Vibes/MacFormattingShortcutMonitor.swift`
+  - Accessibility-gated `CGEventTap` monitor that tracks the configured left/right trigger binding, consumes physical L/P key-down and matching key-up events, suppresses repeats, and restores a disabled tap.
+  - Starts only after Accessibility is already trusted; app launch must not request or move the existing permission prompt.
+- `Core/Vibes/MacFormattingShortcutStateMachine.swift`
+  - Pure modifier/chord decision state for trigger binding specificity, L/P mapping, repeat suppression, key-up consumption, onboarding, and runtime eligibility.
+- `Core/Vibes/MacFormattingTriggerActionController.swift`
+  - Owns formatting-pill feedback and delegates latest-insertion changes to `MacDictationChangeController` without changing saved paragraph/list preferences.
 - `Core/Vibes/MacTriggerTapClassifier.swift`
   - Small deterministic helper for single-tap vs double-tap classification.
 - `Core/Vibes/MacVibesTriggerActionController.swift`
@@ -349,6 +382,12 @@ KeyVox/
   - Merges hidden package-owned dictionary entries before matching so app-brand corrections work even when the user has not created visible dictionary entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift`
   - Shared conservative silence/fallback chunking used by both Whisper and Parakeet services.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
+  - Shared paragraph/list state value used by both iOS and macOS latest-insertion changes.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicVariantResolver.swift`
+  - Selects the target state and saved or rendered source variant for paragraph/list changes.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicTextFormatter.swift`
+  - Owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/SwitchableDictationProvider.swift`
   - Small provider router that swaps the active dictation backend without changing host-side transcription call sites.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TimeExpressionNormalizer.swift`
@@ -379,7 +418,7 @@ KeyVox/
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
-  - Owns recording overlay windows, standalone Vibe pills, recording-time selected-Vibe labels, and cycle-pill window reuse/handoff.
+  - Owns recording overlay windows, generic standalone Vibe/formatting pills, recording-time selected-Vibe labels, and cycle-pill window reuse/handoff.
 - `Core/Overlay/AudioIndicatorDriver.swift`
   - Generic audio-indicator driver for overlay/logo timing.
   - Owns smoothing, stale-sample handling, phase progression, and published timeline state.
