@@ -41,6 +41,76 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         }
     }
 
+    func testParagraphShortcutKeepsReportingOffWhenListHasNoParagraphVariant() async {
+        let listState = DictationDeterministicState(
+            paragraphsEnabled: false,
+            listsEnabled: true
+        )
+        let paragraphListState = DictationDeterministicState(
+            paragraphsEnabled: true,
+            listsEnabled: true
+        )
+        let listText = text(for: listState)
+        for initialState in [listState, paragraphListState] {
+            let harness = makeHarness(
+                state: initialState,
+                sourceText: listText,
+                deterministicVariants: [
+                    listState: listText,
+                    paragraphListState: listText,
+                ]
+            )
+
+            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.paragraphs), false)
+
+            let firstOutcome = await harness.controller.applyDeterministicChange(.paragraphs)
+            let secondOutcome = await harness.controller.applyDeterministicChange(.paragraphs)
+
+            XCTAssertFalse(firstOutcome.didApply)
+            XCTAssertEqual(firstOutcome.effectiveState, listState)
+            XCTAssertFalse(secondOutcome.didApply)
+            XCTAssertEqual(secondOutcome.effectiveState, listState)
+            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.paragraphs), false)
+            XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, listState)
+            XCTAssertTrue(harness.pasteService.replacements.isEmpty)
+        }
+    }
+
+    func testListShortcutKeepsReportingOffWhenTextHasNoListVariant() async {
+        let plainState = DictationDeterministicState(
+            paragraphsEnabled: false,
+            listsEnabled: false
+        )
+        let listState = DictationDeterministicState(
+            paragraphsEnabled: false,
+            listsEnabled: true
+        )
+        let plainText = text(for: plainState)
+        for initialState in [plainState, listState] {
+            let harness = makeHarness(
+                state: initialState,
+                sourceText: plainText,
+                deterministicVariants: [
+                    plainState: plainText,
+                    listState: plainText,
+                ]
+            )
+
+            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.lists), false)
+
+            let firstOutcome = await harness.controller.applyDeterministicChange(.lists)
+            let secondOutcome = await harness.controller.applyDeterministicChange(.lists)
+
+            XCTAssertFalse(firstOutcome.didApply)
+            XCTAssertEqual(firstOutcome.effectiveState, plainState)
+            XCTAssertFalse(secondOutcome.didApply)
+            XCTAssertEqual(secondOutcome.effectiveState, plainState)
+            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.lists), false)
+            XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, plainState)
+            XCTAssertTrue(harness.pasteService.replacements.isEmpty)
+        }
+    }
+
     func testActiveVibeRendersOnceThenUsesStateAndVibeCache() async {
         let baselineState = DictationDeterministicState(
             paragraphsEnabled: false,
@@ -168,30 +238,34 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
 
-    func testIdenticalTargetVariantCommitsTargetStateWithoutReplacement() async {
+    func testCachedIdenticalRenderedTargetCommitsTargetStateWithoutReplacement() async {
         let baselineState = DictationDeterministicState(
             paragraphsEnabled: false,
             listsEnabled: false
         )
-        let currentText = text(for: baselineState)
-        let harness = makeHarness(
-            state: baselineState,
-            currentText: currentText,
-            deterministicVariants: Dictionary(
-                uniqueKeysWithValues: allStates.map { ($0, currentText) }
-            )
-        )
-
-        let outcome = await harness.controller.applyDeterministicChange(.lists)
         let targetState = DictationDeterministicState(
             paragraphsEnabled: false,
             listsEnabled: true
         )
+        let currentText = "Styled same"
+        let harness = makeHarness(
+            state: baselineState,
+            style: .casual,
+            currentText: currentText,
+            renderedVariants: [
+                MacDictationRenderedVariantKey(
+                    deterministicState: targetState,
+                    style: .casual
+                ): currentText,
+            ]
+        )
+
+        let outcome = await harness.controller.applyDeterministicChange(.lists)
 
         XCTAssertFalse(outcome.didApply)
         XCTAssertEqual(outcome.effectiveState, targetState)
         XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, targetState)
-        XCTAssertEqual(harness.controller.activeSession?.sourceText, currentText)
+        XCTAssertEqual(harness.controller.activeSession?.sourceText, text(for: targetState))
         XCTAssertEqual(
             harness.controller.activeSession?.renderedDeterministicVariants[
                 MacDictationRenderedVariantKey(
@@ -199,7 +273,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
                     style: .none
                 )
             ],
-            currentText
+            text(for: targetState)
         )
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
@@ -257,6 +331,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         state: DictationDeterministicState,
         style: StyleRewriteStyle = .none,
         previousStyle: StyleRewriteStyle? = nil,
+        sourceText: String? = nil,
         currentText: String? = nil,
         renderedVariants: [MacDictationRenderedVariantKey: String] = [:],
         displaysAllCaps: Bool = false,
@@ -264,7 +339,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         deterministicVariants: [DictationDeterministicState: String]? = nil
     ) -> FormattingHarness {
         let harness = makeHarnessWithoutSession(modelIsReady: modelIsReady)
-        let sourceText = text(for: state)
+        let sourceText = sourceText ?? text(for: state)
         let displayedText = currentText ?? sourceText
         var cachedVariants = renderedVariants
         cachedVariants[MacDictationRenderedVariantKey(

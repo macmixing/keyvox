@@ -196,6 +196,10 @@ final class MacDictationChangeController {
             from: activeSession.currentDeterministicState,
             kind: kind
         )
+        if let changeTarget = deterministicChangeTarget(for: kind, in: activeSession),
+           changeTarget.sourceText == activeSession.sourceText {
+            return false
+        }
         return formattingEnabled(kind, in: target)
     }
 
