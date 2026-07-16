@@ -267,6 +267,71 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(second.lastInsertedTrailingCharacter, ".")
     }
 
+    func testUntouchedInsertionTargetAndReplacementRunOffMainThread() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: nil,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "β")
+
+        XCTAssertTrue(didMatch)
+        XCTAssertTrue(didReplace)
+        XCTAssertEqual(replacer.targetThreadWasMain, [false, false])
+        XCTAssertEqual(replacer.replaceThreadWasMain, [false])
+    }
+
+    func testUntouchedInsertionFallbackAndCaretRecoveryRunOffMainThread() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: false,
+            menuAttempt: .actionErrored,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .menuFallbackAllowed
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "β")
+
+        XCTAssertFalse(didReplace)
+        XCTAssertEqual(replacer.targetThreadWasMain, [false])
+        XCTAssertEqual(replacer.replaceThreadWasMain, [false])
+        XCTAssertEqual(coordinator.executionThreadWasMain, [false])
+        XCTAssertEqual(replacer.moveCaretThreadWasMain, [false])
+        XCTAssertTrue(replacer.finalizeThreadWasMain.isEmpty)
+    }
+
     func testExecutionPlanBuildsExpectedBranchOutcomes() {
         let restorePlan = PasteServiceExecutionPlan.build(
             didAccessibilityInsertText: true,
@@ -340,7 +405,8 @@ final class PasteServiceExecutionTests: XCTestCase {
         injector: MockAccessibilityInjector,
         coordinator: MockMenuFallbackCoordinator,
         restoreDelayAfterMenuFallback: TimeInterval,
-        clockNow: @escaping () -> Date = Date.init
+        clockNow: @escaping () -> Date = Date.init,
+        untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) throws -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
         let dictionaryFileURL = try makeIsolatedDictionaryFileURL()
@@ -360,7 +426,8 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuFallbackCoordinator: coordinator,
             dictionaryCasingStore: PasteDictionaryCasingStore(dictionaryFileURL: dictionaryFileURL),
             capitalizationHeuristics: capitalization,
-            spacingHeuristics: spacing
+            spacingHeuristics: spacing,
+            untouchedInsertionReplacer: untouchedInsertionReplacer
         )
         Self.retainedServices.append(service)
         return service

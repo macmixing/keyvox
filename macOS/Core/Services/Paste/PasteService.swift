@@ -197,12 +197,27 @@ class PasteService {
     }
 
     // MARK: - Latest Insertion Replacement
-    func currentTextMatchesUntouchedInsertion(_ text: String) -> Bool {
+    func currentTextMatchesUntouchedInsertion(_ text: String) async -> Bool {
+        await performOnPasteQueue {
+            self.currentTextMatchesUntouchedInsertionOnPasteQueue(text)
+        }
+    }
+
+    func replaceUntouchedInsertion(_ currentText: String, with replacementText: String) async -> Bool {
+        await performOnPasteQueue {
+            self.replaceUntouchedInsertionOnPasteQueue(currentText, with: replacementText)
+        }
+    }
+
+    private func currentTextMatchesUntouchedInsertionOnPasteQueue(_ text: String) -> Bool {
         guard currentAppMatchesLastInsertion() else { return false }
         return untouchedInsertionReplacer.target(for: text) != nil
     }
 
-    func replaceUntouchedInsertion(_ currentText: String, with replacementText: String) -> Bool {
+    private func replaceUntouchedInsertionOnPasteQueue(
+        _ currentText: String,
+        with replacementText: String
+    ) -> Bool {
         guard currentAppMatchesLastInsertion(),
               let target = untouchedInsertionReplacer.target(for: currentText) else {
             return false
@@ -230,6 +245,14 @@ class PasteService {
             return false
         case .failed:
             return false
+        }
+    }
+
+    private func performOnPasteQueue<T>(_ operation: @escaping () -> T) async -> T {
+        await withCheckedContinuation { continuation in
+            pasteQueue.async {
+                continuation.resume(returning: operation())
+            }
         }
     }
 

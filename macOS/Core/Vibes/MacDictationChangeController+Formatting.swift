@@ -20,7 +20,7 @@ extension MacDictationChangeController {
             return MacFormattingChangeOutcome(didApply: false, effectiveState: nil)
         }
 
-        guard pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
+        guard await pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
             activeSession = nil
             return MacFormattingChangeOutcome(
                 didApply: false,
@@ -55,14 +55,17 @@ extension MacDictationChangeController {
         let displayedText = displayText(renderedText, for: session)
         let requiresReplacement = displayedText != session.currentText
         if requiresReplacement {
-            guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedText) else {
+            guard await pasteService.replaceUntouchedInsertion(
+                session.currentText,
+                with: displayedText
+            ) else {
                 activeSession = nil
                 return MacFormattingChangeOutcome(
                     didApply: false,
                     effectiveState: session.currentDeterministicState
                 )
             }
-        } else if pasteService.currentTextMatchesUntouchedInsertion(session.currentText) == false {
+        } else if await pasteService.currentTextMatchesUntouchedInsertion(session.currentText) == false {
             activeSession = nil
             return MacFormattingChangeOutcome(
                 didApply: false,

@@ -357,11 +357,11 @@ private final class FormattingFakePasteService: MacDictationInsertionReplacing {
     var currentText: String?
     private(set) var replacements: [(current: String, replacement: String)] = []
 
-    func currentTextMatchesUntouchedInsertion(_ text: String) -> Bool {
+    func currentTextMatchesUntouchedInsertion(_ text: String) async -> Bool {
         currentText == text
     }
 
-    func replaceUntouchedInsertion(_ currentText: String, with replacementText: String) -> Bool {
+    func replaceUntouchedInsertion(_ currentText: String, with replacementText: String) async -> Bool {
         guard self.currentText == currentText else {
             return false
         }

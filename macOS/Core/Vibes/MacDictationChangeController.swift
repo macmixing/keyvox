@@ -88,7 +88,7 @@ final class MacDictationChangeController {
             return false
         }
 
-        guard pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
+        guard await pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
             activeSession = nil
             log("apply skipped reason=changed")
             return false
@@ -114,7 +114,10 @@ final class MacDictationChangeController {
         }
 
         let displayedReplacementText = displayText(replacementText, for: session)
-        guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedReplacementText) else {
+        guard await pasteService.replaceUntouchedInsertion(
+            session.currentText,
+            with: displayedReplacementText
+        ) else {
             activeSession = nil
             log("apply skipped reason=replace-failed")
             return false

@@ -47,10 +47,15 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
     }
 
     private let axInspector: PasteAXInspecting
+    private let verificationTimeout: TimeInterval
     private var trackedValueTarget: PasteUntouchedInsertionTarget?
 
-    init(axInspector: PasteAXInspecting) {
+    init(
+        axInspector: PasteAXInspecting,
+        verificationTimeout: TimeInterval = 0.12
+    ) {
         self.axInspector = axInspector
+        self.verificationTimeout = verificationTimeout
     }
 
     func target(for text: String) -> PasteUntouchedInsertionTarget? {
@@ -220,12 +225,7 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
 
         guard let valueReplacement else { return .failed }
 
-        let status = AXUIElementSetAttributeValue(
-            target.element,
-            kAXSelectedTextAttribute as CFString,
-            replacementText as CFTypeRef
-        )
-        guard status == .success else {
+        guard axInspector.setSelectedText(replacementText, for: target.element) else {
             return replaceViaValue(valueReplacement, target: target)
         }
 
@@ -294,12 +294,7 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
         _ replacement: ValueReplacement,
         target: PasteUntouchedInsertionTarget
     ) -> PasteUntouchedInsertionReplacementOutcome {
-        let status = AXUIElementSetAttributeValue(
-            target.element,
-            kAXValueAttribute as CFString,
-            replacement.text as CFTypeRef
-        )
-        guard status == .success else {
+        guard axInspector.setValueString(replacement.text, for: target.element) else {
             return .failed
         }
 
@@ -337,7 +332,7 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
 
     private func waitUntil(_ condition: () -> Bool) -> Bool {
         var delay: useconds_t = 1_000
-        let timeout = Date().addingTimeInterval(0.12)
+        let timeout = Date().addingTimeInterval(verificationTimeout)
 
         while Date() < timeout {
             if condition() {
@@ -351,15 +346,6 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
     }
 
     private func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
-        var mutableRange = range
-        guard let rangeValue = AXValueCreate(.cfRange, &mutableRange) else {
-            return false
-        }
-
-        return AXUIElementSetAttributeValue(
-            element,
-            kAXSelectedTextRangeAttribute as CFString,
-            rangeValue
-        ) == .success
+        axInspector.setSelectedRange(range, for: element)
     }
 }

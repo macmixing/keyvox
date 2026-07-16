@@ -132,6 +132,7 @@ final class MockAccessibilityInjector: PasteAccessibilityInjecting {
 final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
     private let result: PasteMenuFallbackExecutionResult
     private(set) var executeCalls = 0
+    private(set) var executionThreadWasMain: [Bool] = []
 
     init(result: PasteMenuFallbackExecutionResult) {
         self.result = result
@@ -154,7 +155,56 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         _ = setClipboardStringOnMainThread
         _ = typeLeadingSpacesOnMainThread
         executeCalls += 1
+        executionThreadWasMain.append(Thread.isMainThread)
         return result
+    }
+}
+
+final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
+    let replacementOutcome: PasteUntouchedInsertionReplacementOutcome
+    private let element = AXUIElementCreateApplication(getpid())
+    private(set) var targetThreadWasMain: [Bool] = []
+    private(set) var replaceThreadWasMain: [Bool] = []
+    private(set) var finalizeThreadWasMain: [Bool] = []
+    private(set) var moveCaretThreadWasMain: [Bool] = []
+
+    init(replacementOutcome: PasteUntouchedInsertionReplacementOutcome) {
+        self.replacementOutcome = replacementOutcome
+    }
+
+    func target(for text: String) -> PasteUntouchedInsertionTarget? {
+        targetThreadWasMain.append(Thread.isMainThread)
+        return PasteUntouchedInsertionTarget(
+            element: element,
+            range: CFRange(location: 0, length: (text as NSString).length)
+        )
+    }
+
+    func replace(
+        _ currentText: String,
+        with replacementText: String,
+        target: PasteUntouchedInsertionTarget
+    ) -> PasteUntouchedInsertionReplacementOutcome {
+        _ = currentText
+        _ = replacementText
+        _ = target
+        replaceThreadWasMain.append(Thread.isMainThread)
+        return replacementOutcome
+    }
+
+    func finalizeMenuFallbackReplacement(
+        _ replacementText: String,
+        target: PasteUntouchedInsertionTarget
+    ) {
+        _ = replacementText
+        _ = target
+        finalizeThreadWasMain.append(Thread.isMainThread)
+    }
+
+    func moveCaretToEnd(of replacementText: String, target: PasteUntouchedInsertionTarget) {
+        _ = replacementText
+        _ = target
+        moveCaretThreadWasMain.append(Thread.isMainThread)
     }
 }
 
