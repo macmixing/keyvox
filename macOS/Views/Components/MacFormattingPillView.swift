@@ -12,10 +12,15 @@ struct MacFormattingPillView: View {
             state: state,
             contentSpacing: contentSpacing
         ) {
-            Image(systemName: symbolName)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(isEnabled ? Color.yellow : Color.white)
-                .accessibilityHidden(true)
+            OverlayPillProcessingIcon(
+                isProcessing: state == .processing,
+                foregroundColor: isEnabled ? .yellow : .white,
+                idleScale: 1
+            ) {
+                Image(systemName: symbolName)
+                    .font(.system(size: 18, weight: .semibold))
+            }
+            .accessibilityHidden(true)
         }
     }
 
