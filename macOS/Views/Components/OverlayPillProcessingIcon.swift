@@ -26,6 +26,7 @@ struct OverlayPillProcessingIcon<Icon: View>: View {
                 .foregroundStyle(Color.yellow.opacity(isProcessing ? (isPulsing ? 0.92 : 0.48) : 0))
                 .scaleEffect(isProcessing && isPulsing ? 1.24 : 1.08)
                 .blur(radius: isProcessing ? 4 : 0)
+                .accessibilityHidden(true)
 
             icon
                 .foregroundStyle(foregroundColor)
