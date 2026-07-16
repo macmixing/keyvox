@@ -171,9 +171,9 @@ Supported flags:
 - When L/P arrives during an eligible recording, the trigger interaction becomes consumed, pending Vibe tap classification is cleared, the recording is stopped and discarded without transcription or paste, and formatting runs after recorder shutdown.
 - Trigger release after a consumed formatting chord cannot become a Vibe tap, recording stop, or hands-free action.
 - `MacDictationChangeController` validates the latest insertion before mutation, resolves a saved deterministic source through `KeyVoxCore`, reapplies the active Vibe when available, adjusts rewritten layout for the target state, preserves all-caps display, and commits session state only after paste replacement succeeds.
-- Rendered variants are cached by deterministic state plus Vibe. If Vibes becomes unavailable, formatting falls back to the deterministic source and moves the session to the no-Vibe state.
-- If no untouched insertion exists, the chord is still consumed and the pill reports the saved preference without changing it.
-- Formatting feedback uses the shared overlay pill: yellow SF Symbol means enabled, white means disabled, and successful replacement uses the common completed stroke animation.
+- Rendered variants are cached by deterministic state plus Vibe. If Vibes becomes unavailable, cached styled targets remain usable; an uncached styled target no-ops without clearing the active or previous Vibe.
+- If no untouched insertion exists, the chord is still consumed and the pill reports the requested formatting control as off and unavailable for replacement.
+- Formatting feedback uses the shared overlay pill: yellow SF Symbol means enabled, white means disabled, model-backed rendering uses the shared icon pulse, and the completed stroke starts when replacement begins rather than after post-insertion verification.
 
 ## Post-Processing Order
 
@@ -368,7 +368,8 @@ These remain integration/manual-test territory by design.
 - Keep branded visual tuning inside branded view files.
 - `Views/Components/LogoBarView.swift` is the only branded Mac logo file and owns only standalone/recording logo presentation; it does not own temporary pill copy or rendering.
 - `Views/Components/OverlayPillView.swift` owns neutral pill layout, common metrics, state, and completion animation; injected feature views own their icons and copy.
-- `Views/Components/VibePillView.swift` owns Vibe-specific logo pulsing, while `Views/Components/MacFormattingPillView.swift` owns formatting titles, SF Symbols, enabled colors, and feature-specific spacing.
+- `Views/Components/OverlayPillProcessingIcon.swift` owns the shared two-layer processing pulse and keeps its duplicated decorative glow inaccessible; `VibePillView` and `MacFormattingPillView` provide feature-specific icon content and idle presentation.
+- `Views/Components/MacFormattingPillView.swift` owns formatting titles, SF Symbols, enabled colors, and feature-specific spacing.
 - `Views/Components/SelectedVibeLabel.swift` owns the small recording-time selected Vibe label. It stays separate from `RecordingOverlay` so the label cannot push or resize the logo panel.
 - `Views/Components/MacAppTheme.swift` is the shared non-branded macOS theme file for app-window surfaces; keep generic window/theme tokens there rather than scattering repeated values across settings/onboarding/update views.
 - `Views/Components/UIComponents.swift` is the shared non-branded home for typography/effect/progress primitives; keep those generic building blocks there rather than re-declaring them in feature views.
@@ -376,6 +377,8 @@ These remain integration/manual-test territory by design.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - `Views/Components/OverlayPillOverlay.swift` is the generic standalone-pill visibility shell; `Views/VibePillOverlay.swift` retains only Vibe cycle presentation and flip behavior.
 - `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes and deterministic formatting changes. Change controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionAuthorizer.swift` is the state owner for latest-insertion authorization. It captures and invalidates the token, verifies live app and AX context, and advances successful replacements only within the same target lineage.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift` is the immutable authorization record. It binds the latest insertion to its original PID, AX element, target range, and selection snapshot; focus, caret/selection, target-range, or process changes invalidate eligibility.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift` must keep self-targeted AX writes on the main thread, but must not use an unbounded cross-thread `DispatchQueue.main.sync`; the current contract returns fallback on timeout so paste recovery can proceed.
 - `Core/Services/AppProcessTerminator.swift` is the only helper for intentional immediate app termination after updater handoff or resume-after-move relaunch; keep termination policy out of updater views and app entry-point branching.
 - `Core/Vibes/MacVibesAccessMatrix.swift` stays the pure Mac Vibes settings decision surface. Do not add entitlement, trial, purchase, restore, or paywall branches to Mac Vibes.

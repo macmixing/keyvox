@@ -112,6 +112,7 @@ KeyVox/
 │   │   │   ├── OverlayPillCompletionStroke.swift
 │   │   │   ├── OverlayPillMetrics.swift
 │   │   │   ├── OverlayPillOverlay.swift
+│   │   │   ├── OverlayPillProcessingIcon.swift
 │   │   │   ├── OverlayPillState.swift
 │   │   │   ├── OverlayPillView.swift
 │   │   │   ├── OverlayPresentationMetrics.swift
@@ -276,8 +277,11 @@ KeyVox/
 - `Views/Components/OverlayPillView.swift`
   - Neutral shared temporary-pill renderer for normal, processing, and completed presentation with injected icon content.
   - Owns the capsule, title, completion stroke, common sizing, and shared animation surface without owning Vibe or formatting copy.
+- `Views/Components/OverlayPillProcessingIcon.swift`
+  - Shared two-layer processing pulse used by both the Vibes logo and formatting SF Symbols.
+  - Keeps the decorative glow layer hidden from accessibility while leaving the foreground icon's semantics to its owning presentation.
 - `Views/Components/VibePillView.swift`
-  - Vibe-specific pill content and processing pulse layered onto `OverlayPillView`.
+  - Vibe-specific pill content layered onto `OverlayPillView` and the shared processing-icon renderer.
 - `Views/Components/MacFormattingPillView.swift`
   - Formatting-specific List/Paragraph titles, SF Symbols, enabled-state color, and the Paragraph-specific content spacing used by the shared pill renderer.
 - `Views/Components/SelectedVibeLabel.swift`
@@ -371,7 +375,13 @@ KeyVox/
   - Respects `AppSettingsStore.vibesTriggerKeyInteractionsEnabled`; when disabled, trigger-key taps fall through to normal dictation behavior without Vibes single-tap, double-tap, or pill-handoff behavior.
 - `Core/Services/Paste/PasteService.swift`
   - Owns paste insertion plus latest untouched insertion verification/replacement used by Mac Vibes apply/undo.
-  - Verifies the focused text range before replacement and falls back conservatively when Accessibility cannot prove the text is still safe to mutate.
+  - Requires the exact original process, AX element, target range, and selection snapshot before replacement and falls back conservatively when Accessibility cannot prove the insertion is still safe to mutate.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionAuthorizer.swift`
+  - State owner for latest-insertion token capture, validation, invalidation, and successful-replacement advancement.
+  - Resolves current AX context through the existing replacer and rejects process, element, target-range, or selection mismatches before PasteService mutates text.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift`
+  - Immutable authorization record for the latest successful insertion, binding replacement to its original PID and AX target context.
+  - Allows a successful replacement to advance only within the same process, AX element, and target start location.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
   - Treats the host-provided dictionary-hint flag as an audio/silence eligibility signal, then applies package-owned dictionary availability so built-in entries can participate consistently across macOS and iOS.
@@ -485,7 +495,7 @@ KeyVox/
 - `Core/Services/Paste/PasteService.swift`
   - Host paste orchestrator that snapshots the clipboard, attempts Accessibility insertion first, coordinates menu fallback second, and restores or recovers clipboard state afterward.
 - `Core/Services/Paste/Accessibility/*`
-  - Focused AX inspection/live-session/injection helpers used for direct text insertion.
+  - Focused AX inspection/live-session/injection helpers plus exact-target authorization for direct insertion and latest-insertion replacement.
 - `Core/Services/Paste/MenuFallback/*`
   - Menu-driven paste execution, scanning, verification, and warmup/fallback coordination.
 - `Core/Services/Paste/Clipboard/*`
@@ -717,6 +727,12 @@ KeyVox/
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
   - Routes self-targeted AX writes through a bounded main-thread hop so local AppKit text fields can be updated without an unbounded cross-thread `main.sync`.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionAuthorizer.swift`
+  - Owns the current latest-insertion authorization lifecycle and invalidates it whenever the live app or AX context no longer matches.
+  - Advances authorization after successful replacement only when the replacement remains in the original PID, element, and start location.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift`
+  - Persists the exact PID, AX element, target range, and selection snapshot authorized for latest-insertion replacement.
+  - Invalidates replacement eligibility when the current app, focus target, replacement range, or selection no longer matches.
 - `Core/Services/Paste/MenuFallback/PasteMenuFallbackExecutor.swift`
   - Orchestrates menu fallback execution and verification decisions.
   - Coordinates AX snapshot verification, undo-state fallback checks, and live AX session verification.
