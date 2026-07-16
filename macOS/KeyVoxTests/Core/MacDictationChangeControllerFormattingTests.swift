@@ -88,7 +88,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         XCTAssertEqual(harness.controller.activeSession?.previousStyle, .polished)
     }
 
-    func testUnavailableVibesRestoresDeterministicTextAndMovesSessionToNoVibe() async {
+    func testUnavailableVibesPreservesStyleAndLeavesInsertionUnchanged() async {
         let baselineState = DictationDeterministicState(
             paragraphsEnabled: false,
             listsEnabled: false
@@ -96,21 +96,21 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         let harness = makeHarness(
             state: baselineState,
             style: .polished,
+            previousStyle: .casual,
             currentText: "Styled plain",
             modelIsReady: false
         )
 
         let outcome = await harness.controller.applyDeterministicChange(.lists)
-        let targetState = DictationDeterministicState(
-            paragraphsEnabled: false,
-            listsEnabled: true
-        )
 
-        XCTAssertTrue(outcome.didApply)
-        XCTAssertEqual(outcome.effectiveState, targetState)
-        XCTAssertEqual(harness.pasteService.currentText, text(for: targetState))
-        XCTAssertEqual(harness.controller.activeSession?.currentStyle, StyleRewriteStyle.none)
+        XCTAssertFalse(outcome.didApply)
+        XCTAssertEqual(outcome.effectiveState, baselineState)
+        XCTAssertEqual(harness.pasteService.currentText, "Styled plain")
+        XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, baselineState)
+        XCTAssertEqual(harness.controller.activeSession?.currentStyle, .polished)
+        XCTAssertEqual(harness.controller.activeSession?.previousStyle, .casual)
         XCTAssertTrue(harness.transformer.transformRequests.isEmpty)
+        XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
 
     func testAllCapsPresentationIsPreserved() async {
@@ -168,7 +168,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
 
-    func testIdenticalTargetVariantLeavesCurrentStateUnchanged() async {
+    func testIdenticalTargetVariantCommitsTargetStateWithoutReplacement() async {
         let baselineState = DictationDeterministicState(
             paragraphsEnabled: false,
             listsEnabled: false
@@ -183,10 +183,24 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         )
 
         let outcome = await harness.controller.applyDeterministicChange(.lists)
+        let targetState = DictationDeterministicState(
+            paragraphsEnabled: false,
+            listsEnabled: true
+        )
 
         XCTAssertFalse(outcome.didApply)
-        XCTAssertEqual(outcome.effectiveState, baselineState)
-        XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, baselineState)
+        XCTAssertEqual(outcome.effectiveState, targetState)
+        XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, targetState)
+        XCTAssertEqual(harness.controller.activeSession?.sourceText, currentText)
+        XCTAssertEqual(
+            harness.controller.activeSession?.renderedDeterministicVariants[
+                MacDictationRenderedVariantKey(
+                    deterministicState: targetState,
+                    style: .none
+                )
+            ],
+            currentText
+        )
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
 

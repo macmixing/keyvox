@@ -36,7 +36,13 @@ struct OverlayPillOverlay<Content: View>: View {
             return
         }
 
-        withAnimation(.timingCurve(0.58, 0.0, 0.95, 0.32, duration: 0.18)) {
+        withAnimation(.timingCurve(
+            0.58,
+            0.0,
+            0.95,
+            0.32,
+            duration: VibePillPresentationMetrics.exitDuration
+        )) {
             overlayScale = VibePillPresentationMetrics.hiddenScale
             overlayOpacity = VibePillPresentationMetrics.hiddenOpacity
         }

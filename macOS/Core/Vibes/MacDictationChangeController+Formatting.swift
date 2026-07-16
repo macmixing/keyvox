@@ -28,11 +28,6 @@ extension MacDictationChangeController {
             )
         }
 
-        if vibesCoordinator.canUseVibes == false {
-            session.currentStyle = .none
-            session.previousStyle = nil
-        }
-
         let currentState = session.currentDeterministicState
         let targetState = deterministicVariantResolver.targetState(from: currentState, kind: kind)
         guard let deterministicText = session.deterministicVariants[targetState] else {
@@ -49,10 +44,6 @@ extension MacDictationChangeController {
                 style: .none
             )]
         )
-        guard replacementSourceText != session.sourceText else {
-            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
-        }
-
         guard let renderedText = await renderedText(
             for: targetState,
             sourceText: replacementSourceText,
@@ -62,16 +53,15 @@ extension MacDictationChangeController {
         }
 
         let displayedText = displayText(renderedText, for: session)
-        guard displayedText != session.currentText else {
-            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
-        }
-
-        guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedText) else {
-            activeSession = nil
-            return MacFormattingChangeOutcome(
-                didApply: false,
-                effectiveState: session.currentDeterministicState
-            )
+        let requiresReplacement = displayedText != session.currentText
+        if requiresReplacement {
+            guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedText) else {
+                activeSession = nil
+                return MacFormattingChangeOutcome(
+                    didApply: false,
+                    effectiveState: session.currentDeterministicState
+                )
+            }
         }
 
         session.sourceText = replacementSourceText
@@ -90,7 +80,10 @@ extension MacDictationChangeController {
         )] = renderedText
         activeSession = session
 
-        return MacFormattingChangeOutcome(didApply: true, effectiveState: targetState)
+        return MacFormattingChangeOutcome(
+            didApply: requiresReplacement,
+            effectiveState: targetState
+        )
     }
 
     private func renderedText(
@@ -109,6 +102,10 @@ extension MacDictationChangeController {
         guard session.currentStyle != .none else {
             session.renderedDeterministicVariants[key] = sourceText
             return sourceText
+        }
+
+        guard vibesCoordinator.canUseVibes else {
+            return nil
         }
 
         let result = await vibesCoordinator.transform(sourceText, style: session.currentStyle)
