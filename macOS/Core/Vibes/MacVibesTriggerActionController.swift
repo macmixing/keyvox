@@ -42,6 +42,12 @@ final class MacVibesTriggerActionController {
         pendingSingleTapWorkItem = nil
     }
 
+    func cancelTriggerInteraction() {
+        cancelPendingSingleTap()
+        triggerTapClassifier.reset()
+        triggerPressedAt = nil
+    }
+
     func shouldSuppressRecordingStartForPotentialDoubleTap(
         at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime
     ) -> Bool {

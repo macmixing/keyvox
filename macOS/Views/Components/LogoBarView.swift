@@ -5,19 +5,10 @@ import SwiftUI
 private let isDevModeOversized = false
 
 struct LogoBarView: View {
-    enum VibePillState {
-        case normal
-        case processing
-        case completed
-    }
-
     fileprivate enum Metrics {
         static let staticBaseSize: CGFloat = 44
         static let staticPhaseStep: Double = 0.1
         static let staticPhaseWrapPeriod: Double = .pi * 2
-
-        static let overlayContentPadding: CGFloat = 8
-        static let overlayShadowBleedPadding: CGFloat = 10
 
         static var overlayCircleSize: CGFloat {
             isDevModeOversized ? 300 : 50
@@ -30,9 +21,6 @@ struct LogoBarView: View {
         static var overlayBarWidth: CGFloat {
             isDevModeOversized ? 24 : 4
         }
-
-        static let vibePillWidth: CGFloat = 124
-        static let vibePillHeight: CGFloat = 44
     }
 
     private enum Presentation {
@@ -42,7 +30,6 @@ struct LogoBarView: View {
             timelineState: AudioIndicatorTimelineState,
             ringColor: Color
         )
-        case vibePill(title: String, state: VibePillState)
     }
 
     private let presentation: Presentation
@@ -66,24 +53,14 @@ struct LogoBarView: View {
         )
     }
 
-    init(vibeTitle: String, state: VibePillState = .normal) {
-        self.presentation = .vibePill(title: vibeTitle, state: state)
-    }
-
     static var panelSize: CGSize {
-        let renderedSize = Metrics.overlayCircleSize + (Metrics.overlayContentPadding * 2)
-        let paddedSize = renderedSize + (Metrics.overlayShadowBleedPadding * 2)
+        let renderedSize = Metrics.overlayCircleSize + (OverlayPresentationMetrics.contentPadding * 2)
+        let paddedSize = renderedSize + (OverlayPresentationMetrics.shadowBleedPadding * 2)
         return CGSize(width: paddedSize, height: paddedSize)
     }
 
-    static var vibePillPanelSize: CGSize {
-        let width = Metrics.vibePillWidth + (Metrics.overlayContentPadding * 2) + (Metrics.overlayShadowBleedPadding * 2)
-        let height = Metrics.vibePillHeight + (Metrics.overlayContentPadding * 2) + (Metrics.overlayShadowBleedPadding * 2)
-        return CGSize(width: width, height: height)
-    }
-
     static var panelEdgeInset: CGFloat {
-        Metrics.overlayShadowBleedPadding
+        OverlayPresentationMetrics.shadowBleedPadding
     }
 
     var body: some View {
@@ -98,8 +75,6 @@ struct LogoBarView: View {
                 timelineState: timelineState,
                 ringColor: ringColor
             )
-        case .vibePill(let title, let state):
-            VibePillLogoView(title: title, state: state)
         }
     }
 
@@ -117,142 +92,6 @@ struct LogoBarView: View {
     private func stopRippleAnimation() {
         rippleTimer?.invalidate()
         rippleTimer = nil
-    }
-}
-
-private struct VibePillLogoView: View {
-    let title: String
-    let state: LogoBarView.VibePillState
-
-    @State private var isPulsing = false
-    @State private var completionProgress = 0.0
-
-    private var isProcessing: Bool {
-        state == .processing
-    }
-
-    var body: some View {
-        HStack(spacing: 8) {
-            ZStack {
-                Image("vibes-logo")
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundStyle(Color.yellow.opacity(isProcessing ? (isPulsing ? 0.92 : 0.48) : 0))
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
-                    .scaleEffect(isProcessing && isPulsing ? 1.24 : 1.08)
-                    .blur(radius: isProcessing ? 4 : 0)
-
-                Image("vibes-logo")
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundStyle(.white)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
-                    .scaleEffect(isProcessing && isPulsing ? 1.08 : 0.96)
-            }
-            .frame(width: 30, height: 30)
-
-            Text(title)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(width: LogoBarView.Metrics.vibePillWidth, height: LogoBarView.Metrics.vibePillHeight)
-        .background(
-            Capsule()
-                .fill(Color.black.opacity(0.82))
-                .overlay(
-                    pillStroke
-                )
-                .shadow(color: MacAppTheme.accent.opacity(0.32), radius: 10)
-        )
-        .padding(LogoBarView.Metrics.overlayContentPadding)
-        .padding(LogoBarView.Metrics.overlayShadowBleedPadding)
-        .onAppear(perform: updateStateAnimation)
-        .onChange(of: state) { _ in
-            updateStateAnimation()
-        }
-    }
-
-    @ViewBuilder
-    private var pillStroke: some View {
-        switch state {
-        case .completed:
-            VibePillCompletionStroke(progress: 1)
-                .stroke(MacAppTheme.accent.opacity(0.68), lineWidth: 2)
-                .overlay(
-                    VibePillCompletionStroke(progress: completionProgress)
-                        .stroke(
-                            Color.yellow.opacity(0.92),
-                            style: StrokeStyle(lineWidth: 2, lineCap: .round)
-                        )
-                )
-        case .normal, .processing:
-            Capsule()
-                .stroke(MacAppTheme.accent.opacity(0.68), lineWidth: 2)
-        }
-    }
-
-    private func updateStateAnimation() {
-        switch state {
-        case .normal:
-            isPulsing = false
-            completionProgress = 0
-        case .processing:
-            completionProgress = 0
-            isPulsing = false
-
-            withAnimation(.easeInOut(duration: 0.62).repeatForever(autoreverses: true)) {
-                isPulsing = true
-            }
-        case .completed:
-            isPulsing = false
-            completionProgress = 0
-
-            withAnimation(.easeOut(duration: 0.46)) {
-                completionProgress = 1
-            }
-        }
-    }
-}
-
-private struct VibePillCompletionStroke: Shape {
-    var progress: Double
-
-    var animatableData: Double {
-        get { progress }
-        set { progress = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        let lineInset: CGFloat = 1
-        let rect = rect.insetBy(dx: lineInset, dy: lineInset)
-        let radius = rect.height / 2
-        let topCenter = CGPoint(x: rect.midX, y: rect.minY)
-
-        var path = Path()
-        path.move(to: topCenter)
-        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
-        path.addArc(
-            center: CGPoint(x: rect.maxX - radius, y: rect.midY),
-            radius: radius,
-            startAngle: .degrees(-90),
-            endAngle: .degrees(90),
-            clockwise: false
-        )
-        path.addLine(to: CGPoint(x: rect.minX + radius, y: rect.maxY))
-        path.addArc(
-            center: CGPoint(x: rect.minX + radius, y: rect.midY),
-            radius: radius,
-            startAngle: .degrees(90),
-            endAngle: .degrees(270),
-            clockwise: false
-        )
-        path.addLine(to: topCenter)
-
-        return path.trimmedPath(from: 0, to: progress)
     }
 }
 
@@ -308,8 +147,8 @@ private struct IndicatorLogoView: View {
                 }
             }
         }
-        .padding(LogoBarView.Metrics.overlayContentPadding)
-        .padding(LogoBarView.Metrics.overlayShadowBleedPadding)
+        .padding(OverlayPresentationMetrics.contentPadding)
+        .padding(OverlayPresentationMetrics.shadowBleedPadding)
     }
 }
 

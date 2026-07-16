@@ -35,6 +35,28 @@ extension TranscriptionManager {
         }
     }
 
+    func cancelRecordingForFormattingShortcut(completion: @escaping () -> Void) {
+        triggerController.cancelDeferredRecordingStart()
+        let stopRequestID = UUID()
+        stopRequestedAt = Date()
+        activeStopRequestID = stopRequestID
+        activeStopRequestPurpose = .formattingShortcutCancellation
+        state = .stopping
+        isLocked = true
+
+        audioRecorder.stopRecording { [weak self] _ in
+            guard let self else { return }
+            guard self.activeStopRequestID == stopRequestID else { return }
+            self.isLocked = false
+            self.stopRequestedAt = nil
+            self.activeStopRequestID = nil
+            self.activeStopRequestPurpose = nil
+            self.state = .idle
+            self.updateOverlayHandsFreeVisualState()
+            completion()
+        }
+    }
+
     func startRecording() {
         guard case .idle = state else { return }
         triggerController.cancelDeferredRecordingStart()
@@ -49,6 +71,7 @@ extension TranscriptionManager {
             WarningManager.shared.show(.accessibilityPermission)
             return
         }
+        formattingShortcutMonitor.startMonitoringIfAuthorized()
 
         vibeTriggerActionController.cancelPendingSingleTap()
         playSound(named: "Morse") // Start sound

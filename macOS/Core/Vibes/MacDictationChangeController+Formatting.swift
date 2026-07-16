@@ -1,0 +1,126 @@
+import Foundation
+import KeyVoxCore
+import KeyVoxStyleRewrite
+
+extension MacDictationChangeController {
+    func applyDeterministicChange(
+        _ kind: DictationDeterministicControlKind
+    ) async -> MacFormattingChangeOutcome {
+        guard isApplyingChange == false else {
+            return MacFormattingChangeOutcome(
+                didApply: false,
+                effectiveState: activeSession?.currentDeterministicState
+            )
+        }
+
+        isApplyingChange = true
+        defer { isApplyingChange = false }
+
+        guard var session = activeSession else {
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: nil)
+        }
+
+        guard pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
+            activeSession = nil
+            return MacFormattingChangeOutcome(
+                didApply: false,
+                effectiveState: session.currentDeterministicState
+            )
+        }
+
+        if vibesCoordinator.canUseVibes == false {
+            session.currentStyle = .none
+            session.previousStyle = nil
+        }
+
+        let currentState = session.currentDeterministicState
+        let targetState = deterministicVariantResolver.targetState(from: currentState, kind: kind)
+        guard let deterministicText = session.deterministicVariants[targetState] else {
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
+        }
+
+        let replacementSourceText = deterministicVariantResolver.sourceText(
+            for: targetState,
+            deterministicText: deterministicText,
+            currentState: currentState,
+            currentSourceText: session.sourceText,
+            renderedTextForTargetState: session.renderedDeterministicVariants[MacDictationRenderedVariantKey(
+                deterministicState: targetState,
+                style: .none
+            )]
+        )
+        guard replacementSourceText != session.sourceText else {
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
+        }
+
+        guard let renderedText = await renderedText(
+            for: targetState,
+            sourceText: replacementSourceText,
+            session: &session
+        ) else {
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
+        }
+
+        let displayedText = displayText(renderedText, for: session)
+        guard displayedText != session.currentText else {
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: currentState)
+        }
+
+        guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedText) else {
+            activeSession = nil
+            return MacFormattingChangeOutcome(
+                didApply: false,
+                effectiveState: session.currentDeterministicState
+            )
+        }
+
+        session.sourceText = replacementSourceText
+        session.originalText = replacementSourceText
+        session.currentText = displayedText
+        session.currentDeterministicState = targetState
+        session.variants = [.none: replacementSourceText]
+        session.variants[session.currentStyle] = renderedText
+        session.renderedDeterministicVariants[MacDictationRenderedVariantKey(
+            deterministicState: targetState,
+            style: .none
+        )] = replacementSourceText
+        session.renderedDeterministicVariants[MacDictationRenderedVariantKey(
+            deterministicState: targetState,
+            style: session.currentStyle
+        )] = renderedText
+        activeSession = session
+
+        return MacFormattingChangeOutcome(didApply: true, effectiveState: targetState)
+    }
+
+    private func renderedText(
+        for targetState: DictationDeterministicState,
+        sourceText: String,
+        session: inout MacDictationChangeSession
+    ) async -> String? {
+        let key = MacDictationRenderedVariantKey(
+            deterministicState: targetState,
+            style: session.currentStyle
+        )
+        if let cachedText = session.renderedDeterministicVariants[key] {
+            return cachedText
+        }
+
+        guard session.currentStyle != .none else {
+            session.renderedDeterministicVariants[key] = sourceText
+            return sourceText
+        }
+
+        let result = await vibesCoordinator.transform(sourceText, style: session.currentStyle)
+        let replacementText = deterministicTextFormatter.textAdjustedForDeterministicState(
+            result.finalText,
+            state: targetState
+        )
+        guard replacementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+            return nil
+        }
+
+        session.renderedDeterministicVariants[key] = replacementText
+        return replacementText
+    }
+}

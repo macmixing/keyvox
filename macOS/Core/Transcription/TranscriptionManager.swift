@@ -21,6 +21,7 @@ class TranscriptionManager: ObservableObject {
 
     enum StopRequestPurpose {
         case quickTapCancellation
+        case formattingShortcutCancellation
         case transcription
     }
 
@@ -43,6 +44,16 @@ class TranscriptionManager: ObservableObject {
         vibesCoordinator: vibesCoordinator,
         dictationChangeController: dictationChangeController
     )
+    lazy var formattingTriggerActionController = MacFormattingTriggerActionController(
+        appSettings: appSettings,
+        dictationChangeController: dictationChangeController,
+        vibesCoordinator: vibesCoordinator
+    )
+    lazy var formattingShortcutMonitor = MacFormattingShortcutMonitor(
+        appSettings: appSettings
+    ) { [weak self] kind in
+        self?.triggerController.handleFormattingShortcut(kind)
+    }
     lazy var triggerController = DictationTriggerController(delegate: self)
     lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: provider,
@@ -174,5 +185,17 @@ extension TranscriptionManager: DictationTriggerControllerDelegate {
 
     func triggerCancelQuickTapRecording() {
         cancelQuickTapRecording()
+    }
+
+    func triggerCancelRecordingForFormattingShortcut(completion: @escaping () -> Void) {
+        cancelRecordingForFormattingShortcut(completion: completion)
+    }
+
+    func triggerPresentFormattingProcessing(_ kind: DictationDeterministicControlKind) {
+        formattingTriggerActionController.presentProcessing(kind)
+    }
+
+    func triggerPerformFormatting(_ kind: DictationDeterministicControlKind) async {
+        await formattingTriggerActionController.perform(kind)
     }
 }

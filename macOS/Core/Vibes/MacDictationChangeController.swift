@@ -4,30 +4,24 @@ import KeyVoxStyleRewrite
 
 @MainActor
 final class MacDictationChangeController {
-    private struct Session {
-        let sourceText: String
-        let originalText: String
-        var currentText: String
-        var currentStyle: StyleRewriteStyle
-        var previousStyle: StyleRewriteStyle?
-        var variants: [StyleRewriteStyle: String]
-    }
+    let pasteService: any MacDictationInsertionReplacing
+    let vibesCoordinator: MacVibesCoordinator
+    let deterministicVariantResolver = DictationDeterministicVariantResolver()
+    let deterministicTextFormatter = DictationDeterministicTextFormatter()
 
-    private let pasteService: PasteService
-    private let vibesCoordinator: MacVibesCoordinator
-    private var activeSession: Session?
-    private var isApplyingChange = false
+    var activeSession: MacDictationChangeSession?
+    var isApplyingChange = false
 
     var currentStyle: StyleRewriteStyle {
         activeSession?.currentStyle ?? .none
     }
 
     convenience init(vibesCoordinator: MacVibesCoordinator) {
-        self.init(pasteService: .shared, vibesCoordinator: vibesCoordinator)
+        self.init(pasteService: PasteService.shared, vibesCoordinator: vibesCoordinator)
     }
 
     init(
-        pasteService: PasteService,
+        pasteService: any MacDictationInsertionReplacing,
         vibesCoordinator: MacVibesCoordinator
     ) {
         self.pasteService = pasteService
@@ -37,15 +31,44 @@ final class MacDictationChangeController {
     func recordInsertedDictation(_ result: DictationPipelineResult) {
         let selectedStyle = result.textTransformationStyleIdentifier.flatMap(StyleRewriteStyle.init(rawValue:)) ?? .none
         var variants: [StyleRewriteStyle: String] = [.none: result.baseText]
-        variants[selectedStyle] = result.finalText
+        variants[selectedStyle] = result.uncappedFinalText
 
-        activeSession = Session(
+        let baselineState = DictationDeterministicState(
+            paragraphsEnabled: result.baseParagraphsEnabled,
+            listsEnabled: result.baseListsEnabled
+        )
+        var deterministicVariants: [DictationDeterministicState: String] = [:]
+        for variant in result.deterministicVariants {
+            deterministicVariants[DictationDeterministicState(
+                paragraphsEnabled: variant.paragraphsEnabled,
+                listsEnabled: variant.listsEnabled
+            )] = variant.text
+        }
+        var renderedDeterministicVariants: [MacDictationRenderedVariantKey: String] = [
+            MacDictationRenderedVariantKey(
+                deterministicState: baselineState,
+                style: .none
+            ): result.baseText,
+        ]
+        renderedDeterministicVariants[MacDictationRenderedVariantKey(
+            deterministicState: baselineState,
+            style: selectedStyle
+        )] = result.uncappedFinalText
+        let displaysAllCaps = result.finalText == result.uncappedFinalText.uppercased()
+            && result.finalText != result.uncappedFinalText
+
+        activeSession = MacDictationChangeSession(
             sourceText: result.baseText,
             originalText: result.baseText,
             currentText: result.finalText,
             currentStyle: selectedStyle,
             previousStyle: nil,
-            variants: variants
+            variants: variants,
+            baselineDeterministicState: baselineState,
+            currentDeterministicState: baselineState,
+            deterministicVariants: deterministicVariants,
+            renderedDeterministicVariants: renderedDeterministicVariants,
+            displaysAllCaps: displaysAllCaps
         )
     }
 
@@ -90,16 +113,21 @@ final class MacDictationChangeController {
             return false
         }
 
-        guard pasteService.replaceUntouchedInsertion(session.currentText, with: replacementText) else {
+        let displayedReplacementText = displayText(replacementText, for: session)
+        guard pasteService.replaceUntouchedInsertion(session.currentText, with: displayedReplacementText) else {
             activeSession = nil
             log("apply skipped reason=replace-failed")
             return false
         }
 
-        session.currentText = replacementText
+        session.currentText = displayedReplacementText
         session.previousStyle = session.currentStyle
         session.currentStyle = targetStyle
         session.variants[targetStyle] = replacementText
+        session.renderedDeterministicVariants[MacDictationRenderedVariantKey(
+            deterministicState: session.currentDeterministicState,
+            style: targetStyle
+        )] = replacementText
         activeSession = session
         log(
             "apply succeeded style=\(targetStyle.styleIdentifier)" +
@@ -108,7 +136,7 @@ final class MacDictationChangeController {
         return true
     }
 
-    private func targetStyle(for session: Session) -> StyleRewriteStyle? {
+    private func targetStyle(for session: MacDictationChangeSession) -> StyleRewriteStyle? {
         let selectedStyle = vibesCoordinator.selectedVibe
         if selectedStyle == session.currentStyle {
             if let previousStyle = session.previousStyle {
@@ -122,11 +150,14 @@ final class MacDictationChangeController {
 
     private func replacementText(
         for targetStyle: StyleRewriteStyle,
-        session: inout Session,
+        session: inout MacDictationChangeSession,
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> String? {
-        if let cachedText = session.variants[targetStyle] {
+        if let cachedText = session.renderedDeterministicVariants[MacDictationRenderedVariantKey(
+            deterministicState: session.currentDeterministicState,
+            style: targetStyle
+        )] {
             log(
                 "replacement cached style=\(targetStyle.styleIdentifier)" +
                 rawTextDebugField("finalText", cachedText)
@@ -154,6 +185,31 @@ final class MacDictationChangeController {
 
         session.variants[targetStyle] = result.finalText
         return result.finalText
+    }
+
+    func proposedFormattingEnabled(_ kind: DictationDeterministicControlKind) -> Bool? {
+        guard let activeSession else { return nil }
+        let target = deterministicVariantResolver.targetState(
+            from: activeSession.currentDeterministicState,
+            kind: kind
+        )
+        return formattingEnabled(kind, in: target)
+    }
+
+    func formattingEnabled(
+        _ kind: DictationDeterministicControlKind,
+        in state: DictationDeterministicState
+    ) -> Bool {
+        switch kind {
+        case .paragraphs:
+            return state.paragraphsEnabled
+        case .lists:
+            return state.listsEnabled
+        }
+    }
+
+    func displayText(_ text: String, for session: MacDictationChangeSession) -> String {
+        session.displaysAllCaps ? text.uppercased() : text
     }
 
     private func log(_ message: @autoclosure () -> String) {
