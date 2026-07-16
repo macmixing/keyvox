@@ -14,6 +14,7 @@ class PasteService {
     private let axInspector: PasteAXInspecting
     private let accessibilityInjector: PasteAccessibilityInjecting
     private let untouchedInsertionReplacer: PasteUntouchedInsertionReplacing
+    private let untouchedInsertionAuthorizer: PasteUntouchedInsertionAuthorizer
     private let menuFallbackExecutor: PasteMenuFallbackExecuting
     private let menuFallbackCoordinator: PasteMenuFallbackCoordinating
     private let dictionaryCasingStore: PasteDictionaryCasingStore
@@ -43,10 +44,14 @@ class PasteService {
         spacingHeuristics: PasteSpacingHeuristicApplying? = nil,
         untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) {
+        let resolvedFrontmostAppIdentityProvider = frontmostAppIdentityProvider
+            ?? { PasteService.defaultFrontmostAppIdentity() }
+        let resolvedUntouchedInsertionReplacer = untouchedInsertionReplacer
+            ?? PasteUntouchedInsertionReplacer(axInspector: axInspector)
+
         self.pasteQueue = pasteQueue
         self.restoreDelayAfterMenuFallback = restoreDelayAfterMenuFallback
-        self.frontmostAppIdentityProvider = frontmostAppIdentityProvider
-            ?? { PasteService.defaultFrontmostAppIdentity() }
+        self.frontmostAppIdentityProvider = resolvedFrontmostAppIdentityProvider
         self.clockNow = clockNow
         self.clipboardAdapter = clipboardAdapter
         self.failureRecoveryController = failureRecoveryController
@@ -54,8 +59,12 @@ class PasteService {
         self.axInspector = axInspector
         self.accessibilityInjector = accessibilityInjector
             ?? PasteAccessibilityInjector(axInspector: axInspector)
-        self.untouchedInsertionReplacer = untouchedInsertionReplacer
-            ?? PasteUntouchedInsertionReplacer(axInspector: axInspector)
+        self.untouchedInsertionReplacer = resolvedUntouchedInsertionReplacer
+        self.untouchedInsertionAuthorizer = PasteUntouchedInsertionAuthorizer(
+            axInspector: axInspector,
+            replacer: resolvedUntouchedInsertionReplacer,
+            appIdentityProvider: resolvedFrontmostAppIdentityProvider
+        )
         self.menuFallbackExecutor = menuFallbackExecutor
             ?? PasteMenuFallbackExecutor(
                 axInspector: axInspector,
@@ -118,6 +127,7 @@ class PasteService {
         #endif
 
         pasteQueue.async {
+            self.untouchedInsertionAuthorizer.invalidate()
             let injectionOutcome = self.accessibilityInjector.injectTextViaAccessibility(insertionText)
             let accessibilityDecision = PasteAccessibilityExecutionDecision.from(injectionOutcome)
 
@@ -210,18 +220,17 @@ class PasteService {
     }
 
     private func currentTextMatchesUntouchedInsertionOnPasteQueue(_ text: String) -> Bool {
-        guard currentAppMatchesLastInsertion() else { return false }
-        return untouchedInsertionReplacer.target(for: text) != nil
+        untouchedInsertionAuthorizer.authorization(for: text) != nil
     }
 
     private func replaceUntouchedInsertionOnPasteQueue(
         _ currentText: String,
         with replacementText: String
     ) -> Bool {
-        guard currentAppMatchesLastInsertion(),
-              let target = untouchedInsertionReplacer.target(for: currentText) else {
+        guard let token = untouchedInsertionAuthorizer.authorization(for: currentText) else {
             return false
         }
+        let target = token.target
 
         switch untouchedInsertionReplacer.replace(
             currentText,
@@ -229,21 +238,30 @@ class PasteService {
             target: target
         ) {
         case .succeeded:
-            rememberSuccessfulInsertion(of: replacementText, in: frontmostAppIdentity())
+            rememberSuccessfulReplacement(of: replacementText, authorizedBy: token)
             return true
         case .menuFallbackAllowed:
-            let didReplace = replaceSelectedRangeViaMenuFallback(replacementText)
+            guard frontmostAppIdentity()?.pid == token.appIdentity.pid else {
+                untouchedInsertionAuthorizer.invalidate()
+                return false
+            }
+            let didReplace = replaceSelectedRangeViaMenuFallback(
+                replacementText,
+                targetAppIdentity: token.appIdentity
+            )
             if didReplace {
                 untouchedInsertionReplacer.finalizeMenuFallbackReplacement(
                     replacementText,
                     target: target
                 )
-                rememberSuccessfulInsertion(of: replacementText, in: frontmostAppIdentity())
+                rememberSuccessfulReplacement(of: replacementText, authorizedBy: token)
                 return true
             }
             untouchedInsertionReplacer.moveCaretToEnd(of: currentText, target: target)
+            untouchedInsertionAuthorizer.invalidate()
             return false
         case .failed:
+            untouchedInsertionAuthorizer.invalidate()
             return false
         }
     }
@@ -275,24 +293,23 @@ class PasteService {
         return lhs.pid == rhs.pid
     }
 
-    private func currentAppMatchesLastInsertion() -> Bool {
-        guard let currentIdentity = frontmostAppIdentity(),
-              let lastInsertionAppIdentity else {
-            return false
-        }
-        return appIdentityMatches(currentIdentity, lastInsertionAppIdentity)
-    }
-
-    private func replaceSelectedRangeViaMenuFallback(_ replacementText: String) -> Bool {
+    private func replaceSelectedRangeViaMenuFallback(
+        _ replacementText: String,
+        targetAppIdentity: PasteAppIdentity
+    ) -> Bool {
         let savedSnapshot = clipboardAdapter.captureSnapshot()
         clipboardAdapter.setString(replacementText)
 
         let fallbackResult = menuFallbackCoordinator.executeMenuFallback(
             insertionText: replacementText,
             didAccessibilityInsertText: true,
-            targetAppIdentity: frontmostAppIdentity(),
+            targetAppIdentity: targetAppIdentity,
             menuFallbackExecutor: menuFallbackExecutor,
-            shouldTrustMenuSuccessWithoutAXVerification: { self.shouldTrustMenuSuccessWithoutAXVerification() },
+            shouldTrustMenuSuccessWithoutAXVerification: {
+                PastePolicies.shouldTrustMenuSuccessWithoutAXVerification(
+                    bundleID: targetAppIdentity.bundleID
+                )
+            },
             setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
             typeLeadingSpacesOnMainThread: { self.typeLeadingSpacesOnMainThread(count: $0) }
         )
@@ -309,6 +326,18 @@ class PasteService {
         lastInsertionAt = clockNow()
         lastInsertedTrailingCharacter = text.last
         lastInsertedTrailingNonWhitespaceCharacter = text.last { !$0.isWhitespace }
+        untouchedInsertionAuthorizer.recordInsertion(text, appIdentity: appIdentity)
+    }
+
+    private func rememberSuccessfulReplacement(
+        of text: String,
+        authorizedBy token: PasteUntouchedInsertionToken
+    ) {
+        lastInsertionAppIdentity = token.appIdentity
+        lastInsertionAt = clockNow()
+        lastInsertedTrailingCharacter = text.last
+        lastInsertedTrailingNonWhitespaceCharacter = text.last { !$0.isWhitespace }
+        untouchedInsertionAuthorizer.recordReplacement(text, authorizedBy: token)
     }
 
     private func cancelActiveRecoveryOnMainThread() {

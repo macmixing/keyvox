@@ -133,6 +133,7 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
     private let result: PasteMenuFallbackExecutionResult
     private(set) var executeCalls = 0
     private(set) var executionThreadWasMain: [Bool] = []
+    private(set) var targetAppIdentities: [PasteAppIdentity?] = []
 
     init(result: PasteMenuFallbackExecutionResult) {
         self.result = result
@@ -149,13 +150,13 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
     ) -> PasteMenuFallbackExecutionResult {
         _ = insertionText
         _ = didAccessibilityInsertText
-        _ = targetAppIdentity
         _ = menuFallbackExecutor
         _ = shouldTrustMenuSuccessWithoutAXVerification
         _ = setClipboardStringOnMainThread
         _ = typeLeadingSpacesOnMainThread
         executeCalls += 1
         executionThreadWasMain.append(Thread.isMainThread)
+        targetAppIdentities.append(targetAppIdentity)
         return result
     }
 }
@@ -163,20 +164,36 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
 final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
     let replacementOutcome: PasteUntouchedInsertionReplacementOutcome
     private let element = AXUIElementCreateApplication(getpid())
+    private let stateLock = NSLock()
+    private var targetRangeLocation = 0
+    private let onReplace: (() -> Void)?
     private(set) var targetThreadWasMain: [Bool] = []
     private(set) var replaceThreadWasMain: [Bool] = []
     private(set) var finalizeThreadWasMain: [Bool] = []
     private(set) var moveCaretThreadWasMain: [Bool] = []
 
-    init(replacementOutcome: PasteUntouchedInsertionReplacementOutcome) {
+    init(
+        replacementOutcome: PasteUntouchedInsertionReplacementOutcome,
+        onReplace: (() -> Void)? = nil
+    ) {
         self.replacementOutcome = replacementOutcome
+        self.onReplace = onReplace
+    }
+
+    func updateTargetRangeLocation(_ location: Int) {
+        stateLock.lock()
+        targetRangeLocation = location
+        stateLock.unlock()
     }
 
     func target(for text: String) -> PasteUntouchedInsertionTarget? {
         targetThreadWasMain.append(Thread.isMainThread)
+        stateLock.lock()
+        let location = targetRangeLocation
+        stateLock.unlock()
         return PasteUntouchedInsertionTarget(
             element: element,
-            range: CFRange(location: 0, length: (text as NSString).length)
+            range: CFRange(location: location, length: (text as NSString).length)
         )
     }
 
@@ -189,6 +206,7 @@ final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionRep
         _ = replacementText
         _ = target
         replaceThreadWasMain.append(Thread.isMainThread)
+        onReplace?()
         return replacementOutcome
     }
 
@@ -246,6 +264,15 @@ final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
 }
 
 final class MockAXInspector: PasteAXInspecting {
+    private let stateLock = NSLock()
+    private var selectedRangeValue = CFRange(location: 0, length: 0)
+
+    func updateSelectedRange(_ range: CFRange) {
+        stateLock.lock()
+        selectedRangeValue = range
+        stateLock.unlock()
+    }
+
     func focusedInsertionContext() -> PasteInsertionContext? { nil }
     func focusedUIElement() -> AXUIElement? { nil }
     func roleString(for element: AXUIElement) -> String? {
@@ -254,7 +281,10 @@ final class MockAXInspector: PasteAXInspecting {
     }
     func selectedRange(for element: AXUIElement) -> CFRange? {
         _ = element
-        return nil
+        stateLock.lock()
+        let range = selectedRangeValue
+        stateLock.unlock()
+        return range
     }
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? {
         _ = range
@@ -300,5 +330,27 @@ final class MutableDateSequence {
             return Date()
         }
         return dates.removeFirst()
+    }
+}
+
+final class MutablePasteAppIdentityProvider {
+    private let stateLock = NSLock()
+    private var identity: PasteAppIdentity?
+
+    init(_ identity: PasteAppIdentity?) {
+        self.identity = identity
+    }
+
+    func current() -> PasteAppIdentity? {
+        stateLock.lock()
+        let currentIdentity = identity
+        stateLock.unlock()
+        return currentIdentity
+    }
+
+    func update(_ identity: PasteAppIdentity?) {
+        stateLock.lock()
+        self.identity = identity
+        stateLock.unlock()
     }
 }

@@ -294,8 +294,139 @@ final class PasteServiceExecutionTests: XCTestCase {
 
         XCTAssertTrue(didMatch)
         XCTAssertTrue(didReplace)
-        XCTAssertEqual(replacer.targetThreadWasMain, [false, false])
+        XCTAssertEqual(replacer.targetThreadWasMain, [false, false, false, false])
         XCTAssertEqual(replacer.replaceThreadWasMain, [false])
+    }
+
+    func testUntouchedInsertionRejectsRelaunchedProcessWithSameBundleIdentifier() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let identityProvider = MutablePasteAppIdentityProvider(
+            PasteAppIdentity(bundleID: "com.example.app", pid: 99)
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            frontmostAppIdentityProvider: identityProvider.current,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        identityProvider.update(PasteAppIdentity(bundleID: "com.example.app", pid: 100))
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertFalse(didMatch)
+        XCTAssertEqual(replacer.targetThreadWasMain, [false])
+    }
+
+    func testUntouchedInsertionRejectsMatchingTextAtDifferentTargetRange() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        replacer.updateTargetRangeLocation(8)
+
+        let didMatchMovedTarget = await service.currentTextMatchesUntouchedInsertion("α")
+        replacer.updateTargetRangeLocation(0)
+        let didMatchAfterInvalidation = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertFalse(didMatchMovedTarget)
+        XCTAssertFalse(didMatchAfterInvalidation)
+        XCTAssertEqual(replacer.targetThreadWasMain, [false, false])
+    }
+
+    func testUntouchedInsertionRejectsChangedSelectionAtOriginalTarget() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let inspector = MockAXInspector()
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        inspector.updateSelectedRange(CFRange(location: 1, length: 0))
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertFalse(didMatch)
+    }
+
+    func testSuccessfulReplacementRetainsAuthorizedAppIdentity() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let spacing = MockSpacingHeuristics()
+        let identityProvider = MutablePasteAppIdentityProvider(
+            PasteAppIdentity(bundleID: "com.example.app", pid: 99)
+        )
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .succeeded,
+            onReplace: {
+                identityProvider.update(PasteAppIdentity(bundleID: "com.example.app", pid: 100))
+            }
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: spacing,
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            frontmostAppIdentityProvider: identityProvider.current,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "β")
+        service.pasteText("next")
+        try await waitForCondition { clipboard.restoreCalls == 2 }
+
+        XCTAssertTrue(didReplace)
+        XCTAssertEqual(spacing.inputs.last?.lastInsertionAppIdentity?.pid, 99)
     }
 
     func testUntouchedInsertionFallbackAndCaretRecoveryRunOffMainThread() async throws {
@@ -325,11 +456,51 @@ final class PasteServiceExecutionTests: XCTestCase {
         let didReplace = await service.replaceUntouchedInsertion("α", with: "β")
 
         XCTAssertFalse(didReplace)
-        XCTAssertEqual(replacer.targetThreadWasMain, [false])
+        XCTAssertEqual(replacer.targetThreadWasMain, [false, false])
         XCTAssertEqual(replacer.replaceThreadWasMain, [false])
         XCTAssertEqual(coordinator.executionThreadWasMain, [false])
+        XCTAssertEqual(coordinator.targetAppIdentities.compactMap { $0 }.first?.pid, 99)
         XCTAssertEqual(replacer.moveCaretThreadWasMain, [false])
         XCTAssertTrue(replacer.finalizeThreadWasMain.isEmpty)
+    }
+
+    func testUntouchedInsertionFallbackStopsWhenAuthorizedProcessLosesFocus() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: true,
+            menuAttempt: .actionSucceeded,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let identityProvider = MutablePasteAppIdentityProvider(
+            PasteAppIdentity(bundleID: "com.example.app", pid: 99)
+        )
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .menuFallbackAllowed,
+            onReplace: {
+                identityProvider.update(PasteAppIdentity(bundleID: "com.example.other", pid: 100))
+            }
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0,
+            frontmostAppIdentityProvider: identityProvider.current,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "β")
+
+        XCTAssertFalse(didReplace)
+        XCTAssertEqual(coordinator.executeCalls, 0)
+        XCTAssertTrue(replacer.finalizeThreadWasMain.isEmpty)
+        XCTAssertTrue(replacer.moveCaretThreadWasMain.isEmpty)
     }
 
     func testExecutionPlanBuildsExpectedBranchOutcomes() {
@@ -406,6 +577,10 @@ final class PasteServiceExecutionTests: XCTestCase {
         coordinator: MockMenuFallbackCoordinator,
         restoreDelayAfterMenuFallback: TimeInterval,
         clockNow: @escaping () -> Date = Date.init,
+        frontmostAppIdentityProvider: @escaping () -> PasteAppIdentity? = {
+            PasteAppIdentity(bundleID: "com.example.app", pid: 99)
+        },
+        axInspector: MockAXInspector = MockAXInspector(),
         untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) throws -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
@@ -416,11 +591,11 @@ final class PasteServiceExecutionTests: XCTestCase {
             restoreDelayAfterMenuFallback: restoreDelayAfterMenuFallback,
             menuFallbackVerificationTimeout: 0.01,
             menuFallbackVerificationPollInterval: 0.001,
-            frontmostAppIdentityProvider: { PasteAppIdentity(bundleID: "com.example.app", pid: 99) },
+            frontmostAppIdentityProvider: frontmostAppIdentityProvider,
             clockNow: clockNow,
             clipboardAdapter: clipboard,
             failureRecoveryController: recovery,
-            axInspector: MockAXInspector(),
+            axInspector: axInspector,
             accessibilityInjector: injector,
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
