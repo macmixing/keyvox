@@ -322,7 +322,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         previousStyle: StyleRewriteStyle? = nil,
         sourceText: String? = nil,
         currentText: String? = nil,
-        renderedVariants: [MacDictationRenderedVariantKey: String] = [:],
+        renderedVariants: [MacDictationRenderedVariantKey: String]? = nil,
         displaysAllCaps: Bool = false,
         modelIsReady: Bool = true,
         deterministicVariants: [DictationDeterministicState: String]? = nil
@@ -330,7 +330,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         let harness = makeHarnessWithoutSession(modelIsReady: modelIsReady)
         let sourceText = sourceText ?? text(for: state)
         let displayedText = currentText ?? sourceText
-        var cachedVariants = renderedVariants
+        var cachedVariants = renderedVariants ?? [:]
         cachedVariants[MacDictationRenderedVariantKey(
             deterministicState: state,
             style: .none

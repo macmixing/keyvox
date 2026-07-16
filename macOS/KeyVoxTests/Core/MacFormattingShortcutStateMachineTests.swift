@@ -4,6 +4,7 @@ import KeyVoxCore
 import XCTest
 @testable import KeyVox
 
+@MainActor
 final class MacFormattingShortcutStateMachineTests: XCTestCase {
     func testEveryTriggerBindingRecognizesListAndParagraphKeys() {
         for trigger in triggerCases {
