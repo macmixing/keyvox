@@ -13,6 +13,7 @@ class PasteService {
 
     private let axInspector: PasteAXInspecting
     private let accessibilityInjector: PasteAccessibilityInjecting
+    private let untouchedInsertionReplacer: PasteUntouchedInsertionReplacing
     private let menuFallbackExecutor: PasteMenuFallbackExecuting
     private let menuFallbackCoordinator: PasteMenuFallbackCoordinating
     private let dictionaryCasingStore: PasteDictionaryCasingStore
@@ -39,7 +40,8 @@ class PasteService {
         menuFallbackCoordinator: PasteMenuFallbackCoordinating = PasteMenuFallbackCoordinator(),
         dictionaryCasingStore: PasteDictionaryCasingStore = PasteDictionaryCasingStore(),
         capitalizationHeuristics: PasteCapitalizationHeuristicApplying? = nil,
-        spacingHeuristics: PasteSpacingHeuristicApplying? = nil
+        spacingHeuristics: PasteSpacingHeuristicApplying? = nil,
+        untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) {
         self.pasteQueue = pasteQueue
         self.restoreDelayAfterMenuFallback = restoreDelayAfterMenuFallback
@@ -52,6 +54,8 @@ class PasteService {
         self.axInspector = axInspector
         self.accessibilityInjector = accessibilityInjector
             ?? PasteAccessibilityInjector(axInspector: axInspector)
+        self.untouchedInsertionReplacer = untouchedInsertionReplacer
+            ?? PasteUntouchedInsertionReplacer(axInspector: axInspector)
         self.menuFallbackExecutor = menuFallbackExecutor
             ?? PasteMenuFallbackExecutor(
                 axInspector: axInspector,
@@ -194,43 +198,39 @@ class PasteService {
 
     // MARK: - Latest Insertion Replacement
     func currentTextMatchesUntouchedInsertion(_ text: String) -> Bool {
-        focusedReplacementRange(for: text) != nil
+        guard currentAppMatchesLastInsertion() else { return false }
+        return untouchedInsertionReplacer.target(for: text) != nil
     }
 
     func replaceUntouchedInsertion(_ currentText: String, with replacementText: String) -> Bool {
-        guard let replacement = focusedReplacementRange(for: currentText) else {
+        guard currentAppMatchesLastInsertion(),
+              let target = untouchedInsertionReplacer.target(for: currentText) else {
             return false
         }
 
-        guard setSelectedRange(replacement.range, for: replacement.element) else {
-            return false
-        }
-
-        if replaceSelectedRangeViaAccessibility(
-            replacement.range,
+        switch untouchedInsertionReplacer.replace(
+            currentText,
             with: replacementText,
-            in: replacement.element
+            target: target
         ) {
+        case .succeeded:
             rememberSuccessfulInsertion(of: replacementText, in: frontmostAppIdentity())
             return true
+        case .menuFallbackAllowed:
+            let didReplace = replaceSelectedRangeViaMenuFallback(replacementText)
+            if didReplace {
+                untouchedInsertionReplacer.finalizeMenuFallbackReplacement(
+                    replacementText,
+                    target: target
+                )
+                rememberSuccessfulInsertion(of: replacementText, in: frontmostAppIdentity())
+                return true
+            }
+            untouchedInsertionReplacer.moveCaretToEnd(of: currentText, target: target)
+            return false
+        case .failed:
+            return false
         }
-
-        if replaceSelectedRangeViaMenuFallback(replacementText) {
-            let replacementEndRange = CFRange(
-                location: replacement.range.location + (replacementText as NSString).length,
-                length: 0
-            )
-            _ = setSelectedRange(replacementEndRange, for: replacement.element)
-            rememberSuccessfulInsertion(of: replacementText, in: frontmostAppIdentity())
-            return true
-        }
-
-        let originalCaretRange = CFRange(
-            location: replacement.range.location + replacement.range.length,
-            length: 0
-        )
-        _ = setSelectedRange(originalCaretRange, for: replacement.element)
-        return false
     }
 
     // MARK: - Heuristic Identity / Memory
@@ -252,84 +252,12 @@ class PasteService {
         return lhs.pid == rhs.pid
     }
 
-    private func focusedReplacementRange(for text: String) -> (element: AXUIElement, range: CFRange)? {
-        guard text.isEmpty == false,
-              let focusedElement = axInspector.focusedUIElement(),
-              let selectedRange = axInspector.selectedRange(for: focusedElement),
-              selectedRange.length == 0 else {
-            return nil
-        }
-
+    private func currentAppMatchesLastInsertion() -> Bool {
         guard let currentIdentity = frontmostAppIdentity(),
-              let lastInsertionAppIdentity,
-              appIdentityMatches(currentIdentity, lastInsertionAppIdentity) else {
-            return nil
-        }
-
-        let textLength = (text as NSString).length
-        guard textLength > 0, selectedRange.location >= textLength else {
-            return nil
-        }
-
-        let candidateRange = CFRange(
-            location: selectedRange.location - textLength,
-            length: textLength
-        )
-        guard axInspector.stringForRange(candidateRange, element: focusedElement) == text else {
-            return nil
-        }
-
-        return (focusedElement, candidateRange)
-    }
-
-    private func replaceSelectedRangeViaAccessibility(
-        _ range: CFRange,
-        with replacementText: String,
-        in element: AXUIElement
-    ) -> Bool {
-        guard AXUIElementSetAttributeValue(
-            element,
-            kAXSelectedTextAttribute as CFString,
-            replacementText as CFTypeRef
-        ) == .success else {
+              let lastInsertionAppIdentity else {
             return false
         }
-
-        let replacementLength = (replacementText as NSString).length
-        let insertedRange = CFRange(location: range.location, length: replacementLength)
-        guard waitForAXReplacement(replacementText, in: insertedRange, element: element) else {
-            #if DEBUG
-            print("[PasteService] replacement ax verification failed")
-            #endif
-            return false
-        }
-
-        let caretRange = CFRange(location: insertedRange.location + insertedRange.length, length: 0)
-        if !setSelectedRange(caretRange, for: element) {
-            #if DEBUG
-            print("[PasteService] replacement caret collapse failed")
-            #endif
-        }
-        return true
-    }
-
-    private func waitForAXReplacement(
-        _ replacementText: String,
-        in range: CFRange,
-        element: AXUIElement
-    ) -> Bool {
-        var delay: useconds_t = 1_000
-        let timeout = Date().addingTimeInterval(0.12)
-
-        while Date() < timeout {
-            if axInspector.stringForRange(range, element: element) == replacementText {
-                return true
-            }
-            usleep(delay)
-            delay = min(delay * 2, 16_000)
-        }
-
-        return axInspector.stringForRange(range, element: element) == replacementText
+        return appIdentityMatches(currentIdentity, lastInsertionAppIdentity)
     }
 
     private func replaceSelectedRangeViaMenuFallback(_ replacementText: String) -> Bool {
@@ -351,19 +279,6 @@ class PasteService {
         print("[PasteService] replacement menu fallback evidence: \(fallbackResult.completionEvidence)")
         #endif
         return fallbackResult.didMenuFallbackInsert
-    }
-
-    private func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
-        var mutableRange = range
-        guard let rangeValue = AXValueCreate(.cfRange, &mutableRange) else {
-            return false
-        }
-
-        return AXUIElementSetAttributeValue(
-            element,
-            kAXSelectedTextRangeAttribute as CFString,
-            rangeValue
-        ) == .success
     }
 
     private func rememberSuccessfulInsertion(of text: String, in appIdentity: PasteAppIdentity?) {

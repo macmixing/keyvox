@@ -6,6 +6,7 @@ protocol PasteAXInspecting {
     func focusedUIElement() -> AXUIElement?
     func roleString(for element: AXUIElement) -> String?
     func selectedRange(for element: AXUIElement) -> CFRange?
+    func selectedText(for element: AXUIElement) -> String?
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character?
     func valueLengthForMenuVerification(element: AXUIElement) -> Int?
@@ -21,6 +22,11 @@ protocol PasteAXInspecting {
 extension PasteAXInspecting {
     func prepareApplicationAccessibility(for pid: pid_t) {
         _ = pid
+    }
+
+    func selectedText(for element: AXUIElement) -> String? {
+        _ = element
+        return nil
     }
 }
 
@@ -129,6 +135,19 @@ final class PasteAXInspector: PasteAXInspecting {
             }
         }
         return nil
+    }
+
+    func selectedText(for element: AXUIElement) -> String? {
+        var textRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            kAXSelectedTextAttribute as CFString,
+            &textRef
+        ) == .success else {
+            return nil
+        }
+
+        return textRef as? String
     }
 
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? {
