@@ -74,7 +74,8 @@ final class MacDictationChangeController {
 
     func applyLongPressChange(
         onProcessingStart: @escaping () -> Void,
-        onProcessingEnd: @escaping () -> Void
+        onProcessingEnd: @escaping () -> Void,
+        onReplacementStart: (StyleRewriteStyle) -> Void = { _ in }
     ) async -> Bool {
         guard vibesCoordinator.canUseVibes, isApplyingChange == false else {
             return false
@@ -114,6 +115,7 @@ final class MacDictationChangeController {
         }
 
         let displayedReplacementText = displayText(replacementText, for: session)
+        onReplacementStart(targetStyle)
         guard await pasteService.replaceUntouchedInsertion(
             session.currentText,
             with: displayedReplacementText
