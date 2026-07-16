@@ -4,7 +4,8 @@ import KeyVoxStyleRewrite
 
 extension MacDictationChangeController {
     func applyDeterministicChange(
-        _ kind: DictationDeterministicControlKind
+        _ kind: DictationDeterministicControlKind,
+        onReplacementStart: (DictationDeterministicState) -> Void = { _ in }
     ) async -> MacFormattingChangeOutcome {
         guard isApplyingChange == false else {
             return MacFormattingChangeOutcome(
@@ -22,10 +23,7 @@ extension MacDictationChangeController {
 
         guard await pasteService.currentTextMatchesUntouchedInsertion(session.currentText) else {
             activeSession = nil
-            return MacFormattingChangeOutcome(
-                didApply: false,
-                effectiveState: session.currentDeterministicState
-            )
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: nil)
         }
 
         let currentState = session.currentDeterministicState
@@ -55,22 +53,17 @@ extension MacDictationChangeController {
         let displayedText = displayText(renderedText, for: session)
         let requiresReplacement = displayedText != session.currentText
         if requiresReplacement {
+            onReplacementStart(targetState)
             guard await pasteService.replaceUntouchedInsertion(
                 session.currentText,
                 with: displayedText
             ) else {
                 activeSession = nil
-                return MacFormattingChangeOutcome(
-                    didApply: false,
-                    effectiveState: session.currentDeterministicState
-                )
+                return MacFormattingChangeOutcome(didApply: false, effectiveState: nil)
             }
         } else if await pasteService.currentTextMatchesUntouchedInsertion(session.currentText) == false {
             activeSession = nil
-            return MacFormattingChangeOutcome(
-                didApply: false,
-                effectiveState: session.currentDeterministicState
-            )
+            return MacFormattingChangeOutcome(didApply: false, effectiveState: nil)
         }
 
         session.sourceText = replacementSourceText

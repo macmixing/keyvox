@@ -61,8 +61,6 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
                 ]
             )
 
-            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.paragraphs), false)
-
             let firstOutcome = await harness.controller.applyDeterministicChange(.paragraphs)
             let secondOutcome = await harness.controller.applyDeterministicChange(.paragraphs)
 
@@ -70,7 +68,6 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
             XCTAssertEqual(firstOutcome.effectiveState, listState)
             XCTAssertFalse(secondOutcome.didApply)
             XCTAssertEqual(secondOutcome.effectiveState, listState)
-            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.paragraphs), false)
             XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, listState)
             XCTAssertTrue(harness.pasteService.replacements.isEmpty)
         }
@@ -96,8 +93,6 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
                 ]
             )
 
-            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.lists), false)
-
             let firstOutcome = await harness.controller.applyDeterministicChange(.lists)
             let secondOutcome = await harness.controller.applyDeterministicChange(.lists)
 
@@ -105,7 +100,6 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
             XCTAssertEqual(firstOutcome.effectiveState, plainState)
             XCTAssertFalse(secondOutcome.didApply)
             XCTAssertEqual(secondOutcome.effectiveState, plainState)
-            XCTAssertEqual(harness.controller.proposedFormattingEnabled(.lists), false)
             XCTAssertEqual(harness.controller.activeSession?.currentDeterministicState, plainState)
             XCTAssertTrue(harness.pasteService.replacements.isEmpty)
         }
@@ -205,27 +199,22 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         XCTAssertEqual(harness.controller.activeSession?.sourceText, text(for: targetState))
     }
 
-    func testEditedInsertionInvalidatesSessionWithoutReplacement() async {
-        let harness = makeHarness(
-            state: DictationDeterministicState(
-                paragraphsEnabled: false,
-                listsEnabled: false
-            )
+    func testEditedInsertionInvalidatesSessionAndReportsRequestedControlOff() async {
+        let enabledState = DictationDeterministicState(
+            paragraphsEnabled: true,
+            listsEnabled: true
         )
-        harness.pasteService.currentText = "User edited this"
+        for kind in [DictationDeterministicControlKind.lists, .paragraphs] {
+            let harness = makeHarness(state: enabledState)
+            harness.pasteService.currentText = "User edited this"
 
-        let outcome = await harness.controller.applyDeterministicChange(.lists)
+            let outcome = await harness.controller.applyDeterministicChange(kind)
 
-        XCTAssertFalse(outcome.didApply)
-        XCTAssertEqual(
-            outcome.effectiveState,
-            DictationDeterministicState(
-                paragraphsEnabled: false,
-                listsEnabled: false
-            )
-        )
-        XCTAssertNil(harness.controller.activeSession)
-        XCTAssertTrue(harness.pasteService.replacements.isEmpty)
+            XCTAssertFalse(outcome.didApply)
+            XCTAssertNil(outcome.effectiveState)
+            XCTAssertNil(harness.controller.activeSession)
+            XCTAssertTrue(harness.pasteService.replacements.isEmpty)
+        }
     }
 
     func testMissingInsertionReturnsNoEffectiveState() async {
@@ -297,7 +286,7 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         let outcome = await harness.controller.applyDeterministicChange(.paragraphs)
 
         XCTAssertFalse(outcome.didApply)
-        XCTAssertEqual(outcome.effectiveState, baselineState)
+        XCTAssertNil(outcome.effectiveState)
         XCTAssertNil(harness.controller.activeSession)
         XCTAssertEqual(harness.pasteService.currentText, "User edited while rendering")
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)

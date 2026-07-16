@@ -45,7 +45,6 @@ class TranscriptionManager: ObservableObject {
         dictationChangeController: dictationChangeController
     )
     lazy var formattingTriggerActionController = MacFormattingTriggerActionController(
-        appSettings: appSettings,
         dictationChangeController: dictationChangeController,
         vibesCoordinator: vibesCoordinator
     )

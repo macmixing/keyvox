@@ -190,19 +190,6 @@ final class MacDictationChangeController {
         return result.finalText
     }
 
-    func proposedFormattingEnabled(_ kind: DictationDeterministicControlKind) -> Bool? {
-        guard let activeSession else { return nil }
-        let target = deterministicVariantResolver.targetState(
-            from: activeSession.currentDeterministicState,
-            kind: kind
-        )
-        if let changeTarget = deterministicChangeTarget(for: kind, in: activeSession),
-           changeTarget.sourceText == activeSession.sourceText {
-            return false
-        }
-        return formattingEnabled(kind, in: target)
-    }
-
     func formattingEnabled(
         _ kind: DictationDeterministicControlKind,
         in state: DictationDeterministicState

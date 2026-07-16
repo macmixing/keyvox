@@ -2,16 +2,13 @@ import KeyVoxCore
 
 @MainActor
 final class MacFormattingTriggerActionController {
-    private let appSettings: AppSettingsStore
     private let dictationChangeController: MacDictationChangeController
     private let vibesCoordinator: MacVibesCoordinator
 
     init(
-        appSettings: AppSettingsStore,
         dictationChangeController: MacDictationChangeController,
         vibesCoordinator: MacVibesCoordinator
     ) {
-        self.appSettings = appSettings
         self.dictationChangeController = dictationChangeController
         self.vibesCoordinator = vibesCoordinator
     }
@@ -19,8 +16,7 @@ final class MacFormattingTriggerActionController {
     func presentProcessing(_ kind: DictationDeterministicControlKind) {
         OverlayManager.shared.showFormattingPill(
             kind: kind,
-            isEnabled: dictationChangeController.proposedFormattingEnabled(kind)
-                ?? savedPreference(for: kind),
+            isEnabled: false,
             state: .processing,
             duration: nil,
             placement: .currentOverlayCenter
@@ -28,11 +24,28 @@ final class MacFormattingTriggerActionController {
     }
 
     func perform(_ kind: DictationDeterministicControlKind) async {
-        let outcome = await dictationChangeController.applyDeterministicChange(kind)
+        var didStartCompletionPresentation = false
+        let outcome = await dictationChangeController.applyDeterministicChange(
+            kind,
+            onReplacementStart: { [weak self] targetState in
+                guard let self else { return }
+                didStartCompletionPresentation = true
+                OverlayManager.shared.showFormattingPill(
+                    kind: kind,
+                    isEnabled: self.dictationChangeController.formattingEnabled(kind, in: targetState),
+                    state: .completed,
+                    duration: 0.72,
+                    placement: .currentOverlayCenter
+                )
+            }
+        )
         await vibesCoordinator.releasePrewarmSession(reason: "mac-formatting-shortcut")
+        if outcome.didApply, didStartCompletionPresentation {
+            return
+        }
         let isEnabled = outcome.effectiveState.map {
             dictationChangeController.formattingEnabled(kind, in: $0)
-        } ?? savedPreference(for: kind)
+        } ?? false
 
         OverlayManager.shared.showFormattingPill(
             kind: kind,
@@ -41,14 +54,5 @@ final class MacFormattingTriggerActionController {
             duration: outcome.didApply ? 0.72 : 0.9,
             placement: .currentOverlayCenter
         )
-    }
-
-    private func savedPreference(for kind: DictationDeterministicControlKind) -> Bool {
-        switch kind {
-        case .paragraphs:
-            return appSettings.autoParagraphsEnabled
-        case .lists:
-            return appSettings.listFormattingEnabled
-        }
     }
 }
