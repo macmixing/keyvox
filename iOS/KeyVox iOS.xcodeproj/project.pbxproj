@@ -18,6 +18,8 @@
 		8E97944D2F66B54A009A691D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944C2F66B54A009A691D /* SwiftUI.framework */; };
 		8E97945E2F66B54C009A691D /* KeyVox Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E9794482F66B549009A691D /* KeyVox Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
 		8EB365C72F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
 		8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
@@ -119,7 +121,6 @@
 				"Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift",
 				Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift,
 				Core/Dictation/KeyboardCallObserver.swift,
-				Core/Dictation/KeyboardDeterministicDictationFormatter.swift,
 				Core/Dictation/KeyboardDictationController.swift,
 				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
@@ -318,6 +319,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */,
 				8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
@@ -349,6 +351,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */,
 				8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 				9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
@@ -439,6 +442,7 @@
 			);
 			name = "KeyVox Keyboard";
 			packageProductDependencies = (
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 			);
@@ -519,6 +523,7 @@
 			);
 			name = "KeyVox iOSTests";
 			packageProductDependencies = (
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 				9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */,
