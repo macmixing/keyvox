@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.21] - 2026-07-15
+
+Shared deterministic paragraph and list variant controls.
+
+### Includes
+
+- Added shared deterministic state and control types so clients can toggle paragraph or list formatting without changing the other setting.
+- Added a shared variant resolver that selects an existing rendered result when available and otherwise restores the saved deterministic source variant.
+- Added deterministic text formatting that collapses paragraph breaks while preserving ordered-list line structure when lists remain enabled.
+- Added post-rewrite layout adjustment across all four paragraph and list state combinations.
+- Added shared-engine coverage for target-state selection, saved and rendered source selection, paragraph collapse, list-line preservation, and post-rewrite formatting.
+
+### Notes
+
+- `1.0.21` bumps the tracked engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant handling used by dictation clients.
+
+---
+
 ## [1.0.20] - 2026-07-12
 
 Terminal period completion for ordinary dictation prose.
