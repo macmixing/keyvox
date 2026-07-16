@@ -62,6 +62,12 @@ extension MacDictationChangeController {
                     effectiveState: session.currentDeterministicState
                 )
             }
+        } else if pasteService.currentTextMatchesUntouchedInsertion(session.currentText) == false {
+            activeSession = nil
+            return MacFormattingChangeOutcome(
+                didApply: false,
+                effectiveState: session.currentDeterministicState
+            )
         }
 
         session.sourceText = replacementSourceText

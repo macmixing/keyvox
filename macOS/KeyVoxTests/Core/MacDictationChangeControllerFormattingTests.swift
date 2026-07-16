@@ -204,6 +204,31 @@ final class MacDictationChangeControllerFormattingTests: XCTestCase {
         XCTAssertTrue(harness.pasteService.replacements.isEmpty)
     }
 
+    func testIdenticalRenderedTextRevalidatesInsertionAfterRendering() async {
+        let baselineState = DictationDeterministicState(
+            paragraphsEnabled: false,
+            listsEnabled: false
+        )
+        let harness = makeHarness(
+            state: baselineState,
+            style: .casual,
+            currentText: "Styled plain"
+        )
+        harness.transformer.resultText = "Styled plain"
+        let pasteService = harness.pasteService
+        harness.transformer.onTransform = {
+            pasteService.currentText = "User edited while rendering"
+        }
+
+        let outcome = await harness.controller.applyDeterministicChange(.paragraphs)
+
+        XCTAssertFalse(outcome.didApply)
+        XCTAssertEqual(outcome.effectiveState, baselineState)
+        XCTAssertNil(harness.controller.activeSession)
+        XCTAssertEqual(harness.pasteService.currentText, "User edited while rendering")
+        XCTAssertTrue(harness.pasteService.replacements.isEmpty)
+    }
+
     private var allStates: [DictationDeterministicState] {
         [false, true].flatMap { paragraphsEnabled in
             [false, true].map { listsEnabled in
@@ -350,12 +375,14 @@ private final class FormattingFakePasteService: MacDictationInsertionReplacing {
 @MainActor
 private final class FormattingFakeTextTransformer: DictationTextTransforming {
     var resultText = "Rewritten text"
+    var onTransform: (() -> Void)?
     private(set) var transformRequests: [TextTransformRequest] = []
 
     func prewarm(request: TextTransformRequest) {}
 
     func transform(_ request: TextTransformRequest) async -> TextTransformResult {
         transformRequests.append(request)
+        onTransform?()
         return TextTransformResult(
             originalText: request.baseText,
             finalText: resultText,
