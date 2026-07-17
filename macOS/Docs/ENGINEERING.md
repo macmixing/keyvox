@@ -55,7 +55,7 @@ File-level ownership and locations are intentionally maintained in one place: [`
 ### Transcription Manager Ownership
 
 - `TranscriptionManager.swift` owns shared runtime state, dependencies, pipeline composition, initialization, and teardown.
-- `TranscriptionManager+Bindings.swift` owns Combine bindings from keyboard/caps-lock/model readiness into manager state, trigger orchestration, formatting-monitor runtime eligibility, and overlay readiness.
+- `TranscriptionManager+Bindings.swift` owns Combine bindings from keyboard/caps-lock/model readiness into manager state, routes trigger-key events and cancellation into `DictationTriggerController`, and coordinates formatting-monitor runtime eligibility and overlay readiness.
 - `TranscriptionManager+RecordingSession.swift` owns recording start/stop, formatting-chord recorder discard, transcription pipeline execution, paste insertion handoff, weekly word totals, and last-transcription persistence.
 - `TranscriptionManager+OverlayAndDebug.swift` owns overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging.
 - `Core/DictationTriggerController.swift` owns trigger-key press/release handling, pending-stop behavior, deferred starts, hands-free toggles, and cancellation, and calls back into `TranscriptionManager` only for recording-session commands.
