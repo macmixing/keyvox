@@ -63,7 +63,8 @@ class PasteService {
         self.untouchedInsertionAuthorizer = PasteUntouchedInsertionAuthorizer(
             axInspector: axInspector,
             replacer: resolvedUntouchedInsertionReplacer,
-            appIdentityProvider: resolvedFrontmostAppIdentityProvider
+            appIdentityProvider: resolvedFrontmostAppIdentityProvider,
+            pendingResolutionTimeout: restoreDelayAfterMenuFallback
         )
         self.menuFallbackExecutor = menuFallbackExecutor
             ?? PasteMenuFallbackExecutor(

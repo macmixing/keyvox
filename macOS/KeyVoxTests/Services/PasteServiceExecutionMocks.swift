@@ -163,9 +163,10 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
 
 final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
     let replacementOutcome: PasteUntouchedInsertionReplacementOutcome
-    private let element = AXUIElementCreateApplication(getpid())
+    private let element: AXUIElement
     private let stateLock = NSLock()
     private var targetRangeLocation = 0
+    private var remainingUnavailableTargetCalls: Int
     private let onReplace: (() -> Void)?
     private(set) var targetThreadWasMain: [Bool] = []
     private(set) var replaceThreadWasMain: [Bool] = []
@@ -174,9 +175,13 @@ final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionRep
 
     init(
         replacementOutcome: PasteUntouchedInsertionReplacementOutcome,
+        element: AXUIElement? = nil,
+        unavailableTargetCallCount: Int = 0,
         onReplace: (() -> Void)? = nil
     ) {
         self.replacementOutcome = replacementOutcome
+        self.element = element ?? AXUIElementCreateApplication(getpid())
+        self.remainingUnavailableTargetCalls = unavailableTargetCallCount
         self.onReplace = onReplace
     }
 
@@ -190,7 +195,12 @@ final class QueueRecordingUntouchedInsertionReplacer: PasteUntouchedInsertionRep
         targetThreadWasMain.append(Thread.isMainThread)
         stateLock.lock()
         let location = targetRangeLocation
+        let isTargetUnavailable = remainingUnavailableTargetCalls > 0
+        if isTargetUnavailable {
+            remainingUnavailableTargetCalls -= 1
+        }
         stateLock.unlock()
+        guard isTargetUnavailable == false else { return nil }
         return PasteUntouchedInsertionTarget(
             element: element,
             range: CFRange(location: location, length: (text as NSString).length)
@@ -265,7 +275,12 @@ final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
 
 final class MockAXInspector: PasteAXInspecting {
     private let stateLock = NSLock()
+    private let focusedElement: AXUIElement?
     private var selectedRangeValue = CFRange(location: 0, length: 0)
+
+    init(focusedElement: AXUIElement? = nil) {
+        self.focusedElement = focusedElement
+    }
 
     func updateSelectedRange(_ range: CFRange) {
         stateLock.lock()
@@ -274,7 +289,7 @@ final class MockAXInspector: PasteAXInspecting {
     }
 
     func focusedInsertionContext() -> PasteInsertionContext? { nil }
-    func focusedUIElement() -> AXUIElement? { nil }
+    func focusedUIElement() -> AXUIElement? { focusedElement }
     func roleString(for element: AXUIElement) -> String? {
         _ = element
         return nil

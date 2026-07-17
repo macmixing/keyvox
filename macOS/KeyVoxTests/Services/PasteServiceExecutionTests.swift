@@ -330,6 +330,115 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(replacer.targetThreadWasMain, [false])
     }
 
+    func testDelayedInitialTargetAuthorizesOriginalProcessAndElement() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let element = AXUIElementCreateApplication(getpid())
+        let inspector = MockAXInspector(focusedElement: element)
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .succeeded,
+            element: element,
+            unavailableTargetCallCount: 1
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        inspector.updateSelectedRange(CFRange(location: 1, length: 0))
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertTrue(didMatch)
+    }
+
+    func testDelayedInitialTargetRejectsDifferentElement() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let originalElement = AXUIElementCreateApplication(getpid())
+        let differentElement = AXUIElementCreateApplication(getpid() + 1)
+        let inspector = MockAXInspector(focusedElement: originalElement)
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .succeeded,
+            element: differentElement,
+            unavailableTargetCallCount: 1
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        inspector.updateSelectedRange(CFRange(location: 1, length: 0))
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertFalse(didMatch)
+    }
+
+    func testDelayedInitialTargetRejectsDifferentProcess() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let element = AXUIElementCreateApplication(getpid())
+        let inspector = MockAXInspector(focusedElement: element)
+        let identityProvider = MutablePasteAppIdentityProvider(
+            PasteAppIdentity(bundleID: "com.example.app", pid: 99)
+        )
+        let replacer = QueueRecordingUntouchedInsertionReplacer(
+            replacementOutcome: .succeeded,
+            element: element,
+            unavailableTargetCallCount: 1
+        )
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            frontmostAppIdentityProvider: identityProvider.current,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+        identityProvider.update(PasteAppIdentity(bundleID: "com.example.app", pid: 100))
+        inspector.updateSelectedRange(CFRange(location: 1, length: 0))
+
+        let didMatch = await service.currentTextMatchesUntouchedInsertion("α")
+
+        XCTAssertFalse(didMatch)
+        XCTAssertEqual(replacer.targetThreadWasMain, [false])
+    }
+
     func testUntouchedInsertionRejectsMatchingTextAtDifferentTargetRange() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
@@ -427,6 +536,68 @@ final class PasteServiceExecutionTests: XCTestCase {
 
         XCTAssertTrue(didReplace)
         XCTAssertEqual(spacing.inputs.last?.lastInsertionAppIdentity?.pid, 99)
+    }
+
+    func testSuccessfulReplacementAuthorizesIntendedCaretWhenAXReadbackIsStale() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let inspector = MockAXInspector()
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "ββ")
+        inspector.updateSelectedRange(CFRange(location: 2, length: 0))
+        let didMatchSettledCaret = await service.currentTextMatchesUntouchedInsertion("ββ")
+
+        XCTAssertTrue(didReplace)
+        XCTAssertTrue(didMatchSettledCaret)
+    }
+
+    func testSuccessfulReplacementRejectsCaretOutsideIntendedEnd() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let inspector = MockAXInspector()
+        let replacer = QueueRecordingUntouchedInsertionReplacer(replacementOutcome: .succeeded)
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "α"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+            coordinator: MockMenuFallbackCoordinator(result: .init(
+                didMenuFallbackInsert: false,
+                menuAttempt: nil,
+                suppressFirstWarmupFailureWarning: false
+            )),
+            restoreDelayAfterMenuFallback: 0,
+            axInspector: inspector,
+            untouchedInsertionReplacer: replacer
+        )
+
+        service.pasteText("α")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        let didReplace = await service.replaceUntouchedInsertion("α", with: "ββ")
+        inspector.updateSelectedRange(CFRange(location: 1, length: 0))
+        let didMatchWrongCaret = await service.currentTextMatchesUntouchedInsertion("ββ")
+
+        XCTAssertTrue(didReplace)
+        XCTAssertFalse(didMatchWrongCaret)
     }
 
     func testUntouchedInsertionFallbackAndCaretRecoveryRunOffMainThread() async throws {
