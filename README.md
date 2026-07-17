@@ -30,6 +30,7 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a m
 - ♥️ On-device, reversible writing styles on macOS and iOS
 - 🔒 Privacy-first workflow with on-device inference
 - ⌨️ Global trigger-key dictation from anywhere on macOS
+- ↩️ Reversible Lists and Paragraphs for your latest untouched dictation on macOS and iOS
 - 🧠 Smart post-processing for custom words, lists, and time formatting
 - ☁️ iCloud sync for your custom dictionary and core dictation preferences
 - 📊 See your weekly spoken-word total across devices
@@ -143,16 +144,36 @@ iOS
 3. Hold **Shift** while releasing to continue recording hands-free.
 4. Press **Esc** to cancel an active recording/transcription session.
 
+### Reverse Lists and Paragraphs (macOS)
+
+You can change the List or Paragraph formatting of your latest untouched dictation without recording it again:
+
+- Hold your configured trigger key and press **L** to toggle List formatting.
+- Hold your configured trigger key and press **P** to toggle Paragraph formatting.
+- Repeat the shortcut to reverse the change.
+
+The overlay pill shows whether the requested format is on or off. If the dictation has been edited or removed, the format is shown as off and cannot be changed. These shortcuts affect only the latest eligible dictation and never change your saved Lists or Paragraphs preferences.
+
 ## How to Use (iOS)
 
 1. Tap microphone icon on keyboard to start recording, tap again to stop and transcribe.
 2. Tap the cancel button on the keyboard toolbar to cancel recording.
 
+### Reverse Lists and Paragraphs (iOS)
+
+The Paragraphs and Lists keys on the KeyVox keyboard support two interactions:
+
+- Tap either key to change its saved preference for future dictations.
+- Long press either key to toggle that format on your latest untouched dictation.
+- Long press the same key again to reverse the change.
+
+This lets you change the formatting after dictation without recording again. Once that text has been edited or removed, it is no longer eligible for a reversible change.
+
 ## Dictionary & Settings
 
 - Custom Dictionary entries can be added on either platform and will sync across devices via iCloud.
 - Automatic **Paragraphs** and **Lists** can be configured in Settings. (Enabled by default)
-- On iOS, long press the Paragraphs or Lists keyboard key to undo/redo deterministic formatting on the latest untouched dictation.
+- The iOS keyboard also provides direct Paragraphs and Lists controls for these preferences.
 
 ## KeyVox Speak (iOS) - Coming Soon!
 
