@@ -6,6 +6,10 @@ protocol PasteAXInspecting {
     func focusedUIElement() -> AXUIElement?
     func roleString(for element: AXUIElement) -> String?
     func selectedRange(for element: AXUIElement) -> CFRange?
+    func selectedText(for element: AXUIElement) -> String?
+    func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool
+    func setSelectedText(_ text: String, for element: AXUIElement) -> Bool
+    func setValueString(_ text: String, for element: AXUIElement) -> Bool
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character?
     func valueLengthForMenuVerification(element: AXUIElement) -> Int?
@@ -21,6 +25,29 @@ protocol PasteAXInspecting {
 extension PasteAXInspecting {
     func prepareApplicationAccessibility(for pid: pid_t) {
         _ = pid
+    }
+
+    func selectedText(for element: AXUIElement) -> String? {
+        _ = element
+        return nil
+    }
+
+    func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
+        _ = range
+        _ = element
+        return false
+    }
+
+    func setSelectedText(_ text: String, for element: AXUIElement) -> Bool {
+        _ = text
+        _ = element
+        return false
+    }
+
+    func setValueString(_ text: String, for element: AXUIElement) -> Bool {
+        _ = text
+        _ = element
+        return false
     }
 }
 
@@ -129,6 +156,48 @@ final class PasteAXInspector: PasteAXInspecting {
             }
         }
         return nil
+    }
+
+    func selectedText(for element: AXUIElement) -> String? {
+        var textRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            kAXSelectedTextAttribute as CFString,
+            &textRef
+        ) == .success else {
+            return nil
+        }
+
+        return textRef as? String
+    }
+
+    func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
+        var mutableRange = range
+        guard let rangeValue = AXValueCreate(.cfRange, &mutableRange) else {
+            return false
+        }
+
+        return AXUIElementSetAttributeValue(
+            element,
+            kAXSelectedTextRangeAttribute as CFString,
+            rangeValue
+        ) == .success
+    }
+
+    func setSelectedText(_ text: String, for element: AXUIElement) -> Bool {
+        AXUIElementSetAttributeValue(
+            element,
+            kAXSelectedTextAttribute as CFString,
+            text as CFTypeRef
+        ) == .success
+    }
+
+    func setValueString(_ text: String, for element: AXUIElement) -> Bool {
+        AXUIElementSetAttributeValue(
+            element,
+            kAXValueAttribute as CFString,
+            text as CFTypeRef
+        ) == .success
     }
 
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? {

@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import CoreGraphics
+import KeyVoxCore
 import QuartzCore
 import SwiftUI
 
@@ -31,7 +32,7 @@ class OverlayManager {
     private weak var configuredVibeCyclePillContentPanel: NSPanel?
     private weak var activeVibeCyclePillPanel: NSPanel?
     private var visibleVibePillTitle: String?
-    private var visibleVibePillState: LogoBarView.VibePillState?
+    private var visibleVibePillState: OverlayPillState?
     private var moveObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -112,9 +113,49 @@ class OverlayManager {
 
     func showVibePill(
         title: String,
-        state: LogoBarView.VibePillState = .normal,
+        state: OverlayPillState = .normal,
         duration: TimeInterval? = 0.9,
         placement: VibePillPlacement = .savedOverlayOrigin
+    ) {
+        showStandalonePill(
+            visibleVibeTitle: title,
+            state: state,
+            duration: duration,
+            placement: placement,
+            content: OverlayPillOverlay(visibilityManager: visibilityManager) {
+                VibePillView(title: title, state: state)
+            }
+        )
+    }
+
+    func showFormattingPill(
+        kind: DictationDeterministicControlKind,
+        isEnabled: Bool,
+        state: OverlayPillState = .normal,
+        duration: TimeInterval? = 0.9,
+        placement: VibePillPlacement = .savedOverlayOrigin
+    ) {
+        showStandalonePill(
+            visibleVibeTitle: nil,
+            state: state,
+            duration: duration,
+            placement: placement,
+            content: OverlayPillOverlay(visibilityManager: visibilityManager) {
+                MacFormattingPillView(
+                    kind: kind,
+                    isEnabled: isEnabled,
+                    state: state
+                )
+            }
+        )
+    }
+
+    private func showStandalonePill<Content: View>(
+        visibleVibeTitle: String?,
+        state: OverlayPillState,
+        duration: TimeInterval?,
+        placement: VibePillPlacement,
+        content: Content
     ) {
         pendingHideWorkItem?.cancel()
         pendingHideWorkItem = nil
@@ -124,7 +165,7 @@ class OverlayManager {
 
         if window == nil {
             let panel = OverlayPanel(
-                contentRect: NSRect(origin: .zero, size: LogoBarView.vibePillPanelSize),
+                contentRect: NSRect(origin: .zero, size: OverlayPillMetrics.panelSize),
                 styleMask: [.nonactivatingPanel, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -142,15 +183,11 @@ class OverlayManager {
         }
 
         if let panel = window {
-            resizePanel(panel, to: LogoBarView.vibePillPanelSize)
+            resizePanel(panel, to: OverlayPillMetrics.panelSize)
             hideVibeLabelWindow()
-            visibleVibePillTitle = title
-            visibleVibePillState = state
-            panel.contentView = NSHostingView(rootView: VibePillOverlay(
-                title: title,
-                state: state,
-                visibilityManager: visibilityManager
-            ))
+            self.visibleVibePillTitle = visibleVibeTitle
+            visibleVibePillState = visibleVibeTitle == nil ? nil : state
+            panel.contentView = NSHostingView(rootView: content)
             if configuredVibeCyclePillContentPanel === panel {
                 configuredVibeCyclePillContentPanel = nil
             }
@@ -185,7 +222,7 @@ class OverlayManager {
 
     func showVibeCyclePill(
         title: String,
-        state: LogoBarView.VibePillState = .normal,
+        state: OverlayPillState = .normal,
         duration: TimeInterval? = 0.9
     ) {
         vibeCyclePillHideWorkItem?.cancel()
@@ -230,7 +267,7 @@ class OverlayManager {
         visibleVibePillTitle = nil
         visibleVibePillState = nil
         panel.alphaValue = 1
-        resizePanel(panel, to: LogoBarView.vibePillPanelSize)
+        resizePanel(panel, to: OverlayPillMetrics.panelSize)
         if panel !== window {
             panel.setFrameOrigin(resolvedVibeCyclePillOrigin(for: panel))
         }
@@ -339,11 +376,11 @@ class OverlayManager {
     private func visibleStandaloneVibePillState() -> (
         panel: NSPanel,
         title: String,
-        state: LogoBarView.VibePillState
+        state: OverlayPillState
     )? {
         guard let panel = window,
               panel.isVisible,
-              panel.contentView is NSHostingView<VibePillOverlay>,
+              panel.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>,
               let title = visibleVibePillTitle,
               let state = visibleVibePillState else {
             return nil
@@ -492,7 +529,7 @@ class OverlayManager {
 
     private func makeVibeCyclePillWindow() -> NSPanel {
         let panel = NSPanel(
-            contentRect: NSRect(origin: .zero, size: LogoBarView.vibePillPanelSize),
+            contentRect: NSRect(origin: .zero, size: OverlayPillMetrics.panelSize),
             styleMask: [.nonactivatingPanel, .fullSizeContentView],
             backing: .buffered,
             defer: false

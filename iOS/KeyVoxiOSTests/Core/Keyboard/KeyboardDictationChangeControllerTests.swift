@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxStyleRewrite
+import KeyVoxCore
 import Testing
 import UIKit
 @testable import KeyVox_iOS

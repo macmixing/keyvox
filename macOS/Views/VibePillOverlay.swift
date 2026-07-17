@@ -13,46 +13,10 @@ enum VibePillPresentationMetrics {
     static let flipHalfDuration: TimeInterval = 0.14
 }
 
-struct VibePillOverlay: View {
-    let title: String
-    let state: LogoBarView.VibePillState
-    @ObservedObject var visibilityManager: OverlayVisibilityManager
-    @State private var overlayScale: CGFloat = 0.12
-    @State private var overlayOpacity: Double = 0
-
-    var body: some View {
-        LogoBarView(vibeTitle: title, state: state)
-            .scaleEffect(overlayScale)
-            .opacity(overlayOpacity)
-            .onChange(of: visibilityManager.isVisible) { isVisible in
-                animateOverlayVisibility(isVisible)
-            }
-            .onAppear {
-                overlayScale = visibilityManager.isVisible ? 1.0 : 0.12
-                overlayOpacity = visibilityManager.isVisible ? 1.0 : 0.0
-            }
-    }
-
-    private func animateOverlayVisibility(_ isVisible: Bool) {
-        if isVisible {
-            overlayOpacity = 1.0
-            withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
-                overlayScale = 1.0
-            }
-            return
-        }
-
-        withAnimation(.timingCurve(0.58, 0.0, 0.95, 0.32, duration: 0.18)) {
-            overlayScale = 0.12
-            overlayOpacity = 0.0
-        }
-    }
-}
-
 struct VibeCyclePillPresentation: Equatable {
     let isVisible: Bool
     let title: String
-    let state: LogoBarView.VibePillState
+    let state: OverlayPillState
     let flipSequence: Int
 
     func visible() -> Self {
@@ -75,7 +39,7 @@ struct VibeCyclePillPresentation: Equatable {
 
     func replacingFace(
         title: String,
-        state: LogoBarView.VibePillState,
+        state: OverlayPillState,
         isVisible: Bool,
         forcesFlip: Bool = false
     ) -> Self {
@@ -95,7 +59,7 @@ final class VibeCyclePillVisibilityController: ObservableObject {
 
     init(
         title: String = "",
-        state: LogoBarView.VibePillState = .normal
+        state: OverlayPillState = .normal
     ) {
         presentation = VibeCyclePillPresentation(
             isVisible: false,
@@ -113,7 +77,7 @@ final class VibeCyclePillVisibilityController: ObservableObject {
         presentation.title
     }
 
-    var state: LogoBarView.VibePillState {
+    var state: OverlayPillState {
         presentation.state
     }
 
@@ -126,7 +90,7 @@ final class VibeCyclePillVisibilityController: ObservableObject {
         presentation = presentation.visible()
     }
 
-    func adoptVisiblePill(title: String, state: LogoBarView.VibePillState) {
+    func adoptVisiblePill(title: String, state: OverlayPillState) {
         presentation = VibeCyclePillPresentation(
             isVisible: true,
             title: title,
@@ -135,7 +99,7 @@ final class VibeCyclePillVisibilityController: ObservableObject {
         )
     }
 
-    func present(title: String, state: LogoBarView.VibePillState) {
+    func present(title: String, state: OverlayPillState) {
         if presentation.isVisible {
             presentation = presentation.replacingFace(
                 title: title,
@@ -152,7 +116,7 @@ final class VibeCyclePillVisibilityController: ObservableObject {
         }
     }
 
-    func continueVisibleCycle(title: String, state: LogoBarView.VibePillState) {
+    func continueVisibleCycle(title: String, state: OverlayPillState) {
         presentation = presentation.replacingFace(
             title: title,
             state: state,
@@ -174,9 +138,9 @@ struct VibeCyclePillOverlay: View {
     @State private var overlayScale: CGFloat = VibePillPresentationMetrics.hiddenScale
     @State private var overlayOpacity: Double = VibePillPresentationMetrics.hiddenOpacity
     @State private var displayedTitle: String
-    @State private var displayedState: LogoBarView.VibePillState
+    @State private var displayedState: OverlayPillState
     @State private var incomingTitle: String?
-    @State private var incomingState: LogoBarView.VibePillState = .normal
+    @State private var incomingState: OverlayPillState = .normal
     @State private var outgoingFlipDegrees: Double = 0
     @State private var incomingFlipDegrees: Double = 92
     @State private var outgoingFaceOpacity: Double = 1
@@ -198,7 +162,7 @@ struct VibeCyclePillOverlay: View {
 
     var body: some View {
         ZStack {
-            LogoBarView(vibeTitle: displayedTitle, state: displayedState)
+            VibePillView(title: displayedTitle, state: displayedState)
                 .id("outgoing-\(faceIdentity)-\(displayedTitle)-\(displayedState)")
                 .opacity(outgoingFaceOpacity)
                 .rotation3DEffect(
@@ -208,7 +172,7 @@ struct VibeCyclePillOverlay: View {
                 )
 
             if let incomingTitle {
-                LogoBarView(vibeTitle: incomingTitle, state: incomingState)
+                VibePillView(title: incomingTitle, state: incomingState)
                     .id("incoming-\(faceIdentity)-\(incomingTitle)-\(incomingState)")
                     .opacity(incomingFaceOpacity)
                     .rotation3DEffect(

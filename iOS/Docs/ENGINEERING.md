@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-06-08**
+**Last Updated: 2026-07-15**
 
 ## Design Philosophy
 
@@ -1181,7 +1181,8 @@ The restore card remains visible until both unlocks are owned.
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
 - treats `None` as the original post-processed base text
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, Caps Lock display-transform state, and cached rendered variants
-- delegates deterministic paragraph/list state transitions and paragraph-collapse/list-preservation text shaping to `KeyboardDeterministicDictationFormatter`
+- delegates deterministic paragraph/list state transitions and source selection to `KeyVoxCore.DictationDeterministicVariantResolver`
+- delegates paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment to `KeyVoxCore.DictationDeterministicTextFormatter`
 - regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
 - applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary, including persisted paragraph variants captured even when Paragraphs was disabled during recording
 - applies Caps Lock long-press changes locally from the current untouched insertion and the artifact's selected pre-Caps text, preserving Caps display state across Vibes and deterministic paragraph/list changes
@@ -1370,7 +1371,9 @@ Implementation split:
 - `DictationChange/KeyboardDictationChangeController+Variants.swift` owns deterministic state resolution, Vibes replacement lookup/generation, rendered variant caching, Caps display text handling, and shared preparation/debug helpers
 - `DictationChange/KeyboardDictationChangeSession.swift` owns the latest-insertion session and rendered-variant value types
 - `DictationChange/KeyboardDictationChangeArtifactStore.swift` owns lightweight App Group artifact reads for keyboard-side latest-insertion changes
-- `KeyboardDeterministicDictationFormatter.swift` owns deterministic paragraph/list state transitions and text shaping used by latest-insertion long-press changes
+- `KeyVoxCore.DictationDeterministicState` and `DictationDeterministicControlKind` are the shared paragraph/list state and action vocabulary used by iOS and macOS latest-insertion changes
+- `KeyVoxCore.DictationDeterministicVariantResolver` owns target-state selection and saved-versus-rendered deterministic source selection
+- `KeyVoxCore.DictationDeterministicTextFormatter` owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes
   - `Feedback/` owns extension-local haptics configuration and dispatch

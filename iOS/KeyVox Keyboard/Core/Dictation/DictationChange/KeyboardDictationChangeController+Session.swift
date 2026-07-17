@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 extension KeyboardDictationChangeController {
@@ -51,9 +52,9 @@ extension KeyboardDictationChangeController {
             )
         }
 
-        var deterministicVariants: [KeyboardDeterministicDictationState: String] = [:]
+        var deterministicVariants: [DictationDeterministicState: String] = [:]
         for variant in artifact.deterministicVariants {
-            let state = KeyboardDeterministicDictationState(
+            let state = DictationDeterministicState(
                 paragraphsEnabled: variant.paragraphsEnabled,
                 listsEnabled: variant.listsEnabled
             )

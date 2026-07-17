@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-06-08**
+**Last Updated: 2026-07-15**
 
 ## Project Overview
 
@@ -10,7 +10,7 @@ KeyVox iOS ships as four cooperating targets:
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, dictionary persistence primitives, model-artifact cleanup, date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`.
+Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 
 The current default runtime flow is:
@@ -34,7 +34,7 @@ The current default runtime flow is:
 - **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and final insertion heuristics.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictionary store, post-processing order, model-artifact cleanup, date/math normalization, silence heuristics, and list formatting behavior.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, date/math normalization, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`.
 - **`../Packages/KeyVoxParakeet/`**: local Parakeet Core ML runtime package consumed through the shared `ParakeetService`.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
@@ -313,7 +313,6 @@ iOS/
 │   │   │   │   ├── KeyboardDictationChangeController.swift
 │   │   │   │   └── KeyboardDictationChangeSession.swift
 │   │   │   ├── KeyboardCallObserver.swift
-│   │   │   ├── KeyboardDeterministicDictationFormatter.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
 │   │   ├── Feedback/
@@ -927,7 +926,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Session.swift`
   - Builds the latest untouched insertion session from `KeyboardTextInsertionResult` plus the app-published latest dictation artifact.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift`
-  - Resolves deterministic state, cached rendered variants, Vibes replacement text, Caps display text, and shared debug/preparation helpers for dictation-change actions.
+  - Resolves artifact/session state, cached rendered variants, Vibes replacement text, Caps display text, and shared debug/preparation helpers for dictation-change actions.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift`
   - Session, rendered-variant key, and display-source value types for the latest untouched dictation insertion.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeArtifactStore.swift`
@@ -937,6 +936,12 @@ Packages/
   - Keeps local rewrite model execution out of the extension.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Keyboard-local state machine for shared recording state and app launch handoff.
+- `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
+  - Shared paragraph/list state value used by both keyboard long-press changes and Mac trigger-key changes.
+- `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicVariantResolver.swift`
+  - Selects the target paragraph/list state and the saved or cached source variant without owning presentation or replacement.
+- `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicTextFormatter.swift`
+  - Owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment shared across clients.
 - `KeyVox Keyboard/Core/Transport/KeyboardTTSController.swift`
   - Keyboard-local copied-text playback transport owner that stages TTS requests and reacts to shared TTS state.
 - `KeyVox Keyboard/Core/Feedback/KeyboardInteractionHaptics.swift`
