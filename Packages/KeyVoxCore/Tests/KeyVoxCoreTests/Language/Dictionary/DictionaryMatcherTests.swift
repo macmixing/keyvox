@@ -76,6 +76,16 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() {
+        let matcher = makeRuntimeMatcher()
+        let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
+        matcher.rebuildIndex(entries: entries)
+
+        let result = matcher.apply(to: "Yeah, the Keybox Core package.")
+
+        XCTAssertEqual(result.text, "Yeah, the KeyVox Core package.")
+    }
+
     func testRuntimeMatcherDoesNotRewriteOrdinaryMergedTokenPrefixIntoStylizedSingleTokenBrand() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])

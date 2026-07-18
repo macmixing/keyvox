@@ -287,7 +287,12 @@ extension DictionaryMatcher {
             }
 
             if stylizedSingleTokenEntry,
-               hasAdjacentTitlecaseContext {
+               hasAdjacentTitlecaseContext,
+               !hasStrongStylizedTextEvidence(
+                   observed: observedToken.normalized,
+                   candidate: candidateToken,
+                   textSimilarity: textSimilarity
+               ) {
                 stats.rejectedLowScore += 1
                 return nil
             }

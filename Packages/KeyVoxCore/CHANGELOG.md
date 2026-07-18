@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.0.21] - 2026-07-15
+## [1.1.0] - 2026-07-15
 
-Shared deterministic paragraph and list variant controls with plural dictionary matching protection.
+Shared deterministic paragraph and list variant controls with dictionary matching protections.
 
 ### Includes
 
@@ -17,12 +17,14 @@ Shared deterministic paragraph and list variant controls with plural dictionary 
 - Added deterministic text formatting that collapses paragraph breaks while preserving ordered-list line structure when lists remain enabled.
 - Added post-rewrite layout adjustment across all four paragraph and list state combinations.
 - Required known plural homophone candidates to share their full pronunciation before receiving the relaxed dictionary match boost, preventing unrelated words such as `checks` from becoming `cues` while preserving valid homophones such as `queues` and `cues` regardless of spelling.
+- Allowed strong stylized dictionary corrections beside titlecase product context, restoring matches such as `Keybox Core` to `KeyVox Core` while retaining protection for unrelated name-like phrases.
 - Added shared-engine coverage for target-state selection, saved and rendered source selection, paragraph collapse, list-line preservation, and post-rewrite formatting.
 - Added shared-engine coverage for rejecting unrelated plural pronunciation collisions while preserving differently spelled plural homophone corrections.
+- Added shared-engine coverage for strong stylized matches before titlecase product context while preserving unrelated titlecase phrase protection.
 
 ### Notes
 
-- `1.0.21` bumps the tracked engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant handling plus plural dictionary match protection used by dictation clients.
+- `1.1.0` bumps the tracked minor engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant controls plus dictionary match protections used by dictation clients.
 
 ---
 
