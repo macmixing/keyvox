@@ -41,6 +41,15 @@ private enum StandardEvaluationConstants {
 }
 
 extension DictionaryMatcher {
+    private func hasPluralHomophonePronunciationEvidence(observed: String, candidate: String) -> Bool {
+        guard let observedPronunciation = lexicon.pronunciation(for: observed),
+              let candidatePronunciation = lexicon.pronunciation(for: candidate) else {
+            return true
+        }
+
+        return observedPronunciation == candidatePronunciation
+    }
+
     private func hasAttributionLikePrepositionContext(tokenStart: Int, tokens: [Token]) -> Bool {
         guard tokenStart >= 2 else { return false }
         return tokens[tokenStart - 1].lexicalClass == .preposition
@@ -136,7 +145,11 @@ extension DictionaryMatcher {
                    candidate.tokens.count == 1,
                    !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidate.tokens[0])),
                    adjustedPhoneticScore >= StandardEvaluationConstants.pluralHomophonePhoneticMinimum,
-                   baseScore.text >= StandardEvaluationConstants.pluralHomophoneTextMinimum {
+                   baseScore.text >= StandardEvaluationConstants.pluralHomophoneTextMinimum,
+                   hasPluralHomophonePronunciationEvidence(
+                       observed: form.normalized,
+                       candidate: candidate.tokens[0]
+                   ) {
                     // Deterministic lane for plural homophone near-misses such as
                     // "queues" -> "cues" when the dictionary term is singular.
                     pluralHomophoneBonus = StandardEvaluationConstants.pluralHomophoneBonus

@@ -622,6 +622,19 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Inside of the app Cueboard, you can make cues and subcues.")
     }
 
+    func testDoesNotReplaceUnrelatedPluralWordWithSingularCueEntry() {
+        let matcher = makeRuntimeMatcher()
+        let entries = DictionaryBuiltInEntries.effectiveEntries(
+            merging: [DictionaryEntry(phrase: "cue")]
+        )
+        matcher.rebuildIndex(entries: entries)
+
+        let input = "The gear should only be spinning when data is actually being transmitted, not when empty checks are running."
+        let result = matcher.apply(to: input)
+
+        XCTAssertEqual(result.text, input)
+    }
+
     func testPossessiveSingleTokenKeepsSuffixWhileCorrectingWord() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])

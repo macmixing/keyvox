@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.0.21] - 2026-07-15
 
-Shared deterministic paragraph and list variant controls.
+Shared deterministic paragraph and list variant controls with plural dictionary matching protection.
 
 ### Includes
 
@@ -16,11 +16,13 @@ Shared deterministic paragraph and list variant controls.
 - Added a shared variant resolver that selects an existing rendered result when available and otherwise restores the saved deterministic source variant.
 - Added deterministic text formatting that collapses paragraph breaks while preserving ordered-list line structure when lists remain enabled.
 - Added post-rewrite layout adjustment across all four paragraph and list state combinations.
+- Required known plural homophone candidates to share their full pronunciation before receiving the relaxed dictionary match boost, preventing unrelated words such as `checks` from becoming `cues` while preserving valid homophones such as `queues` and `cues` regardless of spelling.
 - Added shared-engine coverage for target-state selection, saved and rendered source selection, paragraph collapse, list-line preservation, and post-rewrite formatting.
+- Added shared-engine coverage for rejecting unrelated plural pronunciation collisions while preserving differently spelled plural homophone corrections.
 
 ### Notes
 
-- `1.0.21` bumps the tracked engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant handling used by dictation clients.
+- `1.0.21` bumps the tracked engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant handling plus plural dictionary match protection used by dictation clients.
 
 ---
 
