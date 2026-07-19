@@ -6,6 +6,40 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.16] - 2026-07-19
+
+Improves reversible List and Paragraph formatting consistency, preserves short trailing dictation audio, and strengthens custom dictionary matching.
+
+### Changed
+
+- Updated the keyboard's existing List and Paragraph long-press changes through `KeyVoxCore` `1.1.0` so deterministic state, saved and cached variant selection, paragraph collapse, ordered-list preservation, and post-Vibes layout adjustment use the same shared behavior across KeyVox clients.
+- Updated the project README and iOS architecture documentation to explain keyboard tap versus long-press behavior and the shared ownership of reversible List and Paragraph formatting.
+- Updated the bundled Whisper runtime through `KeyVoxWhisper` `1.0.1` from `whisper.cpp` `v1.7.5` to `v1.7.6`.
+
+### Fixed
+
+- Fixed Whisper dictation so trailing audio is still decoded when less than one second remains after the final completed segment.
+- Fixed plural custom-dictionary matching so unrelated pronunciation collisions such as `checks` and `cues` are rejected while valid differently spelled homophones such as `queues` and `cues` remain supported.
+- Fixed strong stylized dictionary corrections beside titlecase product wording so recognized text such as `Keybox Core` can still become `KeyVox Core` without weakening protection for unrelated name-like phrases.
+
+### Package versions
+
+KeyVox iOS 1.2.16
+  KeyVoxCore           1.1.0
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.11
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.1.0` adds shared deterministic paragraph/list state, variant resolution, text shaping, and post-rewrite layout adjustment, rejects unrelated plural pronunciation collisions, and restores strong stylized matches beside titlecase product context.
+- `KeyVoxWhisper` `1.0.1` updates the bundled `whisper.cpp` runtime to `v1.7.6` and adopts its 100-millisecond end-of-audio threshold so short trailing dictation audio is not skipped.
+
+---
+
 ## [1.2.15] - 2026-07-15
 
 Restores Neural Engine-backed background dictation on iOS 27, makes Parakeet model upgrades optional, completes ordinary dictated prose, and keeps long Vibes rewrites responsive.
