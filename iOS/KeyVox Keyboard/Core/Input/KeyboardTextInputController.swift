@@ -195,7 +195,10 @@ final class KeyboardTextInputController {
 
     #if DEBUG
     private func logNormalizationStage(_ stage: String, input: String, output: String) {
-        print("[KVXKeyboardInsert] \(stage) changed=\(input != output) text=\(output)")
+        print(
+            "[KVXKeyboardInsert] \(stage) changed=\(input != output) "
+                + "inputLength=\(input.count) outputLength=\(output.count)"
+        )
     }
     #endif
 
