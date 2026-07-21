@@ -10,17 +10,20 @@ struct PasteInsertionContext {
     let selectionLength: Int?
     let caretLocation: Int?
     let previousCharacter: Character?
+    let characterBeforePreviousCharacter: Character?
     let previousNonWhitespaceCharacter: Character?
 
     init(
         selectionLength: Int?,
         caretLocation: Int?,
         previousCharacter: Character?,
+        characterBeforePreviousCharacter: Character? = nil,
         previousNonWhitespaceCharacter: Character? = nil
     ) {
         self.selectionLength = selectionLength
         self.caretLocation = caretLocation
         self.previousCharacter = previousCharacter
+        self.characterBeforePreviousCharacter = characterBeforePreviousCharacter
         self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
     }
 }

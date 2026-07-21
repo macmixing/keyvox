@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-07-15**
+**Last Updated: 2026-07-21**
 
 ## Project Overview
 
@@ -10,6 +10,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership, and macOS-side iCloud sync wiring
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, provider-aware host integration, paste/update host integration
 - **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, deterministic paragraph/list state and variant handling, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
+- **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, spacing, quotation-mark context, and sentence boundaries
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -86,6 +87,7 @@ KeyVox/
 │   │   │   ├── Paste/
 │   │   │   │   ├── Accessibility/
 │   │   │   │   ├── Clipboard/
+│   │   │   │   ├── Composition/
 │   │   │   │   ├── Heuristics/
 │   │   │   │   ├── MenuFallback/
 │   │   │   │   ├── Pipeline/
@@ -150,6 +152,9 @@ KeyVox/
 │   │       ├── Support/
 │   │       ├── Audio/
 │   │       └── Resources/Pronunciation/
+│   ├── KeyVoxTextComposition/
+│   │   ├── Sources/KeyVoxTextComposition/
+│   │   └── Tests/KeyVoxTextCompositionTests/
 │   ├── KeyVoxWhisper/
 │   ├── KeyVoxParakeet/
 │   ├── KeyVoxLocalInference/
@@ -198,7 +203,7 @@ KeyVox/
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
 7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
 8. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
-9. `Core/Services/Paste/PasteService.swift` normalizes leading capitalization and spacing, then inserts text via Accessibility first and menu-bar Paste fallback second.
+9. `Core/Services/Paste/PasteService.swift` resolves macOS editor context through its composition coordinators, delegates leading capitalization and spacing policy to `Packages/KeyVoxTextComposition`, then inserts text via Accessibility first and menu-bar Paste fallback second.
 10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 11. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
 12. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
@@ -747,13 +752,16 @@ KeyVox/
   - Encapsulates AXObserver lifecycle used for live mutation verification during menu fallback.
 - `Core/Services/Paste/Clipboard/PasteClipboardSnapshot.swift`
   - Full-fidelity clipboard snapshot capture/restore utilities.
-- `Core/Services/Paste/Heuristics/PasteCapitalizationHeuristics.swift`
-  - Sentence-boundary-aware leading-cap normalization for finalized transcription right before insertion.
-  - Preserves dictionary-backed and structurally intentional casing while removing Whisper-style sentence casing mid-sentence.
+- `Core/Services/Paste/Composition/PasteCapitalizationCoordinator.swift`
+  - Resolves macOS Accessibility and recent-insertion fallback context before delegating leading-capitalization policy to `KeyVoxTextComposition`.
+  - Supplies the Mac-specific dictionary casing preservation decision without owning shared capitalization rules.
 - `Core/Services/Paste/Heuristics/PasteDictionaryCasingStore.swift`
   - Reads the persisted macOS dictionary snapshot to preserve exact leading phrase casing during paste-time normalization.
-- `Core/Services/Paste/Heuristics/PasteSpacingHeuristics.swift`
-  - Smart leading separator logic and cross-dictation spacing heuristics.
+- `Core/Services/Paste/Composition/PasteSpacingCoordinator.swift`
+  - Resolves selection, caret, Accessibility, and recent-insertion fallback context before delegating leading-separator policy to `KeyVoxTextComposition`.
+- `Packages/KeyVoxTextComposition/Sources/KeyVoxTextComposition/`
+  - Owns deterministic capitalization, spacing, quotation-mark classification, and sentence-boundary policy shared by macOS and iOS.
+  - Accepts platform-neutral adjacent-text context and has no dependency on Accessibility, UIKit document proxies, clipboards, or insertion transports.
 - `Core/Services/Paste/Pipeline/PastePolicies.swift`
   - Static policy helpers for list render mode and failure-recovery decisions.
 - `Core/Services/Paste/Pipeline/PasteModels.swift`

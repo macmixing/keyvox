@@ -93,6 +93,7 @@ final class PasteAXInspector: PasteAXInspecting {
         let selectionLength = selectedRange.map { max(0, $0.length) }
 
         var previousCharacter: Character?
+        var characterBeforePreviousCharacter: Character?
         var previousNonWhitespaceCharacter: Character?
         if let caretLocation, caretLocation > 0 {
             previousCharacter = previousCharacterFromValueAttribute(element: focusedElement, caretLocation: caretLocation)
@@ -101,6 +102,19 @@ final class PasteAXInspector: PasteAXInspecting {
                     CFRange(location: caretLocation - 1, length: 1),
                     element: focusedElement
                 )?.first
+            }
+
+            if caretLocation > 1 {
+                characterBeforePreviousCharacter = previousCharacterFromValueAttribute(
+                    element: focusedElement,
+                    caretLocation: caretLocation - 1
+                )
+                if characterBeforePreviousCharacter == nil {
+                    characterBeforePreviousCharacter = stringForRange(
+                        CFRange(location: caretLocation - 2, length: 1),
+                        element: focusedElement
+                    )?.first
+                }
             }
 
             previousNonWhitespaceCharacter = computePreviousNonWhitespaceCharacter(
@@ -113,6 +127,7 @@ final class PasteAXInspector: PasteAXInspecting {
             selectionLength: selectionLength,
             caretLocation: caretLocation,
             previousCharacter: previousCharacter,
+            characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: previousNonWhitespaceCharacter
         )
     }

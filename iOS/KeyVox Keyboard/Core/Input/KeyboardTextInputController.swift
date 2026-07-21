@@ -166,17 +166,41 @@ final class KeyboardTextInputController {
         _ text: String,
         documentContextBeforeInput: String?
     ) -> String {
-        let capitalizationNormalizedText = KeyboardInsertionCapitalizationHeuristics
+        let capitalizationNormalizedText = KeyboardInsertionCapitalizationCoordinator
             .normalizeLeadingCapitalizationIfNeeded(
                 text: text,
                 documentContextBeforeInput: documentContextBeforeInput,
                 shouldPreserveLeadingCapitalization: shouldPreserveLeadingCapitalization
             )
-        return KeyboardInsertionSpacingHeuristics.applySmartLeadingSeparatorIfNeeded(
+        #if DEBUG
+        logNormalizationStage(
+            "capitalizationNormalized",
+            input: text,
+            output: capitalizationNormalizedText
+        )
+        #endif
+        let insertionText = KeyboardInsertionSpacingCoordinator.applySmartLeadingSeparatorIfNeeded(
             to: capitalizationNormalizedText,
             documentContextBeforeInput: documentContextBeforeInput
         )
+        #if DEBUG
+        logNormalizationStage(
+            "spacingNormalized",
+            input: capitalizationNormalizedText,
+            output: insertionText
+        )
+        #endif
+        return insertionText
     }
+
+    #if DEBUG
+    private func logNormalizationStage(_ stage: String, input: String, output: String) {
+        print(
+            "[KVXKeyboardInsert] \(stage) changed=\(input != output) "
+                + "inputLength=\(input.count) outputLength=\(output.count)"
+        )
+    }
+    #endif
 
     var selectedText: String? {
         documentProxy.selectedText
