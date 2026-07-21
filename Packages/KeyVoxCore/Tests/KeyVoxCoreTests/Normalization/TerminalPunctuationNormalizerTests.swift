@@ -22,6 +22,16 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(imperativeOutput, "Run!")
     }
 
+    func testConvertsTerminalExclamationCommandAfterClauseEndingInThat() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        let output = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I'm happy to hear that exclamation point."
+        )
+
+        XCTAssertEqual(output, "I'm happy to hear that!")
+    }
+
     func testConvertsRepeatedTerminalCommandsInOrder() {
         let normalizer = TerminalPunctuationNormalizer()
 
@@ -108,11 +118,15 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
     func testConvertsTerminalQuestionCommandAfterDeterminerPhrase() {
         let normalizer = TerminalPunctuationNormalizer()
 
-        let output = normalizer.normalizeSpokenTerminalPunctuation(
+        let punctuatedOutput = normalizer.normalizeSpokenTerminalPunctuation(
             in: "That's cool. So you're a big fan of that question mark."
         )
+        let unpunctuatedOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I'm a fan of that question mark"
+        )
 
-        XCTAssertEqual(output, "That's cool. So you're a big fan of that?")
+        XCTAssertEqual(punctuatedOutput, "That's cool. So you're a big fan of that?")
+        XCTAssertEqual(unpunctuatedOutput, "I'm a fan of that?")
     }
 
     func testDoesNotConvertProtectedDeterminerCommandEdges() {
@@ -121,10 +135,6 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "That question mark."),
             "That question mark."
-        )
-        XCTAssertEqual(
-            normalizer.normalizeSpokenTerminalPunctuation(in: "I'm a fan of that question mark"),
-            "I'm a fan of that question mark"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "Of that question mark."),

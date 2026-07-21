@@ -170,7 +170,7 @@ public struct TerminalPunctuationNormalizer {
         }
 
         if previousWord.lexicalClass == .determiner,
-           !isEligibleDeterminerCommand(match: match, previousIndex: previousIndex, words: words, text: text) {
+           !isEligibleDeterminerCommand(previousIndex: previousIndex, words: words) {
             return false
         }
 
@@ -195,13 +195,10 @@ public struct TerminalPunctuationNormalizer {
     }
 
     private func isEligibleDeterminerCommand(
-        match: CommandMatch,
         previousIndex: Int,
-        words: [WordToken],
-        text: String
+        words: [WordToken]
     ) -> Bool {
-        guard hasExplicitCommandBoundaryAfter(match: match, words: words, text: text),
-              previousIndex > words.startIndex else {
+        guard previousIndex > words.startIndex else {
             return false
         }
 
@@ -210,10 +207,19 @@ public struct TerminalPunctuationNormalizer {
             return false
         }
 
-        // isEligibleDeterminerCommand is a narrow back-reference rule: hasExplicitCommandBoundaryAfter plus [noun/adjective] [preposition] [determiner] via isNominalOrDescriptive.
         let thirdPreviousIndex = words.index(before: secondPreviousIndex)
-        return words[secondPreviousIndex].lexicalClass == .preposition
-            && isNominalOrDescriptive(words[thirdPreviousIndex])
+        if words[secondPreviousIndex].lexicalClass == .preposition,
+           isNominalOrDescriptive(words[thirdPreviousIndex]) {
+            return true
+        }
+
+        // Accept sentence-like clauses such as "happy to hear that exclamation point"
+        // without admitting short punctuation-word references such as "I typed that question mark."
+        guard thirdPreviousIndex > words.startIndex else { return false }
+        let fourthPreviousIndex = words.index(before: thirdPreviousIndex)
+        return words[thirdPreviousIndex].lexicalClass == .particle
+            && words[secondPreviousIndex].lexicalClass == .verb
+            && isNominalOrDescriptive(words[fourthPreviousIndex])
     }
 
     private func isNominalOrDescriptive(_ word: WordToken) -> Bool {

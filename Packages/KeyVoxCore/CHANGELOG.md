@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-07-21
+
+Spoken terminal punctuation completion for determiner-ending clauses.
+
+### Includes
+
+- Converted eligible spoken terminal punctuation after determiner-ending phrases, including `I'm happy to hear that exclamation point.` becoming `I'm happy to hear that!`.
+- Preserved the existing determiner back-reference behavior for natural phrases such as `I'm a fan of that exclamation point` becoming `I'm a fan of that!`, even when the recognizer omits terminal punctuation.
+- Kept ordinary punctuation-word references such as `I typed that question mark.` and short protected determiner edges unchanged.
+- Added shared normalizer and full post-processing coverage for punctuated and unpunctuated determiner-ending commands.
+
+### Notes
+
+- `1.1.1` bumps the tracked patch engine version for `KeyVoxCore` to cover spoken terminal punctuation completion used by shared dictation clients.
+
+---
+
 ## [1.1.0] - 2026-07-15
 
 Shared deterministic paragraph and list variant controls with dictionary matching protections.
