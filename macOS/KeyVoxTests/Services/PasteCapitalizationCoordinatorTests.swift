@@ -147,6 +147,33 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, "Hello")
     }
 
+    func testKeepsCapitalizationAfterSingleIndentedNewLine() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 6,
+                    previousCharacter: " ",
+                    characterBeforePreviousCharacter: "\n",
+                    previousNonWhitespaceCharacter: "x"
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testKeepsCapitalizationAfterPunctuationAndSpace() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
@@ -264,6 +291,32 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "hello")
+    }
+
+    func testSelectionReplacementUsesLocalSentenceBoundary() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 3,
+                    caretLocation: 4,
+                    previousCharacter: " ",
+                    previousNonWhitespaceCharacter: "."
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date().addingTimeInterval(-1),
+            lastInsertedTrailingCharacter: "x",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
     }
 
     func testMissingAXContextKeepsCapitalizationWithFallbackSignal() {

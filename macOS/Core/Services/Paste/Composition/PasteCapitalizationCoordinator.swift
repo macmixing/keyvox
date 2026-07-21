@@ -75,6 +75,7 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 characterBeforePreviousCharacter: context.characterBeforePreviousCharacter,
                 previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter,
                 isAfterNewline: context.previousCharacter?.isNewline == true
+                    || context.characterBeforePreviousCharacter?.isNewline == true
             )
 
             if TextCompositionPolicy.isImmediatelyAfterOpeningQuote(compositionContext) {
@@ -87,7 +88,8 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 return true
             }
 
-            if let selectionLength = context.selectionLength, selectionLength == 0 {
+            if context.previousCharacter != nil
+                || context.previousNonWhitespaceCharacter != nil {
                 return TextCompositionPolicy.isSentenceStart(in: compositionContext)
             }
         }
