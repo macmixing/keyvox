@@ -1474,13 +1474,17 @@ Warning precedence must remain:
 
 ### Text Insertion Rules
 
-`KeyboardInsertionSpacingHeuristics` stays intentionally conservative:
+`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, spacing, quotation-mark, and sentence-boundary policy shared with macOS. It accepts only platform-neutral preceding-text context and never reads `UITextDocumentProxy` or inserts text.
+
+`KeyboardInsertionSpacingCoordinator` converts the keyboard's preceding-text snapshot into the shared context and stays intentionally thin:
 
 - do not prepend a space after existing whitespace
 - do not prepend a space before incoming punctuation
 - do prepend a space after word-like or trigger-punctuation contexts when needed
 
-`KeyboardInsertionCapitalizationHeuristics` stays keyboard-only and does not replace the shared all-caps override owned by the pipeline.
+`KeyboardInsertionCapitalizationCoordinator` supplies the keyboard's preceding-text snapshot and casing-preservation decision to the shared policy. It does not replace the all-caps override owned by the dictation pipeline.
+
+`KeyboardTextInputController` remains the insertion owner. It calls the coordinators, logs the capitalization and spacing stages in debug builds, and inserts the resulting text through the document proxy.
 
 ### Keyboard-Owned Local State
 
@@ -1579,6 +1583,7 @@ Those remain device, integration, or manual-test territory by design.
 - Keep model integrity checks strict. Accepting partial installs creates hard-to-debug runtime failures.
 - Prefer injectable seams for time, storage, downloads, permissions, and services, following the existing onboarding, model, and transcription manager patterns.
 - When `KeyVoxCore` behavior changes, update this document only if the iOS runtime contract or target boundaries change as well.
+- When `KeyVoxTextComposition` changes its context contract or insertion-facing policy, update the keyboard insertion section and `CODEMAP.md` without moving document-proxy ownership into the package.
 - When `KeyVoxStyleRewrite` changes style identifiers, artifact fields, fallback policy, prewarm lifecycle, or transform metadata consumed by iOS, update this document and `CODEMAP.md`.
 
 ## Change Tracking
