@@ -18,8 +18,8 @@ class PasteService {
     private let menuFallbackExecutor: PasteMenuFallbackExecuting
     private let menuFallbackCoordinator: PasteMenuFallbackCoordinating
     private let dictionaryCasingStore: PasteDictionaryCasingStore
-    private let capitalizationHeuristics: PasteCapitalizationHeuristicApplying
-    private let spacingHeuristics: PasteSpacingHeuristicApplying
+    private let capitalizationCoordinator: PasteCapitalizationCoordinating
+    private let spacingCoordinator: PasteSpacingCoordinating
     private let clipboardAdapter: PasteClipboardAdapting
     private let failureRecoveryController: PasteFailureRecoveryControlling
     private let frontmostAppIdentityProvider: () -> PasteAppIdentity?
@@ -40,8 +40,8 @@ class PasteService {
         menuFallbackExecutor: PasteMenuFallbackExecuting? = nil,
         menuFallbackCoordinator: PasteMenuFallbackCoordinating = PasteMenuFallbackCoordinator(),
         dictionaryCasingStore: PasteDictionaryCasingStore = PasteDictionaryCasingStore(),
-        capitalizationHeuristics: PasteCapitalizationHeuristicApplying? = nil,
-        spacingHeuristics: PasteSpacingHeuristicApplying? = nil,
+        capitalizationCoordinator: PasteCapitalizationCoordinating? = nil,
+        spacingCoordinator: PasteSpacingCoordinating? = nil,
         untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) {
         let resolvedFrontmostAppIdentityProvider = frontmostAppIdentityProvider
@@ -74,14 +74,14 @@ class PasteService {
             )
         self.menuFallbackCoordinator = menuFallbackCoordinator
         self.dictionaryCasingStore = dictionaryCasingStore
-        self.capitalizationHeuristics = capitalizationHeuristics
-            ?? PasteCapitalizationHeuristics(
+        self.capitalizationCoordinator = capitalizationCoordinator
+            ?? PasteCapitalizationCoordinator(
                 axInspector: axInspector,
                 heuristicTTL: heuristicTTL,
                 clockNow: clockNow
             )
-        self.spacingHeuristics = spacingHeuristics
-            ?? PasteSpacingHeuristics(
+        self.spacingCoordinator = spacingCoordinator
+            ?? PasteSpacingCoordinator(
                 axInspector: axInspector,
                 heuristicTTL: heuristicTTL
             )
@@ -96,7 +96,7 @@ class PasteService {
         if let targetAppIdentity {
             axInspector.prepareApplicationAccessibility(for: targetAppIdentity.pid)
         }
-        let capitalizationNormalizedText = capitalizationHeuristics.normalizeLeadingCapitalizationIfNeeded(
+        let capitalizationNormalizedText = capitalizationCoordinator.normalizeLeadingCapitalizationIfNeeded(
             in: text,
             currentIdentity: targetAppIdentity,
             lastInsertionAppIdentity: lastInsertionAppIdentity,
@@ -108,7 +108,14 @@ class PasteService {
                 dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: incomingText)
             }
         )
-        let insertionText = spacingHeuristics.applySmartLeadingSeparatorIfNeeded(
+        #if DEBUG
+        logNormalizationStage(
+            "capitalizationNormalized",
+            input: text,
+            output: capitalizationNormalizedText
+        )
+        #endif
+        let insertionText = spacingCoordinator.applySmartLeadingSeparatorIfNeeded(
             to: capitalizationNormalizedText,
             currentIdentity: targetAppIdentity,
             lastInsertionAppIdentity: lastInsertionAppIdentity,
@@ -116,6 +123,13 @@ class PasteService {
             lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
             identityMatcher: appIdentityMatches
         )
+        #if DEBUG
+        logNormalizationStage(
+            "spacingNormalized",
+            input: capitalizationNormalizedText,
+            output: insertionText
+        )
+        #endif
 
         // Preserve full clipboard fidelity before writing insertion payload.
         let savedSnapshot = clipboardAdapter.captureSnapshot()
@@ -183,6 +197,12 @@ class PasteService {
             }
         }
     }
+
+    #if DEBUG
+    private func logNormalizationStage(_ stage: String, input: String, output: String) {
+        print("[KVXPaste] \(stage) changed=\(input != output) text=\(output)")
+    }
+    #endif
 
     // MARK: - List Formatting Target
     func preferredListRenderModeForFocusedElement() -> ListRenderMode {

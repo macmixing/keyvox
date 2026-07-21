@@ -1,6 +1,7 @@
 import Foundation
+import KeyVoxTextComposition
 
-protocol PasteCapitalizationHeuristicApplying {
+protocol PasteCapitalizationCoordinating {
     func normalizeLeadingCapitalizationIfNeeded(
         in text: String,
         currentIdentity: PasteAppIdentity?,
@@ -13,7 +14,7 @@ protocol PasteCapitalizationHeuristicApplying {
     ) -> String
 }
 
-final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
+final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
     private let axInspector: PasteAXInspecting
     private let heuristicTTL: TimeInterval
     private let clockNow: () -> Date
@@ -38,31 +39,20 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
         identityMatcher: (PasteAppIdentity, PasteAppIdentity) -> Bool,
         shouldPreserveLeadingCapitalization: (String) -> Bool
     ) -> String {
-        guard !text.isEmpty else { return text }
-        guard let firstLetterIndex = text.firstIndex(where: \.isLetter) else { return text }
-        guard text[..<firstLetterIndex].allSatisfy(\.isWhitespace) else { return text }
-        guard !shouldPreserveLeadingCapitalization(text) else { return text }
-
-        let leadingWord = text[firstLetterIndex...].prefix(while: \.isLetter)
-        guard isDefaultSentenceCase(word: leadingWord) else { return text }
-        guard !isSentenceStart(
+        let sentenceStart = isSentenceStart(
             currentIdentity: currentIdentity,
             lastInsertionAppIdentity: lastInsertionAppIdentity,
             lastInsertionAt: lastInsertionAt,
             lastInsertedTrailingCharacter: lastInsertedTrailingCharacter,
             lastInsertedTrailingNonWhitespaceCharacter: lastInsertedTrailingNonWhitespaceCharacter,
             identityMatcher: identityMatcher
-        ) else {
-            return text
-        }
-
-        var output = text
-        let firstCharacter = output[firstLetterIndex]
-        output.replaceSubrange(
-            firstLetterIndex...firstLetterIndex,
-            with: String(firstCharacter).lowercased()
         )
-        return output
+        return TextCompositionPolicy.normalizeLeadingCapitalizationIfNeeded(
+            in: text,
+            isSentenceStart: sentenceStart,
+            scope: .firstLetterAfterLeadingWhitespace,
+            preserveLeadingCapitalization: shouldPreserveLeadingCapitalization(text)
+        )
     }
 
     private func isSentenceStart(
@@ -79,20 +69,32 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
                 return true
             }
 
-            if let selectionLength = context.selectionLength, selectionLength == 0 {
-                if context.previousCharacter?.isNewline == true {
-                    return true
-                }
+            let compositionContext = TextCompositionContext(
+                isAtDocumentStart: false,
+                previousCharacter: context.previousCharacter,
+                characterBeforePreviousCharacter: context.characterBeforePreviousCharacter,
+                previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter,
+                isAfterNewline: context.previousCharacter?.isNewline == true
+            )
 
-                if let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter {
-                    return isSentenceBoundary(previousNonWhitespaceCharacter)
-                }
+            if TextCompositionPolicy.isImmediatelyAfterOpeningQuote(compositionContext) {
+                return true
+            }
+
+            if TextCompositionPolicy.isImmediatelyAfterTerminalPunctuationAndClosingQuote(
+                compositionContext
+            ) {
+                return true
+            }
+
+            if let selectionLength = context.selectionLength, selectionLength == 0 {
+                return TextCompositionPolicy.isSentenceStart(in: compositionContext)
             }
         }
 
         if context == nil {
             #if DEBUG
-            print("[PasteCapitalizationHeuristics] suppress_last_insertion_fallback reason=focused_context_missing")
+            print("[PasteCapitalizationCoordinator] suppress_last_insertion_fallback reason=focused_context_missing")
             #endif
             return true
         }
@@ -110,27 +112,12 @@ final class PasteCapitalizationHeuristics: PasteCapitalizationHeuristicApplying 
 
         let boundaryCharacter = lastInsertedTrailingNonWhitespaceCharacter
             ?? lastInsertedTrailingCharacter.flatMap { $0.isWhitespace ? nil : $0 }
-        return boundaryCharacter.map(isSentenceBoundary) ?? false
-    }
-
-    private func isSentenceBoundary(_ character: Character) -> Bool {
-        character == "." || character == "?" || character == "!"
+        return boundaryCharacter.map(TextCompositionPolicy.isSentenceBoundary) ?? false
     }
 }
 
 private extension Character {
     var isNewline: Bool {
         unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
-    }
-}
-
-private extension PasteCapitalizationHeuristics {
-    func isDefaultSentenceCase<S: StringProtocol>(word: S) -> Bool {
-        guard let firstCharacter = word.first else { return false }
-        guard firstCharacter.isUppercase else { return false }
-
-        let remainder = word.dropFirst()
-        guard !remainder.isEmpty else { return false }
-        return remainder.allSatisfy { !$0.isUppercase }
     }
 }

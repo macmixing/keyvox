@@ -3,8 +3,8 @@ import XCTest
 @testable import KeyVox
 
 @MainActor
-final class PasteSpacingHeuristicsTests: XCTestCase {
-    private static var retainedHeuristics: [PasteSpacingHeuristics] = []
+final class PasteSpacingCoordinatorTests: XCTestCase {
+    private static var retainedCoordinators: [PasteSpacingCoordinator] = []
 
     func testDoesNotInsertLeadingSpaceWhenReplacingSelection() {
         let inspector = MockPasteAXInspector(
@@ -96,6 +96,52 @@ final class PasteSpacingHeuristicsTests: XCTestCase {
         XCTAssertEqual(output, "hello")
     }
 
+    func testMapsOpeningQuoteContextToSharedSpacingPolicy() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 20,
+                previousCharacter: "\"",
+                characterBeforePreviousCharacter: " "
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "This is cool.",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, "This is cool.")
+    }
+
+    func testMapsClosingQuoteContextToSharedSpacingPolicy() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 42,
+                previousCharacter: "\"",
+                characterBeforePreviousCharacter: ","
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "but he didn't listen.",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, " but he didn't listen.")
+    }
+
     func testMissingAXContextDoesNotInsertLeadingSpaceFromFallbackSignal() {
         let inspector = MockPasteAXInspector(focusedContext: nil)
         let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
@@ -160,10 +206,10 @@ final class PasteSpacingHeuristicsTests: XCTestCase {
     private func makeRetainedHeuristics(
         axInspector: PasteAXInspecting,
         heuristicTTL: TimeInterval
-    ) -> PasteSpacingHeuristics {
-        let heuristics = PasteSpacingHeuristics(axInspector: axInspector, heuristicTTL: heuristicTTL)
-        Self.retainedHeuristics.append(heuristics)
-        return heuristics
+    ) -> PasteSpacingCoordinator {
+        let coordinator = PasteSpacingCoordinator(axInspector: axInspector, heuristicTTL: heuristicTTL)
+        Self.retainedCoordinators.append(coordinator)
+        return coordinator
     }
 }
 

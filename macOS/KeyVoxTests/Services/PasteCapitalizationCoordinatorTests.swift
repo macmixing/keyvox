@@ -4,8 +4,8 @@ import XCTest
 @testable import KeyVox
 
 @MainActor
-final class PasteCapitalizationHeuristicsTests: XCTestCase {
-    private static var retainedHeuristics: [PasteCapitalizationHeuristics] = []
+final class PasteCapitalizationCoordinatorTests: XCTestCase {
+    private static var retainedCoordinators: [PasteCapitalizationCoordinator] = []
 
     func testKeepsCapitalizationAtFieldStart() {
         let heuristics = makeRetainedHeuristics(
@@ -38,6 +38,87 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
 
     func testKeepsCapitalizationAfterExclamationPoint() {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: "!")
+    }
+
+    func testMapsOpeningQuoteContextToSharedCapitalizationPolicy() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 20,
+                    previousCharacter: "\"",
+                    characterBeforePreviousCharacter: " ",
+                    previousNonWhitespaceCharacter: "\""
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "This is cool.",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "This is cool.")
+    }
+
+    func testMapsClosingQuoteContinuationToSharedCapitalizationPolicy() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 42,
+                    previousCharacter: "\"",
+                    characterBeforePreviousCharacter: ",",
+                    previousNonWhitespaceCharacter: "\""
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "But he didn't listen.",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "but he didn't listen.")
+    }
+
+    func testMapsQuotedSentenceBoundaryToSharedCapitalizationPolicy() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 24,
+                    previousCharacter: "\"",
+                    characterBeforePreviousCharacter: "?",
+                    previousNonWhitespaceCharacter: "\""
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "We missed that.",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "We missed that.")
     }
 
     func testKeepsCapitalizationAtStartOfNewLine() {
@@ -384,13 +465,13 @@ final class PasteCapitalizationHeuristicsTests: XCTestCase {
     private func makeRetainedHeuristics(
         axInspector: PasteAXInspecting,
         heuristicTTL: TimeInterval = 10
-    ) -> PasteCapitalizationHeuristics {
-        let heuristics = PasteCapitalizationHeuristics(
+    ) -> PasteCapitalizationCoordinator {
+        let coordinator = PasteCapitalizationCoordinator(
             axInspector: axInspector,
             heuristicTTL: heuristicTTL
         )
-        Self.retainedHeuristics.append(heuristics)
-        return heuristics
+        Self.retainedCoordinators.append(coordinator)
+        return coordinator
     }
 }
 

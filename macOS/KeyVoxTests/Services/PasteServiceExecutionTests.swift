@@ -771,8 +771,8 @@ final class PasteServiceExecutionTests: XCTestCase {
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
             dictionaryCasingStore: PasteDictionaryCasingStore(dictionaryFileURL: dictionaryFileURL),
-            capitalizationHeuristics: capitalization,
-            spacingHeuristics: spacing,
+            capitalizationCoordinator: capitalization,
+            spacingCoordinator: spacing,
             untouchedInsertionReplacer: untouchedInsertionReplacer
         )
         Self.retainedServices.append(service)

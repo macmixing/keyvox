@@ -38,7 +38,7 @@ final class MockFailureRecoveryController: PasteFailureRecoveryControlling {
     }
 }
 
-final class MockSpacingHeuristics: PasteSpacingHeuristicApplying {
+final class MockSpacingHeuristics: PasteSpacingCoordinating {
     struct Input {
         let text: String
         let currentIdentity: PasteAppIdentity?
@@ -71,7 +71,7 @@ final class MockSpacingHeuristics: PasteSpacingHeuristicApplying {
     }
 }
 
-final class MockCapitalizationHeuristics: PasteCapitalizationHeuristicApplying {
+final class MockCapitalizationHeuristics: PasteCapitalizationCoordinating {
     struct Input {
         let text: String
         let currentIdentity: PasteAppIdentity?
