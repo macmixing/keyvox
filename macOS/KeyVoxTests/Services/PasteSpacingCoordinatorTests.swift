@@ -160,7 +160,13 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
     }
 
     func testFallbackHeuristicDoesNotInsertWhenTTLExpired() {
-        let inspector = MockPasteAXInspector(focusedContext: nil)
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: nil,
+                caretLocation: 8,
+                previousCharacter: nil
+            )
+        )
         let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 1)
         let now = Date()
 
@@ -177,7 +183,13 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
     }
 
     func testFallbackHeuristicDoesNotInsertWhenIdentityDoesNotMatch() {
-        let inspector = MockPasteAXInspector(focusedContext: nil)
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: nil,
+                caretLocation: 8,
+                previousCharacter: nil
+            )
+        )
         let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
         let now = Date()
 

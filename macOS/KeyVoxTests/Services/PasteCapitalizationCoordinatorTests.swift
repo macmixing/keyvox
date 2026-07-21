@@ -338,7 +338,16 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
     }
 
     func testFallbackHeuristicKeepsCapitalizationAfterTrailingNewLine() {
-        let heuristics = makeRetainedHeuristics(axInspector: MockPasteAXInspector(focusedContext: nil), heuristicTTL: 10)
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: nil,
+                    caretLocation: 8,
+                    previousCharacter: nil
+                )
+            ),
+            heuristicTTL: 10
+        )
         let now = Date()
 
         let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
@@ -347,6 +356,58 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
             lastInsertionAppIdentity: identity("com.example.app", 1),
             lastInsertionAt: now.addingTimeInterval(-1),
             lastInsertedTrailingCharacter: "\n",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
+    func testPartialAXContextKeepsCapitalizationWhenTTLExpired() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: nil,
+                    caretLocation: 8,
+                    previousCharacter: nil
+                )
+            ),
+            heuristicTTL: 1
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date().addingTimeInterval(-5),
+            lastInsertedTrailingCharacter: "x",
+            lastInsertedTrailingNonWhitespaceCharacter: "x",
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
+    func testPartialAXContextKeepsCapitalizationWhenIdentityDoesNotMatch() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: nil,
+                    caretLocation: 8,
+                    previousCharacter: nil
+                )
+            ),
+            heuristicTTL: 10
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.other.app", 2),
+            lastInsertionAt: Date().addingTimeInterval(-1),
+            lastInsertedTrailingCharacter: "x",
             lastInsertedTrailingNonWhitespaceCharacter: "x",
             identityMatcher: identityMatcher,
             shouldPreserveLeadingCapitalization: { _ in false }
