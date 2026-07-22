@@ -1,8 +1,9 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 struct KeyboardDictationRenderedVariantKey: Hashable {
-    let deterministicState: KeyboardDeterministicDictationState
+    let deterministicState: DictationDeterministicState
     let style: StyleRewriteStyle
 }
 
@@ -29,9 +30,9 @@ struct KeyboardDictationChangeSession {
     var currentStyle: StyleRewriteStyle
     var previousStyle: StyleRewriteStyle?
     var variants: [StyleRewriteStyle: String]
-    var baselineDeterministicState: KeyboardDeterministicDictationState?
-    var currentDeterministicState: KeyboardDeterministicDictationState?
-    var deterministicVariants: [KeyboardDeterministicDictationState: String]
+    var baselineDeterministicState: DictationDeterministicState?
+    var currentDeterministicState: DictationDeterministicState?
+    var deterministicVariants: [DictationDeterministicState: String]
     var renderedDeterministicVariants: [KeyboardDictationRenderedVariantKey: String]
     var capsBaselineIsUppercase: Bool
     var isCapsTransformApplied: Bool

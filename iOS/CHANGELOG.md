@@ -6,6 +6,87 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.16] - 2026-07-19
+
+Improves reversible List and Paragraph formatting consistency, preserves short trailing dictation audio, and strengthens custom dictionary matching.
+
+### Changed
+
+- Updated the keyboard's existing List and Paragraph long-press changes through `KeyVoxCore` `1.1.0` so deterministic state, saved and cached variant selection, paragraph collapse, ordered-list preservation, and post-Vibes layout adjustment use the same shared behavior across KeyVox clients.
+- Updated the project README and iOS architecture documentation to explain keyboard tap versus long-press behavior and the shared ownership of reversible List and Paragraph formatting.
+- Updated the bundled Whisper runtime through `KeyVoxWhisper` `1.0.1` from `whisper.cpp` `v1.7.5` to `v1.7.6`.
+
+### Fixed
+
+- Fixed Whisper dictation so trailing audio is still decoded when less than one second remains after the final completed segment.
+- Fixed plural custom-dictionary matching so unrelated pronunciation collisions such as `checks` and `cues` are rejected while valid differently spelled homophones such as `queues` and `cues` remain supported.
+- Fixed strong stylized dictionary corrections beside titlecase product wording so recognized text such as `Keybox Core` can still become `KeyVox Core` without weakening protection for unrelated name-like phrases.
+
+### Package versions
+
+KeyVox iOS 1.2.16
+  KeyVoxCore           1.1.0
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.11
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.1.0` adds shared deterministic paragraph/list state, variant resolution, text shaping, and post-rewrite layout adjustment, rejects unrelated plural pronunciation collisions, and restores strong stylized matches beside titlecase product context.
+- `KeyVoxWhisper` `1.0.1` updates the bundled `whisper.cpp` runtime to `v1.7.6` and adopts its 100-millisecond end-of-audio threshold so short trailing dictation audio is not skipped.
+
+---
+
+## [1.2.15] - 2026-07-15
+
+Restores Neural Engine-backed background dictation on iOS 27, makes Parakeet model upgrades optional, completes ordinary dictated prose, and keeps long Vibes rewrites responsive.
+
+### Added
+
+- Added Apple's iOS 27 continued-processing inference entitlement so the existing Core ML speech-to-text path can use the Neural Engine while KeyVox is executing in the background.
+- Added persistent dismissal for the optional Parakeet update prompt so choosing Later does not show the same prompt again while the update remains available in Settings.
+
+### Changed
+
+- Returned iOS 27 Whisper and Parakeet inference to their standard Neural Engine-capable runtimes instead of using the temporary CPU-only compatibility paths from the iOS 1.2.14 release branch.
+- Returned `KeyVoxWhisper` to the upstream `whisper.cpp` v1.7.5 binary dependency and removed the temporary package-owned Whisper runtime artifact.
+- Changed legacy Parakeet installations from a required iOS 27 migration to an optional update available to Parakeet users on iOS, while keeping complete legacy installations ready for dictation.
+- Changed the Settings model card so a ready legacy Parakeet installation shows Update available and an Update action without being classified as failed or repair-required.
+- Changed the keyboard model check so complete legacy and current Parakeet installations are both treated as ready; only incomplete or damaged installs surface the Settings repair action.
+- Updated shared dictation cleanup through `KeyVoxCore` `1.0.20` so eligible multi-word prose receives a terminal period and terminal commas are replaced cleanly.
+- Updated Vibes output repair through `KeyVoxStyleRewrite` `1.0.11` so long Casual and Polished dictations remain responsive while deterministic repair runs.
+
+### Fixed
+
+- Fixed iOS 27 background Whisper and Parakeet Neural Engine requests being canceled when the app had otherwise valid background execution time.
+- Fixed legacy Parakeet install validation so required retained files and manifest SHA-256 entries are verified before an installation is accepted as ready.
+- Fixed Parakeet decoder-state copying so padded or non-contiguous Core ML tensor layouts are validated against their addressable source and destination capacities before copying.
+- Fixed ordinary dictated prose ending without sentence punctuation while preserving questions, exclamations, lists, labels, math, times, email addresses, and websites.
+- Fixed long Vibes rewrites blocking overlay animation or spending unbounded work treating an entire paragraph as one possible number phrase.
+
+### Package versions
+
+KeyVox iOS 1.2.15
+  KeyVoxCore           1.0.20
+  KeyVoxLocalInference 1.0.4
+  KeyVoxParakeet       1.0.4
+  KeyVoxStyleRewrite   1.0.11
+  KeyVoxTTS            1.0.2
+  KeyVoxVibesAdapters  1.0.4
+  KeyVoxWhisper        1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.0.20` adds terminal-period completion for eligible prose, replaces terminal commas without producing duplicate punctuation, and preserves protected non-prose output.
+- `KeyVoxParakeet` `1.0.4` keeps current and legacy model compatibility, restores CPU and Neural Engine execution on iOS 27, and validates padded encoder and decoder tensor storage before copying.
+- `KeyVoxStyleRewrite` `1.0.11` moves deterministic output repair away from the main actor and bounds long-form number parsing while preserving supported factual repairs.
+- `KeyVoxWhisper` `1.0.0` restores the upstream `whisper.cpp` v1.7.5 binary dependency now that iOS 27 background Neural Engine execution is enabled through the required app entitlement.
+
+---
+
 ## [1.2.14] - 2026-07-11
 
 Improves custom dictionary matching on the iOS 27 compatibility release branch so random recognizer titlecase is less likely to trigger accidental replacements.

@@ -19,12 +19,16 @@ protocol DictationTriggerControllerDelegate: AnyObject {
     func triggerStartRecording()
     func triggerStopRecordingAndTranscribe()
     func triggerCancelQuickTapRecording()
+    func triggerCancelRecordingForFormattingShortcut(completion: @escaping () -> Void)
+    func triggerPresentFormattingProcessing(_ kind: DictationDeterministicControlKind)
+    func triggerPerformFormatting(_ kind: DictationDeterministicControlKind) async
 }
 
 @MainActor
 final class DictationTriggerController {
     weak var delegate: DictationTriggerControllerDelegate?
     private var deferredRecordingStartWorkItem: DispatchWorkItem?
+    private var formattingShortcutConsumedCurrentPress = false
 
     init(delegate: DictationTriggerControllerDelegate) {
         self.delegate = delegate
@@ -57,6 +61,14 @@ final class DictationTriggerController {
     func handleTriggerKey(isPressed: Bool, timestamp: TimeInterval) {
         guard let delegate else { return }
         guard delegate.triggerAppSettings.hasCompletedOnboarding else { return }
+        if formattingShortcutConsumedCurrentPress {
+            if isPressed == false {
+                formattingShortcutConsumedCurrentPress = false
+                delegate.triggerVibeActionController.cancelTriggerInteraction()
+                delegate.triggerUpdateOverlayHandsFreeVisualState()
+            }
+            return
+        }
         guard delegate.triggerStopRequestedAt == nil else {
             handleTriggerDuringPendingStop(isPressed: isPressed, timestamp: timestamp)
             delegate.triggerUpdateOverlayHandsFreeVisualState()
@@ -128,6 +140,33 @@ final class DictationTriggerController {
         }
 
         delegate.triggerUpdateOverlayHandsFreeVisualState()
+    }
+
+    func handleFormattingShortcut(_ kind: DictationDeterministicControlKind) {
+        guard let delegate else { return }
+        guard delegate.triggerAppSettings.hasCompletedOnboarding else { return }
+        guard delegate.triggerState == .idle
+            || (delegate.triggerState == .recording && delegate.triggerIsLocked == false) else {
+            return
+        }
+
+        formattingShortcutConsumedCurrentPress = true
+        cancelDeferredRecordingStart()
+        delegate.triggerVibeActionController.cancelTriggerInteraction()
+        delegate.triggerPresentFormattingProcessing(kind)
+
+        let performFormatting = { [weak delegate] in
+            guard let delegate else { return }
+            Task { @MainActor in
+                await delegate.triggerPerformFormatting(kind)
+            }
+        }
+
+        if delegate.triggerState == .recording {
+            delegate.triggerCancelRecordingForFormattingShortcut(completion: performFormatting)
+        } else {
+            performFormatting()
+        }
     }
 
     @discardableResult

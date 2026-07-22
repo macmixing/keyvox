@@ -98,6 +98,17 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(questionOutput, "Reminder?")
         XCTAssertEqual(exclamationOutput, "Reminder!")
     }
+    func testConvertsUnpunctuatedExclamationCommandAfterDeterminerPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I'm a fan of that exclamation point",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I'm a fan of that!")
+    }
     func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
         let processor = TranscriptionPostProcessor()
 

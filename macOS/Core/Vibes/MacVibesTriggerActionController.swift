@@ -42,6 +42,12 @@ final class MacVibesTriggerActionController {
         pendingSingleTapWorkItem = nil
     }
 
+    func cancelTriggerInteraction() {
+        cancelPendingSingleTap()
+        triggerTapClassifier.reset()
+        triggerPressedAt = nil
+    }
+
     func shouldSuppressRecordingStartForPotentialDoubleTap(
         at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime
     ) -> Bool {
@@ -113,21 +119,21 @@ final class MacVibesTriggerActionController {
                     placement: .currentOverlayCenter
                 )
             },
-            onProcessingEnd: {}
+            onProcessingEnd: {},
+            onReplacementStart: { targetStyle in
+                OverlayManager.shared.showVibePill(
+                    title: targetStyle.displayName,
+                    state: .completed,
+                    duration: 0.72,
+                    placement: .currentOverlayCenter
+                )
+            }
         )
 
-        if didApply {
-            OverlayManager.shared.showVibePill(
-                title: dictationChangeController.currentStyle.displayName,
-                state: .completed,
-                duration: 0.72,
-                placement: .currentOverlayCenter
-            )
-        } else {
-            OverlayManager.shared.showVibePill(
-                title: vibesCoordinator.selectedVibe.displayName,
-                placement: .currentOverlayCenter
-            )
-        }
+        guard didApply == false else { return }
+        OverlayManager.shared.showVibePill(
+            title: vibesCoordinator.selectedVibe.displayName,
+            placement: .currentOverlayCenter
+        )
     }
 }

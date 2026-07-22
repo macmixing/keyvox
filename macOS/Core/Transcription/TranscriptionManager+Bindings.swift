@@ -4,6 +4,8 @@ import KeyVoxCore
 
 extension TranscriptionManager {
     func setupBindings() {
+        _ = formattingShortcutMonitor
+
         keyboardMonitor.$triggerKeyEvent
             .compactMap { $0 }
             .sink { [weak self] event in
@@ -32,6 +34,15 @@ extension TranscriptionManager {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isOn in
                 self?.cachedCapsLockIsOn = isOn
+            }
+            .store(in: &cancellables)
+
+        $state
+            .removeDuplicates()
+            .sink { [weak self] state in
+                self?.formattingShortcutMonitor.setRuntimeEnabled(
+                    state == .idle || state == .recording
+                )
             }
             .store(in: &cancellables)
 

@@ -1,16 +1,17 @@
+import KeyVoxCore
 import Testing
 @testable import KeyVox_iOS
 
-struct KeyboardDeterministicDictationFormatterTests {
+struct DictationDeterministicVariantResolverTests {
     @Test func sourceTextPrefersRenderedTargetTextWhenDeterministicVariantIsInline() {
-        let formatter = KeyboardDeterministicDictationFormatter()
-        let sourceText = formatter.sourceText(
-            for: KeyboardDeterministicDictationState(
+        let resolver = DictationDeterministicVariantResolver()
+        let sourceText = resolver.sourceText(
+            for: DictationDeterministicState(
                 paragraphsEnabled: false,
                 listsEnabled: true
             ),
             deterministicText: "Tasks: 1. Alpha; 2. Beta",
-            currentState: KeyboardDeterministicDictationState(
+            currentState: DictationDeterministicState(
                 paragraphsEnabled: false,
                 listsEnabled: false
             ),

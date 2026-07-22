@@ -274,6 +274,48 @@ struct KeyboardTextInputControllerTests {
         #expect(documentProxy.insertedTexts == ["Hello"])
     }
 
+    @Test func transcriptionInsertionUsesSharedPolicyAfterOpeningQuote() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "I was about to say, \""
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+
+        let inserted = controller.insertTranscription("This is cool.")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == ["This is cool."])
+    }
+
+    @Test func transcriptionInsertionUsesSharedPolicyAfterClosingQuoteContinuation() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "I told Johnny, \"you're going to be late,\""
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+
+        let inserted = controller.insertTranscription("But he didn't listen.")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" but he didn't listen."])
+    }
+
+    @Test func transcriptionInsertionUsesSharedPolicyAfterQuotedSentenceBoundary() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Did you say, \"what's up?\""
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+
+        let inserted = controller.insertTranscription("We missed that.")
+
+        #expect(inserted == true)
+        #expect(documentProxy.insertedTexts == [" We missed that."])
+    }
+
     @Test func transcriptionInsertionKeepsLeadingCapitalizationAtStartOfNewLine() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.documentContextBeforeInput = "hello there\n"

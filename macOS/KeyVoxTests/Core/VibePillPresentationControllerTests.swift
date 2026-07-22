@@ -285,17 +285,17 @@ final class VibePillPresentationControllerTests: XCTestCase {
 
     private var visibleStandalonePillWindows: [NSWindow] {
         visiblePillWindows.filter { window in
-            window.contentView is NSHostingView<VibePillOverlay>
+            window.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>
         }
     }
 
     private var visiblePillWindows: [NSWindow] {
         NSApp.windows.filter { window in
             window.isVisible &&
-                window.frame.size == LogoBarView.vibePillPanelSize &&
+                window.frame.size == OverlayPillMetrics.panelSize &&
                 (
                     window.contentView is NSHostingView<VibeCyclePillOverlay> ||
-                    window.contentView is NSHostingView<VibePillOverlay>
+                    window.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>
                 )
         }
     }

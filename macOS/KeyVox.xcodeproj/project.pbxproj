@@ -73,13 +73,15 @@
 		9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */; };
 		9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */; };
 		9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */; };
-		9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */; };
+		9A1000172F4B000100AA0001 /* PasteSpacingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000072F4B000100AA0001 /* PasteSpacingCoordinator.swift */; };
 		9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000082F4B000100AA0001 /* PastePolicies.swift */; };
 		9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */; };
 		9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */; };
 		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
-		9A1000222F4B000100AA0001 /* PasteCapitalizationHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */; };
+		9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */; };
+		B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C100022FF1000100AA0001 /* KeyVoxTextComposition */; };
 		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
+		9A1000902F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
 		9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000032F4C000100AA0001 /* OverlayMotionController.swift */; };
 		9B2000142F4C000100AA0001 /* OverlayScreenPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */; };
@@ -113,7 +115,7 @@
 		AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */; };
 		AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */; };
 		AB3000302F60000100AA0001 /* ModelDownloaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */; };
-		AB3000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */; };
+		AB3000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift */; };
 		AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */; };
 		AB3000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */; };
 		AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */; };
@@ -121,7 +123,8 @@
 		AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */; };
 		AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */; };
 		AB3000392F60000100AA0001 /* DictationPipelineSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */; };
-		AB3000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */; };
+		AB3000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift */; };
+		AB3000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift */; };
 		B12000012FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12000022FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
@@ -131,6 +134,28 @@
 		C11000152FD4000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		C11000162FD5000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000062FD5000100AA0001 /* DictationModelCatalog.swift */; };
 		C11000172FD5000100AA0001 /* DictationModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */; };
+		C20002012FF2000100AA0001 /* OverlayPresentationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001012FF2000100AA0001 /* OverlayPresentationMetrics.swift */; };
+		C20002022FF2000100AA0001 /* OverlayPillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001022FF2000100AA0001 /* OverlayPillState.swift */; };
+		C20002032FF2000100AA0001 /* OverlayPillMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001032FF2000100AA0001 /* OverlayPillMetrics.swift */; };
+		C20002042FF2000100AA0001 /* OverlayPillCompletionStroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001042FF2000100AA0001 /* OverlayPillCompletionStroke.swift */; };
+		C20002052FF2000100AA0001 /* OverlayPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001052FF2000100AA0001 /* OverlayPillView.swift */; };
+		C20002062FF2000100AA0001 /* VibePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001062FF2000100AA0001 /* VibePillView.swift */; };
+		C20002072FF2000100AA0001 /* OverlayPillOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001072FF2000100AA0001 /* OverlayPillOverlay.swift */; };
+		C20002082FF2000100AA0001 /* MacFormattingPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001082FF2000100AA0001 /* MacFormattingPillView.swift */; };
+		C20002092FF2000100AA0001 /* MacDictationRenderedVariantKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001092FF2000100AA0001 /* MacDictationRenderedVariantKey.swift */; };
+		C200020A2FF2000100AA0001 /* MacDictationChangeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010A2FF2000100AA0001 /* MacDictationChangeSession.swift */; };
+		C200020B2FF2000100AA0001 /* MacFormattingChangeOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010B2FF2000100AA0001 /* MacFormattingChangeOutcome.swift */; };
+		C200020C2FF2000100AA0001 /* MacDictationInsertionReplacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010C2FF2000100AA0001 /* MacDictationInsertionReplacing.swift */; };
+		C200020D2FF2000100AA0001 /* MacDictationChangeController+Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010D2FF2000100AA0001 /* MacDictationChangeController+Formatting.swift */; };
+		C200020E2FF2000100AA0001 /* MacFormattingTriggerActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010E2FF2000100AA0001 /* MacFormattingTriggerActionController.swift */; };
+		C200020F2FF2000100AA0001 /* MacFormattingShortcutMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200010F2FF2000100AA0001 /* MacFormattingShortcutMonitor.swift */; };
+		C20002102FF2000100AA0001 /* MacDictationChangeControllerFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001102FF2000100AA0001 /* MacDictationChangeControllerFormattingTests.swift */; };
+		C20002112FF2000100AA0001 /* MacFormattingShortcutStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001112FF2000100AA0001 /* MacFormattingShortcutStateMachine.swift */; };
+		C20002122FF2000100AA0001 /* MacFormattingShortcutStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001122FF2000100AA0001 /* MacFormattingShortcutStateMachineTests.swift */; };
+		C20002132FF2000100AA0001 /* DictationTriggerControllerFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001132FF2000100AA0001 /* DictationTriggerControllerFormattingTests.swift */; };
+		C20002142FF2000100AA0001 /* OverlayPillProcessingIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001142FF2000100AA0001 /* OverlayPillProcessingIcon.swift */; };
+		C20002152FF2000100AA0001 /* PasteUntouchedInsertionToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001152FF2000100AA0001 /* PasteUntouchedInsertionToken.swift */; };
+		C20002162FF2000100AA0001 /* PasteUntouchedInsertionAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001162FF2000100AA0001 /* PasteUntouchedInsertionAuthorizer.swift */; };
 		C22000012FA5000100AA0001 /* SettingsLastTranscriptionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */; };
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
 		D15000122FA1000100AA0001 /* DockIconVisibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000022FA1000100AA0001 /* DockIconVisibilityController.swift */; };
@@ -296,13 +321,14 @@
 		9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAccessibilityInjector.swift; sourceTree = "<group>"; };
 		9A1000052F4B000100AA0001 /* PasteMenuFallbackExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackExecutor.swift; sourceTree = "<group>"; };
 		9A1000062F4B000100AA0001 /* PasteClipboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshot.swift; sourceTree = "<group>"; };
-		9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingHeuristics.swift; sourceTree = "<group>"; };
+		9A1000072F4B000100AA0001 /* PasteSpacingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingCoordinator.swift; sourceTree = "<group>"; };
 		9A1000082F4B000100AA0001 /* PastePolicies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastePolicies.swift; sourceTree = "<group>"; };
 		9A1000092F4B000100AA0001 /* PasteMenuScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuScanner.swift; sourceTree = "<group>"; };
 		9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteAXLiveSession.swift; sourceTree = "<group>"; };
 		9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinator.swift; sourceTree = "<group>"; };
-		9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristics.swift; sourceTree = "<group>"; };
+		9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationCoordinator.swift; sourceTree = "<group>"; };
 		9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDictionaryCasingStore.swift; sourceTree = "<group>"; };
+		9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionReplacer.swift; sourceTree = "<group>"; };
 		9B2000022F4C000100AA0001 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		9B2000032F4C000100AA0001 /* OverlayMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayMotionController.swift; sourceTree = "<group>"; };
 		9B2000042F4C000100AA0001 /* OverlayScreenPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistence.swift; sourceTree = "<group>"; };
@@ -336,7 +362,7 @@
 		AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackExecutorTests.swift; sourceTree = "<group>"; };
 		AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteWarningGuardrailTests.swift; sourceTree = "<group>"; };
 		AB2000302F60000100AA0001 /* ModelDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloaderTests.swift; sourceTree = "<group>"; };
-		AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingHeuristicsTests.swift; sourceTree = "<group>"; };
+		AB2000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteSpacingCoordinatorTests.swift; sourceTree = "<group>"; };
 		AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinatorExecutionTests.swift; sourceTree = "<group>"; };
 		AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteClipboardSnapshotTests.swift; sourceTree = "<group>"; };
 		AB2000342F60000100AA0001 /* AppSettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStoreTests.swift; sourceTree = "<group>"; };
@@ -344,7 +370,8 @@
 		AB2000362F60000100AA0001 /* AudioDeviceManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerTests.swift; sourceTree = "<group>"; };
 		AB2000372F60000100AA0001 /* KeyboardMonitorStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitorStateTests.swift; sourceTree = "<group>"; };
 		AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationPipelineSmokeTests.swift; sourceTree = "<group>"; };
-		AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationHeuristicsTests.swift; sourceTree = "<group>"; };
+		AB2000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationCoordinatorTests.swift; sourceTree = "<group>"; };
+		AB2000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionReplacerTests.swift; sourceTree = "<group>"; };
 		B12000022FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocatorTests.swift; sourceTree = "<group>"; };
 		BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophoneStepController.swift; sourceTree = "<group>"; };
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
@@ -354,6 +381,28 @@
 		C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		C11000062FD5000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
 		C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelInstallManifest.swift; sourceTree = "<group>"; };
+		C20001012FF2000100AA0001 /* OverlayPresentationMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPresentationMetrics.swift; sourceTree = "<group>"; };
+		C20001022FF2000100AA0001 /* OverlayPillState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillState.swift; sourceTree = "<group>"; };
+		C20001032FF2000100AA0001 /* OverlayPillMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillMetrics.swift; sourceTree = "<group>"; };
+		C20001042FF2000100AA0001 /* OverlayPillCompletionStroke.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillCompletionStroke.swift; sourceTree = "<group>"; };
+		C20001052FF2000100AA0001 /* OverlayPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillView.swift; sourceTree = "<group>"; };
+		C20001062FF2000100AA0001 /* VibePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibePillView.swift; sourceTree = "<group>"; };
+		C20001072FF2000100AA0001 /* OverlayPillOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillOverlay.swift; sourceTree = "<group>"; };
+		C20001082FF2000100AA0001 /* MacFormattingPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingPillView.swift; sourceTree = "<group>"; };
+		C20001092FF2000100AA0001 /* MacDictationRenderedVariantKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationRenderedVariantKey.swift; sourceTree = "<group>"; };
+		C200010A2FF2000100AA0001 /* MacDictationChangeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationChangeSession.swift; sourceTree = "<group>"; };
+		C200010B2FF2000100AA0001 /* MacFormattingChangeOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingChangeOutcome.swift; sourceTree = "<group>"; };
+		C200010C2FF2000100AA0001 /* MacDictationInsertionReplacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationInsertionReplacing.swift; sourceTree = "<group>"; };
+		C200010D2FF2000100AA0001 /* MacDictationChangeController+Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacDictationChangeController+Formatting.swift"; sourceTree = "<group>"; };
+		C200010E2FF2000100AA0001 /* MacFormattingTriggerActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingTriggerActionController.swift; sourceTree = "<group>"; };
+		C200010F2FF2000100AA0001 /* MacFormattingShortcutMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingShortcutMonitor.swift; sourceTree = "<group>"; };
+		C20001102FF2000100AA0001 /* MacDictationChangeControllerFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDictationChangeControllerFormattingTests.swift; sourceTree = "<group>"; };
+		C20001112FF2000100AA0001 /* MacFormattingShortcutStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingShortcutStateMachine.swift; sourceTree = "<group>"; };
+		C20001122FF2000100AA0001 /* MacFormattingShortcutStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFormattingShortcutStateMachineTests.swift; sourceTree = "<group>"; };
+		C20001132FF2000100AA0001 /* DictationTriggerControllerFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationTriggerControllerFormattingTests.swift; sourceTree = "<group>"; };
+		C20001142FF2000100AA0001 /* OverlayPillProcessingIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPillProcessingIcon.swift; sourceTree = "<group>"; };
+		C20001152FF2000100AA0001 /* PasteUntouchedInsertionToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionToken.swift; sourceTree = "<group>"; };
+		C20001162FF2000100AA0001 /* PasteUntouchedInsertionAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionAuthorizer.swift; sourceTree = "<group>"; };
 		C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLastTranscriptionCard.swift; sourceTree = "<group>"; };
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D15000022FA1000100AA0001 /* DockIconVisibilityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockIconVisibilityController.swift; sourceTree = "<group>"; };
@@ -440,6 +489,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
 				E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
 				E910000B2FE2000100AA0001 /* KeyVoxLocalInference in Frameworks */,
@@ -551,6 +601,15 @@
 		8E6D05D62F3C51D6003BD458 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				C20001082FF2000100AA0001 /* MacFormattingPillView.swift */,
+				C20001042FF2000100AA0001 /* OverlayPillCompletionStroke.swift */,
+				C20001142FF2000100AA0001 /* OverlayPillProcessingIcon.swift */,
+				C20001032FF2000100AA0001 /* OverlayPillMetrics.swift */,
+				C20001072FF2000100AA0001 /* OverlayPillOverlay.swift */,
+				C20001022FF2000100AA0001 /* OverlayPillState.swift */,
+				C20001052FF2000100AA0001 /* OverlayPillView.swift */,
+				C20001012FF2000100AA0001 /* OverlayPresentationMetrics.swift */,
+				C20001062FF2000100AA0001 /* VibePillView.swift */,
 				8EECE5B02F63AC2800BECF17 /* DictionaryFloatingAddButton.swift */,
 				C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */,
 				F30000372FC2000100AA0001 /* AppActionButton.swift */,
@@ -650,6 +709,7 @@
 				C12000022F91000100AA0001 /* Accessibility */,
 				C12000032F91000100AA0001 /* MenuFallback */,
 				C12000042F91000100AA0001 /* Clipboard */,
+				C12000062F91000100AA0001 /* Composition */,
 				C12000052F91000100AA0001 /* Heuristics */,
 			);
 			path = Paste;
@@ -684,6 +744,9 @@
 		AB1000032F60000100AA0001 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				C20001132FF2000100AA0001 /* DictationTriggerControllerFormattingTests.swift */,
+				C20001102FF2000100AA0001 /* MacDictationChangeControllerFormattingTests.swift */,
+				C20001122FF2000100AA0001 /* MacFormattingShortcutStateMachineTests.swift */,
 				F20000052FB0000100AA0001 /* AudioIndicatorDriverTests.swift */,
 				8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */,
 				F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */,
@@ -734,11 +797,12 @@
 				AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */,
 				AB2000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift */,
 				AB2000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift */,
-				AB2000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift */,
+				AB2000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift */,
 				AB2000252F60000100AA0001 /* PastePoliciesStabilityTests.swift */,
 				AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */,
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
-				AB2000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift */,
+				AB2000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift */,
+				AB2000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift */,
 				AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */,
 				AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */,
 				AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */,
@@ -805,6 +869,9 @@
 				9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */,
 				9A1000032F4B000100AA0001 /* PasteAXInspector.swift */,
 				9A1000042F4B000100AA0001 /* PasteAccessibilityInjector.swift */,
+				9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */,
+				C20001162FF2000100AA0001 /* PasteUntouchedInsertionAuthorizer.swift */,
+				C20001152FF2000100AA0001 /* PasteUntouchedInsertionToken.swift */,
 			);
 			path = Accessibility;
 			sourceTree = "<group>";
@@ -831,11 +898,18 @@
 		C12000052F91000100AA0001 /* Heuristics */ = {
 			isa = PBXGroup;
 			children = (
-				9A1000232F4B000100AA0001 /* PasteCapitalizationHeuristics.swift */,
 				9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */,
-				9A1000072F4B000100AA0001 /* PasteSpacingHeuristics.swift */,
 			);
 			path = Heuristics;
+			sourceTree = "<group>";
+		};
+		C12000062F91000100AA0001 /* Composition */ = {
+			isa = PBXGroup;
+			children = (
+				9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */,
+				9A1000072F4B000100AA0001 /* PasteSpacingCoordinator.swift */,
+			);
+			path = Composition;
 			sourceTree = "<group>";
 		};
 		C13000002F92000100AA0001 /* Transcription */ = {
@@ -863,7 +937,15 @@
 		E90000102FE1000100AA0001 /* Vibes */ = {
 			isa = PBXGroup;
 			children = (
+				C200010D2FF2000100AA0001 /* MacDictationChangeController+Formatting.swift */,
+				C200010A2FF2000100AA0001 /* MacDictationChangeSession.swift */,
 				E90000122FE1000100AA0001 /* MacDictationChangeController.swift */,
+				C200010C2FF2000100AA0001 /* MacDictationInsertionReplacing.swift */,
+				C20001092FF2000100AA0001 /* MacDictationRenderedVariantKey.swift */,
+				C200010B2FF2000100AA0001 /* MacFormattingChangeOutcome.swift */,
+				C200010F2FF2000100AA0001 /* MacFormattingShortcutMonitor.swift */,
+				C20001112FF2000100AA0001 /* MacFormattingShortcutStateMachine.swift */,
+				C200010E2FF2000100AA0001 /* MacFormattingTriggerActionController.swift */,
 				F26000082FF1000100AA0001 /* MacVibesIntroController.swift */,
 				E91000152FE2000100AA0001 /* MacLocalRewriteInferenceService.swift */,
 				E91000112FE2000100AA0001 /* MacLocalRewriteModelCatalog.swift */,
@@ -957,6 +1039,7 @@
 			);
 			name = KeyVox;
 			packageProductDependencies = (
+				B4C100022FF1000100AA0001 /* KeyVoxTextComposition */,
 				A10000012FD1000100AA0001 /* KeyVoxCore */,
 				E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */,
 				E91000212FE2000100AA0001 /* KeyVoxLocalInference */,
@@ -1019,6 +1102,7 @@
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
+				B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */,
 				8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */,
 				8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */,
@@ -1136,9 +1220,26 @@
 				E90000012FE1000100AA0001 /* MacVibesCoordinator.swift in Sources */,
 				E910000F2FE2000100AA0001 /* MacVibesReadinessPrewarmer.swift in Sources */,
 				E90000022FE1000100AA0001 /* MacDictationChangeController.swift in Sources */,
+				C200020D2FF2000100AA0001 /* MacDictationChangeController+Formatting.swift in Sources */,
+				C200020A2FF2000100AA0001 /* MacDictationChangeSession.swift in Sources */,
+				C200020C2FF2000100AA0001 /* MacDictationInsertionReplacing.swift in Sources */,
+				C20002092FF2000100AA0001 /* MacDictationRenderedVariantKey.swift in Sources */,
+				C200020B2FF2000100AA0001 /* MacFormattingChangeOutcome.swift in Sources */,
+				C200020F2FF2000100AA0001 /* MacFormattingShortcutMonitor.swift in Sources */,
+				C20002112FF2000100AA0001 /* MacFormattingShortcutStateMachine.swift in Sources */,
+				C200020E2FF2000100AA0001 /* MacFormattingTriggerActionController.swift in Sources */,
 				E90000032FE1000100AA0001 /* MacTriggerTapClassifier.swift in Sources */,
 				E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */,
 				E90000042FE1000100AA0001 /* VibePillOverlay.swift in Sources */,
+				C20002082FF2000100AA0001 /* MacFormattingPillView.swift in Sources */,
+				C20002042FF2000100AA0001 /* OverlayPillCompletionStroke.swift in Sources */,
+				C20002142FF2000100AA0001 /* OverlayPillProcessingIcon.swift in Sources */,
+				C20002032FF2000100AA0001 /* OverlayPillMetrics.swift in Sources */,
+				C20002072FF2000100AA0001 /* OverlayPillOverlay.swift in Sources */,
+				C20002022FF2000100AA0001 /* OverlayPillState.swift in Sources */,
+				C20002052FF2000100AA0001 /* OverlayPillView.swift in Sources */,
+				C20002012FF2000100AA0001 /* OverlayPresentationMetrics.swift in Sources */,
+				C20002062FF2000100AA0001 /* VibePillView.swift in Sources */,
 				E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */,
 				8EE6025F2F3FC5C80094EC16 /* AppUpdateService.swift in Sources */,
 				8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */,
@@ -1197,14 +1298,17 @@
 				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
 				9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
 				9A1000142F4B000100AA0001 /* PasteAccessibilityInjector.swift in Sources */,
+				9A1000902F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift in Sources */,
+				C20002162FF2000100AA0001 /* PasteUntouchedInsertionAuthorizer.swift in Sources */,
+				C20002152FF2000100AA0001 /* PasteUntouchedInsertionToken.swift in Sources */,
 				9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */,
 				9A1000152F4B000100AA0001 /* PasteMenuFallbackExecutor.swift in Sources */,
 				9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */,
 				9A1000192F4B000100AA0001 /* PasteMenuScanner.swift in Sources */,
 				9A1000162F4B000100AA0001 /* PasteClipboardSnapshot.swift in Sources */,
-				9A1000222F4B000100AA0001 /* PasteCapitalizationHeuristics.swift in Sources */,
+				9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */,
 				9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */,
-				9A1000172F4B000100AA0001 /* PasteSpacingHeuristics.swift in Sources */,
+				9A1000172F4B000100AA0001 /* PasteSpacingCoordinator.swift in Sources */,
 				9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */,
 				8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
@@ -1241,8 +1345,9 @@
 				AB3000322F60000100AA0001 /* PasteMenuFallbackCoordinatorExecutionTests.swift in Sources */,
 				AB3000272F60000100AA0001 /* PasteMenuFallbackExecutorTests.swift in Sources */,
 				AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */,
-				AB3000402F60000100AA0001 /* PasteCapitalizationHeuristicsTests.swift in Sources */,
-				AB3000312F60000100AA0001 /* PasteSpacingHeuristicsTests.swift in Sources */,
+				AB3000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift in Sources */,
+				AB3000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift in Sources */,
+				AB3000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift in Sources */,
 				F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */,
 				8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */,
 				AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */,
@@ -1257,6 +1362,9 @@
 				E91000102FE2000100AA0001 /* MacVibesReadinessPrewarmerTests.swift in Sources */,
 				E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */,
 				E92000012FE3000100AA0001 /* VibePillPresentationControllerTests.swift in Sources */,
+				C20002102FF2000100AA0001 /* MacDictationChangeControllerFormattingTests.swift in Sources */,
+				C20002122FF2000100AA0001 /* MacFormattingShortcutStateMachineTests.swift in Sources */,
+				C20002132FF2000100AA0001 /* DictationTriggerControllerFormattingTests.swift in Sources */,
 				AB3000372F60000100AA0001 /* KeyboardMonitorStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1433,7 +1541,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.1.14;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1484,7 +1592,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.1.14;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1583,6 +1691,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTextComposition;
+		};
 		8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxParakeet;
@@ -1610,6 +1722,11 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B4C100022FF1000100AA0001 /* KeyVoxTextComposition */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
+			productName = KeyVoxTextComposition;
+		};
 		A10000012FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;

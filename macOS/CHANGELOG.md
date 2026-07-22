@@ -6,6 +6,93 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-07-18
+
+Adds reversible List and Paragraph formatting for the latest untouched Mac dictation, strengthens replacement safety and feedback, and preserves trailing Whisper audio.
+
+### Added
+
+- Added trigger-key formatting shortcuts so holding the configured trigger key and pressing `L` toggles List formatting while `P` toggles Paragraph formatting for the latest untouched dictation; repeating either shortcut reverses the change without changing saved formatting preferences.
+- Added reusable formatting feedback pills with enabled, disabled, processing, and completion states, including animated List and Paragraph icons during Vibes-backed rendering.
+- Added a Settings tip that explains the reversible List and Paragraph shortcuts.
+- Added shared deterministic paragraph/list state, variant resolution, and text formatting through `KeyVoxCore` `1.1.0` so Mac formatting changes preserve the correct saved or rendered source across all four formatting combinations.
+
+### Changed
+
+- Updated latest-insertion formatting so active Vibes, all-caps presentation, cached rendered variants, and prior Vibe state remain intact while List or Paragraph formatting is applied or reversed.
+- Updated formatting-chord handling so recording still starts immediately on trigger-down, then a recognized `L` or `P` chord safely discards that captured shortcut recording before applying the requested change.
+- Updated latest-insertion replacement to run away from the main thread and bind each change to the original app process, Accessibility element, text range, and selection context.
+- Updated Vibes and formatting feedback to share the same overlay-pill layout, processing pulse, and completion presentation.
+- Updated Mac architecture documentation, the code map, and the project README for reversible formatting, shortcut ownership, overlay feedback, and latest-insertion replacement safety.
+- Updated the bundled Whisper runtime through `KeyVoxWhisper` `1.0.1` from `whisper.cpp` `v1.7.5` to `v1.7.6`.
+
+### Fixed
+
+- Fixed Whisper dictation so the trailing audio is still decoded when less than one second remains after the final completed segment.
+- Fixed latest-insertion replacement so focus, process, target-range, selection, or caret changes invalidate stale authorization instead of risking a change in the wrong field or app.
+- Fixed delayed Accessibility updates, multiline replacements, repeated formatting changes, and menu fallback handling so authorized replacements retain the intended target and final caret position.
+- Fixed formatting state and feedback so edited, removed, unavailable, or unchanged dictations do not report a successful toggle, while valid no-text-change transitions still preserve the correct session state.
+- Fixed formatting shortcuts so consumed key events and trigger release cannot leak letters, start a Vibe action, stop another recording flow, or create duplicate actions from key repeat.
+- Fixed completion feedback so the ring begins when replacement starts while paste verification continues safely in the background.
+- Fixed Vibes replacement feedback so the completion ring starts with the replacement instead of waiting for post-insertion verification.
+- Fixed processing-pill accessibility so the decorative pulsing icon layer is hidden while the meaningful foreground icon remains exposed.
+- Fixed plural custom-dictionary homophone matching through `KeyVoxCore` `1.1.0` so unrelated pronunciation collisions such as `checks` and `cues` are rejected while valid differently spelled homophones remain supported.
+- Fixed strong custom-dictionary brand corrections beside capitalized product wording so transcription variants such as `Keybox Core` resolve to `KeyVox Core` without weakening unrelated titlecase phrase protection.
+
+### Package versions
+
+KeyVox macOS 1.1.16:
+- KeyVoxCore           1.1.0
+- KeyVoxWhisper        1.0.1
+- KeyVoxParakeet       1.0.4
+- KeyVoxStyleRewrite   1.0.11
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.1.0` adds shared deterministic paragraph/list controls, saved and rendered variant resolution, paragraph collapse with ordered-list preservation, post-rewrite layout adjustment, and stronger custom-dictionary matching protections.
+- `KeyVoxWhisper` `1.0.1` updates the bundled `whisper.cpp` runtime to `v1.7.6` and adopts its 100-millisecond end-of-audio threshold so short trailing dictation audio is not skipped.
+
+---
+
+## [1.1.15] - 2026-07-15
+
+Improves Mac dictation punctuation, long Vibes rewrite responsiveness, and status-menu styling.
+
+### Added
+
+- Added shared terminal-period completion through `KeyVoxCore` `1.0.20` so eligible multi-word dictation prose ends with a period when no sentence-ending punctuation is present.
+
+### Changed
+
+- Updated long Casual and Polished Vibes output repair through `KeyVoxStyleRewrite` `1.0.11` so deterministic cleanup runs away from the main actor and uses bounded number-phrase analysis.
+- Updated the Mac status menu to use the system-provided menu surface, native accent selection colors, and consistent action and warning-row alignment.
+
+### Fixed
+
+- Fixed ordinary dictation prose so missing terminal punctuation is completed consistently while existing punctuation, lists, headings, math, times, URLs, email addresses, and other non-prose output remain unchanged.
+- Fixed model-supplied terminal commas so eligible completed prose ends with a period instead of `,.`.
+- Fixed long Vibes rewrites so output repair no longer blocks overlay animation while preserving supported AP-style number formatting and factual number repair.
+
+### Package versions
+
+KeyVox macOS 1.1.15:
+- KeyVoxCore           1.0.20
+- KeyVoxWhisper        1.0.0
+- KeyVoxParakeet       1.0.4
+- KeyVoxStyleRewrite   1.0.11
+- KeyVoxLocalInference 1.0.4
+- KeyVoxVibesAdapters  1.0.4
+
+### Package changes
+
+- `KeyVoxCore` `1.0.20` adds shared terminal-period completion for eligible prose, replaces terminal commas with periods, and preserves protected punctuation and non-prose output.
+- `KeyVoxParakeet` `1.0.4` adds backward-compatible runtime support for the current Parakeet Core ML artifact layouts. macOS continues to use the legacy `Encoder` and `JointDecision` artifacts, so this package change does not alter Mac Parakeet behavior.
+- `KeyVoxStyleRewrite` `1.0.11` moves deterministic Vibes output repair away from the main actor and bounds long-form number analysis so long rewrites remain responsive.
+
+---
+
 ## [1.1.14] - 2026-07-11
 
 Improves Mac dictation dictionary matching so random recognizer titlecase is less likely to trigger accidental custom dictionary replacements.

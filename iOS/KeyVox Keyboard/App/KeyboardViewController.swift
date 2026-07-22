@@ -1,4 +1,5 @@
 import AVFoundation
+import KeyVoxCore
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {

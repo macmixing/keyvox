@@ -6,6 +6,45 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-07-21
+
+Spoken terminal punctuation completion for determiner-ending clauses.
+
+### Includes
+
+- Converted eligible spoken terminal punctuation after determiner-ending phrases, including `I'm happy to hear that exclamation point.` becoming `I'm happy to hear that!`.
+- Preserved the existing determiner back-reference behavior for natural phrases such as `I'm a fan of that exclamation point` becoming `I'm a fan of that!`, even when the recognizer omits terminal punctuation.
+- Kept ordinary punctuation-word references such as `I typed that question mark.` and short protected determiner edges unchanged.
+- Added shared normalizer and full post-processing coverage for punctuated and unpunctuated determiner-ending commands.
+
+### Notes
+
+- `1.1.1` bumps the tracked patch engine version for `KeyVoxCore` to cover spoken terminal punctuation completion used by shared dictation clients.
+
+---
+
+## [1.1.0] - 2026-07-15
+
+Shared deterministic paragraph and list variant controls with dictionary matching protections.
+
+### Includes
+
+- Added shared deterministic state and control types so clients can toggle paragraph or list formatting without changing the other setting.
+- Added a shared variant resolver that selects an existing rendered result when available and otherwise restores the saved deterministic source variant.
+- Added deterministic text formatting that collapses paragraph breaks while preserving ordered-list line structure when lists remain enabled.
+- Added post-rewrite layout adjustment across all four paragraph and list state combinations.
+- Required known plural homophone candidates to share their full pronunciation before receiving the relaxed dictionary match boost, preventing unrelated words such as `checks` from becoming `cues` while preserving valid homophones such as `queues` and `cues` regardless of spelling.
+- Allowed strong stylized dictionary corrections beside titlecase product context, restoring matches such as `Keybox Core` to `KeyVox Core` while retaining protection for unrelated name-like phrases.
+- Added shared-engine coverage for target-state selection, saved and rendered source selection, paragraph collapse, list-line preservation, and post-rewrite formatting.
+- Added shared-engine coverage for rejecting unrelated plural pronunciation collisions while preserving differently spelled plural homophone corrections.
+- Added shared-engine coverage for strong stylized matches before titlecase product context while preserving unrelated titlecase phrase protection.
+
+### Notes
+
+- `1.1.0` bumps the tracked minor engine version for `KeyVoxCore` to cover shared deterministic paragraph and list variant controls plus dictionary match protections used by dictation clients.
+
+---
+
 ## [1.0.20] - 2026-07-12
 
 Terminal period completion for ordinary dictation prose.

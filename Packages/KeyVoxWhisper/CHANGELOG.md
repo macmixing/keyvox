@@ -6,6 +6,15 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-07-16
+
+Updates the bundled `whisper.cpp` runtime to prevent the ends of dictations from being skipped when less than one second of audio remains after the final decoded segment.
+
+### Changed
+
+- Updated the pinned `whisper.cpp` XCFramework from `v1.7.5` to `v1.7.6`.
+- Adopted the upstream decoder fix that reduces the unprocessed end-of-audio threshold from one second to 100 milliseconds.
+
 ## [1.0.0] - 2026-03-30
 
 Baseline tracked release of the KeyVox Whisper runtime wrapper package.

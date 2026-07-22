@@ -374,7 +374,7 @@ final class DictationPipelineSmokeTests: XCTestCase {
             accessibilityInjector: injector,
             menuFallbackExecutor: NoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,
-            spacingHeuristics: PassthroughSpacingHeuristics()
+            spacingCoordinator: PassthroughSpacingHeuristics()
         )
         Self.retainedServices.append(service)
         return service
@@ -464,7 +464,7 @@ private final class RecordingFailureRecoveryController: PasteFailureRecoveryCont
     }
 }
 
-private final class PassthroughSpacingHeuristics: PasteSpacingHeuristicApplying {
+private final class PassthroughSpacingHeuristics: PasteSpacingCoordinating {
     func applySmartLeadingSeparatorIfNeeded(
         to text: String,
         currentIdentity: PasteAppIdentity?,

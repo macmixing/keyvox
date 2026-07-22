@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 extension KeyboardDictationChangeController {
@@ -142,7 +143,7 @@ extension KeyboardDictationChangeController {
     }
 
     func applyDeterministicLongPressChange(
-        _ kind: KeyboardDeterministicControlKind,
+        _ kind: DictationDeterministicControlKind,
         onProcessingStart: @escaping () -> Void,
         onProcessingEnd: @escaping () -> Void
     ) async -> Bool {
@@ -170,7 +171,7 @@ extension KeyboardDictationChangeController {
             session.currentStyle = .none
         }
 
-        let targetState = deterministicFormatter.targetState(from: currentState, kind: kind)
+        let targetState = deterministicVariantResolver.targetState(from: currentState, kind: kind)
         logChange(
             "deterministicLongPress kind=\(kind.debugLabel) currentStyle=\(session.currentStyle.styleIdentifier) currentState=\(currentState.debugDescription) targetState=\(targetState.debugDescription) currentText=\(debugText(session.currentText))"
         )
@@ -178,7 +179,7 @@ extension KeyboardDictationChangeController {
             return false
         }
 
-        let replacementSourceText = deterministicFormatter.sourceText(
+        let replacementSourceText = deterministicVariantResolver.sourceText(
             for: targetState,
             deterministicText: deterministicText,
             currentState: currentState,

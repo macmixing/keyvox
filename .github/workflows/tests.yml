@@ -100,6 +100,9 @@ jobs:
       - name: Enforce KeyVoxCore coverage
         run: Tools/Quality/check_keyvoxcore_coverage.sh "${{ steps.keyvoxcore-tests.outputs.coverage_path }}"
 
+      - name: Run KeyVoxTextComposition package tests
+        run: swift test --package-path Packages/KeyVoxTextComposition --scratch-path /tmp/keyvox-text-composition-ci
+
       - name: Run KeyVoxStyleRewrite package tests
         run: swift test --package-path Packages/KeyVoxStyleRewrite --scratch-path /tmp/keyvox-style-rewrite-ci
 

@@ -30,6 +30,10 @@
 		9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
 		9B5200012FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
 		9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
+		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
+		B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,7 +123,6 @@
 				"Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift",
 				Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift,
 				Core/Dictation/KeyboardCallObserver.swift,
-				Core/Dictation/KeyboardDeterministicDictationFormatter.swift,
 				Core/Dictation/KeyboardDictationController.swift,
 				Core/Dictation/KeyboardDictationRatingController.swift,
 				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
@@ -141,8 +144,8 @@
 				Core/Settings/KeyboardAppSettingsStore.swift,
 				Core/Text/KeyboardCapsLockStateStore.swift,
 				Core/Text/KeyboardDictionaryCasingStore.swift,
-				Core/Text/KeyboardInsertionCapitalizationHeuristics.swift,
-				Core/Text/KeyboardInsertionSpacingHeuristics.swift,
+				Core/Text/KeyboardInsertionCapitalizationCoordinator.swift,
+				Core/Text/KeyboardInsertionSpacingCoordinator.swift,
 				Core/Transport/KeyboardIPCManager.swift,
 				Core/Transport/KeyboardTransportDisplayState.swift,
 				Core/Transport/KeyboardTTSController.swift,
@@ -321,6 +324,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
+				C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */,
 				8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
@@ -352,6 +357,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
+				C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */,
 				8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 				9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
@@ -442,6 +449,8 @@
 			);
 			name = "KeyVox Keyboard";
 			packageProductDependencies = (
+				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 			);
@@ -522,6 +531,8 @@
 			);
 			name = "KeyVox iOSTests";
 			packageProductDependencies = (
+				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
 				9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */,
@@ -568,6 +579,7 @@
 			mainGroup = 8E9E38492F5BF1F000EAFA72;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */,
 				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */,
@@ -701,7 +713,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -713,7 +725,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -736,7 +748,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -748,7 +760,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -770,7 +782,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -782,7 +794,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -804,7 +816,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -816,7 +828,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -841,7 +853,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -853,7 +865,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -878,7 +890,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -890,7 +902,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1038,7 +1050,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1057,7 +1069,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1083,7 +1095,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1102,7 +1114,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.14;
+				MARKETING_VERSION = 1.2.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1232,6 +1244,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTextComposition;
+		};
 		8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
@@ -1274,6 +1290,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
+			productName = KeyVoxTextComposition;
+		};
 		8E7DB28D2F80FBE0009E3576 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */;

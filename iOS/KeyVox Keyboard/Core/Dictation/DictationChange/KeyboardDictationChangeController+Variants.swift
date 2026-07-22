@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 extension KeyboardDictationChangeController {
@@ -17,14 +18,14 @@ extension KeyboardDictationChangeController {
 
     func artifactBaseDeterministicState(
         from artifact: DictationUtteranceArtifact,
-        deterministicVariants: [KeyboardDeterministicDictationState: String]
-    ) -> KeyboardDeterministicDictationState? {
+        deterministicVariants: [DictationDeterministicState: String]
+    ) -> DictationDeterministicState? {
         guard let paragraphsEnabled = artifact.baseParagraphsEnabled,
               let listsEnabled = artifact.baseListsEnabled else {
             return nil
         }
 
-        let state = KeyboardDeterministicDictationState(
+        let state = DictationDeterministicState(
             paragraphsEnabled: paragraphsEnabled,
             listsEnabled: listsEnabled
         )
@@ -33,8 +34,8 @@ extension KeyboardDictationChangeController {
 
     func currentDeterministicState(
         matching text: String,
-        in deterministicVariants: [KeyboardDeterministicDictationState: String]
-    ) -> KeyboardDeterministicDictationState? {
+        in deterministicVariants: [DictationDeterministicState: String]
+    ) -> DictationDeterministicState? {
         let matchingStates = deterministicVariants
             .filter { $0.value == text }
             .map { $0.key }
@@ -42,7 +43,7 @@ extension KeyboardDictationChangeController {
             return nil
         }
 
-        let preferredState = KeyboardDeterministicDictationState(
+        let preferredState = DictationDeterministicState(
             paragraphsEnabled: appSettingsStore.isAutoParagraphsEnabled,
             listsEnabled: appSettingsStore.isListFormattingEnabled
         )
@@ -116,7 +117,7 @@ extension KeyboardDictationChangeController {
     }
 
     func renderedText(
-        for targetState: KeyboardDeterministicDictationState,
+        for targetState: DictationDeterministicState,
         sourceText: String,
         session: inout KeyboardDictationChangeSession,
         onProcessingStart: @escaping () -> Void,
@@ -152,7 +153,7 @@ extension KeyboardDictationChangeController {
             "renderedText result style=\(session.currentStyle.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
 
-        let replacementText = deterministicFormatter.textAdjustedForDeterministicState(
+        let replacementText = deterministicTextFormatter.textAdjustedForDeterministicState(
             preparedText(
                 result.finalText,
                 documentContextBeforeInput: session.documentContextBeforeInput,

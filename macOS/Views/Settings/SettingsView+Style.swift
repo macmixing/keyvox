@@ -42,6 +42,15 @@ extension SettingsView {
                         .accessibilityLabel("Paragraphs")
                 }
             }
+
+            HStack {
+                Spacer()
+                TipItem(
+                    icon: "keyboard",
+                    text: "Hold the trigger key, then press L for Lists or P for Paragraphs. Repeat to undo."
+                )
+                Spacer()
+            }
         }
     }
 }

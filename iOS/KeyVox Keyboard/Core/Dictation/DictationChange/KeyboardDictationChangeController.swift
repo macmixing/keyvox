@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 @MainActor
@@ -8,7 +9,8 @@ final class KeyboardDictationChangeController {
     let textTransformer: any DictationTextTransforming
     let releaseTextTransformer: (String) -> Void
     let appSettingsStore: KeyboardAppSettingsStore
-    let deterministicFormatter = KeyboardDeterministicDictationFormatter()
+    let deterministicVariantResolver = DictationDeterministicVariantResolver()
+    let deterministicTextFormatter = DictationDeterministicTextFormatter()
     let ratingController: KeyboardDictationRatingController
 
     var activeSession: KeyboardDictationChangeSession?
@@ -54,10 +56,7 @@ final class KeyboardDictationChangeController {
             return appSettingsStore.isAutoParagraphsEnabled
         }
 
-        return deterministicFormatter.isParagraphFormattingVisiblyApplied(
-            currentState: currentState,
-            deterministicVariants: activeSession.deterministicVariants
-        )
+        return currentState.paragraphsEnabled
     }
 
     var displayedListFormattingEnabled: Bool {
@@ -78,7 +77,7 @@ final class KeyboardDictationChangeController {
         return activeInsertionMatchesCurrentText(activeSession)
     }
 
-    func hasActiveDeterministicTransform(_ kind: KeyboardDeterministicControlKind) -> Bool {
+    func hasActiveDeterministicTransform(_ kind: DictationDeterministicControlKind) -> Bool {
         guard let activeSession,
               activeInsertionMatchesCurrentText(activeSession) else {
             return false
@@ -88,7 +87,7 @@ final class KeyboardDictationChangeController {
     }
 
     private func hasActiveDeterministicTransform(
-        _ kind: KeyboardDeterministicControlKind,
+        _ kind: DictationDeterministicControlKind,
         in session: KeyboardDictationChangeSession
     ) -> Bool {
         guard let baselineState = session.baselineDeterministicState,
