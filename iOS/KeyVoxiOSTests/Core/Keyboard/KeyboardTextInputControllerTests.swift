@@ -150,7 +150,7 @@ struct KeyboardTextInputControllerTests {
         #expect(haptics.emissionCount == 1)
     }
 
-    @Test func abcKeyTriggersCapsResetAndInputModeAdvance() {
+    @Test func abcKeyReturnsToAlphabeticPage() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()
         let controller = KeyboardTextInputController(
@@ -173,8 +173,9 @@ struct KeyboardTextInputControllerTests {
         )
 
         #expect(handled == true)
-        #expect(resetCount == 1)
-        #expect(advanceCount == 1)
+        #expect(symbolPage == .alphabetic)
+        #expect(resetCount == 0)
+        #expect(advanceCount == 0)
         #expect(haptics.emissionCount == 1)
     }
 

@@ -34,6 +34,31 @@ enum KeyboardLayoutGeometry {
         }
     }
 
+    final class SecondRowLayout: RowLayout {
+        func update(isLandscape _: Bool) {
+            guard let keyGridView, let rowStack else { return }
+
+            let spacing = KeyboardStyle.keySpacing
+            let rowWidth = keyGridView.bounds.width
+            let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
+            let horizontalInset = (topRowKeyWidth + spacing) / 2
+            guard horizontalInset > 0 else { return }
+            guard rowStack.isLayoutMarginsRelativeArrangement == false
+                    || abs(rowStack.directionalLayoutMargins.leading - horizontalInset) > 0.5
+                    || abs(rowStack.directionalLayoutMargins.trailing - horizontalInset) > 0.5 else {
+                return
+            }
+
+            rowStack.isLayoutMarginsRelativeArrangement = true
+            rowStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+                top: 0,
+                leading: horizontalInset,
+                bottom: 0,
+                trailing: horizontalInset
+            )
+        }
+    }
+
     final class ThirdRowLayout: RowLayout {
         func update(isLandscape _: Bool) {
             guard let keyGridView else { return }

@@ -17,6 +17,9 @@ final class KeyboardViewController: UIInputViewController {
     let openVibesTrialStartURL = URL(string: "keyvoxios://vibes/trial-start")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
+    let letterCaseController = KeyboardLetterCaseController()
+    let predictionCoordinator = KeyboardPredictionCoordinator()
+    let automaticCorrectionUndoStore = KeyboardAutomaticCorrectionUndoStore()
     let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
@@ -73,7 +76,7 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
-    var symbolPage: KeyboardSymbolPage = .primary {
+    var symbolPage: KeyboardSymbolPage = .alphabetic {
         didSet {
             updateUI()
         }
@@ -81,6 +84,11 @@ final class KeyboardViewController: UIInputViewController {
     var isCapsLockEnabled = false {
         didSet {
             updateUI()
+        }
+    }
+    var predictionChoices: [KeyboardPredictionChoice] = [] {
+        didSet {
+            rootContainerView?.predictionBarView.apply(choices: predictionChoices)
         }
     }
 
@@ -116,9 +124,13 @@ final class KeyboardViewController: UIInputViewController {
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         appSettingsStore.normalizeSelectedVibeIfNeeded()
         syncCapsLockState()
+        letterCaseController.synchronize(
+            documentContextBeforeInput: textInputController.documentContextBeforeInput
+        )
         dictationController.syncStateFromSharedState()
         ttsController.syncStateFromSharedState()
         updateUI()
+        refreshPredictionState()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -133,9 +145,13 @@ final class KeyboardViewController: UIInputViewController {
         indicatorDriver.start()
         configurePrimaryViewHeight()
         syncCapsLockState()
+        letterCaseController.synchronize(
+            documentContextBeforeInput: textInputController.documentContextBeforeInput
+        )
         dictationController.syncStateFromSharedState()
         ttsController.syncStateFromSharedState()
         updateUI()
+        refreshPredictionState()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -146,11 +162,17 @@ final class KeyboardViewController: UIInputViewController {
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
         updateActiveInsertionVisualState()
+        letterCaseController.synchronize(
+            documentContextBeforeInput: textInputController.documentContextBeforeInput
+        )
+        synchronizeTypingKeyPresentation()
+        refreshPredictionState()
     }
 
     override func selectionDidChange(_ textInput: UITextInput?) {
         super.selectionDidChange(textInput)
         updateActiveInsertionVisualState()
+        refreshPredictionState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -213,9 +235,17 @@ final class KeyboardViewController: UIInputViewController {
         callObserver.onCallStateChange = { [weak self] in
             self?.updateUI()
         }
+        predictionCoordinator.onChoicesChange = { [weak self] choices in
+            self?.predictionChoices = choices
+        }
     }
 
     func updateUI() {
+        let diagnosticStartedAt = ProcessInfo.processInfo.systemUptime
+        KeyboardTypingDiagnostics.log("ui_update_begin", fields: [
+            "symbol_page": String(describing: symbolPage),
+            "prediction_choice_count": predictionChoices.count,
+        ])
         let toolbarMode = currentToolbarMode()
         let preferredTTSVoiceID = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)?
             .string(forKey: UserDefaultsKeys.ttsVoice)
@@ -223,6 +253,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
+            letterCase: letterCaseController.letterCase,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
@@ -233,6 +264,8 @@ final class KeyboardViewController: UIInputViewController {
             isAutoParagraphsEnabled: dictationChangeController.displayedAutoParagraphsEnabled,
             isListFormattingEnabled: dictationChangeController.displayedListFormattingEnabled,
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
+            arePredictiveSelectionsEnabled: appSettingsStore.arePredictiveSelectionsEnabled,
+            predictionChoices: predictionChoices,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive
@@ -241,6 +274,10 @@ final class KeyboardViewController: UIInputViewController {
             setFullAccessInstructionsPresented(false)
         }
         indicatorDriver.phase = keyboardState.indicatorPhase
+        KeyboardTypingDiagnostics.log("ui_update_end", fields: [
+            "duration_ms": ((ProcessInfo.processInfo.systemUptime - diagnosticStartedAt) * 100_000)
+                .rounded() / 100,
+        ])
     }
 
     private func currentToolbarMode() -> KeyboardToolbarMode {
@@ -459,21 +496,77 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @discardableResult
-    func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+    func handleKeyActivation(_ activation: KeyboardKeyActivation) -> Bool {
+        let kind = activation.kind
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        KeyboardTypingDiagnostics.log("controller_activation_begin", fields: [
+            "key": String(describing: kind),
+            "symbol_page": String(describing: symbolPage),
+        ])
+        if kind == .delete, restoreAutomaticCorrectionIfAvailable() {
+            KeyboardTypingDiagnostics.log("controller_activation_end", fields: [
+                "key": String(describing: kind),
+                "handled": true,
+                "path": "correction_undo",
+                "duration_ms": ((ProcessInfo.processInfo.systemUptime - startedAt) * 100_000)
+                    .rounded() / 100,
+            ])
+            return true
+        }
+
+        if kind == .space, applyAutomaticCorrectionIfAvailable() {
+            KeyboardTypingDiagnostics.log("controller_activation_end", fields: [
+                "key": String(describing: kind),
+                "handled": true,
+                "path": "automatic_correction",
+                "duration_ms": ((ProcessInfo.processInfo.systemUptime - startedAt) * 100_000)
+                    .rounded() / 100,
+            ])
+            return true
+        }
+
+        var updatedSymbolPage = symbolPage
         let didHandle = textInputController.handleKeyActivation(
             kind,
-            symbolPage: &symbolPage,
+            symbolPage: &updatedSymbolPage,
             resetCapsLockStateIfNeeded: { [weak self] in
                 self?.resetCapsLockStateIfNeeded()
             },
             advanceToNextInputMode: { [weak self] in
                 self?.advanceToNextInputMode()
+            },
+            handleShift: { [weak self] in
+                self?.letterCaseController.handleShift()
             }
         )
-        if didHandle {
-            updateActiveInsertionVisualState()
+        if updatedSymbolPage != symbolPage {
+            symbolPage = updatedSymbolPage
         }
+        if didHandle {
+            updatePredictionAfterHandledKey(kind, activation: activation)
+            updateActiveInsertionVisualState()
+            synchronizeTypingKeyPresentation()
+        }
+        KeyboardTypingDiagnostics.log("controller_activation_end", fields: [
+            "key": String(describing: kind),
+            "handled": didHandle,
+            "path": "text_input",
+            "duration_ms": ((ProcessInfo.processInfo.systemUptime - startedAt) * 100_000)
+                .rounded() / 100,
+        ])
         return didHandle
+    }
+
+    @discardableResult
+    func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+        handleKeyActivation(
+            KeyboardKeyActivation(
+                kind: kind,
+                location: .zero,
+                timestamp: ProcessInfo.processInfo.systemUptime,
+                isLongPressAlternate: false
+            )
+        )
     }
 
     func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {

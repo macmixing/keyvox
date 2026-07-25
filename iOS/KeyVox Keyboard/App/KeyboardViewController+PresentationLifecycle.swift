@@ -97,11 +97,17 @@ extension KeyboardViewController {
         rootContainerView.speakButton.addTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
-        rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
-            self?.handleKeyActivation(kind) ?? false
+        rootContainerView.keyGridView.onKeyActivated = { [weak self] activation in
+            self?.handleKeyActivation(activation) ?? false
         }
         rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
             self?.handleSpaceTrackpadEvent(event)
+        }
+        rootContainerView.keyGridView.onCharacterGeometryChange = { [weak self] geometry, size in
+            self?.predictionCoordinator.updateGeometry(geometry, keyboardSize: size)
+        }
+        rootContainerView.predictionBarView.onChoiceSelected = { [weak self] choice in
+            self?.handlePredictionChoice(choice)
         }
         rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
 
@@ -152,6 +158,8 @@ extension KeyboardViewController {
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
             rootContainerView.keyGridView.onKeyActivated = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
+            rootContainerView.keyGridView.onCharacterGeometryChange = nil
+            rootContainerView.predictionBarView.onChoiceSelected = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)
             rootContainerView.keyGridView.resetInteractionState()
         }
@@ -216,6 +224,9 @@ extension KeyboardViewController {
             self.preparePresentationIfNeeded()
             self.configurePrimaryViewHeight()
             self.syncCapsLockState()
+            self.letterCaseController.synchronize(
+                documentContextBeforeInput: self.textInputController.documentContextBeforeInput
+            )
             self.callObserver.refreshState()
             self.rootContainerView?.keyGridView.resetInteractionState()
             self.dictationController.syncStateFromSharedState()
@@ -224,6 +235,7 @@ extension KeyboardViewController {
             KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
             KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
             self.updateUI()
+            self.refreshPredictionState()
         }
     }
 

@@ -22,6 +22,7 @@ enum KeyboardStyle {
 
     static let keyHeight: CGFloat = 48
     static let keyUnitWidth: CGFloat = 34
+    static let keyGridHitOverflow: CGFloat = 12
     static let keyCornerRadius: CGFloat = 8
     static let popupWidthMultiplier: CGFloat = 1.15
     static let popupHeightMultiplier: CGFloat = 1.25

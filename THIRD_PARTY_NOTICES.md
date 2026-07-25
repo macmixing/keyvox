@@ -63,6 +63,55 @@ Attribution: Based on Alibaba Cloud's `Qwen2.5-0.5B-Instruct` model.
 - Base model license: Apache License 2.0
 - Note: These are KeyVox-trained LoRA adapter artifacts for local Vibes rewrite behavior. They are product-specific model adapter assets bundled with the app and are not part of the repository's MIT-licensed source code.
 
+### AOSP LatinIME (bundled predictive-keyboard engine source)
+- Upstream: <https://android.googlesource.com/platform/packages/inputmethods/LatinIME/>
+- Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
+- License: Apache License 2.0
+- License URL: <https://www.apache.org/licenses/LICENSE-2.0>
+- Note: Selected native LatinIME source is bundled through `Packages/KeyVoxPredictiveKeyboard` and connected to a KeyVox-specific portable bridge and ranking pipeline.
+
+Copyright (c) 2008, The Android Open Source Project
+
+### English Speller Database / SCOWL (bundled predictive-keyboard data)
+- Upstream: <https://github.com/en-wl/wordlist>
+- Upstream revision: `1e5b7d3a72f47a71da5d28686c1dd4b397178485`
+- License: ESDB permissive notice
+- Note: KeyVox uses a generated size-60 American English word list in its dictionary and accent-suggestion artifacts.
+
+Copyright 2000-2026 by Kevin Atkinson
+
+Permission to use, copy, modify, distribute, and sell any part of the English
+Speller Database (ESDB, previously known as SCOWLv2), or word lists created
+from it, is hereby granted without fee, provided that the above copyright
+notice appears in all copies and that both the above copyright notice and this
+notice appear in supporting documentation. Kevin Atkinson makes no
+representations about the suitability of this database for any purpose. It is
+provided "as is" without express or implied warranty.
+
+### Tatoeba English sentences (derived predictive-keyboard data)
+- Source: <https://tatoeba.org/en/downloads>
+- License: CC BY 2.0 FR
+- License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
+- Note: English sentences were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`.
+
+Attribution: Based on sentence data contributed by the Tatoeba community.
+
+### OpenAssistant OASST1 (derived predictive-keyboard data)
+- Source: <https://huggingface.co/datasets/OpenAssistant/oasst1>
+- License: Apache License 2.0
+- License URL: <https://www.apache.org/licenses/LICENSE-2.0>
+- Note: English training messages were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`.
+
+Attribution: Based on the OpenAssistant OASST1 dataset created by the OpenAssistant contributors.
+
+### Aalto ITE Typing dataset (derived predictive-keyboard rankers)
+- Source: <https://doi.org/10.5281/zenodo.12528163>
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: KeyVox trained correction, completion, and conservative action-ranking artifacts from the dataset. The bundled model artifacts are adaptations and do not contain the original typing-event records.
+
+Attribution: Based on Leino, Laine, Kurimo, and Oulasvirta, *Mobile Typing with Intelligent Text Entry: A Large-Scale Dataset and Results* (2024).
+
 ### MIT License (applies to `whisper.cpp`, OpenAI Whisper, and `llama.cpp` above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -83,7 +132,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### Apache License 2.0 (applies to Qwen model artifacts above)
+### Apache License 2.0 (applies to Qwen, AOSP LatinIME, and OpenAssistant components above)
 
 Apache License
 Version 2.0, January 2004

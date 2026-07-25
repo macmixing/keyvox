@@ -30,10 +30,12 @@
 		9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
 		9B5200012FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
 		9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
-		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
-		C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 		B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
+		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		D5A100012FD0000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = D5A100032FD0000100AA0001 /* KeyVoxPredictiveKeyboard */; };
+		D5A100042FD0000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = D5A100032FD0000100AA0001 /* KeyVoxPredictiveKeyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,7 +116,10 @@
 				App/KeyboardContainingAppLauncher.swift,
 				App/KeyboardViewController.swift,
 				"App/KeyboardViewController+Debug.swift",
+				"App/KeyboardViewController+Prediction.swift",
 				"App/KeyboardViewController+PresentationLifecycle.swift",
+				"App/KeyboardViewController+TypingPresentation.swift",
+				Core/Diagnostics/KeyboardTypingDiagnostics.swift,
 				Core/Dictation/AudioIndicatorDriver.swift,
 				Core/Dictation/DictationChange/KeyboardDictationChangeArtifactStore.swift,
 				Core/Dictation/DictationChange/KeyboardDictationChangeController.swift,
@@ -128,7 +133,10 @@
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
 				Core/Feedback/KeyboardInteractionHaptics.swift,
 				Core/Feedback/KeyboardKeypressHaptics.swift,
+				Core/Input/KeyboardAlternateCharacterLayout.swift,
 				Core/Input/KeyboardCursorTrackpadSupport.swift,
+				Core/Input/KeyboardKeyActivation.swift,
+				Core/Input/KeyboardLetterCaseController.swift,
 				Core/Input/KeyboardSpecialKeyInteractionSupport.swift,
 				Core/Input/KeyboardTextInputController.swift,
 				Core/KeyboardDictationModelStatus.swift,
@@ -148,6 +156,7 @@
 				Core/Transport/KeyboardIPCManager.swift,
 				Core/Transport/KeyboardTransportDisplayState.swift,
 				Core/Transport/KeyboardTTSController.swift,
+				Views/Components/KeyboardAlternateCharacterPopupView.swift,
 				Views/Components/KeyboardCancelButton.swift,
 				Views/Components/KeyboardCapsLockButton.swift,
 				Views/Components/KeyboardHitTargetButton.swift,
@@ -155,6 +164,7 @@
 				Views/Components/KeyboardKeyPopupView.swift,
 				Views/Components/KeyboardKeyView.swift,
 				Views/Components/KeyboardLogoBarView.swift,
+				Views/Components/KeyboardPredictionBarView.swift,
 				Views/Components/KeyboardRoundedBorderRenderer.swift,
 				Views/Components/KeyboardSettingsToggleButton.swift,
 				Views/Components/KeyboardSpeakButton.swift,
@@ -323,6 +333,7 @@
 			files = (
 				B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */,
+				D5A100012FD0000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */,
 				8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 			);
@@ -356,6 +367,7 @@
 			files = (
 				B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */,
+				D5A100042FD0000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */,
 				8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */,
 				9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 				9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
@@ -447,6 +459,7 @@
 			name = "KeyVox Keyboard";
 			packageProductDependencies = (
 				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
+				D5A100032FD0000100AA0001 /* KeyVoxPredictiveKeyboard */,
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
@@ -529,6 +542,7 @@
 			name = "KeyVox iOSTests";
 			packageProductDependencies = (
 				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
+				D5A100032FD0000100AA0001 /* KeyVoxPredictiveKeyboard */,
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
 				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
@@ -577,6 +591,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */,
+				D5A100022FD0000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */,
 				8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
 				9A7002012FA6000100AA0001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */,
@@ -1241,10 +1256,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxTextComposition;
-		};
 		8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
@@ -1264,6 +1275,14 @@
 		9B5200022FB2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVibesAdapters" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxVibesAdapters;
+		};
+		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTextComposition;
+		};
+		D5A100022FD0000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxPredictiveKeyboard;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -1287,11 +1306,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
-			productName = KeyVoxTextComposition;
-		};
 		8E7DB28D2F80FBE0009E3576 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
@@ -1325,6 +1339,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9B5200022FB2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVibesAdapters" */;
 			productName = KeyVoxVibesAdapters;
+		};
+		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
+			productName = KeyVoxTextComposition;
+		};
+		D5A100032FD0000100AA0001 /* KeyVoxPredictiveKeyboard */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5A100022FD0000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */;
+			productName = KeyVoxPredictiveKeyboard;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

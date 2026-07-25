@@ -16,6 +16,7 @@ final class KeyboardRootView: UIView {
     let dictionaryButton = KeyboardSettingsToggleButton()
     let vibesButton = KeyboardVibesButton()
     let logoBarView = KeyboardLogoBarView()
+    let predictionBarView = KeyboardPredictionBarView()
     let keyGridView = KeyboardKeyGridView()
     let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
 
@@ -117,6 +118,7 @@ final class KeyboardRootView: UIView {
     func apply(
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
+        letterCase: KeyboardLetterCase,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
         isDictationCapsUppercase: Bool,
@@ -127,6 +129,8 @@ final class KeyboardRootView: UIView {
         isAutoParagraphsEnabled: Bool,
         isListFormattingEnabled: Bool,
         isLeftHandedLayoutEnabled: Bool,
+        arePredictiveSelectionsEnabled: Bool,
+        predictionChoices: [KeyboardPredictionChoice],
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
@@ -135,7 +139,10 @@ final class KeyboardRootView: UIView {
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        let shouldShowSpeak = showsBrandedToolbar && isTTSReady
+        let showsPredictionBar = showsBrandedToolbar
+            && arePredictiveSelectionsEnabled
+            && symbolPage == .alphabetic
+        let shouldShowSpeak = showsBrandedToolbar && isTTSReady && !showsPredictionBar
         let shouldEnableSpeak = shouldShowSpeak
             && state != .waitingForApp
             && state != .recording
@@ -162,27 +169,29 @@ final class KeyboardRootView: UIView {
         capsLockButton.isDictationCapsUppercase = isDictationCapsUppercase
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
         capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        capsLockButton.isHidden = !showsBrandedToolbar
+        capsLockButton.isHidden = !showsBrandedToolbar || showsPredictionBar
         paragraphButton.isOn = isAutoParagraphsEnabled
         paragraphButton.isTrackpadModeActive = isTrackpadModeActive
         paragraphButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        paragraphButton.isHidden = !showsBrandedToolbar
+        paragraphButton.isHidden = !showsBrandedToolbar || showsPredictionBar
         listsButton.isOn = isListFormattingEnabled
         listsButton.isTrackpadModeActive = isTrackpadModeActive
         listsButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        listsButton.isHidden = !showsBrandedToolbar
+        listsButton.isHidden = !showsBrandedToolbar || showsPredictionBar
         dictionaryButton.isTrackpadModeActive = isTrackpadModeActive
         dictionaryButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        dictionaryButton.isHidden = !showsBrandedToolbar
+        dictionaryButton.isHidden = !showsBrandedToolbar || showsPredictionBar
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
-        vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
+        vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable || showsPredictionBar
         vibesButton.title = displayedVibeTitle
         vibesButton.displayedVibeStyle = displayedVibeStyle
         vibesButton.isDisplayedVibeApplied = isDisplayedVibeApplied
         speakButton.isSpeaking = state.isTTSPlaybackActive
         speakButton.isTrackpadModeActive = isTrackpadModeActive
         speakButton.isEnabled = shouldEnableSpeak && !isTrackpadModeActive
+        predictionBarView.isHidden = !showsPredictionBar
+        predictionBarView.apply(choices: predictionChoices)
 
         // Keep the toolbar row containers visible even when the toolbar content is hidden.
         // Hiding the arranged containers causes the top row to collapse and the key grid to
@@ -200,6 +209,7 @@ final class KeyboardRootView: UIView {
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
         keyGridView.setSymbolPage(symbolPage)
+        keyGridView.setLetterCase(letterCase)
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
     }
@@ -269,6 +279,8 @@ final class KeyboardRootView: UIView {
         fullAccessInfoButton.isHidden = true
 
         centerContainerView.translatesAutoresizingMaskIntoConstraints = false
+        predictionBarView.isHidden = true
+        centerContainerView.addSubview(predictionBarView)
 
         leadingControlsStack.translatesAutoresizingMaskIntoConstraints = false
         trailingControlsStack.translatesAutoresizingMaskIntoConstraints = false
@@ -374,6 +386,11 @@ final class KeyboardRootView: UIView {
             fullAccessWarningLabel.centerYAnchor.constraint(equalTo: fullAccessWarningContainer.centerYAnchor),
             centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
+
+            predictionBarView.leadingAnchor.constraint(equalTo: centerContainerView.leadingAnchor),
+            predictionBarView.trailingAnchor.constraint(equalTo: centerContainerView.trailingAnchor),
+            predictionBarView.topAnchor.constraint(equalTo: centerContainerView.topAnchor),
+            predictionBarView.bottomAnchor.constraint(equalTo: centerContainerView.bottomAnchor),
 
             keyGridView.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight * 4 + KeyboardStyle.keyboardRowSpacing * 3),
 

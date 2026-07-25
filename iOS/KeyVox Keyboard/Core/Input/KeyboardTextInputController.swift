@@ -40,15 +40,42 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
     }
 
     func insertText(_ text: String) {
-        proxyProvider()?.insertText(text)
+        let proxy = proxyProvider()
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        KeyboardTypingDiagnostics.log("proxy_insert_begin", fields: [
+            "text": text,
+            "text_count": text.count,
+            "context_count_before": proxy?.documentContextBeforeInput?.count ?? -1,
+            "proxy_available": proxy != nil,
+        ])
+        proxy?.insertText(text)
+        KeyboardTypingDiagnostics.log("proxy_insert_end", fields: [
+            "text": text,
+            "context_count_after": proxy?.documentContextBeforeInput?.count ?? -1,
+            "duration_ms": diagnosticMilliseconds(since: startedAt),
+        ])
     }
 
     func deleteBackward() {
-        proxyProvider()?.deleteBackward()
+        let proxy = proxyProvider()
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        KeyboardTypingDiagnostics.log("proxy_delete_begin", fields: [
+            "context_count_before": proxy?.documentContextBeforeInput?.count ?? -1,
+            "proxy_available": proxy != nil,
+        ])
+        proxy?.deleteBackward()
+        KeyboardTypingDiagnostics.log("proxy_delete_end", fields: [
+            "context_count_after": proxy?.documentContextBeforeInput?.count ?? -1,
+            "duration_ms": diagnosticMilliseconds(since: startedAt),
+        ])
     }
 
     func adjustTextPosition(byCharacterOffset offset: Int) {
         proxyProvider()?.adjustTextPosition(byCharacterOffset: offset)
+    }
+
+    private func diagnosticMilliseconds(since start: TimeInterval) -> Double {
+        ((ProcessInfo.processInfo.systemUptime - start) * 100_000).rounded() / 100
     }
 }
 
@@ -75,7 +102,8 @@ final class KeyboardTextInputController {
         _ kind: KeyboardKeyKind,
         symbolPage: inout KeyboardSymbolPage,
         resetCapsLockStateIfNeeded: () -> Void,
-        advanceToNextInputMode: () -> Void
+        advanceToNextInputMode: () -> Void,
+        handleShift: () -> Void = {}
     ) -> Bool {
         switch kind {
         case let .character(value):
@@ -114,9 +142,11 @@ final class KeyboardTextInputController {
         case .space:
             emitKeypress()
             if handleDoubleSpacePeriodInsertionIfNeeded() {
+                symbolPage = .alphabetic
                 return true
             }
             documentProxy.insertText(" ")
+            symbolPage = .alphabetic
             return true
         case .returnKey:
             emitKeypress()
@@ -124,12 +154,24 @@ final class KeyboardTextInputController {
             return true
         case .abc:
             emitKeypress()
+            symbolPage = .alphabetic
+            return true
+        case .shift:
+            emitKeypress()
+            handleShift()
+            return true
+        case .nextKeyboard:
+            emitKeypress()
             resetCapsLockStateIfNeeded()
             advanceToNextInputMode()
             return true
-        case .alternateSymbols, .numberSymbols:
+        case .alternateSymbols:
             emitKeypress()
-            symbolPage.toggle()
+            symbolPage = .alternate
+            return true
+        case .numberSymbols:
+            emitKeypress()
+            symbolPage = .primary
             return true
         }
     }
@@ -236,6 +278,59 @@ final class KeyboardTextInputController {
         }
 
         return documentContextBeforeInsertion.hasSuffix(visiblePrefix)
+    }
+
+    @discardableResult
+    func replaceCurrentWord(
+        _ currentWord: String,
+        with replacement: String,
+        appendingSpace: Bool
+    ) -> Bool {
+        guard currentWord.isEmpty == false,
+              replacement.isEmpty == false,
+              documentProxy.documentContextBeforeInput?.hasSuffix(currentWord) == true else {
+            return false
+        }
+        for _ in currentWord {
+            documentProxy.deleteBackward()
+        }
+        documentProxy.insertText(replacement + (appendingSpace ? " " : ""))
+        return true
+    }
+
+    @discardableResult
+    func restoreAutomaticCorrection(
+        original: String,
+        replacement: String
+    ) -> Bool {
+        let correctedText = replacement + " "
+        guard documentProxy.documentContextBeforeInput?.hasSuffix(correctedText) == true else {
+            return false
+        }
+        for _ in correctedText {
+            documentProxy.deleteBackward()
+        }
+        documentProxy.insertText(original)
+        return true
+    }
+
+    @discardableResult
+    func insertPrediction(
+        _ prediction: String,
+        replacing currentWord: String
+    ) -> Bool {
+        guard prediction.isEmpty == false else { return false }
+        if currentWord.isEmpty {
+            emitKeypress()
+            documentProxy.insertText(prediction + " ")
+            return true
+        }
+        emitKeypress()
+        return replaceCurrentWord(
+            currentWord,
+            with: prediction,
+            appendingSpace: true
+        )
     }
 
     func replaceSelectedText(_ selectedText: String, with text: String) -> Bool {

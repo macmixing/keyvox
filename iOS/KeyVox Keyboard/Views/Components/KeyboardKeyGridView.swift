@@ -14,14 +14,39 @@ enum KeyboardTopRowAccessorySlot: Int {
 }
 
 final class KeyboardKeyGridView: UIView {
-    var onKeyActivated: ((KeyboardKeyKind) -> Bool)?
+    private final class TouchSession {
+        let diagnosticIdentifier: Int
+        let beganAt: TimeInterval
+        let beganLocation: CGPoint
+        let initialKeyView: KeyboardKeyView?
+        var currentKeyView: KeyboardKeyView?
+        var alternatePresentationWorkItem: DispatchWorkItem?
+
+        init(
+            diagnosticIdentifier: Int,
+            beganAt: TimeInterval,
+            beganLocation: CGPoint,
+            currentKeyView: KeyboardKeyView?
+        ) {
+            self.diagnosticIdentifier = diagnosticIdentifier
+            self.beganAt = beganAt
+            self.beganLocation = beganLocation
+            self.initialKeyView = currentKeyView
+            self.currentKeyView = currentKeyView
+        }
+    }
+
+    var onKeyActivated: ((KeyboardKeyActivation) -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
+    var onCharacterGeometryChange: (([KeyboardCharacterKeyGeometry], CGSize) -> Void)?
 
     private let rowsStack = UIStackView()
     private let popupView = KeyboardKeyPopupView()
-    private let pressGestureRecognizer = UILongPressGestureRecognizer()
+    private let alternatePopupView = KeyboardAlternateCharacterPopupView()
     private var keyViews: [KeyboardKeyView] = []
-    private(set) var symbolPage: KeyboardSymbolPage = .primary
+    private var touchSessions: [ObjectIdentifier: TouchSession] = [:]
+    private(set) var symbolPage: KeyboardSymbolPage = .alphabetic
+    private var letterCase: KeyboardLetterCase = .shifted
     private var isKeyboardEnabled = true
     private weak var activeKeyView: KeyboardKeyView?
     private weak var popupContainerView: UIView?
@@ -30,6 +55,11 @@ final class KeyboardKeyGridView: UIView {
     private let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     private var deleteRepeatController = KeyboardDeleteRepeatController()
     private var isDeleteTouchConsuming = false
+    private var deleteTouchIdentifier: ObjectIdentifier?
+    private var spaceTouchIdentifier: ObjectIdentifier?
+    private var alternateTouchIdentifier: ObjectIdentifier?
+    private var lastReportedCharacterGeometry: [KeyboardCharacterKeyGeometry] = []
+    private var secondRowLayoutGeometry: KeyboardLayoutGeometry.SecondRowLayout?
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
     private var bottomRowLayoutGeometry: KeyboardLayoutGeometry.BottomRowLayout?
 
@@ -50,6 +80,29 @@ final class KeyboardKeyGridView: UIView {
         rebuildKeys(for: page)
     }
 
+    func setLetterCase(_ letterCase: KeyboardLetterCase) {
+        guard self.letterCase != letterCase else { return }
+        self.letterCase = letterCase
+        guard symbolPage == .alphabetic else { return }
+
+        let updatedModels = KeyboardSymbolLayout.rows(
+            for: symbolPage,
+            letterCase: letterCase
+        ).flatMap { $0 }
+        guard updatedModels.count == keyViews.count else {
+            rebuildKeys(for: symbolPage)
+            return
+        }
+        for (keyView, model) in zip(keyViews, updatedModels) {
+            keyView.apply(
+                model: model,
+                state: keyView === activeKeyView ? .pressed : .normal,
+                isTrackpadModeActive: spaceTrackpadController.isActive,
+                animated: false
+            )
+        }
+    }
+
     func setKeyboardEnabled(_ enabled: Bool) {
         guard isKeyboardEnabled != enabled else { return }
         isKeyboardEnabled = enabled
@@ -66,6 +119,12 @@ final class KeyboardKeyGridView: UIView {
     }
 
     func resetInteractionState() {
+        cancelAllAlternatePresentations()
+        alternatePopupView.dismiss()
+        touchSessions.removeAll()
+        deleteTouchIdentifier = nil
+        spaceTouchIdentifier = nil
+        alternateTouchIdentifier = nil
         activeKeyView = nil
         trackpadOriginKeyView = nil
         isDeleteTouchConsuming = false
@@ -80,6 +139,7 @@ final class KeyboardKeyGridView: UIView {
     func refreshAppearance() {
         updateKeyStates(activeKey: activeKeyView)
         popupView.refreshAppearance()
+        alternatePopupView.setNeedsLayout()
     }
 
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
@@ -95,13 +155,16 @@ final class KeyboardKeyGridView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        secondRowLayoutGeometry?.update(isLandscape: isLandscape)
         thirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         bottomRowLayoutGeometry?.update(isLandscape: isLandscape)
+        reportCharacterGeometryIfNeeded()
     }
 
     private func configureView() {
         translatesAutoresizingMaskIntoConstraints = false
         clipsToBounds = false
+        isMultipleTouchEnabled = true
 
         rowsStack.translatesAutoresizingMaskIntoConstraints = false
         rowsStack.axis = .vertical
@@ -118,11 +181,6 @@ final class KeyboardKeyGridView: UIView {
             rowsStack.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
 
-        pressGestureRecognizer.minimumPressDuration = 0
-        pressGestureRecognizer.cancelsTouchesInView = true
-        pressGestureRecognizer.delaysTouchesBegan = false
-        pressGestureRecognizer.addTarget(self, action: #selector(handlePressGesture(_:)))
-        addGestureRecognizer(pressGestureRecognizer)
     }
 
     private func rebuildKeys(for page: KeyboardSymbolPage) {
@@ -134,10 +192,14 @@ final class KeyboardKeyGridView: UIView {
             rowsStack.removeArrangedSubview(row)
             row.removeFromSuperview()
         }
+        secondRowLayoutGeometry = nil
         thirdRowLayoutGeometry = nil
         bottomRowLayoutGeometry = nil
 
-        for (rowIndex, rowModels) in KeyboardSymbolLayout.rows(for: page).enumerated() {
+        for (rowIndex, rowModels) in KeyboardSymbolLayout.rows(
+            for: page,
+            letterCase: letterCase
+        ).enumerated() {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
             rowStack.alignment = .fill
@@ -153,7 +215,12 @@ final class KeyboardKeyGridView: UIView {
 
             rowsStack.addArrangedSubview(rowStack)
 
-            if rowIndex == 2 {
+            if rowIndex == 1, page == .alphabetic {
+                secondRowLayoutGeometry = KeyboardLayoutGeometry.SecondRowLayout(
+                    keyGridView: self,
+                    rowStack: rowStack
+                )
+            } else if rowIndex == 2 {
                 thirdRowLayoutGeometry = KeyboardLayoutGeometry.ThirdRowLayout(
                     keyGridView: self,
                     rowStack: rowStack
@@ -167,64 +234,130 @@ final class KeyboardKeyGridView: UIView {
         }
 
         updateKeyStates(activeKey: nil)
+        setNeedsLayout()
     }
 
-    @objc
-    private func handlePressGesture(_ gesture: UILongPressGestureRecognizer) {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        bounds.insetBy(
+            dx: -KeyboardStyle.keyGridHitOverflow,
+            dy: -KeyboardStyle.keyGridHitOverflow
+        ).contains(point)
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard isUserInteractionEnabled,
+              !isHidden,
+              alpha > 0.01,
+              self.point(inside: point, with: event) else {
+            return nil
+        }
+        return self
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard isKeyboardEnabled else { return }
 
-        let location = gesture.location(in: self)
-        let timestamp = ProcessInfo.processInfo.systemUptime
-        let hitKey = keyView(at: location)
-        switch gesture.state {
-        case .began:
+        for touch in touches {
+            let identifier = ObjectIdentifier(touch)
+            let location = touch.location(in: self)
+            let hitKey = keyView(at: location)
+            let session = TouchSession(
+                diagnosticIdentifier: KeyboardTypingDiagnostics.nextIdentifier(),
+                beganAt: touch.timestamp,
+                beganLocation: location,
+                currentKeyView: hitKey
+            )
+            touchSessions[identifier] = session
+            KeyboardTypingDiagnostics.log("touch_begin", fields: [
+                "touch_id": session.diagnosticIdentifier,
+                "x": diagnosticCoordinate(location.x),
+                "y": diagnosticCoordinate(location.y),
+                "resolved_key": diagnosticKeyName(hitKey?.model.kind),
+                "inside_grid_bounds": bounds.contains(location),
+                "active_touches": touchSessions.count,
+            ])
+
             if hitKey?.model.kind == .delete {
+                guard deleteTouchIdentifier == nil else { continue }
+                deleteTouchIdentifier = identifier
                 isDeleteTouchConsuming = true
-                trackpadOriginKeyView = nil
-                _ = spaceTrackpadController.cancel()
                 setActiveKey(hitKey)
                 deleteRepeatController.begin { [weak self] in
                     guard let self else { return true }
-                    let didDelete = self.onKeyActivated?(.delete) ?? false
+                    let didDelete = self.deliverKeyActivation(
+                        KeyboardKeyActivation(
+                            kind: .delete,
+                            location: location,
+                            timestamp: ProcessInfo.processInfo.systemUptime,
+                            isLongPressAlternate: false
+                        ),
+                        session: session,
+                        source: "delete_repeat"
+                    )
                     if !didDelete {
                         self.deleteRepeatController.cancel()
                     }
                     return didDelete
                 }
-                return
+                continue
             }
 
-            isDeleteTouchConsuming = false
-            trackpadOriginKeyView = hitKey?.model.kind == .space ? hitKey : nil
-            if trackpadOriginKeyView != nil {
+            if hitKey?.model.kind == .space, spaceTouchIdentifier == nil {
+                spaceTouchIdentifier = identifier
+                trackpadOriginKeyView = hitKey
                 trackpadActivationFeedback.prepare()
+                spaceTrackpadController.begin(
+                    onSpaceKey: true,
+                    location: location
+                ) { [weak self] in
+                    self?.activateSpaceTrackpadIfNeeded()
+                }
             }
-            spaceTrackpadController.begin(
-                onSpaceKey: hitKey?.model.kind == .space,
-                location: location
-            ) { [weak self] in
-                self?.activateSpaceTrackpadIfNeeded()
-            }
-            if hitKey !== activeKeyView {
-                setActiveKey(hitKey)
-            } else if let hitKey {
-                updatePopup(for: hitKey)
-            }
-        case .changed:
-            if isDeleteTouchConsuming {
-                if hitKey?.model.kind == .delete {
-                    if hitKey !== activeKeyView {
-                        setActiveKey(hitKey)
+
+            setActiveKey(hitKey)
+            scheduleAlternatePresentation(for: hitKey, touchIdentifier: identifier)
+        }
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard isKeyboardEnabled else { return }
+
+        for touch in touches {
+            let identifier = ObjectIdentifier(touch)
+            guard let session = touchSessions[identifier] else { continue }
+            let location = touch.location(in: self)
+            let timestamp = touch.timestamp
+            let rawHitKey = keyView(at: location)
+            let hitKey = stabilizedKeyView(
+                rawHitKey: rawHitKey,
+                location: location,
+                session: session
+            )
+            KeyboardTypingDiagnostics.log("touch_move", fields: [
+                "touch_id": session.diagnosticIdentifier,
+                "x": diagnosticCoordinate(location.x),
+                "y": diagnosticCoordinate(location.y),
+                "previous_key": diagnosticKeyName(session.currentKeyView?.model.kind),
+                "resolved_key": diagnosticKeyName(hitKey?.model.kind),
+                "raw_key": diagnosticKeyName(rawHitKey?.model.kind),
+                "active_touches": touchSessions.count,
+            ])
+
+            if identifier == deleteTouchIdentifier {
+                session.currentKeyView = rawHitKey
+                if rawHitKey?.model.kind == .delete {
+                    if rawHitKey !== activeKeyView {
+                        setActiveKey(rawHitKey)
                     }
                     deleteRepeatController.resumeIfNeeded()
                 } else {
                     clearActiveKey(shouldDismissPopup: true)
                     deleteRepeatController.pause()
                 }
-                return
+                continue
             }
 
-            if spaceTrackpadController.isActive {
+            if identifier == spaceTouchIdentifier, spaceTrackpadController.isActive {
                 let update = spaceTrackpadController.update(
                     location: location,
                     isStillOnSpaceKey: true
@@ -232,60 +365,173 @@ final class KeyboardKeyGridView: UIView {
                 if let movementDelta = update.movementDelta {
                     onSpaceTrackpadEvent?(.moved(movementDelta, timestamp: timestamp))
                 }
-                return
+                continue
             }
 
-            _ = spaceTrackpadController.update(
-                location: location,
-                isStillOnSpaceKey: hitKey?.model.kind == .space
-            )
+            if identifier == alternateTouchIdentifier, alternatePopupView.superview != nil {
+                alternatePopupView.updateSelection(
+                    at: touch.location(in: popupContainerView ?? self),
+                    in: popupContainerView ?? self
+                )
+                continue
+            }
 
-            if hitKey !== activeKeyView {
+            if identifier == spaceTouchIdentifier {
+                _ = spaceTrackpadController.update(
+                    location: location,
+                    isStillOnSpaceKey: rawHitKey?.model.kind == .space
+                )
+            }
+
+            if hitKey !== session.currentKeyView {
+                cancelAlternatePresentation(for: identifier)
+                session.currentKeyView = hitKey
                 setActiveKey(hitKey)
+                scheduleAlternatePresentation(for: hitKey, touchIdentifier: identifier)
             } else if let hitKey {
                 updatePopup(for: hitKey)
             }
-        case .ended:
-            if isDeleteTouchConsuming {
+        }
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        finishTouches(touches, cancelled: false)
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        finishTouches(touches, cancelled: true)
+    }
+
+    private func finishTouches(_ touches: Set<UITouch>, cancelled: Bool) {
+        for touch in touches {
+            let identifier = ObjectIdentifier(touch)
+            guard let session = touchSessions.removeValue(forKey: identifier) else { continue }
+            let alternateValue = identifier == alternateTouchIdentifier
+                ? alternatePopupView.selectedValue()
+                : nil
+            let location = touch.location(in: self)
+            let rawHitKey = keyView(at: location)
+            let hitKey = stabilizedKeyView(
+                rawHitKey: rawHitKey,
+                location: location,
+                session: session
+            )
+            KeyboardTypingDiagnostics.log(cancelled ? "touch_cancel" : "touch_end", fields: [
+                "touch_id": session.diagnosticIdentifier,
+                "x": diagnosticCoordinate(location.x),
+                "y": diagnosticCoordinate(location.y),
+                "resolved_key": diagnosticKeyName(hitKey?.model.kind),
+                "raw_key": diagnosticKeyName(rawHitKey?.model.kind),
+                "last_key": diagnosticKeyName(session.currentKeyView?.model.kind),
+                "duration_ms": diagnosticDuration(from: session.beganAt, to: touch.timestamp),
+                "active_touches": touchSessions.count,
+            ])
+            cancelAlternatePresentation(for: identifier, session: session)
+
+            if identifier == deleteTouchIdentifier {
+                deleteTouchIdentifier = nil
                 isDeleteTouchConsuming = false
                 deleteRepeatController.cancel()
-                clearActiveKey(shouldDismissPopup: true)
-                return
+                refreshActiveKeyFromRemainingTouches()
+                continue
             }
 
-            let wasTrackpadActive = spaceTrackpadController.end()
-            let selectedKind = hitKey?.model.kind ?? activeKeyView?.model.kind
-            trackpadOriginKeyView = nil
-            clearActiveKey(shouldDismissPopup: true)
-            if wasTrackpadActive {
-                onSpaceTrackpadEvent?(.ended)
-            } else if let selectedKind {
-                _ = onKeyActivated?(selectedKind)
+            let selectedKind: KeyboardKeyKind?
+            if cancelled || !bounds.insetBy(dx: -16, dy: -16).contains(location) {
+                selectedKind = nil
+            } else {
+                selectedKind = alternateValue.map(KeyboardKeyKind.character)
+                    ?? hitKey?.model.kind
+                    ?? session.currentKeyView?.model.kind
             }
-        case .cancelled, .failed:
-            if isDeleteTouchConsuming {
-                isDeleteTouchConsuming = false
-                deleteRepeatController.cancel()
-                clearActiveKey(shouldDismissPopup: true)
-                return
+            let isLongPressAlternate = alternateValue != nil
+            if identifier == alternateTouchIdentifier {
+                alternateTouchIdentifier = nil
+                alternatePopupView.dismiss()
             }
 
-            let wasTrackpadActive = spaceTrackpadController.cancel()
-            trackpadOriginKeyView = nil
-            clearActiveKey(shouldDismissPopup: true)
-            if wasTrackpadActive {
-                onSpaceTrackpadEvent?(.cancelled)
+            let wasTrackpadActive: Bool
+            if identifier == spaceTouchIdentifier {
+                spaceTouchIdentifier = nil
+                wasTrackpadActive = cancelled
+                    ? spaceTrackpadController.cancel()
+                    : spaceTrackpadController.end()
+                trackpadOriginKeyView = nil
+            } else {
+                wasTrackpadActive = false
             }
-        default:
-            break
+
+            refreshActiveKeyFromRemainingTouches()
+            if wasTrackpadActive {
+                onSpaceTrackpadEvent?(cancelled ? .cancelled : .ended)
+                KeyboardTypingDiagnostics.log("trackpad_end", fields: [
+                    "touch_id": session.diagnosticIdentifier,
+                    "cancelled": cancelled,
+                ])
+            } else if let selectedKind, !cancelled {
+                _ = deliverKeyActivation(
+                    KeyboardKeyActivation(
+                        kind: selectedKind,
+                        location: location,
+                        timestamp: touch.timestamp,
+                        isLongPressAlternate: isLongPressAlternate
+                    ),
+                    session: session,
+                    source: isLongPressAlternate ? "long_press_alternate" : "touch_end"
+                )
+            } else {
+                KeyboardTypingDiagnostics.log("activation_skipped", fields: [
+                    "touch_id": session.diagnosticIdentifier,
+                    "cancelled": cancelled,
+                    "inside_tolerance": bounds.insetBy(dx: -16, dy: -16).contains(location),
+                    "resolved_key": diagnosticKeyName(selectedKind),
+                ])
+            }
         }
     }
 
     private func keyView(at point: CGPoint) -> KeyboardKeyView? {
-        keyViews.first { keyView in
-            let frame = keyView.convert(keyView.bounds, to: self).insetBy(dx: -6, dy: -6)
-            return frame.contains(point)
+        guard bounds.insetBy(
+            dx: -KeyboardStyle.keyGridHitOverflow,
+            dy: -KeyboardStyle.keyGridHitOverflow
+        ).contains(point) else {
+            return nil
         }
+
+        return keyViews.min { left, right in
+            squaredDistance(from: point, to: left.convert(left.bounds, to: self))
+                < squaredDistance(from: point, to: right.convert(right.bounds, to: self))
+        }
+    }
+
+    private func squaredDistance(from point: CGPoint, to frame: CGRect) -> CGFloat {
+        let horizontalDistance = max(max(frame.minX - point.x, 0), point.x - frame.maxX)
+        let verticalDistance = max(max(frame.minY - point.y, 0), point.y - frame.maxY)
+        return horizontalDistance * horizontalDistance + verticalDistance * verticalDistance
+    }
+
+    private func stabilizedKeyView(
+        rawHitKey: KeyboardKeyView?,
+        location: CGPoint,
+        session: TouchSession
+    ) -> KeyboardKeyView? {
+        guard let initialKeyView = session.initialKeyView else { return rawHitKey }
+        guard rawHitKey !== initialKeyView else { return initialKeyView }
+
+        if initialKeyView.model.kind == .space {
+            return initialKeyView
+        }
+
+        guard case .character = initialKeyView.model.kind else { return rawHitKey }
+        let horizontalMovement = location.x - session.beganLocation.x
+        let verticalMovement = location.y - session.beganLocation.y
+        let movementDistance = hypot(horizontalMovement, verticalMovement)
+        guard movementDistance >= KeyboardStyle.keyHeight * 0.65,
+              let rawHitKey else {
+            return initialKeyView
+        }
+        let rawFrame = rawHitKey.convert(rawHitKey.bounds, to: self).insetBy(dx: 4, dy: 4)
+        return rawFrame.contains(location) ? rawHitKey : initialKeyView
     }
 
     private func setActiveKey(_ keyView: KeyboardKeyView?) {
@@ -313,6 +559,132 @@ final class KeyboardKeyGridView: UIView {
         if shouldDismissPopup {
             popupView.dismiss()
         }
+    }
+
+    private func scheduleAlternatePresentation(
+        for keyView: KeyboardKeyView?,
+        touchIdentifier: ObjectIdentifier
+    ) {
+        cancelAlternatePresentation(for: touchIdentifier)
+        guard let session = touchSessions[touchIdentifier],
+              let keyView,
+              case let .character(value) = keyView.model.kind else {
+            return
+        }
+        let alternates = KeyboardAlternateCharacterLayout.characters(for: value)
+        guard alternates.isEmpty == false else { return }
+        let workItem = DispatchWorkItem { [weak self, weak keyView, weak session] in
+            guard let self,
+                  let keyView,
+                  let session,
+                  self.touchSessions[touchIdentifier] === session,
+                  session.currentKeyView === keyView else {
+                return
+            }
+            if let existingIdentifier = self.alternateTouchIdentifier,
+               existingIdentifier != touchIdentifier {
+                self.cancelAlternatePresentation(for: existingIdentifier)
+            }
+            self.alternateTouchIdentifier = touchIdentifier
+            self.popupView.dismiss()
+            self.alternatePopupView.present(
+                alternates: alternates,
+                primaryValue: value,
+                from: keyView,
+                in: self.popupContainerView ?? self
+            )
+        }
+        session.alternatePresentationWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: workItem)
+    }
+
+    private func cancelAlternatePresentation(
+        for touchIdentifier: ObjectIdentifier,
+        session suppliedSession: TouchSession? = nil
+    ) {
+        let session = suppliedSession ?? touchSessions[touchIdentifier]
+        session?.alternatePresentationWorkItem?.cancel()
+        session?.alternatePresentationWorkItem = nil
+        if alternateTouchIdentifier == touchIdentifier {
+            alternateTouchIdentifier = nil
+            alternatePopupView.dismiss()
+        }
+    }
+
+    private func cancelAllAlternatePresentations() {
+        for (identifier, session) in touchSessions {
+            cancelAlternatePresentation(for: identifier, session: session)
+        }
+    }
+
+    private func refreshActiveKeyFromRemainingTouches() {
+        let latestKeyView = touchSessions.values
+            .filter { $0.currentKeyView != nil }
+            .max { $0.beganAt < $1.beganAt }?
+            .currentKeyView
+        setActiveKey(latestKeyView)
+    }
+
+    private func deliverKeyActivation(
+        _ activation: KeyboardKeyActivation,
+        session: TouchSession,
+        source: String
+    ) -> Bool {
+        let deliveryStartedAt = ProcessInfo.processInfo.systemUptime
+        KeyboardTypingDiagnostics.log("activation_begin", fields: [
+            "touch_id": session.diagnosticIdentifier,
+            "key": diagnosticKeyName(activation.kind),
+            "source": source,
+            "touch_to_activation_ms": diagnosticDuration(
+                from: session.beganAt,
+                to: deliveryStartedAt
+            ),
+        ])
+        let wasHandled = KeyboardTypingDiagnostics.withTouchIdentifier(
+            session.diagnosticIdentifier
+        ) {
+            onKeyActivated?(activation) ?? false
+        }
+        KeyboardTypingDiagnostics.log("activation_end", fields: [
+            "touch_id": session.diagnosticIdentifier,
+            "key": diagnosticKeyName(activation.kind),
+            "handled": wasHandled,
+            "handler_ms": diagnosticDuration(
+                from: deliveryStartedAt,
+                to: ProcessInfo.processInfo.systemUptime
+            ),
+        ])
+        return wasHandled
+    }
+
+    private func diagnosticKeyName(_ kind: KeyboardKeyKind?) -> String {
+        kind.map { String(describing: $0) } ?? "none"
+    }
+
+    private func diagnosticCoordinate(_ value: CGFloat) -> Double {
+        (Double(value) * 100).rounded() / 100
+    }
+
+    private func diagnosticDuration(from start: TimeInterval, to end: TimeInterval) -> Double {
+        ((end - start) * 100_000).rounded() / 100
+    }
+
+    private func reportCharacterGeometryIfNeeded() {
+        guard symbolPage == .alphabetic, bounds.width > 0, bounds.height > 0 else { return }
+        let geometry = keyViews.compactMap { keyView -> KeyboardCharacterKeyGeometry? in
+            guard case let .character(value) = keyView.model.kind,
+                  value.count == 1,
+                  let character = value.lowercased().first else {
+                return nil
+            }
+            return KeyboardCharacterKeyGeometry(
+                character: character,
+                frame: keyView.convert(keyView.bounds, to: self)
+            )
+        }
+        guard geometry != lastReportedCharacterGeometry else { return }
+        lastReportedCharacterGeometry = geometry
+        onCharacterGeometryChange?(geometry, bounds.size)
     }
 
     private func updateKeyStates(activeKey: KeyboardKeyView?) {

@@ -123,6 +123,12 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
     }
 
+    var arePredictiveSelectionsEnabled: Bool {
+        defaults?.object(
+            forKey: UserDefaultsKeys.predictiveSelectionsEnabled
+        ) as? Bool ?? false
+    }
+
     @discardableResult
     func toggleListFormatting() -> Bool {
         let updatedValue = !isListFormattingEnabled

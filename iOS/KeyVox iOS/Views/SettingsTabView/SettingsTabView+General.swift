@@ -6,6 +6,8 @@ enum SettingsTabCopy {
         static let hapticsDescription = "Get haptic feedback from KeyVox keyboard."
         static let leftHandedLayoutTitle = "Left-Handed Layout"
         static let leftHandedLayoutDescription = "Mirror keyboard controls for easier left-hand access."
+        static let predictiveSelectionsTitle = "Predictive Selections"
+        static let predictiveSelectionsDescription = "Show English word choices in the KeyVox keyboard toolbar."
     }
 }
 
@@ -137,6 +139,16 @@ extension SettingsTabView {
                     title: SettingsTabCopy.Keyboard.leftHandedLayoutTitle,
                     description: SettingsTabCopy.Keyboard.leftHandedLayoutDescription,
                     isOn: $settingsStore.leftHandedKeyboardLayoutEnabled
+                )
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                SettingsRow(
+                    icon: "text.word.spacing",
+                    title: SettingsTabCopy.Keyboard.predictiveSelectionsTitle,
+                    description: SettingsTabCopy.Keyboard.predictiveSelectionsDescription,
+                    isOn: $settingsStore.predictiveSelectionsEnabled
                 )
             }
         }
