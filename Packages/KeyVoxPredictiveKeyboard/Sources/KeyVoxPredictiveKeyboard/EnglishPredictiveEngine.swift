@@ -3,8 +3,6 @@ import Foundation
 import KeyVoxPredictiveNative
 
 public final class EnglishPredictiveEngine: @unchecked Sendable {
-    public static let automaticCorrectionThreshold = 0.995
-
     private let nativeEngine: KVPKEngineRef
     private let accentOverlay: AccentSuggestionOverlay
 

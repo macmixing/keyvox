@@ -21,6 +21,7 @@ final class KeyboardKeyGridView: UIView {
         let initialKeyView: KeyboardKeyView?
         var currentKeyView: KeyboardKeyView?
         var alternatePresentationWorkItem: DispatchWorkItem?
+        var popupPresentedAt: TimeInterval?
 
         init(
             diagnosticIdentifier: Int,
@@ -258,6 +259,7 @@ final class KeyboardKeyGridView: UIView {
         guard isKeyboardEnabled else { return }
 
         for touch in touches {
+            let handlingStartedAt = ProcessInfo.processInfo.systemUptime
             let identifier = ObjectIdentifier(touch)
             let location = touch.location(in: self)
             let hitKey = keyView(at: location)
@@ -275,6 +277,10 @@ final class KeyboardKeyGridView: UIView {
                 "resolved_key": diagnosticKeyName(hitKey?.model.kind),
                 "inside_grid_bounds": bounds.contains(location),
                 "active_touches": touchSessions.count,
+                "delivery_delay_ms": diagnosticDuration(
+                    from: touch.timestamp,
+                    to: handlingStartedAt
+                ),
             ])
 
             if hitKey?.model.kind == .delete {
@@ -315,6 +321,22 @@ final class KeyboardKeyGridView: UIView {
             }
 
             setActiveKey(hitKey)
+            if popupView.superview != nil, popupView.alpha > 0 {
+                let presentedAt = ProcessInfo.processInfo.systemUptime
+                session.popupPresentedAt = presentedAt
+                KeyboardTypingDiagnostics.log("popup_presented", fields: [
+                    "touch_id": session.diagnosticIdentifier,
+                    "key": diagnosticKeyName(hitKey?.model.kind),
+                    "presentation_ms": diagnosticDuration(
+                        from: handlingStartedAt,
+                        to: presentedAt
+                    ),
+                    "x": diagnosticCoordinate(popupView.frame.origin.x),
+                    "y": diagnosticCoordinate(popupView.frame.origin.y),
+                    "width": diagnosticCoordinate(popupView.frame.width),
+                    "height": diagnosticCoordinate(popupView.frame.height),
+                ])
+            }
             scheduleAlternatePresentation(for: hitKey, touchIdentifier: identifier)
         }
     }
@@ -416,6 +438,16 @@ final class KeyboardKeyGridView: UIView {
                 location: location,
                 session: session
             )
+            if let popupPresentedAt = session.popupPresentedAt {
+                KeyboardTypingDiagnostics.log("popup_release_requested", fields: [
+                    "touch_id": session.diagnosticIdentifier,
+                    "key": diagnosticKeyName(session.currentKeyView?.model.kind),
+                    "visible_before_release_ms": diagnosticDuration(
+                        from: popupPresentedAt,
+                        to: ProcessInfo.processInfo.systemUptime
+                    ),
+                ])
+            }
             KeyboardTypingDiagnostics.log(cancelled ? "touch_cancel" : "touch_end", fields: [
                 "touch_id": session.diagnosticIdentifier,
                 "x": diagnosticCoordinate(location.x),

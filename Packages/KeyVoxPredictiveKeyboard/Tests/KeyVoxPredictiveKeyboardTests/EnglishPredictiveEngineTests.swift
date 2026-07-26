@@ -77,4 +77,266 @@ final class EnglishPredictiveEngineTests: XCTestCase {
         XCTAssertTrue(response.typedWordIsValid)
         XCTAssertEqual(response.automaticCorrectionProbability, 0)
     }
+
+    func testContextualDeletionCandidateSurvivesNativeCandidateExpansion() throws {
+        let engine = try EnglishPredictiveEngine()
+
+        let response = try engine.predict(
+            typedWord: "fo",
+            previousWords: ["brown", "quick", "the"],
+            touches: [],
+            mode: .correction
+        )
+
+        XCTAssertTrue(
+            response.suggestions.contains { $0.word == "fox" },
+            "Observed suggestions: \(response.suggestions.map(\.word))"
+        )
+    }
+
+    func testAdjacentSubstitutionRanksIntendedWordFirst() throws {
+        let engine = try EnglishPredictiveEngine()
+
+        let response = try engine.predict(
+            typedWord: "ocer",
+            previousWords: ["jumps"],
+            touches: [],
+            mode: .correction
+        )
+
+        XCTAssertEqual(response.suggestions.first?.word, "over")
+    }
+
+    func testContractionRanksIntendedWordFirst() throws {
+        let engine = try EnglishPredictiveEngine()
+
+        let response = try engine.predict(
+            typedWord: "dnt",
+            previousWords: ["please"],
+            touches: [],
+            mode: .correction
+        )
+
+        XCTAssertEqual(response.suggestions.first?.word, "don't")
+    }
+
+    func testSingleDeletionRanksIntendedWordFirst() throws {
+        let engine = try EnglishPredictiveEngine()
+
+        let response = try engine.predict(
+            typedWord: "ltters",
+            previousWords: ["any"],
+            touches: [],
+            mode: .correction
+        )
+
+        XCTAssertEqual(response.suggestions.first?.word, "letters")
+    }
+
+    func testRankedSuggestionsAreUnique() throws {
+        let engine = try EnglishPredictiveEngine()
+
+        let response = try engine.predict(
+            typedWord: "lettrrs",
+            previousWords: ["any"],
+            touches: [],
+            mode: .correction
+        )
+        let normalizedWords = response.suggestions.map { $0.word.lowercased() }
+
+        XCTAssertEqual(Set(normalizedWords).count, normalizedWords.count)
+    }
+
+    func testObservedAdjacentKeyErrorsRetainIntendedCandidate() throws {
+        let engine = try EnglishPredictiveEngine()
+        let cases: [(typed: String, previous: [String], expected: String)] = [
+            ("jumls", ["fox"], "jumps"),
+            ("pleaze", ["so"], "please"),
+            ("plese", ["so"], "please"),
+            ("layz", ["the"], "lazy"),
+            ("jums", ["fox"], "jumps"),
+        ]
+
+        for testCase in cases {
+            let response = try engine.predict(
+                typedWord: testCase.typed,
+                previousWords: testCase.previous,
+                touches: [],
+                mode: .correction
+            )
+            XCTAssertTrue(
+                response.suggestions.contains { $0.word == testCase.expected },
+                "Missing \(testCase.expected) for \(testCase.typed): \(response.suggestions.map(\.word))"
+            )
+        }
+    }
+
+    func testCorrectionPolicyAcceptsObservedHighConfidenceRepairs() throws {
+        let engine = try EnglishPredictiveEngine()
+        let cases: [(typed: String, previous: [String], expected: String)] = [
+            ("lettrrs", ["any"], "letters"),
+            ("dont", ["please"], "don't"),
+            ("dnt", ["please"], "don't"),
+            ("ocer", ["jumps"], "over"),
+            ("ltters", ["any"], "letters"),
+            ("jumls", ["fox"], "jumps"),
+            ("pleaze", ["so"], "please"),
+            ("plese", ["so"], "please"),
+            ("layz", ["the"], "lazy"),
+            ("jums", ["fox"], "jumps"),
+        ]
+        for testCase in cases {
+            let response = try engine.predict(
+                typedWord: testCase.typed,
+                previousWords: testCase.previous,
+                touches: [],
+                mode: .correction
+            )
+            let selection = EnglishAutomaticCorrectionPolicy.select(
+                typedWord: testCase.typed,
+                response: response
+            )
+            XCTAssertEqual(
+                selection.suggestion?.word,
+                testCase.expected,
+                "Failed input: \(testCase.typed)"
+            )
+        }
+    }
+
+    func testCorrectionPolicyUsesContextualTrailingInsertionRecovery() throws {
+        let engine = try EnglishPredictiveEngine()
+        let response = try engine.predict(
+            typedWord: "fo",
+            previousWords: ["brown", "quick", "the"],
+            touches: [],
+            mode: .correction
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "fo",
+            response: response
+        )
+
+        XCTAssertEqual(selection.suggestion?.word, "fox")
+        XCTAssertEqual(selection.reason, .trailingInsertionRecovery)
+    }
+
+    func testCorrectionPolicyRecoversObservedMissingLetter() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "lazy",
+                    nativeScore: -80_970,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.30083887200864157
+                ),
+                PredictiveSuggestion(
+                    word: "lay",
+                    nativeScore: -150_195,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.012498046532128554
+                ),
+            ],
+            automaticCorrectionProbability: 0.098100700944214386,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "lzy",
+            response: response
+        )
+
+        XCTAssertEqual(selection.suggestion?.word, "lazy")
+        XCTAssertEqual(selection.reason, .missingLetterRecovery)
+    }
+
+    func testCorrectionPolicyRejectsTrailingInsertionWithoutContextualSeparation() throws {
+        let engine = try EnglishPredictiveEngine()
+        let response = try engine.predict(
+            typedWord: "fo",
+            previousWords: [],
+            touches: [],
+            mode: .correction
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "fo",
+            response: response
+        )
+
+        XCTAssertNil(selection.suggestion)
+    }
+
+    func testCorrectionPolicyDoesNotInventTrailingLetterFromMissingLetterRule() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "very",
+                    nativeScore: 1,
+                    nativeType: 1,
+                    rankProbability: 0.43116704405415734
+                ),
+                PredictiveSuggestion(
+                    word: "over",
+                    nativeScore: 1,
+                    nativeType: 1,
+                    rankProbability: 0.008338666801763867
+                ),
+            ],
+            automaticCorrectionProbability: 0.14694451984877344,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "ver",
+            response: response
+        )
+
+        XCTAssertNil(selection.suggestion)
+    }
+
+    func testCorrectionPolicyRejectsSingleCharacterInput() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "a",
+                    nativeScore: 1,
+                    nativeType: 1,
+                    rankProbability: 1
+                ),
+            ],
+            automaticCorrectionProbability: 1,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "q",
+            response: response
+        )
+
+        XCTAssertNil(selection.suggestion)
+        XCTAssertEqual(selection.reason, .insufficientInput)
+    }
+
+    func testCorrectionPolicyRejectsObservedAmbiguousInputs() throws {
+        let engine = try EnglishPredictiveEngine()
+        let cases: [(String, [String])] = [
+            ("obe", ["jumps", "fox"]),
+            ("lay", ["the", "obe"]),
+        ]
+        for (typedWord, previousWords) in cases {
+            let response = try engine.predict(
+                typedWord: typedWord,
+                previousWords: previousWords,
+                touches: [],
+                mode: .correction
+            )
+            let selection = EnglishAutomaticCorrectionPolicy.select(
+                typedWord: typedWord,
+                response: response
+            )
+            XCTAssertNil(selection.suggestion, "Unsafe repair for input: \(typedWord)")
+        }
+    }
 }

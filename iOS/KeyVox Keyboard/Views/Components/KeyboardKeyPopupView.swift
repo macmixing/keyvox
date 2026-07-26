@@ -2,6 +2,9 @@ import UIKit
 
 final class KeyboardKeyPopupView: UIView {
     private let titleLabel = UILabel()
+    private var presentedAt: TimeInterval?
+    private var presentationGeneration = 0
+    private var pendingDismissWorkItem: DispatchWorkItem?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -56,6 +59,9 @@ final class KeyboardKeyPopupView: UIView {
     }
 
     func present(text: String, from keyView: KeyboardKeyView, in container: UIView) {
+        pendingDismissWorkItem?.cancel()
+        pendingDismissWorkItem = nil
+        presentationGeneration += 1
         titleLabel.attributedText = keyView.model.attributedTitle(for: text)
 
         let keyFrame = keyView.convert(keyView.bounds, to: container)
@@ -97,10 +103,34 @@ final class KeyboardKeyPopupView: UIView {
 
         alpha = 1
         transform = .identity
+        presentedAt = ProcessInfo.processInfo.systemUptime
     }
 
     func dismiss() {
         guard superview != nil else { return }
+        pendingDismissWorkItem?.cancel()
+        pendingDismissWorkItem = nil
+
+        let now = ProcessInfo.processInfo.systemUptime
+        let elapsed = presentedAt.map { now - $0 } ?? KeyboardStyle.popupMinimumVisibleDuration
+        let remaining = KeyboardStyle.popupMinimumVisibleDuration - elapsed
+        let generation = presentationGeneration
+        guard remaining > 0 else {
+            removeFromSuperviewIfCurrent(generation: generation)
+            return
+        }
+
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.removeFromSuperviewIfCurrent(generation: generation)
+        }
+        pendingDismissWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining, execute: workItem)
+    }
+
+    private func removeFromSuperviewIfCurrent(generation: Int) {
+        guard generation == presentationGeneration else { return }
+        pendingDismissWorkItem = nil
+        presentedAt = nil
         removeFromSuperview()
     }
 

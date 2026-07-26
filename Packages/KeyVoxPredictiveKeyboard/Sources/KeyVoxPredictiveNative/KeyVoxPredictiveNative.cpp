@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
@@ -13,6 +14,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -31,6 +33,7 @@ using namespace latinime;
 namespace {
 
 thread_local std::string lastError;
+constexpr int kInternalCandidateCount = 32;
 
 template <typename T>
 T readValue(const uint8_t *data) {
@@ -458,12 +461,12 @@ public:
                 ),
                 candidates.end()
             );
-            if (candidates.size() > KVPK_MAX_SUGGESTIONS) {
-                candidates.resize(KVPK_MAX_SUGGESTIONS);
-            }
             TreeModel &ranker = mode == KVPKPredictionModeCompletion
                 ? completionRanker_ : correctionRanker_;
             rankCandidates(typed, previous, &candidates, ranker);
+            if (candidates.size() > KVPK_MAX_SUGGESTIONS) {
+                candidates.resize(KVPK_MAX_SUGGESTIONS);
+            }
         }
 
         result->count = static_cast<int32_t>(
@@ -559,7 +562,7 @@ private:
         }
 
         NgramContext context = makeContext(previous);
-        SuggestionResults nativeResults(KVPK_MAX_SUGGESTIONS);
+        SuggestionResults nativeResults(kInternalCandidateCount);
         if (typedCodePoints.empty()) {
             dictionary_->getPredictions(&context, &nativeResults);
         } else {
@@ -576,15 +579,15 @@ private:
         JniArray count;
         count.ints.resize(1);
         JniArray outputCodePoints;
-        outputCodePoints.ints.resize(KVPK_MAX_SUGGESTIONS * MAX_WORD_LENGTH);
+        outputCodePoints.ints.resize(kInternalCandidateCount * MAX_WORD_LENGTH);
         JniArray scores;
-        scores.ints.resize(KVPK_MAX_SUGGESTIONS);
+        scores.ints.resize(kInternalCandidateCount);
         JniArray spaces;
-        spaces.ints.resize(KVPK_MAX_SUGGESTIONS);
+        spaces.ints.resize(kInternalCandidateCount);
         JniArray types;
-        types.ints.resize(KVPK_MAX_SUGGESTIONS);
+        types.ints.resize(kInternalCandidateCount);
         JniArray confidence;
-        confidence.ints.resize(KVPK_MAX_SUGGESTIONS);
+        confidence.ints.resize(kInternalCandidateCount);
         JniArray weight;
         weight.floats.resize(1);
         nativeResults.outputSuggestions(
@@ -593,10 +596,11 @@ private:
         );
 
         std::vector<NativeCandidate> result;
+        std::unordered_map<std::string, size_t> indexByWord;
         const int suggestionCount = std::clamp(
             count.ints[0],
             0,
-            static_cast<int>(KVPK_MAX_SUGGESTIONS)
+            kInternalCandidateCount
         );
         for (int index = 0; index < suggestionCount; ++index) {
             std::string word;
@@ -606,9 +610,25 @@ private:
                 appendUtf8(codePoint, &word);
             }
             if (word.empty()) continue;
-            result.push_back({word, scores.ints[index], types.ints[index], 0.0,
-                              static_cast<size_t>(index)});
+            const auto existing = indexByWord.find(word);
+            if (existing != indexByWord.end()) {
+                NativeCandidate &candidate = result[existing->second];
+                if (scores.ints[index] > candidate.score) {
+                    candidate.score = scores.ints[index];
+                    candidate.type = types.ints[index];
+                }
+                continue;
+            }
+            indexByWord[word] = result.size();
+            result.push_back({
+                word,
+                scores.ints[index],
+                types.ints[index],
+                0.0,
+                static_cast<size_t>(index),
+            });
         }
+        appendSingleEditCandidates(typed, &result);
         std::stable_sort(
             result.begin(), result.end(),
             [](const NativeCandidate &left, const NativeCandidate &right) {
@@ -618,6 +638,77 @@ private:
         );
         for (size_t index = 0; index < result.size(); ++index) result[index].nativeRank = index;
         return result;
+    }
+
+    void appendSingleEditCandidates(
+        const std::string &typed,
+        std::vector<NativeCandidate> *candidates
+    ) const {
+        if (typed.size() < 2 || typed.size() + 1 >= MAX_WORD_LENGTH
+                || !std::all_of(typed.begin(), typed.end(), [](unsigned char value) {
+                    return value >= 'a' && value <= 'z';
+                })) {
+            return;
+        }
+
+        std::unordered_set<std::string> observed;
+        int recoveryScore = 0;
+        int recoveryType = Dictionary::KIND_CORRECTION;
+        if (!candidates->empty()) {
+            recoveryScore = std::min_element(
+                candidates->begin(), candidates->end(),
+                [](const NativeCandidate &left, const NativeCandidate &right) {
+                    return left.score < right.score;
+                }
+            )->score - 1;
+            recoveryType = candidates->front().type;
+        }
+        for (const NativeCandidate &candidate : *candidates) {
+            observed.insert(candidate.word);
+        }
+
+        const auto appendDictionaryCandidate = [&](const std::string &candidate) {
+            if (!observed.insert(candidate).second) return;
+            const std::vector<int> codePoints = utf8CodePoints(candidate);
+            if (dictionary_->getProbability(
+                    CodePointArrayView(codePoints.data(), codePoints.size())) < 0) {
+                return;
+            }
+            candidates->push_back({
+                candidate,
+                recoveryScore,
+                recoveryType,
+                0.0,
+                candidates->size(),
+            });
+        };
+
+        for (size_t position = 0; position <= typed.size(); ++position) {
+            for (char inserted = 'a'; inserted <= 'z'; ++inserted) {
+                std::string candidate = typed;
+                candidate.insert(
+                    candidate.begin() + static_cast<std::ptrdiff_t>(position),
+                    inserted
+                );
+                appendDictionaryCandidate(candidate);
+            }
+        }
+
+        for (size_t position = 0; position < typed.size(); ++position) {
+            for (char replacement = 'a'; replacement <= 'z'; ++replacement) {
+                if (replacement == typed[position]) continue;
+                std::string candidate = typed;
+                candidate[position] = replacement;
+                appendDictionaryCandidate(candidate);
+            }
+        }
+
+        for (size_t position = 0; position + 1 < typed.size(); ++position) {
+            if (typed[position] == typed[position + 1]) continue;
+            std::string candidate = typed;
+            std::swap(candidate[position], candidate[position + 1]);
+            appendDictionaryCandidate(candidate);
+        }
     }
 
     void rankCandidates(const std::string &typed,

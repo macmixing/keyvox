@@ -29,6 +29,8 @@ final class KeyboardPredictionCoordinator {
     private struct CorrectionEvaluation {
         let decision: KeyboardAutomaticCorrectionDecision?
         let reason: String
+        let selectedProbability: Double
+        let competingProbability: Double
     }
 
     private let predictionQueue = DispatchQueue(
@@ -295,8 +297,9 @@ final class KeyboardPredictionCoordinator {
                 "original": snapshot.currentWord,
                 "reason": correctionEvaluation.reason,
                 "typed_word_valid": correctionResponse.typedWordIsValid,
-                "probability": correctionResponse.automaticCorrectionProbability,
-                "threshold": EnglishPredictiveEngine.automaticCorrectionThreshold,
+                "action_probability": correctionResponse.automaticCorrectionProbability,
+                "selected_probability": correctionEvaluation.selectedProbability,
+                "competing_probability": correctionEvaluation.competingProbability,
                 "replacement": correctionEvaluation.decision?.replacement ?? "none",
             ])
             return GeneratedState(
@@ -387,32 +390,59 @@ final class KeyboardPredictionCoordinator {
         protectsLiteral: Bool
     ) -> CorrectionEvaluation {
         guard response.typedWordIsValid == false else {
-            return CorrectionEvaluation(decision: nil, reason: "typed_word_valid")
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: AutomaticCorrectionSelectionReason.typedWordValid.rawValue,
+                selectedProbability: 0,
+                competingProbability: 0
+            )
         }
         guard protectsLiteral == false else {
-            return CorrectionEvaluation(decision: nil, reason: "literal_protected")
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: "literal_protected",
+                selectedProbability: 0,
+                competingProbability: 0
+            )
         }
         guard allowsAutomaticCorrectionCase(for: original) else {
-            return CorrectionEvaluation(decision: nil, reason: "unsupported_case")
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: "unsupported_case",
+                selectedProbability: 0,
+                competingProbability: 0
+            )
         }
-        guard response.automaticCorrectionProbability
-            >= EnglishPredictiveEngine.automaticCorrectionThreshold else {
-            return CorrectionEvaluation(decision: nil, reason: "below_threshold")
-        }
-        guard let suggestion = response.suggestions.first else {
-            return CorrectionEvaluation(decision: nil, reason: "no_suggestion")
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: original,
+            response: response
+        )
+        guard let suggestion = selection.suggestion else {
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: selection.reason.rawValue,
+                selectedProbability: 0,
+                competingProbability: selection.competingProbability
+            )
         }
         let replacement = applyCase(of: original, to: suggestion.word)
         guard replacement.caseInsensitiveCompare(original) != .orderedSame else {
-            return CorrectionEvaluation(decision: nil, reason: "same_as_typed")
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: "same_as_typed",
+                selectedProbability: suggestion.rankProbability,
+                competingProbability: selection.competingProbability
+            )
         }
         return CorrectionEvaluation(
             decision: KeyboardAutomaticCorrectionDecision(
                 original: original,
                 replacement: replacement,
-                probability: response.automaticCorrectionProbability
+                probability: suggestion.rankProbability
             ),
-            reason: "accepted"
+            reason: selection.reason.rawValue,
+            selectedProbability: suggestion.rankProbability,
+            competingProbability: selection.competingProbability
         )
     }
 
@@ -432,9 +462,13 @@ final class KeyboardPredictionCoordinator {
         var observed = Set([literal.lowercased()])
         var candidates: [KeyboardPredictionChoice] = []
 
+        let policySelection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: literal,
+            response: correctionResponse
+        )
         if correctionResponse.typedWordIsValid == false,
            literal.count >= 2,
-           let correction = correctionResponse.suggestions.first {
+           let correction = policySelection.suggestion ?? correctionResponse.suggestions.first {
             let value = applyCase(of: literal, to: correction.word)
             if observed.insert(value.lowercased()).inserted {
                 candidates.append(

@@ -20,6 +20,25 @@ final class KeyboardRootView: UIView {
     let keyGridView = KeyboardKeyGridView()
     let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
 
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let target = super.hitTest(point, with: event)
+#if DEBUG
+        if event?.type == .touches {
+            let gridPoint = convert(point, to: keyGridView)
+            KeyboardTypingDiagnostics.log("root_hit_test", fields: [
+                "x": diagnosticCoordinate(point.x),
+                "y": diagnosticCoordinate(point.y),
+                "grid_x": diagnosticCoordinate(gridPoint.x),
+                "grid_y": diagnosticCoordinate(gridPoint.y),
+                "inside_grid_bounds": keyGridView.bounds.contains(gridPoint),
+                "target": target.map { String(describing: type(of: $0)) } ?? "none",
+                "event_timestamp_ms": event.map { Int(($0.timestamp * 1_000).rounded()) } ?? -1,
+            ])
+        }
+#endif
+        return target
+    }
+
     private let leadingControlsStack = UIView()
     private let trailingControlsStack = UIView()
     private let centerContainerView = UIView()
@@ -433,4 +452,9 @@ final class KeyboardRootView: UIView {
         }
     }
 
+#if DEBUG
+    private func diagnosticCoordinate(_ value: CGFloat) -> Double {
+        (Double(value) * 100).rounded() / 100
+    }
+#endif
 }
