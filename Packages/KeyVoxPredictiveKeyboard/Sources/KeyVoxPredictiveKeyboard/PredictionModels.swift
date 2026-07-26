@@ -60,6 +60,31 @@ public struct PredictionResponse: Equatable, Sendable {
     }
 }
 
+public struct WordLanguageAnalysis: Equatable, Sendable {
+    public let wordIsValid: Bool
+    public let unigramLogProbability: Double
+    public let precedingLogProbability: Double
+    public let precedingPairObserved: Bool
+    public let precedingTrigramLogProbability: Double
+    public let precedingTrigramObserved: Bool
+
+    public init(
+        wordIsValid: Bool,
+        unigramLogProbability: Double,
+        precedingLogProbability: Double,
+        precedingPairObserved: Bool,
+        precedingTrigramLogProbability: Double = 0,
+        precedingTrigramObserved: Bool = false
+    ) {
+        self.wordIsValid = wordIsValid
+        self.unigramLogProbability = unigramLogProbability
+        self.precedingLogProbability = precedingLogProbability
+        self.precedingPairObserved = precedingPairObserved
+        self.precedingTrigramLogProbability = precedingTrigramLogProbability
+        self.precedingTrigramObserved = precedingTrigramObserved
+    }
+}
+
 public enum PredictiveKeyboardError: Error, Equatable {
     case missingArtifact(String)
     case nativeEngineInitializationFailed(String)

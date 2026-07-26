@@ -42,6 +42,15 @@ typedef struct KVPKPredictionResult {
     bool typedWordIsValid;
 } KVPKPredictionResult;
 
+typedef struct KVPKWordAnalysis {
+    bool wordIsValid;
+    double unigramLogProbability;
+    double precedingLogProbability;
+    bool precedingPairObserved;
+    double precedingTrigramLogProbability;
+    bool precedingTrigramObserved;
+} KVPKWordAnalysis;
+
 typedef void *KVPKEngineRef;
 
 const char *KVPKEngineLastError(void);
@@ -79,6 +88,14 @@ bool KVPKEnginePredict(
     int32_t touchCount,
     KVPKPredictionMode mode,
     KVPKPredictionResult *result
+);
+
+bool KVPKEngineAnalyzeWord(
+    KVPKEngineRef engine,
+    const char *word,
+    const char *previousWord,
+    const char *olderWord,
+    KVPKWordAnalysis *result
 );
 
 #ifdef __cplusplus

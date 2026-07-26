@@ -146,6 +146,50 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         )
     }
 
+    public func analyze(
+        word: String,
+        previousWord: String? = nil
+    ) throws -> WordLanguageAnalysis {
+        try analyze(
+            word: word,
+            previousWords: previousWord.map { [$0] } ?? []
+        )
+    }
+
+    public func analyze(
+        word: String,
+        previousWords: [String]
+    ) throws -> WordLanguageAnalysis {
+        let normalizedWord = word.lowercased()
+        let normalizedPreviousWord = previousWords.first?.lowercased() ?? ""
+        let normalizedOlderWord = previousWords.dropFirst().first?.lowercased() ?? ""
+        var result = KVPKWordAnalysis()
+        let succeeded = normalizedWord.withCString { wordPointer in
+            normalizedPreviousWord.withCString { previousWordPointer in
+                normalizedOlderWord.withCString { olderWordPointer in
+                    KVPKEngineAnalyzeWord(
+                        nativeEngine,
+                        wordPointer,
+                        previousWordPointer,
+                        olderWordPointer,
+                        &result
+                    )
+                }
+            }
+        }
+        guard succeeded else {
+            throw PredictiveKeyboardError.nativePredictionFailed(Self.nativeLastError)
+        }
+        return WordLanguageAnalysis(
+            wordIsValid: result.wordIsValid,
+            unigramLogProbability: result.unigramLogProbability,
+            precedingLogProbability: result.precedingLogProbability,
+            precedingPairObserved: result.precedingPairObserved,
+            precedingTrigramLogProbability: result.precedingTrigramLogProbability,
+            precedingTrigramObserved: result.precedingTrigramObserved
+        )
+    }
+
     private static func nativeGeometry(
         _ geometry: PredictionKeyGeometry
     ) -> KVPKKeyGeometry? {
