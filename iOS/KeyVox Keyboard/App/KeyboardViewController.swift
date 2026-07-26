@@ -118,6 +118,9 @@ final class KeyboardViewController: UIInputViewController {
         super.viewDidLoad()
         view.backgroundColor = .clear
         view.clipsToBounds = true
+#if DEBUG
+        installDebugTypingTouchProbe()
+#endif
         configureTraitChangeObservation()
         configureHostLifecycleObservers()
         configureControllerBindingsIfNeeded()

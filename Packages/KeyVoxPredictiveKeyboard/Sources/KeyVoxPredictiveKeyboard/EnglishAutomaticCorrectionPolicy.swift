@@ -1,12 +1,14 @@
 import Foundation
 
 public enum AutomaticCorrectionSelectionReason: String, Equatable, Sendable {
+    case grammaticalReplacement
     case typedWordValid
     case insufficientInput
     case noSuggestion
     case dominantCandidate
     case actionModel
     case missingLetterRecovery
+    case substitutionRecovery
     case transpositionRecovery
     case trailingInsertionRecovery
     case ambiguous
@@ -35,12 +37,19 @@ public enum EnglishAutomaticCorrectionPolicy {
     private static let missingLetterProbability = 0.04
     private static let missingLetterLeadingProbabilityRatio = 0.08
     private static let missingLetterProbabilityRatio = 8.0
+    private static let substitutionProbability = 0.04
+    private static let substitutionLeadingProbabilityRatio = 0.10
+    private static let substitutionProbabilityRatio = 2.5
     private static let transpositionProbability = 0.005
     private static let transpositionLeadingProbabilityRatio = 0.03
     private static let transpositionProbabilityRatio = 8.0
     private static let trailingInsertionProbability = 0.05
-    private static let trailingInsertionActionProbability = 0.90
+    private static let trailingInsertionActionProbability = 0.80
     private static let trailingInsertionProbabilityRatio = 3.0
+
+    public static func grammaticalReplacement(for typedWord: String) -> String? {
+        typedWord == "i" ? "I" : nil
+    }
 
     public static func select(
         typedWord: String,
@@ -104,6 +113,30 @@ public enum EnglishAutomaticCorrectionPolicy {
                 return AutomaticCorrectionSelection(
                     suggestion: missingLetterCandidate,
                     reason: .missingLetterRecovery,
+                    competingProbability: competingProbability
+                )
+            }
+        }
+
+        let substitutionCandidates = response.suggestions.filter {
+            isSingleSubstitution(
+                typedWord: typedWord,
+                candidate: $0.word
+            )
+        }
+        if let substitutionCandidate = substitutionCandidates.first {
+            let competingProbability = substitutionCandidates.dropFirst()
+                .first?.rankProbability ?? 0
+            let probabilityRatio = substitutionCandidate.rankProbability
+                / max(competingProbability, .leastNonzeroMagnitude)
+            let leadingProbabilityRatio = substitutionCandidate.rankProbability
+                / max(first.rankProbability, .leastNonzeroMagnitude)
+            if substitutionCandidate.rankProbability >= substitutionProbability,
+               leadingProbabilityRatio >= substitutionLeadingProbabilityRatio,
+               probabilityRatio >= substitutionProbabilityRatio {
+                return AutomaticCorrectionSelection(
+                    suggestion: substitutionCandidate,
+                    reason: .substitutionRecovery,
                     competingProbability: competingProbability
                 )
             }
@@ -210,5 +243,22 @@ public enum EnglishAutomaticCorrectionPolicy {
         }
         return typedCharacters[differences[0]] == candidateCharacters[differences[1]]
             && typedCharacters[differences[1]] == candidateCharacters[differences[0]]
+    }
+
+    private static func isSingleSubstitution(
+        typedWord: String,
+        candidate: String
+    ) -> Bool {
+        let typedCharacters = Array(typedWord.lowercased())
+        let candidateCharacters = Array(candidate.lowercased())
+        guard typedCharacters.count >= 4,
+              typedCharacters.count == candidateCharacters.count else {
+            return false
+        }
+        return zip(typedCharacters, candidateCharacters).reduce(into: 0) { count, pair in
+            if pair.0 != pair.1 {
+                count += 1
+            }
+        } == 1
     }
 }

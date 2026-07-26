@@ -59,6 +59,9 @@ final class KeyboardKeyGridView: UIView {
     private var deleteTouchIdentifier: ObjectIdentifier?
     private var spaceTouchIdentifier: ObjectIdentifier?
     private var alternateTouchIdentifier: ObjectIdentifier?
+    private var lastTouchBeganAt: TimeInterval?
+    private var lastTouchEndedAt: TimeInterval?
+    private var lastActivationAt: TimeInterval?
     private var lastReportedCharacterGeometry: [KeyboardCharacterKeyGeometry] = []
     private var secondRowLayoutGeometry: KeyboardLayoutGeometry.SecondRowLayout?
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
@@ -126,6 +129,9 @@ final class KeyboardKeyGridView: UIView {
         deleteTouchIdentifier = nil
         spaceTouchIdentifier = nil
         alternateTouchIdentifier = nil
+        lastTouchBeganAt = nil
+        lastTouchEndedAt = nil
+        lastActivationAt = nil
         activeKeyView = nil
         trackpadOriginKeyView = nil
         isDeleteTouchConsuming = false
@@ -263,6 +269,9 @@ final class KeyboardKeyGridView: UIView {
             let identifier = ObjectIdentifier(touch)
             let location = touch.location(in: self)
             let hitKey = keyView(at: location)
+            let previousTouchBeganAt = lastTouchBeganAt
+            let previousTouchEndedAt = lastTouchEndedAt
+            let overlappingTouchCount = touchSessions.count
             let session = TouchSession(
                 diagnosticIdentifier: KeyboardTypingDiagnostics.nextIdentifier(),
                 beganAt: touch.timestamp,
@@ -270,6 +279,7 @@ final class KeyboardKeyGridView: UIView {
                 currentKeyView: hitKey
             )
             touchSessions[identifier] = session
+            lastTouchBeganAt = touch.timestamp
             KeyboardTypingDiagnostics.log("touch_begin", fields: [
                 "touch_id": session.diagnosticIdentifier,
                 "x": diagnosticCoordinate(location.x),
@@ -277,6 +287,17 @@ final class KeyboardKeyGridView: UIView {
                 "resolved_key": diagnosticKeyName(hitKey?.model.kind),
                 "inside_grid_bounds": bounds.contains(location),
                 "active_touches": touchSessions.count,
+                "overlapping_touches": overlappingTouchCount,
+                "since_previous_touch_begin_ms": diagnosticOptionalDuration(
+                    from: previousTouchBeganAt,
+                    to: touch.timestamp
+                ),
+                "since_previous_touch_end_ms": diagnosticOptionalDuration(
+                    from: previousTouchEndedAt,
+                    to: touch.timestamp
+                ),
+                "key_offset_x": diagnosticKeyOffsetX(location, keyView: hitKey),
+                "key_offset_y": diagnosticKeyOffsetY(location, keyView: hitKey),
                 "delivery_delay_ms": diagnosticDuration(
                     from: touch.timestamp,
                     to: handlingStartedAt
@@ -438,6 +459,7 @@ final class KeyboardKeyGridView: UIView {
                 location: location,
                 session: session
             )
+            lastTouchEndedAt = touch.timestamp
             if let popupPresentedAt = session.popupPresentedAt {
                 KeyboardTypingDiagnostics.log("popup_release_requested", fields: [
                     "touch_id": session.diagnosticIdentifier,
@@ -455,6 +477,18 @@ final class KeyboardKeyGridView: UIView {
                 "resolved_key": diagnosticKeyName(hitKey?.model.kind),
                 "raw_key": diagnosticKeyName(rawHitKey?.model.kind),
                 "last_key": diagnosticKeyName(session.currentKeyView?.model.kind),
+                "initial_key": diagnosticKeyName(session.initialKeyView?.model.kind),
+                "changed_key": hitKey !== session.initialKeyView,
+                "travel_x": diagnosticCoordinate(location.x - session.beganLocation.x),
+                "travel_y": diagnosticCoordinate(location.y - session.beganLocation.y),
+                "initial_key_offset_x": diagnosticKeyOffsetX(
+                    session.beganLocation,
+                    keyView: session.initialKeyView
+                ),
+                "initial_key_offset_y": diagnosticKeyOffsetY(
+                    session.beganLocation,
+                    keyView: session.initialKeyView
+                ),
                 "duration_ms": diagnosticDuration(from: session.beganAt, to: touch.timestamp),
                 "active_touches": touchSessions.count,
             ])
@@ -663,10 +697,16 @@ final class KeyboardKeyGridView: UIView {
         source: String
     ) -> Bool {
         let deliveryStartedAt = ProcessInfo.processInfo.systemUptime
+        let previousActivationAt = lastActivationAt
+        lastActivationAt = activation.timestamp
         KeyboardTypingDiagnostics.log("activation_begin", fields: [
             "touch_id": session.diagnosticIdentifier,
             "key": diagnosticKeyName(activation.kind),
             "source": source,
+            "since_previous_activation_ms": diagnosticOptionalDuration(
+                from: previousActivationAt,
+                to: activation.timestamp
+            ),
             "touch_to_activation_ms": diagnosticDuration(
                 from: session.beganAt,
                 to: deliveryStartedAt
@@ -699,6 +739,37 @@ final class KeyboardKeyGridView: UIView {
 
     private func diagnosticDuration(from start: TimeInterval, to end: TimeInterval) -> Double {
         ((end - start) * 100_000).rounded() / 100
+    }
+
+    private func diagnosticOptionalDuration(
+        from start: TimeInterval?,
+        to end: TimeInterval
+    ) -> Any {
+        guard let start else { return NSNull() }
+        return diagnosticDuration(from: start, to: end)
+    }
+
+    private func diagnosticKeyOffsetX(_ location: CGPoint, keyView: KeyboardKeyView?) -> Any {
+        guard let keyView else { return NSNull() }
+        let frame = keyView.convert(keyView.bounds, to: self)
+        return diagnosticKeyOffset(location.x, minimum: frame.minX, maximum: frame.maxX)
+    }
+
+    private func diagnosticKeyOffsetY(_ location: CGPoint, keyView: KeyboardKeyView?) -> Any {
+        guard let keyView else { return NSNull() }
+        let frame = keyView.convert(keyView.bounds, to: self)
+        return diagnosticKeyOffset(location.y, minimum: frame.minY, maximum: frame.maxY)
+    }
+
+    private func diagnosticKeyOffset(
+        _ coordinate: CGFloat,
+        minimum: CGFloat,
+        maximum: CGFloat
+    ) -> Any {
+        guard maximum > minimum else { return NSNull() }
+        let midpoint = (minimum + maximum) / 2
+        let halfLength = (maximum - minimum) / 2
+        return diagnosticCoordinate((coordinate - midpoint) / halfLength)
     }
 
     private func reportCharacterGeometryIfNeeded() {

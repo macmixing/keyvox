@@ -2,6 +2,15 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 final class EnglishPredictiveEngineTests: XCTestCase {
+    func testStandaloneLowercasePronounUsesGrammaticalCapitalization() {
+        XCTAssertEqual(
+            EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: "i"),
+            "I"
+        )
+        XCTAssertNil(EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: "it"))
+        XCTAssertNil(EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: "I"))
+    }
+
     func testMisspellingProducesRankedCandidates() throws {
         let engine = try EnglishPredictiveEngine()
 
@@ -155,6 +164,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
             ("plese", ["so"], "please"),
             ("layz", ["the"], "lazy"),
             ("jums", ["fox"], "jumps"),
+            ("lont", ["a", "in", "wait"], "long"),
         ]
 
         for testCase in cases {
@@ -220,6 +230,70 @@ final class EnglishPredictiveEngineTests: XCTestCase {
 
         XCTAssertEqual(selection.suggestion?.word, "fox")
         XCTAssertEqual(selection.reason, .trailingInsertionRecovery)
+    }
+
+    func testCorrectionPolicyRecoversObservedTrailingLetterAtTypingConfidence() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "bring",
+                    nativeScore: -30_725,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.91694
+                ),
+                PredictiveSuggestion(
+                    word: "brings",
+                    nativeScore: -104_199,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.032166
+                ),
+            ],
+            automaticCorrectionProbability: 0.8384,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "brin",
+            response: response
+        )
+
+        XCTAssertEqual(selection.suggestion?.word, "bring")
+        XCTAssertEqual(selection.reason, .trailingInsertionRecovery)
+    }
+
+    func testCorrectionPolicyRecoversObservedAdjacentRowSubstitution() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "don't",
+                    nativeScore: -26_167,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.372648
+                ),
+                PredictiveSuggestion(
+                    word: "long",
+                    nativeScore: -469_068,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.050191
+                ),
+                PredictiveSuggestion(
+                    word: "lone",
+                    nativeScore: -469_068,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.018624
+                ),
+            ],
+            automaticCorrectionProbability: 0.0812,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "lont",
+            response: response
+        )
+
+        XCTAssertEqual(selection.suggestion?.word, "long")
+        XCTAssertEqual(selection.reason, .substitutionRecovery)
     }
 
     func testCorrectionPolicyRecoversObservedMissingLetter() {

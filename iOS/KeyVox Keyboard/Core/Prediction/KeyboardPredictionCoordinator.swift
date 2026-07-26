@@ -389,14 +389,6 @@ final class KeyboardPredictionCoordinator {
         response: PredictionResponse,
         protectsLiteral: Bool
     ) -> CorrectionEvaluation {
-        guard response.typedWordIsValid == false else {
-            return CorrectionEvaluation(
-                decision: nil,
-                reason: AutomaticCorrectionSelectionReason.typedWordValid.rawValue,
-                selectedProbability: 0,
-                competingProbability: 0
-            )
-        }
         guard protectsLiteral == false else {
             return CorrectionEvaluation(
                 decision: nil,
@@ -409,6 +401,28 @@ final class KeyboardPredictionCoordinator {
             return CorrectionEvaluation(
                 decision: nil,
                 reason: "unsupported_case",
+                selectedProbability: 0,
+                competingProbability: 0
+            )
+        }
+        if let replacement = EnglishAutomaticCorrectionPolicy.grammaticalReplacement(
+            for: original
+        ) {
+            return CorrectionEvaluation(
+                decision: KeyboardAutomaticCorrectionDecision(
+                    original: original,
+                    replacement: replacement,
+                    probability: 1
+                ),
+                reason: AutomaticCorrectionSelectionReason.grammaticalReplacement.rawValue,
+                selectedProbability: 1,
+                competingProbability: 0
+            )
+        }
+        guard response.typedWordIsValid == false else {
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: AutomaticCorrectionSelectionReason.typedWordValid.rawValue,
                 selectedProbability: 0,
                 competingProbability: 0
             )
@@ -461,6 +475,16 @@ final class KeyboardPredictionCoordinator {
     ) -> [KeyboardPredictionChoice] {
         var observed = Set([literal.lowercased()])
         var candidates: [KeyboardPredictionChoice] = []
+
+        if let grammaticalReplacement = EnglishAutomaticCorrectionPolicy
+            .grammaticalReplacement(for: literal) {
+            candidates.append(
+                KeyboardPredictionChoice(
+                    text: grammaticalReplacement,
+                    kind: .correction
+                )
+            )
+        }
 
         let policySelection = EnglishAutomaticCorrectionPolicy.select(
             typedWord: literal,
