@@ -16,7 +16,13 @@ final class KeyboardViewController: UIInputViewController {
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
     let openVibesTrialStartURL = URL(string: "keyvoxios://vibes/trial-start")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
-    let dictionaryCasingStore = KeyboardDictionaryCasingStore()
+    let userDictionaryStore = KeyboardUserDictionaryStore()
+    lazy var dictionaryCasingStore = KeyboardDictionaryCasingStore(
+        phrasesProvider: { [weak self] in self?.userDictionaryStore.phrases() ?? [] }
+    )
+    lazy var userDictionaryCorrectionController = KeyboardUserDictionaryCorrectionController(
+        store: userDictionaryStore
+    )
     let letterCaseController = KeyboardLetterCaseController()
     let predictionCoordinator = KeyboardPredictionCoordinator()
     let automaticCorrectionUndoStore = KeyboardAutomaticCorrectionUndoStore()
@@ -139,6 +145,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         extensionHostIsActive = true
+        loadSupplementaryPredictionLexicon()
+        userDictionaryCorrectionController.reloadIfNeeded()
+        predictionCoordinator.updateUserDictionaryPhrases(userDictionaryStore.phrases())
         preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()

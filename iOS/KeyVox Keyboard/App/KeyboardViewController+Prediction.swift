@@ -1,6 +1,23 @@
 import Foundation
+import UIKit
 
 extension KeyboardViewController {
+    func loadSupplementaryPredictionLexicon() {
+        requestSupplementaryLexicon { [weak self] lexicon in
+            guard let self else { return }
+            let entries = lexicon.entries.map {
+                KeyboardSupplementaryLexicon.Entry(
+                    userInput: $0.userInput,
+                    documentText: $0.documentText
+                )
+            }
+            predictionCoordinator.updateSupplementaryLexicon(
+                KeyboardSupplementaryLexicon(entries: entries)
+            )
+            refreshPredictionState()
+        }
+    }
+
     func restoreAutomaticCorrectionIfAvailable() -> Bool {
         guard automaticCorrectionUndoStore.consumeUndoIfAvailable(
             documentContextBeforeInput: textInputController.documentContextBeforeInput,
@@ -24,9 +41,13 @@ extension KeyboardViewController {
     }
 
     func applyAutomaticCorrectionIfAvailable() -> Bool {
-        guard let decision = predictionCoordinator.automaticCorrectionDecision(
-            documentContextBeforeInput: textInputController.documentContextBeforeInput
-        ) else {
+        let context = textInputController.documentContextBeforeInput
+        let decision = userDictionaryCorrectionController.correction(
+            documentContextBeforeInput: context
+        ) ?? predictionCoordinator.automaticCorrectionDecision(
+            documentContextBeforeInput: context
+        )
+        guard let decision else {
             KeyboardTypingDiagnostics.log("correction_apply_skipped", fields: [
                 "reason": "no_decision",
             ])
@@ -58,7 +79,9 @@ extension KeyboardViewController {
             original: decision.original,
             replacement: decision.replacement
         )
-        predictionCoordinator.reset()
+        predictionCoordinator.advanceAfterWordBoundary(
+            documentContextBeforeInput: textInputController.documentContextBeforeInput
+        )
         letterCaseController.synchronize(
             documentContextBeforeInput: textInputController.documentContextBeforeInput
         )
@@ -88,7 +111,15 @@ extension KeyboardViewController {
             predictionCoordinator.synchronizeAfterDeletion(
                 documentContextBeforeInput: textInputController.documentContextBeforeInput
             )
-        case .space, .returnKey:
+        case .space:
+            automaticCorrectionUndoStore.invalidate()
+            predictionCoordinator.advanceAfterWordBoundary(
+                documentContextBeforeInput: textInputController.documentContextBeforeInput
+            )
+            letterCaseController.synchronize(
+                documentContextBeforeInput: textInputController.documentContextBeforeInput
+            )
+        case .returnKey:
             automaticCorrectionUndoStore.invalidate()
             predictionCoordinator.reset()
             letterCaseController.synchronize(

@@ -17,8 +17,18 @@ final class KeyboardPredictionCoordinator {
 
     private struct GeneratedState {
         let currentWord: String
+        let previousWords: [String]
         let choices: [KeyboardPredictionChoice]
         let correction: KeyboardAutomaticCorrectionDecision?
+        let correctionResponse: PredictionResponse?
+        let protectsLiteral: Bool
+    }
+
+    private struct DeferredWord {
+        let original: String
+        let previousWords: [String]
+        let correctionResponse: PredictionResponse?
+        let protectsLiteral: Bool
     }
 
     private struct EngineGeometry {
@@ -39,11 +49,16 @@ final class KeyboardPredictionCoordinator {
     )
     private var engine: EnglishPredictiveEngine?
     private var latestGeometry: EngineGeometry?
+    private let generationLock = NSLock()
     private var generation = 0
     private var generatedState: GeneratedState?
     private var trackedWord = ""
     private var trackedTouches: [PredictionTouch] = []
     private var protectedWordPrefix = ""
+    private var supplementaryLexicon = KeyboardSupplementaryLexicon.empty
+    private var userDictionaryPhrases: [String] = []
+    private var userDictionarySuggestionIndex = KeyboardUserDictionarySuggestionIndex.empty
+    private var deferredWords: [DeferredWord] = []
 #if DEBUG
     private var hasReportedEngineFailure = false
 #endif
@@ -52,8 +67,7 @@ final class KeyboardPredictionCoordinator {
         documentContextBeforeInput: String?,
         capitalizesNextWord: Bool
     ) {
-        generation += 1
-        let requestedGeneration = generation
+        let requestedGeneration = advanceGeneration()
         let diagnosticRequestIdentifier = KeyboardTypingDiagnostics.nextIdentifier()
         let diagnosticStartedAt = ProcessInfo.processInfo.systemUptime
         let snapshot = Self.textSnapshot(from: documentContextBeforeInput)
@@ -63,6 +77,11 @@ final class KeyboardPredictionCoordinator {
             ? trackedTouches
             : []
         let protectsLiteral = protectedWordPrefix.isEmpty == false
+        let supplementaryLexicon = supplementaryLexicon
+        let userDictionarySuggestionIndex = userDictionarySuggestionIndex
+        let deferredWords = alignedDeferredWords(
+            with: snapshot.previousWords
+        )
         KeyboardTypingDiagnostics.log("prediction_request", fields: [
             "request_id": diagnosticRequestIdentifier,
             "generation": requestedGeneration,
@@ -75,6 +94,15 @@ final class KeyboardPredictionCoordinator {
 
         predictionQueue.async { [weak self] in
             guard let self else { return }
+            guard self.currentGeneration() == requestedGeneration else {
+                KeyboardTypingDiagnostics.log("prediction_skipped", fields: [
+                    "request_id": diagnosticRequestIdentifier,
+                    "requested_generation": requestedGeneration,
+                    "current_generation": self.currentGeneration(),
+                    "reason": "superseded_before_work",
+                ])
+                return
+            }
             KeyboardTypingDiagnostics.log("prediction_worker_begin", fields: [
                 "request_id": diagnosticRequestIdentifier,
                 "queue_delay_ms": Self.diagnosticMilliseconds(since: diagnosticStartedAt),
@@ -83,6 +111,9 @@ final class KeyboardPredictionCoordinator {
                 snapshot: snapshot,
                 touches: touches,
                 protectsLiteral: protectsLiteral,
+                supplementaryLexicon: supplementaryLexicon,
+                userDictionarySuggestionIndex: userDictionarySuggestionIndex,
+                deferredWords: deferredWords,
                 capitalizesNextWord: capitalizesNextWord,
                 diagnosticRequestIdentifier: diagnosticRequestIdentifier
             )
@@ -95,11 +126,14 @@ final class KeyboardPredictionCoordinator {
             ])
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
-                guard self.generation == requestedGeneration else {
+                let currentGeneration = self.currentGeneration()
+                guard currentGeneration == requestedGeneration else {
+                    let retainedResponse = self.retainDeferredResponse(from: state)
                     KeyboardTypingDiagnostics.log("prediction_discarded", fields: [
                         "request_id": diagnosticRequestIdentifier,
                         "requested_generation": requestedGeneration,
-                        "current_generation": self.generation,
+                        "current_generation": currentGeneration,
+                        "retained_for_rolling_context": retainedResponse,
                     ])
                     return
                 }
@@ -184,7 +218,37 @@ final class KeyboardPredictionCoordinator {
     }
 
     func reset() {
-        generation += 1
+        advanceGeneration()
+        generatedState = nil
+        trackedWord = ""
+        trackedTouches = []
+        protectedWordPrefix = ""
+        deferredWords = []
+        onChoicesChange?([])
+    }
+
+    func advanceAfterWordBoundary(documentContextBeforeInput: String?) {
+        advanceGeneration()
+        let snapshot = Self.textSnapshot(from: documentContextBeforeInput)
+        guard snapshot.currentWord.isEmpty,
+              let completedWord = snapshot.previousWords.first else {
+            reset()
+            return
+        }
+        let matchingState = generatedState?.currentWord.caseInsensitiveCompare(completedWord)
+                == .orderedSame
+            ? generatedState
+            : nil
+        let priorHistory = alignedDeferredWords(
+            with: Array(snapshot.previousWords.dropFirst())
+        )
+        deferredWords = Array((priorHistory + [DeferredWord(
+            original: completedWord,
+            previousWords: Array(snapshot.previousWords.dropFirst().prefix(3)),
+            correctionResponse: matchingState?.correctionResponse,
+            protectsLiteral: matchingState?.protectsLiteral == true
+                || supplementaryLexicon.contains(completedWord)
+        )]).suffix(5))
         generatedState = nil
         trackedWord = ""
         trackedTouches = []
@@ -215,10 +279,27 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
+    func updateSupplementaryLexicon(_ supplementaryLexicon: KeyboardSupplementaryLexicon) {
+        advanceGeneration()
+        generatedState = nil
+        self.supplementaryLexicon = supplementaryLexicon
+    }
+
+    func updateUserDictionaryPhrases(_ phrases: [String]) {
+        guard phrases != userDictionaryPhrases else { return }
+        advanceGeneration()
+        generatedState = nil
+        userDictionaryPhrases = phrases
+        userDictionarySuggestionIndex = KeyboardUserDictionarySuggestionIndex(phrases: phrases)
+    }
+
     private func generateState(
         snapshot: TextSnapshot,
         touches: [PredictionTouch],
         protectsLiteral: Bool,
+        supplementaryLexicon: KeyboardSupplementaryLexicon,
+        userDictionarySuggestionIndex: KeyboardUserDictionarySuggestionIndex,
+        deferredWords: [DeferredWord],
         capitalizesNextWord: Bool,
         diagnosticRequestIdentifier: Int
     ) -> GeneratedState {
@@ -226,7 +307,14 @@ final class KeyboardPredictionCoordinator {
             let engine = try resolvedEngine()
             if snapshot.currentWord.isEmpty {
                 guard snapshot.previousWords.isEmpty == false else {
-                    return GeneratedState(currentWord: "", choices: [], correction: nil)
+                    return GeneratedState(
+                        currentWord: "",
+                        previousWords: snapshot.previousWords,
+                        choices: [],
+                        correction: nil,
+                        correctionResponse: nil,
+                        protectsLiteral: false
+                    )
                 }
                 let response = try engine.predict(
                     typedWord: "",
@@ -247,7 +335,14 @@ final class KeyboardPredictionCoordinator {
                         kind: .nextWord
                     )
                 }
-                return GeneratedState(currentWord: "", choices: choices, correction: nil)
+                return GeneratedState(
+                    currentWord: "",
+                    previousWords: snapshot.previousWords,
+                    choices: choices,
+                    correction: nil,
+                    correctionResponse: nil,
+                    protectsLiteral: false
+                )
             }
 
             let containsDirectSpecialInput = snapshot.currentWord.unicodeScalars
@@ -255,8 +350,11 @@ final class KeyboardPredictionCoordinator {
             if containsDirectSpecialInput {
                 return GeneratedState(
                     currentWord: snapshot.currentWord,
+                    previousWords: snapshot.previousWords,
                     choices: [KeyboardPredictionChoice(text: snapshot.currentWord, kind: .literal)],
-                    correction: nil
+                    correction: nil,
+                    correctionResponse: nil,
+                    protectsLiteral: true
                 )
             }
 
@@ -282,16 +380,104 @@ final class KeyboardPredictionCoordinator {
                 mode: "correction",
                 requestIdentifier: diagnosticRequestIdentifier
             )
+            let userDictionarySuggestion = userDictionarySuggestionIndex
+                .preferredSuggestion(for: snapshot.currentWord)
+            if let userDictionarySuggestion {
+                KeyboardTypingDiagnostics.log("user_dictionary_suggestion", fields: [
+                    "request_id": diagnosticRequestIdentifier,
+                    "typed_word": snapshot.currentWord,
+                    "suggestion": userDictionarySuggestion,
+                ])
+            }
             let choices = Self.makeChoices(
                 literal: snapshot.currentWord,
                 completionSuggestions: completionResponse.suggestions,
-                correctionResponse: correctionResponse
+                correctionResponse: correctionResponse,
+                supplementaryLexicon: supplementaryLexicon,
+                userDictionarySuggestion: userDictionarySuggestion
             )
-            let correctionEvaluation = Self.makeCorrectionEvaluation(
+            var correctionEvaluation = Self.makeCorrectionEvaluation(
                 original: snapshot.currentWord,
                 response: correctionResponse,
-                protectsLiteral: protectsLiteral
+                protectsLiteral: protectsLiteral,
+                supplementaryLexicon: supplementaryLexicon
             )
+            if correctionEvaluation.decision == nil,
+               snapshot.currentWord.count == 4 {
+                let stablePrefix = String(snapshot.currentWord.prefix(2))
+                let prefixResponse = try engine.predict(
+                    typedWord: stablePrefix,
+                    previousWords: snapshot.previousWords,
+                    touches: [],
+                    mode: .completion
+                )
+                if let contextualWordCorrection = try EnglishContextualCorrectionPolicy
+                    .fourLetterWordCorrection(
+                        typedWord: snapshot.currentWord,
+                        prefixCompletionSuggestions: prefixResponse.suggestions,
+                        previousWords: snapshot.previousWords,
+                        analyze: { try engine.analyze(word: $0, previousWords: $1) }
+                    ) {
+                    correctionEvaluation = CorrectionEvaluation(
+                        decision: KeyboardAutomaticCorrectionDecision(
+                            original: snapshot.currentWord,
+                            replacement: Self.applyCase(
+                                of: snapshot.currentWord,
+                                to: contextualWordCorrection.word
+                            ),
+                            probability: contextualWordCorrection.rankProbability
+                        ),
+                        reason: AutomaticCorrectionSelectionReason.contextualWordRecovery.rawValue,
+                        selectedProbability: contextualWordCorrection.rankProbability,
+                        competingProbability: 0
+                    )
+                }
+            }
+            if correctionEvaluation.decision == nil,
+               correctionEvaluation.reason
+                    != AutomaticCorrectionSelectionReason.supplementaryLexicon.rawValue,
+               let spacingSelection = try EnglishContextualCorrectionPolicy
+                    .missingSpaceCorrection(
+                        typedWord: snapshot.currentWord,
+                        correctionResponse: correctionResponse,
+                        previousWord: snapshot.previousWords.first,
+                        isSupplementaryWord: supplementaryLexicon.contains,
+                        correctionResponseForWord: { word, previousWord in
+                            try engine.predict(
+                                typedWord: word,
+                                previousWords: previousWord.map { [$0] } ?? [],
+                                touches: [],
+                                mode: .correction
+                            )
+                        },
+                        analyze: { try engine.analyze(word: $0, previousWord: $1) }
+                    ) {
+                correctionEvaluation = CorrectionEvaluation(
+                    decision: KeyboardAutomaticCorrectionDecision(
+                        original: snapshot.currentWord,
+                        replacement: Self.applyCase(
+                            of: snapshot.currentWord,
+                            to: spacingSelection.replacement
+                        ),
+                        probability: 1
+                    ),
+                    reason: AutomaticCorrectionSelectionReason.missingSpaceRecovery.rawValue,
+                    selectedProbability: 1,
+                    competingProbability: 0
+                )
+            }
+            if correctionEvaluation.decision == nil,
+               let rollingEvaluation = try Self.makeRollingEvaluation(
+                    deferredWords: deferredWords,
+                    currentWord: snapshot.currentWord,
+                    currentResponse: correctionResponse,
+                    currentProtectsLiteral: protectsLiteral,
+                    snapshotPreviousWords: snapshot.previousWords,
+                    engine: engine,
+                    supplementaryLexicon: supplementaryLexicon
+               ) {
+                correctionEvaluation = rollingEvaluation
+            }
             KeyboardTypingDiagnostics.log("correction_evaluation", fields: [
                 "request_id": diagnosticRequestIdentifier,
                 "original": snapshot.currentWord,
@@ -304,8 +490,11 @@ final class KeyboardPredictionCoordinator {
             ])
             return GeneratedState(
                 currentWord: snapshot.currentWord,
+                previousWords: snapshot.previousWords,
                 choices: choices,
-                correction: correctionEvaluation.decision
+                correction: correctionEvaluation.decision,
+                correctionResponse: correctionResponse,
+                protectsLiteral: protectsLiteral
             )
         } catch {
             reportEngineFailure(error)
@@ -314,8 +503,11 @@ final class KeyboardPredictionCoordinator {
                 : [KeyboardPredictionChoice(text: snapshot.currentWord, kind: .literal)]
             return GeneratedState(
                 currentWord: snapshot.currentWord,
+                previousWords: snapshot.previousWords,
                 choices: choices,
-                correction: nil
+                correction: nil,
+                correctionResponse: nil,
+                protectsLiteral: protectsLiteral
             )
         }
     }
@@ -384,10 +576,58 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
+    private func alignedDeferredWords(
+        with previousWordsNewestFirst: [String]
+    ) -> [DeferredWord] {
+        var matchedNewestFirst: [DeferredWord] = []
+        let count = min(deferredWords.count, previousWordsNewestFirst.count)
+        for offset in 0..<count {
+            let deferred = deferredWords[deferredWords.count - offset - 1]
+            guard deferred.original.caseInsensitiveCompare(
+                previousWordsNewestFirst[offset]
+            ) == .orderedSame else {
+                break
+            }
+            matchedNewestFirst.append(deferred)
+        }
+        return Array(matchedNewestFirst.reversed())
+    }
+
+    private func retainDeferredResponse(from state: GeneratedState) -> Bool {
+        guard let response = state.correctionResponse,
+              let index = deferredWords.lastIndex(where: { deferred in
+                  deferred.correctionResponse == nil
+                      && deferred.original.caseInsensitiveCompare(state.currentWord)
+                            == .orderedSame
+                      && Self.wordsMatch(
+                        deferred.previousWords,
+                        state.previousWords
+                      )
+              }) else {
+            return false
+        }
+        let existing = deferredWords[index]
+        deferredWords[index] = DeferredWord(
+            original: existing.original,
+            previousWords: existing.previousWords,
+            correctionResponse: response,
+            protectsLiteral: existing.protectsLiteral || state.protectsLiteral
+        )
+        return true
+    }
+
+    private static func wordsMatch(_ left: [String], _ right: [String]) -> Bool {
+        guard left.count == right.prefix(3).count else { return false }
+        return zip(left, right).allSatisfy { words in
+            words.0.caseInsensitiveCompare(words.1) == .orderedSame
+        }
+    }
+
     private static func makeCorrectionEvaluation(
         original: String,
         response: PredictionResponse,
-        protectsLiteral: Bool
+        protectsLiteral: Bool,
+        supplementaryLexicon: KeyboardSupplementaryLexicon
     ) -> CorrectionEvaluation {
         guard protectsLiteral == false else {
             return CorrectionEvaluation(
@@ -397,10 +637,31 @@ final class KeyboardPredictionCoordinator {
                 competingProbability: 0
             )
         }
+        if let replacement = supplementaryLexicon.replacement(for: original),
+           replacement != original {
+            return CorrectionEvaluation(
+                decision: KeyboardAutomaticCorrectionDecision(
+                    original: original,
+                    replacement: replacement,
+                    probability: 1
+                ),
+                reason: AutomaticCorrectionSelectionReason.supplementaryLexicon.rawValue,
+                selectedProbability: 1,
+                competingProbability: 0
+            )
+        }
         guard allowsAutomaticCorrectionCase(for: original) else {
             return CorrectionEvaluation(
                 decision: nil,
                 reason: "unsupported_case",
+                selectedProbability: 0,
+                competingProbability: 0
+            )
+        }
+        guard supplementaryLexicon.contains(original) == false else {
+            return CorrectionEvaluation(
+                decision: nil,
+                reason: AutomaticCorrectionSelectionReason.supplementaryLexicon.rawValue,
                 selectedProbability: 0,
                 competingProbability: 0
             )
@@ -460,21 +721,115 @@ final class KeyboardPredictionCoordinator {
         )
     }
 
+    private static func makeRollingEvaluation(
+        deferredWords: [DeferredWord],
+        currentWord: String,
+        currentResponse: PredictionResponse,
+        currentProtectsLiteral: Bool,
+        snapshotPreviousWords: [String],
+        engine: EnglishPredictiveEngine,
+        supplementaryLexicon: KeyboardSupplementaryLexicon
+    ) throws -> CorrectionEvaluation? {
+        guard deferredWords.isEmpty == false else { return nil }
+        let rollingTokens = deferredWords.map {
+            RollingCorrectionToken(
+                original: $0.original,
+                correctionResponse: $0.correctionResponse,
+                protectsLiteral: $0.protectsLiteral
+            )
+        } + [RollingCorrectionToken(
+            original: currentWord,
+            correctionResponse: currentResponse,
+            protectsLiteral: currentProtectsLiteral
+        )]
+        let precedingWords = Array(
+            snapshotPreviousWords.dropFirst(deferredWords.count)
+        )
+        guard let selection = try EnglishRollingCorrectionPolicy.select(
+                tokens: rollingTokens,
+                precedingWords: precedingWords,
+                isProtectedWord: supplementaryLexicon.contains,
+                analyze: { try engine.analyze(word: $0, previousWords: $1) }
+        ) else {
+            return nil
+        }
+        guard let firstChangedIndex = selection.changedIndices.first else {
+            return nil
+        }
+        let originalWords = rollingTokens.map(\.original)
+        let originalSuffix = originalWords[firstChangedIndex...].joined(separator: " ")
+        let replacementSuffix = zip(
+            originalWords[firstChangedIndex...],
+            selection.replacementWords[firstChangedIndex...]
+        ).map { original, replacement in
+            applyCase(of: original, to: replacement)
+        }.joined(separator: " ")
+        let probability = 1 - exp(-selection.languageScoreImprovement)
+        return CorrectionEvaluation(
+            decision: KeyboardAutomaticCorrectionDecision(
+                original: originalSuffix,
+                replacement: replacementSuffix,
+                probability: probability
+            ),
+            reason: AutomaticCorrectionSelectionReason.rollingContext.rawValue,
+            selectedProbability: probability,
+            competingProbability: 0
+        )
+    }
+
     private static func diagnosticMilliseconds(since start: TimeInterval) -> Double {
         ((ProcessInfo.processInfo.systemUptime - start) * 100_000).rounded() / 100
     }
 
+    @discardableResult
+    private func advanceGeneration() -> Int {
+        generationLock.lock()
+        defer { generationLock.unlock() }
+        generation += 1
+        return generation
+    }
+
+    private func currentGeneration() -> Int {
+        generationLock.lock()
+        defer { generationLock.unlock() }
+        return generation
+    }
+
     private static func allowsAutomaticCorrectionCase(for word: String) -> Bool {
-        word == word.lowercased()
+        if word == word.lowercased() { return true }
+        guard word.first?.isUppercase == true else { return false }
+        return String(word.dropFirst()) == String(word.dropFirst()).lowercased()
     }
 
     private static func makeChoices(
         literal: String,
         completionSuggestions: [PredictiveSuggestion],
-        correctionResponse: PredictionResponse
+        correctionResponse: PredictionResponse,
+        supplementaryLexicon: KeyboardSupplementaryLexicon,
+        userDictionarySuggestion: String?
     ) -> [KeyboardPredictionChoice] {
         var observed = Set([literal.lowercased()])
         var candidates: [KeyboardPredictionChoice] = []
+        var userDictionaryChoice: KeyboardPredictionChoice?
+
+        if let userDictionarySuggestion,
+           userDictionarySuggestion != literal {
+            let choice = KeyboardPredictionChoice(
+                text: userDictionarySuggestion,
+                kind: .correction
+            )
+            userDictionaryChoice = choice
+            candidates.append(choice)
+            observed.insert(userDictionarySuggestion.lowercased())
+        }
+
+        if let replacement = supplementaryLexicon.replacement(for: literal),
+           replacement != literal {
+            candidates.append(
+                KeyboardPredictionChoice(text: replacement, kind: .correction)
+            )
+            observed.insert(replacement.lowercased())
+        }
 
         if let grammaticalReplacement = EnglishAutomaticCorrectionPolicy
             .grammaticalReplacement(for: literal) {
@@ -510,6 +865,13 @@ final class KeyboardPredictionCoordinator {
             return KeyboardPredictionChoice(text: value, kind: kind)
         })
         let literalChoice = KeyboardPredictionChoice(text: literal, kind: .literal)
+        if let userDictionaryChoice {
+            var orderedChoices = [literalChoice, userDictionaryChoice]
+            if let trailingChoice = candidates.first(where: { $0 != userDictionaryChoice }) {
+                orderedChoices.append(trailingChoice)
+            }
+            return orderedChoices
+        }
         guard candidates.isEmpty == false else { return [literalChoice] }
         if candidates.count == 1 {
             return [candidates[0], literalChoice]
@@ -559,7 +921,7 @@ final class KeyboardPredictionCoordinator {
             .split { character in
                 character.isLetter == false && character != "'" && character != "’"
             }
-            .suffix(3)
+            .suffix(8)
             .reversed()
             .map(String.init)
         return TextSnapshot(currentWord: currentWord, previousWords: previousWords)

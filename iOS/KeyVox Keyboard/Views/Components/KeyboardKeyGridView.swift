@@ -14,6 +14,17 @@ enum KeyboardTopRowAccessorySlot: Int {
 }
 
 final class KeyboardKeyGridView: UIView {
+    private static let completedTouchRetentionDuration: TimeInterval = 0.5
+
+    private struct CompletedRoutedTouch: Equatable {
+        let beganAt: TimeInterval
+        let endedAt: TimeInterval
+
+        func contains(timestamp: TimeInterval) -> Bool {
+            timestamp == beganAt || timestamp == endedAt
+        }
+    }
+
     private final class TouchSession {
         let diagnosticIdentifier: Int
         let beganAt: TimeInterval
@@ -22,6 +33,7 @@ final class KeyboardKeyGridView: UIView {
         var currentKeyView: KeyboardKeyView?
         var alternatePresentationWorkItem: DispatchWorkItem?
         var popupPresentedAt: TimeInterval?
+        var lastMovementTimestamp: TimeInterval
 
         init(
             diagnosticIdentifier: Int,
@@ -34,6 +46,7 @@ final class KeyboardKeyGridView: UIView {
             self.beganLocation = beganLocation
             self.initialKeyView = currentKeyView
             self.currentKeyView = currentKeyView
+            self.lastMovementTimestamp = beganAt
         }
     }
 
@@ -46,6 +59,7 @@ final class KeyboardKeyGridView: UIView {
     private let alternatePopupView = KeyboardAlternateCharacterPopupView()
     private var keyViews: [KeyboardKeyView] = []
     private var touchSessions: [ObjectIdentifier: TouchSession] = [:]
+    private var recentlyCompletedRoutedTouches: [ObjectIdentifier: CompletedRoutedTouch] = [:]
     private(set) var symbolPage: KeyboardSymbolPage = .alphabetic
     private var letterCase: KeyboardLetterCase = .shifted
     private var isKeyboardEnabled = true
@@ -66,6 +80,7 @@ final class KeyboardKeyGridView: UIView {
     private var secondRowLayoutGeometry: KeyboardLayoutGeometry.SecondRowLayout?
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
     private var bottomRowLayoutGeometry: KeyboardLayoutGeometry.BottomRowLayout?
+    private var touchRouter: KeyboardTouchRouterGestureRecognizer?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -123,9 +138,12 @@ final class KeyboardKeyGridView: UIView {
     }
 
     func resetInteractionState() {
+        touchRouter?.isEnabled = false
+        touchRouter?.isEnabled = true
         cancelAllAlternatePresentations()
         alternatePopupView.dismiss()
         touchSessions.removeAll()
+        recentlyCompletedRoutedTouches.removeAll()
         deleteTouchIdentifier = nil
         spaceTouchIdentifier = nil
         alternateTouchIdentifier = nil
@@ -180,6 +198,22 @@ final class KeyboardKeyGridView: UIView {
         rowsStack.spacing = KeyboardStyle.keyboardRowSpacing
         rowsStack.clipsToBounds = false
         addSubview(rowsStack)
+
+        let touchRouter = KeyboardTouchRouterGestureRecognizer(target: nil, action: nil)
+        touchRouter.onTouchesBegan = { [weak self] touches, event in
+            self?.routeTouchesBegan(touches, with: event, source: "gesture_router")
+        }
+        touchRouter.onTouchesMoved = { [weak self] touches, event in
+            self?.routeTouchesMoved(touches, with: event)
+        }
+        touchRouter.onTouchesEnded = { [weak self] touches, _ in
+            self?.finishRoutedTouches(touches, cancelled: false)
+        }
+        touchRouter.onTouchesCancelled = { [weak self] touches, _ in
+            self?.finishRoutedTouches(touches, cancelled: true)
+        }
+        addGestureRecognizer(touchRouter)
+        self.touchRouter = touchRouter
 
         NSLayoutConstraint.activate([
             rowsStack.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -262,11 +296,32 @@ final class KeyboardKeyGridView: UIView {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        routeTouchesBegan(touches, with: event, source: "responder_fallback")
+    }
+
+    private func routeTouchesBegan(
+        _ touches: Set<UITouch>,
+        with event: UIEvent?,
+        source: String
+    ) {
         guard isKeyboardEnabled else { return }
 
         for touch in touches {
             let handlingStartedAt = ProcessInfo.processInfo.systemUptime
             let identifier = ObjectIdentifier(touch)
+            guard touchSessions[identifier] == nil else {
+                continue
+            }
+            if let completedTouch = recentlyCompletedRoutedTouches[identifier] {
+                if completedTouch.contains(timestamp: touch.timestamp) {
+                    KeyboardTypingDiagnostics.log("touch_duplicate_suppressed", fields: [
+                        "delivery_source": source,
+                        "touch_timestamp": touch.timestamp,
+                    ])
+                    continue
+                }
+                recentlyCompletedRoutedTouches.removeValue(forKey: identifier)
+            }
             let location = touch.location(in: self)
             let hitKey = keyView(at: location)
             let previousTouchBeganAt = lastTouchBeganAt
@@ -302,6 +357,7 @@ final class KeyboardKeyGridView: UIView {
                     from: touch.timestamp,
                     to: handlingStartedAt
                 ),
+                "delivery_source": source,
             ])
 
             if hitKey?.model.kind == .delete {
@@ -363,6 +419,10 @@ final class KeyboardKeyGridView: UIView {
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        routeTouchesMoved(touches, with: event)
+    }
+
+    private func routeTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard isKeyboardEnabled else { return }
 
         for touch in touches {
@@ -370,6 +430,8 @@ final class KeyboardKeyGridView: UIView {
             guard let session = touchSessions[identifier] else { continue }
             let location = touch.location(in: self)
             let timestamp = touch.timestamp
+            guard timestamp > session.lastMovementTimestamp else { continue }
+            session.lastMovementTimestamp = timestamp
             let rawHitKey = keyView(at: location)
             let hitKey = stabilizedKeyView(
                 rawHitKey: rawHitKey,
@@ -438,17 +500,69 @@ final class KeyboardKeyGridView: UIView {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        finishTouches(touches, cancelled: false)
+        finishResponderTouches(touches, cancelled: false)
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        finishTouches(touches, cancelled: true)
+        finishResponderTouches(touches, cancelled: true)
     }
 
-    private func finishTouches(_ touches: Set<UITouch>, cancelled: Bool) {
+    private func finishRoutedTouches(_ touches: Set<UITouch>, cancelled: Bool) {
+        let completedTouchPairs: [(ObjectIdentifier, CompletedRoutedTouch)] = touches.compactMap {
+            touch -> (ObjectIdentifier, CompletedRoutedTouch)? in
+            let identifier = ObjectIdentifier(touch)
+            guard let session = touchSessions[identifier] else { return nil }
+            return (
+                identifier,
+                CompletedRoutedTouch(
+                    beganAt: session.beganAt,
+                    endedAt: touch.timestamp
+                )
+            )
+        }
+        let completedTouches = Dictionary(uniqueKeysWithValues: completedTouchPairs)
+        let finishedIdentifiers = finishTouches(touches, cancelled: cancelled)
+        for identifier in finishedIdentifiers {
+            recentlyCompletedRoutedTouches[identifier] = completedTouches[identifier]
+        }
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + Self.completedTouchRetentionDuration
+        ) { [weak self] in
+            guard let self else { return }
+            for identifier in finishedIdentifiers
+                where self.recentlyCompletedRoutedTouches[identifier]
+                    == completedTouches[identifier] {
+                self.recentlyCompletedRoutedTouches.removeValue(forKey: identifier)
+            }
+        }
+    }
+
+    private func finishResponderTouches(_ touches: Set<UITouch>, cancelled: Bool) {
+        let unfinishedTouches = Set(touches.filter { touch in
+            let identifier = ObjectIdentifier(touch)
+            return recentlyCompletedRoutedTouches[identifier]?
+                .contains(timestamp: touch.timestamp) != true
+        })
+        _ = finishTouches(unfinishedTouches, cancelled: cancelled)
+        for touch in touches {
+            let identifier = ObjectIdentifier(touch)
+            if recentlyCompletedRoutedTouches[identifier]?
+                .contains(timestamp: touch.timestamp) == true {
+                recentlyCompletedRoutedTouches.removeValue(forKey: identifier)
+            }
+        }
+    }
+
+    @discardableResult
+    private func finishTouches(
+        _ touches: Set<UITouch>,
+        cancelled: Bool
+    ) -> Set<ObjectIdentifier> {
+        var finishedIdentifiers = Set<ObjectIdentifier>()
         for touch in touches {
             let identifier = ObjectIdentifier(touch)
             guard let session = touchSessions.removeValue(forKey: identifier) else { continue }
+            finishedIdentifiers.insert(identifier)
             let alternateValue = identifier == alternateTouchIdentifier
                 ? alternatePopupView.selectedValue()
                 : nil
@@ -554,6 +668,7 @@ final class KeyboardKeyGridView: UIView {
                 ])
             }
         }
+        return finishedIdentifiers
     }
 
     private func keyView(at point: CGPoint) -> KeyboardKeyView? {
