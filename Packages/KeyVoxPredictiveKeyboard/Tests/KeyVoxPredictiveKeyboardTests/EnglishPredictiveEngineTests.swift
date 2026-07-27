@@ -516,6 +516,70 @@ final class EnglishPredictiveEngineTests: XCTestCase {
         XCTAssertEqual(selection.reason, .substitutionRecovery)
     }
 
+    func testCorrectionPolicyPrefersPlausibleSubstitutionShape() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "easy",
+                    nativeScore: -112_882,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.50816751029628104
+                ),
+                PredictiveSuggestion(
+                    word: "last",
+                    nativeScore: -712_321,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.026400882841253193
+                ),
+                PredictiveSuggestion(
+                    word: "lady",
+                    nativeScore: -712_321,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.0030711269227739232
+                ),
+                PredictiveSuggestion(
+                    word: "lazy",
+                    nativeScore: -712_321,
+                    nativeType: 268_435_457,
+                    rankProbability: 0.0030711269227739232
+                ),
+            ],
+            automaticCorrectionProbability: 0.15859487739653061,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "lasy",
+            response: response
+        )
+
+        XCTAssertEqual(selection.suggestion?.word, "last")
+        XCTAssertEqual(selection.reason, .substitutionRecovery)
+    }
+
+    func testCorrectionPolicyRejectsDistantKeySubstitutionRecovery() {
+        let response = PredictionResponse(
+            suggestions: [
+                PredictiveSuggestion(
+                    word: "ramp",
+                    nativeScore: 1,
+                    nativeType: 1,
+                    rankProbability: 0.5
+                ),
+            ],
+            automaticCorrectionProbability: 0.2,
+            typedWordIsValid: false
+        )
+
+        let selection = EnglishAutomaticCorrectionPolicy.select(
+            typedWord: "lamp",
+            response: response
+        )
+
+        XCTAssertNil(selection.suggestion)
+        XCTAssertEqual(selection.reason, .ambiguous)
+    }
+
     func testCorrectionPolicyRecoversObservedMissingLetter() {
         let response = PredictionResponse(
             suggestions: [

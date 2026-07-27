@@ -19,7 +19,7 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         let accentURL = try locator.url(name: "accent_overlay", extension: "bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
 
-        let defaultGeometry = Self.defaultQWERTYGeometry
+        let defaultGeometry = EnglishKeyboardLayout.defaultGeometry
         let nativeGeometry = defaultGeometry.compactMap(Self.nativeGeometry)
         let createdEngine = dictionaryURL.path.withCString { dictionaryPath in
             contextURL.path.withCString { contextPath in
@@ -211,26 +211,6 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         return String(cString: message)
     }
 
-    private static let defaultQWERTYGeometry: [PredictionKeyGeometry] = {
-        let rows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-        let offsets: [CGFloat] = [0, 50, 150]
-        var geometry: [PredictionKeyGeometry] = []
-        for (row, letters) in rows.enumerated() {
-            for (column, character) in letters.enumerated() {
-                let frame = CGRect(
-                    x: offsets[row] + CGFloat(column * 100),
-                    y: CGFloat(row * 100),
-                    width: 100,
-                    height: 100
-                )
-                geometry.append(PredictionKeyGeometry(
-                    character: character,
-                    frame: frame
-                ))
-            }
-        }
-        return geometry
-    }()
 }
 
 private extension PredictionMode {

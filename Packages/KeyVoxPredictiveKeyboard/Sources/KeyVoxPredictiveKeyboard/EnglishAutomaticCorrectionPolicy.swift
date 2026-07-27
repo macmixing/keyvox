@@ -43,6 +43,7 @@ public enum EnglishAutomaticCorrectionPolicy {
     private static let missingLetterLeadingProbabilityRatio = 0.08
     private static let missingLetterProbabilityRatio = 8.0
     private static let substitutionProbability = 0.04
+    private static let substitutionBehindDistantLeaderProbability = 0.02
     private static let substitutionLeadingProbabilityRatio = 0.10
     private static let substitutionProbabilityRatio = 2.5
     private static let transpositionProbability = 0.005
@@ -130,7 +131,7 @@ public enum EnglishAutomaticCorrectionPolicy {
         }
 
         let substitutionCandidates = response.suggestions.filter {
-            isSingleSubstitution(
+            isPlausibleSingleSubstitution(
                 typedWord: typedWord,
                 candidate: $0.word
             )
@@ -140,9 +141,22 @@ public enum EnglishAutomaticCorrectionPolicy {
                 .first?.rankProbability ?? 0
             let probabilityRatio = substitutionCandidate.rankProbability
                 / max(competingProbability, .leastNonzeroMagnitude)
+            let leadingCandidateIsDistantSubstitution = isSingleSubstitution(
+                typedWord: typedWord,
+                candidate: first.word
+            ) && isPlausibleSingleSubstitution(
+                typedWord: typedWord,
+                candidate: first.word
+            ) == false
+            let leadingReferenceProbability = leadingCandidateIsDistantSubstitution
+                ? substitutionCandidate.rankProbability
+                : first.rankProbability
             let leadingProbabilityRatio = substitutionCandidate.rankProbability
-                / max(first.rankProbability, .leastNonzeroMagnitude)
-            if substitutionCandidate.rankProbability >= substitutionProbability,
+                / max(leadingReferenceProbability, .leastNonzeroMagnitude)
+            let requiredProbability = leadingCandidateIsDistantSubstitution
+                ? substitutionBehindDistantLeaderProbability
+                : substitutionProbability
+            if substitutionCandidate.rankProbability >= requiredProbability,
                leadingProbabilityRatio >= substitutionLeadingProbabilityRatio,
                probabilityRatio >= substitutionProbabilityRatio {
                 return AutomaticCorrectionSelection(
@@ -316,6 +330,25 @@ public enum EnglishAutomaticCorrectionPolicy {
                 count += 1
             }
         } == 1
+    }
+
+    private static func isPlausibleSingleSubstitution(
+        typedWord: String,
+        candidate: String
+    ) -> Bool {
+        guard isSingleSubstitution(typedWord: typedWord, candidate: candidate) else {
+            return false
+        }
+        guard let differingPair = zip(
+            typedWord.lowercased(),
+            candidate.lowercased()
+        ).first(where: { $0 != $1 }) else {
+            return false
+        }
+        return EnglishKeyboardLayout.areNeighboring(
+            differingPair.0,
+            differingPair.1
+        )
     }
 
     private static func isOmittedCharactersRepair(
