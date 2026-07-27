@@ -6,6 +6,46 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.1] - 2026-07-27
+
+Improves Mac dictation insertion around sentence, quote, and editor boundaries while expanding spoken terminal punctuation completion.
+
+### Added
+
+- Added shared capitalization and leading-spacing behavior through `KeyVoxTextComposition` `1.0.0`, including sentence-boundary, delimiter, and opening and closing quote awareness.
+
+### Changed
+
+- Updated Mac paste composition to use the shared text-composition policy while keeping Accessibility context collection, dictionary casing, and text insertion owned by the Mac app.
+- Updated Accessibility inspection to capture the two preceding characters so quote boundaries and new lines can be classified from the local editor context.
+- Updated Mac architecture documentation and the code map for shared text-composition ownership and the new paste coordinators.
+- Updated `KeyVoxCore` to `1.1.1` with expanded spoken terminal punctuation completion for determiner-ending clauses.
+
+### Fixed
+
+- Fixed capitalization and spacing immediately after opening quotes, after closing quotes in sentence continuations, and after terminal punctuation followed by a closing quote.
+- Fixed capitalization after an indented new line and during selection replacement so the local sentence boundary determines the inserted text casing.
+- Fixed missing or partial Accessibility context so stale information from an earlier insertion does not add an unwanted leading space or incorrectly lowercase new dictation.
+- Fixed spoken terminal punctuation after determiner-ending phrases so clauses such as `I'm happy to hear that exclamation point` can end with the intended punctuation while ordinary punctuation-word references remain unchanged.
+
+### Package versions
+
+KeyVox macOS 1.2.1:
+- KeyVoxCore            1.1.1
+- KeyVoxWhisper         1.0.1
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.1.1` expands spoken terminal punctuation completion to eligible determiner-ending clauses while preserving punctuation-word references and protected short phrases.
+- `KeyVoxTextComposition` `1.0.0` establishes the shared source of truth for leading capitalization and spacing across sentence starts, continuations, punctuation, delimiters, and quotation marks.
+
+---
+
 ## [1.2.0] - 2026-07-18
 
 Adds reversible List and Paragraph formatting for the latest untouched Mac dictation, strengthens replacement safety and feedback, and preserves trailing Whisper audio.
