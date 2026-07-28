@@ -30,6 +30,7 @@ enum UserDefaultsKeys {
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let lastTranscription = "KeyVox.App.LastTranscription"
         static let activeDictationProvider = "KeyVox.App.ActiveDictationProvider"
+        static let whisperDictationLanguage = "KeyVox.App.WhisperDictationLanguage"
         static let hasSeenKeyVoxVibesIntro = "KeyVox.App.HasSeenKeyVoxVibesIntro"
         static let hasCompletedFirstDictation = "KeyVox.App.HasCompletedFirstDictation"
         static let hasSkippedFirstDictation = "KeyVox.App.HasSkippedFirstDictation"

@@ -69,7 +69,9 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.canSwitchActiveProvider = canSwitchActiveProvider
         self.currentActiveProviderSelection = initialActiveProviderSelection
+        whisperService.updateLanguage(appSettings.whisperDictationLanguage)
         bindActiveProviderSelection()
+        bindWhisperLanguageSelection()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -119,7 +121,9 @@ final class AppServiceRegistry {
         }
         canSwitchActiveProvider = { true }
         currentActiveProviderSelection = .whisper
+        whisperService.updateLanguage(appSettings.whisperDictationLanguage)
         bindActiveProviderSelection()
+        bindWhisperLanguageSelection()
         handleActiveProviderSelectionChange(appSettings.activeDictationProvider)
     }
 
@@ -128,6 +132,15 @@ final class AppServiceRegistry {
             .removeDuplicates()
             .sink { [weak self] selection in
                 self?.handleActiveProviderSelectionChange(selection)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func bindWhisperLanguageSelection() {
+        appSettings.$whisperDictationLanguage
+            .removeDuplicates()
+            .sink { [weak self] language in
+                self?.whisperService.updateLanguage(language)
             }
             .store(in: &cancellables)
     }
