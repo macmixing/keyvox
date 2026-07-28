@@ -12,6 +12,7 @@ public class WhisperService: ObservableObject, DictationProvider {
     private var activeTranscriptionRequestID = UUID()
 
     var whisper: Whisper?
+    var configuredLanguage = DictationLanguage.automatic
     var dictionaryHintPrompt = ""
     let noSpeechSegmentProbabilityThreshold: Float = 0.72
     let noSpeechAverageProbabilityThreshold: Float = 0.80

@@ -22,7 +22,7 @@ extension WhisperService {
         #endif
 
         let params = WhisperParams.default
-        params.language = .auto
+        params.language = WhisperLanguage(rawValue: configuredLanguage.rawValue) ?? .auto
         params.n_threads = 4 // Optimal for M-series P-cores (prevent oversubscription)
         params.no_context = true
         params.print_timestamps = false
