@@ -6,6 +6,11 @@ extension WhisperService {
     }
 
     func applyConfiguredLanguage() {
-        whisper?.params.language = WhisperLanguage(rawValue: configuredLanguage.rawValue) ?? .auto
+        guard let params = whisper?.params else { return }
+        applyConfiguredLanguage(to: params)
+    }
+
+    func applyConfiguredLanguage(to params: WhisperParams) {
+        params.language = WhisperLanguage(rawValue: configuredLanguage.rawValue) ?? .auto
     }
 }
