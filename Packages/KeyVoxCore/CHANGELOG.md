@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-07-27
+
+Shared Whisper Base language selection for dictation clients.
+
+### Includes
+
+- Added a shared dictation-language value and localized display-name formatter for consistent language presentation across app clients.
+- Added a Whisper Base language catalog that exposes Auto Detect and the languages supported by the installed Base model without duplicating language lists in platform code.
+- Added Whisper service language configuration with automatic fallback for unsupported values.
+- Applied the configured language during model warmup and at the beginning of each transcription request so one request keeps a consistent language across all audio chunks.
+
+### Notes
+
+- `1.2.0` bumps the tracked minor engine version for `KeyVoxCore` to cover reusable Whisper language selection for dictation clients.
+
+---
+
 ## [1.1.1] - 2026-07-21
 
 Spoken terminal punctuation completion for determiner-ending clauses.
