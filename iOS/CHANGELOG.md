@@ -6,6 +6,46 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.2.17] - 2026-07-27
+
+Improves keyboard dictation around quotation marks, expands spoken terminal punctuation completion, and protects dictated text in debug diagnostics.
+
+### Added
+
+- Added shared capitalization and leading-spacing behavior through `KeyVoxTextComposition` `1.0.0`, including sentence-boundary, delimiter, and opening and closing quote awareness.
+
+### Changed
+
+- Updated keyboard text insertion to use the shared text-composition policy while keeping document-context collection, dictionary casing, and text insertion owned by the iOS keyboard.
+- Updated keyboard insertion diagnostics to record normalization stage, change state, and text length without logging raw dictated text.
+- Updated the iOS architecture documentation and code map for shared text-composition ownership and the new keyboard insertion coordinators.
+- Updated `KeyVoxCore` to `1.1.1` with expanded spoken terminal punctuation completion for determiner-ending clauses.
+
+### Fixed
+
+- Fixed keyboard dictation immediately after an opening quote so the inserted text keeps sentence capitalization without an unwanted leading space.
+- Fixed keyboard dictation after a closing quote so sentence continuations receive a leading space and lowercase default sentence casing, while terminal punctuation inside the quote starts a new sentence correctly.
+- Fixed spoken terminal punctuation after determiner-ending phrases so clauses such as `I'm happy to hear that exclamation point` can end with the intended punctuation while ordinary punctuation-word references remain unchanged.
+
+### Package versions
+
+KeyVox iOS 1.2.17
+  KeyVoxCore            1.1.1
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.0
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.1.1` expands spoken terminal punctuation completion to eligible determiner-ending clauses while preserving punctuation-word references and protected short phrases.
+- `KeyVoxTextComposition` `1.0.0` establishes the shared source of truth for leading capitalization and spacing across sentence starts, continuations, punctuation, delimiters, and quotation marks.
+
+---
+
 ## [1.2.16] - 2026-07-19
 
 Improves reversible List and Paragraph formatting consistency, preserves short trailing dictation audio, and strengthens custom dictionary matching.
