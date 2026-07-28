@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-07-21**
+**Last Updated: 2026-07-27**
 
 ## Project Overview
 
@@ -10,7 +10,7 @@ KeyVox iOS ships as four cooperating targets:
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`.
+Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, model-aware dictation-language metadata and Whisper configuration, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 
 The current default runtime flow is:
@@ -34,9 +34,9 @@ The current default runtime flow is:
 - **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, date/math normalization, silence heuristics, and list formatting behavior.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, date/math normalization, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, and sentence-boundary policy used immediately before insertion.
-- **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`.
+- **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`, including the iterable language identifiers used to derive model-specific picker options.
 - **`../Packages/KeyVoxParakeet/`**: local Parakeet Core ML runtime package consumed through the shared `ParakeetService`.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
 - **`../Packages/KeyVoxLocalInference/`**: llama.cpp-backed local GGUF inference package with chat-template formatting, optional LoRA adapter attachment, quiet llama logging, cancellation, greedy decoding, token accounting, and opt-in live model tests.
@@ -556,6 +556,7 @@ Packages/
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
+  - Applies the persisted Whisper language when the service is created and keeps later device-local language changes synchronized with `WhisperService`.
   - Normalizes the persisted active provider back to a ready model when install state changes.
   - Normalizes copied-text playback voice selection when PocketTTS install state changes, but does not prewarm PocketTTS; playback owns runtime preparation and teardown.
 - `app-update-policy.json`
@@ -653,6 +654,9 @@ Packages/
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
   - Also includes the KeyVox Vibes style-selection keys used by both `AppSettingsStore` and the keyboard extension's Vibes selector.
+- `KeyVox iOS/App/iCloud/AppSettingsStore.swift`
+  - Owns the device-local active dictation provider and Whisper language selection alongside the app's other persisted settings.
+  - Validates restored Whisper language identifiers against `WhisperBaseLanguageCatalog` and defaults missing or unsupported values to Auto Detect; this preference is intentionally not part of iCloud settings sync.
 - `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
   - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
@@ -890,6 +894,7 @@ Packages/
   - Session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
+  - Attaches the Language section beneath the model card: Whisper uses the shared model catalog for its picker, while Parakeet remains visible as Auto Detect with FAQ guidance because it has no native forced-language selection.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+TTS.swift`
   - Release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+VibesAI.swift`

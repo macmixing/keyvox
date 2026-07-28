@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-07-21**
+**Last Updated: 2026-07-27**
 
 ## Project Overview
 
@@ -131,6 +131,8 @@ KeyVox/
 │   │   ├── VibesIntro/
 │   │   ├── Updates/
 │   │   ├── Settings/
+│   │   │   ├── DictationLanguageSection.swift
+│   │   │   ├── SettingsView+DictationModels.swift
 │   │   │   ├── SettingsVibesCard.swift
 │   │   │   ├── SettingsVibesAIInstallCard.swift
 │   │   │   └── SettingsVibesExamplesSection.swift
@@ -198,7 +200,7 @@ KeyVox/
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager*.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
-4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, and binds install-time Parakeet preloading to the downloader.
+4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, synchronizes the device-local Whisper language, and binds install-time Parakeet preloading to the downloader.
 5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
 7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
@@ -235,12 +237,14 @@ KeyVox/
 - `App/MacRuntimeFlags.swift`
   - Centralized macOS environment flag parser for forcing setup onboarding, first-dictation onboarding, the debug microphone picker, debug model-download preview errors, raw-text debug logs, and the KeyVox Vibes intro without clearing persisted defaults.
 - `App/AppSettingsStore.swift`
-  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, first-dictation outcome flags, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider).
+  - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, first-dictation outcome flags, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider, Whisper dictation language).
   - Single in-memory observable source consumed by settings UI and runtime managers.
+  - Validates restored Whisper language identifiers against the shared catalog and defaults missing or unsupported values to Auto Detect.
 - `App/AppServiceRegistry.swift`
   - Retains shared runtime services and app-owned sync helpers.
   - Instantiates `WhisperService`, `ParakeetService`, and `SwitchableDictationProvider`.
   - Normalizes active-provider selection changes back into the runtime only when transcription is idle.
+  - Applies the persisted Whisper language during composition and keeps later local selection changes synchronized with `WhisperService`.
   - Hooks downloader post-install preparation so Parakeet preload happens after install finalization instead of on the first trigger path.
   - Owns the Mac Vibes local rewrite model manager, inference service, and coordinator without startup Vibes model prewarming.
   - Owns the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator.
@@ -301,8 +305,12 @@ KeyVox/
   - Generic standalone-pill visibility shell shared by Vibe and formatting feedback.
 - `Views/Settings/SettingsView+DictationModels.swift`
   - User-facing `Active Model` settings card for provider selection plus install/remove/progress/error state per model.
+  - Attaches the language row beneath the model controls and delegates its presentation to `DictationLanguageSection`.
   - Falls back to the first ready provider when the persisted active selection is no longer installable/selectable.
   - Only surfaces Parakeet on supported systems; unsupported selections normalize back to Whisper in `AppSettingsStore`.
+- `Views/Settings/DictationLanguageSection.swift`
+  - Uses the standard Mac `SettingsRow` and menu-picker pattern to display and select the current Whisper language from `WhisperBaseLanguageCatalog`.
+  - Keeps the dropdown visible but disabled on Auto Detect for Parakeet and owns the nearby FAQ guidance copy.
 - `Views/Settings/SettingsView+Legal.swift`
   - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
 - `Views/Components/ConfirmDeletePromptView.swift`
@@ -540,11 +548,19 @@ KeyVox/
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift`
   - Loads the rooted Whisper model path from Application Support and runs inference.
-  - Uses automatic language detection (`.auto`) and the shared paragraph chunker/post-processing contracts.
+  - Defaults to automatic language detection and uses the shared paragraph chunker/post-processing contracts.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+Language.swift`
+  - Validates app selections against `WhisperBaseLanguageCatalog` and applies the configured identifier to the loaded Whisper parameters.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+ModelLifecycle.swift`
-  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution).
+  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution) and initializes model parameters with the configured language.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
-  - Owns chunk transcription flow, retry selection, whitespace normalization, and debug segment logging.
+  - Owns chunk transcription flow, applies the current language before a request begins, and handles retry selection, whitespace normalization, and debug segment logging.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguage.swift`
+  - Shared stable language-code value with an explicit Auto Detect identifier.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguageDisplayNameFormatter.swift`
+  - Produces localized language display names for platform settings surfaces.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/WhisperBaseLanguageCatalog.swift`
+  - Derives the Whisper Base picker options from `KeyVoxWhisper.WhisperLanguage` so platform apps do not duplicate language lists.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift`
   - Parakeet provider service root that owns request state and delegates lifecycle/transcription behavior across split extension files.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService+ModelLifecycle.swift`
@@ -814,7 +830,9 @@ KeyVox/
   - Dictionary description includes custom words, email addresses, and short phrases.
   - Primary add action is surfaced as a floating corner button from `Views/Components/DictionaryFloatingAddButton.swift`.
 - `Views/Settings/SettingsView+DictationModels.swift`
-  - Dictation provider selection plus install/remove/progress/error UI for model-backed providers.
+  - Dictation provider selection plus install/remove/progress/error UI for model-backed providers, with the attached language row composed below the model controls.
+- `Views/Settings/DictationLanguageSection.swift`
+  - Standard Mac language dropdown for Whisper and disabled Auto Detect presentation with FAQ guidance for Parakeet.
 - `Views/Settings/SettingsView+Style.swift`
   - Style tab with standalone Lists and Paragraphs cards backed by persisted `listFormattingEnabled` and `autoParagraphsEnabled`.
   - Always composes the KeyVox Vibes style card and drives style-picker availability from the Mac Vibes local install/access matrix.
@@ -851,7 +869,7 @@ KeyVox/
 ## Persistence & Defaults
 
 - Centralized persisted preferences owner: `App/AppSettingsStore.swift`
-  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, onboarding completion, first-dictation completed/skipped flags, update prompt timestamps, active dictation provider
+  - trigger binding, auto paragraphs toggle, list formatting toggle, sound enable/volume, selected microphone UID, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, onboarding completion, first-dictation completed/skipped flags, update prompt timestamps, active dictation provider, device-local Whisper language
 - Shared app-owned runtime registry: `App/AppServiceRegistry.swift`
   - retains the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator
 - Preference key catalog: `App/UserDefaultsKeys.swift`
@@ -868,6 +886,7 @@ KeyVox/
 - Mac Vibes intro seen key: `KeyVox.App.HasSeenKeyVoxVibesIntro`
 - Last transcription cache key: `KeyVox.App.LastTranscription`
 - Active provider key: `KeyVox.App.ActiveDictationProvider`
+- Whisper language key: `KeyVox.App.WhisperDictationLanguage`
 - Update prompt and handoff keys:
   - `KeyVox.App.UpdateAlertLastShown`
   - `KeyVox.App.UpdateAlertSnoozedUntil`
