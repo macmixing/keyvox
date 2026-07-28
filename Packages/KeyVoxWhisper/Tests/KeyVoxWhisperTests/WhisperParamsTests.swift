@@ -23,11 +23,11 @@ final class WhisperParamsTests: XCTestCase {
 
     func testLanguageRoundtrip() {
         let params = WhisperParams.default
-        params.language = .english
-        XCTAssertEqual(params.language, .english)
 
-        params.language = .auto
-        XCTAssertEqual(params.language, .auto)
+        for language in WhisperLanguage.allCases {
+            params.language = language
+            XCTAssertEqual(params.language, language)
+        }
     }
 
     func testSuppressNonSpeechAlias() {
