@@ -1,3 +1,4 @@
+import KeyVoxCore
 import SwiftUI
 
 extension SettingsTabView {
@@ -89,9 +90,63 @@ extension SettingsTabView {
                             modelExpandedContentMeasurement
                         }
                     }
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                dictationLanguageSection
             }
         }
         .id(SettingsScrollTarget.dictationModel)
+    }
+
+    @ViewBuilder
+    private var dictationLanguageSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.accent.opacity(0.2))
+                        .frame(width: 32, height: 32)
+
+                    Image(systemName: "textformat.characters.dottedunderline")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.yellow)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Language")
+                        .font(.appFont(18))
+                        .foregroundStyle(.white)
+
+                    Text(activeDictationLanguageDisplayName)
+                        .font(.appFont(17))
+                        .foregroundStyle(.yellow)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if settingsStore.activeDictationProvider == .whisper {
+                    Menu {
+                        Picker("", selection: whisperLanguageSelection) {
+                            ForEach(whisperLanguageOptions) { language in
+                                Text(DictationLanguageDisplayNameFormatter.displayName(for: language))
+                                    .tag(language)
+                            }
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        Text("Change")
+                            .font(.appFont(16))
+                            .foregroundStyle(.yellow)
+                    }
+                    .padding(.top, 2)
+                }
+            }
+
+            Text(dictationLanguageDescriptionText)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.white.opacity(0.7))
+        }
     }
 
     @ViewBuilder
@@ -315,6 +370,49 @@ extension SettingsTabView {
                 settingsStore.activeDictationProvider = newValue
             }
         )
+    }
+
+    var whisperLanguageSelection: Binding<DictationLanguage> {
+        Binding(
+            get: { settingsStore.whisperDictationLanguage },
+            set: { newValue in
+                guard WhisperBaseLanguageCatalog.supports(newValue) else { return }
+                settingsStore.whisperDictationLanguage = newValue
+            }
+        )
+    }
+
+    var whisperLanguageOptions: [DictationLanguage] {
+        let languageOptions = WhisperBaseLanguageCatalog.supportedLanguages
+            .filter { !$0.isAutomatic }
+            .sorted {
+                DictationLanguageDisplayNameFormatter.displayName(for: $0)
+                    .localizedCaseInsensitiveCompare(
+                        DictationLanguageDisplayNameFormatter.displayName(for: $1)
+                    ) == .orderedAscending
+            }
+
+        return [.automatic] + languageOptions
+    }
+
+    var activeDictationLanguageDisplayName: String {
+        let language: DictationLanguage = switch settingsStore.activeDictationProvider {
+        case .whisper:
+            settingsStore.whisperDictationLanguage
+        case .parakeet:
+            .automatic
+        }
+
+        return DictationLanguageDisplayNameFormatter.displayName(for: language)
+    }
+
+    var dictationLanguageDescriptionText: String {
+        switch settingsStore.activeDictationProvider {
+        case .whisper:
+            return "Choose the language KeyVox uses for dictation."
+        case .parakeet:
+            return "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages."
+        }
     }
 
     var textModelDescriptionText: String {
