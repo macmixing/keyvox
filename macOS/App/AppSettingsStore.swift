@@ -202,6 +202,10 @@ final class AppSettingsStore: ObservableObject {
 
     @Published var whisperDictationLanguage: DictationLanguage {
         didSet {
+            guard WhisperBaseLanguageCatalog.supports(whisperDictationLanguage) else {
+                whisperDictationLanguage = .automatic
+                return
+            }
             defaults.set(
                 whisperDictationLanguage.rawValue,
                 forKey: UserDefaultsKeys.App.whisperDictationLanguage

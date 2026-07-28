@@ -149,6 +149,10 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.whisperDictationLanguage), "fr")
+
+        store.whisperDictationLanguage = DictationLanguage(rawValue: "unknown")
+        XCTAssertEqual(store.whisperDictationLanguage, .automatic)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.whisperDictationLanguage), DictationLanguage.automatic.rawValue)
     }
 
     func testInitFallsBackToAutomaticForUnsupportedWhisperLanguage() {
