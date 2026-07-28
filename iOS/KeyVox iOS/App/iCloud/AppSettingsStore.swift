@@ -1,6 +1,7 @@
 import Combine
 import CoreFoundation
 import Foundation
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 enum SessionDisableTiming: String, CaseIterable, Identifiable {
@@ -238,6 +239,15 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var whisperDictationLanguage: DictationLanguage {
+        didSet {
+            defaults.set(
+                whisperDictationLanguage.rawValue,
+                forKey: UserDefaultsKeys.App.whisperDictationLanguage
+            )
+        }
+    }
+
     @Published var fastPlaybackModeEnabled: Bool {
         didSet {
             defaults.set(fastPlaybackModeEnabled, forKey: UserDefaultsKeys.fastPlaybackModeEnabled)
@@ -301,6 +311,16 @@ final class AppSettingsStore: ObservableObject {
             activeDictationProvider = provider
         } else {
             activeDictationProvider = .whisper
+        }
+
+        let persistedWhisperLanguage = defaults
+            .string(forKey: UserDefaultsKeys.App.whisperDictationLanguage)
+            .map { DictationLanguage(rawValue: $0) }
+        if let persistedWhisperLanguage,
+           WhisperBaseLanguageCatalog.supports(persistedWhisperLanguage) {
+            whisperDictationLanguage = persistedWhisperLanguage
+        } else {
+            whisperDictationLanguage = .automatic
         }
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false

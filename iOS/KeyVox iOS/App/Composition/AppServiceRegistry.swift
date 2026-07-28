@@ -98,6 +98,7 @@ final class AppServiceRegistry {
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
+        whisperService.updateLanguage(settingsStore.whisperDictationLanguage)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
         let modelManager = ModelManager(
@@ -369,6 +370,13 @@ final class AppServiceRegistry {
             .removeDuplicates()
             .sink { [weak self] provider in
                 self?.applyActiveProviderSelection(provider)
+            }
+            .store(in: &cancellables)
+
+        settingsStore.$whisperDictationLanguage
+            .removeDuplicates()
+            .sink { [weak self] language in
+                self?.whisperService.updateLanguage(language)
             }
             .store(in: &cancellables)
 
