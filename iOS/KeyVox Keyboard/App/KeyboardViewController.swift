@@ -14,7 +14,7 @@ final class KeyboardViewController: UIInputViewController {
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
-    let openVibesTrialStartURL = URL(string: "keyvoxios://vibes/trial-start")
+    let openVibesModelRecoveryURL = URL(string: "keyvoxios://vibes/model-recovery")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     let callObserver =  KeyboardCallObserver()
@@ -347,7 +347,7 @@ final class KeyboardViewController: UIInputViewController {
         guard appSettingsStore.isVibesAIInstalled else {
             _ = appSettingsStore.advanceSelectedVibe()
             interactionHaptics.emitMediumIfEnabled()
-            containingAppLauncher.open(openVibesTrialStartURL)
+            containingAppLauncher.open(openVibesModelRecoveryURL)
             updateUI()
             return
         }

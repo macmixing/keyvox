@@ -208,7 +208,7 @@ struct KeyVoxApp: App {
 private extension KeyVoxURLRoute {
     var isVibesPresentationRoute: Bool {
         switch self {
-        case .openVibes, .openVibesTrialStart:
+        case .openVibes, .openVibesTrialStart, .openVibesModelRecovery:
             return true
         case .startRecording, .stopRecording, .startTTS, .openDictionary, .openSettings:
             return false
