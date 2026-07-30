@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-07-15**
+**Last Updated: 2026-07-27**
 
 ## Design Philosophy
 
@@ -168,6 +168,7 @@ Service ownership rules:
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
 - `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. It also wires keyboard style rewrite IPC into the same app-owned local inference path. The app owns branded feature lifecycle and model runtime ownership; the packages own reusable transform and local inference mechanics.
 - `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
+- `AppServiceRegistry` applies `AppSettingsStore.whisperDictationLanguage` when creating `WhisperService` and keeps later device-local selection changes synchronized with the service.
 
 ### Containing App Source Layout
 
@@ -728,6 +729,16 @@ The current iOS app treats models as rooted installs keyed by `DictationModelID`
 
 The active provider is persisted locally through `AppSettingsStore.ActiveDictationProvider`.
 It is intentionally app-local and is not synchronized through iCloud.
+
+### Dictation Language Selection
+
+- `DictationLanguage`, `DictationLanguageDisplayNameFormatter`, and `WhisperBaseLanguageCatalog` in `KeyVoxCore` are the shared source of truth for stable identifiers, localized display names, and the languages exposed for Whisper Base. Platform apps must not maintain duplicate language lists.
+- `KeyVoxWhisper.WhisperLanguage` owns the iterable identifiers accepted by the pinned Whisper runtime. `WhisperBaseLanguageCatalog` derives the app-facing subset from that package metadata.
+- `AppSettingsStore.whisperDictationLanguage` is a device-local UserDefaults preference. It defaults to Auto Detect, survives ordinary launches, and is intentionally excluded from iCloud sync so each device can use a different language.
+- Missing or unsupported persisted identifiers resolve to Auto Detect. Settings controls must validate selections against `WhisperBaseLanguageCatalog` before persistence.
+- `WhisperService` applies the configured language during model setup and again before each transcription request so an already-loaded model observes later setting changes.
+- Parakeet TDT v3 remains automatic-detection-only. Its settings row stays visible, reports Auto Detect, provides FAQ guidance for supported languages, and does not offer a forced-language list.
+- Switching providers does not discard the saved Whisper selection; returning to Whisper restores that device's previous choice.
 
 ### Install Flow
 
@@ -1520,7 +1531,7 @@ Current app-owned surfaces:
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, and cross-section coordination
 - `SettingsTabView+General`: session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view
-- `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection plus per-model install actions and uninstalled model size display
+- `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view

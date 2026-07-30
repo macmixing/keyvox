@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import KeyVoxCore
 import KeyVoxStyleRewrite
 @testable import KeyVox
 
@@ -23,6 +24,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertNil(store.updateAlertLastShown)
         XCTAssertNil(store.updateAlertSnoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .whisper)
+        XCTAssertEqual(store.whisperDictationLanguage, .automatic)
         XCTAssertEqual(store.selectedVibe, .none)
         XCTAssertTrue(store.vibesTriggerKeyInteractionsEnabled)
         XCTAssertFalse(store.hideDockIconWhenAllWindowsClosed)
@@ -46,6 +48,7 @@ final class AppSettingsStoreTests: XCTestCase {
         defaults.set(lastShown, forKey: UserDefaultsKeys.App.updateAlertLastShown)
         defaults.set(snoozedUntil, forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil)
         defaults.set(AppSettingsStore.ActiveDictationProvider.parakeet.rawValue, forKey: UserDefaultsKeys.App.activeDictationProvider)
+        defaults.set("es", forKey: UserDefaultsKeys.App.whisperDictationLanguage)
         defaults.set(StyleRewriteStyle.chill.rawValue, forKey: UserDefaultsKeys.selectedVibe)
         defaults.set(false, forKey: UserDefaultsKeys.vibesTriggerKeyInteractionsEnabled)
         defaults.set(true, forKey: UserDefaultsKeys.hideDockIconWhenAllWindowsClosed)
@@ -64,6 +67,7 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.updateAlertLastShown, lastShown)
         XCTAssertEqual(store.updateAlertSnoozedUntil, snoozedUntil)
         XCTAssertEqual(store.activeDictationProvider, .parakeet)
+        XCTAssertEqual(store.whisperDictationLanguage, DictationLanguage(rawValue: "es"))
         XCTAssertEqual(store.selectedVibe, .chill)
         XCTAssertFalse(store.vibesTriggerKeyInteractionsEnabled)
         XCTAssertTrue(store.hideDockIconWhenAllWindowsClosed)
@@ -128,6 +132,7 @@ final class AppSettingsStoreTests: XCTestCase {
         store.updateAlertLastShown = lastShown
         store.updateAlertSnoozedUntil = snoozedUntil
         store.activeDictationProvider = .parakeet
+        store.whisperDictationLanguage = DictationLanguage(rawValue: "fr")
 
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.hasCompletedOnboarding))
         XCTAssertTrue(defaults.bool(forKey: UserDefaultsKeys.App.hasCompletedFirstDictation))
@@ -143,6 +148,21 @@ final class AppSettingsStoreTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertLastShown) as? Date, lastShown)
         XCTAssertEqual(defaults.object(forKey: UserDefaultsKeys.App.updateAlertSnoozedUntil) as? Date, snoozedUntil)
         XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider), AppSettingsStore.ActiveDictationProvider.parakeet.rawValue)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.whisperDictationLanguage), "fr")
+
+        store.whisperDictationLanguage = DictationLanguage(rawValue: "unknown")
+        XCTAssertEqual(store.whisperDictationLanguage, .automatic)
+        XCTAssertEqual(defaults.string(forKey: UserDefaultsKeys.App.whisperDictationLanguage), DictationLanguage.automatic.rawValue)
+    }
+
+    func testInitFallsBackToAutomaticForUnsupportedWhisperLanguage() {
+        let (defaults, suiteName) = makeIsolatedDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("unknown", forKey: UserDefaultsKeys.App.whisperDictationLanguage)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        XCTAssertEqual(store.whisperDictationLanguage, .automatic)
     }
 
     func testSettingUnsupportedParakeetProviderFallsBackToWhisper() {

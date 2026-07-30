@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-07-15**
+**Last Updated: 2026-07-27**
 
 ## Design Philosophy
 
@@ -89,8 +89,20 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `SwitchableDictationProvider`
   - Mac Vibes local rewrite manager/inference/coordinator
 - `AppSettingsStore.activeDictationProvider` is the local source of truth for the selected provider.
+- `AppSettingsStore.whisperDictationLanguage` is the device-local source of truth for Whisper's configured language.
 - `AppSettingsStore.ActiveDictationProvider.supportedCases()` is the UI/runtime gate for which providers can be selected on the current OS.
 - Unsupported provider selections fail closed back to Whisper instead of leaving the runtime in an unavailable state.
+
+### Dictation Language Contract
+
+- `DictationLanguage`, `DictationLanguageDisplayNameFormatter`, and `WhisperBaseLanguageCatalog` in `KeyVoxCore` are shared across iOS and macOS. The Mac app must not maintain a separate language list.
+- `KeyVoxWhisper.WhisperLanguage` owns the iterable identifiers recognized by the pinned Whisper runtime; the shared catalog derives the Whisper Base options from those identifiers.
+- `AppSettingsStore.whisperDictationLanguage` persists in local UserDefaults under `KeyVox.App.WhisperDictationLanguage`, defaults to Auto Detect, and is intentionally excluded from iCloud sync so different Macs and iOS devices may keep different choices.
+- Missing or unsupported stored identifiers resolve to Auto Detect. Settings writes must be validated against `WhisperBaseLanguageCatalog`.
+- `AppServiceRegistry` applies the stored language when composing `WhisperService` and observes later changes. `WhisperService` also reapplies the configured identifier before each transcription request.
+- `Views/Settings/DictationLanguageSection.swift` uses the standard Mac `SettingsRow` plus right-side menu picker. The control displays the current selection directly; it does not use the iOS Change-button presentation.
+- Parakeet TDT v3 has no native forced-language selection. Its row remains visible with a disabled Auto Detect picker and directs users to the Need Help FAQ for its supported languages.
+- Switching to Parakeet does not erase the stored Whisper choice; switching back restores it.
 
 ## Mac Vibes Local Rewrite Contract
 
@@ -221,6 +233,7 @@ Supported flags:
 - `App/AppServiceRegistry.swift` supplies downloader `postInstallPreparation` so Parakeet preload happens after a successful install instead of on the first trigger press.
 - `App/AppServiceRegistry.swift` does not retain a Vibes readiness prewarmer; an already-installed or newly reinstalled Vibes model must not load until dictation or a Vibe-change transform requests it.
 - `Views/Settings/SettingsView+DictationModels.swift` is the release-facing `Active Model` settings surface for install, removal, progress, and provider switching.
+- `Views/Settings/DictationLanguageSection.swift` is the attached model-language surface and owns the Mac picker presentation plus provider-specific explanatory copy.
 - `Views/Settings/SettingsVibesCard.swift` is the Style-tab Vibes surface for style selection, readiness/status, examples, and style-card download/repair/progress affordances.
 - `Views/Settings/SettingsVibesAIInstallCard.swift` is the Settings/System Vibes AI management surface for install, removal, progress, repair, and the trigger-key interactions toggle.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift` persists the last successful final transcription to `UserDefaultsKeys.App.lastTranscription` for the Settings Home tab.
@@ -390,6 +403,7 @@ These remain integration/manual-test territory by design.
 - Generic reusable indicator models (`AudioIndicatorPhase`, `AudioIndicatorSignalState`, `AudioIndicatorSample`, `AudioIndicatorTimelineState`) should stay neutral and non-branded.
 - `Core/Overlay/OverlayTypes.swift` should remain the neutral home for reusable fling-impact models instead of folding those shapes into panel or physics files.
 - Keep the macOS iCloud settings sync split intact: `KeyVoxiCloudSyncCoordinator` owns dictionary/settings convergence, while `WeeklyWordStatsCloudSync` owns weekly usage only.
+- Keep the dictation-language preference device-local; do not add it to `KeyVoxiCloudSyncCoordinator` or another cross-device payload.
 - Prefer deterministic pure helpers for unit-test coverage.
 - Preserve behavior when doing structural refactors unless explicitly changing product behavior.
 

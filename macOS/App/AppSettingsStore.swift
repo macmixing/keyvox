@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import KeyVoxCore
 import KeyVoxStyleRewrite
 
 @MainActor
@@ -199,6 +200,19 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var whisperDictationLanguage: DictationLanguage {
+        didSet {
+            guard WhisperBaseLanguageCatalog.supports(whisperDictationLanguage) else {
+                whisperDictationLanguage = .automatic
+                return
+            }
+            defaults.set(
+                whisperDictationLanguage.rawValue,
+                forKey: UserDefaultsKeys.App.whisperDictationLanguage
+            )
+        }
+    }
+
     private let defaults: UserDefaults
     private let osVersion: OperatingSystemVersion
     private let defaultSoundVolume: Double = 0.1
@@ -256,6 +270,16 @@ final class AppSettingsStore: ObservableObject {
             activeDictationProvider = Self.normalizedActiveDictationProvider(provider, osVersion: osVersion)
         } else {
             activeDictationProvider = .whisper
+        }
+
+        let persistedWhisperLanguage = defaults
+            .string(forKey: UserDefaultsKeys.App.whisperDictationLanguage)
+            .map { DictationLanguage(rawValue: $0) }
+        if let persistedWhisperLanguage,
+           WhisperBaseLanguageCatalog.supports(persistedWhisperLanguage) {
+            whisperDictationLanguage = persistedWhisperLanguage
+        } else {
+            whisperDictationLanguage = .automatic
         }
     }
 

@@ -61,6 +61,14 @@ private struct DictationModelsCard: View {
                             modelExpandedContentMeasurement
                         }
                     }
+
+                Divider()
+                    .overlay(Color.white.opacity(0.22))
+
+                DictationLanguageSection(
+                    activeProvider: appSettings.activeDictationProvider,
+                    selectedWhisperLanguage: $appSettings.whisperDictationLanguage
+                )
             }
         }
         .onAppear {

@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-07-27
+
+Complete language identifiers for shared Whisper language selection.
+
+### Includes
+
+- Expanded `WhisperLanguage` from Auto Detect and English to the complete language set recognized by the pinned `whisper.cpp` runtime.
+- Added iterable language metadata so shared clients can derive model-specific language catalogs without maintaining duplicate platform lists.
+- Preserved the existing Auto Detect default and raw language-code mapping used by Whisper transcription parameters.
+
+### Notes
+
+- `1.1.0` bumps the tracked minor runtime version for `KeyVoxWhisper` to cover reusable explicit-language selection.
+
+---
+
 ## [1.0.1] - 2026-07-16
 
 Updates the bundled `whisper.cpp` runtime to prevent the ends of dictations from being skipped when less than one second of audio remains after the final decoded segment.

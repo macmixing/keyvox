@@ -33,6 +33,7 @@ extension WhisperService {
         if whisper == nil {
             warmup()
         }
+        applyConfiguredLanguage()
 
         let shouldUseDictionaryHintPrompt = isPromptHintingEnabled && useDictionaryHintPrompt
 
