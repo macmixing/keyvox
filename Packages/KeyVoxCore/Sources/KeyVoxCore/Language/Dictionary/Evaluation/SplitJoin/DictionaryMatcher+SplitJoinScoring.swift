@@ -1,11 +1,11 @@
 import Foundation
 
 private enum SplitJoinScoringConstants {
-    static let hyphenLaneMinimumFirstTokenLength = 1
-    static let hyphenLaneMinimumSecondTokenLength = 4
-    static let hyphenLaneTextSimilarityMinimum = 0.62
-    static let hyphenLanePhoneticSimilarityMinimum = 0.98
-    static let hyphenLaneThreshold = 0.78
+    static let singleLetterTailLaneFirstTokenLength = 1
+    static let singleLetterTailLaneMinimumSecondTokenLength = 4
+    static let singleLetterTailLaneTextSimilarityMinimum = 0.62
+    static let singleLetterTailLanePhoneticSimilarityMinimum = 0.98
+    static let singleLetterTailLaneThreshold = 0.78
 
     static let possessiveStylizedBonus = 0.04
     static let pluralSplitJoinBonus = 0.06
@@ -56,10 +56,11 @@ extension DictionaryMatcher {
             return nil
         }
 
-        let isHyphenSingleLetterLane =
-            isExplicitHyphenDelimitedSplit(window: window, text: text)
-            && window[0].normalized.count == SplitJoinScoringConstants.hyphenLaneMinimumFirstTokenLength
-            && window[1].normalized.count >= SplitJoinScoringConstants.hyphenLaneMinimumSecondTokenLength
+        let isDelimitedSingleLetterTailLane =
+            (isExplicitHyphenDelimitedSplit(window: window, text: text)
+                || isWhitespaceDelimitedSplit(window: window, text: text))
+            && window[0].normalized.count == SplitJoinScoringConstants.singleLetterTailLaneFirstTokenLength
+            && window[1].normalized.count >= SplitJoinScoringConstants.singleLetterTailLaneMinimumSecondTokenLength
 
         let containsShortToken =
             window[0].normalized.count < minimumSplitTokenLength
@@ -69,7 +70,7 @@ extension DictionaryMatcher {
             let hasExactJoinCandidate = forms.contains { form in
                 exactJoinedCandidates.contains(form.normalized)
             }
-            guard hasExactJoinCandidate || isHyphenSingleLetterLane else {
+            guard hasExactJoinCandidate || isDelimitedSingleLetterTailLane else {
                 stats.rejectedShortToken += 1
                 return nil
             }
@@ -170,7 +171,7 @@ extension DictionaryMatcher {
 
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
         var effectiveThreshold = threshold
-        if isHyphenSingleLetterLane {
+        if isDelimitedSingleLetterTailLane {
             let observedJoined = window.map(\.normalized).joined()
             let candidateToken = best.entry.tokens[0]
             let textSimilarity = scorer.similarity(lhs: observedJoined, rhs: candidateToken)
@@ -178,17 +179,17 @@ extension DictionaryMatcher {
             let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
             let phoneticSimilarity = scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic)
 
-            let qualifiesHyphenSingleLetterLane =
+            let qualifiesSingleLetterTailLane =
                 !lexicon.isCommonWord(candidateToken)
                 && candidateToken.hasSuffix(window[1].normalized)
-                && textSimilarity >= SplitJoinScoringConstants.hyphenLaneTextSimilarityMinimum
-                && phoneticSimilarity >= SplitJoinScoringConstants.hyphenLanePhoneticSimilarityMinimum
+                && textSimilarity >= SplitJoinScoringConstants.singleLetterTailLaneTextSimilarityMinimum
+                && phoneticSimilarity >= SplitJoinScoringConstants.singleLetterTailLanePhoneticSimilarityMinimum
 
-            guard qualifiesHyphenSingleLetterLane else {
+            guard qualifiesSingleLetterTailLane else {
                 stats.rejectedShortToken += 1
                 return nil
             }
-            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.hyphenLaneThreshold)
+            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.singleLetterTailLaneThreshold)
         }
         if best.replacementSuffix == "s",
            !lexicon.isCommonWord(best.entry.tokens[0]),

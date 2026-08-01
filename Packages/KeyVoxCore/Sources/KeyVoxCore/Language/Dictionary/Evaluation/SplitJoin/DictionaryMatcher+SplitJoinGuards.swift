@@ -65,4 +65,16 @@ extension DictionaryMatcher {
         let trimmed = between.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed == "-" || trimmed == "‑" || trimmed == "–"
     }
+
+    func isWhitespaceDelimitedSplit(window: [Token], text: String) -> Bool {
+        guard window.count == 2 else { return false }
+        let firstEnd = window[0].range.location + window[0].range.length
+        let secondStart = window[1].range.location
+        guard secondStart > firstEnd else { return false }
+
+        let nsText = text as NSString
+        let between = nsText.substring(with: NSRange(location: firstEnd, length: secondStart - firstEnd))
+        return !between.isEmpty
+            && between.unicodeScalars.allSatisfy { CharacterSet.whitespacesAndNewlines.contains($0) }
+    }
 }

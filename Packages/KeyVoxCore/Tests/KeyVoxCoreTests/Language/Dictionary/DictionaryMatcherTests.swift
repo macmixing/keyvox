@@ -364,6 +364,19 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
+    func testCorrectsSpacedSingleLetterPronunciationToSingleDictionaryTerm() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "Have you ever heard of Q Board?")
+
+        XCTAssertEqual(result.text, "Have you ever heard of Cueboard?")
+    }
+
     func testDoesNotReplaceKeyboardWithDictionaryBrandWhenWordAlreadyLexiconKnown() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
