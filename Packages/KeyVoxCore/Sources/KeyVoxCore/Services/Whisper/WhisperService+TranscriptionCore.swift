@@ -63,7 +63,7 @@ extension WhisperService {
             guard let self else { return }
             do {
                 if let voiceActivityDetector = self.voiceActivityDetector,
-                   let voiceActivity = voiceActivityDetector.analyze(
+                   let voiceActivity = await voiceActivityDetector.analyze(
                     audioFrames: audioFrames,
                     threshold: voiceActivityThreshold,
                     minimumSpeechDurationMilliseconds: voiceActivityMinimumSpeechDurationMilliseconds,

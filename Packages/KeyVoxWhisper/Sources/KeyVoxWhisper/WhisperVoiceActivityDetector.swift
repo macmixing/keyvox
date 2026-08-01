@@ -28,10 +28,10 @@ public struct WhisperVoiceActivityAnalysis: Equatable, Sendable {
     }
 }
 
-public final class WhisperVoiceActivityDetector {
+public actor WhisperVoiceActivityDetector {
     private var context: OpaquePointer?
 
-    public convenience init?() {
+    public init?() {
         guard let modelURL = Bundle.module.url(
             forResource: "ggml-silero-v5.1.2",
             withExtension: "bin"
