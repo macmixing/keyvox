@@ -38,12 +38,32 @@ final class WhisperSegmentTextAssemblerTests: XCTestCase {
         }
     }
 
+    func testLowercasesIncidentalCapitalAcrossChunkBoundary() async {
+        let assembler = makeAssembler()
+        let precedingText = "I just wanted to talk to you for a second because"
+
+        let periodText = await assembler.assemble(
+            ["Like."],
+            after: precedingText,
+            normalizesContinuationCasing: true
+        )
+        let commaText = await assembler.assemble(
+            ["Like, everybody just wants to talk very slowly."],
+            after: precedingText,
+            normalizesContinuationCasing: true
+        )
+
+        XCTAssertEqual(periodText, "like.")
+        XCTAssertEqual(commaText, "like, everybody just wants to talk very slowly.")
+    }
+
     private func makeAssembler() -> WhisperSegmentTextAssembler {
         WhisperSegmentTextAssembler(
             pronunciationLookup: PronunciationLookup(
                 pronunciationsByWord: [
                     "apple": "AE-P-AH-L",
                     "everyone": "EH-V-R-IY-W-AH-N",
+                    "like": "L-AY-K",
                     "sarah": "S-EH-R-AH",
                     "talking": "T-AO-K-IH-NG",
                 ]

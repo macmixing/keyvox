@@ -126,6 +126,7 @@ extension WhisperService {
                 var transcribedChunks: [TranscribedChunk] = []
                 var detectedLanguageCode: String? = nil
                 var nonEmptyChunkTextCount = 0
+                var precedingChunkText = ""
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
@@ -155,9 +156,13 @@ extension WhisperService {
                         pronunciationLookup: pronunciationLookup
                     ).assemble(
                         segments.map(\.text),
+                        after: precedingChunkText,
                         normalizesContinuationCasing: result.detectedLanguageCode == WhisperLanguage.english.rawValue
                     )
                     let normalizedChunkText = self.normalizeWhitespace(chunkText)
+                    if !normalizedChunkText.isEmpty {
+                        precedingChunkText = normalizedChunkText
+                    }
                     let trailingBoundaryFrame = chunkIndex < (chunkResult.chunks.count - 1)
                         ? chunk.endFrame
                         : nil

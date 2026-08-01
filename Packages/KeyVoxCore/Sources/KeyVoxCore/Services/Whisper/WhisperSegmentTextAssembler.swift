@@ -10,6 +10,7 @@ struct WhisperSegmentTextAssembler: Sendable {
 
     func assemble(
         _ segmentTexts: [String],
+        after precedingText: String = "",
         normalizesContinuationCasing: Bool
     ) async -> String {
         let punctuationNormalizer = TerminalPunctuationNormalizer()
@@ -20,12 +21,13 @@ struct WhisperSegmentTextAssembler: Sendable {
             guard !segmentText.isEmpty else { continue }
 
             let normalizedSegmentText: String
+            let continuationContext = assembled.isEmpty ? precedingText : assembled
             if normalizesContinuationCasing,
-               !assembled.isEmpty,
-               !punctuationNormalizer.hasTerminalSentencePunctuation(assembled) {
+               !continuationContext.isEmpty,
+               !punctuationNormalizer.hasTerminalSentencePunctuation(continuationContext) {
                 normalizedSegmentText = normalizeContinuationStart(
                     segmentText,
-                    after: assembled
+                    after: continuationContext
                 )
             } else {
                 normalizedSegmentText = segmentText
