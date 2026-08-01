@@ -426,6 +426,90 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Everything on main goes through another.")
     }
 
+    func testCorrectsStylizedEntryInNounIntroducedTitlecaseContext() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let result = matcher.apply(to: "Have you checked out my app Mego lately? It's pretty cool.")
+
+        XCTAssertEqual(result.text, "Have you checked out my app MiGo lately? It's pretty cool.")
+    }
+
+    func testCorrectsStylizedEntrySplitIntoShortTokensInNounIntroducedContext() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let result = matcher.apply(to: "Have you checked out my app me go lately? It's pretty cool.")
+
+        XCTAssertEqual(result.text, "Have you checked out my app MiGo lately? It's pretty cool.")
+    }
+
+    func testCorrectsStylizedEntrySplitIntoShortTokensAfterParticle() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let result = matcher.apply(to: "Have you checked out me go lately?")
+
+        XCTAssertEqual(result.text, "Have you checked out MiGo lately?")
+    }
+
+    func testContextualShortTokenSplitRejectsCommonObservedWords() {
+        let lexicon = FakeLexicon(
+            pronunciations: [
+                "me": "M",
+                "go": "K",
+                "mego": "MK",
+                "migo": "MK",
+            ],
+            commonWords: ["me", "go"]
+        )
+        let matcher = DictionaryMatcher(
+            lexicon: lexicon,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let input = "Have you checked out my app me go lately?"
+        let result = matcher.apply(to: input)
+
+        XCTAssertEqual(result.text, input)
+    }
+
+    func testCorrectsStylizedTitlecaseListItemWithIndependentPeerSupport() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "MiGo"),
+            DictionaryEntry(phrase: "Cueboard"),
+        ])
+
+        let result = matcher.apply(
+            to: "I have three apps available right now. Keybox, Mego, and Cueboard."
+        )
+
+        XCTAssertEqual(
+            result.text,
+            "I have three apps available right now. KeyVox, MiGo, and Cueboard."
+        )
+    }
+
     func testTitlecaseKnownWordsResistRandomStylizedDictionaryEntries() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

@@ -65,14 +65,18 @@ extension DictionaryMatcher {
         let containsShortToken =
             window[0].normalized.count < minimumSplitTokenLength
             || window[1].normalized.count < minimumSplitTokenLength
+        var requiresContextualShortTokenEvidence = false
         if containsShortToken {
             let exactJoinedCandidates = Set(oneTokenCandidates.map(\.normalizedPhrase))
             let hasExactJoinCandidate = forms.contains { form in
                 exactJoinedCandidates.contains(form.normalized)
             }
-            guard hasExactJoinCandidate || isDelimitedSingleLetterTailLane else {
-                stats.rejectedShortToken += 1
-                return nil
+            if !hasExactJoinCandidate, !isDelimitedSingleLetterTailLane {
+                guard hasShortTokenSplitContext(start: start, end: end, tokens: tokens) else {
+                    stats.rejectedShortToken += 1
+                    return nil
+                }
+                requiresContextualShortTokenEvidence = true
             }
         }
 
@@ -80,6 +84,11 @@ extension DictionaryMatcher {
         var secondBestScore = 0.0
 
         for candidate in oneTokenCandidates {
+            if requiresContextualShortTokenEvidence,
+               !isStylizedSingleTokenEntry(candidate) {
+                continue
+            }
+
             let candidateToken = candidate.tokens[0]
             let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
 
@@ -169,6 +178,12 @@ extension DictionaryMatcher {
             return nil
         }
 
+        let hasCommonObservedShortToken =
+            requiresContextualShortTokenEvidence
+            && window.contains(where: {
+                lexicon.isCommonWord(baseTokenForCommonWordGuard($0.normalized))
+            })
+
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
         var effectiveThreshold = threshold
         if isDelimitedSingleLetterTailLane {
@@ -241,7 +256,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        if lexicon.isCommonWord(best.entry.tokens[0]),
+        if (hasCommonObservedShortToken || lexicon.isCommonWord(best.entry.tokens[0])),
            best.score.final < scorer.commonWordOverrideThreshold {
             stats.rejectedCommonWord += 1
             return nil

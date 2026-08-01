@@ -77,4 +77,11 @@ extension DictionaryMatcher {
         return !between.isEmpty
             && between.unicodeScalars.allSatisfy { CharacterSet.whitespacesAndNewlines.contains($0) }
     }
+
+    func hasShortTokenSplitContext(start: Int, end: Int, tokens: [Token]) -> Bool {
+        guard start > 0, end < tokens.count else { return false }
+        let precedingClass = tokens[start - 1].lexicalClass
+        return (precedingClass == .noun || precedingClass == .particle)
+            && tokens[end].lexicalClass == .adverb
+    }
 }
