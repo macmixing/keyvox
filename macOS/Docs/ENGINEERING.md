@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-07-27**
+**Last Updated: 2026-07-31**
 
 ## Design Philosophy
 
@@ -28,7 +28,7 @@ Convenience must never come at the cost of trust.
 KeyVox is organized by responsibility:
 
 - `App/`: App lifecycle plus persisted app-owned state, runtime flags, window managers, and registries (`KeyVoxApp`, `AppSettingsStore`, `MacRuntimeFlags`, `AppServiceRegistry`, `DockIconVisibilityController`, `WeeklyWordStatsStore`).
-- `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, while `WeeklyWordStatsCloudSync` owns weekly usage convergence separately.
+- `App/iCloud/`: Dedicated iCloud KVS sync helpers and payloads. `KeyVoxiCloudSyncCoordinator` owns dictionary plus trigger/paragraph/list-formatting convergence, `WeeklyWordStatsCloudSync` owns weekly usage convergence separately, `KeyVoxiCloudKeys` owns every KVS key, and `KeyVoxiCloudPayloads` owns the dictionary and weekly-stats payload shapes.
 - `Core/Transcription/`: Runtime state machine and macOS host-side transcription orchestration split across `TranscriptionManager.swift` plus focused extensions for bindings, recording sessions, and overlay/debug work. The reusable transcribe -> post-process -> paste boundary remains extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns effective dictionary availability, built-in entries, prompt content, post-processing, and prompt-echo suppression. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch and publishes a per-successful-dictation revision for UI flows that must observe repeated identical dictations.
 - `Core/DictationTriggerController.swift`: Trigger-key orchestration that converts keyboard press/release/escape state into recording-session commands and hands consumed trigger+L/P chords to the formatting action controller without owning transcription or replacement behavior.
 - `Core/Vibes/`: Mac-owned KeyVox Vibes and latest-insertion change runtime. The Mac Vibes path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation Vibe and deterministic paragraph/list changes, `MacFormattingShortcutMonitor` owns safe chord interception, `MacFormattingTriggerActionController` owns formatting feedback/action orchestration, `MacVibesTriggerActionController` owns quick-tap orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
@@ -37,7 +37,7 @@ KeyVox is organized by responsibility:
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Packages/KeyVoxTextComposition/`: Platform-neutral policy for composing finalized dictation with adjacent editor text. It owns leading capitalization, leading spacing, quote classification, and sentence-boundary rules, but never reads Accessibility state or performs insertion.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `PunctuationRepair` preserves punctuation facts first, `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `AddressFactRepair` preserves source-backed address facts, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired. `StyleRewritePromptLeakGuard` falls back to the base text when generated output leaks significant prompt text.
-- `Core/Services/`: Paste/injection, update/checking, and process-termination services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Composition/`, `Heuristics/`, and `Pipeline/` subdomains. The composition coordinators resolve Mac-specific context and delegate deterministic text policy to `KeyVoxTextComposition`; they do not duplicate package rules. In-place updater pieces live under `AppUpdate/`, immediate process termination is centralized in `AppProcessTerminator.swift`, update feed source selection lives in `UpdateFeedConfig.swift`, and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
+- `Core/Services/`: Paste/injection, update/checking, and process-termination services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Composition/`, `Heuristics/`, and `Pipeline/` subdomains. `PasteUntouchedInsertionAuthorizer` decides whether the latest insertion may change, while `PasteUntouchedInsertionReplacer` owns exact AX target resolution, safe write strategy, verification, and caret placement. The composition coordinators resolve Mac-specific context and delegate deterministic text policy to `KeyVoxTextComposition`; they do not duplicate package rules. In-place updater pieces live under `AppUpdate/`, immediate process termination is centralized in `AppProcessTerminator.swift`, update feed source selection lives in `UpdateFeedConfig.swift`, and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic standalone-pill presentation, generic audio-indicator timing/state driving, and reusable fling-impact types.
 - `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer plus separate reusable overlay-pill components.
 - `Tools/`: Maintainer scripts for pronunciation resources, diagnostics, update feed helpers, and quality gates.
@@ -188,16 +188,30 @@ Supported flags:
 - If no untouched insertion exists, the chord is still consumed and the pill reports the requested formatting control as off and unavailable for replacement.
 - Formatting feedback uses the shared overlay pill: yellow SF Symbol means enabled, white means disabled, model-backed rendering uses the shared icon pulse, and the completed stroke starts when replacement begins rather than after post-insertion verification.
 
+## Whisper Voice-Activity Gate
+
+Whisper uses a shared whole-capture VAD gate after macOS stop-time audio acceptance and before paragraph chunking:
+
+- `KeyVoxWhisper.WhisperVoiceActivityDetector` owns the actor-isolated whisper.cpp VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
+- `WhisperService+ModelLifecycle` creates the detector during Whisper warmup and releases it when Whisper unloads.
+- `WhisperService+TranscriptionCore` treats no detected speech as likely no-speech and skips decoder work.
+- when speech is detected, the complete accepted recording proceeds unchanged; VAD segments must not trim transcription input
+- if detector creation or analysis is unavailable, the existing Whisper decoder no-speech safeguards remain the fallback
+- the gate is Whisper-specific; Parakeet keeps its existing provider flow, and macOS must not add a second host-local VAD asset or policy
+
 ## Post-Processing Order
 
-1. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
-2. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
-3. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies effective dictionary adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery and package-owned hidden app/product naming entries.
-4. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, spoken quantity grouping, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
-5. List formatting applies numeric list rendering when confidence gates pass.
-6. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, `DateNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
-7. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), spoken terminal punctuation, terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
-8. Final text is inserted via the paste service. macOS resolves focused-target and recent-insertion context, supplies dictionary casing preservation, delegates shared capitalization and spacing policy to `KeyVoxTextComposition`, and retains ownership of Accessibility and paste fallback transport.
+1. For Whisper, whole-capture VAD rejects no-speech input before chunking; Parakeet begins with the next step.
+2. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
+3. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
+4. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies effective dictionary adherence via `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery and package-owned hidden app/product naming entries.
+5. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, spoken quantity grouping, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
+6. List formatting applies numeric list rendering when confidence gates pass.
+7. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, `DateNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
+8. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), spoken terminal punctuation, terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
+9. Final text is inserted via the paste service. macOS resolves focused-target and recent-insertion context, supplies dictionary casing preservation, delegates shared capitalization and spacing policy to `KeyVoxTextComposition`, and retains ownership of Accessibility and paste fallback transport.
+
+`TimeExpressionNormalizer` owns compact numeric time shaping. A meridiem match that continues an already colon-separated number must be ignored so input such as `810 PM` becomes `8:10 PM` exactly once, never `8:10:00 PM`.
 
 ## Dictionary Hinting and Built-Ins
 

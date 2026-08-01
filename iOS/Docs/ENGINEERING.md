@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-07-27**
+**Last Updated: 2026-07-31**
 
 ## Design Philosophy
 
@@ -30,6 +30,7 @@ The containing app owns:
 - app-owned haptics
 - settings and iCloud sync
 - model installation, validation, and recovery
+- dictation model update eligibility and update-prompt actions
 - local Vibes model installation, validation, bundled adapter lookup, and inference
 - KeyVox Vibes AI download/delete/repair surfaces in Settings and Vibes Scene C
 - copied-text playback voice installation and validation
@@ -52,6 +53,7 @@ The keyboard extension owns:
 - visible keyboard UI
 - presentation-scoped keyboard view-tree lifecycle
 - toolbar mode selection and warning presentation
+- lightweight active-provider artifact inspection for missing-versus-repair warning state
 - warm/cold launch handoff into the containing app
 - keyboard-owned copied-text speak control and transport state
 - text insertion into host apps
@@ -192,6 +194,8 @@ Service ownership rules:
 - `LocalRewriteModel/` owns the Vibes rewrite base model catalog, foreground install state, manifest validation, SHA-256 checks, bundled adapter lookup, and installed-model invalidation.
 - `StyleRewrite/` owns the app adapter from dictation output and keyboard IPC requests into the reusable style rewrite and local inference packages.
 - `TTS/`, `Audio/`, and `Transcription/` remain isolated by runtime domain.
+
+`Views/Components/ModelUpdatePrompt.swift` owns only the Parakeet artifact-update prompt presentation and its Download/Later callbacks. Model version policy, readiness, and install work remain with the model-management layer.
 
 ## Root Routing and Onboarding Contract
 
@@ -699,6 +703,18 @@ When recording stops:
 
 Interrupted captures follow the same post-stop processing rules before they are staged for recovery.
 
+### Whisper Voice-Activity Gate
+
+Accepted recorder output still passes through a shared whole-capture VAD gate before Whisper decoding:
+
+- `KeyVoxWhisper.WhisperVoiceActivityDetector` owns the actor-isolated whisper.cpp VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
+- `WhisperService+ModelLifecycle` creates the VAD detector during Whisper warmup and releases it when the Whisper model is unloaded.
+- `WhisperService+TranscriptionCore` analyzes the full accepted capture before paragraph chunking.
+- a capture with no detected speech completes as likely no-speech without entering the decoder
+- when speech is detected, the complete original capture continues to chunking and decoding; VAD segments are classification evidence, not trimming boundaries
+- if the bundled detector cannot be created or analysis fails, transcription continues through the existing decoder no-speech safeguards
+- iOS targets must not copy the Silero resource or implement a second platform-local VAD policy
+
 ## Interrupted Capture Recovery
 
 Interrupted capture recovery is now a first-class iOS runtime feature.
@@ -778,6 +794,12 @@ Additional Parakeet-specific readiness requirements:
 - the manifest-backed rooted Core ML artifact set is present under `Models/parakeet`
 
 Partial installs are never treated as ready.
+
+### Update and Keyboard Repair Presentation
+
+- `PendingModelUpdatePrompt` and the `modelUpdatePrompt` view modifier own presentation of the Parakeet artifact-update choice only; callers own whether an update is pending and route Download into `ModelManager`.
+- `KeyboardDictationModelStatus` performs a lightweight App Group artifact check for the active provider so the extension can distinguish not installed from action required.
+- the keyboard check is warning policy, not authoritative install validation: `ModelManager` remains the owner of manifest validation, downloads, deletion, and repair.
 
 ## Copied Text Playback and PocketTTS Contract
 
@@ -954,6 +976,8 @@ Current order:
 7. run late cleanup for laughter, character spam, provider asterisk artifacts, time expressions, dates, email boundaries, website/domain casing, and numeric grouping
 8. run render-mode whitespace cleanup, sentence capitalization, spoken terminal punctuation, terminal-time punctuation completion, and the all-caps override
 
+`TimeExpressionNormalizer` is the single owner of compact numeric time shaping. Meridiem matches that continue an already colon-separated number must be ignored so compact inputs such as `810 PM` normalize once to `8:10 PM`, never a second time to `8:10:00 PM`.
+
 ### Style Rules
 
 - `autoParagraphsEnabled` and `listFormattingEnabled` are app-owned toggles
@@ -982,7 +1006,9 @@ The containing app observes that notification and refreshes `AppSettingsStore.se
 Tap changes only the selected Vibe.
 Before the local trial starts or the unlock is owned, selecting a paid Vibe from the Style tab must leave the selected Vibe as `None` and present the app-owned KeyVox Vibes intro sheet.
 Before access is active, tapping the keyboard Vibes key emits the keyboard's medium no-op haptic and opens `keyvoxios://vibes/open`; the keyboard does not cycle to a paid Vibe.
-Before the local Vibes model is installed, tapping the keyboard Vibes key keeps the selected Vibe resolved to `None`, emits the medium no-op haptic, and opens `keyvoxios://vibes/trial-start` so Scene C can show the install surface.
+Before the local Vibes model is installed, tapping the keyboard Vibes key keeps the selected Vibe resolved to `None`, emits the medium no-op haptic, and opens `keyvoxios://vibes/model-recovery`.
+
+The containing app owns access-aware recovery routing for that URL: unlocked users receive the model-gated continue recovery, active-trial users receive the Scene C install recovery with remaining-trial context, and users without active access enter the trial-start intro path. The keyboard must not choose those scenes itself.
 Vibes access requires `KeyVoxVibesPurchaseController.canUseVibes`; model-backed rewrites also require a ready local rewrite model and the required adapter.
 When access is unavailable or an active local trial expires, the resolved selected Vibe is forced to `None`.
 Long press may change the latest untouched KeyVox dictation insertion by reading the latest artifact, asking the containing app to regenerate from the original base text when a model-backed Vibe is needed, and replacing the active insertion.
@@ -1181,7 +1207,7 @@ The restore card remains visible until both unlocks are owned.
 - posts the shared Vibes selection-change Darwin notification
 - exposes Vibes platform availability as always true now that the Foundation-only gate is gone
 - exposes Vibes access state from app-local unlock/trial defaults and the shared Vibes trial duration policy so locked keyboard taps open the containing-app Vibes sheet instead of changing selection
-- checks local Vibes AI install readiness from the rooted model artifact and manifest so missing-model taps open the trial-start/install flow instead of cycling
+- checks local Vibes AI install readiness from the rooted model artifact and manifest so missing-model taps open the dedicated model-recovery route instead of cycling
 - reads and writes `KeyVox.ListFormattingEnabled` from App Group defaults
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
 - reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
@@ -1412,6 +1438,7 @@ The keyboard root layout has an important invariant:
 - the stable non-flashing keyboard structure lives in the main keyboard stack
 - the warning UI is layered as an overlay on top of the toolbar row
 - the warning must **not** be moved into the root arranged-subview layout path again
+- `KeyboardRootView.apply` must invalidate layout when branded-toolbar Vibes visibility changes, including when a call warning disappears, so the measured accessory geometry is restored instead of retaining warning-mode spacing
 
 That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
 
@@ -1435,7 +1462,7 @@ Current symbol layout rules:
 - the left accessory slot is derived from the live `1` key geometry and swaps statically between Settings and Cancel
 - with Vibes available, top-row Speak aligns over `2`, Dictionary aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
 - with the Vibes feature unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
-- with Vibes available but Vibes AI not installed, the Vibes key stays visible and taps route to the app-owned install/trial-start flow instead of cycling styles
+- with Vibes available but Vibes AI not installed, the Vibes key stays visible and taps route to the app-owned, access-aware model-recovery flow instead of cycling styles
 - the left-handed keyboard layout setting mirrors the control strip while leaving typed symbol order unchanged
 - top-row accessory slots are allocated from the logo edge inward so adding or removing feature keys does not leave empty holes
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise

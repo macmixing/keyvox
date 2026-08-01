@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-07-27**
+**Last Updated: 2026-07-31**
 
 ## Project Overview
 
@@ -10,7 +10,7 @@ KeyVox iOS ships as four cooperating targets:
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, model-aware dictation-language metadata and Whisper configuration, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`.
+Shared speech and text behavior still lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, shared provider seams, model-aware dictation-language metadata and Whisper configuration, whole-capture voice-activity gating, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, guarded compact-time/date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`; `KeyVoxWhisper` also owns the bundled Silero VAD model and actor-isolated detector wrapper used by `WhisperService`.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 
 The current default runtime flow is:
@@ -34,9 +34,9 @@ The current default runtime flow is:
 - **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
-- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, date/math normalization, silence heuristics, and list formatting behavior.
+- **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, whole-capture Whisper VAD coordination, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, guarded compact-time/date/math normalization, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, and sentence-boundary policy used immediately before insertion.
-- **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`, including the iterable language identifiers used to derive model-specific picker options.
+- **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`, including the iterable language identifiers used to derive model-specific picker options plus the bundled Silero voice-activity model and actor-isolated detector wrapper.
 - **`../Packages/KeyVoxParakeet/`**: local Parakeet Core ML runtime package consumed through the shared `ParakeetService`.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
 - **`../Packages/KeyVoxLocalInference/`**: llama.cpp-backed local GGUF inference package with chat-template formatting, optional LoRA adapter attachment, quiet llama logging, cancellation, greedy decoding, token accounting, and opt-in live model tests.
@@ -250,6 +250,7 @@ iOS/
 │   │   │   ├── LoopingVideoPlayer.swift
 │   │   │   ├── ModelDownloaderCardView.swift
 │   │   │   ├── ModelDownloadProgress.swift
+│   │   │   ├── ModelUpdatePrompt.swift
 │   │   │   ├── NativeActivityIndicator.swift
 │   │   │   ├── PlaybackVoicePickerMenu.swift
 │   │   ├── DictionaryTabView/
@@ -336,6 +337,7 @@ iOS/
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── KeyboardLayoutGeometry.swift
+│   │   ├── KeyboardDictationModelStatus.swift
 │   │   ├── KeyboardModelAvailability.swift
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
@@ -455,6 +457,8 @@ Packages/
 ├── KeyVoxWhisper/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxWhisper/
+│   │   ├── Resources/ggml-silero-v5.1.2.bin
+│   │   └── WhisperVoiceActivityDetector.swift
 │   └── Tests/KeyVoxWhisperTests/
 ├── KeyVoxParakeet/
 │   ├── Package.swift
@@ -550,9 +554,9 @@ Packages/
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/Routing/KeyVoxURLRoute.swift`
-  - Typed app route surface for cold-start recording, copied-text playback, locked KeyVox Vibes launches, and Vibes trial-start launches.
+  - Typed app route surface for cold-start recording, copied-text playback, locked KeyVox Vibes launches, Vibes trial-start launches, and keyboard-originated missing-model recovery.
 - `KeyVox iOS/App/Routing/KeyVoxURLRouter.swift`
-  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, Vibes trial-start, and return-to-host flows.
+  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, Vibes trial-start, model recovery, and return-to-host flows.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
@@ -691,6 +695,9 @@ Packages/
   - Strict readiness validation for rooted installed artifacts and install manifests.
 - `KeyVox iOS/Core/ModelDownloader/ModelDownloadBackgroundTasks.swift`
   - App-side background repair task registration and scheduling.
+- `KeyVox iOS/Views/Components/ModelUpdatePrompt.swift`
+  - Presentation owner for the Parakeet artifact-update prompt, including Download/Later actions and modal accessibility focus.
+  - The prompt does not decide model currency or perform downloads; its caller supplies the pending update state and actions.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelCatalog.swift`
   - App-local catalog for the Vibes rewrite base model and package-provided bundled adapter filenames.
   - Current base model is `Qwen2.5-0.5B-Instruct` from `Qwen/Qwen2.5-0.5B-Instruct-GGUF`, artifact `qwen2.5-0.5b-instruct-q4_k_m.gguf`, with strict SHA-256 validation and a 491,400,032-byte expected size.
@@ -813,6 +820,12 @@ Packages/
   - Maps the built-in microphone setting to the playback route family without changing the recorder baseline warm-session contract.
 - `KeyVox iOS/Core/Audio/AudioRecorder+StopPipeline.swift`
   - Owns stop-time and interruption-time capture finalization, produces cleaned `StoppedCapture` values, and rejects silence before inference.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
+  - Runs whole-capture voice-activity analysis before Whisper chunking and rejects captures with no detected speech while preserving the complete original capture whenever speech is present.
+  - Falls through to the existing decoder no-speech safeguards when VAD analysis is unavailable.
+- `Packages/KeyVoxWhisper/Sources/KeyVoxWhisper/WhisperVoiceActivityDetector.swift`
+  - Actor-isolated wrapper around whisper.cpp's VAD context, probability analysis, and speech-segment extraction.
+  - Loads the package-owned `Resources/ggml-silero-v5.1.2.bin` model; platform targets do not own or duplicate this asset.
 - `KeyVox iOS/Core/Transcription/DictationService.swift`
   - iOS-local transcription-service abstraction used by the runtime manager.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
@@ -917,7 +930,11 @@ Packages/
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes trial-start launch, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
+  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
+  - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
+- `KeyVox Keyboard/Core/KeyboardDictationModelStatus.swift`
+  - Resolves the active provider's App Group artifacts into ready, not-installed, or repair-required state for keyboard warning presentation.
+  - Keeps lightweight extension-side artifact inspection separate from containing-app install, validation, and repair ownership.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
   - Responder-chain URL launcher used by the extension whenever it needs to wake the containing app for cold dictation or copied-text playback handoff.
 - `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
@@ -985,6 +1002,7 @@ Packages/
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
+  - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`

@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-07-27**
+**Last Updated: 2026-07-31**
 
 ## Project Overview
 
@@ -9,7 +9,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership, and macOS-side iCloud sync wiring
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, provider-aware host integration, paste/update host integration
-- **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, deterministic paragraph/list state and variant handling, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
+- **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, whole-capture Whisper voice-activity gating, deterministic paragraph/list state and variant handling, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
 - **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, spacing, quotation-mark context, and sentence boundaries
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
@@ -158,6 +158,9 @@ KeyVox/
 │   │   ├── Sources/KeyVoxTextComposition/
 │   │   └── Tests/KeyVoxTextCompositionTests/
 │   ├── KeyVoxWhisper/
+│   │   └── Sources/KeyVoxWhisper/
+│   │       ├── Resources/ggml-silero-v5.1.2.bin
+│   │       └── WhisperVoiceActivityDetector.swift
 │   ├── KeyVoxParakeet/
 │   ├── KeyVoxLocalInference/
 │   │   └── Sources/KeyVoxLocalInference/
@@ -201,15 +204,16 @@ KeyVox/
 2. `Core/Transcription/TranscriptionManager*.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
 4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, synchronizes the device-local Whisper language, and binds install-time Parakeet preloading to the downloader.
-5. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
-6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
-7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
-8. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
-9. `Core/Services/Paste/PasteService.swift` resolves macOS editor context through its composition coordinators, delegates leading capitalization and spacing policy to `Packages/KeyVoxTextComposition`, then inserts text via Accessibility first and menu-bar Paste fallback second.
-10. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
-11. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
-12. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
-13. `Views/Components/LogoBarView.swift` renders standalone and recording-reactive KeyVox logo presentations; reusable temporary pill rendering lives in the dedicated overlay pill components.
+5. For Whisper, `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift` runs whole-capture voice-activity analysis through the package-owned Silero detector before decoding; Parakeet does not use this Whisper-specific gate.
+6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
+7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
+8. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
+9. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
+10. `Core/Services/Paste/PasteService.swift` resolves macOS editor context through its composition coordinators, delegates leading capitalization and spacing policy to `Packages/KeyVoxTextComposition`, then inserts text via Accessibility first and menu-bar Paste fallback second.
+11. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
+12. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
+13. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
+14. `Views/Components/LogoBarView.swift` renders standalone and recording-reactive KeyVox logo presentations; reusable temporary pill rendering lives in the dedicated overlay pill components.
 
 ## Key Components
 
@@ -257,6 +261,10 @@ KeyVox/
 - `App/iCloud/KeyVoxiCloudSyncCoordinator.swift`
   - Owns macOS iCloud KVS convergence for dictionary entries plus `triggerBinding`, `autoParagraphsEnabled`, and `listFormattingEnabled`.
   - Uses per-setting modified-at timestamps so newer local/remote values win deterministically during bootstrap and live sync.
+- `App/iCloud/KeyVoxiCloudKeys.swift`
+  - Single source of truth for macOS iCloud KVS value keys and per-setting modified-at keys.
+- `App/iCloud/KeyVoxiCloudPayloads.swift`
+  - Codable payload ownership for dictionary snapshots and per-device weekly word totals exchanged through iCloud KVS.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
 - `Views/OnboardingView.swift`
@@ -392,6 +400,9 @@ KeyVox/
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionAuthorizer.swift`
   - State owner for latest-insertion token capture, validation, invalidation, and successful-replacement advancement.
   - Resolves current AX context through the existing replacer and rejects process, element, target-range, or selection mismatches before PasteService mutates text.
+- `Core/Services/Paste/Accessibility/PasteUntouchedInsertionReplacer.swift`
+  - Resolves the exact current Accessibility target for an authorized latest insertion and performs replacement through confirmed selected-text or whole-value writes, with menu fallback only when direct mutation cannot be proven safe.
+  - Owns newline-normalized target recovery, post-write verification, tracked value-target continuity, and final caret placement; it does not authorize whether an insertion may be changed.
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift`
   - Immutable authorization record for the latest successful insertion, binding replacement to its original PID and AX target context.
   - Allows a successful replacement to advance only within the same process, AX element, and target start location.
@@ -415,6 +426,7 @@ KeyVox/
   - Small provider router that swaps the active dictation backend without changing host-side transcription call sites.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TimeExpressionNormalizer.swift`
   - Isolated time-shape and meridiem normalization helper used by post-processing.
+  - Rejects meridiem matches that continue an already colon-separated number so compact times such as `810 PM` normalize exactly once to `8:10 PM`.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/Math/MathExpressionNormalizer.swift`
   - Deterministic math phrase/operator normalization (`plus/minus/times/divided by`, exponents, percent, chained expressions) with protected URL/email/code/time/date/version spans.
   - Strips terminal punctuation only for standalone math utterances while preserving sentence punctuation.
@@ -552,9 +564,13 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+Language.swift`
   - Validates app selections against `WhisperBaseLanguageCatalog` and applies the configured identifier to the loaded Whisper parameters.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+ModelLifecycle.swift`
-  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution) and initializes model parameters with the configured language.
+  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution), initializes model parameters with the configured language, and creates/releases the package-owned VAD detector with the Whisper model lifecycle.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
-  - Owns chunk transcription flow, applies the current language before a request begins, and handles retry selection, whitespace normalization, and debug segment logging.
+  - Owns whole-capture VAD gating plus chunk transcription flow, applies the current language before a request begins, and handles retry selection, whitespace normalization, and debug segment logging.
+  - Rejects captures with no detected speech before decoding, preserves the complete original capture when speech exists, and falls back to decoder safeguards when VAD analysis is unavailable.
+- `Packages/KeyVoxWhisper/Sources/KeyVoxWhisper/WhisperVoiceActivityDetector.swift`
+  - Actor-isolated wrapper around whisper.cpp's VAD context, probability analysis, and speech-segment extraction.
+  - Loads the package-owned `Resources/ggml-silero-v5.1.2.bin` model so platform apps do not duplicate VAD assets or policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguage.swift`
   - Shared stable language-code value with an explicit Auto Detect identifier.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguageDisplayNameFormatter.swift`
