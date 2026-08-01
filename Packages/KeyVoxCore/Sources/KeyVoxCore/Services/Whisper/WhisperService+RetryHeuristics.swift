@@ -64,6 +64,24 @@ extension WhisperService {
             retry: retry.segments,
             acceptsSingleWordRecovery: shouldRetryTrailingCutoff
         )
+        #if DEBUG
+        let primaryText = compactSegmentText(primary.segments)
+        let retryText = compactSegmentText(retry.segments)
+        let primaryAverageNoSpeechProbability: Float = primary.segments.isEmpty
+            ? 1.0
+            : primary.segments.reduce(0) { $0 + $1.noSpeechProbability } / Float(primary.segments.count)
+        let retryAverageNoSpeechProbability: Float = retry.segments.isEmpty
+            ? 1.0
+            : retry.segments.reduce(0) { $0 + $1.noSpeechProbability } / Float(retry.segments.count)
+        print(
+            "WhisperService retry selection: selected=\(selection.selectedRetry ? "retry" : "primary") " +
+            "primaryWords=\(wordCount(in: primaryText)) primaryChars=\(primaryText.count) " +
+            "primaryAvgNoSpeech=\(String(format: "%.3f", primaryAverageNoSpeechProbability)) " +
+            "retryWords=\(wordCount(in: retryText)) retryChars=\(retryText.count) " +
+            "retryAvgNoSpeech=\(String(format: "%.3f", retryAverageNoSpeechProbability)) " +
+            "primaryText=\(primaryText) retryText=\(retryText)"
+        )
+        #endif
         let finalSegments = selection.segments
         let finalLanguageCode = selection.selectedRetry
             ? (retry.detectedLanguageCode ?? primary.detectedLanguageCode)

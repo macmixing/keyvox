@@ -23,7 +23,10 @@ let package = Package(
         .target(
             name: "KeyVoxWhisper",
             dependencies: ["whisper"],
-            path: "Sources/KeyVoxWhisper"
+            path: "Sources/KeyVoxWhisper",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .testTarget(
             name: "KeyVoxWhisperTests",

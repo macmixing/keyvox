@@ -4,6 +4,9 @@ import KeyVoxWhisper
 extension WhisperService {
     /// Pre-loads the model into memory to eliminate cold-start latency.
     public func warmup() {
+        if voiceActivityDetector == nil {
+            voiceActivityDetector = WhisperVoiceActivityDetector()
+        }
         guard whisper == nil else {
             #if DEBUG
             print("WhisperService: Warmup skipped (model already loaded).")
@@ -41,8 +44,9 @@ extension WhisperService {
     /// Unloads the currently cached model instance.
     /// Used when model files are deleted so re-download can warm from disk again.
     public func unloadModel() {
-        guard whisper != nil else { return }
+        guard whisper != nil || voiceActivityDetector != nil else { return }
         whisper = nil
+        voiceActivityDetector = nil
         #if DEBUG
         print("WhisperService: Unloaded model from memory.")
         #endif

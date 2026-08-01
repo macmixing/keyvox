@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.2.0] - 2026-07-27
 
-Shared Whisper Base language selection for dictation clients.
+Shared Whisper Base language selection and voice-activity gating for dictation clients.
 
 ### Includes
 
@@ -16,10 +16,14 @@ Shared Whisper Base language selection for dictation clients.
 - Added a Whisper Base language catalog that exposes Auto Detect and the languages supported by the installed Base model without duplicating language lists in platform code.
 - Added Whisper service language configuration with automatic fallback for unsupported values.
 - Applied the configured language during model warmup and at the beginning of each transcription request so one request keeps a consistent language across all audio chunks.
+- Added a whole-capture voice-activity gate that rejects recordings with no detected speech before Whisper decoding, preventing steady background noise from producing hallucinated text.
+- Preserved the complete original recording whenever speech is detected so voice-activity detection does not trim valid words from transcription input.
+- Kept transcription available through the existing decoder safeguards when voice-activity analysis is unavailable.
+- Added diagnostic output for voice-activity probabilities, detected speech ranges, audio-to-ambient measurements, and primary-versus-retry decode selection.
 
 ### Notes
 
-- `1.2.0` bumps the tracked minor engine version for `KeyVoxCore` to cover reusable Whisper language selection for dictation clients.
+- `1.2.0` bumps the tracked minor engine version for `KeyVoxCore` to cover reusable Whisper language selection and voice-activity gating for dictation clients.
 
 ---
 

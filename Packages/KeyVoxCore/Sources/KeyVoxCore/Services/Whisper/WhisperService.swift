@@ -16,6 +16,10 @@ public class WhisperService: ObservableObject, DictationProvider {
     var dictionaryHintPrompt = ""
     let noSpeechSegmentProbabilityThreshold: Float = 0.72
     let noSpeechAverageProbabilityThreshold: Float = 0.80
+    let voiceActivityThreshold: Float = 0.5
+    let voiceActivityMinimumSpeechDurationMilliseconds: Int32 = 100
+    let voiceActivityMinimumSilenceDurationMilliseconds: Int32 = 100
+    let voiceActivitySpeechPaddingMilliseconds: Int32 = 30
     let paragraphChunker = AudioParagraphChunker()
     // Enabled by default; temporarily disable locally when validating phonetic matching without hint bias.
     let isPromptHintingEnabled = false
@@ -28,6 +32,7 @@ public class WhisperService: ObservableObject, DictationProvider {
     let retryRelaxedLogprobThreshold: Float = -2.0
 
     var transcriptionTask: Task<Void, Never>?
+    var voiceActivityDetector: WhisperVoiceActivityDetector?
 
     public init(modelPathResolver: @escaping () -> String? = { nil }) {
         self.modelPathResolver = modelPathResolver
