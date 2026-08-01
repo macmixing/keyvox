@@ -88,6 +88,76 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I haven't seen her since like 2012.")
     }
 
+    func testPreservesSentenceFinalYearAfterAdjectiveModifier() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I haven't done that since at least 2012.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I haven't done that since at least 2012.")
+    }
+
+    func testPreservesYearReferencesBeforeTerminalQualifiersAcrossNumericPaths() {
+        let processor = TranscriptionPostProcessor()
+        let samples = [
+            ("Do you think that happened in 2012 maybe?", "Do you think that happened in 2012 maybe?"),
+            ("That happened in at least 2015, right?", "That happened in at least 2015, right?"),
+            ("Do you think that happened in two thousand twelve maybe?", "Do you think that happened in 2012 maybe?"),
+            ("That happened in at least two thousand fifteen, right?", "That happened in at least 2015, right?"),
+            ("I bought tickets in maybe 2015, right?", "I bought tickets in maybe 2015, right?"),
+            ("I bought tickets in maybe two thousand fifteen, right?", "I bought tickets in maybe 2015, right?"),
+        ]
+
+        for (input, expected) in samples {
+            let output = processor.process(
+                input,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertEqual(output, expected)
+        }
+    }
+
+    func testFormatsSentenceFinalDigitQuantitiesAfterAdjectiveModifiers() {
+        let processor = TranscriptionPostProcessor()
+        let samples = [
+            "I need at least 2000.",
+            "I need the last 2000.",
+        ]
+
+        for sample in samples {
+            let output = processor.process(
+                sample,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertEqual(output, sample.replacingOccurrences(of: "2000", with: "2,000"))
+        }
+    }
+
+    func testFormatsSentenceFinalSpokenQuantitiesAfterAdjectiveModifiers() {
+        let processor = TranscriptionPostProcessor()
+        let samples = [
+            "I need at least two thousand.",
+            "I need the last two thousand.",
+        ]
+
+        for sample in samples {
+            let output = processor.process(
+                sample,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertEqual(output, sample.replacingOccurrences(of: "two thousand", with: "2,000"))
+        }
+    }
+
     func testPreservesSpokenYearBeforeConfirmationPhrase() {
         let processor = TranscriptionPostProcessor()
 

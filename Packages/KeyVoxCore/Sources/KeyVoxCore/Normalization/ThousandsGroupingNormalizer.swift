@@ -163,6 +163,7 @@ public struct ThousandsGroupingNormalizer {
                     value: value,
                     isLikelyYear: isLikelyYearReference(
                         value: value,
+                        thirdPrevious: context.thirdPrevious,
                         secondPrevious: context.secondPrevious,
                         previous: context.previous,
                         next: context.next,
@@ -340,10 +341,17 @@ public struct ThousandsGroupingNormalizer {
     private func lexicalContext(
         around range: NSRange,
         in tokens: [LexicalToken]
-    ) -> (secondPrevious: LexicalToken?, previous: LexicalToken?, next: LexicalToken?, secondNext: LexicalToken?) {
+    ) -> (
+        thirdPrevious: LexicalToken?,
+        secondPrevious: LexicalToken?,
+        previous: LexicalToken?,
+        next: LexicalToken?,
+        secondNext: LexicalToken?
+    ) {
         let previousTokens = tokens.filter { NSMaxRange($0.range) <= range.location }
         let followingTokens = tokens.filter { $0.range.location >= NSMaxRange(range) }
         return (
+            thirdPrevious: previousTokens.dropLast(2).last,
             secondPrevious: previousTokens.dropLast().last,
             previous: previousTokens.last,
             next: followingTokens.first,
@@ -361,12 +369,14 @@ public struct ThousandsGroupingNormalizer {
         }
 
         let secondPrevious = tokenIndex > 1 ? tokens[tokenIndex - 2] : nil
+        let thirdPrevious = tokenIndex > 2 ? tokens[tokenIndex - 3] : nil
         let previous = tokenIndex > 0 ? tokens[tokenIndex - 1] : nil
         let next = tokenIndex + 1 < tokens.count ? tokens[tokenIndex + 1] : nil
         let secondNext = tokenIndex + 2 < tokens.count ? tokens[tokenIndex + 2] : nil
 
         if isLikelyYearReference(
             value: value,
+            thirdPrevious: thirdPrevious,
             secondPrevious: secondPrevious,
             previous: previous,
             next: next,
@@ -392,6 +402,7 @@ public struct ThousandsGroupingNormalizer {
 
     private func isLikelyYearReference(
         value: Int,
+        thirdPrevious: LexicalToken?,
         secondPrevious: LexicalToken?,
         previous: LexicalToken?,
         next: LexicalToken?,
@@ -412,17 +423,29 @@ public struct ThousandsGroupingNormalizer {
             return true
         }
 
-        if previous?.tag == .preposition, next?.tag == .interjection {
+        if previous?.tag == .preposition,
+           let nextTag = next?.tag,
+           [.adverb, .interjection].contains(nextTag),
+           secondNext == nil {
             return true
         }
 
         if secondPrevious?.tag == .preposition,
-           previous?.tag == .interjection {
+           let previousTag = previous?.tag,
+           [.adverb, .interjection].contains(previousTag) {
             return true
         }
 
         if next == nil, previous?.tag == .adverb {
             return true
+        }
+
+        let hasTerminalQualifier = next == nil
+            || (secondNext == nil
+                && next?.tag.map { [.adverb, .interjection].contains($0) } == true)
+        if hasTerminalQualifier, previous?.tag == .adjective {
+            return secondPrevious?.tag == .preposition
+                && thirdPrevious?.tag == .preposition
         }
 
         if next?.tag == .preposition {

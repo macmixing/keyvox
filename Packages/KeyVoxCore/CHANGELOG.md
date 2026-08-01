@@ -23,6 +23,7 @@ Shared Whisper Base language selection and voice-activity gating for dictation c
 - Prevented normalized compact times from being processed twice when the minute component is also a valid hour, avoiding output such as `8:10:00 PM` for `810 PM`.
 - Allowed whitespace-delimited single-letter split pronunciations to match single dictionary terms when the remaining tail matches exactly and spelling and phonetic evidence are strong, while retaining the existing short-token and common-word safeguards.
 - Preserved sentence periods after normalized spoken email addresses when the following sentence is initially overcaptured as part of the domain.
+- Expanded year-context detection across numeric and spoken-number paths to preserve four-digit years with leading or trailing uncertainty and stacked qualifiers, including `in 2012 maybe`, `in maybe 2015`, and `since at least 2012`, while continuing to add thousands separators to similarly phrased quantities such as `I need at least 2000`.
 
 ### Notes
 
