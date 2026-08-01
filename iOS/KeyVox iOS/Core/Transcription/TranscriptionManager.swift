@@ -37,6 +37,7 @@ final class TranscriptionManager: ObservableObject {
     private let capsLockEnabledProvider: () -> Bool
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
     private let recordPipelineResult: (DictationPipelineResult, String) -> Void
+    private let recordSuccessfulDictation: () -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
     let releaseStyleRewritePrewarmSession: @MainActor (String) async -> Void
     private let sessionDisableTimingProvider: (() -> SessionDisableTiming)?
@@ -67,6 +68,7 @@ final class TranscriptionManager: ObservableObject {
         listRenderModeProvider: { .multiline },
         recordSpokenWords: { [weak self] text in
             self?.weeklyWordStatsStore.recordSpokenWords(from: text)
+            self?.recordSuccessfulDictation()
         },
         pasteText: { [weak self] text in
             self?.capturePipelineOutput(text)
@@ -94,6 +96,7 @@ final class TranscriptionManager: ObservableObject {
             .unchanged($0.baseText)
         },
         recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
+        recordSuccessfulDictation: @escaping () -> Void = {},
         prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
         releaseStyleRewritePrewarmSession: @escaping @MainActor (String) async -> Void = { _ in },
         sessionDisableTimingProvider: (() -> SessionDisableTiming)? = nil,
@@ -125,6 +128,7 @@ final class TranscriptionManager: ObservableObject {
         self.capsLockEnabledProvider = capsLockEnabledProvider
         self.processOutputText = processOutputTextWithContext
         self.recordPipelineResult = recordPipelineResult
+        self.recordSuccessfulDictation = recordSuccessfulDictation
         self.prewarmStyleRewriteForUpcomingDictation = prewarmStyleRewriteForUpcomingDictation
         self.releaseStyleRewritePrewarmSession = releaseStyleRewritePrewarmSession
         self.sessionDisableTimingProvider = sessionDisableTimingProvider

@@ -21,6 +21,7 @@ struct KeyVoxApp: App {
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
+    @StateObject private var appReviewRequestCoordinator: AppReviewRequestCoordinator
     @StateObject private var appTabRouter: AppTabRouter
     @StateObject private var appUpdateCoordinator: AppUpdateCoordinator
     private let appHaptics: AppHaptics
@@ -44,6 +45,7 @@ struct KeyVoxApp: App {
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
+        _appReviewRequestCoordinator = StateObject(wrappedValue: services.appReviewRequestCoordinator)
         _appTabRouter = StateObject(wrappedValue: services.appTabRouter)
         _appUpdateCoordinator = StateObject(wrappedValue: services.appUpdateCoordinator)
         appHaptics = services.appHaptics
@@ -88,6 +90,7 @@ struct KeyVoxApp: App {
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)
                 .environmentObject(weeklyWordStatsStore)
+                .environmentObject(appReviewRequestCoordinator)
                 .environmentObject(appTabRouter)
                 .environmentObject(appUpdateCoordinator)
                 .environmentObject(dictionaryStore)

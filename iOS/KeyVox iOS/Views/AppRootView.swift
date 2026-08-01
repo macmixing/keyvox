@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 struct AppRootView: View {
@@ -23,9 +24,13 @@ struct AppRootView: View {
     @EnvironmentObject private var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appUpdateCoordinator: AppUpdateCoordinator
+    @EnvironmentObject private var appReviewRequestCoordinator: AppReviewRequestCoordinator
+    @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
     @State private var previousDestination: RootDestination?
     @State private var onboardingOverlayState: RootOverlayState = .hidden
     @State private var onboardingOverlayOpacity = 1.0
+    @State private var isDescendantBlockingReviewRequest = false
 
     private var destination: RootDestination {
         if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
@@ -119,6 +124,9 @@ struct AppRootView: View {
                 .environmentObject(keyVoxVibesPurchaseController)
         }
         .appUpdatePrompt(activeUpdatePrompt, onUpdate: openUpdate, onLater: dismissOptionalUpdate)
+        .onAppReviewRequestBlockingChange { isBlocked in
+            isDescendantBlockingReviewRequest = isBlocked
+        }
         .onAppear {
             previousDestination = destination
             onboardingOverlayState = destination == .onboarding ? .visible : .hidden
@@ -148,6 +156,10 @@ struct AppRootView: View {
                 onboardingOverlayState = .hidden
                 onboardingOverlayOpacity = 1
             }
+
+            Task { @MainActor in
+                evaluateReviewRequest()
+            }
         }
         .onChange(of: onboardingStore.hasCompletedOnboardingThisLaunch, initial: false) { _, newValue in
             guard newValue else { return }
@@ -158,6 +170,22 @@ struct AppRootView: View {
         }
         .onChange(of: appUpdateCoordinator.activePrompt?.id, initial: false) { _, _ in
             updateKeyVoxSpeakIntroPresentation(for: destination)
+        }
+        .onChange(of: appUpdateCoordinator.isRefreshingPromptState, initial: true) { _, _ in
+            evaluateReviewRequest()
+        }
+        .onChange(of: hasCompetingReviewPresentation, initial: true) { _, _ in
+            evaluateReviewRequest()
+        }
+        .onChange(of: scenePhase, initial: true) { _, newPhase in
+            if newPhase == .active {
+                appReviewRequestCoordinator.handleAppDidBecomeActive()
+                Task { @MainActor in
+                    evaluateReviewRequest()
+                }
+            } else {
+                appReviewRequestCoordinator.handleAppDidLeaveActive()
+            }
         }
         .animation(rootAnimation, value: destination)
     }
@@ -212,6 +240,42 @@ struct AppRootView: View {
         appUpdateCoordinator.dismissOptionalPrompt()
     }
 
+    private var hasCompetingReviewPresentation: Bool {
+        isDescendantBlockingReviewRequest
+            || appUpdateCoordinator.activePrompt != nil
+            || keyVoxSpeakIntroController.isPresented
+            || keyVoxSpeakIntroController.wantsPresentationOnEligibleLaunch
+            || keyVoxVibesIntroController.isPresented
+            || keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch
+            || ttsPurchaseController.isUnlockSheetPresented
+            || keyVoxVibesPurchaseController.sheetPresentation != nil
+            || transcriptionManager.state != .idle
+            || ttsManager.isActive
+    }
+
+    private var hasCompletedOnboardingBeforeCurrentLaunch: Bool {
+        onboardingStore.hasCompletedOnboarding
+            && onboardingStore.hasCompletedOnboardingThisLaunch == false
+    }
+
+    private func evaluateReviewRequest() {
+        guard scenePhase == .active else { return }
+
+        appReviewRequestCoordinator.evaluate(
+            context: AppReviewRequestCoordinator.Context(
+                hasResolvedLaunchContext: appLaunchRouteStore.hasResolvedInitialLaunchContext,
+                isMainInterfacePresented: destination == .main,
+                hasCompetingPresentation: hasCompetingReviewPresentation,
+                isUpdatePromptStateRefreshing: appUpdateCoordinator.isRefreshingPromptState,
+                hasCompletedOnboardingBeforeCurrentLaunch: hasCompletedOnboardingBeforeCurrentLaunch,
+                currentVersion: appUpdateCoordinator.currentAppVersion?.rawValue
+            ),
+            requestReview: {
+                requestReview()
+            }
+        )
+    }
+
 }
 
 #Preview {
@@ -226,6 +290,7 @@ struct AppRootView: View {
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesIntroController)
         .environmentObject(AppServiceRegistry.shared.appUpdateCoordinator)
+        .environmentObject(AppServiceRegistry.shared.appReviewRequestCoordinator)
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
