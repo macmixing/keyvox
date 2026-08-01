@@ -413,6 +413,19 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Spot check something like Monique.")
     }
 
+    func testDoesNotReplaceUnrelatedWordsWithStylizedPluralEntry() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let result = matcher.apply(to: "Everything on main goes through another.")
+
+        XCTAssertEqual(result.text, "Everything on main goes through another.")
+    }
+
     func testTitlecaseKnownWordsResistRandomStylizedDictionaryEntries() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

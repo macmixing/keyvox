@@ -365,15 +365,15 @@ extension DictionaryMatcher {
         guard window.count == 2 else { return false }
         guard isStylizedSingleTokenEntry(candidate) else { return false }
         guard let candidateToken = candidate.tokens.first else { return false }
-        let observedPrefix = window[0].normalized
-        guard candidateToken.hasPrefix(observedPrefix) else { return false }
-
         let observedTail = window[1].normalized
         guard observedTail.hasSuffix("s"),
               !observedTail.hasSuffix("'s"),
               !observedTail.hasSuffix("s'") else {
             return false
         }
+
+        let observedPrefix = window[0].normalized
+        guard candidateToken.hasPrefix(observedPrefix) else { return true }
 
         let observedSingularTail = String(observedTail.dropLast())
         let candidateTail = String(candidateToken.dropFirst(observedPrefix.count))
