@@ -568,6 +568,8 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
   - Owns whole-capture VAD gating plus chunk transcription flow, applies the current language before a request begins, and handles retry selection, whitespace normalization, and debug segment logging.
   - Rejects captures with no detected speech before decoding, preserves the complete original capture when speech exists, and falls back to decoder safeguards when VAD analysis is unavailable.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperSegmentTextAssembler.swift`
+  - Assembles each Whisper chunk off the main actor, including conservative continuation-casing repair backed by an immutable pronunciation lookup snapshot.
 - `Packages/KeyVoxWhisper/Sources/KeyVoxWhisper/WhisperVoiceActivityDetector.swift`
   - Actor-isolated wrapper around whisper.cpp's VAD context, probability analysis, and speech-segment extraction.
   - Loads the package-owned `Resources/ggml-silero-v5.1.2.bin` model so platform apps do not duplicate VAD assets or policy.
@@ -666,6 +668,7 @@ KeyVox/
   - Canonical dictionary entry model.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PronunciationLexicon.swift`
   - Loads bundled pronunciation signatures and curated common-word safety list from `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`.
+  - Exposes an immutable, sendable pronunciation lookup snapshot for CPU-bound work outside the main actor.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/ReplacementScorer.swift`

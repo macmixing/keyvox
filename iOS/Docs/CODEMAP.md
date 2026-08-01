@@ -823,6 +823,8 @@ Packages/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
   - Runs whole-capture voice-activity analysis before Whisper chunking and rejects captures with no detected speech while preserving the complete original capture whenever speech is present.
   - Falls through to the existing decoder no-speech safeguards when VAD analysis is unavailable.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperSegmentTextAssembler.swift`
+  - Assembles each Whisper chunk off the main actor, including conservative continuation-casing repair backed by an immutable pronunciation lookup snapshot.
 - `Packages/KeyVoxWhisper/Sources/KeyVoxWhisper/WhisperVoiceActivityDetector.swift`
   - Actor-isolated wrapper around whisper.cpp's VAD context, probability analysis, and speech-segment extraction.
   - Loads the package-owned `Resources/ggml-silero-v5.1.2.bin` model; platform targets do not own or duplicate this asset.

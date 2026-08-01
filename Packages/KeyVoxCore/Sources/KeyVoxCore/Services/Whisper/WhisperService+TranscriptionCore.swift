@@ -58,6 +58,7 @@ extension WhisperService {
         let voiceActivityMinimumSpeechDurationMilliseconds = self.voiceActivityMinimumSpeechDurationMilliseconds
         let voiceActivityMinimumSilenceDurationMilliseconds = self.voiceActivityMinimumSilenceDurationMilliseconds
         let voiceActivitySpeechPaddingMilliseconds = self.voiceActivitySpeechPaddingMilliseconds
+        let pronunciationLookup = PronunciationLexicon.shared.pronunciationLookup
 
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
@@ -150,9 +151,12 @@ extension WhisperService {
                     self.logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
                     #endif
                     transcribedSegments.append(contentsOf: segments)
-                    let chunkText = segments
-                        .map { $0.text }
-                        .joined(separator: " ")
+                    let chunkText = await WhisperSegmentTextAssembler(
+                        pronunciationLookup: pronunciationLookup
+                    ).assemble(
+                        segments.map(\.text),
+                        normalizesContinuationCasing: result.detectedLanguageCode == WhisperLanguage.english.rawValue
+                    )
                     let normalizedChunkText = self.normalizeWhitespace(chunkText)
                     let trailingBoundaryFrame = chunkIndex < (chunkResult.chunks.count - 1)
                         ? chunk.endFrame
