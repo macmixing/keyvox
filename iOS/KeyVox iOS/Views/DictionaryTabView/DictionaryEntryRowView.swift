@@ -70,5 +70,6 @@ struct DictionaryEntryRowView: View {
         } message: {
             Text("This dictionary entry will be removed from KeyVox.")
         }
+        .blocksAppReviewRequest(isDeleteConfirmationPresented)
     }
 }

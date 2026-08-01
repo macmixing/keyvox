@@ -41,6 +41,9 @@ nonisolated enum UserDefaultsKeys {
         static let hasSeenKeyVoxVibesIntro = "KeyVox.App.HasSeenKeyVoxVibesIntro"
         static let hasInteractedWithKeyVoxVibes = "KeyVox.App.HasInteractedWithKeyVoxVibes"
         static let shouldShowKeyVoxVibesIntroOnNextEligibleLaunch = "KeyVox.App.ShouldShowKeyVoxVibesIntroOnNextEligibleLaunch"
+        static let reviewFirstLaunchAt = "KeyVox.App.Review.FirstLaunchAt"
+        static let reviewLastSuccessfulDictationAt = "KeyVox.App.Review.LastSuccessfulDictationAt"
+        static let reviewLastRequestedVersion = "KeyVox.App.Review.LastRequestedVersion"
     }
 
     enum iCloud {

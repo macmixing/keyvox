@@ -45,6 +45,7 @@ struct SettingsTabView: View {
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
             }
+            .blocksAppReviewRequest(isThirdPartyNoticesPresented)
             .onDisappear {
                 ttsPreviewPlayer.stop()
             }

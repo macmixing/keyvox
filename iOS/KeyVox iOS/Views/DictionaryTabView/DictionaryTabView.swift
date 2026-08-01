@@ -102,6 +102,7 @@ struct DictionaryTabView: View {
                 }
             )
         }
+        .blocksAppReviewRequest(dictionaryEditorMode != nil)
         .onChange(of: dictionaryEditorMode?.id) { _, newValue in
             if let newValue {
                 lastPresentedEditorID = newValue
