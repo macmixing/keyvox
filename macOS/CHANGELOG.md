@@ -6,6 +6,51 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.0] - 2026-08-01
+
+Adds selectable Whisper dictation languages, rejects noise-only captures before decoding, and improves shared transcript cleanup.
+
+### Added
+
+- Added a Language row to Active Model settings with Auto Detect and the complete set of languages supported by Whisper Base.
+- Added device-local Whisper language persistence so each Mac keeps its own selection, while missing or unsupported saved values safely return to Auto Detect.
+- Added shared whole-capture voice-activity gating through `KeyVoxCore` `1.2.0` and `KeyVoxWhisper` `1.1.0`, using a bundled Silero `v5.1.2` model to identify recordings without speech before Whisper decoding.
+
+### Changed
+
+- Updated the Mac runtime to apply the selected Whisper language during model preparation and at the start of each transcription request so every capture uses one consistent language.
+- Updated the Parakeet language row to remain on Auto Detect with guidance to its supported-language FAQ, without overwriting the saved Whisper selection.
+- Updated Mac architecture documentation and the code map for language ownership, device-local persistence, and the Whisper voice-activity gate.
+
+### Fixed
+
+- Fixed steady background noise and other noise-only captures so they no longer reach Whisper decoding and produce hallucinated text, while recordings containing speech keep their complete original audio.
+- Fixed compact dictated times such as `810 PM` so they normalize once to `8:10 PM` instead of becoming `8:10:00 PM`.
+- Fixed strong spaced single-letter pronunciations so supported dictation such as individually spoken letters can match the intended custom dictionary term without weakening existing safeguards.
+- Fixed unanchored plural split/join matches so unrelated phrases such as `main goes` do not collapse into stylized custom dictionary entries, while valid anchored replacements remain supported.
+- Fixed stylized custom dictionary matching in guarded titlecase, list, noun, and particle contexts while preserving common-word protection and requiring eligible short-token evidence.
+- Fixed normalized spoken email addresses so a sentence-ending period remains intact when the following sentence is initially captured as part of the domain.
+- Fixed qualified year references such as `in 2012 maybe`, `in maybe 2015`, and `since at least 2012` so they remain years while similarly phrased quantities still receive thousands separators.
+- Fixed incidental title casing at Whisper continuation-segment boundaries while preserving proper names and dictionary-defined casing.
+
+### Package versions
+
+KeyVox macOS 1.3.0:
+- KeyVoxCore            1.2.0
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.2.0` adds shared Whisper Base language selection and whole-capture voice-activity gating, and improves compact-time normalization, guarded stylized custom dictionary matching, spoken email punctuation, qualified-year preservation, and continuation-segment casing.
+- `KeyVoxWhisper` `1.1.0` exposes the complete supported language set and bundles the Silero `v5.1.2` voice-activity model with a reusable detector for shared Whisper clients.
+
+---
+
 ## [1.2.1] - 2026-07-27
 
 Improves Mac dictation insertion around sentence, quote, and editor boundaries while expanding spoken terminal punctuation completion.
