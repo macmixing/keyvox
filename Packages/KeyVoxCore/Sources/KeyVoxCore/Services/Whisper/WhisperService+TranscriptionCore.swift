@@ -54,10 +54,58 @@ extension WhisperService {
         let paragraphChunker = self.paragraphChunker
         let noSpeechSegmentProbabilityThreshold = self.noSpeechSegmentProbabilityThreshold
         let noSpeechAverageProbabilityThreshold = self.noSpeechAverageProbabilityThreshold
+        let voiceActivityThreshold = self.voiceActivityThreshold
+        let voiceActivityMinimumSpeechDurationMilliseconds = self.voiceActivityMinimumSpeechDurationMilliseconds
+        let voiceActivityMinimumSilenceDurationMilliseconds = self.voiceActivityMinimumSilenceDurationMilliseconds
+        let voiceActivitySpeechPaddingMilliseconds = self.voiceActivitySpeechPaddingMilliseconds
 
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
             do {
+                if let voiceActivityDetector = self.voiceActivityDetector,
+                   let voiceActivity = await voiceActivityDetector.analyze(
+                    audioFrames: audioFrames,
+                    threshold: voiceActivityThreshold,
+                    minimumSpeechDurationMilliseconds: voiceActivityMinimumSpeechDurationMilliseconds,
+                    minimumSilenceDurationMilliseconds: voiceActivityMinimumSilenceDurationMilliseconds,
+                    speechPaddingMilliseconds: voiceActivitySpeechPaddingMilliseconds
+                   ) {
+                    #if DEBUG
+                    let maximumProbability = voiceActivity.probabilities.max() ?? 0
+                    let speechRanges = voiceActivity.speechSegments.map {
+                        "\(String(format: "%.2f", $0.startTime))-\(String(format: "%.2f", $0.endTime))"
+                    }
+                    print(
+                        "WhisperService VAD: frames=\(audioFrames.count) " +
+                        "probabilities=\(voiceActivity.probabilities.count) " +
+                        "maxProbability=\(String(format: "%.3f", maximumProbability)) " +
+                        "speechSegments=\(voiceActivity.speechSegments.count) " +
+                        "speechRanges=\(speechRanges)"
+                    )
+                    #endif
+
+                    guard voiceActivity.containsSpeech else {
+                        #if DEBUG
+                        print("WhisperService VAD: rejected capture with no detected speech.")
+                        #endif
+                        self.finishSuccessfulRequest(
+                            requestID,
+                            usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
+                            finalText: "",
+                            paragraphsText: "",
+                            inlineText: "",
+                            likelyNoSpeech: true,
+                            detectedLanguageCode: nil,
+                            completion: completion
+                        )
+                        return
+                    }
+                } else {
+                    #if DEBUG
+                    print("WhisperService VAD: unavailable; continuing with decoder safeguards.")
+                    #endif
+                }
+
                 let chunkResult = paragraphChunker.split(audioFrames)
                 #if DEBUG
                 let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }

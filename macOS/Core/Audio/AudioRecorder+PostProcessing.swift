@@ -28,11 +28,22 @@ extension AudioRecorder {
         lastCaptureHadActiveSignal = classification.hadActiveSignal
         lastCaptureWasLongTrueSilence = classification.isLongTrueSilence
         #if DEBUG
+        let speechToAmbientRatio = classification.ambientFloorRMS > 0
+            ? classification.speechRMS / classification.ambientFloorRMS
+            : .infinity
+        let noiseDominated = AudioSilenceGatePolicy.shouldRejectNoiseDominatedCapture(
+            hadActiveSignal: classification.hadActiveSignal,
+            speechRMS: classification.speechRMS,
+            ambientFloorRMS: classification.ambientFloorRMS
+        )
         print(
             "Audio silence classification: duration=\(String(format: "%.2f", captureDuration))s " +
             "activeSignal=\(lastCaptureHadActiveSignal) activeRun=\(String(format: "%.3f", maxActiveSignalRunDuration))s " +
             "silentWindowRatio=\(String(format: "%.3f", classification.silentWindowRatio)) " +
             "ambientFloor=\(String(format: "%.5f", classification.ambientFloorRMS)) " +
+            "speechRMS=\(String(format: "%.5f", classification.speechRMS)) " +
+            "speechToAmbientRatio=\(String(format: "%.3f", speechToAmbientRatio)) " +
+            "noiseDominated=\(noiseDominated) rejectLikelySilence=\(classification.shouldRejectLikelySilence) " +
             "longTrueSilence=\(lastCaptureWasLongTrueSilence) " +
             "inputVolume=\(String(format: "%.2f", sessionInputVolumeScalar)) " +
             "thresholdScale=\(String(format: "%.2f", sessionThresholdScale))"
