@@ -22,6 +22,7 @@ Shared Whisper Base language selection and voice-activity gating for dictation c
 - Added diagnostic output for voice-activity probabilities, detected speech ranges, audio-to-ambient measurements, and primary-versus-retry decode selection.
 - Prevented normalized compact times from being processed twice when the minute component is also a valid hour, avoiding output such as `8:10:00 PM` for `810 PM`.
 - Allowed whitespace-delimited single-letter split pronunciations to match single dictionary terms when the remaining tail matches exactly and spelling and phonetic evidence are strong, while retaining the existing short-token and common-word safeguards.
+- Preserved sentence periods after normalized spoken email addresses when the following sentence is initially overcaptured as part of the domain.
 
 ### Notes
 

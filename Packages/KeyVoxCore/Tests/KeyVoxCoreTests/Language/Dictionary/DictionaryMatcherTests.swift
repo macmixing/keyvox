@@ -736,6 +736,19 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Send it to dom@example.com thirteen people should receive it.")
     }
 
+    func testMatcherPreservesSentencePeriodAfterSpokenEmailWithOverflow() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "person@example.com")])
+
+        let result = matcher.apply(
+            to: "My email address is person at example.com. And this sentence follows it."
+        )
+        XCTAssertEqual(
+            result.text,
+            "My email address is person@example.com. And this sentence follows it."
+        )
+    }
+
     func testMatcherNormalizesSpokenEmailWhenDomainHostIsNearDictionaryMatch() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])

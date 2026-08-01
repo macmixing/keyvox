@@ -103,7 +103,9 @@ extension DictionaryMatcher {
 
             let markerPrefix = attachedMarker.map { "\($0.marker) " } ?? ""
             let prefix = resolved.prefix.isEmpty ? "" : "\(resolved.prefix) "
-            let overflowSuffix = domainResolution.overflow.isEmpty ? "" : " \(domainResolution.overflow)"
+            let overflowSuffix = domainResolution.overflow.isEmpty
+                ? ""
+                : domainResolution.overflowSeparator + domainResolution.overflow
             #if DEBUG
             logEmailNormalization(
                 "spoken replace local=\(debugTokenSummary(localRaw)) domain=\(debugDomainSummary(domain)) overflowWords=\(wordCount(domainResolution.overflow)) replacementDomain=\(debugDomainSummary(resolved.entry.domain))"
@@ -147,7 +149,9 @@ extension DictionaryMatcher {
                 continue
             }
 
-            let overflowSuffix = domainResolution.overflow.isEmpty ? "" : " \(domainResolution.overflow)"
+            let overflowSuffix = domainResolution.overflow.isEmpty
+                ? ""
+                : domainResolution.overflowSeparator + domainResolution.overflow
             #if DEBUG
             logEmailNormalization(
                 "compact replace local=\(debugTokenSummary(localRaw)) domain=\(debugDomainSummary(domain)) overflowWords=\(wordCount(domainResolution.overflow)) replacementDomain=\(debugDomainSummary(entry.domain))"
@@ -196,7 +200,7 @@ extension DictionaryMatcher {
                 : "\(resolved.prefix) \(resolved.entry.canonical)"
             let replacementWithOverflow = domainResolution.overflow.isEmpty
                 ? replacement
-                : "\(replacement) \(domainResolution.overflow)"
+                : replacement + domainResolution.overflowSeparator + domainResolution.overflow
             #if DEBUG
             logEmailNormalization(
                 "literal replace local=\(debugTokenSummary(localRaw)) domain=\(debugDomainSummary(domain)) overflowWords=\(wordCount(domainResolution.overflow)) replacement=\(debugTextSummary(replacementWithOverflow))"
