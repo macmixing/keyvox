@@ -75,11 +75,27 @@ extension DictionaryMatcher {
         let leftIsVerb = leftToken.lexicalClass == .verb
         let rightIsVerbLike = rightToken.lexicalClass == .verb || rightToken.lexicalClass == .adjective
 
-        return left.count <= StandardEvaluationConstants.structuralLeftContextMaximumLength
-            && leftIsVerb
-            && rightIsLowerAlphabetic
-            && right.count >= StandardEvaluationConstants.structuralRightContextMinimumLength
-            && rightIsVerbLike
+        return hasNounIntroducedTitlecaseContext(
+            tokenStart: tokenStart,
+            tokenEndExclusive: tokenEndExclusive,
+            tokens: tokens
+        )
+            || (left.count <= StandardEvaluationConstants.structuralLeftContextMaximumLength
+                && leftIsVerb
+                && rightIsLowerAlphabetic
+                && right.count >= StandardEvaluationConstants.structuralRightContextMinimumLength
+                && rightIsVerbLike)
+    }
+
+    private func hasNounIntroducedTitlecaseContext(
+        tokenStart: Int,
+        tokenEndExclusive: Int,
+        tokens: [Token]
+    ) -> Bool {
+        guard tokenStart > 0, tokenEndExclusive < tokens.count else { return false }
+        return tokens[tokenStart - 1].lexicalClass == .noun
+            && isTitlecaseToken(tokens[tokenStart])
+            && tokens[tokenEndExclusive].lexicalClass == .adverb
     }
 
     func proposeStandardReplacement(
@@ -260,6 +276,11 @@ extension DictionaryMatcher {
                 tokenEndExclusive: end,
                 tokens: tokens
             )
+            let hasNounIntroducedTitlecaseContext = hasNounIntroducedTitlecaseContext(
+                tokenStart: start,
+                tokenEndExclusive: end,
+                tokens: tokens
+            )
             let hasAttributionPrepositionContext = hasAttributionLikePrepositionContext(
                 tokenStart: start,
                 tokens: tokens
@@ -271,6 +292,12 @@ extension DictionaryMatcher {
                     totalTokens: tokens.count
                 )
             let hasAdjacentTitlecaseContext = hasAdjacentTitlecasePhraseContext(
+                tokenIndex: start,
+                totalTokens: tokens.count,
+                tokens: tokens,
+                text: text
+            )
+            let hasAdjacentTitlecaseListContext = hasAdjacentTitlecaseListContext(
                 tokenIndex: start,
                 totalTokens: tokens.count,
                 tokens: tokens,
@@ -293,13 +320,17 @@ extension DictionaryMatcher {
                    candidate: candidateToken,
                    textSimilarity: textSimilarity
                ) {
-                stats.rejectedLowScore += 1
-                return nil
+                if !hasAdjacentTitlecaseListContext {
+                    stats.rejectedLowScore += 1
+                    return nil
+                }
             }
 
             if observedHasRuntimePronunciation,
                isTitlecaseToken(observedToken),
                observedToken.normalized.count >= candidateToken.count,
+               !hasNounIntroducedTitlecaseContext,
+               !hasAdjacentTitlecaseListContext,
                textSimilarity < StandardEvaluationConstants.titlecaseKnownWordSurfaceMinimum {
                 requiresPeerSupport = true
                 requiresPeerSupportForTitlecaseKnownWord = true

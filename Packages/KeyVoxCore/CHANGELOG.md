@@ -22,6 +22,8 @@ Shared Whisper Base language selection and voice-activity gating for dictation c
 - Added diagnostic output for voice-activity probabilities, detected speech ranges, audio-to-ambient measurements, and primary-versus-retry decode selection.
 - Prevented normalized compact times from being processed twice when the minute component is also a valid hour, avoiding output such as `8:10:00 PM` for `810 PM`.
 - Allowed whitespace-delimited single-letter split pronunciations to match single dictionary terms when the remaining tail matches exactly and spelling and phonetic evidence are strong, while retaining the existing short-token and common-word safeguards.
+- Prevented unanchored plural split/join matches from collapsing unrelated phrases such as `main goes` into stylized dictionary entries.
+- Improved stylized dictionary matching across titlecase, list, noun, and particle contexts while preserving common-word protection and ranking only eligible stylized short-token candidates.
 - Preserved sentence periods after normalized spoken email addresses when the following sentence is initially overcaptured as part of the domain.
 - Expanded year-context detection across numeric and spoken-number paths to preserve four-digit years with leading or trailing uncertainty and stacked qualifiers, including `in 2012 maybe`, `in maybe 2015`, and `since at least 2012`, while continuing to add thousands separators to similarly phrased quantities such as `I need at least 2000`.
 - Corrected incidental title casing at Whisper continuation-segment boundaries while preserving proper names and dictionary-defined casing.
