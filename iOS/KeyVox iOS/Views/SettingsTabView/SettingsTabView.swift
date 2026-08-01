@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsTabView: View {
     @Environment(\.appHaptics) var appHaptics
+    @Environment(\.openURL) var openURL
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
