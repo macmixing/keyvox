@@ -20,6 +20,7 @@ Shared Whisper Base language selection and voice-activity gating for dictation c
 - Preserved the complete original recording whenever speech is detected so voice-activity detection does not trim valid words from transcription input.
 - Kept transcription available through the existing decoder safeguards when voice-activity analysis is unavailable.
 - Added diagnostic output for voice-activity probabilities, detected speech ranges, audio-to-ambient measurements, and primary-versus-retry decode selection.
+- Prevented normalized compact times from being processed twice when the minute component is also a valid hour, avoiding output such as `8:10:00 PM` for `810 PM`.
 
 ### Notes
 
