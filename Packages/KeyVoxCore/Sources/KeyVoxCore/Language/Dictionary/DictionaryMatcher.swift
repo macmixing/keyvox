@@ -184,6 +184,15 @@ public final class DictionaryMatcher {
                 proposed.append(compressedTailReplacement)
             }
 
+            if let exactMultiTokenJoinReplacement = proposeExactMultiTokenJoinReplacement(
+                start: start,
+                tokens: tokens,
+                text: emailNormalizedInput,
+                stats: &stats
+            ) {
+                proposed.append(exactMultiTokenJoinReplacement)
+            }
+
             if let splitReplacement = proposeSplitJoinReplacement(
                 start: start,
                 tokens: tokens,
