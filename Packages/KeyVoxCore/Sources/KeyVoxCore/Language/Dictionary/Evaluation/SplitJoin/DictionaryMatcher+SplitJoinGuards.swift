@@ -41,17 +41,19 @@ extension DictionaryMatcher {
     }
 
     func isLikelyDomainTokenSplit(window: [Token], text: String) -> Bool {
-        guard window.count == 2 else { return false }
-        let second = window[1].normalized
-        guard second.count >= 2 else { return false }
+        guard window.count >= 2 else { return false }
         guard let regex = Self.domainLabelTokenRegex else { return false }
-        let secondRange = NSRange(location: 0, length: (second as NSString).length)
-        guard regex.firstMatch(in: second, options: [], range: secondRange) != nil else { return false }
 
         let nsText = text as NSString
-        let dotBeforeSecond = window[1].range.location > 0
-            && nsText.substring(with: NSRange(location: window[1].range.location - 1, length: 1)) == "."
-        return dotBeforeSecond
+        return window.dropFirst().contains { token in
+            guard token.normalized.count >= 2 else { return false }
+            let tokenRange = NSRange(location: 0, length: (token.normalized as NSString).length)
+            guard regex.firstMatch(in: token.normalized, options: [], range: tokenRange) != nil else {
+                return false
+            }
+            return token.range.location > 0
+                && nsText.substring(with: NSRange(location: token.range.location - 1, length: 1)) == "."
+        }
     }
 
     func isExplicitHyphenDelimitedSplit(window: [Token], text: String) -> Bool {

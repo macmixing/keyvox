@@ -178,6 +178,11 @@ extension DictionaryMatcher {
             return nil
         }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         let hasCommonObservedShortToken =
             requiresContextualShortTokenEvidence
             && window.contains(where: {
