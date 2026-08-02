@@ -6,6 +6,54 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.0] - 2026-08-01
+
+Adds selectable Whisper dictation languages and App Store review options, rejects noise-only captures before decoding, and improves shared transcript cleanup.
+
+### Added
+
+- Added a Language section to Dictation Model settings with Auto Detect and the complete set of languages supported by Whisper Base.
+- Added device-local Whisper language persistence so each iPhone or iPad keeps its own selection, while missing or unsupported saved values safely return to Auto Detect.
+- Added shared whole-capture voice-activity gating through `KeyVoxCore` `1.2.0` and `KeyVoxWhisper` `1.1.0`, using a bundled Silero `v5.1.2` model to identify recordings without speech before Whisper decoding.
+- Added a Rate & Review card to Settings that opens the KeyVox App Store review page.
+- Added an unobtrusive App Store review request for eligible established users after a recent successful dictation, limited to once per app version and deferred when onboarding, updates, dictation, playback, purchases, or another presentation is active.
+
+### Changed
+
+- Updated the iOS runtime to apply the selected Whisper language during model preparation and at the start of each transcription request so every capture uses one consistent language.
+- Updated the Parakeet language section to remain on Auto Detect with guidance to its supported-language FAQ, without overwriting the saved Whisper selection.
+- Updated iOS architecture documentation and the code map for language ownership, device-local persistence, the Whisper voice-activity gate, shared dictionary-matcher ownership, and the extracted Rate & Review settings section.
+
+### Fixed
+
+- Fixed steady background noise and other noise-only captures so they no longer reach Whisper decoding and produce hallucinated text, while recordings containing speech keep their complete original audio.
+- Fixed compact dictated times such as `810 PM` so they normalize once to `8:10 PM` instead of becoming `8:10:00 PM`.
+- Fixed strong spaced single-letter pronunciations so supported dictation such as individually spoken letters can match the intended custom dictionary term without weakening existing safeguards.
+- Fixed unanchored plural split/join matches so unrelated phrases such as `main goes` do not collapse into stylized custom dictionary entries, while valid anchored replacements remain supported.
+- Fixed stylized custom dictionary matching in guarded titlecase, list, noun, and particle contexts while preserving common-word protection and requiring eligible short-token evidence.
+- Fixed acronym-bearing custom dictionary entries so pronunciation-supported dictation such as `chat GBT` can resolve to `ChatGPT` while unrelated wording such as `chat got` remains unchanged.
+- Fixed exact three- and four-word custom dictionary phrases so the complete spoken phrase is replaced without leaving a duplicated prefix.
+- Fixed multi-word custom dictionary matching around dotted domains so website text is not collapsed into an unrelated dictionary entry.
+- Fixed normalized spoken email addresses so a sentence-ending period remains intact when the following sentence is initially captured as part of the domain.
+- Fixed qualified year references such as `in 2012 maybe`, `in maybe 2015`, and `since at least 2012` so they remain years while similarly phrased quantities still receive thousands separators.
+- Fixed incidental title casing at Whisper segment and audio-chunk boundaries while preserving proper names and capitalization after sentence-ending punctuation.
+- Fixed the keyboard Vibes action when its model is unavailable so the containing app opens the correct model-recovery or trial experience.
+- Fixed the keyboard toolbar layout after a call warning so the Vibes button returns without leaving stale spacing.
+
+### Package versions
+
+KeyVox iOS 1.3.0
+  KeyVoxCore            1.2.1
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.0
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.1.0
+
+---
+
 ## [1.2.17] - 2026-07-27
 
 Improves keyboard dictation around quotation marks, expands spoken terminal punctuation completion, and protects dictated text in debug diagnostics.
