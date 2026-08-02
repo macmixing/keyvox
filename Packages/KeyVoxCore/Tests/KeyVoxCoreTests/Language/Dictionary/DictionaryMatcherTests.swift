@@ -110,6 +110,53 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Dom Esposito.")
     }
 
+    func testDoesNotRewriteChatGotVariantsAsChatGPT() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "ChatGPT")])
+
+        let unrelatedInputs = [
+            "But as that got better, this got worse.",
+            "But as chat got better, this got worse.",
+            "But as chat GOT better, this got worse.",
+            "But as THAT, GOT better, this got worse.",
+            "But as chat G O T better, this got worse.",
+        ]
+        for input in unrelatedInputs {
+            XCTAssertEqual(matcher.apply(to: input).text, input)
+        }
+        XCTAssertEqual(matcher.apply(to: "I used chat gpt.").text, "I used ChatGPT.")
+        XCTAssertEqual(matcher.apply(to: "I used chat G P T.").text, "I used ChatGPT.")
+        XCTAssertEqual(
+            matcher.apply(to: "But as chat GBT got better, this got worse.").text,
+            "But as ChatGPT got better, this got worse."
+        )
+    }
+
+    func testSpelledUppercaseSequencesRequireMatchingPronunciation() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "DataAPI")])
+
+        let mismatchedTail = "The data APT changed."
+        XCTAssertEqual(matcher.apply(to: mismatchedTail).text, mismatchedTail)
+        XCTAssertEqual(matcher.apply(to: "The data api changed.").text, "The DataAPI changed.")
+
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "APIClient")])
+        let mismatchedHead = "The APT client changed."
+        XCTAssertEqual(matcher.apply(to: mismatchedHead).text, mismatchedHead)
+        XCTAssertEqual(matcher.apply(to: "The api client changed.").text, "The APIClient changed.")
+
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "DataAPIClient")])
+        let mismatchedMiddle = "The data APT client changed."
+        XCTAssertEqual(matcher.apply(to: mismatchedMiddle).text, mismatchedMiddle)
+        XCTAssertEqual(matcher.apply(to: "The data api client changed.").text, "The DataAPIClient changed.")
+
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "NASA")])
+        let mismatchedWholeEntry = "I worked with NABSA."
+        XCTAssertEqual(matcher.apply(to: mismatchedWholeEntry).text, mismatchedWholeEntry)
+        XCTAssertEqual(matcher.apply(to: "I worked with NASSA.").text, "I worked with NASA.")
+        XCTAssertEqual(matcher.apply(to: "I worked with nasa.").text, "I worked with NASA.")
+    }
+
     func testCompressedTailFallbackDoesNotRewriteUnrelatedThreeTokenSpan() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])

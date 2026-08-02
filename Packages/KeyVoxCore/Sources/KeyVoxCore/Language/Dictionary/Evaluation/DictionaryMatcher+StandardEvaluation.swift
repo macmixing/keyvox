@@ -220,6 +220,11 @@ extension DictionaryMatcher {
 
         guard let best, let bestObservedNormalized else { return nil }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
 
         if tokenCount == 1,
