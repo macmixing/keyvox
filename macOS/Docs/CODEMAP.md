@@ -648,6 +648,12 @@ KeyVox/
   - Implements possessive/plural form generation and suffix inference helpers used by evaluators.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationEvidenceHelpers.swift`
   - Contains split-tail consumption and token-alignment evidence helpers for deterministic scoring boosts.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+SpelledUppercaseGuard.swift`
+  - Owns shared phonetic validation for uppercase letter sequences across dictionary evaluation paths.
+  - Accepts pronunciation-equivalent sequences while rejecting candidates whose uppercase sequence has different phonetic evidence.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+ExactMultiTokenJoin.swift`
+  - Owns exact three- and four-token joins into canonical single-entry replacements.
+  - Defers dotted-domain protection to the shared split-join domain guard before proposing a replacement.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
   - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
   - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
