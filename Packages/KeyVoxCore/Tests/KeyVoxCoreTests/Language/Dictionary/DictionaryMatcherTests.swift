@@ -229,16 +229,25 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you been to AirRack's apartment in downtown LA?")
     }
 
-    func testDoesNotCollapseWebsiteDomainIntoStylizedDictionaryEntry() {
+    func testDoesNotCollapseWebsiteDomainsIntoStylizedDictionaryEntries() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
             scorer: .balanced
         )
-        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "wwwKeyVoxApp"),
+            DictionaryEntry(phrase: "docsKeyVoxCoUk"),
+        ])
 
-        let result = matcher.apply(to: "www.KeyVox.app")
-        XCTAssertEqual(result.text, "www.KeyVox.app")
+        let domains = [
+            "www.KeyVox.app",
+            "docs.KeyVox.co.uk",
+        ]
+        for domain in domains {
+            XCTAssertEqual(matcher.apply(to: domain).text, domain)
+        }
     }
 
     func testCorrectsTwoTokenNameNearMissWithImplicitPossessiveSuffix() {
