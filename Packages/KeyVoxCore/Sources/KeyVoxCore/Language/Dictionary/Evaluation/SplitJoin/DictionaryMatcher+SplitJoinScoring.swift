@@ -178,6 +178,11 @@ extension DictionaryMatcher {
             return nil
         }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         let hasCommonObservedShortToken =
             requiresContextualShortTokenEvidence
             && window.contains(where: {
@@ -216,11 +221,6 @@ extension DictionaryMatcher {
         if isStylizedSingleTokenEntry(best.entry) {
             let candidateToken = best.entry.tokens[0]
             let similarity = splitJoinStylizedSimilarity(window: window, candidateToken: candidateToken)
-
-            if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
-                stats.rejectedLowScore += 1
-                return nil
-            }
 
             // Keep split-join strict by default, but allow stylized single-token
             // brand-like entries when both text and phonetic evidence are strong.
