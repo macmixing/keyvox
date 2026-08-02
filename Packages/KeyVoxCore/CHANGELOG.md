@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.1] - 2026-08-02
+
+Safer pronunciation-aware dictionary correction with complete multi-token phrase recovery.
+
+### Includes
+
+- Corrected acronym-bearing dictionary entries using pronunciation evidence, allowing spoken equivalents such as `chat GBT` to resolve to `ChatGPT` while leaving unrelated prose such as `chat got` unchanged.
+- Applied the pronunciation safeguard consistently across standard, merged-token, middle-initial, compressed-tail, and split-join matching so equivalent input is handled the same way regardless of where the acronym appears or how the recognizer divides the phrase.
+- Added exact three- and four-token phrase recovery so the matcher consumes the complete spoken span, turning `data api client` into `DataAPIClient` instead of replacing only `api client` and leaving a duplicated `data` prefix.
+- Preserved established merged-token and stylized dictionary corrections while adding the new pronunciation safeguard.
+- Extended dotted-domain protection across two-, three-, and four-token join windows so website text cannot be collapsed into a dictionary entry.
+
+### Notes
+
+- `1.2.1` bumps the tracked patch engine version for `KeyVoxCore` to cover pronunciation-aware acronym correction, complete multi-token phrase recovery, and domain-safe joining used by shared dictation clients.
+
+---
+
 ## [1.2.0] - 2026-08-01
 
 Shared Whisper Base language selection and voice-activity gating for dictation clients.
