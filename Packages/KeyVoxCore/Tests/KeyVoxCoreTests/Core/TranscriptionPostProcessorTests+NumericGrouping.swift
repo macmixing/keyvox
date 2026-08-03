@@ -52,6 +52,30 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Can you give me about 2,000 of them? I need 1,000 of them.")
     }
 
+    func testPreservesYearAfterPartitivePrepositionWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I spent most of 2020 by myself.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I spent most of 2020 by myself.")
+    }
+
+    func testPreservesYearInQuestionBeforeTerminalPrepositionalPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Did you spend 2020 by yourself?",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Did you spend 2020 by yourself?")
+    }
+
     func testPreservesYearReferenceBeforeConfirmationPhrase() {
         let processor = TranscriptionPostProcessor()
 
@@ -62,6 +86,18 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "Yeah, that came out in 2001, right?")
+    }
+
+    func testPreservesYearAfterSimplePrepositionWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met her in 2015.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I met her in 2015.")
     }
 
     func testPreservesSpokenSinceYearWithoutGroupingSeparator() {
@@ -98,6 +134,60 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "I haven't done that since at least 2012.")
+    }
+
+    func testPreservesYearAfterLikeAndAtLeastWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Since like at least 2005.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Since like at least 2005.")
+    }
+
+    func testPreservesYearAfterSinceLikeAndAtLeastWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I haven't been there since like at least 2018.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I haven't been there since like at least 2018.")
+    }
+
+    func testPreservesCoordinatedYearsAfterFromWithoutGroupingSeparators() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "And I'm going to have Facebook data from 2008 as well as X data from 2011 combined in this.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "And I'm going to have Facebook data from 2008 as well as X data from 2011 combined in this."
+        )
+    }
+
+    func testPreservesCoordinatedYearsBeforeSentenceFinalLocationPhrase() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "And I'm going to have Facebook data from 2008 as well as X data from 2011 in this.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "And I'm going to have Facebook data from 2008 as well as X data from 2011 in this."
+        )
     }
 
     func testPreservesYearReferencesBeforeTerminalQualifiersAcrossNumericPaths() {
@@ -192,6 +282,95 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "I need 1,000, right?")
+    }
+
+    func testFormatsQuantityBeforeImmediateTimeQualifier() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I have about 2000 right now.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I have about 2,000 right now.")
+    }
+
+    func testPreservesPinNumberWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "My pin number is 5786.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "My pin number is 5786.")
+    }
+
+    func testPreservesExplicitYearBeyondCommonRangeWithoutGroupingSeparator() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Somebody's going to leave me a one star review in the year 3000 and I'm gonna roll in my fucking grave.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(
+            output,
+            "Somebody's going to leave me a one star review in the year 3000 and I'm gonna roll in my fucking grave."
+        )
+    }
+
+    func testFormatsUnqualifiedQuantityBeyondCommonYearRange() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I love you 3000",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I love you 3,000.")
+    }
+
+    func testFormatsNounBasedCountQuantityBeyondCommonYearRange() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The count 5786 is too high.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The count 5,786 is too high.")
+    }
+
+    func testFormatsTotalNumberQuantityBeyondCommonYearRange() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The total number 5786 is too high.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The total number 5,786 is too high.")
+    }
+
+    func testPreservesYearsQuantitiesAndPinNumberAcrossLongNumericGauntlet() {
+        let processor = TranscriptionPostProcessor()
+        let input = "I started collecting Ninja Turtle Action figures in 2018 and I thought it was pretty cool, but I never knew that I would have over 2000 of them by 2026. It's just crazy because if you think about it, I was born about 1985 and I wanted to get everything as a child growing up. I had about 1000 action figures and about 3500 more that looked like tiny little turtles. So it just goes to show you that by 2017 I was thoroughly into the hobby. Oh, by the way, I love you, 3000, but if you want to see how much money I've made from selling my Ninja Turtles, my pin number is 5786. Look at how much money is in there. Check it around the year 3000."
+        let expected = "I started collecting Ninja Turtle Action figures in 2018 and I thought it was pretty cool, but I never knew that I would have over 2,000 of them by 2026. It's just crazy because if you think about it, I was born about 1985 and I wanted to get everything as a child growing up. I had about 1,000 action figures and about 3,500 more that looked like tiny little turtles. So it just goes to show you that by 2017 I was thoroughly into the hobby. Oh, by the way, I love you, 3,000, but if you want to see how much money I've made from selling my Ninja Turtles, my pin number is 5786. Look at how much money is in there. Check it around the year 3000."
+
+        let output = processor.process(
+            input,
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, expected)
     }
 
     func testFormatsSpokenQuantityWithYearLikeValueWhenContextIsQuantity() {

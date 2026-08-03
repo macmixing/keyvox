@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.2] - 2026-08-02
+
+Thousands-grouping year, quantity, and identifier detection fixes with regression coverage.
+
+### Includes
+
+- Preserved four-digit year forms with stacked uncertainty qualifiers such as `like at least` across numeric and spoken-number normalization paths.
+- Preserved coordinated year references in noun contexts while continuing to group nearby quantities.
+- Reworked four-digit year-versus-quantity detection around contextual evidence instead of individual sentence-shape branches, preferring ungrouped years when the context is ambiguous while retaining grouping for clear quantities such as standalone values, plural noun complements, partitive phrases, and quantity modifiers.
+- Preserved prepositional and clause-based year forms, including simple references such as `in 2015`, even when the lexical tagger labels a neighboring alphabetic token as an unclassified word.
+- Preserved explicit temporal years beyond the common year range, including `year 3000`, while continuing to group unqualified quantities such as `3000`.
+- Protected nominal identifiers such as PIN numbers from grouping while retaining grouping for noun-based count and total-number quantities.
+- Added regression coverage for mixed-format inputs with preformatted and unformatted quantities, affected year forms, and nominal identifiers.
+
+### Notes
+
+- `1.2.2` bumps the tracked patch engine version for `KeyVoxCore` to cover thousands-grouping year detection and quantity protection used by shared dictation clients.
+
+---
+
 ## [1.2.1] - 2026-08-02
 
 Safer pronunciation-aware dictionary correction with complete multi-token phrase recovery.
