@@ -27,7 +27,7 @@ protocol PasteMenuFallbackCoordinating {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        typeLeadingSpacesOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult
 }
 
@@ -58,10 +58,10 @@ final class PasteMenuFallbackCoordinator {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        typeLeadingSpacesOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult {
         #if DEBUG
-        print("Accessibility injection failed/skipped. Triggering Menu Bar Paste...")
+        print("Accessibility injection failed/skipped. Triggering paste fallback...")
         #endif
 
         var didMenuFallbackInsert = false
@@ -69,26 +69,44 @@ final class PasteMenuFallbackCoordinator {
         var completionEvidence: PasteMenuFallbackCompletionEvidence = .none
         var isFirstMenuSuccessAttemptForProcess = false
 
-        var textForMenuPaste = insertionText
+        let transport = didAccessibilityInsertText
+            ? PasteMenuFallbackTransport(leadingSpacesToType: 0, textToPaste: insertionText)
+            : menuFallbackTransport(for: insertionText)
+        let textForMenuPaste = transport.textToPaste
         var didTypeLeadingSpaces = false
+        var keyboardSequenceAttempt: PasteMenuFallbackAttemptResult?
         let verificationContext = menuFallbackExecutor.captureVerificationContext()
         let initialUndoState = (verificationContext == nil)
             ? menuFallbackExecutor.captureUndoStateOnMainThread()
             : nil
 
-        // Some apps normalize leading spaces on paste. If AX injection fully failed,
-        // type leading spaces as key events, then paste the remaining text.
-        if !didAccessibilityInsertText {
-            let transport = menuFallbackTransport(for: insertionText)
-            textForMenuPaste = transport.textToPaste
-
-            if transport.leadingSpacesToType > 0 {
-                didTypeLeadingSpaces = typeLeadingSpacesOnMainThread(transport.leadingSpacesToType)
-            }
-        }
-
         if textForMenuPaste != insertionText {
             setClipboardStringOnMainThread(textForMenuPaste)
+        }
+
+        let liveVerificationProcessIDs = textForMenuPaste.isEmpty
+            ? []
+            : menuFallbackExecutor.liveVerificationProcessIDsOnMainThread(
+                targetProcessID: targetAppIdentity?.pid
+            )
+        let liveValueChangeSessions = menuFallbackExecutor.startLiveValueChangeVerificationSessions(
+            processIDs: liveVerificationProcessIDs
+        )
+        defer {
+            menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSessions)
+        }
+
+        // Some apps normalize leading spaces on paste. Send the spaces and Command-V
+        // through one keyboard event source so their delivery order is deterministic.
+        if transport.leadingSpacesToType > 0 {
+            didTypeLeadingSpaces = executeLeadingSpacePasteOnMainThread(
+                transport.leadingSpacesToType
+            )
+            if !textForMenuPaste.isEmpty {
+                keyboardSequenceAttempt = didTypeLeadingSpaces
+                    ? .actionSucceeded
+                    : .actionErrored
+            }
         }
 
         if textForMenuPaste.isEmpty {
@@ -99,22 +117,21 @@ final class PasteMenuFallbackCoordinator {
                 completionEvidence = .noClipboardPayload
             }
         } else {
-            let liveVerificationProcessIDs = menuFallbackExecutor.liveVerificationProcessIDsOnMainThread(
-                targetProcessID: targetAppIdentity?.pid
-            )
-            let liveValueChangeSessions = menuFallbackExecutor.startLiveValueChangeVerificationSessions(
-                processIDs: liveVerificationProcessIDs
-            )
-            defer {
-                menuFallbackExecutor.finishLiveValueChangeVerificationSession(liveValueChangeSessions)
+            let usedMenuBarAttempt: Bool
+            let menuAttemptResult: PasteMenuFallbackAttemptResult
+            if let keyboardSequenceAttempt {
+                usedMenuBarAttempt = false
+                menuAttemptResult = keyboardSequenceAttempt
+            } else {
+                usedMenuBarAttempt = true
+                menuAttemptResult = menuFallbackExecutor.pasteViaMenuBarOnMainThread()
             }
-
-            let menuAttemptResult = menuFallbackExecutor.pasteViaMenuBarOnMainThread()
             menuAttempt = menuAttemptResult
             var trustWithoutAXVerification = false
             var verificationOutcome: PasteMenuFallbackVerificationOutcome = .none
 
-            if case .actionSucceeded = menuAttemptResult,
+            if usedMenuBarAttempt,
+               case .actionSucceeded = menuAttemptResult,
                shouldAllowFirstMenuSuccessWarmupSuppression(for: targetAppIdentity) {
                 isFirstMenuSuccessAttemptForProcess = !hasSeenMenuSuccessAttempt(for: targetAppIdentity)
                 markMenuSuccessAttemptSeen(for: targetAppIdentity)

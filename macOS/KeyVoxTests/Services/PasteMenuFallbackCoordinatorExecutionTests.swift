@@ -16,7 +16,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { clipboardWrites.append($0) },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -37,11 +37,39 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in false }
+            executeLeadingSpacePasteOnMainThread: { _ in false }
         )
 
         XCTAssertFalse(result.didMenuFallbackInsert)
         XCTAssertNil(result.menuAttempt)
+    }
+
+    func testLeadingSpacePasteUsesOrderedKeyboardSequenceInsteadOfMenuAction() {
+        let coordinator = PasteMenuFallbackCoordinator()
+        let executor = MockPasteMenuFallbackExecutor()
+        executor.verificationContext = sampleVerificationContext()
+        executor.verifyInsertionOutcomeResult = .expectedPayloadObserved
+        var operations: [String] = []
+
+        let result = coordinator.executeMenuFallback(
+            insertionText: " hello",
+            didAccessibilityInsertText: false,
+            targetAppIdentity: identity("com.example.app", 1),
+            menuFallbackExecutor: executor,
+            shouldTrustMenuSuccessWithoutAXVerification: { false },
+            setClipboardStringOnMainThread: {
+                operations.append("clipboard:\($0)")
+            },
+            executeLeadingSpacePasteOnMainThread: { count in
+                operations.append("keyboard:\(count)")
+                return true
+            }
+        )
+
+        XCTAssertTrue(result.didMenuFallbackInsert)
+        XCTAssertEqual(operations, ["clipboard:hello", "keyboard:1"])
+        XCTAssertEqual(executor.pasteViaMenuBarCalls, 0)
+        XCTAssertEqual(executor.verifyInsertionCalls, 1)
     }
 
     func testUnavailableMenuAttemptReturnsNoInsertion() {
@@ -56,7 +84,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertFalse(result.didMenuFallbackInsert)
@@ -76,7 +104,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { true },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -100,7 +128,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -124,7 +152,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -149,7 +177,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -171,7 +199,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertFalse(result.didMenuFallbackInsert)
@@ -194,7 +222,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: executor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
@@ -219,7 +247,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: firstExecutor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         let secondExecutor = MockPasteMenuFallbackExecutor()
@@ -235,7 +263,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
             menuFallbackExecutor: secondExecutor,
             shouldTrustMenuSuccessWithoutAXVerification: { false },
             setClipboardStringOnMainThread: { _ in },
-            typeLeadingSpacesOnMainThread: { _ in true }
+            executeLeadingSpacePasteOnMainThread: { _ in true }
         )
 
         XCTAssertFalse(first.didMenuFallbackInsert)

@@ -510,7 +510,7 @@ private final class StubMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        typeLeadingSpacesOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult {
         _ = insertionText
         _ = didAccessibilityInsertText
@@ -518,7 +518,7 @@ private final class StubMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         _ = menuFallbackExecutor
         _ = shouldTrustMenuSuccessWithoutAXVerification
         _ = setClipboardStringOnMainThread
-        _ = typeLeadingSpacesOnMainThread
+        _ = executeLeadingSpacePasteOnMainThread
         executeCalls += 1
         return result
     }
