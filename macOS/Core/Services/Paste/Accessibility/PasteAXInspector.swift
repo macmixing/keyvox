@@ -95,41 +95,60 @@ final class PasteAXInspector: PasteAXInspecting {
         var previousCharacter: Character?
         var characterBeforePreviousCharacter: Character?
         var previousNonWhitespaceCharacter: Character?
+        var characterBeforePreviousNonWhitespaceCharacter: Character?
+        var isPreviousNonWhitespaceCharacterAtLineStart = false
         if let caretLocation, caretLocation > 0 {
-            previousCharacter = previousCharacterFromValueAttribute(element: focusedElement, caretLocation: caretLocation)
-            if previousCharacter == nil {
-                previousCharacter = stringForRange(
-                    CFRange(location: caretLocation - 1, length: 1),
-                    element: focusedElement
-                )?.first
-            }
-
-            if caretLocation > 1 {
-                characterBeforePreviousCharacter = previousCharacterFromValueAttribute(
-                    element: focusedElement,
-                    caretLocation: caretLocation - 1
-                )
-                if characterBeforePreviousCharacter == nil {
-                    characterBeforePreviousCharacter = stringForRange(
-                        CFRange(location: caretLocation - 2, length: 1),
-                        element: focusedElement
-                    )?.first
-                }
-            }
-
-            previousNonWhitespaceCharacter = computePreviousNonWhitespaceCharacter(
+            if let precedingText = textBeforeCaret(
                 element: focusedElement,
                 caretLocation: caretLocation
-            )
+            ) {
+                let precedingCharacters = Array(precedingText)
+                previousCharacter = precedingCharacters.last
+                characterBeforePreviousCharacter = precedingCharacters.dropLast().last
+
+                let precedingNonWhitespace = precedingCharacters.reversed().filter {
+                    !$0.isWhitespace
+                }
+                previousNonWhitespaceCharacter = precedingNonWhitespace.first
+                characterBeforePreviousNonWhitespaceCharacter = precedingNonWhitespace.dropFirst().first
+
+                if let previousNonWhitespaceIndex = precedingCharacters.lastIndex(where: { !$0.isWhitespace }) {
+                    var index = previousNonWhitespaceIndex - 1
+                    while index >= 0, precedingCharacters[index].isWhitespace {
+                        if precedingCharacters[index].unicodeScalars.allSatisfy(CharacterSet.newlines.contains) {
+                            isPreviousNonWhitespaceCharacterAtLineStart = true
+                            break
+                        }
+                        index -= 1
+                    }
+                }
+            }
         }
 
-        return PasteInsertionContext(
+        let context = PasteInsertionContext(
             selectionLength: selectionLength,
             caretLocation: caretLocation,
             previousCharacter: previousCharacter,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
-            previousNonWhitespaceCharacter: previousNonWhitespaceCharacter
+            previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
+            characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter,
+            isPreviousNonWhitespaceCharacterAtLineStart: isPreviousNonWhitespaceCharacterAtLineStart
         )
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" {
+            let caretDescription = caretLocation.map(String.init) ?? "-"
+            print(
+                "[PasteAXInspector] insertionContext "
+                    + "caret=\(caretDescription) "
+                    + "previous=\(String(reflecting: previousCharacter)) "
+                    + "beforePrevious=\(String(reflecting: characterBeforePreviousCharacter)) "
+                    + "previousNonWhitespace=\(String(reflecting: previousNonWhitespaceCharacter)) "
+                    + "beforePreviousNonWhitespace=\(String(reflecting: characterBeforePreviousNonWhitespaceCharacter)) "
+                    + "previousNonWhitespaceAtLineStart=\(isPreviousNonWhitespaceCharacterAtLineStart)"
+            )
+        }
+        #endif
+        return context
     }
 
     func focusedUIElement() -> AXUIElement? {
@@ -232,58 +251,39 @@ final class PasteAXInspector: PasteAXInspecting {
     }
 
     func previousCharacterFromValueAttribute(element: AXUIElement, caretLocation: Int) -> Character? {
-        guard caretLocation > 0 else { return nil }
-
-        var valueRef: CFTypeRef?
-        let valueResult = AXUIElementCopyAttributeValue(
-            element,
-            kAXValueAttribute as CFString,
-            &valueRef
-        )
-
-        guard valueResult == .success, let value = valueRef as? String else { return nil }
-        let nsValue = value as NSString
-        guard caretLocation <= nsValue.length else { return nil }
-
-        let previousText = nsValue.substring(with: NSRange(location: caretLocation - 1, length: 1))
-        return previousText.first
+        textBeforeCaretFromValueAttribute(
+            element: element,
+            caretLocation: caretLocation
+        )?.last
     }
 
-    private func computePreviousNonWhitespaceCharacter(
+    private func textBeforeCaret(element: AXUIElement, caretLocation: Int) -> String? {
+        if let valueText = textBeforeCaretFromValueAttribute(
+            element: element,
+            caretLocation: caretLocation
+        ) {
+            return valueText
+        }
+
+        guard caretLocation > 0 else { return nil }
+        let startLocation = max(0, caretLocation - maxPreviousNonWhitespaceScanLength)
+        return stringForRange(
+            CFRange(location: startLocation, length: caretLocation - startLocation),
+            element: element
+        )
+    }
+
+    private func textBeforeCaretFromValueAttribute(
         element: AXUIElement,
         caretLocation: Int
-    ) -> Character? {
-        guard caretLocation > 0 else { return nil }
-
-        if let value = valueString(for: element) {
-            let nsValue = value as NSString
-            let startingLocation = min(caretLocation, nsValue.length) - 1
-            var candidateLocation = startingLocation
-            while candidateLocation >= 0 {
-                let candidate = nsValue.substring(with: NSRange(location: candidateLocation, length: 1))
-                if let character = candidate.first, !character.isWhitespace {
-                    return character
-                }
-                candidateLocation -= 1
-            }
+    ) -> String? {
+        guard caretLocation > 0,
+              let value = valueString(for: element) else {
             return nil
         }
 
-        var candidateLocation = caretLocation - 1
-        var scannedCharacterCount = 0
-        while candidateLocation >= 0 && scannedCharacterCount < maxPreviousNonWhitespaceScanLength {
-            let candidate = stringForRange(
-                CFRange(location: candidateLocation, length: 1),
-                element: element
-            )?.first
-            if let candidate, !candidate.isWhitespace {
-                return candidate
-            }
-            candidateLocation -= 1
-            scannedCharacterCount += 1
-        }
-
-        return nil
+        let safeCaretLocation = min(caretLocation, value.utf16.count)
+        return String(decoding: value.utf16.prefix(safeCaretLocation), as: UTF16.self)
     }
 
     private func valueString(for element: AXUIElement) -> String? {

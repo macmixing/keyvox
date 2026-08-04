@@ -12,19 +12,25 @@ struct PasteInsertionContext {
     let previousCharacter: Character?
     let characterBeforePreviousCharacter: Character?
     let previousNonWhitespaceCharacter: Character?
+    let characterBeforePreviousNonWhitespaceCharacter: Character?
+    let isPreviousNonWhitespaceCharacterAtLineStart: Bool
 
     init(
         selectionLength: Int?,
         caretLocation: Int?,
         previousCharacter: Character?,
         characterBeforePreviousCharacter: Character? = nil,
-        previousNonWhitespaceCharacter: Character? = nil
+        previousNonWhitespaceCharacter: Character? = nil,
+        characterBeforePreviousNonWhitespaceCharacter: Character? = nil,
+        isPreviousNonWhitespaceCharacterAtLineStart: Bool = false
     ) {
         self.selectionLength = selectionLength
         self.caretLocation = caretLocation
         self.previousCharacter = previousCharacter
         self.characterBeforePreviousCharacter = characterBeforePreviousCharacter
         self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
+        self.characterBeforePreviousNonWhitespaceCharacter = characterBeforePreviousNonWhitespaceCharacter
+        self.isPreviousNonWhitespaceCharacterAtLineStart = isPreviousNonWhitespaceCharacterAtLineStart
     }
 }
 
