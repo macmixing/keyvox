@@ -61,6 +61,11 @@ final class KeyVoxKeyboardBridge {
     }
 
     func publishTranscriptionReady(_ text: String) {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" {
+            print("[KVXKeyboardBridge] transcriptionPayload text=\(text)")
+        }
+        #endif
         KeyVoxIPCBridge.setTranscription(text)
         KeyVoxIPCBridge.setRecordingState("idle")
         KeyVoxIPCBridge.clearLiveMeter()
