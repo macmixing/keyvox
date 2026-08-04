@@ -7,15 +7,48 @@ public enum TextCompositionPolicy {
         scope: LeadingCapitalizationScope,
         preserveLeadingCapitalization: Bool
     ) -> String {
-        normalizeLeadingCapitalizationIfNeeded(
+        let sentenceStart = isSentenceStart(in: context)
+        let output = normalizedLeadingCapitalization(
             in: text,
-            isSentenceStart: isSentenceStart(in: context),
+            isSentenceStart: sentenceStart,
             scope: scope,
             preserveLeadingCapitalization: preserveLeadingCapitalization
         )
+        #if DEBUG
+        logNormalization(
+            input: text,
+            output: output,
+            sentenceStart: sentenceStart,
+            context: context
+        )
+        #endif
+        return output
     }
 
     public static func normalizeLeadingCapitalizationIfNeeded(
+        in text: String,
+        isSentenceStart: Bool,
+        scope: LeadingCapitalizationScope,
+        preserveLeadingCapitalization: Bool
+    ) -> String {
+        let output = normalizedLeadingCapitalization(
+            in: text,
+            isSentenceStart: isSentenceStart,
+            scope: scope,
+            preserveLeadingCapitalization: preserveLeadingCapitalization
+        )
+        #if DEBUG
+        logNormalization(
+            input: text,
+            output: output,
+            sentenceStart: isSentenceStart,
+            context: nil
+        )
+        #endif
+        return output
+    }
+
+    private static func normalizedLeadingCapitalization(
         in text: String,
         isSentenceStart: Bool,
         scope: LeadingCapitalizationScope,
@@ -44,12 +77,20 @@ public enum TextCompositionPolicy {
         to text: String,
         context: TextCompositionContext
     ) -> String {
-        guard let previousCharacter = context.previousCharacter else { return text }
-        guard isImmediatelyAfterOpeningQuote(context) == false else { return text }
-        return applySmartLeadingSeparatorIfNeeded(
-            to: text,
-            previousCharacter: previousCharacter
-        )
+        let output: String
+        if let previousCharacter = context.previousCharacter,
+           isImmediatelyAfterOpeningQuote(context) == false {
+            output = applySmartLeadingSeparatorIfNeeded(
+                to: text,
+                previousCharacter: previousCharacter
+            )
+        } else {
+            output = text
+        }
+        #if DEBUG
+        logSpacing(input: text, output: output, context: context)
+        #endif
+        return output
     }
 
     public static func applySmartLeadingSeparatorIfNeeded(
@@ -76,6 +117,10 @@ public enum TextCompositionPolicy {
         }
 
         if isImmediatelyAfterTerminalPunctuationAndClosingQuote(context) {
+            return true
+        }
+
+        if isImmediatelyAfterEmojiAtSentenceBoundary(context) {
             return true
         }
 
@@ -154,6 +199,82 @@ public enum TextCompositionPolicy {
         return remainder.allSatisfy { $0.isUppercase == false }
     }
 
+    private static func isImmediatelyAfterEmojiAtSentenceBoundary(
+        _ context: TextCompositionContext
+    ) -> Bool {
+        guard let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
+              isEmojiCharacter(previousNonWhitespaceCharacter) else {
+            return false
+        }
+
+        if context.isPreviousNonWhitespaceCharacterAtLineStart {
+            return true
+        }
+
+        guard let characterBeforeEmoji = context.characterBeforePreviousNonWhitespaceCharacter else {
+            return true
+        }
+
+        return isSentenceBoundary(characterBeforeEmoji)
+    }
+
+    #if DEBUG
+    private static func logNormalization(
+        input: String,
+        output: String,
+        sentenceStart: Bool,
+        context: TextCompositionContext?
+    ) {
+        guard ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" else {
+            return
+        }
+        let previousNonWhitespace = context.map {
+            debugCharacter($0.previousNonWhitespaceCharacter)
+        } ?? "-"
+        let characterBeforePreviousNonWhitespace = context.map {
+            debugCharacter($0.characterBeforePreviousNonWhitespaceCharacter)
+        } ?? "-"
+        let lineStart = context.map {
+            String($0.isPreviousNonWhitespaceCharacterAtLineStart)
+        } ?? "-"
+        print(
+            "[KVXTextComposition] leadingCapitalization "
+                + "changed=\(input != output) "
+                + "inputLength=\(input.count) outputLength=\(output.count) "
+                + "output=\(output) "
+                + "sentenceStart=\(sentenceStart) "
+                + "previousNonWhitespace=\(previousNonWhitespace) "
+                + "beforePreviousNonWhitespace=\(characterBeforePreviousNonWhitespace) "
+                + "previousNonWhitespaceAtLineStart=\(lineStart)"
+        )
+    }
+
+    private static func logSpacing(
+        input: String,
+        output: String,
+        context: TextCompositionContext
+    ) {
+        guard ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" else {
+            return
+        }
+        print(
+            "[KVXTextComposition] leadingSeparator "
+                + "changed=\(input != output) "
+                + "inputLength=\(input.count) outputLength=\(output.count) "
+                + "output=\(output) "
+                + "previousCharacter=\(debugCharacter(context.previousCharacter))"
+        )
+    }
+
+    private static func debugCharacter(_ character: Character?) -> String {
+        guard let character else { return "-" }
+        let scalars = character.unicodeScalars
+            .map { String(format: "U+%04X", $0.value) }
+            .joined(separator: "+")
+        return "\(String(reflecting: character))[\(scalars)]"
+    }
+    #endif
+
     private static func shouldInsertLeadingSpace(
         previousCharacter: Character,
         firstIncomingCharacter: Character
@@ -177,6 +298,19 @@ public enum TextCompositionPolicy {
         let previousIsTriggerPunctuation = previousCharacter.unicodeScalars.contains(
             where: punctuation.contains
         )
-        return previousIsWordLike || previousIsTriggerPunctuation
+        return previousIsWordLike
+            || previousIsTriggerPunctuation
+            || isEmojiCharacter(previousCharacter)
+    }
+
+    private static func isEmojiCharacter(_ character: Character) -> Bool {
+        let scalars = Array(character.unicodeScalars)
+        guard let baseScalar = scalars.first else { return false }
+        if baseScalar.properties.isEmojiPresentation {
+            return true
+        }
+
+        return baseScalar.properties.isEmoji
+            && scalars.dropFirst().first?.value == 0xFE0F
     }
 }
