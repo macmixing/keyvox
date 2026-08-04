@@ -213,8 +213,8 @@ final class OverlayMotionController {
         (panel as? OverlayPanel)?.frameAnimationDurationOverride = nil
         panel.setFrame(overshootFrame, display: true, animate: true)
 
-        let settleWorkItem = DispatchWorkItem { [weak panel] in
-            guard let panel else { return }
+        let settleWorkItem = DispatchWorkItem { [weak self, weak panel] in
+            guard let self, let panel else { return }
             if let overlayPanel = panel as? OverlayPanel {
                 overlayPanel.frameAnimationDurationOverride = self.resetSettleDuration
             }
