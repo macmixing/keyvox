@@ -219,6 +219,32 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
+    func testPreservesExistingMixedCaseAtTextStartAndSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "eBay is awesome. eBay is useful.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "eBay is awesome. eBay is useful.")
+    }
+    func testCapitalizesAfterEmojiOnlyAtSentenceOrLineBoundary() {
+        let normalizer = SentenceCapitalizationNormalizer()
+        let cases = [
+            (input: "😎 emoji", expected: "😎 Emoji"),
+            (input: "©️ emoji", expected: "©️ Emoji"),
+            (input: "#️⃣ emoji", expected: "#️⃣ Emoji"),
+            (input: "That was great. 😎 emoji", expected: "That was great. 😎 Emoji"),
+            (input: "That was great\n😎 emoji", expected: "That was great\n😎 Emoji"),
+            (input: "That was great 😎 emoji", expected: "That was great 😎 emoji")
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(normalizer.normalizeSentenceStarts(in: testCase.input), testCase.expected)
+        }
+    }
     func testPreservesReadmeFilenameExtensionWithoutSentenceSplit() {
         let processor = TranscriptionPostProcessor()
 

@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.2] - 2026-08-02
+## [1.2.2] - 2026-08-03
 
-Thousands-grouping year, quantity, and identifier detection fixes with regression coverage.
+Thousands-grouping, stylized-capitalization, and emoji-boundary normalization fixes with regression coverage.
 
 ### Includes
 
@@ -18,11 +18,14 @@ Thousands-grouping year, quantity, and identifier detection fixes with regressio
 - Preserved prepositional and clause-based year forms, including simple references such as `in 2015`, even when the lexical tagger labels a neighboring alphabetic token as an unclassified word.
 - Preserved explicit temporal years beyond the common year range, including `year 3000`, while continuing to group unqualified quantities such as `3000`.
 - Protected nominal identifiers such as PIN numbers from grouping while retaining grouping for noun-based count and total-number quantities.
+- Preserved model-emitted stylized mixed-case tokens such as `eBay` at sentence and list boundaries while continuing to capitalize ordinary list items.
+- Added emoji-aware sentence and line-boundary capitalization while leaving emoji-following continuation text lowercase when it follows ordinary prose.
 - Added regression coverage for mixed-format inputs with preformatted and unformatted quantities, affected year forms, and nominal identifiers.
+- Added regression coverage for stylized casing, ordinary list-item capitalization, and emoji sentence boundaries.
 
 ### Notes
 
-- `1.2.2` bumps the tracked patch engine version for `KeyVoxCore` to cover thousands-grouping year detection and quantity protection used by shared dictation clients.
+- `1.2.2` tracks the thousands-grouping, quantity-protection, stylized-capitalization, and emoji-boundary behavior used by shared dictation clients.
 
 ---
 
