@@ -137,18 +137,119 @@ private struct IndicatorLogoView: View {
                 .shadow(radius: 10)
                 .frame(width: LogoBarView.Metrics.overlayCircleSize, height: LogoBarView.Metrics.overlayCircleSize)
 
-            HStack(spacing: LogoBarView.Metrics.overlayBarSpacing) {
-                ForEach(0..<5) { index in
-                    ReactiveIndicatorSegmentView(
-                        index: index,
-                        phase: phase,
-                        timelineState: timelineState
-                    )
-                }
-            }
+            indicatorBars
         }
         .padding(OverlayPresentationMetrics.contentPadding)
         .padding(OverlayPresentationMetrics.shadowBleedPadding)
+    }
+
+    @ViewBuilder
+    private var indicatorBars: some View {
+        if let timelineMode {
+            TimelineView(.animation) { context in
+                TimelineIndicatorBarsView(
+                    mode: timelineMode,
+                    phase: renderedTimelinePhase(at: context.date, mode: timelineMode),
+                    displayedLevel: timelineState.displayedLevel
+                )
+            }
+        } else {
+            barStack()
+        }
+    }
+
+    private var timelineMode: TimelineIndicatorBarsView.Mode? {
+        if phase == .processing {
+            return .processing
+        }
+        if phase == .listening && timelineState.signalState == .lowActivity {
+            return .lowActivity
+        }
+        return nil
+    }
+
+    private func barStack() -> some View {
+        HStack(spacing: LogoBarView.Metrics.overlayBarSpacing) {
+            ForEach(0..<5) { index in
+                ReactiveIndicatorSegmentView(
+                    index: index,
+                    phase: phase,
+                    timelineState: timelineState
+                )
+            }
+        }
+    }
+
+    private func renderedTimelinePhase(
+        at date: Date,
+        mode: TimelineIndicatorBarsView.Mode
+    ) -> Double {
+        let elapsed = max(date.timeIntervalSince1970 - timelineState.timestamp, 0)
+        let phase: Double
+        let rate: Double
+
+        switch mode {
+        case .lowActivity:
+            phase = timelineState.lowActivityPhase
+            rate = AudioIndicatorDriver.lowActivityPhaseRate
+        case .processing:
+            phase = timelineState.processingPhase
+            rate = AudioIndicatorDriver.processingPhaseRate
+        }
+
+        return phase + (elapsed * rate)
+    }
+}
+
+private struct TimelineIndicatorBarsView: View {
+    enum Mode {
+        case lowActivity
+        case processing
+    }
+
+    let mode: Mode
+    let phase: Double
+    let displayedLevel: CGFloat
+
+    var body: some View {
+        Canvas { context, size in
+            context.addFilter(.shadow(color: .yellow.opacity(0.9), radius: 4, x: 0, y: 0))
+
+            let barWidth = LogoBarView.Metrics.overlayBarWidth
+            let barSpacing = LogoBarView.Metrics.overlayBarSpacing
+            let totalWidth = (barWidth * 5) + (barSpacing * 4)
+            let firstBarX = (size.width - totalWidth) / 2
+
+            for index in 0..<5 {
+                let barHeight: CGFloat = switch mode {
+                case .lowActivity:
+                    lowActivityBarHeight(
+                        index: index,
+                        phase: phase,
+                        displayedLevel: displayedLevel
+                    )
+                case .processing:
+                    processingBarHeight(index: index, phase: phase)
+                }
+                let barRect = CGRect(
+                    x: firstBarX + (CGFloat(index) * (barWidth + barSpacing)),
+                    y: (size.height - barHeight) / 2,
+                    width: barWidth,
+                    height: barHeight
+                )
+                let barPath = Path(roundedRect: barRect, cornerRadius: 26)
+
+                context.fill(
+                    barPath,
+                    with: .linearGradient(
+                        Gradient(colors: [MacAppTheme.accent, MacAppTheme.accent.opacity(0.9)]),
+                        startPoint: CGPoint(x: barRect.midX, y: barRect.maxY),
+                        endPoint: CGPoint(x: barRect.midX, y: barRect.minY)
+                    )
+                )
+            }
+        }
+        .frame(width: LogoBarView.Metrics.overlayCircleSize, height: LogoBarView.Metrics.overlayCircleSize)
     }
 }
 
@@ -203,12 +304,6 @@ private struct ReactiveIndicatorSegmentView: View {
         let flatHeight: CGFloat = isDevModeOversized ? 9 : 3
         let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
 
-        if phase == .processing {
-            let waveOffset = timelineState.processingPhase + Double(index) * 0.8
-            let rippleHeight = sin(waveOffset) * 0.5 + 0.5
-            return flatHeight + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
-        }
-
         guard phase == .listening else {
             return flatHeight
         }
@@ -218,24 +313,41 @@ private struct ReactiveIndicatorSegmentView: View {
         }
 
         if timelineState.signalState == .lowActivity {
-            let quietWaveOffset = timelineState.lowActivityPhase + Double(index) * 0.8
-            let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
-            let wiggleOffset = (timelineState.lowActivityPhase * 0.9) + Double(index) * 1.35
-            let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
-            let quietLevel = min(max(timelineState.displayedLevel / 0.14, 0), 1)
-            let ambientBaseLift: CGFloat = isDevModeOversized ? 3.2 : 1.2
-            let quietLevelLift: CGFloat = isDevModeOversized ? 2.3 : 0.8
-            let ambientWiggleRange: CGFloat = isDevModeOversized ? 2.6 : 0.9
-            let subtleRippleRange: CGFloat = isDevModeOversized ? 5.4 : 2.0
-            return flatHeight
-                + ambientBaseLift
-                + (CGFloat(quietLevel) * quietLevelLift)
-                + (CGFloat(ambientWiggle) * ambientWiggleRange)
-                + (CGFloat(quietRipple) * subtleRippleRange)
+            return lowActivityBarHeight(
+                index: index,
+                phase: timelineState.lowActivityPhase,
+                displayedLevel: timelineState.displayedLevel
+            )
         }
 
         let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
         let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
         return max(minHeight, dynamicHeight)
     }
+}
+
+private func processingBarHeight(index: Int, phase: Double) -> CGFloat {
+    let flatHeight: CGFloat = isDevModeOversized ? 9 : 3
+    let waveOffset = phase + Double(index) * 0.8
+    let rippleHeight = sin(waveOffset) * 0.5 + 0.5
+    return flatHeight + (CGFloat(rippleHeight) * (isDevModeOversized ? 37 : 9))
+}
+
+private func lowActivityBarHeight(index: Int, phase: Double, displayedLevel: CGFloat) -> CGFloat {
+    let flatHeight: CGFloat = isDevModeOversized ? 9 : 3
+    let quietWaveOffset = phase + Double(index) * 0.8
+    let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
+    let wiggleOffset = (phase * 0.9) + Double(index) * 1.35
+    let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
+    let quietLevel = min(max(displayedLevel / 0.14, 0), 1)
+    let ambientBaseLift: CGFloat = isDevModeOversized ? 3.2 : 1.2
+    let quietLevelLift: CGFloat = isDevModeOversized ? 2.3 : 0.8
+    let ambientWiggleRange: CGFloat = isDevModeOversized ? 2.6 : 0.9
+    let subtleRippleRange: CGFloat = isDevModeOversized ? 5.4 : 2.0
+
+    return flatHeight
+        + ambientBaseLift
+        + (CGFloat(quietLevel) * quietLevelLift)
+        + (CGFloat(ambientWiggle) * ambientWiggleRange)
+        + (CGFloat(quietRipple) * subtleRippleRange)
 }

@@ -26,21 +26,25 @@ nonisolated struct AudioIndicatorTimelineState: Equatable {
     let signalState: AudioIndicatorSignalState
     let lowActivityPhase: Double
     let processingPhase: Double
+    let timestamp: TimeInterval
 
     static let initial = AudioIndicatorTimelineState(
         displayedLevel: 0,
         signalState: .inactive,
         lowActivityPhase: 0,
-        processingPhase: 0
+        processingPhase: 0,
+        timestamp: 0
     )
 }
 
 final class AudioIndicatorDriver: ObservableObject {
+    static let animationFrameDuration: TimeInterval = 0.016
+    static let lowActivityPhaseRate: Double = 3.6
+    static let processingPhaseRate: Double = 6.0
+
     private enum Metrics {
-        static let processingPhaseStep: Double = 0.1
-        static let lowActivityPhaseStep: Double = 0.06
         static let phaseWrapPeriod: Double = .pi * 2
-        static let timerInterval: TimeInterval = 0.016
+        static let timerInterval: TimeInterval = AudioIndicatorDriver.animationFrameDuration
         static let meterPollInterval: TimeInterval = 1.0 / 30.0
         static let sampleFreshnessWindow: TimeInterval = 0.35
         static let smoothingRate: CGFloat = 16
@@ -101,18 +105,19 @@ final class AudioIndicatorDriver: ObservableObject {
     func advance(to timestamp: TimeInterval, sample: AudioIndicatorSample?) {
         assertMainThread()
         let previousTimestamp = lastTickTimestamp ?? timestamp
-        let delta = min(max(timestamp - previousTimestamp, 1.0 / 120.0), 1.0 / 20.0)
+        let rawDelta = max(timestamp - previousTimestamp, 0)
+        let delta = min(max(rawDelta, 1.0 / 120.0), 1.0 / 20.0)
         lastTickTimestamp = timestamp
 
-        processingPhase = wrappedPhase(processingPhase + Metrics.processingPhaseStep * delta * 60)
-        lowActivityPhase = wrappedPhase(lowActivityPhase + Metrics.lowActivityPhaseStep * delta * 60)
+        processingPhase = wrappedPhase(processingPhase + AudioIndicatorDriver.processingPhaseRate * delta)
+        lowActivityPhase = wrappedPhase(lowActivityPhase + AudioIndicatorDriver.lowActivityPhaseRate * delta)
 
         refreshSampleIfNeeded(at: timestamp, sample: sample)
 
         let smoothing = min(delta * Metrics.smoothingRate, 1)
         displayedLevel += (targetLevel - displayedLevel) * smoothing
 
-        publishTimelineState()
+        publishTimelineState(at: timestamp)
     }
 
     private func refreshSampleIfNeeded(at timestamp: TimeInterval, sample: AudioIndicatorSample?) {
@@ -147,12 +152,13 @@ final class AudioIndicatorDriver: ObservableObject {
         return wrapped
     }
 
-    private func publishTimelineState() {
+    private func publishTimelineState(at timestamp: TimeInterval = Date().timeIntervalSince1970) {
         timelineState = AudioIndicatorTimelineState(
             displayedLevel: displayedLevel,
             signalState: signalState,
             lowActivityPhase: lowActivityPhase,
-            processingPhase: processingPhase
+            processingPhase: processingPhase,
+            timestamp: timestamp
         )
     }
 
