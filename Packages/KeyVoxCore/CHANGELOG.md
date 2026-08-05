@@ -6,12 +6,13 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.2] - 2026-08-04
+## [1.2.2] - 2026-08-05
 
 Thousands-grouping, numeric dictionary matching, stylized-capitalization, and emoji-boundary normalization fixes with regression coverage.
 
 ### Includes
 
+- Added VAD-aware Whisper speech-range selection that removes trailing and inter-speech silence before decoding while preserving logical paragraph chunk boundaries, reducing hallucinated text from accepted silence.
 - Preserved four-digit year forms with stacked uncertainty qualifiers such as `like at least` across numeric and spoken-number normalization paths.
 - Preserved coordinated year references in noun contexts while continuing to group nearby quantities.
 - Reworked four-digit year-versus-quantity detection around contextual evidence instead of individual sentence-shape branches, preferring ungrouped years when the context is ambiguous while retaining grouping for clear quantities such as standalone values, plural noun complements, partitive phrases, and quantity modifiers.
