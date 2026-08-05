@@ -49,6 +49,7 @@ final class TranscriptionManager: ObservableObject {
     var idleTimeoutTask: Task<Void, Never>?
     var utteranceSafetyTask: Task<Void, Never>?
     var activeUtteranceID = UUID()
+    var activeInterruptedCaptureRecoveryID: UUID?
 
     lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
@@ -77,6 +78,20 @@ final class TranscriptionManager: ObservableObject {
             await self?.processOutputText(context) ?? .unchanged(context.baseText)
         }
     )
+
+    func runDictationPipeline(
+        audioFrames: [Float],
+        useDictionaryHintPrompt: Bool
+    ) async -> DictationPipelineResult {
+        await withCheckedContinuation { continuation in
+            dictationPipeline.run(
+                audioFrames: audioFrames,
+                useDictionaryHintPrompt: useDictionaryHintPrompt
+            ) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
 
     init(
         recorder: any AudioRecording,
@@ -309,50 +324,47 @@ final class TranscriptionManager: ObservableObject {
         state = .transcribing
         keyboardBridge.publishTranscribing()
 
-        dictationPipeline.run(
+        let result = await runDictationPipeline(
             audioFrames: stoppedCapture.outputFrames,
             useDictionaryHintPrompt: usedDictionaryHintPrompt
-        ) { [weak self] result in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                guard utteranceID == self.activeUtteranceID else {
-                    await self.releaseStyleRewritePrewarmSession("stale-result")
-                    return
-                }
+        )
 
-                let finalText = self.pendingPipelineOutputText ?? result.finalText
-                #if DEBUG
-                print("2. Provider inference: \(String(format: "%.3f", result.inferenceDuration))s")
-                self.logTextTransformationSpeedProfile(result)
-                #endif
-                self.pendingPipelineOutputText = nil
-                self.lastErrorMessage = nil
-                self.state = .idle
-                self.recordPipelineResult(result, finalText)
-
-                if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    #if DEBUG
-                    print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
-                    let totalTime = Date().timeIntervalSince(startTime)
-                    print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
-                    print("--- Speed Profile End ---")
-                    #endif
-                    self.keyboardBridge.publishNoSpeech()
-                } else {
-                    #if DEBUG
-                    print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
-                    let totalTime = Date().timeIntervalSince(startTime)
-                    print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
-                    print("--- Speed Profile End ---")
-                    #endif
-                    self.lastTranscriptionText = finalText
-                    self.keyboardBridge.publishTranscriptionReady(finalText)
-                }
-
-                await self.releaseStyleRewritePrewarmSession("utterance-finished")
-                Task { await self.finishAndDisableSessionIfNeeded() }
-            }
+        guard utteranceID == activeUtteranceID else {
+            await releaseStyleRewritePrewarmSession("stale-result")
+            return
         }
+
+        let finalText = pendingPipelineOutputText ?? result.finalText
+        #if DEBUG
+        print("2. Provider inference: \(String(format: "%.3f", result.inferenceDuration))s")
+        logTextTransformationSpeedProfile(result)
+        #endif
+        pendingPipelineOutputText = nil
+        lastErrorMessage = nil
+        state = .idle
+        recordPipelineResult(result, finalText)
+
+        if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            #if DEBUG
+            print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+            let totalTime = Date().timeIntervalSince(startTime)
+            print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
+            print("--- Speed Profile End ---")
+            #endif
+            keyboardBridge.publishNoSpeech()
+        } else {
+            #if DEBUG
+            print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
+            let totalTime = Date().timeIntervalSince(startTime)
+            print("Total end-to-end latency: \(String(format: "%.3f", totalTime))s")
+            print("--- Speed Profile End ---")
+            #endif
+            lastTranscriptionText = finalText
+            keyboardBridge.publishTranscriptionReady(finalText)
+        }
+
+        await releaseStyleRewritePrewarmSession("utterance-finished")
+        await finishAndDisableSessionIfNeeded()
     }
 
     private func bindDictionaryState() {

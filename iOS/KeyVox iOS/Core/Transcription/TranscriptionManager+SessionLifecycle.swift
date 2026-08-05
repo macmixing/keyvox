@@ -134,6 +134,8 @@ extension TranscriptionManager {
         activeUtteranceID = UUID()
         cancelUtteranceSafetyWatchdog()
         pendingPipelineOutputText = nil
+        isRecoveringInterruptedCapture = false
+        activeInterruptedCaptureRecoveryID = nil
         lastErrorMessage = nil
 
         switch state {
