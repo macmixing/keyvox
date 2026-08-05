@@ -63,6 +63,13 @@ final class AudioIndicatorDriverTests: XCTestCase {
         XCTAssertGreaterThan(driver.timelineState.lowActivityPhase, initialPhase)
     }
 
+    func testDeadInputUsesQuietIndicatorState() {
+        XCTAssertEqual(
+            AudioIndicatorSignalState(liveInputSignalState: .dead),
+            .lowActivity
+        )
+    }
+
     private func makeSample(level: CGFloat, signalState: AudioIndicatorSignalState, timestamp: TimeInterval) -> AudioIndicatorSample {
         AudioIndicatorSample(level: level, signalState: signalState, timestamp: timestamp)
     }

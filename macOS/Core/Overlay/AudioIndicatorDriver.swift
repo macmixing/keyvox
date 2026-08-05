@@ -165,7 +165,7 @@ extension AudioIndicatorSignalState {
     init(liveInputSignalState: LiveInputSignalState) {
         switch liveInputSignalState {
         case .dead:
-            self = .inactive
+            self = .lowActivity
         case .quiet:
             self = .lowActivity
         case .active:
