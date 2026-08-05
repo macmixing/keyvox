@@ -3,7 +3,6 @@ import Foundation
 public struct PhoneticEncoder {
     public init() {}
 
-    @MainActor
     public func signature(for normalizedToken: String, lexicon: PronunciationLexiconProviding) -> String {
         let tokenVariants = DictionaryNumericMatching.tokenVariants(for: normalizedToken)
         if let numericSpelling = tokenVariants.last,
@@ -25,19 +24,16 @@ public struct PhoneticEncoder {
         return fallbackSignature(for: normalizedToken)
     }
 
-    @MainActor
     public func phraseSignature(for tokens: [String], lexicon: PronunciationLexiconProviding) -> String {
         tokens
             .map { signature(for: $0, lexicon: lexicon) }
             .joined(separator: " ")
     }
 
-    @MainActor
     public func scoringSignature(for normalizedToken: String, lexicon: PronunciationLexiconProviding) -> String {
         fallbackSignature(for: signature(for: normalizedToken, lexicon: lexicon))
     }
 
-    @MainActor
     public func scoringPhraseSignature(for tokens: [String], lexicon: PronunciationLexiconProviding) -> String {
         tokens
             .map { scoringSignature(for: $0, lexicon: lexicon) }

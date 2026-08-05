@@ -1,6 +1,6 @@
 import Foundation
 
-public struct DictionaryEntry: Codable, Identifiable, Equatable {
+public struct DictionaryEntry: Codable, Identifiable, Equatable, Sendable {
     public let id: UUID
     public var phrase: String
 

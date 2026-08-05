@@ -13,6 +13,8 @@ Thousands-grouping, numeric dictionary matching, stylized-capitalization, and em
 ### Includes
 
 - Added VAD-aware Whisper speech-range selection that removes trailing and inter-speech silence before decoding while preserving logical paragraph chunk boundaries, reducing hallucinated text from accepted silence.
+- Moved transcription post-processing and deterministic variant generation onto a serialized background queue so longer dictation results do not block UI work while preserving the synchronous API for callers that require it.
+- Delivered no-speech dictation completions asynchronously on `MainActor`, matching the successful transcription callback isolation.
 - Preserved four-digit year forms with stacked uncertainty qualifiers such as `like at least` across numeric and spoken-number normalization paths.
 - Preserved coordinated year references in noun contexts while continuing to group nearby quantities.
 - Reworked four-digit year-versus-quantity detection around contextual evidence instead of individual sentence-shape branches, preferring ungrouped years when the context is ambiguous while retaining grouping for clear quantities such as standalone values, plural noun complements, partitive phrases, and quantity modifiers.

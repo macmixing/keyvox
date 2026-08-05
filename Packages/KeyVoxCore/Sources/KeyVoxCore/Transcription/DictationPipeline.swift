@@ -233,28 +233,30 @@ public final class DictationPipeline {
             #endif
 
             guard !wasLikelyNoSpeech else {
-                completion(
-                    DictationPipelineResult(
-                        id: utteranceID,
-                        rawText: rawText,
-                        baseText: "",
-                        uncappedFinalText: "",
-                        finalText: "",
-                        baseParagraphsEnabled: autoParagraphsEnabled,
-                        baseListsEnabled: listFormattingEnabled,
-                        deterministicVariants: [],
-                        wasLikelyNoSpeech: true,
-                        inferenceDuration: inferenceDuration,
-                        textTransformationDuration: 0,
-                        textTransformationApplied: false,
-                        textTransformationStyleIdentifier: nil,
-                        textTransformationChunkCount: 0,
-                        textTransformationErrorDescription: nil,
-                        textTransformationErrors: [],
-                        textTransformationProcessingMode: nil,
-                        pasteDuration: 0
+                Task { @MainActor in
+                    completion(
+                        DictationPipelineResult(
+                            id: utteranceID,
+                            rawText: rawText,
+                            baseText: "",
+                            uncappedFinalText: "",
+                            finalText: "",
+                            baseParagraphsEnabled: autoParagraphsEnabled,
+                            baseListsEnabled: listFormattingEnabled,
+                            deterministicVariants: [],
+                            wasLikelyNoSpeech: true,
+                            inferenceDuration: inferenceDuration,
+                            textTransformationDuration: 0,
+                            textTransformationApplied: false,
+                            textTransformationStyleIdentifier: nil,
+                            textTransformationChunkCount: 0,
+                            textTransformationErrorDescription: nil,
+                            textTransformationErrors: [],
+                            textTransformationProcessingMode: nil,
+                            pasteDuration: 0
+                        )
                     )
-                )
+                }
                 return
             }
 
@@ -262,53 +264,53 @@ public final class DictationPipeline {
                 merging: userDictionaryEntries
             )
             let renderMode = self.listRenderModeProvider()
-            let finalText = self.postProcessor.process(
-                rawText,
-                dictionaryEntries: dictionaryEntries,
-                renderMode: renderMode,
-                listFormattingEnabled: listFormattingEnabled,
-                forceAllCaps: false,
-                languageCode: languageCode
-            )
-            #if DEBUG
-            self.logPipelineStage("finalText", finalText)
-            #endif
-
-            if DictationPromptEchoGuard.shouldTreatAsNoSpeech(
-                processedText: finalText,
-                dictionaryEntries: dictionaryEntries,
-                usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
-            ) {
-                #if DEBUG
-                print("DictationPipeline: Suppressed likely dictionary prompt echo output.")
-                #endif
-                completion(
-                    DictationPipelineResult(
-                        id: utteranceID,
-                        rawText: rawText,
-                        baseText: finalText,
-                        uncappedFinalText: "",
-                        finalText: "",
-                        baseParagraphsEnabled: autoParagraphsEnabled,
-                        baseListsEnabled: listFormattingEnabled,
-                        deterministicVariants: [],
-                        wasLikelyNoSpeech: true,
-                        inferenceDuration: inferenceDuration,
-                        textTransformationDuration: 0,
-                        textTransformationApplied: false,
-                        textTransformationStyleIdentifier: nil,
-                        textTransformationChunkCount: 0,
-                        textTransformationErrorDescription: nil,
-                        textTransformationErrors: [],
-                        textTransformationProcessingMode: nil,
-                        pasteDuration: 0
-                    )
-                )
-                return
-            }
-
             Task { @MainActor [self] in
-                let deterministicVariants = self.deterministicVariants(
+                let finalText = await self.postProcessor.processAsync(
+                    rawText,
+                    dictionaryEntries: dictionaryEntries,
+                    renderMode: renderMode,
+                    listFormattingEnabled: listFormattingEnabled,
+                    forceAllCaps: false,
+                    languageCode: languageCode
+                )
+                #if DEBUG
+                self.logPipelineStage("finalText", finalText)
+                #endif
+
+                if DictationPromptEchoGuard.shouldTreatAsNoSpeech(
+                    processedText: finalText,
+                    dictionaryEntries: dictionaryEntries,
+                    usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
+                ) {
+                    #if DEBUG
+                    print("DictationPipeline: Suppressed likely dictionary prompt echo output.")
+                    #endif
+                    completion(
+                        DictationPipelineResult(
+                            id: utteranceID,
+                            rawText: rawText,
+                            baseText: finalText,
+                            uncappedFinalText: "",
+                            finalText: "",
+                            baseParagraphsEnabled: autoParagraphsEnabled,
+                            baseListsEnabled: listFormattingEnabled,
+                            deterministicVariants: [],
+                            wasLikelyNoSpeech: true,
+                            inferenceDuration: inferenceDuration,
+                            textTransformationDuration: 0,
+                            textTransformationApplied: false,
+                            textTransformationStyleIdentifier: nil,
+                            textTransformationChunkCount: 0,
+                            textTransformationErrorDescription: nil,
+                            textTransformationErrors: [],
+                            textTransformationProcessingMode: nil,
+                            pasteDuration: 0
+                        )
+                    )
+                    return
+                }
+
+                let deterministicVariants = await self.deterministicVariants(
                     paragraphRawText: paragraphRawText,
                     inlineRawText: inlineRawText,
                     dictionaryEntries: dictionaryEntries,
@@ -368,10 +370,10 @@ public final class DictationPipeline {
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
-    ) -> [DictationPipelineResult.DeterministicTextVariant] {
+    ) async -> [DictationPipelineResult.DeterministicTextVariant] {
         #if DEBUG
-        return TranscriptionPostProcessingDebugLogging.$isEnabled.withValue(false) {
-            makeDeterministicVariants(
+        return await TranscriptionPostProcessingDebugLogging.$isEnabled.withValue(false) {
+            await makeDeterministicVariants(
                 paragraphRawText: paragraphRawText,
                 inlineRawText: inlineRawText,
                 dictionaryEntries: dictionaryEntries,
@@ -380,7 +382,7 @@ public final class DictationPipeline {
             )
         }
         #else
-        return makeDeterministicVariants(
+        return await makeDeterministicVariants(
             paragraphRawText: paragraphRawText,
             inlineRawText: inlineRawText,
             dictionaryEntries: dictionaryEntries,
@@ -396,8 +398,8 @@ public final class DictationPipeline {
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
-    ) -> [DictationPipelineResult.DeterministicTextVariant] {
-        let noParagraphsNoLists = postProcessor.process(
+    ) async -> [DictationPipelineResult.DeterministicTextVariant] {
+        let noParagraphsNoLists = await postProcessor.processAsync(
             inlineRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: .singleLineInline,
@@ -405,7 +407,7 @@ public final class DictationPipeline {
             forceAllCaps: false,
             languageCode: languageCode
         )
-        let paragraphsNoLists = postProcessor.process(
+        let paragraphsNoLists = await postProcessor.processAsync(
             paragraphRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
@@ -413,7 +415,7 @@ public final class DictationPipeline {
             forceAllCaps: false,
             languageCode: languageCode
         )
-        let noParagraphsWithLists = postProcessor.process(
+        let noParagraphsWithLists = await postProcessor.processAsync(
             inlineRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
@@ -421,7 +423,7 @@ public final class DictationPipeline {
             forceAllCaps: false,
             languageCode: languageCode
         )
-        let paragraphsWithLists = postProcessor.process(
+        let paragraphsWithLists = await postProcessor.processAsync(
             paragraphRawText,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,

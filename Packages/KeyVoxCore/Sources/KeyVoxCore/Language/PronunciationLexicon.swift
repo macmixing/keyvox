@@ -12,13 +12,11 @@ struct PronunciationLookup: Sendable {
     }
 }
 
-@MainActor
 public protocol PronunciationLexiconProviding: AnyObject {
     func pronunciation(for normalizedWord: String) -> String?
     func isCommonWord(_ normalizedWord: String) -> Bool
 }
 
-@MainActor
 public final class PronunciationLexicon: PronunciationLexiconProviding {
     public static let shared = PronunciationLexicon()
 

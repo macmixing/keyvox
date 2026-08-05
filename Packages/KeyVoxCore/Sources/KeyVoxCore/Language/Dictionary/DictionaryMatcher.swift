@@ -11,7 +11,6 @@ public struct DictionaryMatchResult {
     }
 }
 
-@MainActor
 public final class DictionaryMatcher {
     public struct DebugStats {
         public var attempted: Int = 0

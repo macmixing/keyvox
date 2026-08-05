@@ -6,8 +6,11 @@ enum TranscriptionPostProcessingDebugLogging {
 }
 #endif
 
-@MainActor
-public final class TranscriptionPostProcessor {
+public final class TranscriptionPostProcessor: @unchecked Sendable {
+    private let processingQueue = DispatchQueue(
+        label: "com.cueit.keyvox.transcription-post-processing",
+        qos: .userInitiated
+    )
     private let dictionaryMatcher = DictionaryMatcher()
     private let listFormattingEngine = ListFormattingEngine()
     private let laughterNormalizer = LaughterNormalizer()
@@ -31,6 +34,12 @@ public final class TranscriptionPostProcessor {
     public init() {}
 
     public func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
+        processingQueue.sync {
+            updateDictionaryEntriesSynchronously(entries)
+        }
+    }
+
+    private func updateDictionaryEntriesSynchronously(_ entries: [DictionaryEntry]) {
         let effectiveEntries = DictionaryBuiltInEntries.effectiveEntries(merging: entries)
         let fingerprint = fingerprint(for: effectiveEntries)
         guard fingerprint != dictionaryFingerprint else { return }
@@ -39,6 +48,49 @@ public final class TranscriptionPostProcessor {
     }
 
     public func process(
+        _ text: String,
+        dictionaryEntries: [DictionaryEntry],
+        renderMode: ListRenderMode,
+        listFormattingEnabled: Bool = true,
+        forceAllCaps: Bool = false,
+        languageCode: String? = nil
+    ) -> String {
+        processingQueue.sync {
+            processSynchronously(
+                text,
+                dictionaryEntries: dictionaryEntries,
+                renderMode: renderMode,
+                listFormattingEnabled: listFormattingEnabled,
+                forceAllCaps: forceAllCaps,
+                languageCode: languageCode
+            )
+        }
+    }
+
+    public func processAsync(
+        _ text: String,
+        dictionaryEntries: [DictionaryEntry],
+        renderMode: ListRenderMode,
+        listFormattingEnabled: Bool = true,
+        forceAllCaps: Bool = false,
+        languageCode: String? = nil
+    ) async -> String {
+        await withCheckedContinuation { continuation in
+            processingQueue.async {
+                let output = self.processSynchronously(
+                    text,
+                    dictionaryEntries: dictionaryEntries,
+                    renderMode: renderMode,
+                    listFormattingEnabled: listFormattingEnabled,
+                    forceAllCaps: forceAllCaps,
+                    languageCode: languageCode
+                )
+                continuation.resume(returning: output)
+            }
+        }
+    }
+
+    private func processSynchronously(
         _ text: String,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
@@ -58,7 +110,7 @@ public final class TranscriptionPostProcessor {
         }
         #endif
 
-        updateDictionaryEntries(dictionaryEntries)
+        updateDictionaryEntriesSynchronously(dictionaryEntries)
         let emailNormalizedInput = EmailAddressNormalizer.normalize(in: text)
         #if DEBUG
         logPipelineStage("emailNormalizedInput", emailNormalizedInput)
