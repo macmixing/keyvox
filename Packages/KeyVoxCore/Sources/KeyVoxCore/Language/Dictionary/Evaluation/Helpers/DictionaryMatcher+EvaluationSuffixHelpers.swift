@@ -11,33 +11,58 @@ extension DictionaryMatcher {
         window: [Token],
         observedNormalized: String,
         observedPhonetic: String
-    ) -> [(normalized: String, phonetic: String, replacementSuffix: String)] {
+    ) -> [(normalized: String, phonetic: String, replacementSuffix: String, numericSourceTokens: [String?])] {
+        func numericSourceTokens(for normalized: String) -> [String?] {
+            let tokens = normalized.split(separator: " ").map(String.init)
+            return DictionaryNumericMatching.phraseVariants(for: tokens)
+                .first(where: { $0.normalized == normalized })?
+                .numericSourceTokens
+                ?? Array(repeating: nil, count: tokens.count)
+        }
+
         guard tokenCount == 1 || tokenCount == 2 else {
-            return [(normalized: observedNormalized, phonetic: observedPhonetic, replacementSuffix: "")]
+            return [(
+                normalized: observedNormalized,
+                phonetic: observedPhonetic,
+                replacementSuffix: "",
+                numericSourceTokens: numericSourceTokens(for: observedNormalized)
+            )]
         }
 
         var seen = Set<String>()
-        var forms: [(normalized: String, phonetic: String, replacementSuffix: String)] = []
+        var forms: [(normalized: String, phonetic: String, replacementSuffix: String, numericSourceTokens: [String?])] = []
 
-        func appendForm(normalized: String, phonetic: String, replacementSuffix: String) {
+        func appendForm(
+            normalized: String,
+            phonetic: String,
+            replacementSuffix: String,
+            numericSourceTokens: [String?]
+        ) {
             let key = "\(normalized)|\(replacementSuffix)"
             guard seen.insert(key).inserted else { return }
-            forms.append((normalized: normalized, phonetic: phonetic, replacementSuffix: replacementSuffix))
+            forms.append((
+                normalized: normalized,
+                phonetic: phonetic,
+                replacementSuffix: replacementSuffix,
+                numericSourceTokens: numericSourceTokens
+            ))
         }
 
         appendForm(
             normalized: observedNormalized,
             phonetic: observedPhonetic,
-            replacementSuffix: ""
+            replacementSuffix: "",
+            numericSourceTokens: numericSourceTokens(for: observedNormalized)
         )
 
         for numericVariant in DictionaryNumericMatching.phraseVariants(for: window.map(\.normalized))
-        where numericVariant != observedNormalized {
-            let variantTokens = numericVariant.split(separator: " ").map(String.init)
+        where numericVariant.normalized != observedNormalized
+            && numericVariant.tokens.count == tokenCount {
             appendForm(
-                normalized: numericVariant,
-                phonetic: encoder.scoringPhraseSignature(for: variantTokens, lexicon: lexicon),
-                replacementSuffix: ""
+                normalized: numericVariant.normalized,
+                phonetic: encoder.scoringPhraseSignature(for: numericVariant.tokens, lexicon: lexicon),
+                replacementSuffix: "",
+                numericSourceTokens: numericVariant.numericSourceTokens
             )
         }
 
@@ -49,7 +74,8 @@ extension DictionaryMatcher {
                     appendForm(
                         normalized: stem,
                         phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                        replacementSuffix: "'s"
+                        replacementSuffix: "'s",
+                        numericSourceTokens: numericSourceTokens(for: stem)
                     )
                 }
             } else if observedNormalized.hasSuffix("s"),
@@ -61,7 +87,8 @@ extension DictionaryMatcher {
                     appendForm(
                         normalized: stem,
                         phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                        replacementSuffix: "s"
+                        replacementSuffix: "s",
+                        numericSourceTokens: numericSourceTokens(for: stem)
                     )
 
                     // Preserve implicit possessive recovery for proper-name-like tokens.
@@ -70,7 +97,8 @@ extension DictionaryMatcher {
                         appendForm(
                             normalized: stem,
                             phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                            replacementSuffix: "'s"
+                            replacementSuffix: "'s",
+                            numericSourceTokens: numericSourceTokens(for: stem)
                         )
                     }
                 }
@@ -89,7 +117,8 @@ extension DictionaryMatcher {
                 appendForm(
                     normalized: normalized,
                     phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
-                    replacementSuffix: "'s"
+                    replacementSuffix: "'s",
+                    numericSourceTokens: numericSourceTokens(for: normalized)
                 )
             }
         } else if second.hasSuffix("s"),
@@ -103,7 +132,8 @@ extension DictionaryMatcher {
                 appendForm(
                     normalized: normalized,
                     phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
-                    replacementSuffix: "'s"
+                    replacementSuffix: "'s",
+                    numericSourceTokens: numericSourceTokens(for: normalized)
                 )
             }
         }

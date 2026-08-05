@@ -29,6 +29,7 @@ extension DictionaryMatcher {
         let normalizedPhrase: String
         let matchingNormalizedPhrases: [String]
         let tokens: [String]
+        let numericSourceTokens: [String?]
         let phoneticPhrase: String
     }
 

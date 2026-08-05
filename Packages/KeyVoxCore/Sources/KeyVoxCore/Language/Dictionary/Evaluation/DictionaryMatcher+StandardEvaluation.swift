@@ -130,6 +130,7 @@ extension DictionaryMatcher {
                 for form in observedForms {
                     guard hasSufficientNumericAlignment(
                         observedNormalized: form.normalized,
+                        observedNumericSourceTokens: form.numericSourceTokens,
                         candidate: candidate
                     ) else {
                         continue

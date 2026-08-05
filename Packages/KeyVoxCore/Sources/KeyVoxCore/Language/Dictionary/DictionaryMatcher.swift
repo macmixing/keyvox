@@ -93,16 +93,13 @@ public final class DictionaryMatcher {
             let tokens = normalizedPhrase.split(separator: " ").map(String.init)
             guard !tokens.isEmpty, tokens.count <= 4 else { continue }
 
-            let phoneticPhrase = encoder.scoringPhraseSignature(for: tokens, lexicon: lexicon)
-            let compiled = CompiledEntry(
+            for compiled in compiledEntries(
                 phrase: entry.phrase,
                 normalizedPhrase: normalizedPhrase,
-                matchingNormalizedPhrases: DictionaryNumericMatching.phraseVariants(for: tokens),
-                tokens: tokens,
-                phoneticPhrase: phoneticPhrase
-            )
-
-            grouped[tokens.count, default: []].append(compiled)
+                tokens: tokens
+            ) {
+                grouped[compiled.tokens.count, default: []].append(compiled)
+            }
 
             for alias in DictionaryBuiltInEntries.aliases(for: entry) {
                 let normalizedAlias = DictionaryTextNormalization.normalizedPhrase(alias)
@@ -111,21 +108,46 @@ public final class DictionaryMatcher {
                 let aliasTokens = normalizedAlias.split(separator: " ").map(String.init)
                 guard !aliasTokens.isEmpty, aliasTokens.count <= 4 else { continue }
 
-                let aliasPhoneticPhrase = encoder.scoringPhraseSignature(for: aliasTokens, lexicon: lexicon)
-                let compiledAlias = CompiledEntry(
+                for compiledAlias in compiledEntries(
                     phrase: entry.phrase,
                     normalizedPhrase: normalizedAlias,
-                    matchingNormalizedPhrases: DictionaryNumericMatching.phraseVariants(for: aliasTokens),
-                    tokens: aliasTokens,
-                    phoneticPhrase: aliasPhoneticPhrase
-                )
-
-                grouped[aliasTokens.count, default: []].append(compiledAlias)
+                    tokens: aliasTokens
+                ) {
+                    grouped[compiledAlias.tokens.count, default: []].append(compiledAlias)
+                }
             }
         }
 
         entriesByTokenCount = grouped
         emailEntriesByDomain = emailGrouped
+    }
+
+    private func compiledEntries(
+        phrase: String,
+        normalizedPhrase: String,
+        tokens: [String]
+    ) -> [CompiledEntry] {
+        var variantsByTokenCount: [Int: [DictionaryNumericMatching.PhraseVariant]] = [:]
+        for variant in DictionaryNumericMatching.phraseVariants(for: tokens)
+        where !variant.tokens.isEmpty && variant.tokens.count <= 4 {
+            variantsByTokenCount[variant.tokens.count, default: []].append(variant)
+        }
+
+        return variantsByTokenCount.keys.sorted().compactMap { tokenCount in
+            guard let variants = variantsByTokenCount[tokenCount], !variants.isEmpty else {
+                return nil
+            }
+
+            let activeVariant = variants.first(where: { $0.normalized == normalizedPhrase }) ?? variants[0]
+            return CompiledEntry(
+                phrase: phrase,
+                normalizedPhrase: activeVariant.normalized,
+                matchingNormalizedPhrases: variants.map(\.normalized),
+                tokens: activeVariant.tokens,
+                numericSourceTokens: activeVariant.numericSourceTokens,
+                phoneticPhrase: encoder.scoringPhraseSignature(for: activeVariant.tokens, lexicon: lexicon)
+            )
+        }
     }
 
     public func apply(to text: String) -> DictionaryMatchResult {

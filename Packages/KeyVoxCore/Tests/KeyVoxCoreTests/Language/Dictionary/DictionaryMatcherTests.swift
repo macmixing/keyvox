@@ -50,6 +50,25 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
+    func testMatchesMultiwordCardinalForNumericDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The schedule says twenty one time today.").text,
+            "The schedule says 21 Time today."
+        )
+    }
+
+    func testDoesNotMatchDifferentMultiwordCardinalForNumericDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
+
+        let input = "The schedule says twenty two time today."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testExactPhraseIsPreserved() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
