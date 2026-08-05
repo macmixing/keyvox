@@ -10,15 +10,20 @@ extension DictionaryMatcher {
         var forms: [JoinedObservedForm] = []
         var seen = Set<String>()
 
-        let direct = first + second
-        if !direct.isEmpty, seen.insert(direct).inserted {
-            forms.append(
-                JoinedObservedForm(
-                    normalized: direct,
-                    singularizedSecondToken: false,
-                    replacementSuffix: ""
-                )
-            )
+        for firstVariant in DictionaryNumericMatching.tokenVariants(for: first) {
+            for secondVariant in DictionaryNumericMatching.tokenVariants(for: second) {
+                let direct = firstVariant.replacingOccurrences(of: " ", with: "")
+                    + secondVariant.replacingOccurrences(of: " ", with: "")
+                if !direct.isEmpty, seen.insert(direct).inserted {
+                    forms.append(
+                        JoinedObservedForm(
+                            normalized: direct,
+                            singularizedSecondToken: false,
+                            replacementSuffix: ""
+                        )
+                    )
+                }
+            }
         }
 
         if second.hasSuffix("'s"), second.count > minimumSplitTokenLength {

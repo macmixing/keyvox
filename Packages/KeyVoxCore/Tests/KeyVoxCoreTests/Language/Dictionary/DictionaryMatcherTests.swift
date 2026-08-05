@@ -4,6 +4,115 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherTests: XCTestCase {
+    func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
+
+        let input = "The team logged seven moves during rehearsal."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testMatchesNumericShapeForHyphenatedDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
+
+        let result = matcher.apply(to: "The storefront is next to 7-11.")
+
+        XCTAssertEqual(result.text, "The storefront is next to 7-Eleven.")
+    }
+
+    func testMatchesCardinalAndOrdinalNumericShapesForSpokenDictionaryPhrase() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "I think 11 time will be great.").text,
+            "I think Leven Time will be great."
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "We built 11th time for the demo.").text,
+            "We built Leven Time for the demo."
+        )
+    }
+
+    func testMatchesNumericShapeWhenDictionaryEntryIsJoined() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LevenTime")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The prototype uses 11 time.").text,
+            "The prototype uses LevenTime."
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "I tested 11th time today.").text,
+            "I tested LevenTime today."
+        )
+    }
+
+    func testMatchesMultiwordCardinalForNumericDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The schedule says twenty one time today.").text,
+            "The schedule says 21 Time today."
+        )
+    }
+
+    func testDoesNotMatchDifferentMultiwordCardinalForNumericDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
+
+        let input = "The schedule says twenty two time today."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Pilots")])
+
+        let input = "That's the 21st pilot."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testMatchesNumericPluralToSpelledOutDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Twenty One Pilots")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "Yeah, that's 21 pilots.").text,
+            "Yeah, that's Twenty One Pilots."
+        )
+    }
+
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+        let cases = [
+            (entry: "42 Comets", input: "The 42nd comet passed overhead."),
+            (entry: "53 Runners", input: "The 53rd runner crossed the finish line."),
+            (entry: "44 Climbers", input: "The 44th climber reached the summit.")
+        ]
+
+        for testCase in cases {
+            let matcher = makeRuntimeMatcher()
+            matcher.rebuildIndex(entries: [DictionaryEntry(phrase: testCase.entry)])
+
+            XCTAssertEqual(matcher.apply(to: testCase.input).text, testCase.input)
+        }
+    }
+
+    func testMatchesCardinalPluralToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "42 Comets")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The forty two comets passed overhead.").text,
+            "The 42 Comets passed overhead."
+        )
+    }
+
     func testExactPhraseIsPreserved() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
