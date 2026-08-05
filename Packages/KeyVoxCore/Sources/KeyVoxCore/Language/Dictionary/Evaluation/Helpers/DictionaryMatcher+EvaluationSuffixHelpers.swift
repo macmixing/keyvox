@@ -16,25 +16,41 @@ extension DictionaryMatcher {
             return [(normalized: observedNormalized, phonetic: observedPhonetic, replacementSuffix: "")]
         }
 
-        var forms: [(normalized: String, phonetic: String, replacementSuffix: String)] = [
-            (normalized: observedNormalized, phonetic: observedPhonetic, replacementSuffix: "")
-        ]
         var seen = Set<String>()
-        seen.insert("\(observedNormalized)|")
+        var forms: [(normalized: String, phonetic: String, replacementSuffix: String)] = []
+
+        func appendForm(normalized: String, phonetic: String, replacementSuffix: String) {
+            let key = "\(normalized)|\(replacementSuffix)"
+            guard seen.insert(key).inserted else { return }
+            forms.append((normalized: normalized, phonetic: phonetic, replacementSuffix: replacementSuffix))
+        }
+
+        appendForm(
+            normalized: observedNormalized,
+            phonetic: observedPhonetic,
+            replacementSuffix: ""
+        )
+
+        for numericVariant in DictionaryNumericMatching.phraseVariants(for: window.map(\.normalized))
+        where numericVariant != observedNormalized {
+            let variantTokens = numericVariant.split(separator: " ").map(String.init)
+            appendForm(
+                normalized: numericVariant,
+                phonetic: encoder.scoringPhraseSignature(for: variantTokens, lexicon: lexicon),
+                replacementSuffix: ""
+            )
+        }
 
         if tokenCount == 1 {
             let observedRawToken = window.first?.raw ?? observedNormalized
             if observedNormalized.hasSuffix("'s"), observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast(2))
                 if stem.count >= EvaluationSuffixConstants.minimumStemLength {
-                    let key = "\(stem)|'s"
-                    if seen.insert(key).inserted {
-                        forms.append((
-                            normalized: stem,
-                            phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                            replacementSuffix: "'s"
-                        ))
-                    }
+                    appendForm(
+                        normalized: stem,
+                        phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
+                        replacementSuffix: "'s"
+                    )
                 }
             } else if observedNormalized.hasSuffix("s"),
                       !observedNormalized.hasSuffix("ss"),
@@ -42,26 +58,20 @@ extension DictionaryMatcher {
                       observedNormalized.count > 3 {
                 let stem = String(observedNormalized.dropLast())
                 if stem.count >= EvaluationSuffixConstants.minimumStemLength {
-                    let pluralKey = "\(stem)|s"
-                    if seen.insert(pluralKey).inserted {
-                        forms.append((
-                            normalized: stem,
-                            phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                            replacementSuffix: "s"
-                        ))
-                    }
+                    appendForm(
+                        normalized: stem,
+                        phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
+                        replacementSuffix: "s"
+                    )
 
                     // Preserve implicit possessive recovery for proper-name-like tokens.
                     let startsUppercase = observedRawToken.unicodeScalars.first?.properties.isUppercase == true
                     if startsUppercase {
-                        let possessiveKey = "\(stem)|'s"
-                        if seen.insert(possessiveKey).inserted {
-                            forms.append((
-                                normalized: stem,
-                                phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
-                                replacementSuffix: "'s"
-                            ))
-                        }
+                        appendForm(
+                            normalized: stem,
+                            phonetic: encoder.scoringSignature(for: stem, lexicon: lexicon),
+                            replacementSuffix: "'s"
+                        )
                     }
                 }
             }
@@ -76,14 +86,11 @@ extension DictionaryMatcher {
             let stem = String(second.dropLast(2))
             if stem.count >= minimumSplitTokenLength {
                 let normalized = "\(first) \(stem)"
-                let key = "\(normalized)|'s"
-                if seen.insert(key).inserted {
-                    forms.append((
-                        normalized: normalized,
-                        phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
-                        replacementSuffix: "'s"
-                    ))
-                }
+                appendForm(
+                    normalized: normalized,
+                    phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
+                    replacementSuffix: "'s"
+                )
             }
         } else if second.hasSuffix("s"),
                   !second.hasSuffix("ss"),
@@ -93,14 +100,11 @@ extension DictionaryMatcher {
             let stem = String(second.dropLast())
             if stem.count >= minimumSplitTokenLength {
                 let normalized = "\(first) \(stem)"
-                let key = "\(normalized)|'s"
-                if seen.insert(key).inserted {
-                    forms.append((
-                        normalized: normalized,
-                        phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
-                        replacementSuffix: "'s"
-                    ))
-                }
+                appendForm(
+                    normalized: normalized,
+                    phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
+                    replacementSuffix: "'s"
+                )
             }
         }
 

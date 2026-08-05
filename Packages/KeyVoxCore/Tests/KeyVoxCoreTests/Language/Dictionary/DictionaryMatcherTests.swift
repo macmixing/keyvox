@@ -4,6 +4,52 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherTests: XCTestCase {
+    func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
+
+        let input = "The team logged seven moves during rehearsal."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testMatchesNumericShapeForHyphenatedDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
+
+        let result = matcher.apply(to: "The storefront is next to 7-11.")
+
+        XCTAssertEqual(result.text, "The storefront is next to 7-Eleven.")
+    }
+
+    func testMatchesCardinalAndOrdinalNumericShapesForSpokenDictionaryPhrase() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "I think 11 time will be great.").text,
+            "I think Leven Time will be great."
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "We built 11th time for the demo.").text,
+            "We built Leven Time for the demo."
+        )
+    }
+
+    func testMatchesNumericShapeWhenDictionaryEntryIsJoined() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LevenTime")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The prototype uses 11 time.").text,
+            "The prototype uses LevenTime."
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "I tested 11th time today.").text,
+            "I tested LevenTime today."
+        )
+    }
+
     func testExactPhraseIsPreserved() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])

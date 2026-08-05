@@ -97,6 +97,7 @@ public final class DictionaryMatcher {
             let compiled = CompiledEntry(
                 phrase: entry.phrase,
                 normalizedPhrase: normalizedPhrase,
+                matchingNormalizedPhrases: DictionaryNumericMatching.phraseVariants(for: tokens),
                 tokens: tokens,
                 phoneticPhrase: phoneticPhrase
             )
@@ -114,6 +115,7 @@ public final class DictionaryMatcher {
                 let compiledAlias = CompiledEntry(
                     phrase: entry.phrase,
                     normalizedPhrase: normalizedAlias,
+                    matchingNormalizedPhrases: DictionaryNumericMatching.phraseVariants(for: aliasTokens),
                     tokens: aliasTokens,
                     phoneticPhrase: aliasPhoneticPhrase
                 )
