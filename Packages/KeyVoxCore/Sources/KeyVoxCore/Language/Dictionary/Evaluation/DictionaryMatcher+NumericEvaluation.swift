@@ -58,6 +58,13 @@ extension DictionaryMatcher {
                 continue
             }
 
+            guard !hasSingularPluralMismatch(
+                observedToken: observedToken,
+                candidateToken: candidateToken
+            ) else {
+                return false
+            }
+
             let textSimilarity = scorer.similarity(lhs: observedToken, rhs: candidateToken)
             let observedPhonetic = encoder.scoringSignature(for: observedToken, lexicon: lexicon)
             let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
@@ -72,6 +79,21 @@ extension DictionaryMatcher {
         }
 
         return true
+    }
+
+    private func hasSingularPluralMismatch(observedToken: String, candidateToken: String) -> Bool {
+        func singularStem(of token: String) -> String? {
+            guard token.count > 3,
+                  token.hasSuffix("s"),
+                  !token.hasSuffix("ss"),
+                  !token.hasSuffix("s'") else {
+                return nil
+            }
+            return String(token.dropLast())
+        }
+
+        return singularStem(of: observedToken) == candidateToken
+            || singularStem(of: candidateToken) == observedToken
     }
 
     private func numericTokenVariantsOverlap(_ lhs: String, _ rhs: String) -> Bool {

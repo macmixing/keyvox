@@ -69,6 +69,50 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Pilots")])
+
+        let input = "That's the 21st pilot."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testMatchesNumericPluralToSpelledOutDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Twenty One Pilots")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "Yeah, that's 21 pilots.").text,
+            "Yeah, that's Twenty One Pilots."
+        )
+    }
+
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+        let cases = [
+            (entry: "42 Comets", input: "The 42nd comet passed overhead."),
+            (entry: "53 Runners", input: "The 53rd runner crossed the finish line."),
+            (entry: "44 Climbers", input: "The 44th climber reached the summit.")
+        ]
+
+        for testCase in cases {
+            let matcher = makeRuntimeMatcher()
+            matcher.rebuildIndex(entries: [DictionaryEntry(phrase: testCase.entry)])
+
+            XCTAssertEqual(matcher.apply(to: testCase.input).text, testCase.input)
+        }
+    }
+
+    func testMatchesCardinalPluralToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "42 Comets")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The forty two comets passed overhead.").text,
+            "The 42 Comets passed overhead."
+        )
+    }
+
     func testExactPhraseIsPreserved() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])

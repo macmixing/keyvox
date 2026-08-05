@@ -12,6 +12,19 @@ enum DictionaryNumericMatching {
         options: []
     )
 
+    private static let cardinalNumericLookup: [String: String] = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .spellOut
+
+        var lookup: [String: String] = [:]
+        for value in 0...999 {
+            guard let spelledOut = formatter.string(from: NSNumber(value: value)) else { continue }
+            lookup[DictionaryTextNormalization.normalizedPhrase(spelledOut)] = String(value)
+        }
+        return lookup
+    }()
+
     static func isNumericToken(_ normalizedToken: String) -> Bool {
         let range = NSRange(location: 0, length: (normalizedToken as NSString).length)
         return numericTokenRegex.firstMatch(in: normalizedToken, options: [], range: range) != nil
@@ -48,7 +61,90 @@ enum DictionaryNumericMatching {
             }
         }
 
-        return unique(variants)
+        return unique(variants.flatMap(variantsWithCardinalAliases))
+    }
+
+    private static func variantsWithCardinalAliases(_ variant: PhraseVariant) -> [PhraseVariant] {
+        let spans = cardinalSpans(for: variant)
+        guard !spans.isEmpty else { return [variant] }
+
+        func build(
+            spanIndex: Int,
+            tokenIndex: Int,
+            tokens: [String],
+            numericSourceTokens: [String?]
+        ) -> [PhraseVariant] {
+            guard tokenIndex < variant.tokens.count else {
+                return [PhraseVariant(
+                    normalized: tokens.joined(separator: " "),
+                    tokens: tokens,
+                    numericSourceTokens: numericSourceTokens
+                )]
+            }
+
+            guard spanIndex < spans.count, spans[spanIndex].start == tokenIndex else {
+                return build(
+                    spanIndex: spanIndex,
+                    tokenIndex: tokenIndex + 1,
+                    tokens: tokens + [variant.tokens[tokenIndex]],
+                    numericSourceTokens: numericSourceTokens + [variant.numericSourceTokens[tokenIndex]]
+                )
+            }
+
+            let span = spans[spanIndex]
+            let originalTokens = Array(variant.tokens[span.start..<span.end])
+            let originalSources = Array(variant.numericSourceTokens[span.start..<span.end])
+            let kept = build(
+                spanIndex: spanIndex + 1,
+                tokenIndex: span.end,
+                tokens: tokens + originalTokens,
+                numericSourceTokens: numericSourceTokens + originalSources
+            )
+            let collapsed = build(
+                spanIndex: spanIndex + 1,
+                tokenIndex: span.end,
+                tokens: tokens + [span.source],
+                numericSourceTokens: numericSourceTokens + [span.source]
+            )
+            return kept + collapsed
+        }
+
+        return build(spanIndex: 0, tokenIndex: 0, tokens: [], numericSourceTokens: [])
+    }
+
+    private static func cardinalSpans(
+        for variant: PhraseVariant
+    ) -> [(start: Int, end: Int, source: String)] {
+        var spans: [(start: Int, end: Int, source: String)] = []
+        var index = 0
+
+        while index < variant.tokens.count {
+            guard variant.numericSourceTokens[index] == nil else {
+                index += 1
+                continue
+            }
+
+            var phrase = ""
+            var best: (start: Int, end: Int, source: String)?
+            for end in index..<variant.tokens.count {
+                phrase = phrase.isEmpty
+                    ? variant.tokens[end]
+                    : "\(phrase) \(variant.tokens[end])"
+                if let source = cardinalNumericLookup[phrase] {
+                    best = (start: index, end: end + 1, source: source)
+                }
+            }
+
+            guard let best else {
+                index += 1
+                continue
+            }
+
+            spans.append(best)
+            index = best.end
+        }
+
+        return spans
     }
 
     private static func cardinalSpelling(for normalizedToken: String) -> String? {
