@@ -55,14 +55,16 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         forceAllCaps: Bool = false,
         languageCode: String? = nil
     ) -> String {
-        processingQueue.sync {
-            processSynchronously(
+        let debugLoggingEnabled = currentDebugLoggingEnabled
+        return processingQueue.sync {
+            processOnQueue(
                 text,
                 dictionaryEntries: dictionaryEntries,
                 renderMode: renderMode,
                 listFormattingEnabled: listFormattingEnabled,
                 forceAllCaps: forceAllCaps,
-                languageCode: languageCode
+                languageCode: languageCode,
+                debugLoggingEnabled: debugLoggingEnabled
             )
         }
     }
@@ -75,19 +77,61 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         forceAllCaps: Bool = false,
         languageCode: String? = nil
     ) async -> String {
-        await withCheckedContinuation { continuation in
+        let debugLoggingEnabled = currentDebugLoggingEnabled
+        return await withCheckedContinuation { continuation in
             processingQueue.async {
-                let output = self.processSynchronously(
+                let output = self.processOnQueue(
                     text,
                     dictionaryEntries: dictionaryEntries,
                     renderMode: renderMode,
                     listFormattingEnabled: listFormattingEnabled,
                     forceAllCaps: forceAllCaps,
-                    languageCode: languageCode
+                    languageCode: languageCode,
+                    debugLoggingEnabled: debugLoggingEnabled
                 )
                 continuation.resume(returning: output)
             }
         }
+    }
+
+    private func processOnQueue(
+        _ text: String,
+        dictionaryEntries: [DictionaryEntry],
+        renderMode: ListRenderMode,
+        listFormattingEnabled: Bool,
+        forceAllCaps: Bool,
+        languageCode: String?,
+        debugLoggingEnabled: Bool
+    ) -> String {
+        withDebugLogging(debugLoggingEnabled) {
+            processSynchronously(
+                text,
+                dictionaryEntries: dictionaryEntries,
+                renderMode: renderMode,
+                listFormattingEnabled: listFormattingEnabled,
+                forceAllCaps: forceAllCaps,
+                languageCode: languageCode
+            )
+        }
+    }
+
+    private var currentDebugLoggingEnabled: Bool {
+#if DEBUG
+        TranscriptionPostProcessingDebugLogging.isEnabled
+#else
+        true
+#endif
+    }
+
+    private func withDebugLogging<T>(
+        _ enabled: Bool,
+        operation: () -> T
+    ) -> T {
+#if DEBUG
+        TranscriptionPostProcessingDebugLogging.$isEnabled.withValue(enabled, operation: operation)
+#else
+        operation()
+#endif
     }
 
     private func processSynchronously(
