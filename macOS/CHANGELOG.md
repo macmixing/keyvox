@@ -6,6 +6,47 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.1] - 2026-08-05
+
+Adds numeric dictionary matching and emoji-aware text composition while improving speech-range handling, dictation responsiveness, and Mac text insertion and overlay feedback.
+
+### Added
+
+- Added numeric custom-dictionary matching for equivalent digit, cardinal, ordinal, and phonetic number forms, including joined and hyphenated entries.
+- Added VAD-assisted speech-range trimming that removes trailing and inter-speech silence before Whisper decoding while preserving logical paragraph chunk boundaries.
+- Added stylized mixed-case preservation and emoji-aware capitalization and spacing at document, sentence, line, and list boundaries through `KeyVoxCore` `1.2.2` and `KeyVoxTextComposition` `1.0.1`.
+
+### Changed
+
+- Updated shared transcription post-processing and deterministic variant generation to run on a serialized background queue, keeping no-speech completions isolated to `MainActor`.
+- Updated Mac Accessibility context collection to inspect preceding grapheme-safe text, the character before the previous non-whitespace character, and line-start context for more reliable composition decisions.
+- Updated leading-space fallback paste so spaces and Command-V are delivered through one ordered keyboard sequence and verified as one insertion.
+- Updated Mac architecture documentation and the code map for the expanded dictionary matcher ownership and shared normalization and composition behavior.
+
+### Fixed
+
+- Fixed numeric dictionary candidate evaluation so numeric source mappings remain aligned across variants, while singular/plural companion mismatches and unrelated plural or possessive tails are rejected.
+- Fixed pronunciation-aware dictionary corrections for acronym-bearing entries such as `chat GBT` to `ChatGPT`, while unrelated phrases such as `chat got` remain unchanged.
+- Fixed exact three- and four-token dictionary phrase recovery so input such as `data api client` becomes `DataAPIClient` without leaving a duplicated prefix.
+- Fixed dictionary split and join matching so dotted domains are protected across two-, three-, and four-token windows, and uppercase pronunciation guards apply consistently across matching strategies.
+- Fixed four-digit year preservation for qualified, coordinated, prepositional, clause-based, and extended-range years while continuing to group clear quantities; nominal identifiers such as PIN numbers remain ungrouped.
+- Fixed fallback insertion in applications that normalize leading spaces during paste by keeping the spaces and pasted text in a deterministic delivery order.
+- Fixed longer dictation results so cleanup and formatting no longer block the rest of the app while preserving the existing synchronous processing API where needed.
+- Fixed logo-bar animation timing by rendering quiet-input and processing states through shared timeline-driven Canvas animations with elapsed-time phase projection for smooth, continuous motion between indicator updates.
+- Fixed silent dictation input so dead live audio maps to the quiet animation state instead of appearing inactive, while capture classification remains separate.
+- Fixed delayed overlay settle animation so the motion controller remains available while the settle work executes.
+
+### Package versions
+
+KeyVox macOS 1.3.1:
+- KeyVoxCore            1.2.2
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.1
+
 ## [1.3.0] - 2026-08-01
 
 Adds selectable Whisper dictation languages, rejects noise-only captures before decoding, and improves shared transcript cleanup.
