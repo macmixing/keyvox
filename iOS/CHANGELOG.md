@@ -6,6 +6,43 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.1] - 2026-08-05
+
+Adds numeric dictionary matching and emoji-aware text composition while improving speech-range handling, dictation responsiveness, and asynchronous lifecycle safety.
+
+### Added
+
+- Added numeric custom-dictionary matching for equivalent digit, cardinal, ordinal, and phonetic number forms, including joined and hyphenated entries.
+- Added VAD-assisted speech-range trimming that removes trailing and inter-speech silence before Whisper decoding while preserving logical paragraph chunk boundaries.
+- Added stylized mixed-case preservation and emoji-aware capitalization and spacing at document, sentence, line, and list boundaries through `KeyVoxCore` `1.2.2` and `KeyVoxTextComposition` `1.0.1`.
+
+### Changed
+
+- Updated shared transcription post-processing and deterministic variant generation to run on a serialized background queue, keeping no-speech completions isolated to `MainActor`.
+- Updated iOS transcription lifecycle handling to await pipeline completion before applying transcription and session state changes, with per-recovery identity checks for canceled or superseded interrupted-capture recoveries.
+- Updated keyboard diagnostics so raw transcription payloads are logged only in Debug builds when `KVX_DEBUG_LOG_RAW_TEXT=1` is explicitly enabled.
+
+### Fixed
+
+- Fixed numeric dictionary candidate evaluation so numeric source mappings remain aligned across variants, while singular/plural companion mismatches and unrelated plural or possessive tails are rejected.
+- Fixed four-digit year normalization across qualified, coordinated, prepositional, clause-based, and extended-range references while continuing to group clear quantities and protecting nominal identifiers such as PIN numbers.
+- Fixed longer dictation results so cleanup and deterministic variant generation no longer block UI work.
+- Fixed asynchronous iOS dictation and interrupted-capture recovery results so canceled, superseded, or stale completions cannot overwrite newer transcription or session state.
+
+### Package versions
+
+KeyVox iOS 1.3.1
+  KeyVoxCore            1.2.2
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.1
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.1.0
+
+---
+
 ## [1.3.0] - 2026-08-01
 
 Adds selectable Whisper dictation languages and App Store review options, rejects noise-only captures before decoding, and improves shared transcript cleanup.
