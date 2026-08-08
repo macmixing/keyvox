@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.3] - 2026-08-05
+
+Stylized spoken-number dictionary matching and deterministic post-processing log suppression.
+
+### Includes
+
+- Expanded formatter-generated cardinal aliases so joined stylized number words can resolve from both digit and fully spoken transcription forms without entry-specific wording.
+- Added regression coverage for joined compound tens and hundreds across numeric and spoken dictionary inputs.
+- Included commit `891787b`, which preserves the caller's debug-logging state across serialized synchronous and asynchronous post-processing so disabled deterministic logs remain suppressed.
+
+### Notes
+
+- `1.2.3` tracks stylized spoken-number dictionary matching and deterministic post-processing log suppression in the shared Core engine.
+
+---
+
 ## [1.2.2] - 2026-08-05
 
 Thousands-grouping, numeric dictionary matching, stylized-capitalization, and emoji-boundary normalization fixes with regression coverage.

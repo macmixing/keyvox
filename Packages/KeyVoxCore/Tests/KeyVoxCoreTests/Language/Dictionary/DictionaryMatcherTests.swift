@@ -88,6 +88,43 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
+    func testMatchesNumericAndSpokenShapesToStylizedJoinedCardinalEntries() {
+        let cases = [
+            (
+                entry: "EightyEight Pilots",
+                numericInput: "Have you ever heard of the band 88 pilots?",
+                spokenInput: "Have you ever heard of the band eighty eight pilots?",
+                expected: "Have you ever heard of the band EightyEight Pilots?"
+            ),
+            (
+                entry: "FortyTwo Comets",
+                numericInput: "The 42 comets passed overhead.",
+                spokenInput: "The forty two comets passed overhead.",
+                expected: "The FortyTwo Comets passed overhead."
+            ),
+            (
+                entry: "OneHundredOne Dalmatians",
+                numericInput: "We counted 101 dalmatians.",
+                spokenInput: "We counted one hundred one dalmatians.",
+                expected: "We counted OneHundredOne Dalmatians."
+            )
+        ]
+
+        for testCase in cases {
+            let matcher = makeRuntimeMatcher()
+            matcher.rebuildIndex(entries: [DictionaryEntry(phrase: testCase.entry)])
+
+            XCTAssertEqual(
+                matcher.apply(to: testCase.numericInput).text,
+                testCase.expected
+            )
+            XCTAssertEqual(
+                matcher.apply(to: testCase.spokenInput).text,
+                testCase.expected
+            )
+        }
+    }
+
     func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntryWithSyntheticPhrase() {
         let cases = [
             (entry: "42 Comets", input: "The 42nd comet passed overhead."),

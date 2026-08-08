@@ -12,17 +12,26 @@ enum DictionaryNumericMatching {
         options: []
     )
 
-    private static let cardinalNumericLookup: [String: String] = {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .spellOut
-
+    private static let cardinalSpellingsByNumericToken: [String: String] = {
+        let formatter = makeSpellOutFormatter()
         var lookup: [String: String] = [:]
         for value in 0...999 {
-            guard let spelledOut = formatter.string(from: NSNumber(value: value)) else { continue }
-            lookup[DictionaryTextNormalization.normalizedPhrase(spelledOut)] = String(value)
+            guard let spelledOut = spelledOutCardinal(for: value, using: formatter) else { continue }
+            lookup[String(value)] = spelledOut
         }
         return lookup
+    }()
+
+    private static let cardinalNumericLookup: [String: String] = {
+        cardinalSpellingsByNumericToken.reduce(into: [:]) { lookup, form in
+            lookup[form.value] = form.key
+        }
+    }()
+
+    private static let compactCardinalSpellingLookup: [String: String] = {
+        cardinalSpellingsByNumericToken.values.reduce(into: [:]) { lookup, spelling in
+            lookup[spelling.replacingOccurrences(of: " ", with: "")] = spelling
+        }
     }()
 
     static func isNumericToken(_ normalizedToken: String) -> Bool {
@@ -31,13 +40,18 @@ enum DictionaryNumericMatching {
     }
 
     static func tokenVariants(for normalizedToken: String) -> [String] {
-        guard let spelledOut = cardinalSpelling(for: normalizedToken) else {
-            return [normalizedToken]
+        if let spelledOut = cardinalSpelling(for: normalizedToken) {
+            return normalizedToken == spelledOut
+                ? [normalizedToken]
+                : [normalizedToken, spelledOut]
         }
 
-        return normalizedToken == spelledOut
-            ? [normalizedToken]
-            : [normalizedToken, spelledOut]
+        if let expandedSpelling = compactCardinalSpellingLookup[normalizedToken],
+           expandedSpelling != normalizedToken {
+            return [normalizedToken, expandedSpelling]
+        }
+
+        return [normalizedToken]
     }
 
     static func phraseVariants(for normalizedTokens: [String]) -> [PhraseVariant] {
@@ -153,13 +167,24 @@ enum DictionaryNumericMatching {
             return nil
         }
 
+        if let cachedSpelling = cardinalSpellingsByNumericToken[digits] {
+            return cachedSpelling
+        }
+
+        return spelledOutCardinal(for: value, using: makeSpellOutFormatter())
+    }
+
+    private static func makeSpellOutFormatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.numberStyle = .spellOut
+        return formatter
+    }
+
+    private static func spelledOutCardinal(for value: Int, using formatter: NumberFormatter) -> String? {
         guard let spelledOut = formatter.string(from: NSNumber(value: value)) else {
             return nil
         }
-
         return DictionaryTextNormalization.normalizedPhrase(spelledOut)
     }
 
@@ -174,7 +199,8 @@ enum DictionaryNumericMatching {
             return nil
         }
 
-        return nsToken.substring(with: match.range(at: 1))
+        let digits = nsToken.substring(with: match.range(at: 1))
+        return Int(digits).map(String.init) ?? digits
     }
 
     private static func unique(_ values: [PhraseVariant]) -> [PhraseVariant] {
