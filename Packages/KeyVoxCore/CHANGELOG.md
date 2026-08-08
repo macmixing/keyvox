@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.3] - 2026-08-05
+## [1.2.3] - 2026-08-08
 
 Stylized spoken-number dictionary matching and deterministic post-processing log suppression.
 
@@ -15,6 +15,7 @@ Stylized spoken-number dictionary matching and deterministic post-processing log
 - Expanded formatter-generated cardinal aliases so joined stylized number words can resolve from both digit and fully spoken transcription forms without entry-specific wording.
 - Added regression coverage for joined compound tens and hundreds across numeric and spoken dictionary inputs.
 - Included commit `891787b`, which preserves the caller's debug-logging state across serialized synchronous and asynchronous post-processing so disabled deterministic logs remain suppressed.
+- Removed the leftover abbreviation period between normalized meridiem times and capitalized continuation text, so `11 a.m. Eastern` becomes `11:00 AM Eastern`.
 
 ### Notes
 

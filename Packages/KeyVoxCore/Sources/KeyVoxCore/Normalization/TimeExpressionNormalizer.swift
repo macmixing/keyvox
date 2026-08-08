@@ -370,6 +370,7 @@ public struct TimeExpressionNormalizer {
         }
 
         guard value.hasSuffix("."),
+              !value.dropLast().contains("."),
               shouldPreserveSentenceBoundaryPeriod(in: nsText, after: matchRange) else {
             return normalized
         }
