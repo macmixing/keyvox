@@ -84,7 +84,7 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 return true
             }
 
-            if TextCompositionPolicy.isImmediatelyAfterTerminalPunctuationAndClosingQuote(
+            if TextCompositionPolicy.isImmediatelyAfterTerminalPunctuationAndDelimiter(
                 compositionContext
             ) {
                 return true

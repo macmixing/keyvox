@@ -116,7 +116,7 @@ public enum TextCompositionPolicy {
             return true
         }
 
-        if isImmediatelyAfterTerminalPunctuationAndClosingQuote(context) {
+        if isImmediatelyAfterTerminalPunctuationAndDelimiter(context) {
             return true
         }
 
@@ -157,15 +157,27 @@ public enum TextCompositionPolicy {
         }
     }
 
-    public static func isImmediatelyAfterTerminalPunctuationAndClosingQuote(
+    public static func isImmediatelyAfterTerminalPunctuationAndDelimiter(
         _ context: TextCompositionContext
     ) -> Bool {
-        guard let quote = context.previousCharacter,
-              [Character("\""), Character("'"), Character("”"), Character("’")].contains(quote),
-              let characterBeforeQuote = context.characterBeforePreviousCharacter else {
+        guard let delimiter = context.previousNonWhitespaceCharacter ?? context.previousCharacter,
+              isCapitalizationDelimiter(delimiter) else {
             return false
         }
-        return isSentenceBoundary(characterBeforeQuote)
+
+        let characterBeforeDelimiter: Character?
+        if context.previousCharacter == delimiter {
+            characterBeforeDelimiter = context.characterBeforePreviousCharacter
+        } else {
+            characterBeforeDelimiter = context.characterBeforePreviousNonWhitespaceCharacter
+        }
+
+        guard let characterBeforeDelimiter else { return true }
+        return isSentenceBoundary(characterBeforeDelimiter)
+    }
+
+    private static func isCapitalizationDelimiter(_ character: Character) -> Bool {
+        character.isPunctuation || character.isSymbol
     }
 
     private static func capitalizationIndex(
@@ -283,7 +295,7 @@ public enum TextCompositionPolicy {
             return false
         }
 
-        let punctuation = CharacterSet(charactersIn: ".,!?;:)]}\\\"'”’")
+        let punctuation = CharacterSet(charactersIn: ".,!?;:)]}\\\"'”’&")
         if firstIncomingCharacter.unicodeScalars.allSatisfy(punctuation.contains) {
             return false
         }

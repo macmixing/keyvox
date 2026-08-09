@@ -113,6 +113,71 @@ final class TextCompositionPolicyTests: XCTestCase {
         }
     }
 
+    func testPunctuationAndSymbolsOnlyPreserveCapitalizationAfterTerminalPunctuation() {
+        for delimiter in [
+            Character("("),
+            Character("["),
+            Character("{"),
+            Character("/"),
+            Character("\\"),
+            Character(":"),
+            Character("<"),
+            Character(">"),
+            Character("&"),
+            Character("$"),
+            Character("#")
+        ] {
+            let continuationContext = TextCompositionContext(
+                precedingText: "Existing text\(delimiter)"
+            )
+            XCTAssertFalse(TextCompositionPolicy.isSentenceStart(in: continuationContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: continuationContext),
+                "this is new."
+            )
+
+            let sentenceStartContext = TextCompositionContext(
+                precedingText: "Existing text.\(delimiter)"
+            )
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: sentenceStartContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: sentenceStartContext),
+                "This is new."
+            )
+
+            let trailingWhitespaceSentenceStartContext = TextCompositionContext(
+                precedingText: "Existing text.\(delimiter)  "
+            )
+            XCTAssertTrue(
+                TextCompositionPolicy.isSentenceStart(in: trailingWhitespaceSentenceStartContext)
+            )
+            XCTAssertEqual(
+                normalize("This is new.", context: trailingWhitespaceSentenceStartContext),
+                "This is new."
+            )
+
+            let documentStartContext = TextCompositionContext(
+                precedingText: String(delimiter)
+            )
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: documentStartContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: documentStartContext),
+                "This is new."
+            )
+
+            let trailingWhitespaceDocumentStartContext = TextCompositionContext(
+                precedingText: "\(delimiter)  "
+            )
+            XCTAssertTrue(
+                TextCompositionPolicy.isSentenceStart(in: trailingWhitespaceDocumentStartContext)
+            )
+            XCTAssertEqual(
+                normalize("This is new.", context: trailingWhitespaceDocumentStartContext),
+                "This is new."
+            )
+        }
+    }
+
     func testEmojiAtDocumentOrLineStartPreservesIncomingCapitalization() {
         for precedingText in ["😎 ", "Hello.\n😎 "] {
             let context = TextCompositionContext(precedingText: precedingText)
@@ -224,6 +289,7 @@ final class TextCompositionPolicyTests: XCTestCase {
     func testSpacingPreservesExistingDelimiterAndPunctuationBehavior() {
         XCTAssertEqual(applySpacing(to: "there", after: "o"), " there")
         XCTAssertEqual(applySpacing(to: "there", after: "."), " there")
+        XCTAssertEqual(applySpacing(to: "there", after: "&"), " there")
         XCTAssertEqual(applySpacing(to: "there", after: "😎"), " there")
         XCTAssertEqual(applySpacing(to: ".", after: "o"), ".")
         XCTAssertEqual(applySpacing(to: "there", after: " "), "there")

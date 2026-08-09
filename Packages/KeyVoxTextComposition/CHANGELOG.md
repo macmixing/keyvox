@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.2] - 2026-08-08
+
+Generalized capitalization and spacing around punctuation and symbol boundaries.
+
+### Includes
+
+- Preserved incoming capitalization at document starts and after terminal punctuation followed by punctuation or symbol delimiters, including trailing whitespace.
+- Kept ordinary continuation text lowercase after non-terminal delimiters across Unicode punctuation and symbol categories.
+- Added a leading separator after an existing ampersand.
+- Added regression coverage for delimiter, whitespace, document-start, and ampersand composition cases.
+
+### Notes
+
+- `1.0.2` bumps the tracked patch version for shared punctuation- and symbol-aware text-composition behavior.
+
 ## [1.0.1] - 2026-08-03
 
 Emoji-aware capitalization and spacing at text-composition boundaries.
