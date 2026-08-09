@@ -36,6 +36,15 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
+    func testDoesNotMatchUnrelatedPronunciationInMultiwordDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
+
+        let input = "Do you know what Levin means?"
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testMatchesNumericShapeWhenDictionaryEntryIsJoined() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LevenTime")])

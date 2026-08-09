@@ -16,6 +16,8 @@ Stylized spoken-number dictionary matching and deterministic post-processing log
 - Added regression coverage for joined compound tens and hundreds across numeric and spoken dictionary inputs.
 - Included commit `891787b`, which preserves the caller's debug-logging state across serialized synchronous and asynchronous post-processing so disabled deterministic logs remain suppressed.
 - Removed the leftover abbreviation period between normalized meridiem times and capitalized continuation text, so `11 a.m. Eastern` becomes `11:00 AM Eastern`.
+- Removed the relaxed two-token possessive threshold that could rewrite unrelated prose such as `Levin means` as a dictionary entry with an inferred possessive suffix, while preserving valid multi-token possessive recovery.
+- Added regression coverage for the unrelated pronunciation case.
 
 ### Notes
 

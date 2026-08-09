@@ -13,8 +13,6 @@ private enum StandardEvaluationConstants {
     static let singleTokenPluralPhoneticMinimum = 0.92
     static let singleTokenPluralMinimumThreshold = 0.78
     static let singleTokenPluralThresholdDelta = 0.12
-    static let twoTokenPossessiveMinimumThreshold = 0.70
-    static let twoTokenPossessiveThresholdDelta = 0.10
 
     static let peerSupportSimilarityMaximum = 0.70
     static let stylizedSurfaceSimilarityMinimum = 0.82
@@ -261,13 +259,6 @@ extension DictionaryMatcher {
             effectiveThreshold = max(
                 StandardEvaluationConstants.singleTokenPluralMinimumThreshold,
                 threshold - StandardEvaluationConstants.singleTokenPluralThresholdDelta
-            )
-        } else if tokenCount == 2, best.replacementSuffix == "'s" {
-            // Two-token possessive near-misses can lose apostrophes in Whisper output.
-            // Keep this tighter than single-token possessives but allow a modest lift.
-            effectiveThreshold = max(
-                StandardEvaluationConstants.twoTokenPossessiveMinimumThreshold,
-                threshold - StandardEvaluationConstants.twoTokenPossessiveThresholdDelta
             )
         } else {
             effectiveThreshold = threshold
