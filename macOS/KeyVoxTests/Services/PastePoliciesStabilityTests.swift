@@ -47,6 +47,31 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testRepeatedTextAfterCaretIsNotTreatedAsTrailingNewline() {
+        XCTAssertFalse(
+            PasteAXInspector.shouldTreatTrailingValueNewlineAsPrecedingCaret(
+                rangeText: "abc",
+                value: "abcabc\n",
+                caretLocation: 3
+            )
+        )
+    }
+
+    func testOnlyNewlineRangeAtCaretIsTreatedAsInsertionBoundary() {
+        XCTAssertTrue(PasteAXInspector.isNewlineRangeAtCaret("\n"))
+        XCTAssertFalse(PasteAXInspector.isNewlineRangeAtCaret("a"))
+    }
+
+    func testTerminalNewlineUsesElectronCaretCoordinateWithoutLineBreaks() {
+        XCTAssertTrue(
+            PasteAXInspector.shouldTreatTrailingValueNewlineAsPrecedingCaret(
+                rangeText: "abc😀x",
+                value: "abc\n😀x\n",
+                caretLocation: 6
+            )
+        )
+    }
+
     func testListMultilineOverridePolicyMatchesPreFixBehavior() {
         assertListRenderMode(
             PastePolicies.listRenderMode(

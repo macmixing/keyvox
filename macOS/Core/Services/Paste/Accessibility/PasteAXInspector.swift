@@ -258,19 +258,60 @@ final class PasteAXInspector: PasteAXInspecting {
     }
 
     private func textBeforeCaret(element: AXUIElement, caretLocation: Int) -> String? {
-        if let valueText = textBeforeCaretFromValueAttribute(
-            element: element,
-            caretLocation: caretLocation
-        ) {
-            return valueText
-        }
-
         guard caretLocation > 0 else { return nil }
         let startLocation = max(0, caretLocation - maxPreviousNonWhitespaceScanLength)
-        return stringForRange(
+        if let rangeText = stringForRange(
             CFRange(location: startLocation, length: caretLocation - startLocation),
             element: element
+        ), rangeText.isEmpty == false {
+            let rangeAfterCaret = stringForRange(
+                CFRange(location: caretLocation, length: 1),
+                element: element
+            )
+            let value = valueString(for: element)
+            let shouldTreatTrailingNewline = Self.isNewlineRangeAtCaret(rangeAfterCaret)
+                || (value.map {
+                    Self.shouldTreatTrailingValueNewlineAsPrecedingCaret(
+                        rangeText: rangeText,
+                        value: $0,
+                        caretLocation: caretLocation
+                    )
+                } ?? false)
+            if shouldTreatTrailingNewline {
+                return rangeText + "\n"
+            }
+            return rangeText
+        }
+
+        return textBeforeCaretFromValueAttribute(
+            element: element,
+            caretLocation: caretLocation
         )
+    }
+
+    static func isNewlineRangeAtCaret(_ rangeAfterCaret: String?) -> Bool {
+        guard let rangeAfterCaret, rangeAfterCaret.isEmpty == false else { return false }
+        return rangeAfterCaret.unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+    }
+
+    static func shouldTreatTrailingValueNewlineAsPrecedingCaret(
+        rangeText: String,
+        value: String,
+        caretLocation: Int?
+    ) -> Bool {
+        guard let caretLocation,
+              caretLocation >= 0,
+              rangeText.last?.unicodeScalars.allSatisfy(CharacterSet.newlines.contains) == false,
+              value.last?.unicodeScalars.allSatisfy(CharacterSet.newlines.contains) == true else {
+            return false
+        }
+
+        let valueLengthWithoutNewlines = value.reduce(into: 0) { length, character in
+            if character.unicodeScalars.allSatisfy(CharacterSet.newlines.contains) == false {
+                length += String(character).utf16.count
+            }
+        }
+        return caretLocation == valueLengthWithoutNewlines
     }
 
     private func textBeforeCaretFromValueAttribute(

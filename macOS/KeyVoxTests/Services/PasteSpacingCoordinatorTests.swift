@@ -42,6 +42,29 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, "hello")
     }
 
+    func testDoesNotInsertLeadingSpaceAtStartOfNewLine() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 8,
+                previousCharacter: "\n",
+                previousNonWhitespaceCharacter: "x"
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testInsertsLeadingSpaceFromAXContextWhenPreviousCharacterIsWordLike() {
         let inspector = MockPasteAXInspector(
             focusedContext: PasteInsertionContext(selectionLength: 0, caretLocation: 8, previousCharacter: "x")
