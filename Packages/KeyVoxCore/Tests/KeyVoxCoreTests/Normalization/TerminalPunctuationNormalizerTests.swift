@@ -25,11 +25,42 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
     func testConvertsTerminalExclamationCommandAfterClauseEndingInThat() {
         let normalizer = TerminalPunctuationNormalizer()
 
-        let output = normalizer.normalizeSpokenTerminalPunctuation(
+        let descriptiveClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
             in: "I'm happy to hear that exclamation point."
         )
+        let adverbialClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I would really appreciate that exclamation point."
+        )
+        let directAdverbialClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "Yeah, that's super helpful. I just figured we'd go to the store. I really appreciate that exclamation point."
+        )
+        let adverbialQuestionClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I would really appreciate that question mark."
+        )
+        let directClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I appreciate that exclamation point."
+        )
+        let contractedDirectClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I'd appreciate that exclamation point."
+        )
+        let directClauseAfterSentenceOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "That's helpful. I appreciate that exclamation point."
+        )
+        let adjectivePrepositionClauseOutput = normalizer.normalizeSpokenTerminalPunctuation(
+            in: "I'm happy about that exclamation point."
+        )
 
-        XCTAssertEqual(output, "I'm happy to hear that!")
+        XCTAssertEqual(descriptiveClauseOutput, "I'm happy to hear that!")
+        XCTAssertEqual(adverbialClauseOutput, "I would really appreciate that!")
+        XCTAssertEqual(
+            directAdverbialClauseOutput,
+            "Yeah, that's super helpful. I just figured we'd go to the store. I really appreciate that!"
+        )
+        XCTAssertEqual(adverbialQuestionClauseOutput, "I would really appreciate that?")
+        XCTAssertEqual(directClauseOutput, "I appreciate that!")
+        XCTAssertEqual(contractedDirectClauseOutput, "I'd appreciate that!")
+        XCTAssertEqual(directClauseAfterSentenceOutput, "That's helpful. I appreciate that!")
+        XCTAssertEqual(adjectivePrepositionClauseOutput, "I'm happy about that!")
     }
 
     func testConvertsRepeatedTerminalCommandsInOrder() {
@@ -142,6 +173,19 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         )
     }
 
+    func testDoesNotConvertTerminalPunctuationNounPhrases() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "What's wrong with an exclamation point?"),
+            "What's wrong with an exclamation point?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(in: "What's wrong with the question mark?"),
+            "What's wrong with the question mark?"
+        )
+    }
+
     func testDoesNotConvertOrdinaryReferences() {
         let normalizer = TerminalPunctuationNormalizer()
 
@@ -165,10 +209,6 @@ final class TerminalPunctuationNormalizerTests: XCTestCase {
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "I typed exclamation point"),
             "I typed exclamation point"
-        )
-        XCTAssertEqual(
-            normalizer.normalizeSpokenTerminalPunctuation(in: "I typed that question mark."),
-            "I typed that question mark."
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(in: "I declared exclamation mark"),

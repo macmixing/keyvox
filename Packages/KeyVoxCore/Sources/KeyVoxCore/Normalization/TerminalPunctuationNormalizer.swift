@@ -170,7 +170,12 @@ public struct TerminalPunctuationNormalizer {
         }
 
         if previousWord.lexicalClass == .determiner,
-           !isEligibleDeterminerCommand(previousIndex: previousIndex, words: words) {
+           !isEligibleDeterminerCommand(
+               previousIndex: previousIndex,
+               match: match,
+               words: words,
+               text: text
+           ) {
             return false
         }
 
@@ -196,7 +201,9 @@ public struct TerminalPunctuationNormalizer {
 
     private func isEligibleDeterminerCommand(
         previousIndex: Int,
-        words: [WordToken]
+        match: CommandMatch,
+        words: [WordToken],
+        text: String
     ) -> Bool {
         guard previousIndex > words.startIndex else {
             return false
@@ -208,18 +215,35 @@ public struct TerminalPunctuationNormalizer {
         }
 
         let thirdPreviousIndex = words.index(before: secondPreviousIndex)
-        if words[secondPreviousIndex].lexicalClass == .preposition,
-           isNominalOrDescriptive(words[thirdPreviousIndex]) {
+        if words[thirdPreviousIndex].lexicalClass == .pronoun,
+           words[secondPreviousIndex].lexicalClass == .verb {
             return true
         }
 
-        // Accept sentence-like clauses such as "happy to hear that exclamation point"
-        // without admitting short punctuation-word references such as "I typed that question mark."
+        if words[secondPreviousIndex].lexicalClass == .preposition {
+            if words[thirdPreviousIndex].lexicalClass == .noun {
+                return true
+            }
+
+            if words[thirdPreviousIndex].lexicalClass == .adjective,
+               !hasExplicitQuestionBoundaryAfter(match: match, words: words, text: text) {
+                return true
+            }
+        }
+
+        // Accept sentence-like clauses such as "happy to hear that exclamation point."
         guard thirdPreviousIndex > words.startIndex else { return false }
         let fourthPreviousIndex = words.index(before: thirdPreviousIndex)
-        return words[thirdPreviousIndex].lexicalClass == .particle
+        if words[thirdPreviousIndex].lexicalClass == .particle
             && words[secondPreviousIndex].lexicalClass == .verb
-            && isNominalOrDescriptive(words[fourthPreviousIndex])
+            && isNominalOrDescriptive(words[fourthPreviousIndex]) {
+            return true
+        }
+
+        return words[thirdPreviousIndex].lexicalClass == .adverb
+            && words[secondPreviousIndex].lexicalClass == .verb
+            && (words[fourthPreviousIndex].lexicalClass == .verb
+                || words[fourthPreviousIndex].lexicalClass == .pronoun)
     }
 
     private func isNominalOrDescriptive(_ word: WordToken) -> Bool {
@@ -240,6 +264,22 @@ public struct TerminalPunctuationNormalizer {
         }
 
         return followingText.contains(where: isCommandSentenceBoundary)
+    }
+
+    private func hasExplicitQuestionBoundaryAfter(
+        match: CommandMatch,
+        words: [WordToken],
+        text: String
+    ) -> Bool {
+        let commandEnd = words[words.index(before: match.nextWordIndex)].range.upperBound
+        let followingText: Substring
+        if match.nextWordIndex < words.endIndex {
+            followingText = text[commandEnd..<words[match.nextWordIndex].range.lowerBound]
+        } else {
+            followingText = text[commandEnd..<text.endIndex]
+        }
+
+        return followingText.contains("?")
     }
 
     private func commandPhraseEndsBeforeWord(

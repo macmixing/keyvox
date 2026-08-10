@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.4] - 2026-08-10
+
+Spoken question and exclamation commands now convert reliably after natural clauses while punctuation noun phrases stay intact.
+
+### Includes
+
+- Expanded determiner-ending command recognition across direct, adverbial, particle-led, and adjective-preposition clause shapes.
+- Made eligible short clauses convert consistently when they appear after earlier sentences in the same transcription.
+- Covered natural adverbial dictation such as `I really appreciate that exclamation point.` without requiring a modal verb.
+- Preserved explicit terminal questions that refer to punctuation noun phrases instead of dictating punctuation commands.
+- Added focused coverage for the supported clause structures and multi-sentence transcription behavior.
+
+### Notes
+
+- `1.2.4` tracks the spoken terminal punctuation completion refinements used by shared dictation clients.
+
+---
+
 ## [1.2.3] - 2026-08-08
 
 Stylized spoken-number dictionary matching and deterministic post-processing log suppression.
