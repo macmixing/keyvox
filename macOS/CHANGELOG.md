@@ -6,6 +6,37 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.2] - 2026-08-09
+
+Improves custom-dictionary corrections, text insertion around punctuation and symbols, and dictated time formatting.
+
+### Changed
+
+- Updated shared text composition through `KeyVoxTextComposition` `1.0.2` so sentence capitalization works consistently after punctuation and symbol delimiters, including when trailing whitespace is present.
+- Updated custom-dictionary matching through `KeyVoxCore` `1.2.3` so joined stylized number words can resolve from both digit and fully spoken forms.
+
+### Fixed
+
+- Fixed joined custom-dictionary entries such as `EightyEight Pilots` and `OneHundredOne Dalmatians` so equivalent numeric and spoken dictation resolves to the saved styling.
+- Fixed custom-dictionary possessives before adjective-and-noun phrases so dictation such as `cue boards latest update` becomes `Cueboard's latest update`.
+- Fixed unrelated multiword pronunciation matches so ordinary phrases such as `Levin means` are not rewritten as possessive dictionary entries.
+- Fixed capitalization at document and sentence boundaries when punctuation or symbol delimiters appear before the inserted dictation, while preserving lowercase continuation text after non-terminal delimiters.
+- Fixed missing spacing after an existing ampersand during text insertion.
+- Fixed dictated times with dotted meridiems before capitalized continuation text so `11 a.m. Eastern` becomes `11:00 AM Eastern` without an extra period.
+
+### Package versions
+
+KeyVox macOS 1.3.2:
+- KeyVoxCore            1.2.3
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.2
+
+---
+
 ## [1.3.1] - 2026-08-05
 
 Adds numeric dictionary matching and emoji-aware text composition while improving speech-range handling, dictation responsiveness, and Mac text insertion and overlay feedback.
