@@ -1,11 +1,11 @@
 import Foundation
 
 private enum SplitJoinScoringConstants {
-    static let hyphenLaneMinimumFirstTokenLength = 1
-    static let hyphenLaneMinimumSecondTokenLength = 4
-    static let hyphenLaneTextSimilarityMinimum = 0.62
-    static let hyphenLanePhoneticSimilarityMinimum = 0.98
-    static let hyphenLaneThreshold = 0.78
+    static let singleLetterTailLaneFirstTokenLength = 1
+    static let singleLetterTailLaneMinimumSecondTokenLength = 4
+    static let singleLetterTailLaneTextSimilarityMinimum = 0.62
+    static let singleLetterTailLanePhoneticSimilarityMinimum = 0.98
+    static let singleLetterTailLaneThreshold = 0.78
 
     static let possessiveStylizedBonus = 0.04
     static let pluralSplitJoinBonus = 0.06
@@ -28,6 +28,8 @@ private enum SplitJoinScoringConstants {
     static let stylizedAnchoredThreshold = 0.44
     static let stylizedAnchoredTailGuardMinimumSecondTokenLength = 4
     static let stylizedAnchoredTailGuardMinimumSimilarity = 0.55
+    static let numericShortTokenTextMinimum = 0.80
+    static let numericShortTokenPhoneticMinimum = 0.70
 
     static let blendedTextWeight = 0.6
     static let blendedPhoneticWeight = 0.4
@@ -56,22 +58,36 @@ extension DictionaryMatcher {
             return nil
         }
 
-        let isHyphenSingleLetterLane =
-            isExplicitHyphenDelimitedSplit(window: window, text: text)
-            && window[0].normalized.count == SplitJoinScoringConstants.hyphenLaneMinimumFirstTokenLength
-            && window[1].normalized.count >= SplitJoinScoringConstants.hyphenLaneMinimumSecondTokenLength
+        let isDelimitedSingleLetterTailLane =
+            (isExplicitHyphenDelimitedSplit(window: window, text: text)
+                || isWhitespaceDelimitedSplit(window: window, text: text))
+            && window[0].normalized.count == SplitJoinScoringConstants.singleLetterTailLaneFirstTokenLength
+            && window[1].normalized.count >= SplitJoinScoringConstants.singleLetterTailLaneMinimumSecondTokenLength
 
         let containsShortToken =
             window[0].normalized.count < minimumSplitTokenLength
             || window[1].normalized.count < minimumSplitTokenLength
+        var requiresContextualShortTokenEvidence = false
         if containsShortToken {
-            let exactJoinedCandidates = Set(oneTokenCandidates.map(\.normalizedPhrase))
+            let exactJoinedCandidates = Set(oneTokenCandidates.flatMap(\.matchingNormalizedPhrases))
             let hasExactJoinCandidate = forms.contains { form in
                 exactJoinedCandidates.contains(form.normalized)
             }
-            guard hasExactJoinCandidate || isHyphenSingleLetterLane else {
-                stats.rejectedShortToken += 1
-                return nil
+            let hasNumericShortToken = window.contains {
+                DictionaryNumericMatching.isNumericToken($0.normalized)
+            }
+            let hasNumericShortTokenMatchEvidence = hasNumericShortToken
+                && hasNumericShortTokenEvidence(
+                    window: window,
+                    forms: forms,
+                    candidates: oneTokenCandidates
+                )
+            if !hasExactJoinCandidate, !isDelimitedSingleLetterTailLane, !hasNumericShortTokenMatchEvidence {
+                guard hasShortTokenSplitContext(start: start, end: end, tokens: tokens) else {
+                    stats.rejectedShortToken += 1
+                    return nil
+                }
+                requiresContextualShortTokenEvidence = true
             }
         }
 
@@ -79,6 +95,11 @@ extension DictionaryMatcher {
         var secondBestScore = 0.0
 
         for candidate in oneTokenCandidates {
+            if requiresContextualShortTokenEvidence,
+               !isStylizedSingleTokenEntry(candidate) {
+                continue
+            }
+
             let candidateToken = candidate.tokens[0]
             let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
 
@@ -89,76 +110,78 @@ extension DictionaryMatcher {
                 continue
             }
 
-            for form in forms {
-                // Only non-common dictionary entries can use plural-tail singularization.
-                if form.singularizedSecondToken && candidateIsCommonWord {
-                    continue
-                }
-                if shouldRejectFuzzyStylizedSplitJoinPluralForm(window: window, candidate: candidate) {
-                    continue
-                }
+            for candidateText in candidate.matchingNormalizedPhrases {
+                for form in forms {
+                    // Only non-common dictionary entries can use plural-tail singularization.
+                    if form.singularizedSecondToken && candidateIsCommonWord {
+                        continue
+                    }
+                    if shouldRejectFuzzyStylizedSplitJoinPluralForm(window: window, candidate: candidate) {
+                        continue
+                    }
 
-                let observedPhonetic = encoder.scoringSignature(for: form.normalized, lexicon: lexicon)
-                let score = scorer.score(
-                    observedText: form.normalized,
-                    observedPhonetic: observedPhonetic,
-                    candidateText: candidate.normalizedPhrase,
-                    candidatePhonetic: candidate.phoneticPhrase,
-                    previousToken: start > 0 ? tokens[start - 1].normalized : nil,
-                    nextToken: end < tokens.count ? tokens[end].normalized : nil
-                )
-                let fallbackPhoneticSimilarity = splitJoinStylizedFallbackPhoneticSimilarity(
-                    observedNormalized: form.normalized,
-                    observedPhonetic: observedPhonetic,
-                    candidate: candidate
-                )
-                let phoneticDelta = max(0, fallbackPhoneticSimilarity - score.phonetic)
-                let adjustedBaseFinal = min(1.0, score.final + (scorer.phoneticWeight * phoneticDelta))
-                let possessiveStylizedBonus =
-                    (form.replacementSuffix == "'s" && isStylizedSingleTokenEntry(candidate))
-                    ? SplitJoinScoringConstants.possessiveStylizedBonus
-                    : 0.0
-                let pluralSplitJoinBonus =
-                    (form.singularizedSecondToken && form.replacementSuffix == "s" && !candidateIsCommonWord)
-                    ? SplitJoinScoringConstants.pluralSplitJoinBonus
-                    : 0.0
-                let anchoredStylizedBonus: Double
-                if isStylizedSingleTokenEntry(candidate), candidateToken.hasPrefix(window[0].normalized) {
-                    anchoredStylizedBonus = SplitJoinScoringConstants.anchoredStylizedBonus
-                } else {
-                    anchoredStylizedBonus = 0
-                }
-                let adjustedScore = ReplacementScore(
-                    text: score.text,
-                    phonetic: max(score.phonetic, fallbackPhoneticSimilarity),
-                    context: score.context,
-                    final: min(
-                        1.0,
-                        adjustedBaseFinal
-                            + possessiveBonus(for: form.replacementSuffix)
-                            + possessiveStylizedBonus
-                            + pluralSplitJoinBonus
-                            + anchoredStylizedBonus
+                    let observedPhonetic = encoder.scoringSignature(for: form.normalized, lexicon: lexicon)
+                    let score = scorer.score(
+                        observedText: form.normalized,
+                        observedPhonetic: observedPhonetic,
+                        candidateText: candidateText,
+                        candidatePhonetic: candidate.phoneticPhrase,
+                        previousToken: start > 0 ? tokens[start - 1].normalized : nil,
+                        nextToken: end < tokens.count ? tokens[end].normalized : nil
                     )
-                )
+                    let fallbackPhoneticSimilarity = splitJoinStylizedFallbackPhoneticSimilarity(
+                        observedNormalized: form.normalized,
+                        observedPhonetic: observedPhonetic,
+                        candidate: candidate
+                    )
+                    let phoneticDelta = max(0, fallbackPhoneticSimilarity - score.phonetic)
+                    let adjustedBaseFinal = min(1.0, score.final + (scorer.phoneticWeight * phoneticDelta))
+                    let possessiveStylizedBonus =
+                        (form.replacementSuffix == "'s" && isStylizedSingleTokenEntry(candidate))
+                        ? SplitJoinScoringConstants.possessiveStylizedBonus
+                        : 0.0
+                    let pluralSplitJoinBonus =
+                        (form.singularizedSecondToken && form.replacementSuffix == "s" && !candidateIsCommonWord)
+                        ? SplitJoinScoringConstants.pluralSplitJoinBonus
+                        : 0.0
+                    let anchoredStylizedBonus: Double
+                    if isStylizedSingleTokenEntry(candidate), candidateToken.hasPrefix(window[0].normalized) {
+                        anchoredStylizedBonus = SplitJoinScoringConstants.anchoredStylizedBonus
+                    } else {
+                        anchoredStylizedBonus = 0
+                    }
+                    let adjustedScore = ReplacementScore(
+                        text: score.text,
+                        phonetic: max(score.phonetic, fallbackPhoneticSimilarity),
+                        context: score.context,
+                        final: min(
+                            1.0,
+                            adjustedBaseFinal
+                                + possessiveBonus(for: form.replacementSuffix)
+                                + possessiveStylizedBonus
+                                + pluralSplitJoinBonus
+                                + anchoredStylizedBonus
+                        )
+                    )
 
-                if let currentBest = best {
-                    if adjustedScore.final > currentBest.score.final {
-                        secondBestScore = currentBest.score.final
+                    if let currentBest = best {
+                        if adjustedScore.final > currentBest.score.final {
+                            secondBestScore = currentBest.score.final
+                            best = Candidate(
+                                entry: candidate,
+                                score: adjustedScore,
+                                replacementSuffix: form.replacementSuffix
+                            )
+                        } else if adjustedScore.final > secondBestScore {
+                            secondBestScore = adjustedScore.final
+                        }
+                    } else {
                         best = Candidate(
                             entry: candidate,
                             score: adjustedScore,
                             replacementSuffix: form.replacementSuffix
                         )
-                    } else if adjustedScore.final > secondBestScore {
-                        secondBestScore = adjustedScore.final
                     }
-                } else {
-                    best = Candidate(
-                        entry: candidate,
-                        score: adjustedScore,
-                        replacementSuffix: form.replacementSuffix
-                    )
                 }
             }
         }
@@ -168,9 +191,20 @@ extension DictionaryMatcher {
             return nil
         }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        let hasCommonObservedShortToken =
+            requiresContextualShortTokenEvidence
+            && window.contains(where: {
+                lexicon.isCommonWord(baseTokenForCommonWordGuard($0.normalized))
+            })
+
         let threshold = max(scorer.threshold(for: 2), splitJoinMinimumScore)
         var effectiveThreshold = threshold
-        if isHyphenSingleLetterLane {
+        if isDelimitedSingleLetterTailLane {
             let observedJoined = window.map(\.normalized).joined()
             let candidateToken = best.entry.tokens[0]
             let textSimilarity = scorer.similarity(lhs: observedJoined, rhs: candidateToken)
@@ -178,17 +212,17 @@ extension DictionaryMatcher {
             let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
             let phoneticSimilarity = scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic)
 
-            let qualifiesHyphenSingleLetterLane =
+            let qualifiesSingleLetterTailLane =
                 !lexicon.isCommonWord(candidateToken)
                 && candidateToken.hasSuffix(window[1].normalized)
-                && textSimilarity >= SplitJoinScoringConstants.hyphenLaneTextSimilarityMinimum
-                && phoneticSimilarity >= SplitJoinScoringConstants.hyphenLanePhoneticSimilarityMinimum
+                && textSimilarity >= SplitJoinScoringConstants.singleLetterTailLaneTextSimilarityMinimum
+                && phoneticSimilarity >= SplitJoinScoringConstants.singleLetterTailLanePhoneticSimilarityMinimum
 
-            guard qualifiesHyphenSingleLetterLane else {
+            guard qualifiesSingleLetterTailLane else {
                 stats.rejectedShortToken += 1
                 return nil
             }
-            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.hyphenLaneThreshold)
+            effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.singleLetterTailLaneThreshold)
         }
         if best.replacementSuffix == "s",
            !lexicon.isCommonWord(best.entry.tokens[0]),
@@ -240,7 +274,7 @@ extension DictionaryMatcher {
             return nil
         }
 
-        if lexicon.isCommonWord(best.entry.tokens[0]),
+        if (hasCommonObservedShortToken || lexicon.isCommonWord(best.entry.tokens[0])),
            best.score.final < scorer.commonWordOverrideThreshold {
             stats.rejectedCommonWord += 1
             return nil
@@ -253,7 +287,8 @@ extension DictionaryMatcher {
                observedCombined: window.map(\.normalized).joined(),
                observedTail: window[1].normalized,
                candidate: candidateToken,
-               nextToken: end < tokens.count ? tokens[end] : nil
+               nextToken: end < tokens.count ? tokens[end] : nil,
+               followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
            ) {
             replacementSuffix = "'s"
         }
@@ -265,7 +300,8 @@ extension DictionaryMatcher {
                observedCombined: window.map(\.normalized).joined(),
                observedTail: window[1].normalized,
                candidate: candidateToken,
-               nextToken: end < tokens.count ? tokens[end] : nil
+               nextToken: end < tokens.count ? tokens[end] : nil,
+               followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
            ) {
             replacementSuffix = "'s"
         }
@@ -305,6 +341,36 @@ extension DictionaryMatcher {
         let fallbackSimilarity = scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
         let runtimeSimilarity = scorer.similarity(lhs: observedPhonetic, rhs: candidate.phoneticPhrase)
         return max(fallbackSimilarity, runtimeSimilarity)
+    }
+
+    private func hasNumericShortTokenEvidence(
+        window: [Token],
+        forms: [JoinedObservedForm],
+        candidates: [CompiledEntry]
+    ) -> Bool {
+        let originalJoined = window.map(\.normalized).joined()
+
+        for form in forms where form.normalized != originalJoined {
+            let observedPhonetic = encoder.scoringSignature(for: form.normalized, lexicon: lexicon)
+            for candidate in candidates {
+                let textSimilarity = candidate.matchingNormalizedPhrases
+                    .map { scorer.similarity(lhs: form.normalized, rhs: $0) }
+                    .max() ?? 0
+                guard textSimilarity >= SplitJoinScoringConstants.numericShortTokenTextMinimum else {
+                    continue
+                }
+
+                let phoneticSimilarity = scorer.similarity(
+                    lhs: observedPhonetic,
+                    rhs: candidate.phoneticPhrase
+                )
+                if phoneticSimilarity >= SplitJoinScoringConstants.numericShortTokenPhoneticMinimum {
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 
     private func splitJoinStylizedSimilarity(window: [Token], candidateToken: String) -> (text: Double, phonetic: Double, blended: Double) {
@@ -364,15 +430,15 @@ extension DictionaryMatcher {
         guard window.count == 2 else { return false }
         guard isStylizedSingleTokenEntry(candidate) else { return false }
         guard let candidateToken = candidate.tokens.first else { return false }
-        let observedPrefix = window[0].normalized
-        guard candidateToken.hasPrefix(observedPrefix) else { return false }
-
         let observedTail = window[1].normalized
         guard observedTail.hasSuffix("s"),
               !observedTail.hasSuffix("'s"),
               !observedTail.hasSuffix("s'") else {
             return false
         }
+
+        let observedPrefix = window[0].normalized
+        guard candidateToken.hasPrefix(observedPrefix) else { return true }
 
         let observedSingularTail = String(observedTail.dropLast())
         let candidateTail = String(candidateToken.dropFirst(observedPrefix.count))

@@ -52,6 +52,9 @@ final class KeyVoxURLRouter {
         case .openVibesTrialStart:
             appTabRouter.selectTab(.style, suppressesHaptic: true)
             vibesPurchaseController.presentIntroSheet(presentation: .trialStart)
+        case .openVibesModelRecovery:
+            appTabRouter.selectTab(.style, suppressesHaptic: true)
+            vibesPurchaseController.presentKeyboardModelRecoverySheet()
         }
     }
 

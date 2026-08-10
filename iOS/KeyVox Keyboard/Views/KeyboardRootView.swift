@@ -137,6 +137,8 @@ final class KeyboardRootView: UIView {
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
         let shouldShowSpeak = showsBrandedToolbar && isTTSReady
+        let shouldShowVibes = showsBrandedToolbar && isVibesAvailable
+        let wasVibesButtonHidden = vibesButton.isHidden
         let shouldEnableSpeak = shouldShowSpeak
             && state != .waitingForApp
             && state != .recording
@@ -185,7 +187,7 @@ final class KeyboardRootView: UIView {
         }
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
-        vibesButton.isHidden = !showsBrandedToolbar || !isVibesAvailable
+        vibesButton.isHidden = !shouldShowVibes
         vibesButton.title = displayedVibeTitle
         vibesButton.displayedVibeStyle = displayedVibeStyle
         vibesButton.isDisplayedVibeApplied = isDisplayedVibeApplied
@@ -211,6 +213,10 @@ final class KeyboardRootView: UIView {
         keyGridView.setSymbolPage(symbolPage)
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
+
+        if vibesButton.isHidden != wasVibesButtonHidden {
+            setNeedsLayout()
+        }
     }
 
     private func configureView() {

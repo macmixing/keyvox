@@ -2,7 +2,8 @@ import Foundation
 import KeyVoxCore
 
 extension TranscriptionManager {
-    func handleAppDidBecomeActive() {
+    @discardableResult
+    func handleAppDidBecomeActive() -> Task<Void, Never> {
         Task { await resumeInterruptedCaptureRecoveryIfNeeded() }
     }
 
@@ -10,6 +11,8 @@ extension TranscriptionManager {
         cancelIdleTimeout()
         cancelUtteranceSafetyWatchdog()
         pendingPipelineOutputText = nil
+        isRecoveringInterruptedCapture = false
+        activeInterruptedCaptureRecoveryID = nil
         state = .idle
         isSessionActive = recorder.isMonitoring
         sessionDisablePending = false
@@ -68,38 +71,42 @@ extension TranscriptionManager {
 
         pendingPipelineOutputText = nil
         lastErrorMessage = nil
+        let recoveryID = UUID()
+        activeInterruptedCaptureRecoveryID = recoveryID
         isRecoveringInterruptedCapture = true
         state = .transcribing
         transcriptionService.warmup()
 
-        dictationPipeline.run(
+        let result = await runDictationPipeline(
             audioFrames: payload.audioFrames,
             useDictionaryHintPrompt: payload.recovery.usedDictionaryHintPrompt
-        ) { [weak self] result in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
+        )
 
-                let finalText = self.pendingPipelineOutputText ?? result.finalText
-                self.pendingPipelineOutputText = nil
-                self.state = .idle
-
-                if result.wasLikelyNoSpeech {
-                    self.clearInterruptedCaptureRecovery()
-                    return
-                }
-
-                let trimmedText = finalText.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmedText.isEmpty else {
-                    self.markInterruptedCaptureRecoveryFailed("Interrupted capture recovery produced no transcription.")
-                    return
-                }
-
-                self.lastErrorMessage = nil
-                self.lastTranscriptionText = finalText
-                KeyVoxIPCBridge.setTranscription(finalText)
-                self.clearInterruptedCaptureRecovery()
-            }
+        guard !Task.isCancelled,
+              isRecoveringInterruptedCapture,
+              activeInterruptedCaptureRecoveryID == recoveryID else {
+            return
         }
+
+        let finalText = pendingPipelineOutputText ?? result.finalText
+        pendingPipelineOutputText = nil
+        state = .idle
+
+        if result.wasLikelyNoSpeech {
+            clearInterruptedCaptureRecovery()
+            return
+        }
+
+        let trimmedText = finalText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            markInterruptedCaptureRecoveryFailed("Interrupted capture recovery produced no transcription.")
+            return
+        }
+
+        lastErrorMessage = nil
+        lastTranscriptionText = finalText
+        KeyVoxIPCBridge.setTranscription(finalText)
+        clearInterruptedCaptureRecovery()
     }
 
     private func interruptedCaptureRecoveryPayload(for stoppedCapture: StoppedCapture) -> InterruptedCaptureRecoveryPayload? {
@@ -132,6 +139,7 @@ extension TranscriptionManager {
             try interruptedCaptureRecoveryStore.clear()
             setInterruptedCaptureRecoveryPresence(false)
             isRecoveringInterruptedCapture = false
+            activeInterruptedCaptureRecoveryID = nil
         } catch {
             lastErrorMessage = error.localizedDescription
         }
@@ -150,6 +158,7 @@ extension TranscriptionManager {
             try interruptedCaptureRecoveryStore.save(payload)
             setInterruptedCaptureRecoveryPresence(true)
             isRecoveringInterruptedCapture = false
+            activeInterruptedCaptureRecoveryID = nil
             lastErrorMessage = reason
         } catch {
             lastErrorMessage = error.localizedDescription

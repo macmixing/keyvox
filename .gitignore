@@ -11,6 +11,7 @@ Packages/**/.swiftpm/
 
 # Local tooling scratch files
 .tmp.pronunciation-bench.*
+LOGS.md
 
 # Local build artifacts / generated distributables
 build/

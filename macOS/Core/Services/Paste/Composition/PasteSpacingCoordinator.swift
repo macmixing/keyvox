@@ -45,7 +45,9 @@ final class PasteSpacingCoordinator: PasteSpacingCoordinating {
                     isAtDocumentStart: false,
                     previousCharacter: previous,
                     characterBeforePreviousCharacter: context.characterBeforePreviousCharacter,
-                    previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter
+                    previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter,
+                    characterBeforePreviousNonWhitespaceCharacter: context.characterBeforePreviousNonWhitespaceCharacter,
+                    isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart
                 )
                 return TextCompositionPolicy.applySmartLeadingSeparatorIfNeeded(
                     to: text,

@@ -88,6 +88,11 @@ extension DictionaryMatcher {
             return nil
         }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: [observed], candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         let threshold = MergedTokenEvaluationConstants.acceptanceThreshold
         guard best.score.final >= threshold else {
             stats.rejectedLowScore += 1

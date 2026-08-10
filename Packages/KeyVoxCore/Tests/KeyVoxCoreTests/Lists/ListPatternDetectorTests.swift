@@ -14,6 +14,15 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
     }
 
+    func testCapitalizesPlainListItemsWhilePreservingStylizedLeadingCasing() {
+        let detector = ListPatternDetector()
+        let text = "1. dog 2. cat 3. eBay"
+
+        let detected = detector.detectList(in: text)
+
+        XCTAssertEqual(detected?.items.map(\.content), ["Dog", "Cat", "eBay"])
+    }
+
     func testIgnoresSingleMarkerInput() {
         let detector = ListPatternDetector()
         let detected = detector.detectList(in: "one buy groceries")

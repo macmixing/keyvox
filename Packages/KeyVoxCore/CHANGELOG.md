@@ -6,6 +6,103 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.3] - 2026-08-08
+
+Stylized spoken-number dictionary matching and deterministic post-processing log suppression.
+
+### Includes
+
+- Expanded formatter-generated cardinal aliases so joined stylized number words can resolve from both digit and fully spoken transcription forms without entry-specific wording.
+- Added regression coverage for joined compound tens and hundreds across numeric and spoken dictionary inputs.
+- Included commit `891787b`, which preserves the caller's debug-logging state across serialized synchronous and asynchronous post-processing so disabled deterministic logs remain suppressed.
+- Removed the leftover abbreviation period between normalized meridiem times and capitalized continuation text, so `11 a.m. Eastern` becomes `11:00 AM Eastern`.
+- Removed the relaxed two-token possessive threshold that could rewrite unrelated prose such as `Levin means` as a dictionary entry with an inferred possessive suffix, while preserving valid multi-token possessive recovery.
+- Added regression coverage for the unrelated pronunciation case.
+- Improved split-join possessive recovery before adjective-plus-noun phrases, so `cue boards latest update` resolves to `Cueboard's latest update`.
+- Added regression coverage for adjective-plus-noun possessive context.
+
+### Notes
+
+- `1.2.3` tracks stylized spoken-number dictionary matching and deterministic post-processing log suppression in the shared Core engine.
+
+---
+
+## [1.2.2] - 2026-08-05
+
+Thousands-grouping, numeric dictionary matching, stylized-capitalization, and emoji-boundary normalization fixes with regression coverage.
+
+### Includes
+
+- Added VAD-aware Whisper speech-range selection that removes trailing and inter-speech silence before decoding while preserving logical paragraph chunk boundaries, reducing hallucinated text from accepted silence.
+- Moved transcription post-processing and deterministic variant generation onto a serialized background queue so longer dictation results do not block UI work while preserving the synchronous API for callers that require it.
+- Delivered no-speech dictation completions asynchronously on `MainActor`, matching the successful transcription callback isolation.
+- Preserved four-digit year forms with stacked uncertainty qualifiers such as `like at least` across numeric and spoken-number normalization paths.
+- Preserved coordinated year references in noun contexts while continuing to group nearby quantities.
+- Reworked four-digit year-versus-quantity detection around contextual evidence instead of individual sentence-shape branches, preferring ungrouped years when the context is ambiguous while retaining grouping for clear quantities such as standalone values, plural noun complements, partitive phrases, and quantity modifiers.
+- Preserved prepositional and clause-based year forms, including simple references such as `in 2015`, even when the lexical tagger labels a neighboring alphabetic token as an unclassified word.
+- Preserved explicit temporal years beyond the common year range, including `year 3000`, while continuing to group unqualified quantities such as `3000`.
+- Protected nominal identifiers such as PIN numbers from grouping while retaining grouping for noun-based count and total-number quantities.
+- Added number-aware dictionary variants so digit, cardinal, ordinal, and phonetic number forms can resolve to the same custom entry across hyphenated and joined phrase shapes.
+- Updated dictionary phonetic encoding to use canonical cardinal pronunciations for numeric and ordinal tokens.
+- Required number-shaped dictionary candidates to preserve numeric alignment and strong evidence for nonnumeric companion words, preventing unrelated plural or possessive tails from triggering replacements.
+- Preserved model-emitted stylized mixed-case tokens such as `eBay` at sentence and list boundaries while continuing to capitalize ordinary list items.
+- Added emoji-aware sentence and line-boundary capitalization while leaving emoji-following continuation text lowercase when it follows ordinary prose.
+- Added regression coverage for mixed-format inputs with preformatted and unformatted quantities, affected year forms, and nominal identifiers.
+- Added regression coverage for numeric dictionary substitutions, joined and hyphenated entries, cardinal and ordinal forms, and unrelated-tail false positives.
+- Added regression coverage for stylized casing, ordinary list-item capitalization, and emoji sentence boundaries.
+
+### Notes
+
+- `1.2.2` tracks the thousands-grouping, quantity-protection, numeric dictionary matching, stylized-capitalization, and emoji-boundary behavior used by shared dictation clients.
+
+---
+
+## [1.2.1] - 2026-08-02
+
+Safer pronunciation-aware dictionary correction with complete multi-token phrase recovery.
+
+### Includes
+
+- Corrected acronym-bearing dictionary entries using pronunciation evidence, allowing spoken equivalents such as `chat GBT` to resolve to `ChatGPT` while leaving unrelated prose such as `chat got` unchanged.
+- Applied the pronunciation safeguard consistently across standard, merged-token, middle-initial, compressed-tail, and split-join matching so equivalent input is handled the same way regardless of where the acronym appears or how the recognizer divides the phrase.
+- Added exact three- and four-token phrase recovery so the matcher consumes the complete spoken span, turning `data api client` into `DataAPIClient` instead of replacing only `api client` and leaving a duplicated `data` prefix.
+- Preserved established merged-token and stylized dictionary corrections while adding the new pronunciation safeguard.
+- Extended dotted-domain protection across two-, three-, and four-token join windows so website text cannot be collapsed into a dictionary entry.
+
+### Notes
+
+- `1.2.1` bumps the tracked patch engine version for `KeyVoxCore` to cover pronunciation-aware acronym correction, complete multi-token phrase recovery, and domain-safe joining used by shared dictation clients.
+
+---
+
+## [1.2.0] - 2026-08-01
+
+Shared Whisper Base language selection and voice-activity gating for dictation clients.
+
+### Includes
+
+- Added a shared dictation-language value and localized display-name formatter for consistent language presentation across app clients.
+- Added a Whisper Base language catalog that exposes Auto Detect and the languages supported by the installed Base model without duplicating language lists in platform code.
+- Added Whisper service language configuration with automatic fallback for unsupported values.
+- Applied the configured language during model warmup and at the beginning of each transcription request so one request keeps a consistent language across all audio chunks.
+- Added a whole-capture voice-activity gate that rejects recordings with no detected speech before Whisper decoding, preventing steady background noise from producing hallucinated text.
+- Preserved the complete original recording whenever speech is detected so voice-activity detection does not trim valid words from transcription input.
+- Kept transcription available through the existing decoder safeguards when voice-activity analysis is unavailable.
+- Added diagnostic output for voice-activity probabilities, detected speech ranges, audio-to-ambient measurements, and primary-versus-retry decode selection.
+- Prevented normalized compact times from being processed twice when the minute component is also a valid hour, avoiding output such as `8:10:00 PM` for `810 PM`.
+- Allowed whitespace-delimited single-letter split pronunciations to match single dictionary terms when the remaining tail matches exactly and spelling and phonetic evidence are strong, while retaining the existing short-token and common-word safeguards.
+- Prevented unanchored plural split/join matches from collapsing unrelated phrases such as `main goes` into stylized dictionary entries.
+- Improved stylized dictionary matching across titlecase, list, noun, and particle contexts while preserving common-word protection and ranking only eligible stylized short-token candidates.
+- Preserved sentence periods after normalized spoken email addresses when the following sentence is initially overcaptured as part of the domain.
+- Expanded year-context detection across numeric and spoken-number paths to preserve four-digit years with leading or trailing uncertainty and stacked qualifiers, including `in 2012 maybe`, `in maybe 2015`, and `since at least 2012`, while continuing to add thousands separators to similarly phrased quantities such as `I need at least 2000`.
+- Corrected incidental title casing at Whisper continuation-segment boundaries while preserving proper names and dictionary-defined casing.
+
+### Notes
+
+- `1.2.0` bumps the tracked minor engine version for `KeyVoxCore` to cover reusable Whisper language selection and voice-activity gating for dictation clients.
+
+---
+
 ## [1.1.1] - 2026-07-21
 
 Spoken terminal punctuation completion for determiner-ending clauses.

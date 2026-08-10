@@ -1,20 +1,31 @@
 import Foundation
 
-@MainActor
+struct PronunciationLookup: Sendable {
+    private let pronunciationsByWord: [String: String]
+
+    init(pronunciationsByWord: [String: String]) {
+        self.pronunciationsByWord = pronunciationsByWord
+    }
+
+    func pronunciation(for normalizedWord: String) -> String? {
+        pronunciationsByWord[normalizedWord]
+    }
+}
+
 public protocol PronunciationLexiconProviding: AnyObject {
     func pronunciation(for normalizedWord: String) -> String?
     func isCommonWord(_ normalizedWord: String) -> Bool
 }
 
-@MainActor
 public final class PronunciationLexicon: PronunciationLexiconProviding {
     public static let shared = PronunciationLexicon()
 
-    private(set) var pronunciationsByWord: [String: String] = [:]
+    nonisolated let pronunciationLookup: PronunciationLookup
     private(set) var commonWords: Set<String> = []
 
     private init(bundle: Bundle = .module) {
-        loadPronunciations(from: bundle)
+        let pronunciationLookup = Self.loadPronunciations(from: bundle)
+        self.pronunciationLookup = pronunciationLookup
         loadCommonWords(from: bundle)
     }
 
@@ -22,14 +33,14 @@ public final class PronunciationLexicon: PronunciationLexiconProviding {
     deinit {}
 
     public func pronunciation(for normalizedWord: String) -> String? {
-        pronunciationsByWord[normalizedWord]
+        pronunciationLookup.pronunciation(for: normalizedWord)
     }
 
     public func isCommonWord(_ normalizedWord: String) -> Bool {
         commonWords.contains(normalizedWord)
     }
 
-    private func resourceURL(
+    private static func resourceURL(
         named name: String,
         extension ext: String,
         in bundle: Bundle,
@@ -39,7 +50,7 @@ public final class PronunciationLexicon: PronunciationLexiconProviding {
             ?? bundle.url(forResource: name, withExtension: ext)
     }
 
-    private func loadPronunciations(from bundle: Bundle) {
+    private static func loadPronunciations(from bundle: Bundle) -> PronunciationLookup {
         guard let url = resourceURL(
             named: "lexicon-v1",
             extension: "tsv",
@@ -49,8 +60,7 @@ public final class PronunciationLexicon: PronunciationLexiconProviding {
             #if DEBUG
             print("[PronunciationLexicon] Missing lexicon-v1.tsv resource")
             #endif
-            pronunciationsByWord = [:]
-            return
+            return PronunciationLookup(pronunciationsByWord: [:])
         }
 
         do {
@@ -74,17 +84,17 @@ public final class PronunciationLexicon: PronunciationLexiconProviding {
                 map[normalized] = signature
             }
 
-            pronunciationsByWord = map
+            return PronunciationLookup(pronunciationsByWord: map)
         } catch {
             #if DEBUG
             print("[PronunciationLexicon] Failed to load lexicon-v1.tsv: \(error)")
             #endif
-            pronunciationsByWord = [:]
+            return PronunciationLookup(pronunciationsByWord: [:])
         }
     }
 
     private func loadCommonWords(from bundle: Bundle) {
-        guard let url = resourceURL(
+        guard let url = Self.resourceURL(
             named: "common-words-v1",
             extension: "txt",
             in: bundle,

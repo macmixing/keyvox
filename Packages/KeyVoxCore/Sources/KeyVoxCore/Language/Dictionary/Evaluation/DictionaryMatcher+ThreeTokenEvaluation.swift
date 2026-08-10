@@ -125,6 +125,11 @@ extension DictionaryMatcher {
             return nil
         }
 
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         guard best.score.final >= ThreeTokenEvaluationConstants.middleInitialAcceptanceThreshold else {
             stats.rejectedLowScore += 1
             return nil
@@ -250,6 +255,11 @@ extension DictionaryMatcher {
         }
 
         guard let best else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
             stats.rejectedLowScore += 1
             return nil
         }

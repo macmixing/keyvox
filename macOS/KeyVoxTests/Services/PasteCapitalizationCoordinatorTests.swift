@@ -40,6 +40,41 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: "!")
     }
 
+    func testEmojiCapitalizationUsesCharacterBeforeEmojiBoundary() {
+        let cases = [
+            (characterBeforeEmoji: Character("l"), expected: "hello"),
+            (characterBeforeEmoji: Character("."), expected: "Hello")
+        ]
+
+        for testCase in cases {
+            let heuristics = makeRetainedHeuristics(
+                axInspector: MockPasteAXInspector(
+                    focusedContext: PasteInsertionContext(
+                        selectionLength: 0,
+                        caretLocation: 8,
+                        previousCharacter: Character("😎"),
+                        characterBeforePreviousCharacter: Character(" "),
+                        previousNonWhitespaceCharacter: Character("😎"),
+                        characterBeforePreviousNonWhitespaceCharacter: testCase.characterBeforeEmoji
+                    )
+                )
+            )
+
+            let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+                in: "Hello",
+                currentIdentity: identity("com.example.app", 1),
+                lastInsertionAppIdentity: nil,
+                lastInsertionAt: .distantPast,
+                lastInsertedTrailingCharacter: nil,
+                lastInsertedTrailingNonWhitespaceCharacter: nil,
+                identityMatcher: identityMatcher,
+                shouldPreserveLeadingCapitalization: { _ in false }
+            )
+
+            XCTAssertEqual(output, testCase.expected)
+        }
+    }
+
     func testMapsOpeningQuoteContextToSharedCapitalizationPolicy() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(

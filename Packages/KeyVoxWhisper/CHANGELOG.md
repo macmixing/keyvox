@@ -6,6 +6,25 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-07-27
+
+Complete language identifiers and bundled voice-activity detection for shared Whisper clients.
+
+### Includes
+
+- Expanded `WhisperLanguage` from Auto Detect and English to the complete language set recognized by the pinned `whisper.cpp` runtime.
+- Added iterable language metadata so shared clients can derive model-specific language catalogs without maintaining duplicate platform lists.
+- Preserved the existing Auto Detect default and raw language-code mapping used by Whisper transcription parameters.
+- Bundled the official Silero `v5.1.2` voice-activity model used by the pinned `whisper.cpp` runtime so clients do not require a separate model download.
+- Added a package-owned voice-activity detector that exposes frame probabilities and detected speech ranges without coupling clients directly to the upstream C API.
+- Added configurable speech probability, minimum speech duration, minimum silence duration, and speech-padding inputs for conservative whole-capture analysis.
+
+### Notes
+
+- `1.1.0` bumps the tracked minor runtime version for `KeyVoxWhisper` to cover reusable explicit-language selection and bundled voice-activity detection.
+
+---
+
 ## [1.0.1] - 2026-07-16
 
 Updates the bundled `whisper.cpp` runtime to prevent the ends of dictations from being skipped when less than one second of audio remains after the final decoded segment.

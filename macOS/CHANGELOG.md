@@ -6,6 +6,163 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.2] - 2026-08-09
+
+Improves custom-dictionary corrections, text insertion around punctuation and symbols, and dictated time formatting.
+
+### Changed
+
+- Updated shared text composition through `KeyVoxTextComposition` `1.0.2` so sentence capitalization works consistently after punctuation and symbol delimiters, including when trailing whitespace is present.
+- Updated custom-dictionary matching through `KeyVoxCore` `1.2.3` so joined stylized number words can resolve from both digit and fully spoken forms.
+
+### Fixed
+
+- Fixed joined custom-dictionary entries such as `EightyEight Pilots` and `OneHundredOne Dalmatians` so equivalent numeric and spoken dictation resolves to the saved styling.
+- Fixed custom-dictionary possessives before adjective-and-noun phrases so dictation such as `cue boards latest update` becomes `Cueboard's latest update`.
+- Fixed unrelated multiword pronunciation matches so ordinary phrases such as `Levin means` are not rewritten as possessive dictionary entries.
+- Fixed capitalization at document and sentence boundaries when punctuation or symbol delimiters appear before the inserted dictation, while preserving lowercase continuation text after non-terminal delimiters.
+- Fixed missing spacing after an existing ampersand during text insertion.
+- Fixed dictated times with dotted meridiems before capitalized continuation text so `11 a.m. Eastern` becomes `11:00 AM Eastern` without an extra period.
+
+### Package versions
+
+KeyVox macOS 1.3.2:
+- KeyVoxCore            1.2.3
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.2
+
+---
+
+## [1.3.1] - 2026-08-05
+
+Adds numeric dictionary matching and emoji-aware text composition while improving speech-range handling, dictation responsiveness, and Mac text insertion and overlay feedback.
+
+### Added
+
+- Added numeric custom-dictionary matching for equivalent digit, cardinal, ordinal, and phonetic number forms, including joined and hyphenated entries.
+- Added VAD-assisted speech-range trimming that removes trailing and inter-speech silence before Whisper decoding while preserving logical paragraph chunk boundaries.
+- Added stylized mixed-case preservation and emoji-aware capitalization and spacing at document, sentence, line, and list boundaries through `KeyVoxCore` `1.2.2` and `KeyVoxTextComposition` `1.0.1`.
+
+### Changed
+
+- Updated shared transcription post-processing and deterministic variant generation to run on a serialized background queue, keeping no-speech completions isolated to `MainActor`.
+- Updated Mac Accessibility context collection to inspect preceding grapheme-safe text, the character before the previous non-whitespace character, and line-start context for more reliable composition decisions.
+- Updated leading-space fallback paste so spaces and Command-V are delivered through one ordered keyboard sequence and verified as one insertion.
+- Updated Mac architecture documentation and the code map for the expanded dictionary matcher ownership and shared normalization and composition behavior.
+
+### Fixed
+
+- Fixed numeric dictionary candidate evaluation so numeric source mappings remain aligned across variants, while singular/plural companion mismatches and unrelated plural or possessive tails are rejected.
+- Fixed pronunciation-aware dictionary corrections for acronym-bearing entries such as `chat GBT` to `ChatGPT`, while unrelated phrases such as `chat got` remain unchanged.
+- Fixed exact three- and four-token dictionary phrase recovery so input such as `data api client` becomes `DataAPIClient` without leaving a duplicated prefix.
+- Fixed dictionary split and join matching so dotted domains are protected across two-, three-, and four-token windows, and uppercase pronunciation guards apply consistently across matching strategies.
+- Fixed four-digit year preservation for qualified, coordinated, prepositional, clause-based, and extended-range years while continuing to group clear quantities; nominal identifiers such as PIN numbers remain ungrouped.
+- Fixed fallback insertion in applications that normalize leading spaces during paste by keeping the spaces and pasted text in a deterministic delivery order.
+- Fixed longer dictation results so cleanup and formatting no longer block the rest of the app while preserving the existing synchronous processing API where needed.
+- Fixed logo-bar animation timing by rendering quiet-input and processing states through shared timeline-driven Canvas animations with elapsed-time phase projection for smooth, continuous motion between indicator updates.
+- Fixed silent dictation input so dead live audio maps to the quiet animation state instead of appearing inactive, while capture classification remains separate.
+- Fixed delayed overlay settle animation so the motion controller remains available while the settle work executes.
+
+### Package versions
+
+KeyVox macOS 1.3.1:
+- KeyVoxCore            1.2.2
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.1
+
+## [1.3.0] - 2026-08-01
+
+Adds selectable Whisper dictation languages, rejects noise-only captures before decoding, and improves shared transcript cleanup.
+
+### Added
+
+- Added a Language row to Active Model settings with Auto Detect and the complete set of languages supported by Whisper Base.
+- Added device-local Whisper language persistence so each Mac keeps its own selection, while missing or unsupported saved values safely return to Auto Detect.
+- Added shared whole-capture voice-activity gating through `KeyVoxCore` `1.2.0` and `KeyVoxWhisper` `1.1.0`, using a bundled Silero `v5.1.2` model to identify recordings without speech before Whisper decoding.
+
+### Changed
+
+- Updated the Mac runtime to apply the selected Whisper language during model preparation and at the start of each transcription request so every capture uses one consistent language.
+- Updated the Parakeet language row to remain on Auto Detect with guidance to its supported-language FAQ, without overwriting the saved Whisper selection.
+- Updated Mac architecture documentation and the code map for language ownership, device-local persistence, and the Whisper voice-activity gate.
+
+### Fixed
+
+- Fixed steady background noise and other noise-only captures so they no longer reach Whisper decoding and produce hallucinated text, while recordings containing speech keep their complete original audio.
+- Fixed compact dictated times such as `810 PM` so they normalize once to `8:10 PM` instead of becoming `8:10:00 PM`.
+- Fixed strong spaced single-letter pronunciations so supported dictation such as individually spoken letters can match the intended custom dictionary term without weakening existing safeguards.
+- Fixed unanchored plural split/join matches so unrelated phrases such as `main goes` do not collapse into stylized custom dictionary entries, while valid anchored replacements remain supported.
+- Fixed stylized custom dictionary matching in guarded titlecase, list, noun, and particle contexts while preserving common-word protection and requiring eligible short-token evidence.
+- Fixed normalized spoken email addresses so a sentence-ending period remains intact when the following sentence is initially captured as part of the domain.
+- Fixed qualified year references such as `in 2012 maybe`, `in maybe 2015`, and `since at least 2012` so they remain years while similarly phrased quantities still receive thousands separators.
+- Fixed incidental title casing at Whisper continuation-segment boundaries while preserving proper names and dictionary-defined casing.
+
+### Package versions
+
+KeyVox macOS 1.3.0:
+- KeyVoxCore            1.2.0
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.2.0` adds shared Whisper Base language selection and whole-capture voice-activity gating, and improves compact-time normalization, guarded stylized custom dictionary matching, spoken email punctuation, qualified-year preservation, and continuation-segment casing.
+- `KeyVoxWhisper` `1.1.0` exposes the complete supported language set and bundles the Silero `v5.1.2` voice-activity model with a reusable detector for shared Whisper clients.
+
+---
+
+## [1.2.1] - 2026-07-27
+
+Improves Mac dictation insertion around sentence, quote, and editor boundaries while expanding spoken terminal punctuation completion.
+
+### Added
+
+- Added shared capitalization and leading-spacing behavior through `KeyVoxTextComposition` `1.0.0`, including sentence-boundary, delimiter, and opening and closing quote awareness.
+
+### Changed
+
+- Updated Mac paste composition to use the shared text-composition policy while keeping Accessibility context collection, dictionary casing, and text insertion owned by the Mac app.
+- Updated Accessibility inspection to capture the two preceding characters so quote boundaries and new lines can be classified from the local editor context.
+- Updated Mac architecture documentation and the code map for shared text-composition ownership and the new paste coordinators.
+- Updated `KeyVoxCore` to `1.1.1` with expanded spoken terminal punctuation completion for determiner-ending clauses.
+
+### Fixed
+
+- Fixed capitalization and spacing immediately after opening quotes, after closing quotes in sentence continuations, and after terminal punctuation followed by a closing quote.
+- Fixed capitalization after an indented new line and during selection replacement so the local sentence boundary determines the inserted text casing.
+- Fixed missing or partial Accessibility context so stale information from an earlier insertion does not add an unwanted leading space or incorrectly lowercase new dictation.
+- Fixed spoken terminal punctuation after determiner-ending phrases so clauses such as `I'm happy to hear that exclamation point` can end with the intended punctuation while ordinary punctuation-word references remain unchanged.
+
+### Package versions
+
+KeyVox macOS 1.2.1:
+- KeyVoxCore            1.1.1
+- KeyVoxWhisper         1.0.1
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.11
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.0
+
+### Package changes
+
+- `KeyVoxCore` `1.1.1` expands spoken terminal punctuation completion to eligible determiner-ending clauses while preserving punctuation-word references and protected short phrases.
+- `KeyVoxTextComposition` `1.0.0` establishes the shared source of truth for leading capitalization and spacing across sentence starts, continuations, punctuation, delimiters, and quotation marks.
+
+---
+
 ## [1.2.0] - 2026-07-18
 
 Adds reversible List and Paragraph formatting for the latest untouched Mac dictation, strengthens replacement safety and feedback, and preserves trailing Whisper audio.

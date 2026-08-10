@@ -15,6 +15,22 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "3:15 AM 3:17 AM 4:19 PM")
     }
+    func testNormalizesCompactTimesWithoutRenormalizingMinutesAsHours() {
+        let normalizer = TimeExpressionNormalizer()
+        let cases = [
+            (input: "1012 AM.", expected: "10:12 AM."),
+            (input: "912 AM", expected: "9:12 AM"),
+            (input: "910 AM", expected: "9:10 AM"),
+            (input: "810 AM.", expected: "8:10 AM."),
+            (input: "811 AM.", expected: "8:11 AM."),
+            (input: "812 AM.", expected: "8:12 AM."),
+            (input: "809 AM.", expected: "8:09 AM."),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(normalizer.normalize(in: testCase.input), testCase.expected)
+        }
+    }
     func testNormalizesHourOnlyMeridiemVariantsToFullTime() {
         let processor = TranscriptionPostProcessor()
 
@@ -25,6 +41,17 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "10:00 AM 10:00 AM 10:00 AM 10:00 PM 10:00 PM 10:00 PM")
+    }
+    func testRemovesDottedMeridiemPeriodBeforeCapitalizedContinuation() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I told him that I'd be there at 11 a.m. Eastern.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "I told him that I'd be there at 11:00 AM Eastern.")
     }
     func testNormalizesHyphenSeparatedTimesWithSplitMeridiemAndMathSpacedVariant() {
         let processor = TranscriptionPostProcessor()
@@ -202,6 +229,32 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
+    }
+    func testPreservesExistingMixedCaseAtTextStartAndSentenceBoundary() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "eBay is awesome. eBay is useful.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "eBay is awesome. eBay is useful.")
+    }
+    func testCapitalizesAfterEmojiOnlyAtSentenceOrLineBoundary() {
+        let normalizer = SentenceCapitalizationNormalizer()
+        let cases = [
+            (input: "😎 emoji", expected: "😎 Emoji"),
+            (input: "©️ emoji", expected: "©️ Emoji"),
+            (input: "#️⃣ emoji", expected: "#️⃣ Emoji"),
+            (input: "That was great. 😎 emoji", expected: "That was great. 😎 Emoji"),
+            (input: "That was great\n😎 emoji", expected: "That was great\n😎 Emoji"),
+            (input: "That was great 😎 emoji", expected: "That was great 😎 emoji")
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(normalizer.normalizeSentenceStarts(in: testCase.input), testCase.expected)
+        }
     }
     func testPreservesReadmeFilenameExtensionWithoutSentenceSplit() {
         let processor = TranscriptionPostProcessor()

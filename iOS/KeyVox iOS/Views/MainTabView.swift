@@ -56,6 +56,7 @@ struct MainTabView: View {
             onDownload: performModelUpdatePromptDownload,
             onLater: dismissModelUpdatePromptPermanently
         )
+        .blocksAppReviewRequest(hasReviewBlockingPresentation)
         .sheet(
             isPresented: Binding(
                 get: { canPresentFeatureSheets && ttsPurchaseController.isUnlockSheetPresented },
@@ -270,6 +271,12 @@ struct MainTabView: View {
     private var canPresentExplicitVibesSheet: Bool {
         onboardingStore.shouldShowOnboarding == false
             && ttsManager.isPlaybackPreparationViewPresented == false
+    }
+
+    private var hasReviewBlockingPresentation: Bool {
+        pendingDeletionConfirmation != nil
+            || pendingDownloadConfirmation != nil
+            || pendingModelUpdatePrompt != nil
     }
 
 }

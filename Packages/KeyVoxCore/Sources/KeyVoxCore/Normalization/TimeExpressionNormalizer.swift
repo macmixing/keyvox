@@ -184,6 +184,7 @@ public struct TimeExpressionNormalizer {
         timeBuilder: (_ match: NSTextCheckingResult, _ nsText: NSString) -> String?
     ) -> String {
         replacingMatches(pattern: pattern, in: text) { match, nsText in
+            guard !isContinuationOfColonSeparatedNumber(match.range, in: nsText) else { return nil }
             guard let time = timeBuilder(match, nsText) else { return nil }
             let meridiemRangeIndex = match.numberOfRanges - 1
             return formattedTime(
@@ -193,6 +194,27 @@ public struct TimeExpressionNormalizer {
                 matchRange: match.range
             )
         }
+    }
+
+    private func isContinuationOfColonSeparatedNumber(_ range: NSRange, in text: NSString) -> Bool {
+        let colon = ":".utf16.first!
+        var index = range.location - 1
+
+        while index >= 0,
+              CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(text.character(at: index))!) {
+            index -= 1
+        }
+
+        guard index >= 0, text.character(at: index) == colon else { return false }
+        index -= 1
+
+        while index >= 0,
+              CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(text.character(at: index))!) {
+            index -= 1
+        }
+
+        guard index >= 0 else { return false }
+        return CharacterSet.decimalDigits.contains(UnicodeScalar(text.character(at: index))!)
     }
 
     private func formattedCompactTime(_ digits: String) -> String? {
@@ -348,6 +370,7 @@ public struct TimeExpressionNormalizer {
         }
 
         guard value.hasSuffix("."),
+              !value.dropLast().contains("."),
               shouldPreserveSentenceBoundaryPeriod(in: nsText, after: matchRange) else {
             return normalized
         }

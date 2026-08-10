@@ -28,6 +28,9 @@ public struct SentenceCapitalizationNormalizer {
     private static let filenameComponentCharacterSet = CharacterSet(
         charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
     )
+    private static let sentenceTerminalPunctuation = CharacterSet(charactersIn: ".!?:…")
+    private static let sentenceClosingPunctuation = CharacterSet(charactersIn: "\"'“”‘’)]}")
+    private let stylizedCapitalizationPreserver = StylizedCapitalizationPreserver()
 
     public init() {}
 
@@ -35,7 +38,8 @@ public struct SentenceCapitalizationNormalizer {
         let textStartNormalized = capitalizeAtTextStart(text)
         let sentenceStartNormalized = capitalizeAfterSentenceBoundary(textStartNormalized)
         let lineBreakNormalized = capitalizeAfterLineBreak(sentenceStartNormalized)
-        return capitalizeStandalonePronounI(in: lineBreakNormalized)
+        let emojiBoundaryNormalized = capitalizeAfterEmojiBoundary(lineBreakNormalized)
+        return capitalizeStandalonePronounI(in: emojiBoundaryNormalized)
     }
 
     private func capitalizeAtTextStart(_ text: String) -> String {
@@ -45,7 +49,11 @@ public struct SentenceCapitalizationNormalizer {
         let nsText = text as NSString
         let range = NSRange(location: 0, length: nsText.length)
         guard let match = regex.firstMatch(in: text, options: [], range: range) else { return text }
-        if isAddressOrURLToken(firstToken(in: text)) { return text }
+        let token = firstToken(in: text)
+        if isAddressOrURLToken(token)
+            || stylizedCapitalizationPreserver.preservesExistingCasing(in: token) {
+            return text
+        }
 
         let prefix = nsText.substring(with: match.range(at: 1))
         let nextLetter = nsText.substring(with: match.range(at: 2)).uppercased()
@@ -94,7 +102,8 @@ public struct SentenceCapitalizationNormalizer {
             let tokenStart = match.range(at: 3).location
             let tokenTail = nsText.substring(with: NSRange(location: tokenStart, length: nsText.length - tokenStart))
             let firstToken = tokenTail.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
-            if isAddressOrURLToken(firstToken) {
+            if isAddressOrURLToken(firstToken)
+                || stylizedCapitalizationPreserver.preservesExistingCasing(in: firstToken) {
                 continue
             }
 
@@ -137,6 +146,9 @@ public struct SentenceCapitalizationNormalizer {
         for match in matches.reversed() {
             let tokenStart = match.range(at: 3).location
             guard !lineStartsWithAddressOrURL(in: nsText, from: tokenStart) else { continue }
+            let tokenTail = nsText.substring(with: NSRange(location: tokenStart, length: nsText.length - tokenStart))
+            let firstToken = tokenTail.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+            guard !stylizedCapitalizationPreserver.preservesExistingCasing(in: firstToken) else { continue }
             let newline = nsText.substring(with: match.range(at: 1))
             let prefix = nsText.substring(with: match.range(at: 2))
             let nextLetter = nsText.substring(with: match.range(at: 3)).uppercased()
@@ -144,6 +156,47 @@ public struct SentenceCapitalizationNormalizer {
         }
 
         return mutable as String
+    }
+
+    private func capitalizeAfterEmojiBoundary(_ text: String) -> String {
+        let characters = Array(text)
+        guard !characters.isEmpty else { return text }
+
+        var characterStarts: [String.Index] = []
+        var stringIndex = text.startIndex
+        while stringIndex < text.endIndex {
+            characterStarts.append(stringIndex)
+            stringIndex = text.index(after: stringIndex)
+        }
+
+        var replacements: [(range: Range<String.Index>, replacement: String)] = []
+        for index in characters.indices {
+            guard isEmojiCharacter(characters[index]) else { continue }
+            guard let nextIndex = nextNonHorizontalWhitespaceIndex(after: index, in: characters),
+                  let nextScalar = characters[nextIndex].unicodeScalars.first,
+                  nextScalar.properties.isLowercase else {
+                continue
+            }
+
+            let token = tokenStarting(at: nextIndex, in: characters)
+            guard !stylizedCapitalizationPreserver.preservesExistingCasing(in: token),
+                  hasSentenceBoundaryBeforeEmoji(at: index, in: characters) else {
+                continue
+            }
+
+            let nextStart = characterStarts[nextIndex]
+            let nextEnd = text.index(after: nextStart)
+            let nextCharacter = String(text[nextStart..<nextEnd])
+            replacements.append((nextStart..<nextEnd, nextCharacter.uppercased()))
+        }
+
+        guard !replacements.isEmpty else { return text }
+
+        var normalized = text
+        for replacement in replacements.reversed() {
+            normalized.replaceSubrange(replacement.range, with: replacement.replacement)
+        }
+        return normalized
     }
 
     private func lineStartsWithAddressOrURL(in text: NSString, from location: Int) -> Bool {
@@ -251,6 +304,62 @@ public struct SentenceCapitalizationNormalizer {
         if stripped.contains("_") { return true }
         if stripped.contains("$") { return true }
         return false
+    }
+
+    private func isEmojiCharacter(_ character: Character) -> Bool {
+        let scalars = Array(character.unicodeScalars)
+        guard let baseScalar = scalars.first else { return false }
+        if baseScalar.properties.isEmojiPresentation {
+            return true
+        }
+
+        guard baseScalar.properties.isEmoji else { return false }
+        return scalars.dropFirst().contains {
+            $0.value == 0xFE0F || $0.value == 0x20E3
+        }
+    }
+
+    private func nextNonHorizontalWhitespaceIndex(after index: Int, in characters: [Character]) -> Int? {
+        var nextIndex = index + 1
+        while nextIndex < characters.count, isHorizontalWhitespace(characters[nextIndex]) {
+            nextIndex += 1
+        }
+        return nextIndex < characters.count ? nextIndex : nil
+    }
+
+    private func tokenStarting(at index: Int, in characters: [Character]) -> String {
+        var endIndex = index
+        while endIndex < characters.count,
+              !characters[endIndex].unicodeScalars.allSatisfy({ CharacterSet.whitespacesAndNewlines.contains($0) }) {
+            endIndex += 1
+        }
+        return String(characters[index..<endIndex])
+    }
+
+    private func hasSentenceBoundaryBeforeEmoji(at index: Int, in characters: [Character]) -> Bool {
+        var previousIndex = index - 1
+        while previousIndex >= 0 {
+            let previousCharacter = characters[previousIndex]
+            if isHorizontalWhitespace(previousCharacter) {
+                previousIndex -= 1
+                continue
+            }
+            if previousCharacter.unicodeScalars.allSatisfy({ CharacterSet.newlines.contains($0) }) {
+                return true
+            }
+            if previousCharacter.unicodeScalars.allSatisfy({ Self.sentenceClosingPunctuation.contains($0) }) {
+                previousIndex -= 1
+                continue
+            }
+            return previousCharacter.unicodeScalars.contains { Self.sentenceTerminalPunctuation.contains($0) }
+        }
+        return true
+    }
+
+    private func isHorizontalWhitespace(_ character: Character) -> Bool {
+        !character.unicodeScalars.isEmpty && character.unicodeScalars.allSatisfy {
+            CharacterSet.whitespaces.contains($0)
+        }
     }
 
     private func isLikelyDomainBoundary(_ text: String, dotLocation: Int) -> Bool {

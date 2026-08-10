@@ -33,6 +33,7 @@ extension WhisperService {
         if whisper == nil {
             warmup()
         }
+        applyConfiguredLanguage()
 
         let shouldUseDictionaryHintPrompt = isPromptHintingEnabled && useDictionaryHintPrompt
 
@@ -47,16 +48,72 @@ extension WhisperService {
         }
 
         #if DEBUG
-        print("Transcribing \(audioFrames.count) raw frames...")
+        print(
+            "Transcribing \(audioFrames.count) raw frames " +
+            "language=\(configuredLanguage.rawValue)..."
+        )
         #endif
 
         let paragraphChunker = self.paragraphChunker
+        let speechRangePlanner = WhisperSpeechRangePlanner()
         let noSpeechSegmentProbabilityThreshold = self.noSpeechSegmentProbabilityThreshold
         let noSpeechAverageProbabilityThreshold = self.noSpeechAverageProbabilityThreshold
+        let voiceActivityThreshold = self.voiceActivityThreshold
+        let voiceActivityMinimumSpeechDurationMilliseconds = self.voiceActivityMinimumSpeechDurationMilliseconds
+        let voiceActivityMinimumSilenceDurationMilliseconds = self.voiceActivityMinimumSilenceDurationMilliseconds
+        let voiceActivitySpeechPaddingMilliseconds = self.voiceActivitySpeechPaddingMilliseconds
+        let pronunciationLookup = PronunciationLexicon.shared.pronunciationLookup
 
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
             do {
+                let voiceActivityAnalysis: WhisperVoiceActivityAnalysis?
+                if let voiceActivityDetector = self.voiceActivityDetector,
+                   let voiceActivity = await voiceActivityDetector.analyze(
+                    audioFrames: audioFrames,
+                    threshold: voiceActivityThreshold,
+                    minimumSpeechDurationMilliseconds: voiceActivityMinimumSpeechDurationMilliseconds,
+                    minimumSilenceDurationMilliseconds: voiceActivityMinimumSilenceDurationMilliseconds,
+                    speechPaddingMilliseconds: voiceActivitySpeechPaddingMilliseconds
+                   ) {
+                    #if DEBUG
+                    let maximumProbability = voiceActivity.probabilities.max() ?? 0
+                    let speechRanges = voiceActivity.speechSegments.map {
+                        "\(String(format: "%.2f", Double($0.startTime) / 100.0))-\(String(format: "%.2f", Double($0.endTime) / 100.0))s"
+                    }
+                    print(
+                        "WhisperService VAD: frames=\(audioFrames.count) " +
+                        "probabilities=\(voiceActivity.probabilities.count) " +
+                        "maxProbability=\(String(format: "%.3f", maximumProbability)) " +
+                        "speechSegments=\(voiceActivity.speechSegments.count) " +
+                        "speechRangesSeconds=\(speechRanges)"
+                    )
+                    #endif
+
+                    guard voiceActivity.containsSpeech else {
+                        #if DEBUG
+                        print("WhisperService VAD: rejected capture with no detected speech.")
+                        #endif
+                        self.finishSuccessfulRequest(
+                            requestID,
+                            usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
+                            finalText: "",
+                            paragraphsText: "",
+                            inlineText: "",
+                            likelyNoSpeech: true,
+                            detectedLanguageCode: nil,
+                            completion: completion
+                        )
+                        return
+                    }
+                    voiceActivityAnalysis = voiceActivity
+                } else {
+                    #if DEBUG
+                    print("WhisperService VAD: unavailable; continuing with decoder safeguards.")
+                    #endif
+                    voiceActivityAnalysis = nil
+                }
+
                 let chunkResult = paragraphChunker.split(audioFrames)
                 #if DEBUG
                 let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }
@@ -76,6 +133,9 @@ extension WhisperService {
                 var transcribedChunks: [TranscribedChunk] = []
                 var detectedLanguageCode: String? = nil
                 var nonEmptyChunkTextCount = 0
+                var precedingChunkText = ""
+                var vadSkippedChunkCount = 0
+                var vadSelectedFrameCount = 0
 
                 for (chunkIndex, chunk) in chunkResult.chunks.enumerated() {
                     if Task.isCancelled {
@@ -86,8 +146,69 @@ extension WhisperService {
                         return
                     }
 
-                    let chunkFrames = Array(audioFrames[chunk.startFrame..<chunk.endFrame])
-                    guard !chunkFrames.isEmpty else { continue }
+                    let sourceChunkFrames = Array(audioFrames[chunk.startFrame..<chunk.endFrame])
+                    guard !sourceChunkFrames.isEmpty else { continue }
+
+                    let trailingBoundaryFrame = chunkIndex < (chunkResult.chunks.count - 1)
+                        ? chunk.endFrame
+                        : nil
+                    let selectedSpeechRanges: [WhisperSpeechRangePlanner.FrameRange]?
+                    let chunkFrames: [Float]
+
+                    if let speechSegments = voiceActivityAnalysis?.speechSegments {
+                        let ranges = speechRangePlanner.ranges(
+                            for: chunk,
+                            speechSegments: speechSegments,
+                            audioFrameCount: audioFrames.count
+                        )
+                        selectedSpeechRanges = ranges
+
+                        guard !ranges.isEmpty else {
+                            vadSkippedChunkCount += 1
+                            transcribedChunks.append(
+                                TranscribedChunk(
+                                    text: "",
+                                    trailingBoundaryFrame: trailingBoundaryFrame
+                                )
+                            )
+                            #if DEBUG
+                            print(
+                                "WhisperService VAD chunk: chunk=\(chunkIndex + 1)/\(chunkResult.chunks.count) " +
+                                "sourceSeconds=\(String(format: "%.2f", Double(sourceChunkFrames.count) / 16_000.0)) " +
+                                "action=skip_no_speech_overlap"
+                            )
+                            #endif
+                            continue
+                        }
+
+                        chunkFrames = speechRangePlanner.compactedFrames(
+                            from: audioFrames,
+                            ranges: ranges,
+                            maximumInterRangeSilenceMilliseconds: Int(voiceActivityMinimumSilenceDurationMilliseconds)
+                        )
+                        vadSelectedFrameCount += chunkFrames.count
+                    } else {
+                        selectedSpeechRanges = nil
+                        chunkFrames = sourceChunkFrames
+                    }
+
+                    guard !chunkFrames.isEmpty else {
+                        vadSkippedChunkCount += 1
+                        transcribedChunks.append(
+                            TranscribedChunk(
+                                text: "",
+                                trailingBoundaryFrame: trailingBoundaryFrame
+                            )
+                        )
+                        #if DEBUG
+                        print(
+                            "WhisperService VAD chunk: chunk=\(chunkIndex + 1)/\(chunkResult.chunks.count) " +
+                            "sourceSeconds=\(String(format: "%.2f", Double(sourceChunkFrames.count) / 16_000.0)) " +
+                            "action=skip_empty_selection"
+                        )
+                        #endif
+                        continue
+                    }
 
                     let result = try await self.transcribeChunkWithLeadingPhraseRetry(
                         chunkFrames: chunkFrames,
@@ -101,13 +222,17 @@ extension WhisperService {
                     self.logChunkSegments(segments, chunkIndex: chunkIndex, totalChunks: chunkResult.chunks.count)
                     #endif
                     transcribedSegments.append(contentsOf: segments)
-                    let chunkText = segments
-                        .map { $0.text }
-                        .joined(separator: " ")
+                    let chunkText = await WhisperSegmentTextAssembler(
+                        pronunciationLookup: pronunciationLookup
+                    ).assemble(
+                        segments.map(\.text),
+                        after: precedingChunkText,
+                        normalizesContinuationCasing: result.detectedLanguageCode == WhisperLanguage.english.rawValue
+                    )
                     let normalizedChunkText = self.normalizeWhitespace(chunkText)
-                    let trailingBoundaryFrame = chunkIndex < (chunkResult.chunks.count - 1)
-                        ? chunk.endFrame
-                        : nil
+                    if !normalizedChunkText.isEmpty {
+                        precedingChunkText = normalizedChunkText
+                    }
                     transcribedChunks.append(
                         TranscribedChunk(
                             text: normalizedChunkText,
@@ -118,13 +243,19 @@ extension WhisperService {
                         nonEmptyChunkTextCount += 1
                     }
                     #if DEBUG
-                    let chunkDurationSeconds = Double(chunk.endFrame - chunk.startFrame) / 16_000.0
+                    let sourceChunkDurationSeconds = Double(sourceChunkFrames.count) / 16_000.0
+                    let decodedChunkDurationSeconds = Double(chunkFrames.count) / 16_000.0
+                    let selectedRangeSummary = selectedSpeechRanges?.map {
+                        "\($0.startFrame)-\($0.endFrame)"
+                    } ?? ["full"]
                     let averageChunkNoSpeechProbability: Float = segments.isEmpty
                         ? 1.0
                         : (segments.reduce(0) { $0 + $1.noSpeechProbability } / Float(segments.count))
                     print(
                         "WhisperService chunk result: chunk=\(chunkIndex + 1)/\(chunkResult.chunks.count) " +
-                        "seconds=\(String(format: "%.2f", chunkDurationSeconds)) " +
+                        "sourceSeconds=\(String(format: "%.2f", sourceChunkDurationSeconds)) " +
+                        "decodedSeconds=\(String(format: "%.2f", decodedChunkDurationSeconds)) " +
+                        "selectedRanges=\(selectedRangeSummary) " +
                         "segments=\(segments.count) " +
                         "avgNoSpeech=\(String(format: "%.3f", averageChunkNoSpeechProbability)) " +
                         "emptyText=\(normalizedChunkText.isEmpty)"
@@ -175,6 +306,8 @@ extension WhisperService {
                 print(
                     "WhisperService final decode: totalChunks=\(chunkResult.chunks.count) " +
                     "nonEmptyChunks=\(nonEmptyChunkTextCount) " +
+                    "vadSkippedChunks=\(vadSkippedChunkCount) " +
+                    "vadSelectedFrames=\(vadSelectedFrameCount) " +
                     "segments=\(transcribedSegments.count) " +
                     "likelyNoSpeech=\(likelyNoSpeechByDecoder) " +
                     "finalChars=\(finalText.count)"

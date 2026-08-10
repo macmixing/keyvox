@@ -30,7 +30,6 @@ func waitForCondition(
     }
 }
 
-@MainActor
 final class FakeLexicon: PronunciationLexiconProviding {
     var pronunciations: [String: String]
     var commonWords: Set<String>

@@ -79,7 +79,6 @@
 		9A1000202F4B000100AA0001 /* PasteAXLiveSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000102F4B000100AA0001 /* PasteAXLiveSession.swift */; };
 		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
 		9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */; };
-		B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C100022FF1000100AA0001 /* KeyVoxTextComposition */; };
 		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
 		9A1000902F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
@@ -126,6 +125,7 @@
 		AB3000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift */; };
 		AB3000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift */; };
 		B12000012FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12000022FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift */; };
+		B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C100022FF1000100AA0001 /* KeyVoxTextComposition */; };
 		BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */; };
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
@@ -160,6 +160,7 @@
 		D15000112FA1000100AA0001 /* LoginItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000012FA1000100AA0001 /* LoginItemController.swift */; };
 		D15000122FA1000100AA0001 /* DockIconVisibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15000022FA1000100AA0001 /* DockIconVisibilityController.swift */; };
 		D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */; };
+		D16000122FA2000100AA0001 /* DictationLanguageSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000022FA2000100AA0001 /* DictationLanguageSection.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
 		D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26000022FF0000100AA0001 /* AppProcessTerminator.swift */; };
 		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
@@ -407,6 +408,7 @@
 		D15000012FA1000100AA0001 /* LoginItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemController.swift; sourceTree = "<group>"; };
 		D15000022FA1000100AA0001 /* DockIconVisibilityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockIconVisibilityController.swift; sourceTree = "<group>"; };
 		D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DictationModels.swift"; sourceTree = "<group>"; };
+		D16000022FA2000100AA0001 /* DictationLanguageSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationLanguageSection.swift; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
 		D26000022FF0000100AA0001 /* AppProcessTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProcessTerminator.swift; sourceTree = "<group>"; };
 		E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
@@ -525,6 +527,7 @@
 				8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */,
 				8E57FB982F3E444B00935A26 /* SettingsView+More.swift */,
 				D16000012FA2000100AA0001 /* SettingsView+DictationModels.swift */,
+				D16000022FA2000100AA0001 /* DictationLanguageSection.swift */,
 				8F2201062F44010000BB2201 /* SettingsView+DictionarySection.swift */,
 				8E57FB992F3E444B00935A26 /* SettingsView+Dictionary.swift */,
 				8E57FB9A2F3E444B00935A26 /* SettingsView+Sidebar.swift */,
@@ -1206,6 +1209,7 @@
 				8F2202062F44010000BB2201 /* SettingsView+DictionarySection.swift in Sources */,
 				8E57FBA02F3E444B00935A26 /* SettingsView+More.swift in Sources */,
 				D16000112FA2000100AA0001 /* SettingsView+DictationModels.swift in Sources */,
+				D16000122FA2000100AA0001 /* DictationLanguageSection.swift in Sources */,
 				8E57FBA12F3E444B00935A26 /* SettingsView+Style.swift in Sources */,
 				E900000A2FE1000100AA0001 /* SettingsVibesCard.swift in Sources */,
 				E93000012FE9000100AA0001 /* SettingsVibesExamplesSection.swift in Sources */,
@@ -1541,7 +1545,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1592,7 +1596,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1691,10 +1695,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxTextComposition;
-		};
 		8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxParakeet;
@@ -1706,6 +1706,10 @@
 		8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
+		};
+		B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTextComposition;
 		};
 		E90000202FE1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1722,11 +1726,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B4C100022FF1000100AA0001 /* KeyVoxTextComposition */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
-			productName = KeyVoxTextComposition;
-		};
 		A10000012FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
@@ -1734,6 +1733,11 @@
 		A10000022FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
+		};
+		B4C100022FF1000100AA0001 /* KeyVoxTextComposition */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
+			productName = KeyVoxTextComposition;
 		};
 		E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */ = {
 			isa = XCSwiftPackageProductDependency;

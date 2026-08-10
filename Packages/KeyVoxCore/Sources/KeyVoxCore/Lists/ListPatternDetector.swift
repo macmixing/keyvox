@@ -4,6 +4,7 @@ public struct ListPatternDetector {
     private let markerParser = ListPatternMarkerParser()
     private let runSelector = ListPatternRunSelector()
     private let trailingSplitter = ListPatternTrailingSplitter()
+    private let stylizedCapitalizationPreserver = StylizedCapitalizationPreserver()
 
     public init() {}
 
@@ -117,6 +118,11 @@ public struct ListPatternDetector {
 
         if let normalizedDomainItem = WebsiteNormalizer.normalizeLeadingDomainTokenCasing(in: cleaned) {
             return normalizedDomainItem
+        }
+
+        let firstToken = cleaned.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
+        if stylizedCapitalizationPreserver.preservesExistingCasing(in: firstToken) {
+            return cleaned
         }
 
         return capitalizeFirstLetter(in: cleaned)

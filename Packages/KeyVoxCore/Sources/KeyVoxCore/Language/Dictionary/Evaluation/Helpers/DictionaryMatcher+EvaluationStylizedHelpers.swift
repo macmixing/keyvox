@@ -48,6 +48,26 @@ extension DictionaryMatcher {
         return previousIsTitlecase || nextIsTitlecase
     }
 
+    func hasAdjacentTitlecaseListContext(
+        tokenIndex: Int,
+        totalTokens: Int,
+        tokens: [Token],
+        text: String
+    ) -> Bool {
+        guard isTitlecaseToken(tokens[tokenIndex]) else { return false }
+
+        let previousIsListItem =
+            tokenIndex > 0
+            && isTitlecaseToken(tokens[tokenIndex - 1])
+            && hasListSeparatorBetween(tokens[tokenIndex - 1], tokens[tokenIndex], in: text)
+        let nextIsListItem =
+            tokenIndex + 1 < totalTokens
+            && isTitlecaseToken(tokens[tokenIndex + 1])
+            && hasListSeparatorBetween(tokens[tokenIndex], tokens[tokenIndex + 1], in: text)
+
+        return previousIsListItem || nextIsListItem
+    }
+
     private func hasSentenceBoundaryBetween(_ left: Token, _ right: Token, in text: String) -> Bool {
         let leftEnd = left.range.location + left.range.length
         let rightStart = right.range.location
@@ -56,6 +76,16 @@ extension DictionaryMatcher {
         let bridge = text as NSString
         let gap = bridge.substring(with: NSRange(location: leftEnd, length: rightStart - leftEnd))
         return gap.contains(".") || gap.contains("?") || gap.contains("!") || gap.contains("\n")
+    }
+
+    private func hasListSeparatorBetween(_ left: Token, _ right: Token, in text: String) -> Bool {
+        let leftEnd = left.range.location + left.range.length
+        let rightStart = right.range.location
+        guard rightStart > leftEnd else { return false }
+
+        let bridge = text as NSString
+        let gap = bridge.substring(with: NSRange(location: leftEnd, length: rightStart - leftEnd))
+        return gap.contains(",") || gap.contains(";")
     }
 
     func isStylizedSingleTokenEntry(_ entry: CompiledEntry) -> Bool {

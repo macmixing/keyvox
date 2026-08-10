@@ -146,14 +146,14 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        typeLeadingSpacesOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult {
         _ = insertionText
         _ = didAccessibilityInsertText
         _ = menuFallbackExecutor
         _ = shouldTrustMenuSuccessWithoutAXVerification
         _ = setClipboardStringOnMainThread
-        _ = typeLeadingSpacesOnMainThread
+        _ = executeLeadingSpacePasteOnMainThread
         executeCalls += 1
         executionThreadWasMain.append(Thread.isMainThread)
         targetAppIdentities.append(targetAppIdentity)

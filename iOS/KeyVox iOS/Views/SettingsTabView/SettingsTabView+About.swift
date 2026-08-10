@@ -1,4 +1,3 @@
-import StoreKit
 import SwiftUI
 
 extension SettingsTabView {
@@ -182,15 +181,15 @@ extension SettingsTabView {
 
     func openAppStoreReview() {
         appHaptics.light()
-        if #available(iOS 18.0, *) {
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                AppStore.requestReview(in: scene)
-            }
-        } else {
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                SKStoreReviewController.requestReview(in: scene)
-            }
-        }
+
+        var components = URLComponents(
+            url: AppUpdateConfiguration.fallbackAppStoreURL,
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [URLQueryItem(name: "action", value: "write-review")]
+
+        guard let writeReviewURL = components?.url else { return }
+        openURL(writeReviewURL)
     }
 
     func openGitHubSponsors() {

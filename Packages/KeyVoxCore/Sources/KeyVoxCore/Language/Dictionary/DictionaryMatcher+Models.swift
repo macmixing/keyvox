@@ -27,7 +27,9 @@ extension DictionaryMatcher {
     struct CompiledEntry {
         let phrase: String
         let normalizedPhrase: String
+        let matchingNormalizedPhrases: [String]
         let tokens: [String]
+        let numericSourceTokens: [String?]
         let phoneticPhrase: String
     }
 

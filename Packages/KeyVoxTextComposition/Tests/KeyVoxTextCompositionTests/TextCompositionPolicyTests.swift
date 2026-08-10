@@ -113,6 +113,131 @@ final class TextCompositionPolicyTests: XCTestCase {
         }
     }
 
+    func testPunctuationAndSymbolsOnlyPreserveCapitalizationAfterTerminalPunctuation() {
+        for delimiter in [
+            Character("("),
+            Character("["),
+            Character("{"),
+            Character("/"),
+            Character("\\"),
+            Character(":"),
+            Character("<"),
+            Character(">"),
+            Character("&"),
+            Character("$"),
+            Character("#")
+        ] {
+            let continuationContext = TextCompositionContext(
+                precedingText: "Existing text\(delimiter)"
+            )
+            XCTAssertFalse(TextCompositionPolicy.isSentenceStart(in: continuationContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: continuationContext),
+                "this is new."
+            )
+
+            let sentenceStartContext = TextCompositionContext(
+                precedingText: "Existing text.\(delimiter)"
+            )
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: sentenceStartContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: sentenceStartContext),
+                "This is new."
+            )
+
+            let trailingWhitespaceSentenceStartContext = TextCompositionContext(
+                precedingText: "Existing text.\(delimiter)  "
+            )
+            XCTAssertTrue(
+                TextCompositionPolicy.isSentenceStart(in: trailingWhitespaceSentenceStartContext)
+            )
+            XCTAssertEqual(
+                normalize("This is new.", context: trailingWhitespaceSentenceStartContext),
+                "This is new."
+            )
+
+            let documentStartContext = TextCompositionContext(
+                precedingText: String(delimiter)
+            )
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: documentStartContext))
+            XCTAssertEqual(
+                normalize("This is new.", context: documentStartContext),
+                "This is new."
+            )
+
+            let trailingWhitespaceDocumentStartContext = TextCompositionContext(
+                precedingText: "\(delimiter)  "
+            )
+            XCTAssertTrue(
+                TextCompositionPolicy.isSentenceStart(in: trailingWhitespaceDocumentStartContext)
+            )
+            XCTAssertEqual(
+                normalize("This is new.", context: trailingWhitespaceDocumentStartContext),
+                "This is new."
+            )
+        }
+    }
+
+    func testEmojiAtDocumentOrLineStartPreservesIncomingCapitalization() {
+        for precedingText in ["😎 ", "Hello.\n😎 "] {
+            let context = TextCompositionContext(precedingText: precedingText)
+
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: context))
+            XCTAssertEqual(normalize("Hey there.", context: context), "Hey there.")
+        }
+    }
+
+    func testEmojiAfterTerminalPunctuationPreservesIncomingCapitalization() {
+        let context = TextCompositionContext(precedingText: "Hello. 😎 ")
+
+        XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: context))
+        XCTAssertEqual(normalize("Hey there.", context: context), "Hey there.")
+    }
+
+    func testEmojiAfterLowercaseTextContinuesLowercase() {
+        let context = TextCompositionContext(precedingText: "hello 😎 ")
+
+        XCTAssertFalse(TextCompositionPolicy.isSentenceStart(in: context))
+        XCTAssertEqual(normalize("Hey there.", context: context), "hey there.")
+    }
+
+    func testEmojiContextProducesCapitalizedSpacedPayload() {
+        let context = TextCompositionContext(precedingText: "😎")
+        let capitalized = normalize("Hey there.", context: context)
+
+        XCTAssertEqual(
+            TextCompositionPolicy.applySmartLeadingSeparatorIfNeeded(
+                to: capitalized,
+                context: context
+            ),
+            " Hey there."
+        )
+    }
+
+    func testEmojiVariationSelectorContextPreservesCapitalizationAndSpacing() {
+        let context = TextCompositionContext(precedingText: "©️ ")
+
+        XCTAssertEqual(context.previousNonWhitespaceCharacter, "©️")
+        XCTAssertEqual(normalize("Hey there.", context: context), "Hey there.")
+
+        XCTAssertEqual(
+            TextCompositionPolicy.applySmartLeadingSeparatorIfNeeded(
+                to: "Hey there.",
+                previousCharacter: context.previousNonWhitespaceCharacter!
+            ),
+            " Hey there."
+        )
+
+        let noTrailingSpaceContext = TextCompositionContext(precedingText: "©️")
+        XCTAssertEqual(
+            TextCompositionPolicy.applySmartLeadingSeparatorIfNeeded(
+                to: "Hey there.",
+                context: noTrailingSpaceContext
+            ),
+            " Hey there."
+        )
+    }
+
     func testContinuationCapitalizationPreservesIntentionalCasing() {
         let context = TextCompositionContext(
             isAtDocumentStart: false,
@@ -164,6 +289,8 @@ final class TextCompositionPolicyTests: XCTestCase {
     func testSpacingPreservesExistingDelimiterAndPunctuationBehavior() {
         XCTAssertEqual(applySpacing(to: "there", after: "o"), " there")
         XCTAssertEqual(applySpacing(to: "there", after: "."), " there")
+        XCTAssertEqual(applySpacing(to: "there", after: "&"), " there")
+        XCTAssertEqual(applySpacing(to: "there", after: "😎"), " there")
         XCTAssertEqual(applySpacing(to: ".", after: "o"), ".")
         XCTAssertEqual(applySpacing(to: "there", after: " "), "there")
         XCTAssertEqual(applySpacing(to: "there", after: "("), "there")

@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import Testing
 @testable import KeyVox_iOS
@@ -92,6 +93,31 @@ struct KeyVoxVibesAccessMatrixTests {
         #expect(matrix.destinationCTA == .none)
     }
 
+    @Test func keyboardMissingModelForUnlockedUserPresentsContinueRecovery() async {
+        let suiteName = "KeyVoxVibesAccessMatrixTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(true, forKey: UserDefaultsKeys.App.isVibesUnlocked)
+
+        let controller = KeyVoxVibesPurchaseController(
+            defaults: defaults,
+            store: UnlockedVibesStore(),
+            setSelectedVibe: { _ in }
+        )
+        for _ in 0..<5 {
+            await Task.yield()
+        }
+
+        controller.presentKeyboardModelRecoverySheet()
+
+        #expect(
+            controller.sheetPresentation == KeyVoxVibesPurchaseController.SheetPresentation.unlock(
+                initialScene: KeyVoxVibesSheetView.Scene.unlock,
+                primaryAction: KeyVoxVibesSheetView.UnlockPrimaryAction.continueWhenVibesAIReady
+            )
+        )
+    }
+
     @Test func derivedAccessStateMatchesTrialAndUnlockFlags() {
         #expect(
             KeyVoxVibesAccessMatrix.accessState(
@@ -138,5 +164,23 @@ struct KeyVoxVibesAccessMatrixTests {
             modelState: modelState,
             selectedVibe: selectedVibe
         )
+    }
+}
+
+private final class UnlockedVibesStore: StoreUnlockStore {
+    func loadUnlockProduct(productID _: String) async throws -> StoreUnlockProduct? {
+        nil
+    }
+
+    func isUnlocked(productID _: String) async throws -> Bool {
+        true
+    }
+
+    func purchase(productID _: String) async throws -> Bool {
+        true
+    }
+
+    func restore(productID _: String) async throws -> Bool {
+        true
     }
 }

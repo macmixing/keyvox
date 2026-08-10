@@ -10,17 +10,20 @@ extension DictionaryMatcher {
         options: []
     )
 
-    func resolveDictionaryDomainCandidate(_ raw: String, localHint: String? = nil) -> (domain: String, overflow: String)? {
+    func resolveDictionaryDomainCandidate(
+        _ raw: String,
+        localHint: String? = nil
+    ) -> (domain: String, overflow: String, overflowSeparator: String)? {
         guard let labelBundle = extractDomainLabels(from: raw) else { return nil }
         let normalizedLabels = labelBundle.normalized
         let rawLabels = labelBundle.raw
         let normalized = normalizedLabels.joined(separator: ".")
 
         if emailEntriesByDomain[normalized] != nil {
-            return (normalized, "")
+            return (normalized, "", "")
         }
         if let fuzzyDomain = resolveFuzzyDomainCandidate(normalized, localHint: localHint) {
-            return (fuzzyDomain, "")
+            return (fuzzyDomain, "", "")
         }
 
         guard normalizedLabels.count >= 3 else { return nil }
@@ -29,18 +32,30 @@ extension DictionaryMatcher {
             let candidateDomain = normalizedLabels[..<endIndexExclusive].joined(separator: ".")
             if emailEntriesByDomain[candidateDomain] != nil {
                 let overflow = rawLabels[endIndexExclusive...].joined(separator: " ")
-                return (candidateDomain, overflow)
+                let separator = overflowSeparator(
+                    beforeLabelAt: endIndexExclusive,
+                    labelRanges: labelBundle.ranges,
+                    in: labelBundle.source
+                )
+                return (candidateDomain, overflow, separator)
             }
             guard let fuzzyDomain = resolveFuzzyDomainCandidate(candidateDomain, localHint: localHint) else { continue }
 
             let overflow = rawLabels[endIndexExclusive...].joined(separator: " ")
-            return (fuzzyDomain, overflow)
+            let separator = overflowSeparator(
+                beforeLabelAt: endIndexExclusive,
+                labelRanges: labelBundle.ranges,
+                in: labelBundle.source
+            )
+            return (fuzzyDomain, overflow, separator)
         }
 
         return nil
     }
 
-    private func extractDomainLabels(from raw: String) -> (normalized: [String], raw: [String])? {
+    private func extractDomainLabels(
+        from raw: String
+    ) -> (normalized: [String], raw: [String], ranges: [NSRange], source: String)? {
         let normalizedSeparators = Self.spokenDotRegex.stringByReplacingMatches(
             in: raw,
             options: [],
@@ -55,8 +70,10 @@ extension DictionaryMatcher {
 
         var rawLabels: [String] = []
         var normalizedLabels: [String] = []
+        var labelRanges: [NSRange] = []
         rawLabels.reserveCapacity(matches.count)
         normalizedLabels.reserveCapacity(matches.count)
+        labelRanges.reserveCapacity(matches.count)
 
         for match in matches {
             let token = ns.substring(with: match.range)
@@ -70,6 +87,7 @@ extension DictionaryMatcher {
 
             rawLabels.append(trimmedRaw)
             normalizedLabels.append(normalized)
+            labelRanges.append(match.range)
         }
 
         guard normalizedLabels.count >= 2 else { return nil }
@@ -78,7 +96,27 @@ extension DictionaryMatcher {
             return nil
         }
 
-        return (normalizedLabels, rawLabels)
+        return (normalizedLabels, rawLabels, labelRanges, normalizedSeparators)
+    }
+
+    private func overflowSeparator(
+        beforeLabelAt index: Int,
+        labelRanges: [NSRange],
+        in source: String
+    ) -> String {
+        guard index > 0, index < labelRanges.count else { return " " }
+
+        let previousEnd = NSMaxRange(labelRanges[index - 1])
+        let nextStart = labelRanges[index].location
+        guard nextStart > previousEnd else { return " " }
+
+        let separatorRange = NSRange(location: previousEnd, length: nextStart - previousEnd)
+        let separator = (source as NSString).substring(with: separatorRange)
+        let periodFollowedByWhitespace = separator.range(
+            of: #"\.\s+"#,
+            options: .regularExpression
+        ) != nil
+        return periodFollowedByWhitespace ? ". " : " "
     }
 
     private func resolveFuzzyDomainCandidate(_ candidateDomain: String, localHint: String?) -> String? {

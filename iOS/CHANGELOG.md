@@ -6,6 +6,163 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.2] - 2026-08-09
+
+Improves custom-dictionary corrections, keyboard insertion around punctuation and symbols, and dictated time formatting.
+
+### Changed
+
+- Updated shared text composition through `KeyVoxTextComposition` `1.0.2` so sentence capitalization works consistently after punctuation and symbol delimiters, including when trailing whitespace is present.
+- Updated custom-dictionary matching through `KeyVoxCore` `1.2.3` so joined stylized number words can resolve from both digit and fully spoken forms.
+
+### Fixed
+
+- Fixed joined custom-dictionary entries such as `EightyEight Pilots` and `OneHundredOne Dalmatians` so equivalent numeric and spoken dictation resolves to the saved styling.
+- Fixed custom-dictionary possessives before adjective-and-noun phrases so dictation such as `cue boards latest update` becomes `Cueboard's latest update`.
+- Fixed unrelated multiword pronunciation matches so ordinary phrases such as `Levin means` are not rewritten as possessive dictionary entries.
+- Fixed keyboard capitalization at document and sentence boundaries when punctuation or symbol delimiters appear before the inserted dictation, while preserving lowercase continuation text after non-terminal delimiters.
+- Fixed missing spacing after an existing ampersand during keyboard text insertion.
+- Fixed dictated times with dotted meridiems before capitalized continuation text so `11 a.m. Eastern` becomes `11:00 AM Eastern` without an extra period.
+
+### Package versions
+
+KeyVox iOS 1.3.2
+  KeyVoxCore            1.2.3
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.2
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.1.0
+
+---
+
+## [1.3.1] - 2026-08-05
+
+Adds numeric dictionary matching and emoji-aware text composition while improving speech-range handling, dictation responsiveness, and asynchronous lifecycle safety.
+
+### Added
+
+- Added numeric custom-dictionary matching for equivalent digit, cardinal, ordinal, and phonetic number forms, including joined and hyphenated entries.
+- Added VAD-assisted speech-range trimming that removes trailing and inter-speech silence before Whisper decoding while preserving logical paragraph chunk boundaries.
+- Added stylized mixed-case preservation and emoji-aware capitalization and spacing at document, sentence, line, and list boundaries through `KeyVoxCore` `1.2.2` and `KeyVoxTextComposition` `1.0.1`.
+
+### Changed
+
+- Updated shared transcription post-processing and deterministic variant generation to run on a serialized background queue, keeping no-speech completions isolated to `MainActor`.
+- Updated iOS transcription lifecycle handling to await pipeline completion before applying transcription and session state changes, with per-recovery identity checks for canceled or superseded interrupted-capture recoveries.
+- Updated keyboard diagnostics so raw transcription payloads are logged only in Debug builds when `KVX_DEBUG_LOG_RAW_TEXT=1` is explicitly enabled.
+
+### Fixed
+
+- Fixed numeric dictionary candidate evaluation so numeric source mappings remain aligned across variants, while singular/plural companion mismatches and unrelated plural or possessive tails are rejected.
+- Fixed four-digit year normalization across qualified, coordinated, prepositional, clause-based, and extended-range references while continuing to group clear quantities and protecting nominal identifiers such as PIN numbers.
+- Fixed longer dictation results so cleanup and deterministic variant generation no longer block UI work.
+- Fixed asynchronous iOS dictation and interrupted-capture recovery results so canceled, superseded, or stale completions cannot overwrite newer transcription or session state.
+
+### Package versions
+
+KeyVox iOS 1.3.1
+  KeyVoxCore            1.2.2
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.1
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.1.0
+
+---
+
+## [1.3.0] - 2026-08-01
+
+Adds selectable Whisper dictation languages and App Store review options, rejects noise-only captures before decoding, and improves shared transcript cleanup.
+
+### Added
+
+- Added a Language section to Dictation Model settings with Auto Detect and the complete set of languages supported by Whisper Base.
+- Added device-local Whisper language persistence so each iPhone or iPad keeps its own selection, while missing or unsupported saved values safely return to Auto Detect.
+- Added shared whole-capture voice-activity gating through `KeyVoxCore` `1.2.0` and `KeyVoxWhisper` `1.1.0`, using a bundled Silero `v5.1.2` model to identify recordings without speech before Whisper decoding.
+- Added a Rate & Review card to Settings that opens the KeyVox App Store review page.
+- Added an unobtrusive App Store review request for eligible established users after a recent successful dictation, limited to once per app version and deferred when onboarding, updates, dictation, playback, purchases, or another presentation is active.
+
+### Changed
+
+- Updated the iOS runtime to apply the selected Whisper language during model preparation and at the start of each transcription request so every capture uses one consistent language.
+- Updated the Parakeet language section to remain on Auto Detect with guidance to its supported-language FAQ, without overwriting the saved Whisper selection.
+- Updated iOS architecture documentation and the code map for language ownership, device-local persistence, the Whisper voice-activity gate, shared dictionary-matcher ownership, and the extracted Rate & Review settings section.
+
+### Fixed
+
+- Fixed steady background noise and other noise-only captures so they no longer reach Whisper decoding and produce hallucinated text, while recordings containing speech keep their complete original audio.
+- Fixed compact dictated times such as `810 PM` so they normalize once to `8:10 PM` instead of becoming `8:10:00 PM`.
+- Fixed strong spaced single-letter pronunciations so supported dictation such as individually spoken letters can match the intended custom dictionary term without weakening existing safeguards.
+- Fixed unanchored plural split/join matches so unrelated phrases such as `main goes` do not collapse into stylized custom dictionary entries, while valid anchored replacements remain supported.
+- Fixed stylized custom dictionary matching in guarded titlecase, list, noun, and particle contexts while preserving common-word protection and requiring eligible short-token evidence.
+- Fixed acronym-bearing custom dictionary entries so pronunciation-supported dictation such as `chat GBT` can resolve to `ChatGPT` while unrelated wording such as `chat got` remains unchanged.
+- Fixed exact three- and four-word custom dictionary phrases so the complete spoken phrase is replaced without leaving a duplicated prefix.
+- Fixed multi-word custom dictionary matching around dotted domains so website text is not collapsed into an unrelated dictionary entry.
+- Fixed normalized spoken email addresses so a sentence-ending period remains intact when the following sentence is initially captured as part of the domain.
+- Fixed qualified year references such as `in 2012 maybe`, `in maybe 2015`, and `since at least 2012` so they remain years while similarly phrased quantities still receive thousands separators.
+- Fixed incidental title casing at Whisper segment and audio-chunk boundaries while preserving proper names and capitalization after sentence-ending punctuation.
+- Fixed the keyboard Vibes action when its model is unavailable so the containing app opens the correct model-recovery or trial experience.
+- Fixed the keyboard toolbar layout after a call warning so the Vibes button returns without leaving stale spacing.
+
+### Package versions
+
+KeyVox iOS 1.3.0
+  KeyVoxCore            1.2.1
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.0
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.1.0
+
+---
+
+## [1.2.17] - 2026-07-27
+
+Improves keyboard dictation around quotation marks, expands spoken terminal punctuation completion, and protects dictated text in debug diagnostics.
+
+### Added
+
+- Added shared capitalization and leading-spacing behavior through `KeyVoxTextComposition` `1.0.0`, including sentence-boundary, delimiter, and opening and closing quote awareness.
+
+### Changed
+
+- Updated keyboard text insertion to use the shared text-composition policy while keeping document-context collection, dictionary casing, and text insertion owned by the iOS keyboard.
+- Updated keyboard insertion diagnostics to record normalization stage, change state, and text length without logging raw dictated text.
+- Updated the iOS architecture documentation and code map for shared text-composition ownership and the new keyboard insertion coordinators.
+- Updated `KeyVoxCore` to `1.1.1` with expanded spoken terminal punctuation completion for determiner-ending clauses.
+
+### Fixed
+
+- Fixed keyboard dictation immediately after an opening quote so the inserted text keeps sentence capitalization without an unwanted leading space.
+- Fixed keyboard dictation after a closing quote so sentence continuations receive a leading space and lowercase default sentence casing, while terminal punctuation inside the quote starts a new sentence correctly.
+- Fixed spoken terminal punctuation after determiner-ending phrases so clauses such as `I'm happy to hear that exclamation point` can end with the intended punctuation while ordinary punctuation-word references remain unchanged.
+
+### Package versions
+
+KeyVox iOS 1.2.17
+  KeyVoxCore            1.1.1
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxStyleRewrite    1.0.11
+  KeyVoxTextComposition 1.0.0
+  KeyVoxTTS             1.0.2
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxWhisper         1.0.1
+
+### Package changes
+
+- `KeyVoxCore` `1.1.1` expands spoken terminal punctuation completion to eligible determiner-ending clauses while preserving punctuation-word references and protected short phrases.
+- `KeyVoxTextComposition` `1.0.0` establishes the shared source of truth for leading capitalization and spacing across sentence starts, continuations, punctuation, delimiters, and quotation marks.
+
+---
+
 ## [1.2.16] - 2026-07-19
 
 Improves reversible List and Paragraph formatting consistency, preserves short trailing dictation audio, and strengthens custom dictionary matching.

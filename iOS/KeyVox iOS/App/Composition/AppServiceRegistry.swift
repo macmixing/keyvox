@@ -13,6 +13,8 @@ final class AppServiceRegistry {
     let settingsStore: AppSettingsStore
     let onboardingStore: OnboardingStore
     let weeklyWordStatsStore: WeeklyWordStatsStore
+    let appReviewRequestStore: AppReviewRequestStore
+    let appReviewRequestCoordinator: AppReviewRequestCoordinator
     let appTabRouter: AppTabRouter
     let appHaptics: AppHaptics
     let ttsPurchaseController: TTSPurchaseController
@@ -68,6 +70,8 @@ final class AppServiceRegistry {
         let runtimeFlags = RuntimeFlags()
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
+        let appReviewRequestStore = AppReviewRequestStore(defaults: settingsDefaults)
+        let appReviewRequestCoordinator = AppReviewRequestCoordinator(store: appReviewRequestStore)
         let appTabRouter = AppTabRouter()
         let appHaptics = AppHaptics()
         let ttsPurchaseController = TTSPurchaseController(
@@ -98,6 +102,7 @@ final class AppServiceRegistry {
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
         let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
+        whisperService.updateLanguage(settingsStore.whisperDictationLanguage)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
         let modelManager = ModelManager(
@@ -211,6 +216,9 @@ final class AppServiceRegistry {
                         )
                     }
                 )
+            },
+            recordSuccessfulDictation: { [weak appReviewRequestStore] in
+                appReviewRequestStore?.recordSuccessfulDictation()
             },
             prewarmStyleRewriteForUpcomingDictation: { [weak styleRewritePipelineCoordinator] in
                 Task { @MainActor [weak styleRewritePipelineCoordinator] in
@@ -350,6 +358,8 @@ final class AppServiceRegistry {
         self.settingsStore = settingsStore
         self.onboardingStore = onboardingStore
         self.weeklyWordStatsStore = weeklyWordStatsStore
+        self.appReviewRequestStore = appReviewRequestStore
+        self.appReviewRequestCoordinator = appReviewRequestCoordinator
         self.appTabRouter = appTabRouter
         self.appHaptics = appHaptics
         self.ttsPurchaseController = ttsPurchaseController
@@ -385,6 +395,13 @@ final class AppServiceRegistry {
             .removeDuplicates()
             .sink { [weak self] provider in
                 self?.applyActiveProviderSelection(provider)
+            }
+            .store(in: &cancellables)
+
+        settingsStore.$whisperDictationLanguage
+            .removeDuplicates()
+            .sink { [weak self] language in
+                self?.whisperService.updateLanguage(language)
             }
             .store(in: &cancellables)
 

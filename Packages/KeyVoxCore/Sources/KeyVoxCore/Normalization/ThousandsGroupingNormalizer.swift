@@ -163,6 +163,8 @@ public struct ThousandsGroupingNormalizer {
                     value: value,
                     isLikelyYear: isLikelyYearReference(
                         value: value,
+                        fourthPrevious: context.fourthPrevious,
+                        thirdPrevious: context.thirdPrevious,
                         secondPrevious: context.secondPrevious,
                         previous: context.previous,
                         next: context.next,
@@ -340,10 +342,19 @@ public struct ThousandsGroupingNormalizer {
     private func lexicalContext(
         around range: NSRange,
         in tokens: [LexicalToken]
-    ) -> (secondPrevious: LexicalToken?, previous: LexicalToken?, next: LexicalToken?, secondNext: LexicalToken?) {
+    ) -> (
+        fourthPrevious: LexicalToken?,
+        thirdPrevious: LexicalToken?,
+        secondPrevious: LexicalToken?,
+        previous: LexicalToken?,
+        next: LexicalToken?,
+        secondNext: LexicalToken?
+    ) {
         let previousTokens = tokens.filter { NSMaxRange($0.range) <= range.location }
         let followingTokens = tokens.filter { $0.range.location >= NSMaxRange(range) }
         return (
+            fourthPrevious: previousTokens.dropLast(3).last,
+            thirdPrevious: previousTokens.dropLast(2).last,
             secondPrevious: previousTokens.dropLast().last,
             previous: previousTokens.last,
             next: followingTokens.first,
@@ -351,7 +362,31 @@ public struct ThousandsGroupingNormalizer {
         )
     }
 
+    private func hasStrongYearContext(around range: NSRange, in tokens: [LexicalToken]) -> Bool {
+        let context = lexicalContext(around: range, in: tokens)
+        let nextTag = context.next?.tag
+        let hasTemporalLead = context.thirdPrevious?.tag == .preposition
+            && context.secondPrevious?.tag == .determiner
+        return context.previous?.tag == .noun
+            && hasTemporalLead
+            && (context.next == nil
+                || [.verb, .pronoun, .determiner, .conjunction].contains(nextTag))
+    }
+
+    private func isNominalIdentifierContext(around range: NSRange, in tokens: [LexicalToken]) -> Bool {
+        let context = lexicalContext(around: range, in: tokens)
+        return context.previous?.tag == .verb
+            && context.secondPrevious?.tag == .noun
+            && context.thirdPrevious?.tag == .noun
+            && context.fourthPrevious?.tag == .determiner
+    }
+
     private func shouldGroup(value: Int, range: NSRange, tokens: [LexicalToken]) -> Bool {
+        if hasStrongYearContext(around: range, in: tokens)
+            || isNominalIdentifierContext(around: range, in: tokens) {
+            return false
+        }
+
         if !Self.plausibleYearRange.contains(value) {
             return true
         }
@@ -361,12 +396,16 @@ public struct ThousandsGroupingNormalizer {
         }
 
         let secondPrevious = tokenIndex > 1 ? tokens[tokenIndex - 2] : nil
+        let thirdPrevious = tokenIndex > 2 ? tokens[tokenIndex - 3] : nil
+        let fourthPrevious = tokenIndex > 3 ? tokens[tokenIndex - 4] : nil
         let previous = tokenIndex > 0 ? tokens[tokenIndex - 1] : nil
         let next = tokenIndex + 1 < tokens.count ? tokens[tokenIndex + 1] : nil
         let secondNext = tokenIndex + 2 < tokens.count ? tokens[tokenIndex + 2] : nil
 
         if isLikelyYearReference(
             value: value,
+            fourthPrevious: fourthPrevious,
+            thirdPrevious: thirdPrevious,
             secondPrevious: secondPrevious,
             previous: previous,
             next: next,
@@ -392,6 +431,8 @@ public struct ThousandsGroupingNormalizer {
 
     private func isLikelyYearReference(
         value: Int,
+        fourthPrevious: LexicalToken?,
+        thirdPrevious: LexicalToken?,
         secondPrevious: LexicalToken?,
         previous: LexicalToken?,
         next: LexicalToken?,
@@ -403,66 +444,70 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
+        let hasAlphabeticOtherWordNeighbor = [previous, next].contains { token in
+            token?.tag == .otherWord
+                && token?.text.rangeOfCharacter(from: .letters) != nil
+        }
+        let hasMeaningfulNeighbor = [previous, next].contains { token in
+            guard let tag = token?.tag else { return false }
+            return ![.number, .otherWord].contains(tag)
+                || token?.text.rangeOfCharacter(from: .letters) != nil
+        }
+        if !hasMeaningfulNeighbor {
+            return false
+        }
+
         if isCalendarMonthToken(previous) {
             return true
         }
 
-        if let nextTag = next?.tag,
-           [.verb, .pronoun, .determiner, .conjunction].contains(nextTag) {
-            return true
+        let priorTags = [fourthPrevious, thirdPrevious, secondPrevious, previous].compactMap { $0?.tag }
+        let priorPrepositionCount = priorTags.filter { $0 == .preposition }.count
+        let nextTag = next?.tag
+        let previousTag = previous?.tag
+        let secondPreviousTag = secondPrevious?.tag
+        let hasPluralNounFollowing = nextTag == .noun && isPluralInflectedNoun(next)
+        if hasPluralNounFollowing {
+            return false
         }
 
-        if previous?.tag == .preposition, next?.tag == .interjection {
-            return true
+        if previousTag == .adverb, nextTag == .noun {
+            return false
         }
 
-        if secondPrevious?.tag == .preposition,
-           previous?.tag == .interjection {
-            return true
-        }
+        let hasPartitiveComplement = nextTag == .preposition
+            && [.pronoun, .determiner].contains(secondNext?.tag)
+        let hasFiniteClauseLead = previousTag == .verb
+            && secondPreviousTag == .pronoun
+            && (thirdPrevious?.tag == .verb || fourthPrevious?.tag == .verb)
+        let hasPrepositionalModifier = previousTag == .preposition
+            && [.noun, .adjective].contains(secondPreviousTag)
 
-        if next == nil, previous?.tag == .adverb {
-            return true
-        }
+        let yearEvidence = [
+            hasAlphabeticOtherWordNeighbor,
+            [.verb, .pronoun, .determiner, .conjunction].contains(nextTag),
+            nextTag == .noun,
+            previousTag == .preposition && !hasPartitiveComplement,
+            hasPrepositionalModifier,
+            priorPrepositionCount >= 2,
+            secondPreviousTag == .preposition
+                && [.adverb, .interjection].contains(previousTag),
+            hasFiniteClauseLead && hasPartitiveComplement,
+            next == nil && [.adverb, .noun, .determiner, .preposition].contains(previousTag),
+            previous == nil && nextTag == .noun,
+            previousTag == .determiner && nextTag == .noun,
+            previousTag == .noun && nextTag == .noun,
+        ].filter { $0 }.count
 
-        if next?.tag == .preposition {
-            if let secondNextTag = secondNext?.tag,
-               [.pronoun, .determiner].contains(secondNextTag) {
-                return false
-            }
+        let quantityEvidence = [
+            hasPartitiveComplement && !hasFiniteClauseLead && !hasPrepositionalModifier,
+            previousTag == .adjective && priorPrepositionCount < 2,
+            previousTag == .verb
+                && [.adverb, .interjection].contains(nextTag)
+                && secondNext == nil,
+        ].filter { $0 }.count
 
-            if previous?.tag == .preposition {
-                return true
-            }
-        }
-
-        if next == nil,
-           let previousTag = previous?.tag,
-           [.noun, .determiner, .preposition].contains(previousTag) {
-            return true
-        }
-
-        if previous == nil, next?.tag == .noun {
-            if isPluralInflectedNoun(next), secondNext?.tag == .verb {
-                return false
-            }
-
-            return true
-        }
-
-        if previous?.tag == .determiner, next?.tag == .noun {
-            if isPluralInflectedNoun(next), secondNext?.tag == .verb {
-                return false
-            }
-
-            return true
-        }
-
-        if previous?.tag == .noun, next?.tag == .noun {
-            return true
-        }
-
-        return false
+        return yearEvidence >= quantityEvidence
     }
 
     private func isPluralInflectedNoun(_ token: LexicalToken?) -> Bool {

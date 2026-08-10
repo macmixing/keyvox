@@ -74,6 +74,8 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 previousCharacter: context.previousCharacter,
                 characterBeforePreviousCharacter: context.characterBeforePreviousCharacter,
                 previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter,
+                characterBeforePreviousNonWhitespaceCharacter: context.characterBeforePreviousNonWhitespaceCharacter,
+                isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart,
                 isAfterNewline: context.previousCharacter?.isNewline == true
                     || context.characterBeforePreviousCharacter?.isNewline == true
             )
@@ -82,7 +84,7 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 return true
             }
 
-            if TextCompositionPolicy.isImmediatelyAfterTerminalPunctuationAndClosingQuote(
+            if TextCompositionPolicy.isImmediatelyAfterTerminalPunctuationAndDelimiter(
                 compositionContext
             ) {
                 return true

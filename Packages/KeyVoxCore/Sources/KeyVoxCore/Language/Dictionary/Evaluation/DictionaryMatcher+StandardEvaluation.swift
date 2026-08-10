@@ -13,8 +13,6 @@ private enum StandardEvaluationConstants {
     static let singleTokenPluralPhoneticMinimum = 0.92
     static let singleTokenPluralMinimumThreshold = 0.78
     static let singleTokenPluralThresholdDelta = 0.12
-    static let twoTokenPossessiveMinimumThreshold = 0.70
-    static let twoTokenPossessiveThresholdDelta = 0.10
 
     static let peerSupportSimilarityMaximum = 0.70
     static let stylizedSurfaceSimilarityMinimum = 0.82
@@ -75,11 +73,27 @@ extension DictionaryMatcher {
         let leftIsVerb = leftToken.lexicalClass == .verb
         let rightIsVerbLike = rightToken.lexicalClass == .verb || rightToken.lexicalClass == .adjective
 
-        return left.count <= StandardEvaluationConstants.structuralLeftContextMaximumLength
-            && leftIsVerb
-            && rightIsLowerAlphabetic
-            && right.count >= StandardEvaluationConstants.structuralRightContextMinimumLength
-            && rightIsVerbLike
+        return hasNounIntroducedTitlecaseContext(
+            tokenStart: tokenStart,
+            tokenEndExclusive: tokenEndExclusive,
+            tokens: tokens
+        )
+            || (left.count <= StandardEvaluationConstants.structuralLeftContextMaximumLength
+                && leftIsVerb
+                && rightIsLowerAlphabetic
+                && right.count >= StandardEvaluationConstants.structuralRightContextMinimumLength
+                && rightIsVerbLike)
+    }
+
+    private func hasNounIntroducedTitlecaseContext(
+        tokenStart: Int,
+        tokenEndExclusive: Int,
+        tokens: [Token]
+    ) -> Bool {
+        guard tokenStart > 0, tokenEndExclusive < tokens.count else { return false }
+        return tokens[tokenStart - 1].lexicalClass == .noun
+            && isTitlecaseToken(tokens[tokenStart])
+            && tokens[tokenEndExclusive].lexicalClass == .adverb
     }
 
     func proposeStandardReplacement(
@@ -110,80 +124,90 @@ extension DictionaryMatcher {
         for candidate in candidates {
             var bestForCandidate: Candidate?
             var bestObservedNormalizedForCandidate: String?
-            for form in observedForms {
-                let baseScore = scorer.score(
-                    observedText: form.normalized,
-                    observedPhonetic: form.phonetic,
-                    candidateText: candidate.normalizedPhrase,
-                    candidatePhonetic: candidate.phoneticPhrase,
-                    previousToken: start > 0 ? tokens[start - 1].normalized : nil,
-                    nextToken: end < tokens.count ? tokens[end].normalized : nil
-                )
+            for candidateText in candidate.matchingNormalizedPhrases {
+                for form in observedForms {
+                    guard hasSufficientNumericAlignment(
+                        observedNormalized: form.normalized,
+                        observedNumericSourceTokens: form.numericSourceTokens,
+                        candidate: candidate
+                    ) else {
+                        continue
+                    }
 
-                let fallbackPhoneticSimilarity = stylizedFallbackPhoneticSimilarity(
-                    tokenCount: tokenCount,
-                    observedNormalized: form.normalized,
-                    observedPhonetic: form.phonetic,
-                    candidate: candidate
-                )
-                let allowStylizedFallbackBySurface =
-                    tokenCount != 1
-                    || !isStylizedSingleTokenEntry(candidate)
-                    || allowStylizedFallbackForCommonObservedToken(
-                        token: window[0],
-                        tokenIndex: start,
-                        totalTokens: tokens.count
+                    let baseScore = scorer.score(
+                        observedText: form.normalized,
+                        observedPhonetic: form.phonetic,
+                        candidateText: candidateText,
+                        candidatePhonetic: candidate.phoneticPhrase,
+                        previousToken: start > 0 ? tokens[start - 1].normalized : nil,
+                        nextToken: end < tokens.count ? tokens[end].normalized : nil
                     )
-                let gatedFallbackPhoneticSimilarity =
-                    allowStylizedFallbackBySurface ? fallbackPhoneticSimilarity : 0
-                let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
-                let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
-                let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
-                let pluralHomophoneBonus: Double
-                if tokenCount == 1,
-                   form.replacementSuffix == "s",
-                   candidate.tokens.count == 1,
-                   !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidate.tokens[0])),
-                   adjustedPhoneticScore >= StandardEvaluationConstants.pluralHomophonePhoneticMinimum,
-                   baseScore.text >= StandardEvaluationConstants.pluralHomophoneTextMinimum,
-                   hasPluralHomophonePronunciationEvidence(
-                       observed: form.normalized,
-                       candidate: candidate.tokens[0]
-                   ) {
-                    // Deterministic lane for plural homophone near-misses such as
-                    // "queues" -> "cues" when the dictionary term is singular.
-                    pluralHomophoneBonus = StandardEvaluationConstants.pluralHomophoneBonus
-                } else {
-                    pluralHomophoneBonus = 0
-                }
 
-                let boostedFinalScore = min(
-                    1.0,
-                    adjustedBaseFinal
-                        + tokenAlignmentBoost(window: window, candidate: candidate)
-                        + possessiveBonus(for: form.replacementSuffix)
-                        + pluralHomophoneBonus
-                )
-                let score = ReplacementScore(
-                    text: baseScore.text,
-                    phonetic: adjustedPhoneticScore,
-                    context: baseScore.context,
-                    final: boostedFinalScore
-                )
+                    let fallbackPhoneticSimilarity = stylizedFallbackPhoneticSimilarity(
+                        tokenCount: tokenCount,
+                        observedNormalized: form.normalized,
+                        observedPhonetic: form.phonetic,
+                        candidate: candidate
+                    )
+                    let allowStylizedFallbackBySurface =
+                        tokenCount != 1
+                        || !isStylizedSingleTokenEntry(candidate)
+                        || allowStylizedFallbackForCommonObservedToken(
+                            token: window[0],
+                            tokenIndex: start,
+                            totalTokens: tokens.count
+                        )
+                    let gatedFallbackPhoneticSimilarity =
+                        allowStylizedFallbackBySurface ? fallbackPhoneticSimilarity : 0
+                    let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
+                    let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
+                    let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
+                    let pluralHomophoneBonus: Double
+                    if tokenCount == 1,
+                       form.replacementSuffix == "s",
+                       candidate.tokens.count == 1,
+                       !lexicon.isCommonWord(baseTokenForCommonWordGuard(candidate.tokens[0])),
+                       adjustedPhoneticScore >= StandardEvaluationConstants.pluralHomophonePhoneticMinimum,
+                       baseScore.text >= StandardEvaluationConstants.pluralHomophoneTextMinimum,
+                       hasPluralHomophonePronunciationEvidence(
+                           observed: form.normalized,
+                           candidate: candidate.tokens[0]
+                       ) {
+                        // Deterministic lane for plural homophone near-misses such as
+                        // "queues" -> "cues" when the dictionary term is singular.
+                        pluralHomophoneBonus = StandardEvaluationConstants.pluralHomophoneBonus
+                    } else {
+                        pluralHomophoneBonus = 0
+                    }
 
-                let candidateScore = Candidate(
-                    entry: candidate,
-                    score: score,
-                    replacementSuffix: form.replacementSuffix
-                )
-                if let currentBestForCandidate = bestForCandidate {
-                    if candidateScore.score.final > currentBestForCandidate.score.final {
+                    let boostedFinalScore = min(
+                        1.0,
+                        adjustedBaseFinal
+                            + tokenAlignmentBoost(window: window, candidate: candidate)
+                            + possessiveBonus(for: form.replacementSuffix)
+                            + pluralHomophoneBonus
+                    )
+                    let score = ReplacementScore(
+                        text: baseScore.text,
+                        phonetic: adjustedPhoneticScore,
+                        context: baseScore.context,
+                        final: boostedFinalScore
+                    )
+
+                    let candidateScore = Candidate(
+                        entry: candidate,
+                        score: score,
+                        replacementSuffix: form.replacementSuffix
+                    )
+                    if let currentBestForCandidate = bestForCandidate {
+                        if candidateScore.score.final > currentBestForCandidate.score.final {
+                            bestForCandidate = candidateScore
+                            bestObservedNormalizedForCandidate = form.normalized
+                        }
+                    } else {
                         bestForCandidate = candidateScore
                         bestObservedNormalizedForCandidate = form.normalized
                     }
-                } else {
-                    bestForCandidate = candidateScore
-                    bestObservedNormalizedForCandidate = form.normalized
                 }
             }
 
@@ -203,6 +227,11 @@ extension DictionaryMatcher {
         }
 
         guard let best, let bestObservedNormalized else { return nil }
+
+        if shouldRejectMismatchedSpelledUppercaseSequence(window: window, candidate: best.entry) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
 
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
 
@@ -231,13 +260,6 @@ extension DictionaryMatcher {
                 StandardEvaluationConstants.singleTokenPluralMinimumThreshold,
                 threshold - StandardEvaluationConstants.singleTokenPluralThresholdDelta
             )
-        } else if tokenCount == 2, best.replacementSuffix == "'s" {
-            // Two-token possessive near-misses can lose apostrophes in Whisper output.
-            // Keep this tighter than single-token possessives but allow a modest lift.
-            effectiveThreshold = max(
-                StandardEvaluationConstants.twoTokenPossessiveMinimumThreshold,
-                threshold - StandardEvaluationConstants.twoTokenPossessiveThresholdDelta
-            )
         } else {
             effectiveThreshold = threshold
         }
@@ -260,6 +282,11 @@ extension DictionaryMatcher {
                 tokenEndExclusive: end,
                 tokens: tokens
             )
+            let hasNounIntroducedTitlecaseContext = hasNounIntroducedTitlecaseContext(
+                tokenStart: start,
+                tokenEndExclusive: end,
+                tokens: tokens
+            )
             let hasAttributionPrepositionContext = hasAttributionLikePrepositionContext(
                 tokenStart: start,
                 tokens: tokens
@@ -271,6 +298,12 @@ extension DictionaryMatcher {
                     totalTokens: tokens.count
                 )
             let hasAdjacentTitlecaseContext = hasAdjacentTitlecasePhraseContext(
+                tokenIndex: start,
+                totalTokens: tokens.count,
+                tokens: tokens,
+                text: text
+            )
+            let hasAdjacentTitlecaseListContext = hasAdjacentTitlecaseListContext(
                 tokenIndex: start,
                 totalTokens: tokens.count,
                 tokens: tokens,
@@ -293,13 +326,17 @@ extension DictionaryMatcher {
                    candidate: candidateToken,
                    textSimilarity: textSimilarity
                ) {
-                stats.rejectedLowScore += 1
-                return nil
+                if !hasAdjacentTitlecaseListContext {
+                    stats.rejectedLowScore += 1
+                    return nil
+                }
             }
 
             if observedHasRuntimePronunciation,
                isTitlecaseToken(observedToken),
                observedToken.normalized.count >= candidateToken.count,
+               !hasNounIntroducedTitlecaseContext,
+               !hasAdjacentTitlecaseListContext,
                textSimilarity < StandardEvaluationConstants.titlecaseKnownWordSurfaceMinimum {
                 requiresPeerSupport = true
                 requiresPeerSupportForTitlecaseKnownWord = true

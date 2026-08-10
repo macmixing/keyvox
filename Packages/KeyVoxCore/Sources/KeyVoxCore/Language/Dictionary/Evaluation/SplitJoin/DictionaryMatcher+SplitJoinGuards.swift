@@ -19,11 +19,16 @@ extension DictionaryMatcher {
         observedCombined: String,
         observedTail: String,
         candidate: String,
-        nextToken: Token?
+        nextToken: Token?,
+        followingToken: Token?
     ) -> Bool {
         guard let nextToken else { return false }
         guard !candidate.hasSuffix("s") else { return false }
-        guard nextToken.lexicalClass == .noun else { return false }
+        let hasNounContext = nextToken.lexicalClass == .noun
+        let hasAdjectiveNounContext =
+            nextToken.lexicalClass == .adjective
+            && followingToken?.lexicalClass == .noun
+        guard hasNounContext || hasAdjectiveNounContext else { return false }
         let hasPossessiveSoundEnding =
             hasPossessiveLikeEnding(observedCombined)
             || hasPossessiveLikeEnding(observedTail)
@@ -41,17 +46,19 @@ extension DictionaryMatcher {
     }
 
     func isLikelyDomainTokenSplit(window: [Token], text: String) -> Bool {
-        guard window.count == 2 else { return false }
-        let second = window[1].normalized
-        guard second.count >= 2 else { return false }
+        guard window.count >= 2 else { return false }
         guard let regex = Self.domainLabelTokenRegex else { return false }
-        let secondRange = NSRange(location: 0, length: (second as NSString).length)
-        guard regex.firstMatch(in: second, options: [], range: secondRange) != nil else { return false }
 
         let nsText = text as NSString
-        let dotBeforeSecond = window[1].range.location > 0
-            && nsText.substring(with: NSRange(location: window[1].range.location - 1, length: 1)) == "."
-        return dotBeforeSecond
+        return window.dropFirst().contains { token in
+            guard token.normalized.count >= 2 else { return false }
+            let tokenRange = NSRange(location: 0, length: (token.normalized as NSString).length)
+            guard regex.firstMatch(in: token.normalized, options: [], range: tokenRange) != nil else {
+                return false
+            }
+            return token.range.location > 0
+                && nsText.substring(with: NSRange(location: token.range.location - 1, length: 1)) == "."
+        }
     }
 
     func isExplicitHyphenDelimitedSplit(window: [Token], text: String) -> Bool {
@@ -64,5 +71,24 @@ extension DictionaryMatcher {
         let between = nsText.substring(with: NSRange(location: firstEnd, length: secondStart - firstEnd))
         let trimmed = between.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed == "-" || trimmed == "‑" || trimmed == "–"
+    }
+
+    func isWhitespaceDelimitedSplit(window: [Token], text: String) -> Bool {
+        guard window.count == 2 else { return false }
+        let firstEnd = window[0].range.location + window[0].range.length
+        let secondStart = window[1].range.location
+        guard secondStart > firstEnd else { return false }
+
+        let nsText = text as NSString
+        let between = nsText.substring(with: NSRange(location: firstEnd, length: secondStart - firstEnd))
+        return !between.isEmpty
+            && between.unicodeScalars.allSatisfy { CharacterSet.whitespacesAndNewlines.contains($0) }
+    }
+
+    func hasShortTokenSplitContext(start: Int, end: Int, tokens: [Token]) -> Bool {
+        guard start > 0, end < tokens.count else { return false }
+        let precedingClass = tokens[start - 1].lexicalClass
+        return (precedingClass == .noun || precedingClass == .particle)
+            && tokens[end].lexicalClass == .adverb
     }
 }

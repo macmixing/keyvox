@@ -1,4 +1,5 @@
 import Cocoa
+import Carbon.HIToolbox
 import KeyVoxCore
 
 class PasteService {
@@ -163,7 +164,9 @@ class PasteService {
                     menuFallbackExecutor: self.menuFallbackExecutor,
                     shouldTrustMenuSuccessWithoutAXVerification: { self.shouldTrustMenuSuccessWithoutAXVerification() },
                     setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
-                    typeLeadingSpacesOnMainThread: { self.typeLeadingSpacesOnMainThread(count: $0) }
+                    executeLeadingSpacePasteOnMainThread: {
+                        self.executeLeadingSpacePasteOnMainThread(count: $0)
+                    }
                 )
                 didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
                 suppressFirstWarmupFailureWarning = menuFallbackExecution.suppressFirstWarmupFailureWarning
@@ -332,7 +335,9 @@ class PasteService {
                 )
             },
             setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
-            typeLeadingSpacesOnMainThread: { self.typeLeadingSpacesOnMainThread(count: $0) }
+            executeLeadingSpacePasteOnMainThread: {
+                self.executeLeadingSpacePasteOnMainThread(count: $0)
+            }
         )
 
         restoreClipboardOnMainThread(from: savedSnapshot, policy: .immediate)
@@ -463,30 +468,68 @@ class PasteService {
         }
     }
 
-    private func typeLeadingSpacesOnMainThread(count: Int) -> Bool {
+    private func executeLeadingSpacePasteOnMainThread(count: Int) -> Bool {
         if Thread.isMainThread {
-            return typeLeadingSpaces(count: count)
+            return executeLeadingSpacePaste(count: count)
         }
 
         var didSucceed = false
         DispatchQueue.main.sync {
-            didSucceed = typeLeadingSpaces(count: count)
+            didSucceed = executeLeadingSpacePaste(count: count)
         }
         return didSucceed
     }
 
-    private func typeLeadingSpaces(count: Int) -> Bool {
+    private func executeLeadingSpacePaste(count: Int) -> Bool {
         guard count > 0 else { return true }
-        guard let source = CGEventSource(stateID: .hidSystemState) else { return false }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return false }
+
+        var events: [CGEvent] = []
 
         for _ in 0..<count {
-            guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 49, keyDown: true),
-                  let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 49, keyDown: false) else {
+            guard let keyDown = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: CGKeyCode(kVK_Space),
+                keyDown: true
+            ),
+                  let keyUp = CGEvent(
+                    keyboardEventSource: source,
+                    virtualKey: CGKeyCode(kVK_Space),
+                    keyDown: false
+                  ) else {
                 return false
             }
-            keyDown.post(tap: .cghidEventTap)
-            keyUp.post(tap: .cghidEventTap)
+            events.append(contentsOf: [keyDown, keyUp])
         }
+
+        guard let commandDown = CGEvent(
+            keyboardEventSource: source,
+            virtualKey: CGKeyCode(kVK_Command),
+            keyDown: true
+        ),
+              let pasteDown = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: CGKeyCode(kVK_ANSI_V),
+                keyDown: true
+              ),
+              let pasteUp = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: CGKeyCode(kVK_ANSI_V),
+                keyDown: false
+              ),
+              let commandUp = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: CGKeyCode(kVK_Command),
+                keyDown: false
+              ) else {
+            return false
+        }
+
+        commandDown.flags = .maskCommand
+        pasteDown.flags = .maskCommand
+        pasteUp.flags = .maskCommand
+        events.append(contentsOf: [commandDown, pasteDown, pasteUp, commandUp])
+        events.forEach { $0.post(tap: .cghidEventTap) }
 
         return true
     }

@@ -4,6 +4,34 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
+    func testPostProcessorDoesNotRewriteMismatchedSpelledUppercaseSequences() {
+        let processor = TranscriptionPostProcessor()
+        let entries = DictionaryBuiltInEntries.effectiveEntries(
+            merging: [DictionaryEntry(phrase: "ChatGPT")]
+        )
+        let inputs = [
+            "But as that got better, this got worse.",
+            "But as chat GOT better, this got worse.",
+            "But as THAT, GOT better, this got worse.",
+        ]
+
+        for input in inputs {
+            let output = processor.process(
+                input,
+                dictionaryEntries: entries,
+                renderMode: .multiline
+            )
+            XCTAssertEqual(output, input)
+        }
+
+        let phoneticUppercaseOutput = processor.process(
+            "But as chat GBT got better, this got worse.",
+            dictionaryEntries: entries,
+            renderMode: .multiline
+        )
+        XCTAssertEqual(phoneticUppercaseOutput, "But as ChatGPT got better, this got worse.")
+    }
+
     func testRewritesMergedDictionaryTokenToCanonicalTwoTokenPhrase() {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Mister PinupCA")]

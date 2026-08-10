@@ -8,6 +8,7 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
     case openSettings
     case openVibes
     case openVibesTrialStart
+    case openVibesModelRecovery
 
     init?(url: URL) {
         guard url.scheme?.lowercased() == "keyvoxios" else { return nil }
@@ -46,6 +47,8 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
                 self = .openVibes
             case "trial-start":
                 self = .openVibesTrialStart
+            case "model-recovery":
+                self = .openVibesModelRecovery
             default:
                 return nil
             }

@@ -605,8 +605,7 @@ struct TranscriptionManagerTests {
         harness.recorder.isMonitoring = false
         await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
 
-        harness.manager.handleAppDidBecomeActive()
-        await settleAsyncManagerWork()
+        await harness.manager.handleAppDidBecomeActive().value
 
         #expect(harness.transcriptionService.transcribeCallCount == 1)
         #expect(harness.manager.lastTranscriptionText != nil)
@@ -623,8 +622,7 @@ struct TranscriptionManagerTests {
         harness.recorder.isMonitoring = false
         await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
 
-        harness.manager.handleAppDidBecomeActive()
-        await settleAsyncManagerWork()
+        await harness.manager.handleAppDidBecomeActive().value
 
         #expect(harness.transcriptionService.transcribeCallCount == 0)
         #expect(harness.manager.hasPendingInterruptedCaptureRecovery == true)

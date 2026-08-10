@@ -13,6 +13,7 @@ final class AppUpdateCoordinator: ObservableObject {
     }
 
     @Published var activePrompt: Prompt?
+    @Published private(set) var isRefreshingPromptState = false
 
     private let service: AppUpdateService
     private let defaults: UserDefaults
@@ -39,10 +40,14 @@ final class AppUpdateCoordinator: ObservableObject {
         guard refreshTask == nil else { return }
         guard shouldRefresh else { return }
 
+        isRefreshingPromptState = true
         refreshTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            defer {
+                self.isRefreshingPromptState = false
+                self.refreshTask = nil
+            }
             await self.refreshPromptState()
-            self.refreshTask = nil
         }
     }
 
@@ -95,7 +100,7 @@ final class AppUpdateCoordinator: ObservableObject {
         syncPresentationState()
     }
 
-    private var currentAppVersion: AppVersion? {
+    var currentAppVersion: AppVersion? {
         guard let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else {
             return nil
         }

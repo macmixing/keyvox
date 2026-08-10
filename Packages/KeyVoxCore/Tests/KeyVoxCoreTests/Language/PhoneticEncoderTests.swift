@@ -30,4 +30,12 @@ final class PhoneticEncoderTests: XCTestCase {
         let signature = encoder.phraseSignature(for: ["migo", "platform"], lexicon: lexicon)
         XCTAssertTrue(signature == "MGO PLTRM")
     }
+
+    func testNumericAndOrdinalTokensUseCardinalPronunciation() {
+        let lexicon = FakeLexicon(pronunciations: ["eleven": "IH-L-EH-V-AH-N"])
+        let encoder = PhoneticEncoder()
+
+        XCTAssertEqual(encoder.signature(for: "11", lexicon: lexicon), "IH-L-EH-V-AH-N")
+        XCTAssertEqual(encoder.signature(for: "11th", lexicon: lexicon), "IH-L-EH-V-AH-N")
+    }
 }

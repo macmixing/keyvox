@@ -751,11 +751,12 @@ final class PasteServiceExecutionTests: XCTestCase {
         frontmostAppIdentityProvider: @escaping () -> PasteAppIdentity? = {
             PasteAppIdentity(bundleID: "com.example.app", pid: 99)
         },
-        axInspector: MockAXInspector = MockAXInspector(),
+        axInspector: MockAXInspector? = nil,
         untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) throws -> PasteService {
         let queue = DispatchQueue(label: "PasteServiceExecutionTests.queue")
         let dictionaryFileURL = try makeIsolatedDictionaryFileURL()
+        let resolvedAXInspector = axInspector ?? MockAXInspector()
         let service = PasteService(
             pasteQueue: queue,
             heuristicTTL: 10,
@@ -766,7 +767,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             clockNow: clockNow,
             clipboardAdapter: clipboard,
             failureRecoveryController: recovery,
-            axInspector: axInspector,
+            axInspector: resolvedAXInspector,
             accessibilityInjector: injector,
             menuFallbackExecutor: PasteServiceNoopFallbackExecutor(),
             menuFallbackCoordinator: coordinator,

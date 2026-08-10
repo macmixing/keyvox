@@ -187,6 +187,16 @@ final class KeyVoxVibesPurchaseController: ObservableObject {
         }
     }
 
+    func presentKeyboardModelRecoverySheet() {
+        refreshTrialStateIfNeeded()
+
+        if isVibesUnlocked || isTrialActive {
+            presentModelRecoverySheet()
+        } else {
+            presentIntroSheet(presentation: .trialStart)
+        }
+    }
+
     func presentHelpSheet() {
         refreshTrialStateIfNeeded()
 
