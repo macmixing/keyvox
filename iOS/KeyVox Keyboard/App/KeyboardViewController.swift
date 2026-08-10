@@ -460,9 +460,10 @@ final class KeyboardViewController: UIInputViewController {
 
     @discardableResult
     func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+        var updatedSymbolPage = symbolPage
         let didHandle = textInputController.handleKeyActivation(
             kind,
-            symbolPage: &symbolPage,
+            symbolPage: &updatedSymbolPage,
             resetCapsLockStateIfNeeded: { [weak self] in
                 self?.resetCapsLockStateIfNeeded()
             },
@@ -470,6 +471,7 @@ final class KeyboardViewController: UIInputViewController {
                 self?.advanceToNextInputMode()
             }
         )
+        symbolPage = updatedSymbolPage
         if didHandle {
             updateActiveInsertionVisualState()
         }
