@@ -287,7 +287,8 @@ extension DictionaryMatcher {
                observedCombined: window.map(\.normalized).joined(),
                observedTail: window[1].normalized,
                candidate: candidateToken,
-               nextToken: end < tokens.count ? tokens[end] : nil
+               nextToken: end < tokens.count ? tokens[end] : nil,
+               followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
            ) {
             replacementSuffix = "'s"
         }
@@ -299,7 +300,8 @@ extension DictionaryMatcher {
                observedCombined: window.map(\.normalized).joined(),
                observedTail: window[1].normalized,
                candidate: candidateToken,
-               nextToken: end < tokens.count ? tokens[end] : nil
+               nextToken: end < tokens.count ? tokens[end] : nil,
+               followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
            ) {
             replacementSuffix = "'s"
         }

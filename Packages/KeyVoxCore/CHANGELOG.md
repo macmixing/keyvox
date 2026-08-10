@@ -18,6 +18,8 @@ Stylized spoken-number dictionary matching and deterministic post-processing log
 - Removed the leftover abbreviation period between normalized meridiem times and capitalized continuation text, so `11 a.m. Eastern` becomes `11:00 AM Eastern`.
 - Removed the relaxed two-token possessive threshold that could rewrite unrelated prose such as `Levin means` as a dictionary entry with an inferred possessive suffix, while preserving valid multi-token possessive recovery.
 - Added regression coverage for the unrelated pronunciation case.
+- Improved split-join possessive recovery before adjective-plus-noun phrases, so `cue boards latest update` resolves to `Cueboard's latest update`.
+- Added regression coverage for adjective-plus-noun possessive context.
 
 ### Notes
 

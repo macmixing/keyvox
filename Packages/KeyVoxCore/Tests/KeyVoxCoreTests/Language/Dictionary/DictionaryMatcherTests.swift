@@ -922,6 +922,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "this is a test of Cueboard's abilities")
     }
 
+    func testSplitJoinInfersPossessiveBeforeAdjectiveNounPhrase() {
+        let matcher = makeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let result = matcher.apply(to: "Have you seen cue boards latest update?")
+        XCTAssertEqual(result.text, "Have you seen Cueboard's latest update?")
+    }
+
     func testSplitJoinPreservesPluralForSingularDictionaryEntry() {
         let lexicon = FakeLexicon(pronunciations: [
             "sub": "SB",
