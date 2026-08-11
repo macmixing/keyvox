@@ -16,6 +16,7 @@ Spoken question and exclamation commands now convert reliably after natural clau
 - Made eligible short clauses convert consistently when they appear after earlier sentences in the same transcription.
 - Covered natural adverbial dictation such as `I really appreciate that exclamation point.` without requiring a modal verb.
 - Preserved explicit terminal questions that refer to punctuation noun phrases instead of dictating punctuation commands.
+- Ensured continuation text is capitalized when spoken question-mark and exclamation-point commands insert a new sentence boundary.
 - Added focused coverage for the supported clause structures and multi-sentence transcription behavior.
 
 ### Notes

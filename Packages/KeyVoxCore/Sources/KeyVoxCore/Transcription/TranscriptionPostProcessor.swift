@@ -232,18 +232,20 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         #if DEBUG
         logPipelineStage("whitespaceNormalized", whitespaceNormalized)
         #endif
-        let sentenceNormalized = capitalizationNormalizer.normalizeSentenceStarts(in: whitespaceNormalized)
-        #if DEBUG
-        logPipelineStage("sentenceNormalized", sentenceNormalized)
-        #endif
         let spokenTerminalPunctuationNormalized = terminalPunctuationNormalizer.normalizeSpokenTerminalPunctuation(
-            in: sentenceNormalized
+            in: whitespaceNormalized
         )
         #if DEBUG
         logPipelineStage("spokenTerminalPunctuationNormalized", spokenTerminalPunctuationNormalized)
         #endif
+        let sentenceNormalized = capitalizationNormalizer.normalizeSentenceStarts(
+            in: spokenTerminalPunctuationNormalized
+        )
+        #if DEBUG
+        logPipelineStage("sentenceNormalized", sentenceNormalized)
+        #endif
         let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(
-            spokenTerminalPunctuationNormalized
+            sentenceNormalized
         )
         let terminalPeriodNormalized = terminalPeriodNormalizer.appendTerminalPeriodIfNeeded(
             to: punctuatedOutput,

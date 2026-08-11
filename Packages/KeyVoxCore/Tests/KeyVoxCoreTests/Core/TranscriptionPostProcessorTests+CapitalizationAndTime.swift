@@ -136,6 +136,28 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I'm a fan of that!")
     }
+    func testCapitalizesFollowingLetterAfterSpokenQuestionMark() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "So we're in good shape, right? Question mark, there's nothing brittle here.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "So we're in good shape, right? There's nothing brittle here.")
+    }
+    func testCapitalizesFollowingLetterAfterSpokenExclamationPoint() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "So we're in good shape, right! Exclamation point, there's nothing brittle here.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "So we're in good shape, right! There's nothing brittle here.")
+    }
     func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
         let processor = TranscriptionPostProcessor()
 
