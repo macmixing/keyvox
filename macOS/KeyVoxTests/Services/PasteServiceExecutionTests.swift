@@ -72,7 +72,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(clipboard.writes, ["hello"])
     }
 
-    func testMenuFallbackSuccessRestoresClipboardAndSkipsRecovery() async throws {
+    func testVerifiedMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()
         let capitalization = MockCapitalizationHeuristics(outputText: "hello")
@@ -91,12 +91,15 @@ final class PasteServiceExecutionTests: XCTestCase {
             spacing: spacing,
             injector: injector,
             coordinator: coordinator,
-            restoreDelayAfterMenuFallback: 10
+            restoreDelayAfterMenuFallback: 0.15
         )
 
         service.pasteText("hello")
 
-        try await waitForCondition(timeout: 0.2) {
+        try await Task.sleep(nanoseconds: 40_000_000)
+        XCTAssertEqual(clipboard.restoreCalls, 0)
+
+        try await waitForCondition {
             clipboard.restoreCalls == 1
         }
 
@@ -119,7 +122,7 @@ final class PasteServiceExecutionTests: XCTestCase {
             spacing: MockSpacingHeuristics(),
             injector: MockAccessibilityInjector(outcome: .failureNeedsFallback),
             coordinator: coordinator,
-            restoreDelayAfterMenuFallback: 0.8
+            restoreDelayAfterMenuFallback: 0.05
         )
 
         service.pasteText("first")
@@ -729,7 +732,7 @@ final class PasteServiceExecutionTests: XCTestCase {
         )
         XCTAssertTrue(verifiedMenuRestorePlan.shouldRememberInsertion)
         XCTAssertFalse(verifiedMenuRestorePlan.shouldStartFailureRecovery)
-        XCTAssertEqual(verifiedMenuRestorePlan.restorePolicy, .immediate)
+        XCTAssertEqual(verifiedMenuRestorePlan.restorePolicy, .afterDelay(0.8))
 
         let structuralMenuRestorePlan = PasteServiceExecutionPlan.build(
             didAccessibilityInsertText: false,

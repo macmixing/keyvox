@@ -401,7 +401,12 @@ class PasteService {
             #if DEBUG
             print("Clipboard restore policy: delayed \(String(format: "%.3f", delay))s")
             #endif
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+            if Thread.isMainThread {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: restoreBlock)
+            } else {
+                Thread.sleep(forTimeInterval: delay)
+                DispatchQueue.main.sync(execute: restoreBlock)
+            }
         case .deferredToFailureRecovery:
             break
         }
