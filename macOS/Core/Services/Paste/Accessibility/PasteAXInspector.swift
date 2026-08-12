@@ -269,7 +269,16 @@ final class PasteAXInspector: PasteAXInspecting {
                 element: element
             )
             let value = valueString(for: element)
-            let shouldTreatTrailingNewline = Self.isNewlineRangeAtCaret(rangeAfterCaret)
+            let insertionLine = integerAttribute(
+                kAXInsertionPointLineNumberAttribute as String,
+                element: element
+            )
+            let caretIndexLine = lineForIndex(caretLocation, element: element)
+            let shouldTreatTrailingNewline = Self.shouldTreatNewlineRangeAtCaret(
+                rangeAfterCaret,
+                insertionLine: insertionLine,
+                caretIndexLine: caretIndexLine
+            )
                 || (value.map {
                     Self.shouldTreatTrailingValueNewlineAsPrecedingCaret(
                         rangeText: rangeText,
@@ -289,9 +298,50 @@ final class PasteAXInspector: PasteAXInspecting {
         )
     }
 
+    private func integerAttribute(_ attribute: String, element: AXUIElement) -> Int? {
+        var valueRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            attribute as CFString,
+            &valueRef
+        ) == .success,
+        let number = valueRef as? NSNumber else {
+            return nil
+        }
+        return number.intValue
+    }
+
+    private func lineForIndex(_ index: Int, element: AXUIElement) -> Int? {
+        let indexNumber = NSNumber(value: index)
+        var lineRef: CFTypeRef?
+        guard AXUIElementCopyParameterizedAttributeValue(
+            element,
+            "AXLineForIndex" as CFString,
+            indexNumber,
+            &lineRef
+        ) == .success,
+        let number = lineRef as? NSNumber else {
+            return nil
+        }
+        return number.intValue
+    }
+
     static func isNewlineRangeAtCaret(_ rangeAfterCaret: String?) -> Bool {
         guard let rangeAfterCaret, rangeAfterCaret.isEmpty == false else { return false }
         return rangeAfterCaret.unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+    }
+
+    static func shouldTreatNewlineRangeAtCaret(
+        _ rangeAfterCaret: String?,
+        insertionLine: Int?,
+        caretIndexLine: Int?
+    ) -> Bool {
+        guard isNewlineRangeAtCaret(rangeAfterCaret),
+              let insertionLine,
+              let caretIndexLine else {
+            return false
+        }
+        return insertionLine == caretIndexLine
     }
 
     static func shouldTreatTrailingValueNewlineAsPrecedingCaret(
