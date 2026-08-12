@@ -28,6 +28,33 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, "Hello")
     }
 
+    func testKeepsCapitalizationWhenEmptyFieldContainsInvisibleFormatCharacter() {
+        let invisibleFormatCharacter = Character("\u{FEFF}")
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 1,
+                    previousCharacter: invisibleFormatCharacter,
+                    previousNonWhitespaceCharacter: invisibleFormatCharacter
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testKeepsCapitalizationAfterPeriod() {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: ".")
     }

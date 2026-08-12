@@ -69,16 +69,7 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 return true
             }
 
-            let compositionContext = TextCompositionContext(
-                isAtDocumentStart: false,
-                previousCharacter: context.previousCharacter,
-                characterBeforePreviousCharacter: context.characterBeforePreviousCharacter,
-                previousNonWhitespaceCharacter: context.previousNonWhitespaceCharacter,
-                characterBeforePreviousNonWhitespaceCharacter: context.characterBeforePreviousNonWhitespaceCharacter,
-                isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart,
-                isAfterNewline: context.previousCharacter?.isNewline == true
-                    || context.characterBeforePreviousCharacter?.isNewline == true
-            )
+            let compositionContext = compositionContext(from: context)
 
             if TextCompositionPolicy.isImmediatelyAfterOpeningQuote(compositionContext) {
                 return true
@@ -90,8 +81,8 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
                 return true
             }
 
-            if context.previousCharacter != nil
-                || context.previousNonWhitespaceCharacter != nil {
+            if compositionContext.previousCharacter != nil
+                || compositionContext.previousNonWhitespaceCharacter != nil {
                 return TextCompositionPolicy.isSentenceStart(in: compositionContext)
             }
         }
@@ -118,10 +109,38 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
             ?? lastInsertedTrailingCharacter.flatMap { $0.isWhitespace ? nil : $0 }
         return boundaryCharacter.map(TextCompositionPolicy.isSentenceBoundary) ?? false
     }
+
+    private func compositionContext(from context: PasteInsertionContext) -> TextCompositionContext {
+        let precedingCharacters = [
+            context.previousCharacter,
+            context.characterBeforePreviousCharacter
+        ].compactMap { $0 }.filter { !$0.isInvisibleFormatCharacter }
+        let precedingNonWhitespaceCharacters = [
+            context.previousNonWhitespaceCharacter,
+            context.characterBeforePreviousNonWhitespaceCharacter
+        ].compactMap { $0 }.filter { !$0.isInvisibleFormatCharacter }
+        let previousCharacter = precedingCharacters.first
+        let characterBeforePreviousCharacter = precedingCharacters.dropFirst().first
+
+        return TextCompositionContext(
+            isAtDocumentStart: false,
+            previousCharacter: previousCharacter,
+            characterBeforePreviousCharacter: characterBeforePreviousCharacter,
+            previousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.first,
+            characterBeforePreviousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.dropFirst().first,
+            isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart,
+            isAfterNewline: previousCharacter?.isNewline == true
+                || characterBeforePreviousCharacter?.isNewline == true
+        )
+    }
 }
 
 private extension Character {
     var isNewline: Bool {
         unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+    }
+
+    var isInvisibleFormatCharacter: Bool {
+        unicodeScalars.allSatisfy { $0.properties.generalCategory == .format }
     }
 }
