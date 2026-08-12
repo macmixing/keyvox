@@ -104,6 +104,37 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(coordinator.executeCalls, 1)
     }
 
+    func testRapidMenuFallbacksFinishClipboardTransactionBeforeStartingNextPayload() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: true,
+            menuAttempt: .actionSucceeded,
+            completionEvidence: .expectedPayloadObserved,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "payload"),
+            spacing: MockSpacingHeuristics(),
+            injector: MockAccessibilityInjector(outcome: .failureNeedsFallback),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0.8
+        )
+
+        service.pasteText("first")
+        service.pasteText("second")
+
+        try await waitForCondition {
+            clipboard.restoreCalls == 2
+        }
+
+        XCTAssertEqual(
+            clipboard.transactionEvents,
+            ["capture", "write", "restore", "capture", "write", "restore"]
+        )
+    }
+
     func testStructuralMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let recovery = MockFailureRecoveryController()

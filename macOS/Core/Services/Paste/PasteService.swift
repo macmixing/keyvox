@@ -132,17 +132,13 @@ class PasteService {
         )
         #endif
 
-        // Preserve full clipboard fidelity before writing insertion payload.
-        let savedSnapshot = clipboardAdapter.captureSnapshot()
-
-        // Menu fallback uses Cmd+V semantics, so payload must be in the clipboard.
-        clipboardAdapter.setString(insertionText)
-
-        #if DEBUG
-        print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
-        #endif
-
         pasteQueue.async {
+            let savedSnapshot = self.beginClipboardTransactionOnMainThread(
+                payload: insertionText
+            )
+            #if DEBUG
+            print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
+            #endif
             self.untouchedInsertionAuthorizer.invalidate()
             let injectionOutcome = self.accessibilityInjector.injectTextViaAccessibility(insertionText)
             let accessibilityDecision = PasteAccessibilityExecutionDecision.from(injectionOutcome)
@@ -196,7 +192,10 @@ class PasteService {
             if executionPlan.shouldStartFailureRecovery {
                 self.startFailureRecoveryOnMainThread(savedSnapshot: savedSnapshot)
             } else {
-                self.restoreClipboardOnMainThread(from: savedSnapshot, policy: executionPlan.restorePolicy)
+                self.restoreClipboardOnMainThread(
+                    from: savedSnapshot,
+                    policy: executionPlan.restorePolicy
+                )
             }
         }
     }
@@ -393,7 +392,11 @@ class PasteService {
             #if DEBUG
             print("Clipboard restore policy: immediate")
             #endif
-            DispatchQueue.main.async(execute: restoreBlock)
+            if Thread.isMainThread {
+                restoreBlock()
+            } else {
+                DispatchQueue.main.sync(execute: restoreBlock)
+            }
         case .afterDelay(let delay):
             #if DEBUG
             print("Clipboard restore policy: delayed \(String(format: "%.3f", delay))s")
@@ -402,6 +405,22 @@ class PasteService {
         case .deferredToFailureRecovery:
             break
         }
+    }
+
+    private func beginClipboardTransactionOnMainThread(
+        payload: String
+    ) -> PasteClipboardSnapshot.Snapshot {
+        let beginTransaction = { [clipboardAdapter] in
+            let snapshot = clipboardAdapter.captureSnapshot()
+            clipboardAdapter.setString(payload)
+            return snapshot
+        }
+
+        if Thread.isMainThread {
+            return beginTransaction()
+        }
+
+        return DispatchQueue.main.sync(execute: beginTransaction)
     }
 
     static func shouldStartFailureRecovery(

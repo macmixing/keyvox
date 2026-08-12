@@ -5,21 +5,25 @@ final class MockClipboardAdapter: PasteClipboardAdapting {
     let snapshot: PasteClipboardSnapshot.Snapshot
     private(set) var writes: [String] = []
     private(set) var restoreCalls = 0
+    private(set) var transactionEvents: [String] = []
 
     init(snapshot: PasteClipboardSnapshot.Snapshot) {
         self.snapshot = snapshot
     }
 
     func captureSnapshot() -> PasteClipboardSnapshot.Snapshot {
-        snapshot
+        transactionEvents.append("capture")
+        return snapshot
     }
 
     func setString(_ text: String) {
+        transactionEvents.append("write")
         writes.append(text)
     }
 
     func restore(_ snapshot: PasteClipboardSnapshot.Snapshot) {
         _ = snapshot
+        transactionEvents.append("restore")
         restoreCalls += 1
     }
 }
